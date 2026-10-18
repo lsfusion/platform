@@ -2128,6 +2128,16 @@ public class GwtClientUtils {
         else
             throw new Error("Field " + field + " not found");
     }-*/;
+    // what a view's call that is refused throws: a JS Error whose message is the reason alone, which a view may show its
+    // user as it is. A Java exception thrown into JS says "java.lang.RuntimeException: <reason>" - GWT's Throwable puts
+    // its class name into the message of the JS error behind it -, and on the Java side this is a RuntimeException all
+    // the same
+    public static RuntimeException refusal(String reason) {
+        return new JavaScriptException(newError(reason));
+    }
+    private static native JavaScriptObject newError(String message)/*-{
+        return new Error(message);
+    }-*/;
     public static native JavaScriptObject getField(JavaScriptObject object, String field)/*-{
         return object[field];
     }-*/;

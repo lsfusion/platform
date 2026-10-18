@@ -594,7 +594,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     private GPropertyDraw resolveClassicGroupProperty(String errorPrefix, GGroupObject group, String integrationSID) {
         GPropertyDraw property = form.getPropertyDraw(group, integrationSID);
         if (property != null && form.countPropertyDraws(group, integrationSID) != 1)
-            throw new RuntimeException(errorPrefix + "'" + integrationSID + "' is drawn more than once on "
+            throw refusal(errorPrefix + "'" + integrationSID + "' is drawn more than once on "
                     + (group != null ? "group '" + group.getSID() + "'" : "the form level")
                     + ", so this name does not say which of them is meant; give them explicit EXTIDs");
         return property;
@@ -605,7 +605,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // a different, real cell, and it would look like it worked. Refused with the reason, as projecting one already is.
     private void checkAddressableProperty(String errorPrefix, GPropertyDraw property) {
         if (property.hasColumnGroupObjects())
-            throw new RuntimeException(errorPrefix + "'" + property.integrationSID + "' is grouped in columns - it is one cell"
+            throw refusal(errorPrefix + "'" + property.integrationSID + "' is grouped in columns - it is one cell"
                     + " per row AND column, and this names a row, so it is not addressed here (nor projected)");
     }
 
@@ -625,16 +625,16 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         int dot = name.lastIndexOf('.');
         GGroupObject group = dot > 0 ? form.getGroupObject(name.substring(0, dot)) : null;
         if (dot > 0 && group == null) // it is qualified and names no group of this form: say which half failed
-            throw new RuntimeException(errorPrefix + "unknown object group '" + name.substring(0, dot) + "'");
+            throw refusal(errorPrefix + "unknown object group '" + name.substring(0, dot) + "'");
         String integrationSID = dot > 0 ? name.substring(dot + 1) : name;
 
         GPropertyDraw property = resolveClassicGroupProperty(errorPrefix, group, integrationSID);
         if (property == null) {
             if (group != null)
-                throw new RuntimeException(errorPrefix + "property '" + integrationSID + "' is not drawn on group '" + group.getSID() + "'");
+                throw refusal(errorPrefix + "property '" + integrationSID + "' is not drawn on group '" + group.getSID() + "'");
             GGroupObject drawnOn = form.getSingleDrawnGroup(name); // a bare name a group draws: say how to name it
             String groupSID = drawnOn != null ? drawnOn.getSID() : "<group>";
-            throw new RuntimeException(errorPrefix + "'" + name + "' names no property of the form level; a property of an"
+            throw refusal(errorPrefix + "'" + name + "' names no property of the form level; a property of an"
                     + " object group is named with its group, '" + groupSID + "." + name + "'");
         }
         checkAddressableProperty(errorPrefix, property);
@@ -651,11 +651,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
             return null;
         GGroupObjectValue objectKey = GGroupObjectValue.resolveObject(objectOrKey);
         if (objectKey == null)
-            throw new RuntimeException(controllerPrefix(surface) + (group != null
+            throw refusal(controllerPrefix(surface) + (group != null
                     ? "expects a row of '" + group.getSID() + "', its objects handle; a key names a row only in the react view that draws the rows"
                     : "the object argument is not a data row or an objects handle; pass one of those" + noGroup));
         if (group != null && !objectKey.isEmpty() && group.filterRowKeys(objectKey) == null)
-            throw new RuntimeException(controllerPrefix(surface) + "that row is not a row of '" + group.getSID() + "'");
+            throw refusal(controllerPrefix(surface) + "that row is not a row of '" + group.getSID() + "'");
         return objectKey;
     }
     // ... and the row a classic name is given: one of the group its prefix names - a bare name names a property of the
@@ -669,7 +669,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         return resolveGroupObject(surface, form.getGroupObject(property.substring(0, dot)), objectOrKey, "");
     }
     private RuntimeException noRowsOfFormLevel(String surface, String property) {
-        return new RuntimeException(controllerPrefix(surface) + "'" + property + "' names a property of the form level,"
+        return refusal(controllerPrefix(surface) + "'" + property + "' names a property of the form level,"
                 + " which has no rows: a property of an object group is named with its group, '<group>." + property
                 + "'");
     }

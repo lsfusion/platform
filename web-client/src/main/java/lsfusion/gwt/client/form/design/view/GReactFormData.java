@@ -198,13 +198,13 @@ public class GReactFormData {
     // a batch's fn (ViewState.batch): a function, the member calls it makes being sent together
     private static void checkFunction(String errorPrefix, JavaScriptObject fn) {
         if (!isFunction(fn))
-            throw new RuntimeException(errorPrefix + "takes a function, the member calls it makes being sent together");
+            throw refusal(errorPrefix + "takes a function, the member calls it makes being sent together");
     }
     // fn, run at once: what follows an await in it would be made after the batch has ended, so a Promise it returns is
     // refused - what it made before is sent. A custom grid view's batch runs its fn so too (GSimpleStateTableView)
     public static void runBatchFunction(String errorPrefix, JavaScriptObject fn) {
         if (isThenable(GwtClientUtils.call(fn)))
-            throw new RuntimeException(errorPrefix + "the function returned a Promise: a batch is sent when it returns, so"
+            throw refusal(errorPrefix + "the function returned a Promise: a batch is sent when it returns, so"
                     + " what follows an await in it would be made outside it. Await before the batch");
     }
     private static native boolean isFunction(JavaScriptObject value) /*-{ return typeof value === 'function'; }-*/;
@@ -866,7 +866,7 @@ public class GReactFormData {
             for (GGroupObject group : groups)
                 if (group.getSID().equals(groupSID))
                     return readStateProperty(errorPrefix, group, name.substring(dot + 1));
-            throw new RuntimeException(errorPrefix + "'" + name + "' names no property of a group of tree '" + this.name
+            throw refusal(errorPrefix + "'" + name + "' names no property of a group of tree '" + this.name
                     + "': a condition names one by its group's name and its own, " + groups.get(0).getSID() + ".<name>");
         }
     }
@@ -959,7 +959,7 @@ public class GReactFormData {
         GPropertyDraw readProperty(String errorPrefix, JavaScriptObject item) {
             GPropertyDraw property = node.readPropertyName(errorPrefix, readAuthorObject(errorPrefix, item, this.item, itemFields));
             if (!canList(property))
-                throw new RuntimeException(errorPrefix + "'" + node.getPropertyName(property) + "' cannot be " + listedBy
+                throw refusal(errorPrefix + "'" + node.getPropertyName(property) + "' cannot be " + listedBy
                         + " by here: " + whyNot(property));
             return property;
         }
@@ -1050,7 +1050,7 @@ public class GReactFormData {
                 String prefix = errorPrefix + "order " + i + ": ";
                 GPropertyDraw property = readProperty(prefix, order);
                 if (named.put(property, true) != null)
-                    throw new RuntimeException(prefix + "'" + node.getPropertyName(property) + "' is already in this list");
+                    throw refusal(prefix + "'" + node.getPropertyName(property) + "' is already in this list");
                 applyOrder(prefix, order, property, result);
             }
             verbs.changeOrders(node.groups, result);
@@ -1077,9 +1077,9 @@ public class GReactFormData {
                 return;
             }
             if (!isJSBoolean(desc))
-                throw new RuntimeException(errorPrefix + "'desc' must be true or false");
+                throw refusal(errorPrefix + "'desc' must be true or false");
             if (property.noSort)
-                throw new RuntimeException(errorPrefix + "'" + node.getPropertyName(property) + "' cannot be sorted by");
+                throw refusal(errorPrefix + "'" + node.getPropertyName(property) + "' cannot be sorted by");
             result.put(column, !toBoolean(desc));
         }
     }
@@ -1292,7 +1292,7 @@ public class GReactFormData {
             String errorPrefix = controllerPrefix(surface);
             boolean value = readBoolean(errorPrefix, shown);
             if (filter == null)
-                throw new RuntimeException(errorPrefix + "has no filter controls of the platform's to show: the platform "
+                throw refusal(errorPrefix + "has no filter controls of the platform's to show: the platform "
                         + "draws neither the conditions nor FILTERCONTROLS here, or its toolbar turns its filters off (showFilters)");
             if (value != filter.isControlsVisible())
                 filter.toggleControlsVisible();
@@ -1370,12 +1370,12 @@ public class GReactFormData {
                 return GController.rejectedControllerPromise(refusal);
             String errorPrefix = controllerPrefix(surface);
             if (propertySID == null)
-                throw new RuntimeException(errorPrefix + "takes the name of the property to sum, as a string");
+                throw refusal(errorPrefix + "takes the name of the property to sum, as a string");
             GPropertyDraw property = readStateProperty(errorPrefix, node.group, propertySID);
             if (property.hasColumnGroupObjects())
-                throw new RuntimeException(errorPrefix + "'" + propertySID + "' is grouped in columns, and a sum names no column");
+                throw refusal(errorPrefix + "'" + propertySID + "' is grouped in columns, and a sum names no column");
             if (!(property.getValueType() instanceof GIntegralType))
-                throw new RuntimeException(errorPrefix + "'" + propertySID + "' is not a number");
+                throw refusal(errorPrefix + "'" + propertySID + "' is not a number");
             return answerPromise((answer, failed) -> verbs.calculateSum(node.group, property, GGroupObjectValue.EMPTY, answer, failed));
         }
         // the manual update turned on or off, as the platform's toggle does - on, nothing held back yet
@@ -1411,8 +1411,8 @@ public class GReactFormData {
             }
             if (view == null) {
                 if (listViews.isEmpty())
-                    throw new RuntimeException(controllerPrefix(surface) + "has no view to switch to: no table of the platform's draws the rows");
-                throw new RuntimeException(controllerPrefix(surface) + "takes the name of a view of the table: " + names);
+                    throw refusal(controllerPrefix(surface) + "has no view to switch to: no table of the platform's draws the rows");
+                throw refusal(controllerPrefix(surface) + "takes the name of a view of the table: " + names);
             }
             if (view != views.getListView())
                 views.changeListView(view);
@@ -1498,13 +1498,13 @@ public class GReactFormData {
         void addFilter(String surface) {
             GFiltersHandler handler = getHandler(surface);
             if (!handler.hasFiltersContainer())
-                throw new RuntimeException(controllerPrefix(surface) + "has no FILTERS box to add a condition to: the design has none");
+                throw refusal(controllerPrefix(surface) + "has no FILTERS box to add a condition to: the design has none");
             handler.addCondition();
         }
         void applyFilters(String surface) {
             getHandler(surface);
             if (editors == null)
-                throw new RuntimeException(controllerPrefix(surface) + "has nothing to apply: a view draws the conditions, "
+                throw refusal(controllerPrefix(surface) + "has nothing to apply: a view draws the conditions, "
                         + "each change of which is sent at once");
             if (editors.isManualApplyMode() && applyEnabled)
                 editors.applyFilters();
@@ -1516,7 +1516,7 @@ public class GReactFormData {
         // draws the conditions, and its toolbar turns its filters off (showFilters)
         private GFiltersHandler getHandler(String surface) {
             if (handler == null)
-                throw new RuntimeException(controllerPrefix(surface) + "has nothing to give its commands to: the platform draws "
+                throw refusal(controllerPrefix(surface) + "has nothing to give its commands to: the platform draws "
                         + "the conditions, and its toolbar turns its filters off (showFilters)");
             return handler;
         }
@@ -1595,14 +1595,14 @@ public class GReactFormData {
             int size = filterGroup.filters.size();
             if (index == null) {
                 if (!offersNone())
-                    throw new RuntimeException(errorPrefix + "takes the index of one of its filters, 0 to " + (size - 1)
+                    throw refusal(errorPrefix + "takes the index of one of its filters, 0 to " + (size - 1)
                             + ": one has to be selected");
                 select(null);
                 return;
             }
             double value = index instanceof Double ? (Double) index : -1;
             if (value != Math.floor(value) || value < 0 || value >= size)
-                throw new RuntimeException(errorPrefix + "takes the index of one of its filters, 0 to " + (size - 1)
+                throw refusal(errorPrefix + "takes the index of one of its filters, 0 to " + (size - 1)
                         + (offersNone() ? ", or null for none" : ""));
             select(filterGroup.filters.get((int) value));
         }
@@ -1618,7 +1618,7 @@ public class GReactFormData {
     }
     private static boolean readBoolean(String errorPrefix, Object value) {
         if (!(value instanceof Boolean))
-            throw new RuntimeException(errorPrefix + "takes true or false");
+            throw refusal(errorPrefix + "takes true or false");
         return (Boolean) value;
     }
 
@@ -1843,7 +1843,7 @@ public class GReactFormData {
             GGroupObjectValue key = resolveRow(errorPrefix, objectOrKey);
             GGroupObjectValue rowKey = key.isEmpty() ? null : node.group.getRowKey(key);
             if (rowKey == null)
-                throw new RuntimeException(errorPrefix + "that row is not a row of '" + node.name + "'");
+                throw refusal(errorPrefix + "that row is not a row of '" + node.name + "'");
             return rowKey;
         }
         // a row of this group, named however the view has it: the row, its `objects` handle, or the key the projection
@@ -1853,7 +1853,7 @@ public class GReactFormData {
             if (key == null)
                 key = GGroupObjectValue.resolveObject(keyedRow(field(node.current(), "byKey"), objectOrKey));
             if (key == null)
-                throw new RuntimeException(errorPrefix + "expects a row of '" + node.name + "', its objects handle, or its key;"
+                throw refusal(errorPrefix + "expects a row of '" + node.name + "', its objects handle, or its key;"
                         + " that is none of them, or names no row the group has now");
             return key;
         }
@@ -2502,9 +2502,9 @@ public class GReactFormData {
         void change(String surface, JavaScriptObject value, JavaScriptObject objectOrKey, boolean noValue) {
             String errorPrefix = controllerPrefix(surface);
             if (property.isAction())
-                throw new RuntimeException(errorPrefix + "'" + property.integrationSID + "' is an action, which has no value to set: call exec()");
+                throw refusal(errorPrefix + "'" + property.integrationSID + "' is an action, which has no value to set: call exec()");
             if (noValue)
-                throw new RuntimeException(errorPrefix + "the value is missing - pass null to clear it, or call exec() to run the property's change event");
+                throw refusal(errorPrefix + "the value is missing - pass null to clear it, or call exec() to run the property's change event");
             changeCell(errorPrefix, objectOrKey, GSimpleStateTableView.convertFromJSUndefValue(property, value));
         }
         // ... exec([row]): the property's change event, or the action, with no value given
@@ -2533,7 +2533,7 @@ public class GReactFormData {
         // `hidden`
         void checkShown(String errorPrefix) {
             if (!shown)
-                throw new RuntimeException(errorPrefix + "'" + property.integrationSID + "' is not shown by the form now"
+                throw refusal(errorPrefix + "'" + property.integrationSID + "' is not shown by the form now"
                         + " (its entry is hidden), so it has nobody to change it for");
         }
         // the key of the cell a call names: EMPTY, the current objects, where it names no row
@@ -2569,7 +2569,7 @@ public class GReactFormData {
         GGroupObjectValue getMemberKey(String errorPrefix, JavaScriptObject objectOrKey) {
             // raw JS key: a numeric 0 key reads as null under Java == null (GWT falsy-primitive collapse)
             if (!GwtClientUtils.isUndefinedOrNull(objectOrKey))
-                throw new RuntimeException(errorPrefix + (property.groupObject == null
+                throw refusal(errorPrefix + (property.groupObject == null
                         ? "'" + property.integrationSID + "' belongs to no object group, so there is no row to name"
                         : "'" + property.integrationSID + "' is a panel property: it is changed for the current object of '"
                             + property.groupObject.getSID() + "', which is chosen where the rows are drawn"));
@@ -2640,7 +2640,7 @@ public class GReactFormData {
             if (objectKey == null) // ... a KEY, looked up in the rows the column is drawn in
                 return rowsPart.resolveRow(errorPrefix, objectOrKey);
             if (!objectKey.isEmpty() && property.groupObject.filterRowKeys(objectKey) == null)
-                throw new RuntimeException(errorPrefix + "that row is not a row of '" + property.groupObject.getSID() + "'");
+                throw refusal(errorPrefix + "that row is not a row of '" + property.groupObject.getSID() + "'");
             return objectKey;
         }
     }
@@ -3215,13 +3215,13 @@ public class GReactFormData {
     private static String readAuthorObject(String errorPrefix, JavaScriptObject item, String what, String fields) {
         String fieldList = fields.replace(",", ", ");
         if (!isJSObject(item))
-            throw new RuntimeException(errorPrefix + what + " must be an object {" + fieldList + "}");
+            throw refusal(errorPrefix + what + " must be an object {" + fieldList + "}");
         String unknown = getUnknownField(item, fields);
         if (unknown != null)
-            throw new RuntimeException(errorPrefix + "unknown field '" + unknown + "'; " + what + " has " + fieldList);
+            throw refusal(errorPrefix + "unknown field '" + unknown + "'; " + what + " has " + fieldList);
         String propertySID = getOwnString(item, "property");
         if (propertySID == null)
-            throw new RuntimeException(errorPrefix + (hasOwnField(item, "property")
+            throw refusal(errorPrefix + (hasOwnField(item, "property")
                     ? "'property' must be the property's name, as a string" : what + " has no 'property'"));
         return propertySID;
     }
@@ -3238,7 +3238,7 @@ public class GReactFormData {
         assert form.countPropertyDraws(group, propertySID) <= 1;
         GPropertyDraw property = form.getPropertyDraw(group, propertySID);
         if (property == null)
-            throw new RuntimeException(errorPrefix + "unknown property '" + propertySID + "' of object group '"
+            throw refusal(errorPrefix + "unknown property '" + propertySID + "' of object group '"
                     + group.getSID() + "'");
         return property;
     }
@@ -3259,7 +3259,7 @@ public class GReactFormData {
     private GPropertyFilter readFilterCondition(String errorPrefix, JavaScriptObject condition, GPropertyDraw property,
                                                 JavaScriptObject value) {
         if (property.getFilterBaseType().getDataType() instanceof GFileType)
-            throw new RuntimeException(errorPrefix + "'" + property.integrationSID + "' is a file: a condition on it has"
+            throw refusal(errorPrefix + "'" + property.integrationSID + "' is a file: a condition on it has"
                     + " a link to the file for its value, which is not the file, so it can be taken off, not stated");
         GCompare compare = readFilterCompare(errorPrefix, condition, property);
         boolean negation = readFlag(errorPrefix, condition, "negation");
@@ -3276,12 +3276,12 @@ public class GReactFormData {
             return property.getDefaultCompare();
         String compareSID = getOwnString(condition, "compare");
         if (compareSID == null)
-            throw new RuntimeException(errorPrefix + "'compare' must be the operator as a string");
+            throw refusal(errorPrefix + "'compare' must be the operator as a string");
         GCompare compare = GCompare.get(compareSID);
         if (compare == null)
-            throw new RuntimeException(errorPrefix + "unknown compare '" + compareSID + "'");
+            throw refusal(errorPrefix + "unknown compare '" + compareSID + "'");
         if (compare == GCompare.INARRAY) // a condition compares with one value - FILTER refuses it the same way
-            throw new RuntimeException(errorPrefix + "'" + compareSID + "' is no comparison of a filter condition");
+            throw refusal(errorPrefix + "'" + compareSID + "' is no comparison of a filter condition");
         return compare;
     }
 
@@ -3292,7 +3292,7 @@ public class GReactFormData {
             return false;                 // `null` and `undefined` included - they are given, and they are not flags
         JavaScriptObject value = getOwnField(entry, field);
         if (!isJSBoolean(value))
-            throw new RuntimeException(errorPrefix + "'" + field + "' must be true or false");
+            throw refusal(errorPrefix + "'" + field + "' must be true or false");
         return toBoolean(value);
     }
 

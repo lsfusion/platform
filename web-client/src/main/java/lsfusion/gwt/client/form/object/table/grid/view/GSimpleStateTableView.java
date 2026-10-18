@@ -187,7 +187,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         if (type instanceof GColorType) {
             String color = isString(value) ? toString(value) : null; // "#rrggbb" (ColorDTO)
             if (color == null || !color.matches("#[0-9a-fA-F]{6}"))
-                throw new RuntimeException(notTakenBack(value, "a color", "'#rrggbb'"));
+                throw GwtClientUtils.refusal(notTakenBack(value, "a color", "'#rrggbb'"));
             return PValue.getPValue(new ColorDTO(color.substring(1)));
         }
         if (type instanceof GIntervalType) {
@@ -199,7 +199,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             } catch (NumberFormatException e) {
                 // said below, as a string with no dot is
             }
-            throw new RuntimeException(notTakenBack(value, "an interval", "'<from>.<to>', its bounds in milliseconds"));
+            throw GwtClientUtils.refusal(notTakenBack(value, "an interval", "'<from>.<to>', its bounds in milliseconds"));
         }
 
         return PValue.getPValue(toString(value));

@@ -2993,6 +2993,14 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(refused, refused.contains("'columns' cannot be sorted by here: it is grouped in columns, and a sorting names no column"));
         assertEquals(1, f.sortedCalls);
     }
+    // a refusal says its reason alone, as a view shows it to its user: nothing of the Java exception it is on the Java
+    // side - "java.lang.RuntimeException: ", which a Java exception thrown into JS puts before its message - comes first
+    public void testARefusalSaysItsReasonAlone() {
+        Fixture f = Fixture.withPlatformProperties();
+        JavaScriptObject orders = field(field(f.sa.controller, "items"), "orders");
+        String refused = refusedChange(orders, parse("{\"property\": \"nosuch\", \"desc\": true}"));
+        assertTrue(refused, refused.startsWith("controller.items.orders.change(): unknown property 'nosuch' of object group 'items'"));
+    }
     // a sorting names a property, never a column of it: a property React draws is never in columns
     private static Column column(GPropertyDraw property) {
         return new Column(property, GGroupObjectValue.EMPTY);
