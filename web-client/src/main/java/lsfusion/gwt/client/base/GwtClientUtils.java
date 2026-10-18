@@ -673,12 +673,15 @@ public class GwtClientUtils {
         }
         return isShowing(widget.getElement());
     }
+    // whether it is on the page and nothing hides it: neither the platform, which hides with display none, nor a React
+    // view, whose <Platform> hides the host it places a view of the platform's in with the `hidden` attribute, while
+    // the entry of what it holds says `hidden` (usePlatform) - the platform does not hide what a React view places
     public static boolean isShowing(Element el) {
         if (el == null) {
             return false;
         }
         while (el != null && el != rootElement) {
-            if (!UIObject.isVisible(el)) {
+            if (!UIObject.isVisible(el) || el.hasAttribute("hidden")) {
                 return false;
             }
 

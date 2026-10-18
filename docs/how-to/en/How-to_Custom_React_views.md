@@ -1478,9 +1478,9 @@ The server applies the filter selected and reports it, so `value` is what the se
 form opens, a `FILTERGROUP` action's choice — and a filter a view selects shows at once. `change` takes the index of one
 of `filters`, or `null`, and anything else is refused. It is a part of a [batch](How-to_Custom_view_controller.md#batch)
 as `filters.change` is, and asks the server even for the filter shown — after a batch that failed, it is set again. A
-filter's key keeps working while the form shows the filter group — its descriptor's `hidden` — and the view's
-container, as the platform's widget takes it: it selects the filter, and in a group of one filter — the platform's
-check box —, pressed again, takes it off.
+filter's key keeps working while the form shows the filter group — its descriptor's `hidden` — and the view that draws
+it is shown, the host a container places that view in included, as the platform's widget takes it: it selects the
+filter, and in a group of one filter — the platform's check box —, pressed again, takes it off.
 
 A filter group is its group's — the last group for the objects its filters take, the one a
 [filter](../paradigm/Form_structure.md#filters) of the form is applied to —, a group of a [tree](#trees) included: it is

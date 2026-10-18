@@ -3,11 +3,16 @@ package lsfusion.gwt.client.base.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RootPanel;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 
 // the store a ReactRoot hands its component's hooks, with no React drawing anything: the root is never mounted, so the
 // first push, which would draw the component, draws nothing, and every later one only tells the store's subscribers.
-// And what a root dresses a host in, by the kind of host its owner places into (ReactRoot.Host)
+// And what a root dresses a host in, by the kind of host its owner places into (ReactRoot.Host), and that a host it
+// hides hides what is in it
 public class ReactRootTest extends GWTTestCase {
     @Override public String getModuleName() { return "lsfusion.gwt.main"; }
 
@@ -93,6 +98,25 @@ public class ReactRootTest extends GWTTestCase {
         assertEquals("menu-main", text(menu, "className"));
         assertFalse(has(menu, "data-lsf-sid"));
         assertFalse(has(host.props("Sale.sales", null), "className")); // no class given: none, not a null one
+    }
+
+    // ... and a view in a host the component hides - <Platform> puts `hidden` on it while the entry of what it holds
+    // says so - is not shown, as one the platform hides is not: the platform does not hide a view a React view places,
+    // so what it takes only from a view that is shown - a key of a filter group's widget - goes with the host
+    public void testAViewInAHostTheComponentHidesIsNotShown() {
+        FlowPanel host = new FlowPanel(); // the host a <Platform> renders, the view of the platform's put into it
+        Label view = new Label("view");
+        host.add(view);
+        RootPanel.get().add(host);
+        try {
+            assertTrue(GwtClientUtils.isShowing(view));
+            host.getElement().setAttribute("hidden", "");
+            assertFalse(GwtClientUtils.isShowing(view));
+            host.getElement().removeAttribute("hidden");
+            assertTrue(GwtClientUtils.isShowing(view));
+        } finally {
+            RootPanel.get().remove(host);
+        }
     }
 
     private static native String text(JavaScriptObject object, String name) /*-{ return object[name]; }-*/;

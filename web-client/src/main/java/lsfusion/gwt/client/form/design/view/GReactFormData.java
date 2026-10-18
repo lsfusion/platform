@@ -1546,8 +1546,8 @@ public class GReactFormData {
         // whether the form shows the filter group now, which its descriptor says (ComponentEntry.isShown): its filters'
         // keys are taken while it does, as the platform's widget's are while the widget is shown - it is hidden with
         // the filter group, and its key goes with it. A filter group of its own has no descriptor in its own view: its
-        // view is what the form hides then (what the key does where a React container places that view and the form
-        // hides it there is the keys' of React views to say, not this)
+        // view is what the form hides then - the platform, or the host of the React container that places it, which
+        // is hidden with the filter group, its view and its key with it (GwtClientUtils.isShowing)
         boolean isShown() {
             JavaScriptObject descriptor = getOwnField(node.state.current(), filterGroup.sID);
             return descriptor == null || !isField(descriptor, "hidden", true);
