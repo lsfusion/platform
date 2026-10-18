@@ -3023,6 +3023,18 @@ public class GReactFormDataTest extends GWTTestCase {
     }
     private static native String typeOf(JavaScriptObject object, String name) /*-{ return typeof object[name]; }-*/;
 
+    // whether a change of a property asks the user first, and with what (CONFIRM, the design's askConfirm): the
+    // platform's own editor and button ask, a view's call does not, so the view is told - every entry says whether,
+    // the message only where it asks; a property of the empty group too
+    public void testAPropertySaysWhetherItsChangeAsksFirst() {
+        Fixture f = new Fixture(r -> { r.quantity.askConfirm = true; r.quantity.askConfirmMessage = "Change the quantity?"; });
+        assertTrue(flag(field(f.node(), "quantity"), "askConfirm"));
+        assertEquals("Change the quantity?", text(field(f.node(), "quantity"), "askConfirmMessage"));
+        assertFalse(flag(field(f.node(), "price"), "askConfirm"));
+        assertEquals("undefined", typeOf(field(f.node(), "price"), "askConfirmMessage"));
+        assertEquals("boolean", typeOf(field(f.data(), "single"), "askConfirm"));
+    }
+
     // the member is where the rows are drawn: a draws them, b holds only a panel property of the group
     public void testSortingsAreAMemberWhereTheRowsAre() {
         Fixture f = new Fixture();

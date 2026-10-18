@@ -3113,6 +3113,11 @@ public class GReactFormData {
 
     private void emitPropertyFacts(JavaScriptObject entry, GPropertyDraw property) {
         setField(entry, "type", GSimpleStateTableView.getJSTypeName(property.getRenderType(RendererType.SIMPLE)));
+        // whether a change of it - for an action, running it - asks the user first (CONFIRM, the design's askConfirm),
+        // and with what: the platform's own editor and button ask, a view's call does not, so a view asks itself
+        setField(entry, "askConfirm", property.askConfirm);
+        if (property.askConfirm)
+            setField(entry, "askConfirmMessage", property.askConfirmMessage);
         // whether a user may sort by it - asked of the PROPERTY, so a panel property answers it too
         if (property.groupObject != null)
             setField(entry, "noSort", property.noSort);
