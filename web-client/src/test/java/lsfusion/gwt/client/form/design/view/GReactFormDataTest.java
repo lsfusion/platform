@@ -1020,11 +1020,8 @@ public class GReactFormDataTest extends GWTTestCase {
                 else
                     initializeGroupControllers(group, new GPlatformPanelGroupController(), GUserOrdersController.NONE, GUserFiltersController.NONE);
             // then the properties', the components', the filter groups'; then the projection sets out what it has
-            for (GPropertyDraw property : form.propertyDraws) {
-                GPropertyController controller = projection.createPropertyController(property, platform);
-                if (controller != null) // none, as the form keeps it: React keeps nothing of it
-                    properties.put(property, controller);
-            }
+            for (GPropertyDraw property : form.propertyDraws)
+                properties.put(property, projection.createPropertyController(property, platform));
             initializeComponentControllers(form.mainContainer);
             for (GRegularFilterGroup filterGroup : form.regularFilterGroups)
                 filterGroups.put(filterGroup, projection.createFilterGroupController(filterGroup, () -> null));
@@ -1087,9 +1084,7 @@ public class GReactFormDataTest extends GWTTestCase {
             userFilters.put(group, groupFilters);
         }
         void initializeComponentControllers(GComponent component) {
-            GComponentController controller = projection.createComponentController(component, platformComponents);
-            if (controller != null)
-                components.put(component, controller);
+            components.put(component, projection.createComponentController(component, platformComponents));
             for (GComponent child : component.getChildren())
                 initializeComponentControllers(child);
         }
@@ -1616,8 +1611,8 @@ public class GReactFormDataTest extends GWTTestCase {
     // the form's controllers of what React draws are what React has of it: a group's rows, its current object, the
     // client's own add or remove go to the part the rows are drawn as; a property's optimistic value, and whether the
     // form shows it, to what React has of the property - whatever group it is of, one whose rows React draws or one
-    // whose rows GWT draws - and one React carries by no name has none: nothing is sent for it. Which controller the
-    // form takes is GFormController.initializeControllers', not built here
+    // whose rows GWT draws - and one React carries by no name has the one that keeps nothing: nothing is sent for it.
+    // Which controller the form takes is GFormController.initializeControllers', not built here
     public void testTheRoutesAreWhatReactHasOfIt() {
         Fixture f = Fixture.withOuter();
         GGroupController grid = f.controller(f.group);
@@ -1644,7 +1639,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals(f.one, f.controller(f.price).setLoadingValueAt(f.price, f.one, PValue.getPValue(11)).first);
         assertEquals(f.two, f.controller(f.price).setLoadingValueAt(f.price, GGroupObjectValue.EMPTY, PValue.getPValue(21)).first);
         assertTrue(f.controller(f.price).isPropertyShown(f.price));
-        assertNull(f.controller(f.unnamed));
+        assertSame(GPropertyController.NONE, f.controller(f.unnamed));
         // a platform-drawn property's value is the platform's, and so is where
         f.controller(f.nativeProperty).focusProperty(f.nativeProperty);
         // it is edited: its controller is the platform's own

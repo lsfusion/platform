@@ -805,11 +805,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         // controllers draw them (getPlatformPropertyController). A property is ONE owner: all that is sent for it goes
         // to its controller, what labels it included; as a component only its class is sent, which is the platform's
         // to apply (createComponentController)
-        for (GPropertyDraw property : form.propertyDraws) {
-            GPropertyController controller = reactData.createPropertyController(property, getPlatformPropertyController(property));
-            if (controller != null) // none: React keeps nothing of it (getPropertyController)
-                propertyControllers.put(property, controller);
-        }
+        for (GPropertyDraw property : form.propertyDraws)
+            propertyControllers.put(property, reactData.createPropertyController(property, getPlatformPropertyController(property)));
         initializeComponentControllers(form.mainContainer); // ... the components
         // ... the filter groups with filters - one with none has no view -: one React draws is a part of its group
         for (GRegularFilterGroup filterGroup : form.regularFilterGroups) {
@@ -822,9 +819,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // ... every component, down the design - a grid's record is inside its grid, and so is what it holds -, a property
     // too, as a component (createComponentController)
     private void initializeComponentControllers(GComponent component) {
-        GComponentController controller = reactData.createComponentController(component, platformComponentController);
-        if (controller != null) // none: React keeps nothing of it (getComponentController)
-            componentControllers.put(component, controller);
+        componentControllers.put(component, reactData.createComponentController(component, platformComponentController));
         for (GComponent child : component.getChildren())
             initializeComponentControllers(child);
     }
@@ -1449,23 +1444,19 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
             return platformFormPanelController;
     }
 
-    // the form's controller of an owner: where all it sends for the owner goes (initializeControllers). One React
-    // draws and keeps nothing of has none, and nothing is sent for it: a property React carries by no name - the
-    // platform's own COUNT of a list group, the pivot's, whose SHOWIF a group React draws never meets -, and, as a
-    // component, a property whose content React draws and a component the design does not name
-    // (GReactFormData.reactKeepsNothing)
+    // the form's controller of an owner: where all it sends for the owner goes (initializeControllers). What React
+    // draws and keeps nothing of has the one that keeps nothing, and nothing is sent for it: a property React carries by
+    // no name - the platform's own COUNT of a list group, the pivot's - (GPropertyController.NONE), a component React
+    // draws that the design does not name (GComponentController.NONE); what a delta carries of it all the same is
+    // dropped, the rest of the delta applied
     public GGroupController getGroupController(GGroupObject group) {
         return groupControllers.get(group);
     }
     public GPropertyController getPropertyController(GPropertyDraw property) {
-        GPropertyController controller = propertyControllers.get(property);
-        assert controller != null : property.sID;
-        return controller;
+        return propertyControllers.get(property);
     }
     public GComponentController getComponentController(GComponent component) {
-        GComponentController controller = componentControllers.get(component);
-        assert controller != null : component.sID;
-        return controller;
+        return componentControllers.get(component);
     }
 
     // the controller drawing this platform-drawn property, for whoever is placing one of its per-row renderers

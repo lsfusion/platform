@@ -226,17 +226,17 @@ public class GReactFormData {
     // (GTableController.getGroupController, getUserOrdersController) -, then the properties, in the form's order, the
     // order of the names a node carries, then the components, then the filter groups
     // ... of a property, ALL of it - its values and what labels it alike: an entry, keyed by its integration name on
-    // the node of its group, where React draws it - none where it carries it by no name, the platform's own COUNT of a
-    // list group, the pivot's: React keeps nothing of it, and nothing is sent for it; an entry over the platform's,
+    // the node of its group, where React draws it - NONE where it carries it by no name, the platform's own COUNT of a
+    // list group, the pivot's: React keeps nothing of it (reactKeepsNothing); an entry over the platform's,
     // keyed the same way, where the platform draws it and React places it - a panel property React places, the column
     // of the rows React draws -, which keeps what labels the property and hands the rest on, an action's labels too,
     // its button's face; else the platform's
     public GPropertyController createPropertyController(GPropertyDraw property, GPlatformPropertyController platform) {
+        if (reactKeepsNothing(property))
+            return GPropertyController.NONE;
         GComponent scope = nameScope(property);
-        if (scope == null)
+        if (scope == null || !hasEntry(property)) // ... and a platform-drawn one with no entry brings no node either
             return platform;
-        if (!hasEntry(property)) // ... and where it has no entry, it brings no node either
-            return noEntry(property, platform);
         ViewState state = views.get(scope);
         if (property.isList) { // its content is its column, with its group's rows, on their node
             RowsPart rows = state.getRowsPart(property.groupObject);
@@ -257,12 +257,13 @@ public class GReactFormData {
     private static boolean hasEntry(GPropertyDraw property) {
         return property.integrationSID != null;
     }
-    // ... and what the COUNT has instead: nothing, React keeping nothing of it - the platform's controller, where the
-    // platform draws it
-    private static GPropertyController noEntry(GPropertyDraw property, GPlatformPropertyController platform) {
-        return property.isPlatformDrawn() ? platform : null;
+    // ... and WHAT REACT KEEPS NOTHING OF as a property, so nothing is sent for it (mirrors FormView.reactKeepsNothing):
+    // one a view names and carries by no name, the group's own COUNT, unless the platform draws it. Asked of a property
+    // as a property: as a component it is asked the component's (createComponentController)
+    private boolean reactKeepsNothing(GPropertyDraw property) {
+        return !hasEntry(property) && nameScope(property) != null && !property.isPlatformDrawn();
     }
-    // ... of a component: none of what React keeps nothing of (reactKeepsNothing). A property's is the platform's,
+    // ... of a component: NONE of what React keeps nothing of (reactKeepsNothing). A property's is the platform's,
     // whatever draws the property - a property is no owner as a component, all of it being its property controller's
     // (above), and the one thing sent for it as a component, its class (a design showIf on a property is the
     // property's SHOWIF), is the platform's to apply to the view it draws the property in: none where React draws it.
@@ -271,7 +272,7 @@ public class GReactFormData {
     // name, nothing: all of it is the platform's. `platform` is the platform's controller of the component: the layout
     public GComponentController createComponentController(GComponent component, GComponentController platform) {
         if (reactKeepsNothing(component))
-            return null;
+            return GComponentController.NONE;
         GComponent scope = component instanceof GPropertyDraw ? null : nameScope(component);
         return reactOrPlatform(scope, state -> component.isPlatformDrawn() ? new PlatformComponentEntry(state, component, platform) : new ReactComponentEntry(state, component), () -> platform);
     }

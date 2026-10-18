@@ -5,8 +5,10 @@ import com.google.gwt.junit.client.GWTTestCase;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.GFormChangesTest;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -15,11 +17,13 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.object.GGroupObject;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
@@ -27,8 +31,11 @@ import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
 // A form's controller as it is made, over a form given whole with nothing behind it - no server, no window: what its
-// constructor builds is what a test reads. The React view of a grid of its own is built with the form's containers,
-// before the controllers, and is sized by the grid's columns, which the form counts before it builds the layout
+// constructor builds is what a test reads, and what it is given then is what the server would send. The React view of
+// a grid of its own is built with the form's containers, before the controllers, and is sized by the grid's columns,
+// which the form counts before it builds the layout. A delta goes to the controller of each owner it carries something
+// of, and what React keeps nothing of has one that keeps nothing: what the delta carries of it is dropped, and the
+// rest of the delta applied
 public class GFormControllerTest extends GWTTestCase {
     @Override public String getModuleName() { return "lsfusion.gwt.main"; }
 
@@ -60,14 +67,80 @@ public class GFormControllerTest extends GWTTestCase {
     }-*/;
 
     public void testAGridOfItsOwnIsSizedByItsColumns() {
-        GForm form = new GForm();
-        form.sID = "leafGrid";
-        form.mainContainer = new GContainer();
-        form.mainContainer.ID = 1; form.mainContainer.nativeSID = "c1"; form.mainContainer.sID = "main";
-        form.mainContainer.main = true;
-        layout(form.mainContainer);
-        form.mainContainer.lines = 1; form.mainContainer.childrenAlignment = GFlexAlignment.START;
+        GForm form = leafGridForm();
+        GGrid grid = form.groupObjects.get(0).grid;
 
+        // no window to open it in: no forms controller
+        GFormController controller = new GFormController(null, null, formContainer(), form, false, "leafGrid", 0, null);
+
+        // the grid's view as the main container lays it out: its base size along the container, a vertical one - the
+        // grid's height, its rows' by its columns' (a style here keeps no calc() size to read the width from)
+        Widget view = controller.getFormLayout().getBaseComponentViews().get(grid).getShowingWidget();
+        while (!(view.getLayoutData() instanceof FlexPanel.WidgetLayoutData))
+            view = view.getParent();
+        GSize laidOut = ((FlexPanel.WidgetLayoutData) view.getLayoutData()).flex.baseFlexBasis;
+        assertEquals(grid.getHeight().getString(), laidOut.getString());
+    }
+
+    // the count a list group gets for its pivot, COUNT(<group>), shown only in the pivot, of a group whose rows a React
+    // view draws, which is never in it: React keeps nothing of it, and the server sends nothing of it (#1892). A delta
+    // that carries its values all the same - as the server's answer to a CANCEL did, for such a group on a page a tab
+    // strip does not show - is applied without them; it used to fail the whole answer, the client actions after it too
+    public void testAValueOfACountReactKeepsNothingOfIsDropped() {
+        GForm form = leafGridForm();
+        GPropertyDraw count = count(form, 22, form.groupObjects.get(0));
+        GFormController controller = new GFormController(null, null, formContainer(), form, false, "leafGrid", 0, null);
+
+        GFormChanges changes = new GFormChanges();
+        NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
+        values.put(new GGroupObjectValue(10, 1), null); // the values of a property not read yet: none
+        changes.properties.put(count, values);
+        changes.needConfirm = true; // what the form takes after the values: the rest of the delta
+        controller.applyRemoteChanges(changes, 1);
+        assertTrue(controller.needConfirm());
+    }
+
+    // ... and its drop, as the answer that showed that page then sent, the count having been taken as shown there
+    public void testADropOfACountReactKeepsNothingOfIsDropped() {
+        GForm form = leafGridForm();
+        GPropertyDraw count = count(form, 22, form.groupObjects.get(0));
+        GFormController controller = new GFormController(null, null, formContainer(), form, false, "leafGrid", 0, null);
+
+        GFormChanges changes = new GFormChanges();
+        changes.dropProperties.add(count);
+        changes.needConfirm = true;
+        controller.applyRemoteChanges(changes, 1);
+        assertTrue(controller.needConfirm());
+    }
+
+    // ... and a component React draws that the design does not name: React keeps nothing of it either, nothing of it is
+    // sent, and a delta that carries its class all the same is applied without it
+    public void testAClassOfAComponentReactKeepsNothingOfIsDropped() {
+        GForm form = form("board");
+        GContainer board = new GContainer(); // NEW board { custom = 'Board'; ... }
+        board.ID = 2; board.nativeSID = "c2"; board.sID = "board"; board.custom = "Board"; board.react = true;
+        board.container = form.mainContainer; form.mainContainer.children.add(board);
+        layout(board);
+        GContainer unnamed = new GContainer(); // ... with a container in it the design does not name
+        unnamed.ID = 3; unnamed.nativeSID = "c3";
+        unnamed.container = board; board.children.add(unnamed);
+        layout(unnamed);
+        form.initialFormChanges = GFormChangesTest.noChanges();
+        GFormController controller = new GFormController(null, null, formContainer(), form, false, "board", 0, null);
+
+        GFormChanges changes = new GFormChanges();
+        NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
+        values.put(GGroupObjectValue.EMPTY, null);
+        changes.properties.put(unnamed.elementClassReader, values);
+        changes.needConfirm = true;
+        controller.applyRemoteChanges(changes, 1);
+        assertTrue(controller.needConfirm());
+    }
+
+    // a form of one list group whose rows the React view of its grid draws, GRID(items) { custom = 'LeafGrid'; }, with
+    // two columns, as the server gives it - with nothing of its toolbar and filters to build
+    private static GForm leafGridForm() {
+        GForm form = form("leafGrid");
         GGroupObject group = new GGroupObject();
         group.ID = 10; group.nativeSID = "g10"; group.sID = "items"; group.viewType = GClassViewType.LIST;
         group.objects.add(new GObject(group, "item", 10, "item", GIntegerType.instance));
@@ -89,17 +162,19 @@ public class GFormControllerTest extends GWTTestCase {
         column(form, 20, "price", group);
         column(form, 21, "quantity", group);
         form.initialFormChanges = GFormChangesTest.noChanges(); // it arrives with no changes
+        return form;
+    }
 
-        // no window to open it in: no forms controller
-        GFormController controller = new GFormController(null, null, formContainer(), form, false, "leafGrid", 0, null);
-
-        // the grid's view as the main container lays it out: its base size along the container, a vertical one - the
-        // grid's height, its rows' by its columns' (a style here keeps no calc() size to read the width from)
-        Widget view = controller.getFormLayout().getBaseComponentViews().get(grid).getShowingWidget();
-        while (!(view.getLayoutData() instanceof FlexPanel.WidgetLayoutData))
-            view = view.getParent();
-        GSize laidOut = ((FlexPanel.WidgetLayoutData) view.getLayoutData()).flex.baseFlexBasis;
-        assertEquals(grid.getHeight().getString(), laidOut.getString());
+    // a form with nothing in its main container yet, which lays its children out in one line from the start
+    private static GForm form(String sID) {
+        GForm form = new GForm();
+        form.sID = sID;
+        form.mainContainer = new GContainer();
+        form.mainContainer.ID = 1; form.mainContainer.nativeSID = "c1"; form.mainContainer.sID = "main";
+        form.mainContainer.main = true;
+        layout(form.mainContainer);
+        form.mainContainer.lines = 1; form.mainContainer.childrenAlignment = GFlexAlignment.START;
+        return form;
     }
 
     // what the server gives every component of a design to be laid out by
@@ -109,12 +184,21 @@ public class GFormControllerTest extends GWTTestCase {
         component.captionAlignmentHorz = GFlexAlignment.START; component.captionAlignmentVert = GFlexAlignment.START;
     }
 
-    private static void column(GForm form, int id, String name, GGroupObject group) {
+    private static GPropertyDraw column(GForm form, int id, String name, GGroupObject group) {
         GPropertyDraw property = new GPropertyDraw();
         property.ID = id; property.nativeSID = "p" + id; property.sID = name; property.integrationSID = name;
         property.propertyFormName = name; property.groupObject = group; property.isList = true;
         property.valueType = GIntegerType.instance; property.valueWidth = 80; property.valueHeight = 20;
         form.propertyDraws.add(property);
+        return property;
+    }
+
+    // ... and the count the server gives a list group for its pivot (FormEntity.initDefaultGroupElements): a column of
+    // the group with no name, NOEXTID
+    private static GPropertyDraw count(GForm form, int id, GGroupObject group) {
+        GPropertyDraw count = column(form, id, "COUNT(" + group.sID + ")", group);
+        count.integrationSID = null;
+        return count;
     }
 
     private static FormContainer formContainer() {

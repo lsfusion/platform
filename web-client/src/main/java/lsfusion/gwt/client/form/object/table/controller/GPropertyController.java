@@ -31,4 +31,26 @@ public interface GPropertyController {
     void updateOther(GExtraPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial);
     // the server stopped showing it
     void dropProperty(GPropertyDraw property);
+
+    // what keeps a property React keeps nothing of - the platform's own COUNT of a list group, the pivot's, where React
+    // draws the group's rows (GReactFormData.createPropertyController) -: nothing. The server sends nothing of it
+    // (FormView.reactKeepsNothing); what a delta carries of it all the same is dropped, the rest of the delta applied
+    GPropertyController NONE = new GPropertyController() {
+        public boolean isPropertyShown(GPropertyDraw property) {
+            return false;
+        }
+        public void focusProperty(GPropertyDraw property) {
+        }
+        public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) {
+            return null;
+        }
+        public void updateValue(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
+        }
+        public void updateLabel(GExtraLabelReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
+        }
+        public void updateOther(GExtraPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
+        }
+        public void dropProperty(GPropertyDraw property) {
+        }
+    };
 }
