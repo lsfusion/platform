@@ -76,17 +76,19 @@ import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 
-// The projection of a form's react containers. Each container owns its state (ContainerState): its nodes and its
-// published snapshot - what its view is given - and its controller, whose members mirror that snapshot's
-// entries - what the view changes them through. What React has of each group, property and component - its rows' part,
-// its entry, its descriptor - is the form's controller of it (GFormController.initializeControllers): made here
-// once, from the platform's controller of it, and handed all the form sends for it, which it keeps itself: the values
-// of the readers it draws from (ReaderValues), its rows, whether the form shows it. The projection keeps the
-// containers, and one flush for all of them.
-// Placement is design data, and so is the SHAPE of every snapshot: an entry a container carries is there from the
-// start, and whether the form shows it now is its `hidden`, never its presence. A part of a group is projected where
-// its component is - the rows where the grid (or the tree) is, a panel property where the property is. The form level
-// is the empty group: its node is each container's top level. Every other component React draws or places has a
+// The projection of a form's React views - each of a component whose custom is a React component: a react container,
+// or a grid, a tree, a toolbar, filter controls, a filter group of its own. Each view owns its state (ViewState): its
+// nodes and its published snapshot - what its view is given - and its controller, whose members mirror that
+// snapshot's entries - what the view changes them through. What React has of each group, property and component - its
+// rows' part, its entry, its descriptor - is the form's controller of it (GFormController.initializeControllers): made
+// here once, from the platform's controller of it, and handed all the form sends for it, which it keeps itself: the
+// values of the readers it draws from (ReaderValues), its rows, whether the form shows it. The projection keeps the
+// views, and one flush for all of them.
+// Placement is design data, and so is the SHAPE of every snapshot: an entry a view carries is there from the start, and
+// whether the form shows it now is its `hidden`, never its presence. A part of a group is projected where its component
+// is drawn - the rows where the grid (or the tree) is, a panel property where the property is; what a component with
+// a React view of its own shows, in that view. The form level is the empty group: its node is each view's top level.
+// Every other component React draws or places has a
 // descriptor - its entry at that top level, keyed by its SID, where a property carried by name is keyed by that name -
 // one the platform draws included, which React places: a platform-drawn ACTION's says only whether the form
 // shows it, its caption and image being its buttons' face, which the platform draws. What an entry says is what the
@@ -94,18 +96,18 @@ import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 // empties it. A property the form does not show is dropped by the server, and its entry has no value; a component the
 // form does not show has its SHOWIF, and its descriptor says so - the rows of a hidden grid stay as the server last
 // sent them, as the platform's own grid keeps them. Like any attribute, `hidden` is there only while it has a value:
-// while the form does not show the entry's component. The model, top down: a container's state (ContainerState) and its
-// nodes - its top level (TopNode), and an owner's node, a group's or a tree's (GroupNode, TreeNode) -; on an owner's
-// node, one part for each of the owner's components the container draws (Part), and on a node the entries of the
+// while the form does not show the entry's component. The model, top down: a view's state (ViewState) and its nodes
+// - its top level (TopNode), and an owner's node, a group's or a tree's (GroupNode, TreeNode) -; on an owner's node,
+// one part for each of the owner's components the view draws (Part), and on a node the entries of the
 // properties and components it carries (Entry); the members that mirror them (THE MEMBERS); and what a view's author
 // wrote, read by one rule (WHAT A STATE MEMBER READS).
 public class GReactFormData {
     private final GForm form;
     // GComponent.getReactPlace - handed in, so a test sees who asks it
-    private final Function<GComponent, GContainer> place;
+    private final Function<GComponent, GComponent> place;
     private final Verbs verbs; // what the parts ask of the form (GFormController)
-    private final NativeSIDMap<GContainer, ContainerState> containers = new NativeSIDMap<>();
-    private NativeSIDMap<GContainer, ContainerState> pending = new NativeSIDMap<>();
+    private final NativeSIDMap<GComponent, ViewState> views = new NativeSIDMap<>();
+    private NativeSIDMap<GComponent, ViewState> pending = new NativeSIDMap<>();
 
     // WHEN WHAT IS WRITTEN IS PUBLISHED: a controller writes and never publishes; what is written is pending. What a
     // CHANGE writes - a call of a view's member, a server's delta applied (change) - is published once the outermost
@@ -116,7 +118,7 @@ public class GReactFormData {
     // draw (DataGrid's DOM, the forms window)
     private int changing; // the changes under way
 
-    public GReactFormData(GForm form, Function<GComponent, GContainer> place, Verbs verbs) {
+    public GReactFormData(GForm form, Function<GComponent, GComponent> place, Verbs verbs) {
         this.form = form;
         this.place = place;
         this.verbs = verbs;
@@ -167,9 +169,9 @@ public class GReactFormData {
         // ===== a filter group of a group: the filter selected in it - null: none -, as its member read it ...
         void changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter);
         // ... and a filter's key, which selects it where a view draws the filter group (FilterGroupPart) - the
-        // platform's binding, taken while the react container the view draws it in is shown and the form shows the
-        // filter group (shown), as the platform's widget's is while the widget is shown
-        int addRegularFilterBinding(GInputBindingEvent event, GFormController.BindingExec pressed, GContainer scope, Supplier<Boolean> shown, GGroupObject groupObject);
+        // platform's binding, taken while the React view that draws it is shown and the form shows the filter group
+        // (shown), as the platform's widget's is while the widget is shown
+        int addRegularFilterBinding(GInputBindingEvent event, GFormController.BindingExec pressed, GComponent scope, Supplier<Boolean> shown, GGroupObject groupObject);
         // ===== what a toolbar asks where a view draws it - requests (getRefusal): a group's (GridToolbarPart), the
         // count of its rows and the sum of a column of them, answered or failed, ...
         void countRecords(GGroupObject group, Consumer<Number> answer, Consumer<Throwable> failed);
@@ -193,7 +195,7 @@ public class GReactFormData {
         void batch(Runnable run);
     }
 
-    // a batch's fn (ContainerState.batch): a function, the member calls it makes being sent together
+    // a batch's fn (ViewState.batch): a function, the member calls it makes being sent together
     private static void checkFunction(String errorPrefix, JavaScriptObject fn) {
         if (!isFunction(fn))
             throw new RuntimeException(errorPrefix + "takes a function, the member calls it makes being sent together");
@@ -210,15 +212,15 @@ public class GReactFormData {
         return value != null && typeof value.then === 'function';
     }-*/;
 
-    // a react container's state, made with its view, and its controller with it
-    public ContainerState addContainer(GContainer scope, Consumer<JavaScriptObject> publish) {
-        ContainerState state = new ContainerState(scope, publish);
-        containers.put(scope, state);
-        state.enlist(); // published with what the form is set out with - empty / static-only containers too
+    // a React view's state, made with the view, and its controller with it
+    public ViewState addView(GComponent scope, Consumer<JavaScriptObject> publish) {
+        ViewState state = new ViewState(scope, publish);
+        views.put(scope, state);
+        state.enlist(); // published with what the form is set out with - empty / static-only views too
         return state;
     }
 
-    // ===== THE FORM'S CONTROLLER OF EACH OWNER, settled once, when every react container is there, from the platform's
+    // ===== THE FORM'S CONTROLLER OF EACH OWNER, settled once, when every React view is there, from the platform's
     // controller of it (GFormController.initializeControllers): placement is design data. The groups first, as their
     // tables are set up - what draws the rows gives each group's controller and what shows the groups' user orders
     // (GTableController.getGroupController, getUserOrdersController) -, then the properties, in the form's order, the
@@ -230,12 +232,12 @@ public class GReactFormData {
     // of the rows React draws -, which keeps what labels the property and hands the rest on, an action's labels too,
     // its button's face; else the platform's
     public GPropertyController createPropertyController(GPropertyDraw property, GPlatformPropertyController platform) {
-        GContainer scope = nameScope(property);
+        GComponent scope = nameScope(property);
         if (scope == null)
             return platform;
         if (!hasEntry(property)) // ... and where it has no entry, it brings no node either
             return noEntry(property, platform);
-        ContainerState state = containers.get(scope);
+        ViewState state = views.get(scope);
         if (property.isList) { // its content is its column, with its group's rows, on their node
             RowsPart rows = state.getRowsPart(property.groupObject);
             if (!property.isPlatformDrawn())
@@ -270,7 +272,7 @@ public class GReactFormData {
     public GComponentController createComponentController(GComponent component, GComponentController platform) {
         if (reactKeepsNothing(component))
             return null;
-        GContainer scope = component instanceof GPropertyDraw ? null : nameScope(component);
+        GComponent scope = component instanceof GPropertyDraw ? null : nameScope(component);
         return reactOrPlatform(scope, state -> component.isPlatformDrawn() ? new PlatformComponentEntry(state, component, platform) : new ReactComponentEntry(state, component), () -> platform);
     }
     // ... and WHAT REACT KEEPS NOTHING OF as a component, so nothing is sent for it as one (mirrors
@@ -336,17 +338,17 @@ public class GReactFormData {
     // ... either: the table's part, of the table's kind (part), given to the toolbar as it is made, as the platform's
     // table gives itself to it, where React draws the rows - where the table is drawn -, else the platform's table
     // (platform), made only then
-    private <R extends GTableController> R createTableController(GGridProperty table, GToolbarController<R> toolbar, Function<ContainerState, R> part, Supplier<R> platform) {
+    private <R extends GTableController> R createTableController(GGridProperty table, GToolbarController<R> toolbar, Function<ViewState, R> part, Supplier<R> platform) {
         return reactOrPlatform(componentScope(table), state -> {
             R rows = part.apply(state);
             toolbar.addRows(rows);
             return rows;
         }, platform);
     }
-    // ... the one choice each of the factories above makes: what React has of a component it draws in a react container
+    // ... the one choice each of the factories above makes: what React has of a component it draws in a React view
     // (scope) - a part of its owner there, or an entry, made by react -, else the platform's (platform), made only then
-    private <C> C reactOrPlatform(GContainer scope, Function<ContainerState, C> react, Supplier<C> platform) {
-        return scope != null ? react.apply(containers.get(scope)) : platform.get();
+    private <C> C reactOrPlatform(GComponent scope, Function<ViewState, C> react, Supplier<C> platform) {
+        return scope != null ? react.apply(views.get(scope)) : platform.get();
     }
     // THE ROWS A GROUP'S PER-ROW RENDERERS FOLLOW (GPlatformRowsPanelController): a group's platform-drawn list
     // properties are drawn per row only where React draws the group's rows (FormView.isPlatformDrawn), so what they
@@ -359,12 +361,12 @@ public class GReactFormData {
     // ... of a group whose rows React draws, handed out once, while the form is built: placement is asked here, and
     // then never again
     public Rows getRows(GGroupObject group) {
-        return containers.get(rowsScope(group)).getRowsPart(group);
+        return views.get(rowsScope(group)).getRowsPart(group);
     }
     // ... and then what the nodes carry of it all, once: a group's rows are there from the start, none of them yet; the
     // names every node carries; the members that mirror its entries
     public void initialize() {
-        containers.foreachValue(ContainerState::initialize);
+        views.foreachValue(ViewState::initialize);
     }
 
     // THE VALUES OF AN OWNER'S READERS, as the server last sent them, with the client's own on top - kept by the owner
@@ -448,8 +450,8 @@ public class GReactFormData {
     // (TablePart.place) - is in this publication, its container pending already. The batch is detached before the
     // notifications, so that edits made by a subscriber get their own draft and remain pending for the next one.
     public void flush() {
-        pending.foreachValue(ContainerState::commit);
-        NativeSIDMap<GContainer, ContainerState> batch = pending;
+        pending.foreachValue(ViewState::commit);
+        NativeSIDMap<GComponent, ViewState> batch = pending;
         pending = new NativeSIDMap<>();
         batch.foreachValue(state -> {
             if (state.data != state.lastPublished) { // a nested flush may have given it out already
@@ -500,10 +502,9 @@ public class GReactFormData {
         }
     }
 
-    // what one react container is given - its nodes, its snapshot - and what its view changes them through:
-    // its controller
-    public final class ContainerState {
-        final GContainer scope;
+    // what one React view is given - its nodes, its snapshot - and what it changes them through: its controller
+    public final class ViewState {
+        final GComponent scope;
         final Consumer<JavaScriptObject> publish;
         // each group's and each tree's node here, by its name - data.<name> -, in the order they are made: the server
         // keeps the names of the groups and trees a container carries apart (FormView.checkReactProjectionNames)
@@ -519,10 +520,10 @@ public class GReactFormData {
         JavaScriptObject lastPublished; // what the view was last given (flush)
         // `props.controller`: made with the state and never replaced, so a view keeps the one it is given. Its members
         // mirror the entries of `data` and are made with them (initialize); the form gives it what every controller
-        // carries (GFormController.addReactContainer)
+        // carries (GFormController.addReactView)
         public final JavaScriptObject controller;
 
-        ContainerState(GContainer scope, Consumer<JavaScriptObject> publish) {
+        ViewState(GComponent scope, Consumer<JavaScriptObject> publish) {
             this.scope = scope;
             this.publish = publish;
             this.top = new TopNode(this);
@@ -651,7 +652,7 @@ public class GReactFormData {
         final GComponent component;
         final GPropertyReader[] labelReaders; // its caption and image
 
-        ComponentEntry(ContainerState state, GComponent component) {
+        ComponentEntry(ViewState state, GComponent component) {
             super(state.top, component.sID);
             this.component = component;
             this.labelReaders = present(component.getLabelReaders());
@@ -676,7 +677,7 @@ public class GReactFormData {
     // ... of one React draws: the rest of it - its classes, its custom design - is React's as well, and draws nothing:
     // the platform has no view of it
     private final class ReactComponentEntry extends ComponentEntry {
-        ReactComponentEntry(ContainerState state, GComponent component) {
+        ReactComponentEntry(ViewState state, GComponent component) {
             super(state, component);
         }
         public void updateOther(GComponentReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
@@ -687,7 +688,7 @@ public class GReactFormData {
     private final class PlatformComponentEntry extends ComponentEntry {
         final GComponentController platform; // the platform's controller of the component: the layout, which draws it
 
-        PlatformComponentEntry(ContainerState state, GComponent component, GComponentController platform) {
+        PlatformComponentEntry(ViewState state, GComponent component, GComponentController platform) {
             super(state, component);
             this.platform = platform;
         }
@@ -703,10 +704,10 @@ public class GReactFormData {
     // properties by name, and on their member the members that mirror those entries, one per value they carry - a
     // property is of a group, so a tree's node carries none. One JS object holds all it writes, and so does one node
     private abstract class Node {
-        final ContainerState state;
+        final ViewState state;
         final ArrayList<PropertyEntry> properties = new ArrayList<>(); // what it carries by name, in the form's order
 
-        Node(ContainerState state) {
+        Node(ViewState state) {
             this.state = state;
         }
         // ... and on a member, the members that mirror them
@@ -722,7 +723,7 @@ public class GReactFormData {
     // the empty group's node: the container's top level itself - its entries are data's own, its members the
     // controller's own
     private final class TopNode extends Node {
-        TopNode(ContainerState state) {
+        TopNode(ViewState state) {
             super(state);
         }
         JavaScriptObject edit() {
@@ -747,7 +748,7 @@ public class GReactFormData {
         final JavaScriptObject member = newObject(); // controller.<name>, put on the controller with its members
         final NativeStringMap<Boolean> unnameable = new NativeStringMap<>(); // reported already (reportUnnameable)
 
-        OwnerNode(ContainerState state, String name, List<GGroupObject> groups) {
+        OwnerNode(ViewState state, String name, List<GGroupObject> groups) {
             super(state);
             this.name = name;
             this.groups = groups;
@@ -808,7 +809,7 @@ public class GReactFormData {
     private final class GroupNode extends OwnerNode {
         final GGroupObject group;
 
-        GroupNode(ContainerState state, GGroupObject group) {
+        GroupNode(ViewState state, GGroupObject group) {
             super(state, group.getSID(), Collections.singletonList(group));
             this.group = group;
         }
@@ -842,7 +843,7 @@ public class GReactFormData {
     private final class TreeNode extends OwnerNode {
         final GTreeGroup tree;
 
-        TreeNode(ContainerState state, GTreeGroup tree) {
+        TreeNode(ViewState state, GTreeGroup tree) {
             super(state, tree.name, tree.groups);
             this.tree = tree;
         }
@@ -1238,8 +1239,8 @@ public class GReactFormData {
         }
     }
 
-    // a TOOLBAR where React draws it - TOOLBARSYSTEM in a react container: a part of its table, a list's grid or a
-    // tree, on the table's node there, and the toolbar's controller (GToolbarController) (GridToolbarPart,
+    // a TOOLBAR where React draws it - TOOLBARSYSTEM in a React view, its own too: a part of its table, a list's grid
+    // or a tree, on the table's node there, and the toolbar's controller (GToolbarController) (GridToolbarPart,
     // TreeToolbarPart). What its buttons show is on the table's node, each under a name of its own, and its buttons are
     // members on the table's: a state's member changes it, as `filters`' does, and the rest are calls. Here is what
     // both have: the filter button - filterControlsVisible, whether the platform's filter controls it shows are shown
@@ -1439,7 +1440,7 @@ public class GReactFormData {
         }
 
     }
-    // the FILTER CONTROLS where React draws them - FILTERCONTROLS(g), or FILTERCONTROLS(TREE t), in a react container:
+    // the FILTER CONTROLS where React draws them - FILTERCONTROLS(g), or FILTERCONTROLS(TREE t), in a React view:
     // a part of their own, of the group or of the tree, on its node there, and the controls of its filter input
     // controller (GFilterControlsController). The same whoever draws the conditions: its buttons are members on the
     // table's - the add, the apply, the reset, each what the platform's button does over those conditions -, and what
@@ -1519,7 +1520,7 @@ public class GReactFormData {
             return handler;
         }
     }
-    // a group's FILTER GROUP where React draws it - FILTERGROUP(fg) in a react container: a part of the group, on its
+    // a group's FILTER GROUP where React draws it - FILTERGROUP(fg) in a React view: a part of the group, on its
     // node there, under the filter group's own name - the form's name of it, sent with it as a tree's is
     // (GRegularFilterGroup.name) -, shaped as a property's entry - `value`, the index of the filter selected, null for
     // none; `filters`, their captions; `canClear`, whether none may be selected, as the platform's widget offers it
@@ -1543,9 +1544,12 @@ public class GReactFormData {
         }
         // whether the form shows the filter group now, which its descriptor says (ComponentEntry.isShown): its filters'
         // keys are taken while it does, as the platform's widget's are while the widget is shown - it is hidden with
-        // the filter group, and its key goes with it
+        // the filter group, and its key goes with it. A filter group of its own has no descriptor in its own view: its
+        // view is what the form hides then (what the key does where a React container places that view and the form
+        // hides it there is the keys' of React views to say, not this)
         boolean isShown() {
-            return !isField(getOwnField(node.state.current(), filterGroup.sID), "hidden", true);
+            JavaScriptObject descriptor = getOwnField(node.state.current(), filterGroup.sID);
+            return descriptor == null || !isField(descriptor, "hidden", true);
         }
         // its entry
         void writeState() {
@@ -2101,7 +2105,7 @@ public class GReactFormData {
         @Override
         void putMember(JavaScriptObject ownerMember) {
         }
-        // ... and what its rows state about one another, placed once the batch is complete (ContainerState.commit):
+        // ... and what its rows state about one another, placed once the batch is complete (ViewState.commit):
         // nothing - a grid's rows state nothing about each other; a tree's (TreeTablePart.place)
         void place() {
         }
@@ -2685,7 +2689,7 @@ public class GReactFormData {
     }
     // ... a panel or empty-group one's: keyed by its integration name on its group's node, where a panel property React
     // draws is, and carried by name with them. A <Platform> places it by the same name (getName), and hides its host by
-    // this entry (ContainerState.entryOf): it says whether the form shows it - all that an action's says
+    // this entry (ViewState.entryOf): it says whether the form shows it - all that an action's says
     private abstract class PlatformPanelEntry extends PlatformPropertyEntry {
         PlatformPanelEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
             super(node, property, platform);
@@ -2776,20 +2780,21 @@ public class GReactFormData {
         return property.groupObject == null ? property.integrationSID : property.groupObject.getSID() + "." + property.integrationSID;
     }
 
-    // where a group's ROWS go: the react container that draws them, null when the platform does - asked of what DRAWS
+    // where a group's ROWS go: the React view that draws them, null when the platform does - asked of what DRAWS
     // them, never of the group's box. A group not in LIST view has none anywhere: the server sends it no rows, only its
     // current object, which nothing chooses among rows, so no view gets a node of rows for it, wherever its grid sits
     // (mirrors FormView.rowsScope)
-    private GContainer rowsScope(GGroupObject group) {
+    private GComponent rowsScope(GGroupObject group) {
         return !group.viewType.isList() ? null : componentScope(group.getDrawComponent());
     }
-    // where a COMPONENT is drawn: the react container that draws it, null when the platform does - a platform-drawn one
-    // too, whose content is the platform's wherever React places it. A list property has no place of its own: it is
-    // drawn as its column, where the rows are, platform-drawn or not (mirrors FormView.componentScope)
-    private GContainer componentScope(GComponent component) {
+    // where what a COMPONENT draws is drawn - its content: the React view that draws it, its own where its custom is a
+    // React component, null when the platform does - a platform-drawn one too, whose content is the platform's wherever
+    // React places it. A list property has no place of its own: it is drawn as its column, where the rows are,
+    // platform-drawn or not (mirrors FormView.componentScope)
+    private GComponent componentScope(GComponent component) {
         if (component instanceof GPropertyDraw && ((GPropertyDraw) component).isList)
             return rowsScope(((GPropertyDraw) component).groupObject);
-        return component.isPlatformDrawn() ? null : placed(component);
+        return drawn(component);
     }
     // ... and WHERE THE VIEW NAMES IT, null where none does: the one container a component is named in (getName), and
     // where its entry is. A property is named on its group's node, where React draws its content - a list property's
@@ -2797,20 +2802,19 @@ public class GReactFormData {
     // the platform draws (an ACTION's saying only whether the form shows it: its caption and image are its button's
     // face). Any other component is named at the top level, where React draws or places it - one the design does not
     // name, a user filter's, nowhere (mirrors FormView.nameScope)
-    private GContainer nameScope(GComponent component) {
+    private GComponent nameScope(GComponent component) {
         if (component instanceof GPropertyDraw && ((GPropertyDraw) component).isList) // its column, where the rows are
             return rowsScope(((GPropertyDraw) component).groupObject);
         return component.sID != null ? placed(component) : null;
     }
-    // where what a FILTERS box holds is drawn - the box's part being its content -: the react container a view built
-    // here draws it in, null elsewhere (mirrors FormView.filtersScope)
-    private GContainer filtersScope(GContainer box) {
-        GContainer filters = box != null ? box.getChildrenReactPlace() : null;
-        return filters != null && containers.get(filters) != null ? filters : null;
+    // where what a FILTERS box holds is drawn - the box's part being its content -: the React view built here that
+    // draws it, null elsewhere (mirrors FormView.filtersScope)
+    private GComponent filtersScope(GContainer box) {
+        return box != null ? drawn(box) : null;
     }
     // ... where a FILTER GROUP is drawn as a part of its group: one with filters - one with none has no view -, of a
     // group - none has no node of its own to go on (mirrors FormView.filterGroupScope)
-    private GContainer filterGroupScope(GRegularFilterGroup filterGroup) {
+    private GComponent filterGroupScope(GRegularFilterGroup filterGroup) {
         if (filterGroup.filters.isEmpty())
             return null;
         return filterGroup.groupObject != null ? componentScope(filterGroup) : null;
@@ -2818,21 +2822,32 @@ public class GReactFormData {
     // ... where the FILTERCONTROLS of a table or a tree is drawn as a part of its table - of a list's grid, or of a
     // tree, one for all its groups: the form asks no other (GFormController.initializeTable) - (mirrors
     // FormView.filterControlsScope)
-    private GContainer filterControlsScope(GGridProperty table) {
+    private GComponent filterControlsScope(GGridProperty table) {
         return componentScope(table.filterControls);
     }
     // ... and where its TOOLBARSYSTEM is, shown (mirrors FormView.toolbarScope)
-    private GContainer toolbarScope(GGridProperty table) {
+    private GComponent toolbarScope(GGridProperty table) {
         return table.toolbar.visible ? componentScope(table.toolbar) : null;
     }
-    // the react container a component is in, as long as it has a view: one REMOVEd from the design is still the
-    // container of what it held, but nothing built it, so nothing of it is projected. Asked only here, while the form
-    // is built - never by a delta: what a reader brings goes to what React has of its owner
-    private GContainer placed(GComponent component) {
-        if (containers.isEmpty()) // a form with no react container: nowhere to be placed, nothing walked
+    // the React view a component is in, as long as it has a view: one REMOVEd from the design is still the container
+    // of what it held, but nothing built it, so nothing of it is projected. Asked only here, while the form is built -
+    // never by a delta: what a reader brings goes to what React has of its owner
+    private GComponent placed(GComponent component) {
+        if (views.isEmpty()) // a form with no React view: nowhere to be placed, nothing walked
             return null;
-        GContainer scope = place.apply(component);
-        return scope != null && containers.get(scope) != null ? scope : null;
+        return built(place.apply(component));
+    }
+    // ... and the one what a component draws is in - its content: its own, where its custom is a React component; none
+    // where it is platform-drawn, its view drawing all of it; else the one it is in (mirrors
+    // ComponentView.getContentReactPlace)
+    private GComponent drawn(GComponent component) {
+        if (component.isReact())
+            return built(component);
+        return component.isPlatformDrawn() ? null : placed(component);
+    }
+    // ... a React view's component, as long as the view is built
+    private GComponent built(GComponent scope) {
+        return scope != null && views.get(scope) != null ? scope : null;
     }
 
     // a group's own reader, on its node or on a row: no owner, so no static default
@@ -2906,10 +2921,10 @@ public class GReactFormData {
     // a controller, with what no single member can own: the batch its members' changes are sent together in, as many as
     // the function makes, of whatever groups and properties - no change of its own, each named by the member that makes
     // it
-    private static native JavaScriptObject makeController(ContainerState state) /*-{
+    private static native JavaScriptObject makeController(ViewState state) /*-{
         return {
             batch: function (fn) {
-                state.@lsfusion.gwt.client.form.design.view.GReactFormData.ContainerState::batch(*)(fn);
+                state.@lsfusion.gwt.client.form.design.view.GReactFormData.ViewState::batch(*)(fn);
             }
         };
     }-*/;

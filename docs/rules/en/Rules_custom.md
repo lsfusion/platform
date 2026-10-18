@@ -35,7 +35,10 @@ title: 'Rules: custom views'
      React component (a name matching `[A-Z][A-Za-z0-9_$]*`)
      that draws the container's whole subtree from the
      `props.data` projection, or an HTML template that only
-     places platform-drawn children.
+     places platform-drawn children; a table, a toolbar,
+     filter controls or a filter group take a React
+     component the same way, which draws what that
+     component shows of its group, in its place.
 
    All three are web client only: the desktop client renders
    the standard views and the container's regular subtree.

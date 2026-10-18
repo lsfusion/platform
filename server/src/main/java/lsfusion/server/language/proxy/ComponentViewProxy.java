@@ -31,13 +31,20 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         target.setActivated(activated, getVersion());
     }
 
-    // `custom = NULL`: the platform's standard view of the component rather than a custom one - the one value any
-    // component takes; a container takes a custom view of its own too (ContainerViewProxy)
+    // `custom = NULL`: the platform's standard view of the component rather than a custom one, which any component
+    // takes; or a React component, a view of its own drawing what the component shows (FormView
+    // .checkCustomReactComponents). A container takes a design of its own too (ContainerViewProxy), a property its
+    // CUSTOM render function instead (PropertyDrawViewProxy)
     @SuppressWarnings("unused")
     public void setCustom(Object custom) {
-        if (!isExplicitNull(custom))
-            throw new UnsupportedOperationException("custom of a component that is not a container can only be NULL, the standard view");
-        target.setCustom(Custom.NOCUSTOM, getVersion());
+        if (isExplicitNull(custom))
+            target.setCustom(Custom.NOCUSTOM, getVersion());
+        else if (custom instanceof LocalizedString && Custom.isReactComponent(custom.toString()))
+            target.setCustom(custom.toString(), getVersion());
+        else
+            throw new UnsupportedOperationException("custom of a component that is not a container is NULL, the standard"
+                    + " view, or the name of a React component (an uppercase letter followed by letters, digits, '_' or"
+                    + " '$'): a template, '' and a property lay out the children of a container");
     }
 
     protected static boolean isExplicitNull(Object value) {

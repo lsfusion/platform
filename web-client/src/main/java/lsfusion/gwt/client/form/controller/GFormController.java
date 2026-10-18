@@ -244,16 +244,18 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
         dispatcher = new FormDispatchAsync(this, dispatchPriority);
 
-        // the form's projection: empty on a form with no react container, since a react container's view makes its
-        // state in it (addReactContainer). A call through a member is the form's own edit: the form is its Verbs
+        // has to be done before the layout and the controllers, both of which add views (since adding component uses
+        // getSize): the layout adds the React view of a component that is not a container, a grid's sized by its columns
+        initializeParams();
+
+        // the form's projection: empty on a form with no React view, since a React view makes its state in it
+        // (addReactView). A call through a member is the form's own edit: the form is its Verbs
         reactData = new GReactFormData(form, GComponent::getReactPlace, this);
         formLayout = new GFormLayout(this, form.mainContainer);
         if (form.sID != null)
             formLayout.getElement().setAttribute("lsfusion-form", form.sID);
 
         this.editEvent = editEvent;
-
-        initializeParams(); // has to be done before initializeControllers (since adding component uses getSize)
 
         initializeControllers();
 
@@ -419,14 +421,14 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // and exists only on one: a member says that `data.<group>.<property>` is there, and an object with no data beside
     // it has nothing to say that about.
     public final JavaScriptObject controller = extendController(GwtClientUtils.newObject());
-    // ... so the members live on a PROJECTION: each react container's state carries its own controller beside its own
-    // `props.data`, naming exactly what that data carries (GReactFormData.ContainerState.controller). A view that
-    // cannot SEE its neighbour does not name it either; the rest of the form is reached the way anything outside this
-    // surface is - change / exec / eval / evalAction, which every controller carries and which are gated in their own
-    // right. A react container's state is made with its view, and its controller with it, to which the form adds what
-    // every controller carries
-    public GReactFormData.ContainerState addReactContainer(GContainer container, Consumer<JavaScriptObject> publish) {
-        GReactFormData.ContainerState state = reactData.addContainer(container, publish);
+    // ... so the members live on a PROJECTION: each React view's state carries its own controller beside its own
+    // `props.data`, naming exactly what that data carries (GReactFormData.ViewState.controller). A view that cannot
+    // SEE its neighbour does not name it either; the rest of the form is reached the way anything outside this surface
+    // is - change / exec / eval / evalAction, which every controller carries and which are gated in their own right. A
+    // React view's state is made with the view - a react container's, or a component's that is not a container -, and
+    // its controller with it, to which the form adds what every controller carries
+    public GReactFormData.ViewState addReactView(GComponent component, Consumer<JavaScriptObject> publish) {
+        GReactFormData.ViewState state = reactData.addView(component, publish);
         extendController(state.controller);
         return state;
     }
@@ -2783,12 +2785,13 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     public int addRegularFilterBinding(GInputBindingEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(event.inputEvent, event.env, pressed, component, groupObject);
     }
-    // ... and of a filter group a view draws (GReactFormData.FilterGroupPart): shown while the react container the view
-    // draws it in is - the platform's widget is that container's view there - and the form shows the filter group,
-    // which the part says (shown): the platform's widget is hidden with the filter group, and its binding with it
+    // ... and of a filter group a view draws (GReactFormData.FilterGroupPart): shown while the React view that draws it
+    // is - the platform's widget is that view there - and the form shows the filter group, which the part says
+    // (shown): the platform's widget is hidden with the filter group, and its binding with it
     @Override
-    public int addRegularFilterBinding(GInputBindingEvent event, BindingExec pressed, GContainer scope, Supplier<Boolean> shown, GGroupObject groupObject) {
-        Widget view = formLayout.getContainerView(scope).getView();
+    public int addRegularFilterBinding(GInputBindingEvent event, BindingExec pressed, GComponent scope, Supplier<Boolean> shown, GGroupObject groupObject) {
+        Widget view = scope instanceof GContainer ? formLayout.getContainerView((GContainer) scope).getView()
+                : formLayout.getBaseComponentViews().get(scope).getShowingWidget();
         return addBinding(createBindingEvent(event.inputEvent, event.env, null, view), new Binding(groupObject) {
             @Override
             public boolean showing() {

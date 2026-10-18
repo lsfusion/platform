@@ -73,8 +73,6 @@ public class GContainer extends GComponent {
     public Integer lineSize;
     public Integer captionLineSize;
     public boolean lineShrink;
-    public String custom = null;
-    public boolean react = false; // CUSTOM REACT 'fn': custom holds the React component name
 
     public ArrayList<GComponent> children = new ArrayList<>();
 
@@ -238,10 +236,6 @@ public class GContainer extends GComponent {
         return lineShrink;
     }
 
-    public String getCustom() {
-        return custom;
-    }
-
     public void setCustom(String custom) {
         this.custom = custom;
     }
@@ -256,17 +250,6 @@ public class GContainer extends GComponent {
     // so it follows the ordinary rule
     public boolean isCustomDrawn() {
         return custom != null && !custom.isEmpty();
-    }
-
-    public boolean isReact() {
-        return react; // custom holds the React component name
-    }
-    // WHERE WHAT THIS CONTAINER HOLDS IS: where a child of it is (GComponent.getReactPlace) - the container itself when
-    // it is a react one, whose component draws its children, else where the container is, unless it is a platform-drawn
-    // one. FILTERS(g) is asked it: what it holds is the group's user filters (mirrors
-    // ContainerView.getChildrenReactPlace)
-    public GContainer getChildrenReactPlace() {
-        return getReactPlaceFrom(this);
     }
 
     private class GCaptionReader extends GComponentLabelReader {

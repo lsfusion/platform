@@ -49,7 +49,7 @@ public class GFormChangesTest extends GWTTestCase {
 
     // the changes of a request that changed nothing
     @SuppressWarnings("unchecked")
-    private static GFormChangesDTO noChanges() {
+    public static GFormChangesDTO noChanges() {
         GFormChangesDTO dto = new GFormChangesDTO();
         dto.objectsGroupIds = new int[0]; dto.objects = new GGroupObjectValue[0];
         dto.gridObjectsGroupIds = new int[0]; dto.gridObjects = new ArrayList[0];

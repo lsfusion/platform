@@ -35,6 +35,10 @@ public class GComponent implements Serializable, HasNativeSID {
 
     // whether a CUSTOM REACT view places this component instead of drawing it (see isPlatformDrawn)
     public boolean platformDrawn;
+    // its own custom view: a React component's name - the one a component that is not a container takes -, or a
+    // container's design (GContainer)
+    public String custom = null;
+    public boolean react = false; // custom holds the React component name
 
     public String elementClass;
 
@@ -116,32 +120,38 @@ public class GComponent implements Serializable, HasNativeSID {
     // the platform draws this component and a CUSTOM REACT view places it: its real (server-built) lsFusion view is
     // mounted into a placeholder instead of being drawn from `data`. The flag as the server works it out
     // (FormView.isPlatformDrawn) - a component with a view of its own, an explicit custom (`custom = NULL`, NOCUSTOM, a
-    // custom of its own), where a react view draws what it stands in: a container or a panel property under the
-    // CUSTOM REACT container above it, however deep under the containers that one draws itself (one REMOVEd from
-    // the design is placed by nothing), and a GRID property, which has no place of its own, of a group such a
-    // container draws, wherever its own component is (the renderers of its rows are placed by the view that draws
-    // them) - so the flag is the answer
+    // custom of its own - a React component's too), where a React view draws what it stands in: a component under the
+    // React view above it, however deep under the containers that one draws itself (one REMOVEd from the design is
+    // placed by nothing), and a GRID property, which has no place of its own, of a group such a view draws, wherever
+    // its own component is (the renderers of its rows are placed by the view that draws them) - so the flag is the
+    // answer
     public boolean isPlatformDrawn() {
         return platformDrawn;
     }
 
-    // WHERE THIS COMPONENT IS: the react container that draws or places it, null when the platform draws it where it
-    // stands - pure design data, no controller, no projection. Walked from the component's CONTAINER - a grid's record,
-    // which has none, is in its grid (getHiddenContainer): a react container answers, a platform-drawn component ends
-    // the walk - the platform draws everything under it. Whether the component itself is platform-drawn says only which
-    // entry it has there, its content or its descriptor, never where the entry goes. A react container inside what
-    // another one draws is platform-drawn, so the first one reached is the only one there is (mirrors
-    // ComponentView.getReactPlace, which ends the walk at any view of its own - the same answer)
-    public GContainer getReactPlace() {
-        return getReactPlaceFrom(getHiddenContainer());
+    public String getCustom() {
+        return custom;
     }
-    // ... the walk itself, up from a component: the walk of what a container holds starts at the container
-    // (GContainer.getChildrenReactPlace)
-    protected static GContainer getReactPlaceFrom(GComponent component) {
-        for (GComponent parent = component; parent != null; parent = parent.getHiddenContainer()) {
-            // the first react container answers - one REMOVEd from the design holds its children, but nothing draws it
-            if (parent instanceof GContainer && ((GContainer) parent).isReact())
-                return parent.isInForm() ? (GContainer) parent : null;
+
+    // a React component draws it (ComponentView.isReact): a container's children, or what a component that is not a
+    // container shows - its rows, its buttons
+    public boolean isReact() {
+        return react;
+    }
+
+    // WHERE THIS COMPONENT IS: the React view that draws or places it - a component's whose custom is a React component
+    // (isReact): a container's, or a grid's, which holds its record -, null when the platform draws it where it stands
+    // - pure design data, no controller, no projection. Walked from the component's CONTAINER - a grid's record, which
+    // has none, is in its grid (getHiddenContainer): a React view answers, a platform-drawn component ends the walk -
+    // its view draws everything under it. Whether the component itself is platform-drawn says only which entry it has
+    // there, its content or its descriptor, never where the entry goes. A React view inside what another one draws is
+    // platform-drawn, so the first one reached is the only one there is (mirrors ComponentView.getReactPlace, which
+    // ends the walk at any view of its own - the same answer)
+    public GComponent getReactPlace() {
+        for (GComponent parent = getHiddenContainer(); parent != null; parent = parent.getHiddenContainer()) {
+            // the first React view answers - one REMOVEd from the design holds what it held, but nothing draws it
+            if (parent.isReact())
+                return parent.isInForm() ? parent : null;
             if (parent.platformDrawn)
                 return null;
         }

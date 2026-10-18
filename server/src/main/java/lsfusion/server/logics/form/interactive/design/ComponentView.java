@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.interactive.design;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.FontInfo;
+import lsfusion.server.base.Custom;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -42,10 +43,10 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
     protected NFProperty<Boolean> activated = NFFact.property();
 
     // what the design says draws the component - its `custom`, null where it says nothing: Custom.NOCUSTOM, the
-    // platform's standard view (`custom = NULL`), or a container's own custom view (ContainerView). Inside what a
-    // CUSTOM REACT container draws, a component given one keeps its real (server-built) view, which React places
-    // instead of drawing the component (FormView.isPlatformDrawn); anywhere else the platform draws it with that view,
-    // as it would anyway
+    // platform's standard view (`custom = NULL`), or a custom view of its own - a React component (isReact), a
+    // container's design too (ContainerView). Inside what a React view draws, a component given one keeps its own view,
+    // which the React view places instead of drawing the component (FormView.isPlatformDrawn); anywhere else that view
+    // draws it where it stands
     protected final NFProperty<String> custom = NFFact.property();
 
     protected NFProperty<Double> flex = NFFact.property();
@@ -403,24 +404,31 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
         return !isMain() && isUserHidable() ? getHiddenContainer() : this;
     }
 
-    // WHERE THIS COMPONENT IS: the react container that draws or places it, null when the platform draws it where it
-    // stands. Walked from the component's CONTAINER - a grid's record, which has none, is in its grid
-    // (getHiddenContainer): a react container answers, a component with a view of its own (hasExplicitCustom) ends
-    // the walk - the platform draws everything under it. Whether the component itself has one says only which entry
-    // it has there, its content or its descriptor, never where the entry goes. A react container inside what another
-    // one draws has a view of its own, so the first one reached is the only one there is (mirrors
-    // GComponent.getReactPlace, which ends the walk at a platform-drawn component - the same answer: the topmost of
-    // these under a react container is platform-drawn, and one under none has no react place to find)
-    public ContainerView getReactPlace() {
+    // WHERE THIS COMPONENT IS: the React view that draws or places it - a component's whose custom is a React component
+    // (isReact): a container's, or a grid's, which holds its record -, null when the platform draws it where it stands.
+    // Walked from the component's CONTAINER - a grid's record, which has none, is in its grid (getHiddenContainer): a
+    // React view answers, a component with a view of its own (hasExplicitCustom) ends the walk - that view draws
+    // everything under it. Whether the component itself has one says only which entry it has there, its content or its
+    // descriptor, never where the entry goes. A React view inside what another one draws is a view of its own, so the
+    // first one reached is the only one there is (mirrors GComponent.getReactPlace, which ends the walk at a
+    // platform-drawn component - the same answer: the topmost of these under a React view is platform-drawn, and one
+    // under none has no React place to find)
+    public ComponentView getReactPlace() {
         return getReactPlaceFrom(getHiddenContainer());
     }
-    // ... the walk itself, up from a component: the walk of what a container holds starts at the container
-    // (ContainerView.getChildrenReactPlace)
-    protected static ContainerView getReactPlaceFrom(ComponentView component) {
+    // ... and WHERE WHAT IT DRAWS IS, its content - what a container holds, the rows of a grid, the buttons of a
+    // toolbar -: the same walk from the component itself, so one whose custom is a React component answers itself, one
+    // with another view of its own nothing - that view draws it whole -, any other where it is (mirrors
+    // GReactFormData.drawn)
+    public ComponentView getContentReactPlace() {
+        return getReactPlaceFrom(this);
+    }
+    // ... the walk itself, up from a component
+    private static ComponentView getReactPlaceFrom(ComponentView component) {
         for (ComponentView parent = component; parent != null; parent = parent.getHiddenContainer()) {
-            // the first react container answers - one REMOVEd from the design holds its children, but nothing draws it
-            if (parent instanceof ContainerView && ((ContainerView) parent).isReact())
-                return parent.isInForm() ? (ContainerView) parent : null;
+            // the first React view answers - one REMOVEd from the design holds what it held, but nothing draws it
+            if (parent.isReact())
+                return parent.isInForm() ? parent : null;
             if (parent.hasExplicitCustom())
                 return null;
         }
@@ -515,6 +523,8 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
         outStream.writeBoolean(isDefaultComponent());
 
         outStream.writeBoolean(pool.context.view.isPlatformDrawn(this)); // what the client is told is where it stands
+        pool.writeString(outStream, getCustom());
+        outStream.writeBoolean(isReact());
 
         pool.writeString(outStream, getSID());
     }
@@ -579,9 +589,21 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
     public boolean hasExplicitCustom() {
         return custom.get() != null;
     }
-    // Custom.NOCUSTOM is the one value any component takes (ContainerView takes its own custom views too)
+    // the component's own custom view, none where the design gives it the standard view or says nothing: a React
+    // component's name, the one a component that is not a container takes, or a container's design (ContainerView)
+    public String getCustom() {
+        String value = custom.get();
+        return Custom.NOCUSTOM.equals(value) ? null : value;
+    }
+    // Custom.NOCUSTOM, the standard view, or a React component (a container takes a design of its own too)
     public void setCustom(String value, Version version) {
         custom.set(value, version);
+    }
+    // a React component draws it: React is INFERRED from the custom value (not stored) - a bare component identifier
+    // (UpperCamel) names a React component; '', an HTML template ('<div><Platform:child></div>'), or a lower-case/path
+    // string is a container's plain custom design
+    public boolean isReact() {
+        return Custom.isReactComponent(getCustom());
     }
 
     public Double getFlex() {

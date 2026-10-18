@@ -5,9 +5,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 // what a `custom` value is, and what the <Platform:name> places in it name. The single point of determination, shared
-// by everything a `custom` can draw - a DESIGN container, a navigator window - which do not accept the same vocabulary:
+// by everything a `custom` can draw - a DESIGN component, a navigator window - which do not accept the same vocabulary:
 // a container takes '' (lay the children out in order), a component name, or markup; a window takes a component name
-// or markup only, since it has no children of its own to lay out
+// or markup only, since it has no children of its own to lay out; and a component that is not a container a component
+// name alone, having no children for markup to place either
 public class Custom {
 
     private static final Pattern REACT_COMPONENT_NAME = Pattern.compile("[A-Z][A-Za-z0-9_$]*");

@@ -1,0 +1,19 @@
+MODULE ComponentViewOfHiddenToolbar;
+
+REQUIRE System;
+
+// a toolbar the design hides shows nothing, so a React component of its own would be given nothing to draw
+CLASS HiddenToolbarItem;
+hiddenToolbarQty = DATA INTEGER (HiddenToolbarItem);
+
+FORM componentViewOfHiddenToolbar
+    OBJECTS i = HiddenToolbarItem
+    PROPERTIES(i) hiddenToolbarQty
+;
+
+DESIGN componentViewOfHiddenToolbar {
+    TOOLBARSYSTEM(i) {
+        visible = FALSE;
+        custom = 'HiddenToolbar';
+    }
+}

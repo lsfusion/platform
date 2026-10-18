@@ -1,0 +1,22 @@
+MODULE ComponentViewOfGridWithRecord;
+
+REQUIRE System;
+
+// what the design moves into a grid, GRID(i) { MOVE ...; }, is its record, which a CUSTOM, MAP or CALENDAR view pops up
+// for a row: the React view of the grid itself does not take it - a React container around the grid does
+CLASS RecordItem;
+recordQty = DATA INTEGER (RecordItem);
+recordNote = DATA STRING[50] (RecordItem);
+
+FORM componentViewOfGridWithRecord
+    OBJECTS i = RecordItem
+    PROPERTIES(i) recordQty
+    PROPERTIES(i) PANEL recordNote
+;
+
+DESIGN componentViewOfGridWithRecord {
+    GRID(i) {
+        custom = 'RecordGrid';
+        MOVE PROPERTY(recordNote(i));
+    }
+}

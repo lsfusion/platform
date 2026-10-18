@@ -296,28 +296,16 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     }
 
     // a custom view of the container's own - a component, markup, '' or a property -, a view of its own as much as
-    // `custom = NULL` is: inside what a react container draws, the container is drawn by it and placed
+    // `custom = NULL` is: inside what a React view draws, the container is drawn by it and placed
     public boolean isCustom() {
         return getCustom() != null;
     }
 
-    public boolean isReact() {
-        // React is INFERRED from the custom value (not stored): a bare component identifier (UpperCamel) names a React
-        // component; '', an HTML template ('<div><Platform:child></div>'), or a lower-case/path string is a plain custom design
-        return Custom.isReactComponent(getCustom());
-    }
     // ... a container the view draws too, platform-drawn or not: one it draws itself - a page of a tab strip it draws -
     // it shows or hides itself (useShown), and what is inside it is read only while it shows it
     @Override
     public boolean isReactHidable() {
         return getReactPlace() != null;
-    }
-
-    // WHERE WHAT THIS CONTAINER HOLDS IS: where a child of it is (ComponentView.getReactPlace) - the container itself
-    // when it is a react one, whose component draws its children, else where the container is, unless it has a view of
-    // its own. FILTERS(g) is asked it: what it holds is the group's user filters (mirrors GContainer.getChildrenReactPlace)
-    public ContainerView getChildrenReactPlace() {
-        return getReactPlaceFrom(this);
     }
 
     @Override
@@ -453,12 +441,6 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         pool.writeInt(outStream, getLineSize());
         pool.writeInt(outStream, getCaptionLineSize());
         outStream.writeBoolean(isLineShrink(pool.context));
-
-        outStream.writeBoolean(isCustom());
-        if (isCustom())
-            pool.writeString(outStream, getCustom());
-
-        outStream.writeBoolean(isReact());
     }
 
     public LocalizedString getCaption() {
@@ -673,13 +655,8 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
         lineShrink.set(value, version);
     }
 
-    // the container's own custom view: the component name (React) or design (HTML template / '' simple), React being
-    // INFERRED from it (isReact) - none where the design gives the standard view
-    public String getCustom() {
-        String value = custom.get();
-        return Custom.NOCUSTOM.equals(value) ? null : value;
-    }
-    // ... and the standard view drops the property that gave the custom view, too
+    // the container's own custom view (getCustom) is a React component's name, or a design - an HTML template, or ''
+    // simple -; and the standard view drops the property that gave the custom view, too
     @Override
     public void setCustom(String value, Version version) {
         super.setCustom(value, version);

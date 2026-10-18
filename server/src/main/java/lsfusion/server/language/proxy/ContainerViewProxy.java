@@ -140,7 +140,7 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
     @Override
     public void setCustom(Object custom) {
         // a CUSTOM container: the value IS the design. React vs plain custom is inferred from this string in
-        // ContainerView.isReact() (a component identifier -> React; '' / HTML template / property -> plain custom),
+        // ComponentView.isReact() (a component identifier -> React; '' / HTML template / property -> plain custom),
         // so nothing else is set here - and NULL is the standard view, which every component takes
         if(isExplicitNull(custom))
             super.setCustom(custom);

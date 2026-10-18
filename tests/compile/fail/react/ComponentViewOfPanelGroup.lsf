@@ -1,0 +1,17 @@
+MODULE ComponentViewOfPanelGroup;
+
+REQUIRE System;
+
+// the grid of a group in PANEL view shows no rows - the server sends it none -, so a React component of its own would
+// be given nothing to draw
+CLASS PanelViewItem;
+panelViewQty = DATA INTEGER (PanelViewItem);
+
+FORM componentViewOfPanelGroup
+    OBJECTS i = PanelViewItem PANEL
+    PROPERTIES(i) panelViewQty
+;
+
+DESIGN componentViewOfPanelGroup {
+    GRID(i) { custom = 'PanelViewGrid'; }
+}

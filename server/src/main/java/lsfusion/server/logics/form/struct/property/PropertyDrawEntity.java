@@ -1388,11 +1388,11 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return isList(context) && (toDraw = getToDraw(context.entity)) != null && toDraw.isCustom();
     }
 
-    // a list group rendered by a CUSTOM REACT container is custom for grid-only purposes too (the container holds
-    // the React-ness, not the group's view type), so autoselect must be skipped just like for a classic custom group
+    // a list group whose rows a React view draws is custom for grid-only purposes too (the view holds the React-ness,
+    // not the group's view type), so autoselect must be skipped just like for a classic custom group
     public boolean isGroupReact(FormInstanceContext context) {
         GroupObjectEntity toDraw;
-        return context.view != null && isList(context) && (toDraw = getToDraw(context.entity)) != null && context.view.isReactContainerGroup(toDraw);
+        return context.view != null && isList(context) && (toDraw = getToDraw(context.entity)) != null && context.view.isReactDrawnGroup(toDraw);
     }
 
     public boolean isGroupSimpleState(FormInstanceContext context) {

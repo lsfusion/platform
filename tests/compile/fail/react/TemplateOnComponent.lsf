@@ -1,0 +1,17 @@
+MODULE TemplateOnComponent;
+
+REQUIRE System;
+
+// a component that is not a container takes NULL or a React component, which draws what it shows: a template, '' and
+// a property lay out the children of a container, which it has none of
+CLASS TemplateItem;
+templateQty = DATA INTEGER (TemplateItem);
+
+FORM templateOnComponent
+    OBJECTS i = TemplateItem
+    PROPERTIES(i) templateQty
+;
+
+DESIGN templateOnComponent {
+    GRID(i) { custom = '<div class="frame">rows</div>'; }
+}

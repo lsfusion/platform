@@ -1,0 +1,34 @@
+MODULE ComponentViews;
+
+REQUIRE System;
+
+// a component that is not a container drawn by a React component of its own: a grid, a tree's grid, a toolbar, filter
+// controls and a filter group each draw what they show of their group or their tree - in a classic form, the rest of
+// it the platform's, each view a root of its own; and inside a react container, which places such a view as it places
+// any view of its own
+CLASS ComponentViewItem;
+componentViewQty = DATA INTEGER (ComponentViewItem);
+componentViewParent = DATA ComponentViewItem (ComponentViewItem);
+
+FORM componentViews
+    OBJECTS i = ComponentViewItem
+    PROPERTIES(i) componentViewQty
+    FILTERGROUP stock FILTER 'Has a quantity' componentViewQty(i)
+    OBJECTS j = ComponentViewItem
+    PROPERTIES(j) componentViewQty
+    TREE tree t = ComponentViewItem PARENT componentViewParent(t)
+    PROPERTIES(t) componentViewQty
+;
+
+DESIGN componentViews {
+    GRID(i) { custom = 'ComponentViewGrid'; }
+    TOOLBARSYSTEM(i) { custom = 'ComponentViewToolbar'; }
+    FILTERCONTROLS(i) { custom = 'ComponentViewControls'; }
+    FILTERGROUP(stock) { custom = 'ComponentViewStock'; }
+    GRID(TREE tree) { custom = 'ComponentViewTree'; }
+    NEW board {
+        custom = 'ComponentViewBoard';
+        MOVE BOX(j);
+    }
+    TOOLBARSYSTEM(j) { custom = 'ComponentViewPlaced'; } // inside what the board draws: the board places it
+}

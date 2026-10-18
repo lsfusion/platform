@@ -56,6 +56,10 @@ public abstract class ClientComponent extends ClientIdentityObject {
     public boolean defaultComponent;
 
     public boolean platformDrawn; // keeps its lsFusion view inside a CUSTOM REACT container, which places it
+    // its own custom view: a React component's name or a container's design - which only the web client draws, so this
+    // client lays the component out with the platform's view anyway
+    public String custom = null;
+    public boolean react = false; // custom holds the React component name
 
     public ClientComponent() {
     }
@@ -116,6 +120,8 @@ public abstract class ClientComponent extends ClientIdentityObject {
         defaultComponent = inStream.readBoolean();
 
         platformDrawn = inStream.readBoolean();
+        custom = pool.readString(inStream);
+        react = inStream.readBoolean();
 
         sID = pool.readString(inStream);
     }

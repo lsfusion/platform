@@ -84,6 +84,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         component.container = convertOrCast(clientComponent.container);
         component.defaultComponent = clientComponent.defaultComponent;
         component.platformDrawn = clientComponent.platformDrawn;
+        component.custom = clientComponent.custom;
+        component.react = clientComponent.react;
 
         component.elementClass = clientComponent.elementClass;
 
@@ -164,8 +166,6 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         container.lineSize = clientContainer.lineSize;
         container.captionLineSize = clientContainer.captionLineSize;
         container.lineShrink = clientContainer.lineShrink;
-        container.custom = clientContainer.custom;
-        container.react = clientContainer.react;
 
         for (ClientComponent child : clientContainer.children) {
             GComponent childComponent = convertOrCast(child);

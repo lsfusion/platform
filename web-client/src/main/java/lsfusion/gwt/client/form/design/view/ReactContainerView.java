@@ -8,7 +8,6 @@ import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.*;
@@ -22,7 +21,7 @@ public class ReactContainerView extends ParkedContainerView {
 
     private final ReactRoot root;
     // this container's state in the form's projection: what its `props.data` is built from, and its `props.controller`
-    private final GReactFormData.ContainerState state;
+    private final GReactFormData.ViewState state;
 
     // the components this view places, by the name a <Platform> gives them (getName): those it is the React place of (GComponent.getReactPlace, the rule the
     // layout and the projection ask too) - its children and what is inside the containers it draws itself. What a
@@ -82,21 +81,12 @@ public class ReactContainerView extends ParkedContainerView {
         // THIS projection's controller: it names what this container's own `props.data` carries and nothing else -
         // a view that cannot see its neighbour does not name it either. The classic surfaces (a custom group view, a
         // custom cell editor, an INTERNAL CLIENT action) keep the form's own controller
-        state = formController.addReactContainer(container, this::updateData);
-        root = new ReactRoot(container.getCustom(), state.controller, new ReactRoot.Placement() {
+        state = formController.addReactView(container, this::updateData);
+        root = new ReactRoot(container.getCustom(), state.controller, new ReactViewPlacement(formController, state) {
+            // a name given no row: one view of what this view places
             @Override
-            public void mount(String name, Element host, JavaScriptObject row) {
-                getPlacement(name, row).mount(host);
-            }
-
-            @Override
-            public void unmount(String name, Element host, JavaScriptObject row) {
-                getPlacement(name, row).unmount(host);
-            }
-
-            @Override
-            public ReactRoot.Host getHost() {
-                return new ReactRoot.MarkedHost(); // a host here holds a view of the form, which the layout styles by its marks
+            PlatformPlacement placeView(String name) {
+                return new PlatformViewPlacement(name);
             }
 
             // the entry a name keys: a property's where its name says - data.o.note -, any other component's descriptor
@@ -104,7 +94,7 @@ public class ReactContainerView extends ParkedContainerView {
             @Override
             public JavaScriptObject entryOf(JavaScriptObject data, String name) {
                 GComponent component = placeable.get(name);
-                return component instanceof GPropertyDraw ? state.entryOf(data, (GPropertyDraw) component) : ReactRoot.Placement.super.entryOf(data, name);
+                return component instanceof GPropertyDraw ? state.entryOf(data, (GPropertyDraw) component) : super.entryOf(data, name);
             }
 
             // whether the component shows a container it draws itself - kept, and the server told with the placements
@@ -134,7 +124,7 @@ public class ReactContainerView extends ParkedContainerView {
 
     // what is under the container whose React place it is: the design is fixed, so this is taken once. Not a grid
     // property: it is no view of its own here - a platform-drawn one's renderers are placed per row by the view that
-    // draws its group's rows (getPlacement), any other's cells are drawn there - and it is parked in its group's box,
+    // draws its group's rows (ReactViewPlacement), any other's cells are drawn there - and it is parked in its group's box,
     // which says nothing about where its rows are, so its name would claim a place a panel property of the same name
     // has
     private void addPlaceable(GComponent component) {
@@ -179,54 +169,8 @@ public class ReactContainerView extends ParkedContainerView {
         super.removeImpl(index);
     }
 
-    // HOW a <Platform name> places what it names, decided here, once per mount and unmount, into one kind: what the
-    // name names here - a component by its design identifier, a property by the name the view has for it, o.qty -, one
-    // view of it, or, for a platform-drawn grid property of a group this view draws, its renderer for the row given,
-    // which has to be a row of that group (a tree's row of a group below passes, narrowed to the path down to it, as a
-    // group's change(row) takes it); and a placement that can never work, its mistake shown in the host - a
-    // platform-drawn grid property with no row, a row that is no row or not the group's, a row for what has one view.
-    // Mount and unmount are called back by the host's ref, the cleanup the exact inverse (F1): both are given the same
-    // name and row, so both get the same kind. React runs every ref detach of a commit before any attach, so a mount
-    // can never race an unmount of the same child: a second live host for one name is always a duplicate, never a
-    // legitimate move
-    private PlatformPlacement getPlacement(String name, JavaScriptObject row) {
-        GPropertyDraw property = state.getRowPlatformProperty(name);
-        if (row == null) {
-            if (property == null)
-                return new PlatformViewPlacement(name);
-            // without the row the host would wait for a single view that is never built - silently, for good
-            return new FailedPlatformPlacement(new PlacedViews.Problem(
-                    "'" + name + "' is drawn per row, so its <Platform> needs a row",
-                    "'" + name + "' is a property the platform draws per row: its <Platform> is given the row it"
-                            + " belongs to - <Platform name=\"" + name + "\" row={row}/> -, since each row has a"
-                            + " renderer of its own"));
-        }
-        GGroupObjectValue key = GGroupObjectValue.resolveObject(row);
-        if (key == null)
-            return new FailedPlatformPlacement(new PlacedViews.Problem(
-                    "the `row` given to '" + name + "' is not a row",
-                    "the `row` passed to '" + name + "' does not identify a row: pass the row object from the projected"
-                            + " data, not its key"));
-        if (property == null)
-            return new FailedPlatformPlacement(new PlacedViews.Problem(
-                    "'" + name + "' is not a grid property this view places per row",
-                    "'" + name + "' is given a row, but it names no grid property the platform draws of a group container '"
-                            + container.sID + "' draws - group, then integration name, as its column entry is keyed -,"
-                            + " so nothing is drawn per row for it here"));
-        GGroupObjectValue rowKey = property.groupObject.getRowKey(key);
-        if (rowKey == null)
-            return new FailedPlatformPlacement(new PlacedViews.Problem(
-                    "the `row` given to '" + name + "' is not a row of '" + property.groupObject.getSID() + "'",
-                    "the `row` passed to '" + name + "' is a row of another group: '" + name + "' is drawn per row of '"
-                            + property.groupObject.getSID() + "'"));
-        return new PlatformRowPlacement(name, property, rowKey);
-    }
-    private abstract static class PlatformPlacement {
-        abstract void mount(Element host);
-        abstract void unmount(Element host);
-    }
-    // ... one view, mounted in the host claimed for it (`placed`)
-    private final class PlatformViewPlacement extends PlatformPlacement {
+    // one view, mounted in the host claimed for it (`placed`)
+    private final class PlatformViewPlacement extends ReactViewPlacement.PlatformPlacement {
         final String name;
 
         PlatformViewPlacement(String name) {
@@ -245,50 +189,6 @@ public class ReactContainerView extends ParkedContainerView {
             scheduleReconcile();
         }
     }
-    // ... a renderer per row: the row says which goes in the host, and the rows panel controller of the rows holds
-    // them. A row React unmounts - scrolled out, say - sends its renderer back to waiting, it is NOT dropped
-    private final class PlatformRowPlacement extends PlatformPlacement {
-        final String name;
-        final GPropertyDraw property;
-        final GGroupObjectValue rowKey;
-
-        PlatformRowPlacement(String name, GPropertyDraw property, GGroupObjectValue rowKey) {
-            this.name = name;
-            this.property = property;
-            this.rowKey = rowKey;
-        }
-
-        @Override
-        void mount(Element host) {
-            // the property, not the name JSX used: the ledger of who holds which row is the property's own
-            if (formController.getRowsPanelController(property).place(rowKey, property, host) != null)
-                PlacedViews.reportDuplicate(name, host); // another <Platform> already placed this property for this row
-        }
-
-        @Override
-        void unmount(Element host) {
-            formController.getRowsPanelController(property).unplace(rowKey, property, host);
-        }
-    }
-    // ... and one that can never work: its mistake is shown in the host, which holds it until the host goes
-    private static final class FailedPlatformPlacement extends PlatformPlacement {
-        final PlacedViews.Problem problem;
-
-        FailedPlatformPlacement(PlacedViews.Problem problem) {
-            this.problem = problem;
-        }
-
-        @Override
-        void mount(Element host) {
-            problem.show(host);
-        }
-
-        @Override
-        void unmount(Element host) {
-            GwtClientUtils.clearCustomViewError(host);
-        }
-    }
-
     // Tell the server which platform-drawn children this view places, so the data of one it does not place is not read
     // - the way a tab strip tells it which page is active, and a collapse header whether it is collapsed. What is sent
     // is the STATE, worked out from the placements as they stand, never from the mount / unmount that changed them: a

@@ -186,7 +186,7 @@ public class GReactFormDataTest extends GWTTestCase {
         final GContainer box = container(4);
         final GReactFormData projection;
         final Controllers controllers;
-        final GReactFormData.ContainerState sa, sb, sc;
+        final GReactFormData.ViewState sa, sb, sc;
         final JavaScriptObject[] snapshots = new JavaScriptObject[3];
         final int[] publications = new int[3];
         Runnable onPublish;
@@ -232,8 +232,13 @@ public class GReactFormDataTest extends GWTTestCase {
         // ... and the filters' keys it bound, each while the container it names is shown and its part says the form
         // shows the filter group
         final ArrayList<GFormController.BindingExec> filterKeys = new ArrayList<>();
-        final ArrayList<GContainer> filterKeyScopes = new ArrayList<>();
+        final ArrayList<GComponent> filterKeyScopes = new ArrayList<>();
         final ArrayList<java.util.function.Supplier<Boolean>> filterKeyShown = new ArrayList<>();
+        // the React views of components that are not containers, each made after the containers', as the layout makes
+        // them (GFormLayout.addReactView) - only in a test that asks (ownView) -, and what each was last given
+        final ArrayList<GComponent> ownViews = new ArrayList<>();
+        final LinkedHashMap<GComponent, GReactFormData.ViewState> ownStates = new LinkedHashMap<>();
+        final LinkedHashMap<GComponent, JavaScriptObject> ownSnapshots = new LinkedHashMap<>();
         // the group's filter input controller where the toolbar has its button - only in a test that asks
         PanelDouble filter;
         // ... and the platform's table whose views the toolbar switches - only in a test that asks
@@ -331,7 +336,7 @@ public class GReactFormDataTest extends GWTTestCase {
                     edits.add("regularFilter " + filterGroup.sID + " " + (filter != null ? filter.caption : "none"));
                     controllers.filterGroups.get(filterGroup).showFilter(filter);
                 }
-                public int addRegularFilterBinding(GInputBindingEvent event, GFormController.BindingExec pressed, GContainer scope, java.util.function.Supplier<Boolean> shown, GGroupObject groupObject) {
+                public int addRegularFilterBinding(GInputBindingEvent event, GFormController.BindingExec pressed, GComponent scope, java.util.function.Supplier<Boolean> shown, GGroupObject groupObject) {
                     filterKeys.add(pressed); filterKeyScopes.add(scope); filterKeyShown.add(shown);
                     return filterKeys.size() - 1;
                 }
@@ -357,9 +362,11 @@ public class GReactFormDataTest extends GWTTestCase {
                     }
                 }
             });
-            sa = projection.addContainer(a, data -> publish(0, data));
-            sb = projection.addContainer(b, data -> publish(1, data));
-            sc = projection.addContainer(c, data -> publish(2, data));
+            sa = projection.addView(a, data -> publish(0, data));
+            sb = projection.addView(b, data -> publish(1, data));
+            sc = projection.addView(c, data -> publish(2, data));
+            for (GComponent component : ownViews)
+                ownStates.put(component, projection.addView(component, data -> ownSnapshots.put(component, data)));
             controllers = new Controllers(projection, form, platform, platformComponents, filter, views);
             formFilters.controllers = controllers;
             formOrders.controllers = controllers;
@@ -401,6 +408,15 @@ public class GReactFormDataTest extends GWTTestCase {
             controls.ID = 13; controls.sID = "FILTERCONTROLS(items)"; controls.container = scope; scope.children.add(controls);
             group.grid.filterControls = controls;
         }
+        // a component that is not a container drawn by a React component of its own - `custom = 'Own'` -, its view
+        // made with the containers' (ownViews): placed by the react container it stands in, if any, as the server says
+        // of a component with a view of its own there (FormView.isPlatformDrawn)
+        void ownView(GComponent component) {
+            component.custom = "Own"; component.react = true;
+            component.platformDrawn = component.getReactPlace() != null;
+            ownViews.add(component);
+        }
+        JavaScriptObject ownData(GComponent component) { return ownSnapshots.get(component); }
         // the additions a test asks for
         static Fixture withOuter() { return new Fixture(Fixture::addOuter); }
         static Fixture withNote() { return new Fixture(f -> f.note = f.property(25, "note", f.group, false, f.a)); }
@@ -535,7 +551,7 @@ public class GReactFormDataTest extends GWTTestCase {
         public boolean isManualUpdate(GGroupObject group) { return group.enableManualUpdate; }
         public String getRefusal(String surface) { return batching ? batchRefusal(surface) : null; }
         public void changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) { }
-        public int addRegularFilterBinding(GInputBindingEvent event, GFormController.BindingExec pressed, GContainer scope, java.util.function.Supplier<Boolean> shown, GGroupObject groupObject) { return -1; }
+        public int addRegularFilterBinding(GInputBindingEvent event, GFormController.BindingExec pressed, GComponent scope, java.util.function.Supplier<Boolean> shown, GGroupObject groupObject) { return -1; }
         // as the form does: the request numbered and sent, the group's controller told of it
         public void expandNode(GGroupObject group, GGroupObjectValue key) {
             controllers.groups.get(group).changeExpanded(key, true, ask("expand " + group.getSID() + " " + key.toKeyString()));
@@ -607,7 +623,7 @@ public class GReactFormDataTest extends GWTTestCase {
         final GGroupObjectValue c1 = new GGroupObjectValue(60, 1), c2 = new GGroupObjectValue(60, 2);
         final GGroupObjectValue i15 = itemKey(1, 5), i16 = itemKey(1, 6), i27 = itemKey(2, 7);
         final GReactFormData projection;
-        final GReactFormData.ContainerState sa; // the container the tree is drawn in: its controller
+        final GReactFormData.ViewState sa; // the container the tree is drawn in: its controller
         final Controllers controllers;
         // the platform's controller of a group and of a property, as far as the form hands it on
         final RecordingTableController platform = new RecordingTableController();
@@ -620,7 +636,7 @@ public class GReactFormDataTest extends GWTTestCase {
         int publications;
         // a second react container beside a, where a test puts a part of the tree in one (b()): its state
         GContainer b;
-        GReactFormData.ContainerState sb;
+        GReactFormData.ViewState sb;
 
         TreeFixture() {
             this(f -> { });
@@ -641,9 +657,9 @@ public class GReactFormDataTest extends GWTTestCase {
             addition.accept(this);
             projection = new GReactFormData(form, GComponent::getReactPlace, verbs);
             verbs.projection = projection;
-            sa = projection.addContainer(a, d -> { data = d; publications++; });
+            sa = projection.addView(a, d -> { data = d; publications++; });
             if (b != null)
-                sb = projection.addContainer(b, d -> { });
+                sb = projection.addView(b, d -> { });
             controllers = new Controllers(projection, form, platform, platformComponents, filter, null);
             verbs.controllers = controllers;
             verbs.filters.controllers = controllers;
@@ -1171,7 +1187,7 @@ public class GReactFormDataTest extends GWTTestCase {
         try { member.change(value, row); return null; } catch (e) { return e.message; }
     }-*/;
     // a member of a view's controller, at a group (null: the empty group, the controller itself)
-    private static JavaScriptObject member(GReactFormData.ContainerState state, String group, String name) {
+    private static JavaScriptObject member(GReactFormData.ViewState state, String group, String name) {
         JavaScriptObject owner = group == null ? state.controller : field(state.controller, group);
         return owner == null ? null : field(owner, name);
     }
@@ -1210,7 +1226,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // whether a view's controller has a property's member under the name, at a group (null: the empty group, the
     // controller itself): an object of the verbs a property member answers to. The name says which property - the one
     // the view's node of the group carries under it
-    private static boolean hasMember(GReactFormData.ContainerState state, String group, String name) {
+    private static boolean hasMember(GReactFormData.ViewState state, String group, String name) {
         JavaScriptObject owner = group == null ? state.controller : field(state.controller, group);
         return owner != null && own(owner, name) && "function".equals(typeOf(field(owner, name), "exec"));
     }
@@ -1863,10 +1879,10 @@ public class GReactFormDataTest extends GWTTestCase {
         RecordingTableController platform = new RecordingTableController();
         GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs);
         final JavaScriptObject[] published = new JavaScriptObject[1];
-        projection.addContainer(f.a, data -> { });
-        projection.addContainer(f.b, data -> { });
-        projection.addContainer(f.c, data -> { });
-        projection.addContainer(details, data -> published[0] = data); // GFormLayout builds the record's containers too
+        projection.addView(f.a, data -> { });
+        projection.addView(f.b, data -> { });
+        projection.addView(f.c, data -> { });
+        projection.addView(details, data -> published[0] = data); // GFormLayout builds the record's containers too
         Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
         NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
         values.put(GGroupObjectValue.EMPTY, PValue.getPValue(5));
@@ -1888,9 +1904,9 @@ public class GReactFormDataTest extends GWTTestCase {
         RecordingTableController platform = new RecordingTableController();
         GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs);
         final JavaScriptObject[] published = new JavaScriptObject[1];
-        GReactFormData.ContainerState sa = projection.addContainer(f.a, data -> published[0] = data);
-        projection.addContainer(f.b, data -> { });
-        projection.addContainer(f.c, data -> { });
+        GReactFormData.ViewState sa = projection.addView(f.a, data -> published[0] = data);
+        projection.addView(f.b, data -> { });
+        projection.addView(f.c, data -> { });
         Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
         controllers.groups.get(f.group).updateKeys(f.group, rows(f.one), null, 0);
         projection.flush();
@@ -2159,9 +2175,9 @@ public class GReactFormDataTest extends GWTTestCase {
             placements[0]++;
             return component.getReactPlace();
         }, f.verbs);
-        projection.addContainer(f.a, data -> { });
-        projection.addContainer(f.b, data -> { });
-        projection.addContainer(f.c, data -> { });
+        projection.addView(f.a, data -> { });
+        projection.addView(f.b, data -> { });
+        projection.addView(f.c, data -> { });
         Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
         GReactFormData.Rows rows = projection.getRows(f.group); // bound once, while the form is built
         int placed = placements[0];
@@ -2221,9 +2237,9 @@ public class GReactFormDataTest extends GWTTestCase {
         RecordingTableController platform = new RecordingTableController();
         GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs);
         final JavaScriptObject[] published = new JavaScriptObject[1];
-        projection.addContainer(f.a, data -> { });
-        projection.addContainer(f.b, data -> published[0] = data);
-        projection.addContainer(f.c, data -> { });
+        projection.addView(f.a, data -> { });
+        projection.addView(f.b, data -> published[0] = data);
+        projection.addView(f.c, data -> { });
         Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
         NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
         values.put(GGroupObjectValue.EMPTY, PValue.getPValue("Go"));
@@ -2309,9 +2325,9 @@ public class GReactFormDataTest extends GWTTestCase {
         RecordingTableController platform = new RecordingTableController();
         GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs);
         final JavaScriptObject[] published = new JavaScriptObject[1];
-        projection.addContainer(f.a, data -> published[0] = data);
-        projection.addContainer(f.b, data -> { });
-        projection.addContainer(f.c, data -> { });
+        projection.addView(f.a, data -> published[0] = data);
+        projection.addView(f.b, data -> { });
+        projection.addView(f.c, data -> { });
         Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
         controllers.groups.get(f.group).updateKeys(f.group, rows(f.one, f.two), null, 0);
         projection.flush();
@@ -4804,6 +4820,90 @@ public class GReactFormDataTest extends GWTTestCase {
         assertNodeReserved("the toolbar", field(toolbar.snapshots[2], "items"), field(toolbar.sc.controller, "items"), "",
                 ReactProjectionNames.NODE_OWN, ReactProjectionNames.TOOLBAR_PART);
     }
+    // A COMPONENT'S OWN REACT VIEW: a component that is not a container whose custom is a React component draws what
+    // it shows of its group - GRID(o) { custom = 'X'; }, as NEW w { custom = 'X'; MOVE GRID(o); } draws it -: the
+    // grid's rows, a part of the group on the group's node in its view, with the entries of their columns and the
+    // group's change(row); none of it the platform's, nor in a react container beside it
+    public void testAGridOfItsOwnDrawsTheRows() {
+        Fixture f = new Fixture(fixture -> { fixture.rowsByThePlatform(); fixture.ownView(fixture.group.grid); });
+        assertFalse(f.controllers.gridRows.get(f.group) instanceof RecordingTableController);
+        JavaScriptObject node = field(f.ownData(f.group.grid), "items");
+        assertEquals(2, length(field(node, "list")));
+        assertEquals(10.0, value(field(field(node, "byKey"), "1"), "price"), 0.0);
+        assertNotNull(field(node, "quantity")); // a column's entry
+        assertNotNull(member(f.ownStates.get(f.group.grid), "items", "change"));
+        assertNull(field(f.data(), "items")); // a, beside it, has no node of the group
+        assertFalse(own(f.ownData(f.group.grid), "grid")); // its own descriptor is not in its view
+    }
+
+    // ... and inside a react container it is placed there, as a component with a view of its own: the container
+    // carries its descriptor and nothing of its rows, which its own view draws
+    public void testAGridOfItsOwnInAContainerIsPlacedThere() {
+        Fixture f = new Fixture(fixture -> fixture.ownView(fixture.group.grid)); // the grid in a
+        assertTrue(f.group.grid.platformDrawn);
+        assertNotNull(field(f.data(), "grid")); // a's entry of it, which labels what a places
+        assertNull(field(f.data(), "items"));
+        assertEquals(2, length(field(field(f.ownData(f.group.grid), "items"), "list")));
+    }
+
+    // a view the layout has not built - what a REMOVEd component would have - draws nothing: the platform's rows
+    public void testAComponentWithNoViewBuiltIsThePlatforms() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.rowsByThePlatform();
+            fixture.group.grid.custom = "Own"; fixture.group.grid.react = true; // ... and no view of it
+        });
+        assertTrue(f.controllers.gridRows.get(f.group) instanceof RecordingTableController);
+    }
+
+    // a TOOLBARSYSTEM of its own is the toolbar's part on the group's node in its view, all its buttons - over the
+    // rows a react container draws, or over the platform's -, and the container drawing the rows has none of them
+    public void testAToolbarOfItsOwnDrawsTheButtons() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.toolbarIn(fixture.form.mainContainer);
+            fixture.ownView(fixture.group.grid.toolbar);
+        });
+        GReactFormData.ViewState toolbar = f.ownStates.get(f.group.grid.toolbar);
+        assertFalse(f.controllers.toolbars.get(f.group) instanceof ToolbarDouble);
+        assertTrue(isFalse(field(f.ownData(f.group.grid.toolbar), "items"), "manual"));
+        assertEquals("export,filterControlsVisible,getCount,getSum,listView,manual,update", keysOf(field(toolbar.controller, "items")));
+        assertFalse(own(field(f.data(), "items"), "manual")); // a draws the rows, not the toolbar
+        assertNull(member(f.sa, "items", "getCount"));
+
+        Fixture platform = new Fixture(fixture -> {
+            fixture.rowsByThePlatform();
+            fixture.toolbarIn(fixture.form.mainContainer);
+            fixture.ownView(fixture.group.grid.toolbar);
+        });
+        assertTrue(platform.controllers.gridRows.get(platform.group) instanceof RecordingTableController);
+        assertNotNull(member(platform.ownStates.get(platform.group.grid.toolbar), "items", "getCount"));
+    }
+
+    // FILTERCONTROLS of their own are the controls' part on the group's node in their view
+    public void testFilterControlsOfTheirOwnAreThePart() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.filterControlsIn(fixture.form.mainContainer);
+            fixture.ownView(fixture.group.grid.filterControls);
+        });
+        GReactFormData.ViewState controls = f.ownStates.get(f.group.grid.filterControls);
+        assertEquals("addFilter,applyFilters,resetFilters", keysOf(field(controls.controller, "items")));
+        assertTrue(isFalse(field(f.ownData(f.group.grid.filterControls), "items"), "filtersPending"));
+        assertFalse(has(field(f.sa.controller, "items"), "addFilter"));
+    }
+
+    // a FILTERGROUP of its own is the filter group's part on its group's node in its view, its keys bound to that view
+    public void testAFilterGroupOfItsOwnIsThePart() {
+        GRegularFilterGroup[] stock = new GRegularFilterGroup[1];
+        Fixture f = new Fixture(fixture -> {
+            stock[0] = fixture.filterGroupIn(fixture.form.mainContainer, false);
+            fixture.ownView(stock[0]);
+        });
+        JavaScriptObject entry = field(field(f.ownData(stock[0]), "items"), "stock");
+        assertEquals("In stock,Out of stock", join(field(entry, "filters")));
+        assertNotNull(member(f.ownStates.get(stock[0]), "items", "stock"));
+        assertSame(stock[0], f.filterKeyScopes.get(0)); // its F10, taken while its own view is shown
+        assertTrue(f.filterKeyShown.get(0).get()); // ... with no descriptor of its own there to say it is hidden
+    }
+
     // ... a group's node: what the parts on it write in data.<g> and on controller.<g>
     private static void assertNodeReserved(String what, JavaScriptObject node, JavaScriptObject member, String aside, String... lists) {
         assertReserved(what + ", in data", node, aside, lists);

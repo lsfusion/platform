@@ -219,18 +219,14 @@ public class GFormLayout extends SizedFlexPanel {
                 addPlacedContainers(child);  // platform-drawn containers inside it, which this react container places
                 continue;
             }
-            if(child instanceof GGrid)
-                child = ((GGrid)child).record;
-            if (child instanceof GContainer) {
-                addContainers((GContainer) child);
-            }
+            addViews(child);
         }
     }
     // inside a component React draws itself - a container's children, a grid's record (it is where its grid is): a
-    // platform-drawn container gets its view - its parent has none, so add hands the view to the react container that
-    // places it - and is built on as any other, as is a platform-drawn grid's record; anything else is walked for more
-    // of them. A platform-drawn base component's view comes from its controller, and reaches that react container the
-    // same way
+    // platform-drawn container gets its view - its parent has none, so add hands the view to the React view that
+    // places it - and is built on as any other, as is a platform-drawn grid's record and a component's React view;
+    // anything else is walked for more of them. A platform-drawn base component's view comes from its controller, and
+    // reaches that React view the same way
     private void addPlacedContainers(GComponent drawn) {
         for (GComponent child : drawn.getChildren())
             addPlacedContainer(child);
@@ -238,22 +234,37 @@ public class GFormLayout extends SizedFlexPanel {
     private void addPlacedContainer(GComponent component) {
         if (!component.isPlatformDrawn())
             addPlacedContainers(component);
-        else {
-            if (component instanceof GGrid)
-                component = ((GGrid) component).record;
-            if (component instanceof GContainer)
-                addContainers((GContainer) component);
-        }
+        else
+            addViews(component);
+    }
+    // the views built here of a component the platform draws or places: a container's, and what it holds; a grid's
+    // record's - it is where its grid is -; and the React view of a component that is not a container whose custom is
+    // a React component, which nothing else builds - no controller of the platform's draws it -, and which holds no
+    // view (FormView.checkCustomReactComponents). Any other base component's view comes from its controller
+    private void addViews(GComponent component) {
+        if (component instanceof GContainer)
+            addContainers((GContainer) component);
+        else if (component.isReact())
+            addReactView(component);
+        else if (component instanceof GGrid && ((GGrid) component).record != null)
+            addContainers(((GGrid) component).record);
+    }
+    // ... the React view of a component that is not a container: put where the component stands, as its platform view
+    // would be - its base component view (addBaseComponent), which its SHOWIF and its class go to -, and placed by the
+    // React view it is in, if any, as any view of its own
+    private void addReactView(GComponent component) {
+        addBaseComponent(component, new ReactBaseComponentView(form, component).getView(), null);
     }
 
     // the container view that holds a component's view: its container's - or, for a component inside a container React
-    // draws itself, which has no view, the view of the react container that places it
+    // draws itself, which has no view, the view of the react container that places it; a React view of a component
+    // that is not a container holds none (FormView.checkCustomReactComponents)
     private GAbstractContainerView getHoldingView(GComponent component) {
         GAbstractContainerView view = containerViews.get(component.container);
         if (view == null) {
-            GContainer place = component.getReactPlace();
-            if (place != null)
-                view = containerViews.get(place);
+            GComponent place = component.getReactPlace();
+            if (place instanceof GContainer)
+                view = containerViews.get((GContainer) place);
         }
         return view;
     }
@@ -310,9 +321,14 @@ public class GFormLayout extends SizedFlexPanel {
         updateComponentClass(valueClass, containerViews.get(component).getView(), "value");
     }
 
+    // the class of a table's cells, and below a tree's hierarchical caption: the platform's table's, which a table drawn
+    // by a React view of its own does not have - the view draws its rows itself, and these say nothing to it, as
+    // nothing of a table React draws inside a react container is drawn by them (the projection carries neither)
     public void setValueClass(GGridProperty component, String valueClass) {
         component.valueClass = valueClass;
 
+        if (component.isReact())
+            return;
         TableContainer tableContainer = (TableContainer)baseComponentViews.get(component).getSingleWidget().widget;
         tableContainer.updateElementClass(component);
     }
@@ -320,6 +336,8 @@ public class GFormLayout extends SizedFlexPanel {
     public void setHierarchicalCaption(GTreeGroup component, String hierarchicalCaption) {
         component.hierarchicalCaption = hierarchicalCaption;
 
+        if (component.isReact())
+            return;
         TableContainer tableContainer = (TableContainer)baseComponentViews.get(component).getSingleWidget().widget;
         tableContainer.updateHierarchicalCaption(component);
     }
@@ -447,7 +465,7 @@ public class GFormLayout extends SizedFlexPanel {
                 ComponentViewWidget childView = baseComponentViews.get(child); // we have to use baseComponentView (and not a wrapper in getChildView), since it has relevant visible state
                 childVisible = childView != null && childView.isVisible();
 
-                if (child instanceof GGrid) {
+                if (child instanceof GGrid && !child.isReact()) { // a React view of the grid has no record views
                     GContainer record = ((GGrid) child).record;
                     if(record != null)
                         updateContainersVisibility(record, requestIndex);

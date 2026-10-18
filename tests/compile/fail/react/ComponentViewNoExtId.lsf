@@ -1,0 +1,17 @@
+MODULE ComponentViewNoExtId;
+
+REQUIRE System;
+
+// a grid drawn by a React component of its own draws its group's rows, and a property of them it draws has to have a
+// name there, as in a react container
+CLASS NamelessViewItem;
+namelessViewQty = DATA INTEGER (NamelessViewItem);
+
+FORM componentViewNoExtId
+    OBJECTS i = NamelessViewItem
+    PROPERTIES(i) namelessViewQty NOEXTID
+;
+
+DESIGN componentViewNoExtId {
+    GRID(i) { custom = 'NamelessViewGrid'; }
+}

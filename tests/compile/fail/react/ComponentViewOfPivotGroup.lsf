@@ -1,0 +1,17 @@
+MODULE ComponentViewOfPivotGroup;
+
+REQUIRE System;
+
+// a table drawn by a React component of its own draws its group's rows, which a React view draws in the default GRID
+// view only (PivotRowsInReact): a group the form puts in PIVOT view is refused there too
+CLASS PivotViewItem;
+pivotViewQty = DATA INTEGER (PivotViewItem);
+
+FORM componentViewOfPivotGroup
+    OBJECTS i = PivotViewItem PIVOT
+    PROPERTIES(i) pivotViewQty
+;
+
+DESIGN componentViewOfPivotGroup {
+    GRID(i) { custom = 'PivotViewGrid'; }
+}
