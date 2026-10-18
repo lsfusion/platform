@@ -1728,6 +1728,16 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
         executePropertyEventAction(new EventHandler(bindingEvent), true, editContext);
     }
+    // ... and of a property or an action no cell of which the platform draws - a React view draws it
+    // (GReactFormData.ReactPropertyEntry.onBinding): what the binding of a cell does, with no cell to focus - its change
+    // event, asked first where the property asks (CONFIRM), for the current objects, the cell loading as a member's
+    // change leaves it
+    @Override
+    public void pressProperty(GPropertyDraw property, Event event) {
+        String actionSID = property.getEventSID(event, true, null, null);
+        confirmPropertyEventAction(property, actionSID, getPopupOwner(), () -> executePropertyEventAction(property, GGroupObjectValue.EMPTY, actionSID,
+                GEventSource.BINDING, requestIndex -> setLoadingValueAt(property, GGroupObjectValue.EMPTY, PValue.UNDEFINED, requestIndex)));
+    }
 
     public void executePropertyEventAction(EventHandler handler, ExecuteEditContext editContext) {
         executePropertyEventAction(handler, false, editContext);
@@ -1774,14 +1784,17 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     }
 
     public void executePropertyEventAction(ExecuteEditContext editContext, String actionSID, GEventSource eventSource, EventHandler handler) {
-        GPropertyDraw property = editContext.getProperty();
+        confirmPropertyEventAction(editContext.getProperty(), actionSID, editContext.getPopupOwner(), () -> executePropertyEventActionConfirmed(editContext, actionSID, eventSource, handler));
+    }
+    // a change of a property that asks first (CONFIRM), run once the user says yes; any other event at once
+    private void confirmPropertyEventAction(GPropertyDraw property, String actionSID, PopupOwner popupOwner, Runnable run) {
         if (isChangeEvent(actionSID) && property.askConfirm) {
-            DialogBoxHelper.showConfirmBox("lsFusion", EscapeUtils.toHTML(property.askConfirmMessage, StaticImage.MESSAGE_WARN), editContext.getPopupOwner(), chosenOption -> {
+            DialogBoxHelper.showConfirmBox("lsFusion", EscapeUtils.toHTML(property.askConfirmMessage, StaticImage.MESSAGE_WARN), popupOwner, chosenOption -> {
                         if (chosenOption == DialogBoxHelper.OptionType.YES)
-                            executePropertyEventActionConfirmed(editContext, actionSID, eventSource, handler);
+                            run.run();
                     });
         } else
-            executePropertyEventActionConfirmed(editContext, actionSID, eventSource, handler);
+            run.run();
     }
 
     public void executePropertyEventActionConfirmed(ExecuteEditContext editContext, String actionSID, GEventSource eventSource, EventHandler handler) {

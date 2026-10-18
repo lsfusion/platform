@@ -30,6 +30,9 @@ import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.property.async.GAsyncInput;
+import lsfusion.gwt.client.form.property.async.GAsyncNoWaitExec;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.filter.GFilterGroupController;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
@@ -86,6 +89,7 @@ import lsfusion.gwt.client.form.property.GLoadingReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.GReadOnlyReader;
+import lsfusion.gwt.client.form.property.GPropertyEditType;
 import lsfusion.gwt.client.form.property.GRowBackgroundReader;
 import lsfusion.gwt.client.form.property.GRowForegroundReader;
 import lsfusion.gwt.client.form.property.GRowSelectReader;
@@ -341,6 +345,9 @@ public class GReactFormDataTest extends GWTTestCase {
                 public Widget getViewWidget(GComponent scope) {
                     return viewWidget(scope);
                 }
+                public void pressProperty(GPropertyDraw property, Event event) {
+                    edits.add("press " + property.integrationSID);
+                }
                 // ... and a call that asks the server, refused while a batch runs
                 public String getRefusal(String surface) {
                     return batching ? batchRefusal(surface) : null;
@@ -557,6 +564,7 @@ public class GReactFormDataTest extends GWTTestCase {
         public String getRefusal(String surface) { return batching ? batchRefusal(surface) : null; }
         public void changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) { }
         public Widget getViewWidget(GComponent scope) { return null; }
+        public void pressProperty(GPropertyDraw property, Event event) { }
         // as the form does: the request numbered and sent, the group's controller told of it
         public void expandNode(GGroupObject group, GGroupObjectValue key) {
             controllers.groups.get(group).changeExpanded(key, true, ask("expand " + group.getSID() + " " + key.toKeyString()));
@@ -841,6 +849,21 @@ public class GReactFormDataTest extends GWTTestCase {
         return container;
     }
     private static ArrayList<GGroupObjectValue> rows(GGroupObjectValue... keys) { return new ArrayList<>(Arrays.asList(keys)); }
+    // a property or an action with a key (CHANGEKEY), whose change asks a value in the cell or not, as the server says
+    // it (its async change: an input of its type, or an action run)
+    private static GPropertyDraw keyed(GPropertyDraw property, int keyCode, boolean asksValue) {
+        property.bindingEvents.add(new GInputBindingEvent(new GKeyInputEvent(new GKeyStroke(keyCode)), null));
+        property.hasUserChangeAction = true;
+        property.asyncExecMap = new HashMap<>();
+        property.asyncExecMap.put(GEditBindingMap.CHANGE, asksValue ? new GAsyncInput(new GStringType(GExtInt.UNLIMITED, false, false), false, null, null, null) : new GAsyncNoWaitExec());
+        return property;
+    }
+    // ... and whether its key, through the property's controller, ran what the platform's key runs (pressProperty)
+    private static boolean pressed(Fixture f, GPropertyDraw property) {
+        int before = f.edits.size();
+        f.controllers.properties.get(property).onBinding(property, null);
+        return f.edits.size() > before && f.edits.get(f.edits.size() - 1).equals("press " + property.integrationSID);
+    }
     // a property of a form, of a group or of none, a list one or not, drawn in scope - named by its name everywhere
     private static GPropertyDraw property(GForm form, int id, String name, GGroupObject group, boolean list, GContainer scope) {
         GPropertyDraw property = new GPropertyDraw();
@@ -4723,6 +4746,83 @@ public class GReactFormDataTest extends GWTTestCase {
         key.onBinding(cleared.filters.get(0));
         key.onBinding(cleared.filters.get(0)); // NONULL: the check box is cleared all the same
         assertEquals("regularFilter FILTERGROUP(stock) none", noNull.edits.get(noNull.edits.size() - 1));
+    }
+
+    // the key of an action a view draws is the platform's binding, which the form binds for every property, its
+    // controller - the action's entry - giving the widget it is taken with: the view's that draws it, while the form
+    // shows the action - its entry not `hidden`: not before its first delivery, nor once it is dropped -, pressed on the
+    // current objects, which a panel entry always has, running what the platform's key of its button runs
+    public void testAnActionAViewDrawsTakesItsKey() {
+        GPropertyDraw[] go = new GPropertyDraw[1];
+        Fixture f = new Fixture(fixture -> {
+            go[0] = keyed(fixture.property(45, "go", null, false, fixture.b), 118, false); // F7
+            go[0].valueType = GActionType.instance;
+        });
+        GPropertyController entry = f.controllers.properties.get(go[0]);
+        assertNull(entry.getBindingWidget(go[0])); // not delivered yet: its entry says `hidden`
+        GFormChanges shown = new GFormChanges(); put(shown, go[0], GGroupObjectValue.EMPTY, true); f.apply(shown);
+        assertSame(f.viewWidget(f.b), entry.getBindingWidget(go[0])); // the view that draws it
+        assertTrue(pressed(f, go[0]));
+        f.apply(drop(go[0]));
+        assertNull(entry.getBindingWidget(go[0])); // the form hides it: the key is not taken
+    }
+
+    // ... and of an action in the rows a view draws, on the current row, as a grid column's key is on its selected row:
+    // with no current row, it is not taken - left to the other bindings
+    public void testAListActionsKeyIsPressedOnTheCurrentRow() {
+        GPropertyDraw[] mark = new GPropertyDraw[1];
+        Fixture f = new Fixture(fixture -> {
+            mark[0] = keyed(fixture.property(46, "mark", fixture.group, true, fixture.a), 119, false); // F8
+            mark[0].valueType = GActionType.instance;
+        });
+        GFormChanges shown = new GFormChanges(); put(shown, mark[0], f.one, true); f.apply(shown);
+        GPropertyController entry = f.controllers.properties.get(mark[0]);
+        assertSame(f.viewWidget(f.a), entry.getBindingWidget(mark[0])); // where its rows are, with a current row
+        assertTrue(pressed(f, mark[0])); // for the current objects, which hold that row
+        f.controller(f.group).changeCurrentKey(null);
+        assertNull(entry.getBindingWidget(mark[0]));
+    }
+
+    // ... and not while the form shows it read only: on a cell READONLYIF it is not taken, as the platform's key of a
+    // cell does nothing there; one READONLY on the form takes no key at all
+    public void testAKeyIsNotPressedOnACellTheFormShowsReadOnly() {
+        GPropertyDraw[] p = new GPropertyDraw[2];
+        Fixture f = new Fixture(fixture -> {
+            p[0] = keyed(fixture.property(45, "go", null, false, fixture.b), 118, false); // F7
+            p[0].valueType = GActionType.instance;
+            p[0].readOnlyReader = new GReadOnlyReader(45, -1);
+            p[1] = keyed(fixture.property(46, "fixed", null, false, fixture.b), 119, false); // F8
+            p[1].editType = GPropertyEditType.READONLY;
+        });
+        GFormChanges shown = new GFormChanges(); put(shown, p[0], GGroupObjectValue.EMPTY, true); put(shown, p[1], GGroupObjectValue.EMPTY, 1); f.apply(shown);
+        GPropertyController go = f.controllers.properties.get(p[0]);
+        assertNotNull(go.getBindingWidget(p[0]));
+        assertNull(f.controllers.properties.get(p[1]).getBindingWidget(p[1])); // READONLY: no key
+        GFormChanges readOnly = new GFormChanges(); put(readOnly, p[0].readOnlyReader, GGroupObjectValue.EMPTY, true); f.apply(readOnly);
+        assertNull(go.getBindingWidget(p[0]));
+        GFormChanges editable = new GFormChanges(); put(editable, p[0].readOnlyReader, GGroupObjectValue.EMPTY, null); f.apply(editable);
+        assertNotNull(go.getBindingWidget(p[0]));
+    }
+
+    // a property a view draws takes its key where its change asks no value - its ON CHANGE runs an action -, as an
+    // action does. Not one whose change asks a value in the cell right away - a DATA property's default change, a
+    // scanner's field: the platform opens an editor in the cell for it, and the editor here is the view's -, nor one
+    // with no change
+    public void testAPropertysKeyIsTakenWhereItsChangeAsksNoValue() {
+        GPropertyDraw[] p = new GPropertyDraw[3];
+        Fixture f = new Fixture(fixture -> {
+            p[0] = keyed(fixture.property(47, "barcode", null, false, fixture.b), 115, true); // F4: an input
+            p[1] = keyed(fixture.property(48, "toggled", null, false, fixture.b), 117, false); // F6: ON CHANGE
+            p[2] = keyed(fixture.property(49, "computed", null, false, fixture.b), 116, false); // F5: no change
+            p[2].hasUserChangeAction = false;
+        });
+        GFormChanges shown = new GFormChanges();
+        for (GPropertyDraw property : p)
+            put(shown, property, GGroupObjectValue.EMPTY, 1);
+        f.apply(shown);
+        assertNull(f.controllers.properties.get(p[0]).getBindingWidget(p[0]));
+        assertSame(f.viewWidget(f.b), f.controllers.properties.get(p[1]).getBindingWidget(p[1]));
+        assertNull(f.controllers.properties.get(p[2]).getBindingWidget(p[2]));
     }
 
     // the table's view switch, where the toolbar is a view's and the platform draws the rows: the node says the view

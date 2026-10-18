@@ -173,6 +173,9 @@ public class GReactFormData {
         // with it (the form binds them, through their controllers: FilterGroupPart, PropertyEntry), as a widget of the
         // platform's takes its own
         Widget getViewWidget(GComponent scope);
+        // ===== what a binding of a property a view draws does (ReactPropertyEntry): its change event, as the platform's
+        // binding of a cell runs it, for the current objects
+        void pressProperty(GPropertyDraw property, Event event);
         // ===== what a toolbar asks where a view draws it - requests (getRefusal): a group's (GridToolbarPart), the
         // count of its rows and the sum of a column of them, answered or failed, ...
         void countRecords(GGroupObject group, Consumer<Number> answer, Consumer<Throwable> failed);
@@ -2469,6 +2472,23 @@ public class GReactFormData {
         }
         public void focusProperty(GPropertyDraw property) {
         }
+        // its bindings - keys and mouse ones - (GFormController.initializeBindings): taken with the view that draws it
+        // while the form shows it, where it has a change that asks no value in the cell right away (asksValue) and is
+        // not READONLY on the form, and only with a cell to press them on - its cell for the current objects, a
+        // column's in the current row - the form does not show read only now (READONLYIF); with none, an event is left
+        // to the other bindings. Pressed, it runs the change event as the platform's binding of a cell does
+        // (pressProperty)
+        public Widget getBindingWidget(GPropertyDraw property) {
+            if (!shown || !property.hasUserChangeAction || property.isReadOnly() != null || asksValue())
+                return null;
+            GGroupObjectValue cell = getCellKey(GGroupObjectValue.EMPTY);
+            if (cell == null || (property.readOnlyReader != null && values.get(property.readOnlyReader, cell) != null))
+                return null;
+            return verbs.getViewWidget(node.state.scope);
+        }
+        public void onBinding(GPropertyDraw property, Event event) {
+            verbs.pressProperty(property, event);
+        }
         public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) {
             GGroupObjectValue cellKey = getCellKey(fullCurrentKey);
             if (cellKey == null)
@@ -2515,10 +2535,16 @@ public class GReactFormData {
         // cancelled (GFormActionDispatcher)
         void exec(String surface, JavaScriptObject objectOrKey) {
             String errorPrefix = controllerPrefix(surface);
-            if (property.getChangeType() != null)
+            if (asksValue())
                 throw refusal(errorPrefix + "'" + property.integrationSID + "' asks for a value" + (property.isAction()
                         ? ", which no call can give an action" : ", which a view gives itself: call change(value)"));
             changeCell(errorPrefix, objectOrKey, PValue.UNDEFINED);
+        }
+        // whether its change asks a value before it runs - its change type -, in the cell the change is made in, which
+        // neither a call nor a binding of a view has: exec() is refused, and no binding is taken (getBindingWidget) -
+        // the platform would open its editor there, and the editor is the view's
+        private boolean asksValue() {
+            return property.getChangeType() != null;
         }
         private void changeCell(String errorPrefix, JavaScriptObject objectOrKey, PValue value) {
             checkShown(errorPrefix);
