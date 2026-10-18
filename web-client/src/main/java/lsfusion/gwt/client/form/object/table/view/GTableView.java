@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.form.object.table.view;
 
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -56,8 +58,12 @@ public interface GTableView extends TableComponent {
     void updateTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
     void updateValueTooltipValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
     void updatePropertyCustomOptionsValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
-    void updateChangeKeyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
-    void updateChangeMouseValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
+    // the keys a property gives itself (a design's changeKey / changeMouse given by a property): the form binds them
+    // (GExtraPropReader.update), a view only shows them - by default, nothing
+    default void updateChangeKeyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+    }
+    default void updateChangeMouseValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+    }
     void updateImageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
     void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
     void updateCaptionElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
@@ -74,6 +80,13 @@ public interface GTableView extends TableComponent {
     void focus(FocusUtils.Reason reason);
 
     default void onClear(){}
+    // a property's bindings where the view draws it (GPlatformTableController.getBindingWidget): the widget they are
+    // taken with, null where the view takes none - only the grid takes them -, and what one does
+    default Widget getBindingWidget(GPropertyDraw property) {
+        return null;
+    }
+    default void onBinding(GPropertyDraw property, Event event) {
+    }
 
     // the view is dropped for good (the form is closing, or the table view is being switched); everything this view
     // registered in a page-lifetime structure (MainFrame's color-theme listener list) has to be unregistered here

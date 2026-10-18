@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.panel.controller;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.Pair;
@@ -90,11 +91,6 @@ public abstract class GPlatformPanelController extends GPlatformPropertyControll
     // with the keys: one per column value when grouped in columns, one per row when drawn per row, and none at all for
     // a hidden property with no binding to carry
     public abstract boolean isSingleRenderer(GPropertyDraw property);
-
-    // whether these renderers take part in the form's key and mouse bindings. A binding is form-global, so it cannot
-    // mean "the third row"; and CHANGEKEY / CHANGEMOUSE are read on the column axis, so every row would carry the same
-    // one anyway
-    public abstract boolean shouldRegisterBindings();
 
     // the key that focus goes to, or null when there is nothing to focus
     public abstract GGroupObjectValue getFocusKey(ArrayList<GGroupObjectValue> keys);
@@ -317,5 +313,17 @@ public abstract class GPlatformPanelController extends GPlatformPropertyControll
     @Override
     public boolean isPropertyShown(GPropertyDraw property) {
         return containsProperty(property);
+    }
+
+    // its bindings: taken on the renderer focus goes to (GPropertyPanelController.getBindingWidget), none while the
+    // panel has none of the property
+    @Override
+    public Widget getBindingWidget(GPropertyDraw property) {
+        GPropertyPanelController propertyController = propertyControllers.get(property);
+        return propertyController != null ? propertyController.getBindingWidget() : null;
+    }
+    @Override
+    public void onBinding(GPropertyDraw property, Event event) {
+        propertyControllers.get(property).onBinding(event);
     }
 }

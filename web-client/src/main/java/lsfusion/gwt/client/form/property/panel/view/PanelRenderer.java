@@ -13,7 +13,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 
-import java.util.ArrayList;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
@@ -24,8 +23,6 @@ public abstract class PanelRenderer {
     protected final GPropertyDraw property;
 
     protected final ActionOrPropertyPanelValue value;
-
-    public ArrayList<Integer> bindingEventIndices;
 
     public PanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, GGroupObjectValue rowKey, boolean globalCaptionIsDrawn) {
         this.form = form;
@@ -110,7 +107,6 @@ public abstract class PanelRenderer {
     public void setChangeKey(GInputBindingEvent changeKey) {
         if (!GwtSharedUtils.nullEquals(this.changeKey, changeKey)) {
             this.changeKey = changeKey;
-            form.addDynamicBinding(changeKey, property, false);
             updateCaption();
         }
     }
@@ -119,7 +115,6 @@ public abstract class PanelRenderer {
     public void setChangeMouse(GInputBindingEvent changeMouse) {
         if (!GwtSharedUtils.nullEquals(this.changeMouse, changeMouse)) {
             this.changeMouse = changeMouse;
-            form.addDynamicBinding(changeMouse, property, true);
             updateCaption();
         }
     }

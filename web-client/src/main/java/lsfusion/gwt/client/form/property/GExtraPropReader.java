@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property;
 
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
@@ -50,6 +51,16 @@ public class GExtraPropReader extends GExtraPropertyReader {
         } else if (readerType == DEFAULTVALUE) {
             controller.updateDefaultValueValues(this, values);
         }
+    }
+
+    // a key a property gives itself - a design's changeKey / changeMouse given by a property -: the form's binding of
+    // the property takes it, whoever draws the property (GFormController.addDynamicBinding) - one binding, so the key
+    // of one column: the first that gives one -, and its controller gets it as any other reader
+    @Override
+    public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
+        if (readerType == CHANGEKEY || readerType == CHANGEMOUSE)
+            controller.addDynamicBinding(PValue.getBindingValue(values.firstValue()), controller.getProperty(propertyID), readerType == CHANGEMOUSE);
+        super.update(controller, values, partial);
     }
 
     // a kind with a field of its own is an attribute React draws from

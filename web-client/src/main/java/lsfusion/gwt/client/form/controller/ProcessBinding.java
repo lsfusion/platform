@@ -49,7 +49,10 @@ public class ProcessBinding {
                 GFormController.Binding binding = bindings.get(i);
                 boolean equalGroup;
                 GBindingEnv bindingEnv = bindingEvent.env;
-                if(bindPreview.apply(bindingEnv, preview) &&
+                // a binding that cannot be pressed now - one bound for good, while what it is of is not drawn - takes
+                // no part, as one not bound: of two with one priority the later one is kept, and would take the event
+                if(binding.enabled() &&
+                        bindPreview.apply(bindingEnv, preview) &&
                         bindDialog.apply(bindingEnv) &&
                         bindWindow.apply(bindingEnv) &&
                         bindGroup.apply(bindingEnv, groupObject, equalGroup = nullEquals(groupObject, binding.groupObject)) &&
@@ -65,13 +68,11 @@ public class ProcessBinding {
         }
 
         for (GFormController.Binding binding : orderedBindings.values()) {
-            if (binding.enabled()) {
-                checkCommitEditing.run();
-                handler.consume();
+            checkCommitEditing.run();
+            handler.consume();
 
-                binding.exec(event);
-                return;
-            }
+            binding.exec(event);
+            return;
         }
     }
 

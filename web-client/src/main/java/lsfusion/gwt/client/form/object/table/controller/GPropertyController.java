@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.form.object.table.controller;
 
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -31,6 +33,15 @@ public interface GPropertyController {
     void updateOther(GExtraPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial);
     // the server stopped showing it
     void dropProperty(GPropertyDraw property);
+    // ===== its BINDINGS - keys and mouse ones (CHANGEKEY, CHANGEMOUSE) -, bound once for every property by the form,
+    // whoever draws it (GFormController.initializeBindings): the widget one is taken with - while it is on the page -,
+    // null where the property takes none now - by default: a controller that draws no cell of the platform's takes
+    // none -, and what one does then - what the platform's binding of a cell does
+    default Widget getBindingWidget(GPropertyDraw property) {
+        return null;
+    }
+    default void onBinding(GPropertyDraw property, Event event) {
+    }
 
     // what keeps a property React keeps nothing of - the platform's own COUNT of a list group, the pivot's, where React
     // draws the group's rows (GReactFormData.createPropertyController) -: nothing. The server sends nothing of it

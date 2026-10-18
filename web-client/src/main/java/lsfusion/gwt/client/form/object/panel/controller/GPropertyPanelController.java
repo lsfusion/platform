@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.form.design.view.ComponentWidget;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -155,16 +156,12 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     public ComponentViewWidget addPanelRenderer(GGroupObjectValue rendererKey, Result<CaptionWidget> caption) {
         PanelRenderer newRenderer = property.createPanelRenderer(form, GPropertyPanelController.this, panelController.getColumnKey(rendererKey), panelController.getRowKey(rendererKey), caption);
         ComponentViewWidget component = newRenderer.getComponentViewWidget();
-        if (panelController.shouldRegisterBindings())
-            newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component.getShowingWidget());
         renderers.put(rendererKey, newRenderer);
         return component;
     }
 
     public ComponentViewWidget removePanelRenderer(GGroupObjectValue rendererKey) {
         PanelRenderer renderer = renderers.remove(rendererKey);
-        if (renderer.bindingEventIndices != null) // a per-row renderer registers none, so there are none to take back
-            form.removePropertyBindings(renderer.bindingEventIndices);
         ComponentViewWidget componentViewWidget = renderer.getComponentViewWidget();
         renderer.destroy(); // after the widget is read out: a dropped renderer is otherwise kept alive by its tippy and by MainFrame's color-theme listener list
         return componentViewWidget;
@@ -240,18 +237,30 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     }
 
     public boolean focus(FocusUtils.Reason reason) {
-        if (renderers == null || renderers.isEmpty()) {
-            return false;
-        }
-
-        PanelRenderer toFocus;
-        if (rendererKeys == null)
-            toFocus = renderers.firstValue();
-        else {
-            GGroupObjectValue focusKey = panelController.getFocusKey(rendererKeys); // the first column, or the CURRENT row
-            toFocus = focusKey != null ? renderers.get(focusKey) : null;
-        }
+        PanelRenderer toFocus = getFocusRenderer();
         return toFocus != null && toFocus.focus(reason);
+    }
+    // the property's bindings (GPlatformPanelController.getBindingWidget) are taken with the renderer focus goes to,
+    // and pressed on it, as its own binding: the current row's where it is drawn in every row a React view draws, as a
+    // grid column's is its selected row's. Sacrificed for one binding per property: one with column keys takes its key
+    // and its mouse binding on the first column's renderer - none while that one is hidden -, where each column's
+    // renderer bound them, the last one made winning
+    public Widget getBindingWidget() {
+        PanelRenderer renderer = getFocusRenderer();
+        return renderer != null ? renderer.getComponentViewWidget().getShowingWidget() : null;
+    }
+    public void onBinding(Event event) {
+        getFocusRenderer().onBinding(event);
+    }
+    // the renderer focus goes to, and the property's keys with it: the one there is, or the one of the key the panel
+    // says - the first column, or the CURRENT row -; null where there is none
+    private PanelRenderer getFocusRenderer() {
+        if (renderers == null || renderers.isEmpty())
+            return null;
+        if (rendererKeys == null)
+            return renderers.firstValue();
+        GGroupObjectValue focusKey = panelController.getFocusKey(rendererKeys);
+        return focusKey != null ? renderers.get(focusKey) : null;
     }
 
     @Override

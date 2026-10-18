@@ -622,18 +622,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord, GTreeGroup, 
     }
 
     @Override
-    public void updateChangeKeyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
-        super.updateChangeKeyValues(propertyDraw, values);
-        dataUpdated = true;
-    }
-
-    @Override
-    public void updateChangeMouseValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
-        super.updateChangeMouseValues(propertyDraw, values);
-        dataUpdated = true;
-    }
-
-    @Override
     public void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         super.updateCellForegroundValues(propertyDraw, values);
         dataUpdated = true;

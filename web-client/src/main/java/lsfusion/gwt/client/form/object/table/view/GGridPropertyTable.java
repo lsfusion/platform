@@ -100,8 +100,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> tooltips = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> valueTooltips = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> propertyCustomOptions = new NativeSIDMap<>();
-    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> changeKeys = new NativeSIDMap<>();
-    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> changeMouses = new NativeSIDMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowBackgroundValues = new NativeHashMap<>();
     protected NativeHashMap<GGroupObjectValue, PValue> rowForegroundValues = new NativeHashMap<>();
 
@@ -398,14 +396,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
         propertyCustomOptions.put(propertyDraw, values);
     }
 
-    public void updateChangeKeyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
-        changeKeys.put(propertyDraw, values);
-    }
-
-    public void updateChangeMouseValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
-        changeMouses.put(propertyDraw, values);
-    }
-
     public void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         cellForegroundValues.put(propertyDraw, values);
     }
@@ -683,9 +673,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
             header.setTooltip(property.getTooltip(nvl(getPropertyTooltip(property, columnKey), columnCaption)));
         } else
             assert property.ignoreHasHeaders || columnCaption == null || columnCaption.isEmpty();
-
-        form.addDynamicBinding(getChangeKey(property, columnKey), property, false);
-        form.addDynamicBinding(getChangeMouse(property, columnKey), property, true);
     }
 
     protected void updatePropertyFooter(int index) {
@@ -759,16 +746,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
                 return PValue.getStringValue(pattern);
         }
         return null;
-    }
-
-    protected GInputBindingEvent getChangeKey(GPropertyDraw property, GGroupObjectValue columnKey) {
-        NativeHashMap<GGroupObjectValue, PValue> propChangeKeys = changeKeys.get(property);
-        return propChangeKeys != null ? PValue.getBindingValue(propChangeKeys.get(columnKey)) : null;
-    }
-
-    protected GInputBindingEvent getChangeMouse(GPropertyDraw property, GGroupObjectValue columnKey) {
-        NativeHashMap<GGroupObjectValue, PValue> propChangeMouses = changeMouses.get(property);
-        return propChangeMouses != null ? PValue.getBindingValue(propChangeMouses.get(columnKey)) : null;
     }
 
     protected AppBaseImage getPropertyImage(GPropertyDraw property, GGroupObjectValue columnKey) {

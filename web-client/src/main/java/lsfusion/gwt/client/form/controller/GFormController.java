@@ -815,6 +815,43 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
                 filterGroupControllers.put(filterGroup, controller);
         }
         reactData.initialize(); // ... and the projection sets out what it has
+        initializeBindings();
+    }
+    // THE BINDINGS of every filter of a filter group and of every property - keys and mouse ones -, bound here once
+    // whoever draws them, each through the controller settled for it above: taken with the widget the controller gives,
+    // while that is on the page - with none, the event is left to the other bindings -, and pressed through it; in the
+    // form's order, the filter groups' first - an empty one too, which the key the form sends later takes
+    // (addDynamicBinding). Where an event is taken the modes say - a mouse one in a cell (bindCell) -, not the widget
+    private void initializeBindings() {
+        for (GRegularFilterGroup filterGroup : form.regularFilterGroups) {
+            GFilterGroupController controller = filterGroupControllers.get(filterGroup);
+            if (controller != null)
+                for (GRegularFilter filter : filterGroup.filters)
+                    addBindings(filter.bindingEvents, null, filterGroup.groupObject, controller::getBindingWidget, event -> controller.onBinding(filter));
+        }
+        for (GPropertyDraw property : form.propertyDraws) {
+            GPropertyController controller = propertyControllers.get(property);
+            addBindings(property.bindingEvents, property, property.groupObject, () -> controller.getBindingWidget(property), event -> controller.onBinding(property, event));
+        }
+    }
+    private void addBindings(ArrayList<GInputBindingEvent> bindingEvents, GPropertyDraw property, GGroupObject groupObject, Supplier<Widget> widget, BindingExec pressed) {
+        for (GInputBindingEvent bindingEvent : bindingEvents)
+            addBinding(createBindingEvent(bindingEvent.inputEvent, bindingEvent.env, property, bindingEvent.inputEvent instanceof GMouseInputEvent), new Binding(groupObject) {
+                @Override
+                public boolean showing() {
+                    return isShowing(widget.get());
+                }
+
+                @Override
+                public boolean enabled() {
+                    return widget.get() != null;
+                }
+
+                @Override
+                public void exec(Event event) {
+                    pressed.exec(event);
+                }
+            });
     }
     // ... every component, down the design - a grid's record is inside its grid, and so is what it holds -, a property
     // too, as a component (createComponentController)
@@ -2745,13 +2782,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     public interface BindingExec {
         void exec(Event event);
     }
-    public ArrayList<Integer> addPropertyBindings(GPropertyDraw propertyDraw, BindingExec bindingExec, Widget widget) {
-        ArrayList<Integer> result = new ArrayList<>();
-        for(GInputBindingEvent bindingEvent : propertyDraw.bindingEvents) // supplier for optimization
-            result.add(addBinding(bindingEvent.inputEvent, bindingEvent.env, propertyDraw, bindingExec, widget, propertyDraw.groupObject));
-        return result;
-    }
-
     public void addDynamicBinding(GInputBindingEvent inputBindingEvent, GPropertyDraw property, boolean mouse) {
         for (int i = 0, size = bindingEvents.size(); i < size; i++) {
             GBindingEvent bindingEvent = bindingEvents.get(i);
@@ -2762,49 +2792,28 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
                     inputBindingEvent = GInputBindingEvent.dumb;
                 // the same binding under another event, put back where it was: this runs on ordinary state updates,
                 // so spending a slot each time would grow the list - and everything dispatched through it - endlessly
-                replaceBinding(i, createBindingEvent(inputBindingEvent.inputEvent, inputBindingEvent.env, property,
-                        bindingEvent.widget), bindings.get(i));
+                replaceBinding(i, createBindingEvent(inputBindingEvent.inputEvent, inputBindingEvent.env, property, mouse),
+                        bindings.get(i));
             }
         }
     }
 
-    public void removePropertyBindings(ArrayList<Integer> indices) {
-        for(int index : indices)
-            removeBinding(index);
-    }
-
-    public int addRegularFilterBinding(GInputBindingEvent event, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        return addBinding(event.inputEvent, event.env, pressed, component, groupObject);
-    }
-    // ... and of a filter group a view draws (GReactFormData.FilterGroupPart): shown while the React view that draws it
-    // is - the platform's widget is that view there - and the form shows the filter group, which the part says
-    // (shown): the platform's widget is hidden with the filter group, and its binding with it
+    // the widget of the React view that draws what scope holds (GReactFormData's entries and parts): what its keys are
+    // taken with, as a widget of the platform's is - the platform's widget is that view there
     @Override
-    public int addRegularFilterBinding(GInputBindingEvent event, BindingExec pressed, GComponent scope, Supplier<Boolean> shown, GGroupObject groupObject) {
-        Widget view = scope instanceof GContainer ? formLayout.getContainerView((GContainer) scope).getView()
+    public Widget getViewWidget(GComponent scope) {
+        return scope instanceof GContainer ? formLayout.getContainerView((GContainer) scope).getView()
                 : formLayout.getBaseComponentViews().get(scope).getShowingWidget();
-        return addBinding(createBindingEvent(event.inputEvent, event.env, null, view), new Binding(groupObject) {
-            @Override
-            public boolean showing() {
-                return isShowing(view) && shown.get();
-            }
-
-            @Override
-            public void exec(Event e) {
-                pressed.exec(e);
-            }
-        });
     }
     public int addBinding(GInputEvent event, GBindingEnv env, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(event::isEvent, env, null, pressed, component, groupObject);
     }
-    public int addBinding(GInputEvent event, GBindingEnv env, GPropertyDraw property, BindingExec pressed, Widget component, GGroupObject groupObject) {
-        return addBinding(createBindingEvent(event, env, property, component), createBinding(null, pressed, component, groupObject));
-    }
-    // the event half of a binding, built the same way whether the binding is being added or replaced
-    private GBindingEvent createBindingEvent(GInputEvent event, GBindingEnv env, GPropertyDraw property, Widget component) {
+    // the event half of a property's binding, built the same way whether the binding is being added or replaced: of
+    // the kind it is bound as, a key's or a mouse one's, for good - a NULL a property gives itself leaves its slot for
+    // the next one of that kind
+    private GBindingEvent createBindingEvent(GInputEvent event, GBindingEnv env, GPropertyDraw property, boolean mouse) {
         //event != null - dumb check (see InputBindingEvent.dumb)
-        return new GBindingEvent(e -> event != null && event.isEvent(e), env, property, component, event instanceof GMouseInputEvent);
+        return new GBindingEvent(e -> event != null && event.isEvent(e), env, property, null, mouse);
     }
     public int addBinding(BindingCheck event, GBindingEnv env, Supplier<Boolean> enabled, BindingExec pressed, Widget component, GGroupObject groupObject) {
         return addBinding(event, env, null, false, enabled, pressed, component, groupObject);

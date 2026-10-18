@@ -127,11 +127,6 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
     }
 
     @Override
-    public boolean shouldRegisterBindings() {
-        return false; // one renderer per row, and a form-global binding cannot name a row
-    }
-
-    @Override
     public GGroupObjectValue getFocusKey(ArrayList<GGroupObjectValue> keys) {
         // focus belongs to the CURRENT row, never to whichever row happened to be placed first - and the projection
         // already knows which that is, including right after the view changed it optimistically

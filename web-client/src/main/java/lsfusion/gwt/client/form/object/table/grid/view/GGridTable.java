@@ -8,6 +8,7 @@ import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -55,8 +56,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
     private ArrayList<GPropertyDraw> properties = new ArrayList<>();
     // map for fast incremental update, essentially needed for working with group-to-columns (columnKeys)
     private NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> columnsMap = new NativeSIDMap<>();
-
-    private ArrayList<ArrayList<Integer>> bindingEventIndices = new ArrayList<>();
 
     private ArrayList<GGroupObjectValue> rowKeys = new ArrayList<>();
 
@@ -718,7 +717,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
     public void removeProperty(GPropertyDraw property) {
         int index = properties.indexOf(property);
         properties.remove(index);
-        form.removePropertyBindings(bindingEventIndices.remove(index));
 
         values.remove(property);
         loadings.remove(property);
@@ -746,7 +744,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
                 int newColumnIndex = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
 
                 properties.add(newColumnIndex, property);
-                bindingEventIndices.add(newColumnIndex, form.addPropertyBindings(property, event -> onBinding(property, event), getWidget()));
 
                 this.columnKeys.put(property, columnKeys);
 
@@ -773,6 +770,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
         dataUpdated = true;
     }
 
+    // a column's bindings: taken with the grid while the property is a column of it, and pressed on its selected row
+    @Override
+    public Widget getBindingWidget(GPropertyDraw property) {
+        return properties.contains(property) ? getWidget() : null;
+    }
+    @Override
     public void onBinding(GPropertyDraw property, Event event) {
         int column = getGridColumnIndex(property, null);
         if(column >= 0 && getSelectedRow() >= 0) {
@@ -861,20 +864,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
         super.updatePropertyCustomOptionsValues(propertyDraw, values);
         updatedProperties.put(propertyDraw, TRUE);
         dataUpdated = true;
-    }
-
-    @Override
-    public void updateChangeKeyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
-        super.updateChangeKeyValues(propertyDraw, values);
-        updatedProperties.put(propertyDraw, TRUE);
-        captionsUpdated = true;
-    }
-
-    @Override
-    public void updateChangeMouseValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
-        super.updateChangeMouseValues(propertyDraw, values);
-        updatedProperties.put(propertyDraw, TRUE);
-        captionsUpdated = true;
     }
 
     @Override

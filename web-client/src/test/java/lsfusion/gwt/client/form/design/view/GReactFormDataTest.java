@@ -4,6 +4,8 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.FocusUtils;
@@ -231,11 +233,9 @@ public class GReactFormDataTest extends GWTTestCase {
         final HashMap<GGroupObject, Boolean> manualUpdates = new HashMap<>(); // ... and each group's update mode it set
         java.util.function.Consumer<Number> answered; // ... the last answer it waits for
         GReactFormData.Verbs verbs; // ... all of it, the form as far as the projection asks it
-        // ... and the filters' keys it bound, each while the container it names is shown and its part says the form
-        // shows the filter group
-        final ArrayList<GFormController.BindingExec> filterKeys = new ArrayList<>();
-        final ArrayList<GComponent> filterKeyScopes = new ArrayList<>();
-        final ArrayList<java.util.function.Supplier<Boolean>> filterKeyShown = new ArrayList<>();
+        // ... and the widget of each React view it was asked for, what the keys of what the view draws are taken with -
+        // one per view, made as it is first asked for (viewWidget)
+        final LinkedHashMap<GComponent, Widget> viewWidgets = new LinkedHashMap<>();
         // the React views of components that are not containers, each made after the containers', as the layout makes
         // them (GFormLayout.addReactView) - only in a test that asks (ownView) -, and what each was last given
         final ArrayList<GComponent> ownViews = new ArrayList<>();
@@ -338,9 +338,8 @@ public class GReactFormDataTest extends GWTTestCase {
                     edits.add("regularFilter " + filterGroup.sID + " " + (filter != null ? filter.caption : "none"));
                     controllers.filterGroups.get(filterGroup).showFilter(filter);
                 }
-                public int addRegularFilterBinding(GInputBindingEvent event, GFormController.BindingExec pressed, GComponent scope, java.util.function.Supplier<Boolean> shown, GGroupObject groupObject) {
-                    filterKeys.add(pressed); filterKeyScopes.add(scope); filterKeyShown.add(shown);
-                    return filterKeys.size() - 1;
+                public Widget getViewWidget(GComponent scope) {
+                    return viewWidget(scope);
                 }
                 // ... and a call that asks the server, refused while a batch runs
                 public String getRefusal(String surface) {
@@ -389,6 +388,10 @@ public class GReactFormDataTest extends GWTTestCase {
             toolbar.visible = true; toolbar.showCountQuantity = true; toolbar.showCalculateSum = true;
             toolbar.showPrintGroupXls = true; toolbar.showManualUpdate = true;
             group.grid.toolbar = toolbar;
+        }
+        // the widget of the view that draws what scope holds, as the form gives it (Verbs.getViewWidget)
+        Widget viewWidget(GComponent scope) {
+            return viewWidgets.computeIfAbsent(scope, view -> new Label());
         }
         // FILTERGROUP(stock) in scope: two filters, the first with a key, NONULL as a test says - the fixture reports
         // no filter selected
@@ -553,7 +556,7 @@ public class GReactFormDataTest extends GWTTestCase {
         public boolean isManualUpdate(GGroupObject group) { return group.enableManualUpdate; }
         public String getRefusal(String surface) { return batching ? batchRefusal(surface) : null; }
         public void changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) { }
-        public int addRegularFilterBinding(GInputBindingEvent event, GFormController.BindingExec pressed, GComponent scope, java.util.function.Supplier<Boolean> shown, GGroupObject groupObject) { return -1; }
+        public Widget getViewWidget(GComponent scope) { return null; }
         // as the form does: the request numbered and sent, the group's controller told of it
         public void expandNode(GGroupObject group, GGroupObjectValue key) {
             controllers.groups.get(group).changeExpanded(key, true, ask("expand " + group.getSID() + " " + key.toKeyString()));
@@ -4638,7 +4641,7 @@ public class GReactFormDataTest extends GWTTestCase {
 
     // where a view draws a filter group, it is a part of its group there, under its own name, shaped as a property's
     // entry - the filter selected, none at first; the filters' captions; whether none may be selected - with a member
-    // that selects one; only there. A filter's key is bound all the same, shown while the container is
+    // that selects one; only there. Its filters' keys are taken with the view of the container
     public void testAFilterGroupAViewDrawsIsAPartOfTheGroup() {
         Fixture f = new Fixture(fixture -> fixture.filterGroupIn(fixture.c, false));
         JavaScriptObject stock = field(field(f.snapshots[2], "items"), "stock");
@@ -4647,7 +4650,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(flag(stock, "canClear"));
         assertNotNull(member(f.sc, "items", "stock"));
         assertFalse(has(field(f.snapshots[0], "items"), "stock")); // only where it is drawn
-        assertEquals(1, f.filterKeys.size()); // F10
+        assertSame(f.viewWidget(f.c), f.controllers.filterGroups.get(f.form.regularFilterGroups.get(0)).getBindingWidget());
     }
 
     // its member selects a filter by its index, as the platform's list does, in a batch too - the form sends it and
@@ -4687,47 +4690,38 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("regularFilter FILTERGROUP(stock) none", checkBox.edits.get(checkBox.edits.size() - 1));
     }
 
-    // a filter's key is bound as the filter group's part is made, as the platform's check box or list binds its own as
-    // it is made - not once the part is set out: a key's priority is the order it is bound in (ProcessBinding), so the
-    // keys of the form's filter groups, whoever draws each, keep the form's order - of two with one key, the later wins
-    public void testAFilterGroupsKeyIsBoundAsItsPartIsMade() {
-        Fixture f = new Fixture(fixture -> fixture.filterGroupIn(fixture.c, false));
-        assertEquals(1, f.filterKeys.size());
-        GRegularFilterGroup another = f.filterGroupIn(f.c, false); // its part made now, long after the form is set out
-        f.projection.createFilterGroupController(another, () -> null);
-        assertEquals(2, f.filterKeys.size());
-    }
-
-    // a filter's key works as the platform's widget's does, bound while the container the view draws the group in is
-    // shown and while the form shows the filter group, which the part tells the binding - hidden by its SHOWIF, its
-    // descriptor saying so, the key is the platform's widget's hidden with it: not taken, so another binding of it may
-    // be -: it selects the filter - and in a group of one filter, the platform's check box, pressed again, takes it
-    // off, whatever NONULL says, as the check box is cleared; a group of several's list only selects
+    // a filter's key works as the platform's widget's does, through the filter group's part, which the form binds it
+    // with: taken with the view of the container the view draws the group in, while the form shows the filter group -
+    // hidden by its SHOWIF, its descriptor saying so, the part gives no widget, as the platform's widget is hidden with
+    // it: not taken, so another binding of it may be -: it selects the filter - and in a group of one filter, the
+    // platform's check box, pressed again, takes it off, whatever NONULL says, as the check box is cleared; a group of
+    // several's list only selects
     public void testAFilterGroupsKeySelectsItsFilter() {
         Fixture f = new Fixture(fixture -> fixture.filterGroupIn(fixture.c, false));
-        assertSame(f.c, f.filterKeyScopes.get(0));
-        GFormController.BindingExec f10 = f.filterKeys.get(0);
-        f10.exec(null);
-        assertEquals("regularFilter FILTERGROUP(stock) In stock", f.edits.get(f.edits.size() - 1));
-        f10.exec(null); // a list: selected again
-        assertEquals("regularFilter FILTERGROUP(stock) In stock", f.edits.get(f.edits.size() - 1));
         GRegularFilterGroup stock = f.form.regularFilterGroups.get(0);
-        assertTrue(f.filterKeyShown.get(0).get());
+        GFilterGroupController part = f.controllers.filterGroups.get(stock);
+        assertSame(f.viewWidget(f.c), part.getBindingWidget());
+        part.onBinding(stock.filters.get(0)); // F10
+        assertEquals("regularFilter FILTERGROUP(stock) In stock", f.edits.get(f.edits.size() - 1));
+        part.onBinding(stock.filters.get(0)); // a list: selected again
+        assertEquals("regularFilter FILTERGROUP(stock) In stock", f.edits.get(f.edits.size() - 1));
         GFormChanges hide = new GFormChanges(); put(hide, stock.showIfReader, GGroupObjectValue.EMPTY, true); f.apply(hide);
-        assertFalse(f.filterKeyShown.get(0).get()); // the form hides the filter group: the binding is not taken
+        assertNull(part.getBindingWidget()); // the form hides the filter group: the key is not taken
         GFormChanges show = new GFormChanges(); put(show, stock.showIfReader, GGroupObjectValue.EMPTY, null); f.apply(show);
-        assertTrue(f.filterKeyShown.get(0).get());
+        assertSame(f.viewWidget(f.c), part.getBindingWidget());
 
         Fixture single = new Fixture(fixture -> fixture.filterGroupIn(fixture.c, false).filters.remove(1));
-        GFormController.BindingExec check = single.filterKeys.get(0);
-        check.exec(null);
+        GRegularFilterGroup one = single.form.regularFilterGroups.get(0);
+        GFilterGroupController check = single.controllers.filterGroups.get(one);
+        check.onBinding(one.filters.get(0));
         assertEquals("regularFilter FILTERGROUP(stock) In stock", single.edits.get(single.edits.size() - 1));
-        check.exec(null); // a check box: taken off
+        check.onBinding(one.filters.get(0)); // a check box: taken off
         assertEquals("regularFilter FILTERGROUP(stock) none", single.edits.get(single.edits.size() - 1));
         Fixture noNull = new Fixture(fixture -> fixture.filterGroupIn(fixture.c, true).filters.remove(1));
-        GFormController.BindingExec key = noNull.filterKeys.get(0);
-        key.exec(null);
-        key.exec(null); // NONULL: the check box is cleared all the same
+        GRegularFilterGroup cleared = noNull.form.regularFilterGroups.get(0);
+        GFilterGroupController key = noNull.controllers.filterGroups.get(cleared);
+        key.onBinding(cleared.filters.get(0));
+        key.onBinding(cleared.filters.get(0)); // NONULL: the check box is cleared all the same
         assertEquals("regularFilter FILTERGROUP(stock) none", noNull.edits.get(noNull.edits.size() - 1));
     }
 
@@ -4940,8 +4934,8 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject entry = field(field(f.ownData(stock[0]), "items"), "stock");
         assertEquals("In stock,Out of stock", join(field(entry, "filters")));
         assertNotNull(member(f.ownStates.get(stock[0]), "items", "stock"));
-        assertSame(stock[0], f.filterKeyScopes.get(0)); // its F10, taken while its own view is shown
-        assertTrue(f.filterKeyShown.get(0).get()); // ... with no descriptor of its own there to say it is hidden
+        // its F10, taken with its own view - no descriptor of its own there to say it is hidden
+        assertSame(f.viewWidget(stock[0]), f.controllers.filterGroups.get(stock[0]).getBindingWidget());
     }
 
     // ... a group's node: what the parts on it write in data.<g> and on controller.<g>

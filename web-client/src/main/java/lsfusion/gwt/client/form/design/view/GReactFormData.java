@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.design.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -126,8 +127,8 @@ public class GReactFormData {
 
     // WHAT A MEMBER DOES: the form's own edit, the one a user makes, or a request of the form's own that changes
     // nothing - a lookup, a count, an export -, which a batch does not carry (getRefusal); and what the parts ask of
-    // the form besides: its sortings and filters as it has them, a filter's key bound, a part published later. The
-    // members are made here, beside the entries they mirror, and each holds the state it stands for (a
+    // the form besides: its sortings and filters as it has them, the widget of the view that draws one, a part published
+    // later. The members are made here, beside the entries they mirror, and each holds the state it stands for (a
     // ReactPropertyEntry, a Part): a call through one reads what it names - the row, the value - from that state, and
     // hands the form the edit, which the form shows at once and sends at once or, inside a batch, when the batch ends
     // (batch)
@@ -166,12 +167,12 @@ public class GReactFormData {
         // ... and a group's as the form has them - what a view's part shows, and what one condition stated is merged
         // into: a list of the caller's own
         ArrayList<GPropertyFilter> getFilters(GGroupObject group);
-        // ===== a filter group of a group: the filter selected in it - null: none -, as its member read it ...
+        // ===== a filter group of a group: the filter selected in it - null: none -, as its member read it
         void changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter);
-        // ... and a filter's key, which selects it where a view draws the filter group (FilterGroupPart) - the
-        // platform's binding, taken while the React view that draws it is shown and the form shows the filter group
-        // (shown), as the platform's widget's is while the widget is shown
-        int addRegularFilterBinding(GInputBindingEvent event, GFormController.BindingExec pressed, GComponent scope, Supplier<Boolean> shown, GGroupObject groupObject);
+        // ===== the widget of the React view that draws what scope holds: the keys of what the view draws are taken
+        // with it (the form binds them, through their controllers: FilterGroupPart, PropertyEntry), as a widget of the
+        // platform's takes its own
+        Widget getViewWidget(GComponent scope);
         // ===== what a toolbar asks where a view draws it - requests (getRefusal): a group's (GridToolbarPart), the
         // count of its rows and the sum of a column of them, answered or failed, ...
         void countRecords(GGroupObject group, Consumer<Number> answer, Consumer<Throwable> failed);
@@ -1536,12 +1537,12 @@ public class GReactFormData {
         FilterGroupPart(GroupNode node, GRegularFilterGroup filterGroup) {
             super(node);
             this.filterGroup = filterGroup;
-            // its filters' keys, bound as it is made, as the platform's check box or list binds its own: a key's
-            // priority is the order it is bound in (ProcessBinding), so the filter groups' keys keep the form's order
-            // whoever draws them - bound when the part is set out, they would come after every platform's group's
-            for (GRegularFilter filter : filterGroup.filters)
-                for (GInputBindingEvent bindingEvent : filter.bindingEvents)
-                    verbs.addRegularFilterBinding(bindingEvent, event -> toggle(filter), node.state.scope, this::isShown, filterGroup.groupObject);
+        }
+        // its filters' keys, bound by the form (GFormController.initializeBindings): taken with the view that draws it
+        // while the form shows the filter group (isShown), as the platform's widget's are while the widget is shown, and
+        // selecting the filter, as that widget does (onBinding)
+        public Widget getBindingWidget() {
+            return isShown() ? verbs.getViewWidget(node.state.scope) : null;
         }
         // whether the form shows the filter group now, which its descriptor says (ComponentEntry.isShown): its filters'
         // keys are taken while it does, as the platform's widget's are while the widget is shown - it is hidden with
@@ -1580,7 +1581,7 @@ public class GReactFormData {
 
         // ===== a filter's key, as the platform's widget takes it: selected - in a group of one filter, the platform's
         // check box, taken off where it is selected already; a group of several's list only selects
-        void toggle(GRegularFilter filter) {
+        public void onBinding(GRegularFilter filter) {
             select(filter == selected && filterGroup.filters.size() == 1 ? null : filter);
         }
         // whether none may be selected, as the platform's widget offers it: a group of one filter is its check box,
@@ -2685,6 +2686,14 @@ public class GReactFormData {
         }
         public void focusProperty(GPropertyDraw property) {
             platform.focusProperty(property);
+        }
+        // ... and so are its keys: taken on the platform's renderer - in the host the view places it in, or in the
+        // current row's where it is drawn in every row
+        public Widget getBindingWidget(GPropertyDraw property) {
+            return platform.getBindingWidget(property);
+        }
+        public void onBinding(GPropertyDraw property, Event event) {
+            platform.onBinding(property, event);
         }
         public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) {
             return platform.setLoadingValueAt(property, fullCurrentKey, value);

@@ -103,11 +103,6 @@ public final class GPlatformFormPanelController extends GPlatformPanelController
     }
 
     @Override
-    public boolean shouldRegisterBindings() {
-        return true;
-    }
-
-    @Override
     public GGroupObjectValue getFocusKey(ArrayList<GGroupObjectValue> keys) {
         return keys != null && !keys.isEmpty() ? keys.get(0) : null;
     }

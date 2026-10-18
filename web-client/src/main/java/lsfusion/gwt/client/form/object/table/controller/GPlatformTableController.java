@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.controller;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -217,6 +218,16 @@ public abstract class GPlatformTableController<P extends GGridProperty, V extend
     @Override
     public void focusProperty(GPropertyDraw propertyDraw) {
         view.focusProperty(propertyDraw);
+    }
+
+    // its keys: the view it shows now takes them - the grid, as a column's (GTableView.getBindingWidget)
+    @Override
+    public Widget getBindingWidget(GPropertyDraw property) {
+        return view.getBindingWidget(property);
+    }
+    @Override
+    public void onBinding(GPropertyDraw property, Event event) {
+        view.onBinding(property, event);
     }
 
     @Override

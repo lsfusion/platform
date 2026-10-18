@@ -9,7 +9,6 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FormCheckBox;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.event.GInputBindingEvent;
 
 import java.util.ArrayList;
 
@@ -38,6 +37,19 @@ public final class GPlatformFilterGroupController implements GFilterGroupControl
             ((ListBox) view).setSelectedIndex(filterGroup.filters.indexOf(filter) + (filterGroup.noNull ? 0 : 1));
     }
 
+    // a filter's binding, bound by the form (GFormController.initializeBindings): taken with the check box or the list,
+    // it toggles the check box, or selects the filter in the list
+    public Widget getBindingWidget() {
+        return view;
+    }
+    public void onBinding(GRegularFilter filter) {
+        if (view instanceof CheckBox) {
+            CheckBox filterCheck = (CheckBox) view;
+            filterCheck.setValue(!filterCheck.getValue(), true);
+        } else
+            setRegularFilter((ListBox) view, filterGroup.filters.indexOf(filter));
+    }
+
     private CheckBox createSingleFilterComponent(final GRegularFilter filter) {
         final CheckBox filterCheck = new FormCheckBox(filter.getFullCaption());
         filterCheck.setValue(false);
@@ -50,9 +62,6 @@ public final class GPlatformFilterGroupController implements GFilterGroupControl
         GwtClientUtils.addClassName(filterCheck, "filter-group-check");
 
         GFormController.setBindingGroupObject(filterCheck, filterGroup.groupObject);
-        for (GInputBindingEvent bindingEvent : filter.bindingEvents) {
-            form.addRegularFilterBinding(bindingEvent, (event) -> filterCheck.setValue(!filterCheck.getValue(), true), filterCheck, filterGroup.groupObject);
-        }
         return filterCheck;
     }
 
@@ -67,13 +76,7 @@ public final class GPlatformFilterGroupController implements GFilterGroupControl
             final GRegularFilter filter = filters.get(i);
             filterBox.addItem(filter.getFullCaption(), "" + i);
 
-            final int filterIndex = i;
             GFormController.setBindingGroupObject(filterBox, filterGroup.groupObject);
-            for(GInputBindingEvent bindingEvent : filter.bindingEvents) {
-                form.addRegularFilterBinding(bindingEvent, (event) -> {
-                    setRegularFilter(filterBox, filterIndex);
-                }, filterBox, filterGroup.groupObject);
-            }
         }
 
         filterBox.addChangeHandler(event -> setRemoteRegularFilter(filterBox.getSelectedIndex() - (filterGroup.noNull ? 0 : 1)));
