@@ -175,6 +175,22 @@ public class GComponent implements Serializable, HasNativeSID {
     public List<GComponent> getChildren() {
         return Collections.emptyList();
     }
+    // ... and the container or the component with this id there, this one included - what the server names by its id
+    public GContainer findContainerByID(int id) {
+        for (GComponent child : getChildren()) {
+            GContainer result = child.findContainerByID(id);
+            if (result != null) return result;
+        }
+        return null;
+    }
+    public GComponent findComponentByID(int id) {
+        if (id == this.ID) return this;
+        for (GComponent child : getChildren()) {
+            GComponent result = child.findComponentByID(id);
+            if (result != null) return result;
+        }
+        return null;
+    }
 
     // React draws this component from data, so GWT builds no view of it - below it, only of the platform-drawn
     // components the react container places (GFormLayout.addPlacedContainers): it has a React place and is not

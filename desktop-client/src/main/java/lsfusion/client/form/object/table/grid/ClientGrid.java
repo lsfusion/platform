@@ -2,11 +2,14 @@ package lsfusion.client.form.object.table.grid;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
+import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 public class ClientGrid extends ClientGridProperty {
 
@@ -20,6 +23,11 @@ public class ClientGrid extends ClientGridProperty {
     public ClientContainer record;
 
     public ClientGrid() {
+    }
+
+    @Override
+    public List<ClientComponent> getChildren() { // a grid's record has no container: it is inside its grid
+        return record != null ? Collections.singletonList(record) : Collections.emptyList();
     }
 
     @Override

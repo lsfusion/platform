@@ -15,6 +15,8 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import static javax.swing.BorderFactory.createCompoundBorder;
@@ -62,6 +64,28 @@ public abstract class ClientComponent extends ClientIdentityObject {
     public boolean react = false; // custom holds the React component name
 
     public ClientComponent() {
+    }
+
+    // what is inside it, walked down: a container's children, a grid's record (ClientGrid), which has no container and
+    // is in its grid
+    public List<ClientComponent> getChildren() {
+        return Collections.emptyList();
+    }
+    // ... and the container or the component with this id there, this one included - what the server names by its id
+    public ClientContainer findContainerByID(int id) {
+        for (ClientComponent child : getChildren()) {
+            ClientContainer result = child.findContainerByID(id);
+            if (result != null) return result;
+        }
+        return null;
+    }
+    public ClientComponent findComponentByID(int id) {
+        if (id == this.ID) return this;
+        for (ClientComponent child : getChildren()) {
+            ClientComponent result = child.findComponentByID(id);
+            if (result != null) return result;
+        }
+        return null;
     }
 
     public Integer getSize(boolean vertical) {

@@ -1970,8 +1970,12 @@ public class ClientFormController implements AsyncListener {
         ClientFormLayout layout = getLayout();
         if(clientContainer.main)
             updateFormCaption();
-        else
-            layout.getContainerView(clientContainer.container).updateCaption(clientContainer);
+        else {
+            // none is built for what a grid's record holds: this client has no map, calendar or custom view to show it
+            ClientContainerView containerView = layout.getContainerView(clientContainer.container);
+            if(containerView != null)
+                containerView.updateCaption(clientContainer);
+        }
     }
 
     private abstract class RmiCheckNullFormRequest<T> extends RmiRequest<T> {

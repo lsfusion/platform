@@ -2,12 +2,14 @@ package lsfusion.gwt.client;
 
 import com.google.gwt.junit.client.GWTTestCase;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
+import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.filter.user.GFilterValueDTO;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import lsfusion.gwt.client.form.view.Column;
@@ -20,7 +22,8 @@ import java.util.LinkedHashMap;
 
 // What the client takes of the user orders and filters the server reports for a group: the orders in their priority
 // order, by the property and its column key, true - ascending - no orders too, as an empty list -; the filters as they
-// are. And the filter it reports selected in a filter group, none too
+// are. And the filter it reports selected in a filter group, none too. And a component the changes name by its id,
+// wherever the design has it - in a grid's record too
 public class GFormChangesTest extends GWTTestCase {
     @Override public String getModuleName() { return "lsfusion.gwt.main"; }
 
@@ -132,5 +135,40 @@ public class GFormChangesTest extends GWTTestCase {
         GFormChanges changes = GFormChanges.remap(form, noChanges());
         assertFalse(changes.userOrders.containsKey(group));
         assertFalse(changes.userFilters.containsKey(group));
+    }
+
+    // what a grid's record holds - what a design puts into GRID(g): a container with no container of its own, inside its
+    // grid - is found by the id the server names it by, as what any container holds is: a container's caption, a tab
+    // to activate, a container to collapse
+    public void testWhatAGridsRecordHoldsIsFoundById() {
+        setUpForm();
+        GContainer main = new GContainer();
+        main.ID = 1; main.main = true;
+        form.mainContainer = main;
+        GGrid grid = new GGrid();
+        grid.ID = 2; grid.container = main;
+        main.children.add(grid);
+        GContainer record = new GContainer();
+        record.ID = 3; record.recordContainer = grid;
+        grid.record = record;
+        GContainer card = container(4, record), pages = container(5, record), page = container(6, pages);
+        GFormChangesDTO dto = noChanges();
+        dto.properties = new GPropertyReaderDTO[] {new GPropertyReaderDTO(4, GFormChanges.GPropertyReadType.CONTAINER_CAPTION, 0)};
+        dto.propertiesValueKeys = new GGroupObjectValue[][] {{}};
+        dto.propertiesValueValues = new Serializable[][] {{}};
+        dto.activateTabsIds = new int[] {6};
+        dto.collapseContainerIds = new int[] {4};
+
+        GFormChanges changes = GFormChanges.remap(form, dto);
+        assertTrue(changes.properties.containsKey(card.captionReader));
+        assertEquals(Collections.singletonList(page), changes.activateTabs);
+        assertEquals(Collections.singletonList(card), changes.collapseContainers);
+    }
+
+    private static GContainer container(int id, GContainer parent) {
+        GContainer container = new GContainer();
+        container.ID = id; container.container = parent;
+        parent.children.add(container);
+        return container;
     }
 }

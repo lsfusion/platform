@@ -165,30 +165,13 @@ public class ClientContainer extends ClientComponent {
         return custom != null;
     }
 
+    @Override
     public ClientContainer findContainerByID(int id) {
         if (id == this.ID) return this;
-        for (ClientComponent comp : children) {
-            if (comp instanceof ClientContainer) {
-                ClientContainer result = ((ClientContainer) comp).findContainerByID(id);
-                if (result != null) return result;
-            }
-        }
-        return null;
+        return super.findContainerByID(id);
     }
 
-    public ClientComponent findComponentByID(int id) {
-        if (id == this.ID) return this;
-        for (ClientComponent comp : children) {
-            if (comp instanceof ClientContainer) {
-                ClientComponent result = ((ClientContainer) comp).findComponentByID(id);
-                if (result != null) return result;
-            } else if(id == comp.ID)
-                return comp;
-        }
-        return null;
-
-    }
-
+    @Override
     public List<ClientComponent> getChildren() {
         return children;
     }

@@ -126,15 +126,10 @@ public class GContainer extends GComponent {
         return draws;
     }
 
+    @Override
     public GContainer findContainerByID(int id) {
         if (id == this.ID) return this;
-        for (GComponent comp : children) {
-            if (comp instanceof GContainer) {
-                GContainer result = ((GContainer) comp).findContainerByID(id);
-                if (result != null) return result;
-            }
-        }
-        return null;
+        return super.findContainerByID(id);
     }
 
     public GContainer findContainerBySID(String sID) {
@@ -143,19 +138,6 @@ public class GContainer extends GComponent {
             if (comp instanceof GContainer) {
                 GContainer result = ((GContainer) comp).findContainerBySID(sID);
                 if (result != null) return result;
-            }
-        }
-        return null;
-    }
-
-    public GComponent findComponentByID(int id) {
-        if (id == this.ID) return this;
-        for (GComponent comp : children) {
-            if (comp instanceof GContainer) {
-                GComponent result = ((GContainer) comp).findComponentByID(id);
-                if (result != null) return result;
-            } else {
-                if (id == comp.ID) return comp;
             }
         }
         return null;
