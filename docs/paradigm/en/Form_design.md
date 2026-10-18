@@ -158,7 +158,7 @@ The automatic design is generated as follows:
             -   `TOOLBARBOX(<group of objects / tree>)`: contains all the components of a toolbar (responsible for layout inside the toolbar). Horizontal container. Alignment: `STRETCH`
                 -   `TOOLBARLEFT(<group of objects / tree>)`: the left side of a toolbar. Horizontal container. Alignment: `CENTER`.  
                     -   `TOOLBARSYSTEM(<group of objects / tree>)`: the base component of the System toolbar. Alignment: `CENTER`.
-                    -   `POPUP(<group of objects / tree>)`: a collapsed popup container (shown as a "⋮" menu) that holds the components moved into it.
+                    -   `POPUP(<group of objects / tree>)`: a collapsed popup container (shown as a "⋮" menu) that contains the components of the properties displayed in the `POPUP` [view](Interactive_view.md#property) and [display group](Form_structure.md#drawgroup) equal to the specified one, and the components moved into it.
                 -   `TOOLBARRIGHT(<group of objects / tree>)`: the right side of a toolbar. Horizontal container. Extension coefficient: `1`, alignment: `CENTER`.
                     -   `CALCULATIONS(<group of objects / tree>)`: base component of the table calculations. Extension coefficient: `1`.
                     -   `FILTERGROUPS(<group of filters>)`: contains all the components that are created for filter groups corresponding to a object group. Horizontal container. Alignment: `CENTER`.

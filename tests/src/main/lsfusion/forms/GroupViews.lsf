@@ -1,0 +1,59 @@
+MODULE GroupViews;
+
+REQUIRE TestUtils;
+
+// a group's view is the default view of its properties: a property that names no view of its own - or GRID, a column
+// only in a group shown as a table - is in the group's popup container when the group is in POPUP view and in its
+// toolbar in TOOLBAR view, also when an extension of the form gives the group its view. It was in the group's panel,
+// the default view of a property (GRID) taken for one it named. Another view the property names wins, and an action is
+// in the panel unless it names another (#1891)
+
+CLASS GvItem 'Item';
+gvName 'Name' = DATA STRING[20] (GvItem);
+gvCode 'Code' = DATA STRING[10] (GvItem);
+gvNote 'Note' = DATA STRING[30] (GvItem);
+gvTouch 'Touch' (GvItem i) { gvCode(i) <- 'touched'; }
+
+FORM gvPopup 'Popup'
+    OBJECTS i = GvItem POPUP
+    PROPERTIES(i) gvName, gvCode PANEL, gvNote GRID, gvTouch
+;
+
+FORM gvToolbar 'Toolbar'
+    OBJECTS i = GvItem TOOLBAR
+    PROPERTIES(i) gvName, gvCode PANEL
+;
+
+FORM gvGrid 'Grid'
+    OBJECTS i = GvItem
+    PROPERTIES(i) gvName, gvCode POPUP
+;
+
+FORM gvLater 'Later'
+    OBJECTS i = GvItem
+    PROPERTIES(i) gvName
+;
+
+EXTEND FORM gvLater
+    EXTEND OBJECTS i POPUP
+;
+
+testAGroupInPopupViewHasItsPropertiesInItsPopup 'A group in POPUP view has its properties in its popup container' () {
+    assertPlaced('GroupViews.gvPopup', 'PROPERTY(gvName(i))', 'POPUP(i)');
+    assertPlaced('GroupViews.gvPopup', 'PROPERTY(gvNote(i))', 'POPUP(i)');
+    assertPlaced('GroupViews.gvPopup', 'PROPERTY(gvCode(i))', 'GROUP(,i)');
+    assertPlaced('GroupViews.gvPopup', 'PROPERTY(gvTouch(i))', 'GROUP(,i)');
+}
+
+testAGroupInToolbarViewHasItsPropertiesInItsToolbar 'A group in TOOLBAR view has its properties in its toolbar' () {
+    assertPlaced('GroupViews.gvToolbar', 'PROPERTY(gvName(i))', 'TOOLBAR(i)');
+    assertPlaced('GroupViews.gvToolbar', 'PROPERTY(gvCode(i))', 'GROUP(,i)');
+}
+
+testAPropertyInPopupViewIsInItsGroupsPopup 'A property in POPUP view of a group in GRID view is in the group\'s popup container' () {
+    assertPlaced('GroupViews.gvGrid', 'PROPERTY(gvCode(i))', 'POPUP(i)');
+}
+
+testAGroupGivenItsViewLaterHasItsPropertiesThere 'A group an extension of the form puts in POPUP view has its properties in its popup container' () {
+    assertPlaced('GroupViews.gvLater', 'PROPERTY(gvName(i))', 'POPUP(i)');
+}

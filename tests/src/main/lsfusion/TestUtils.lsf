@@ -47,6 +47,11 @@ readShown () {
 assertWalked (STRING form, STRING component, STRING walks)
     INTERNAL 'lsfusion.tests.DesignWalksAction' (STRING, STRING, STRING);
 
+// which container of a form's design a component is in, both by the names DESIGN gives them - failing unless it is
+// `container`
+assertPlaced (STRING form, STRING component, STRING container)
+    INTERNAL 'lsfusion.tests.DesignPlacedAction' (STRING, STRING, STRING);
+
 // whether the open form the action runs in holds the changes of a group, by its name, back - a group in manual update
 // until it is updated (forceUpdate) -, as of the last readUpdatePending() that read the form's answer to its client:
 // what the client's update button and the group's dimmed rows show, which an answer that says nothing of it leaves be

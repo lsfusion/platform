@@ -956,18 +956,21 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return explicit == null ? getNFApplyObject(form, SetFact.EMPTY(), true, version) : explicit;
     }
 
+    // the draw's own view, but GRID - every property's default (Property's drawOptions) - makes a column only in a group
+    // in GRID view (isNFList): in a group in another view the draw is in the group's, so a group in TOOLBAR or POPUP view
+    // puts its properties there
     public boolean isNFToolbar(FormEntity formEntity, Version version) {
         ClassViewType explicitViewType = getNFViewType(version);
-        if (explicitViewType != null)
+        if (explicitViewType != null && !explicitViewType.isList())
             return explicitViewType.isToolbar();
 
         GroupObjectEntity toDraw = getNFToDraw(formEntity, version);
         return toDraw != null && toDraw.getNFViewType(version).isToolbar();
     }
 
-    public boolean isNFPopup(FormEntity formEntity, Version version) {
+    public boolean isNFPopup(FormEntity formEntity, Version version) { // as isNFToolbar
         ClassViewType explicitViewType = getNFViewType(version);
-        if (explicitViewType != null)
+        if (explicitViewType != null && !explicitViewType.isList())
             return explicitViewType.isPopup();
 
         GroupObjectEntity toDraw = getNFToDraw(formEntity, version);

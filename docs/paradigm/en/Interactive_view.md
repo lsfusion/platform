@@ -46,7 +46,7 @@ For each object group, you can specify which *default view* the properties of th
 For the remainder of the section, the behavior of properties and actions is exactly the same and so we will use only the term property (behavior is absolutely identical for actions).
 :::
 
-If necessary, the developer can explicitly specify which view a property should use.
+If necessary, the developer can explicitly specify which view a property should use. A property in the table column view whose display group is not shown as a table (its view is `PANEL`, `TOOLBAR` or `POPUP`) is displayed in the view of that group.
 
 If at any point there are no properties displayed in the table for the object group, the table is automatically hidden.
 
