@@ -1537,7 +1537,7 @@ search box of [`ItemBoard`](#filters), without its list, is such a panel.
 The conditions the component sets are the group's own: a `FILTER` action, a pivot's drill-down and this component all
 change one list, so they cannot disagree.
 
-`TOOLBARSYSTEM(o)`, `FILTERCONTROLS(o)` and `FILTERGROUP(f)` are not containers and do not take `custom`.
+`TOOLBARSYSTEM(o)`, `FILTERCONTROLS(o)` and `FILTERGROUP(f)` are not containers, but each takes a `custom` of its own, and a React component then draws it in its place ([A component's own view](#component-views)).
 
 Receiving a group's state does not make a component the only one drawing it. Which components are drawn is decided
 by the design and by what is placed with `<Platform>`, not by what `data` contains — the state is the group's, whoever draws it. So
