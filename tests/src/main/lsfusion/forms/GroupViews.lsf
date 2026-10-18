@@ -6,7 +6,8 @@ REQUIRE TestUtils;
 // only in a group shown as a table - is in the group's popup container when the group is in POPUP view and in its
 // toolbar in TOOLBAR view, also when an extension of the form gives the group its view. It was in the group's panel,
 // the default view of a property (GRID) taken for one it named. Another view the property names wins, and an action is
-// in the panel unless it names another (#1891)
+// in the panel unless it names another (#1891). And a group in POPUP view, which shows its current object alone as one
+// in PANEL or TOOLBAR view does, has a box that takes the room its content needs, as theirs; it stretched as a table's
 
 CLASS GvItem 'Item';
 gvName 'Name' = DATA STRING[20] (GvItem);
@@ -56,4 +57,10 @@ testAPropertyInPopupViewIsInItsGroupsPopup 'A property in POPUP view of a group 
 
 testAGroupGivenItsViewLaterHasItsPropertiesThere 'A group an extension of the form puts in POPUP view has its properties in its popup container' () {
     assertPlaced('GroupViews.gvLater', 'PROPERTY(gvName(i))', 'POPUP(i)');
+}
+
+testAGroupInPopupViewHasABoxAsAPanelOne 'The box of a group in POPUP view does not stretch, as one in a panel' () {
+    assertFlex('GroupViews.gvPopup', 'BOX(i)', 0);
+    assertFlex('GroupViews.gvToolbar', 'BOX(i)', 0);
+    assertFlex('GroupViews.gvGrid', 'BOX(i)', 1);
 }

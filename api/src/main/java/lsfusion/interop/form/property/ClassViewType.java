@@ -5,8 +5,9 @@ public enum ClassViewType {
 
     public static ClassViewType DEFAULT = LIST;
     
+    // a view in which a group shows its current object alone, as in a panel: all but a table's
     public boolean isPanel() {
-        return this == PANEL || this == TOOLBAR;
+        return this == PANEL || this == TOOLBAR || this == POPUP;
     }
 
     public boolean isToolbar() {

@@ -52,6 +52,11 @@ assertWalked (STRING form, STRING component, STRING walks)
 assertPlaced (STRING form, STRING component, STRING container)
     INTERNAL 'lsfusion.tests.DesignPlacedAction' (STRING, STRING, STRING);
 
+// the extension coefficient a component of a form's design gets, the component by the name DESIGN gives it - failing
+// unless it is `flex`
+assertFlex (STRING form, STRING component, INTEGER flex)
+    INTERNAL 'lsfusion.tests.DesignFlexAction' (STRING, STRING, INTEGER);
+
 // whether the open form the action runs in holds the changes of a group, by its name, back - a group in manual update
 // until it is updated (forceUpdate) -, as of the last readUpdatePending() that read the form's answer to its client:
 // what the client's update button and the group's dimmed rows show, which an answer that says nothing of it leaves be
