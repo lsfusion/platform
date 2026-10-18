@@ -63,6 +63,12 @@ assertFlex (STRING form, STRING component, INTEGER flex)
 updatePendingInForm = DATA LOCAL BOOLEAN (STRING);
 readUpdatePending INTERNAL 'lsfusion.tests.ReadUpdatePendingAction' ();
 
+// whether the open form the action runs in takes a column - a list property of a group, by its name in the form - as
+// shown, as of the last readShownColumns(), read the way the form reads its answer to its client: what it sends the
+// client the values of, and the drop of once it stops showing it
+shownColumnInForm = DATA LOCAL BOOLEAN (STRING);
+readShownColumns INTERNAL 'lsfusion.tests.ReadShownColumnsAction' ();
+
 // a list group of the open form the action runs in, by its name, switched to one of its views - GRID, PIVOT, ... -, as
 // the switch on a client's toolbar asks for it: a pivot holds the group's changes back until it is updated
 changeListView INTERNAL 'lsfusion.tests.ChangeListViewAction' (STRING, STRING);

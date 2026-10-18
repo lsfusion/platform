@@ -1,0 +1,44 @@
+MODULE ReactCount;
+
+REQUIRE TestUtils;
+
+// a list group gets a count of its rows for its pivot, COUNT(<group>), shown only in the pivot (its SHOWIF): a group
+// whose rows a React view draws is never in the pivot, and its client keeps nothing of that count, so the form never
+// takes it as shown - what the form takes as shown it sends the client the values of, and the drop of once it stops
+// showing it -, whatever the form's state (#1892). Before the fix it did, on a page a tab strip does not show: the form
+// reads the SHOWIF of what such a page holds once the page is shown, where something the page holds shows it anyway (a
+// property with no SHOWIF), and takes the property as shown meanwhile - so a CANCEL, which changes what the count's
+// SHOWIF reads, made the count shown and sent its values, showing the page then dropped it, and the web client failed
+// the whole answer on either. The count of a group the platform draws is taken as shown on the same step: what the step
+// reaches
+
+CLASS RcItem 'Item';
+rcName 'Name' = DATA STRING[20] (RcItem);
+
+FORM rcPages 'Pages'
+    OBJECTS a = RcItem
+    PROPERTIES(a) READONLY aName = rcName
+    OBJECTS b = RcItem
+    PROPERTIES(b) READONLY bName = rcName
+    OBJECTS c = RcItem
+    PROPERTIES(c) READONLY cName = rcName
+;
+
+DESIGN rcPages {
+    NEW pages FIRST {
+        tabbed = TRUE;
+        NEW page1 { custom = 'RcPage'; MOVE BOX(a); }
+        NEW page2 { custom = 'RcPage'; MOVE BOX(b); }
+        NEW page3 { MOVE BOX(c); }
+    }
+}
+
+testACancelShowsNoReactCount 'A CANCEL does not show the count of a group a React view draws on a page not shown' () {
+    SHOW rcPages NOWAIT {
+        readShownColumns(); // the first answer, which reads every SHOWIF
+        CANCEL;
+        readShownColumns();
+        assertFalse(shownColumnInForm('COUNT(b)'), 'a CANCEL showed the count of a group a React view draws on a page not shown');
+        assertTrue(shownColumnInForm('COUNT(c)'), 'a CANCEL did not show the count of a group the platform draws on a page not shown: the steps no longer reach what they test');
+    };
+}

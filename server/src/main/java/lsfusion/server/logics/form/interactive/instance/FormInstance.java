@@ -2628,6 +2628,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private boolean isPropertyStaticShown(ComponentView drawComponent, PropertyDrawInstance drawProperty, ImSet<GroupObjectInstance> propRowColumnGrids) {
+        // what its client keeps nothing of, whatever its SHOWIF says (FormView.reactKeepsNothing)
+        if (entity.view.reactKeepsNothing(drawProperty.getEntity()))
+            return false;
+
         if(!drawProperty.isInInterface(propRowColumnGrids, true) && !drawProperty.getEntity().isSelector() && drawProperty.propertyShowIf == null) { // allow SHOWIF / SELECTOR to decide visibility dynamically
             return false;
         }

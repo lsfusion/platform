@@ -315,6 +315,19 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     public boolean reactKeepsNothing(ComponentView component) {
         return component.getSID() == null && component.isReactDrawn();
     }
+    // ... and WHAT REACT KEEPS NOTHING OF as a PROPERTY: one a React view carries by no name - the platform's own COUNT
+    // of a list group, the pivot's, where React draws the group's rows, any other being refused
+    // (checkReactProjectionNames) -, which the client keeps nothing of: the form never shows it, so nothing of it is
+    // read or sent, whatever the form's state (FormInstance.isPropertyStaticShown). Its SHOWIF alone does not do it: a
+    // group React draws is never in the pivot the COUNT is shown in (checkReactRowsListView), but the form reads the
+    // SHOWIF of what a page a tab strip does not show holds only once the page is shown - where the page is shown
+    // anyway, by a property with no SHOWIF there -, and takes the property as shown until then
+    // (FormInstance.updatePropertiesShowIfs). One the platform draws is the platform's, which keeps it (mirrors
+    // GReactFormData.reactKeepsNothing)
+    public boolean reactKeepsNothing(PropertyDrawEntity property) {
+        PropertyDrawView view = get(property);
+        return !hasEntry(view) && nameScope(view) != null && !isPlatformDrawn(view);
+    }
 
     // where what a COMPONENT draws is drawn - its content: the React view that draws it, its own where its custom is a
     // React component, null when the platform does - a platform-drawn one too, whose content is the platform's wherever
