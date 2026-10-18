@@ -1,0 +1,22 @@
+MODULE CustomOnPropertyInReact;
+
+REQUIRE System;
+
+// a property's custom is its CUSTOM render function, a view of its own: where a CUSTOM REACT container draws the
+// group's rows, the platform draws the property per row and the container places it - by its name, which NOEXTID takes
+// away (the FORM's spelling: CustomRendererInReact)
+CLASS DesignRendererItem;
+designRendererQty = DATA INTEGER (DesignRendererItem);
+
+FORM customOnPropertyInReact
+    OBJECTS i = DesignRendererItem
+    PROPERTIES(i) designRendererQty NOEXTID
+;
+
+DESIGN customOnPropertyInReact {
+    PROPERTY(designRendererQty(i)) { custom = 'designRendererStars'; }
+    NEW board {
+        custom = 'DesignRendererBoard';
+        MOVE BOX(i);
+    }
+}

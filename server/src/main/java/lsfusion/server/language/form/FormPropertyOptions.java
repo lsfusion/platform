@@ -79,7 +79,7 @@ public class FormPropertyOptions {
     private FormSessionScope formSessionScope;
 
     // NOCUSTOM: the platform's standard view, so a custom view above the property places it rather than drawing it
-    private String custom; // the custom of the property's view: Custom.NOCUSTOM
+    private String custom; // the property's custom it gives: Custom.NOCUSTOM
 
     //integration options
     private Boolean attr;

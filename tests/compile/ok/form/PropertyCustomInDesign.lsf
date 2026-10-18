@@ -1,0 +1,17 @@
+MODULE PropertyCustomInDesign;
+
+REQUIRE System;
+
+// a property's custom is its own, as its caption is: the design names its CUSTOM render function as the FORM does, and
+// NULL gives it the standard view, as NOCUSTOM does
+propertyCustomNote = DATA STRING[50] ();
+propertyCustomQty = DATA INTEGER ();
+
+FORM propertyCustomInDesign
+    PROPERTIES() propertyCustomNote, propertyCustomQty CUSTOM 'propertyCustomBar' CHANGE 'propertyCustomEdit'
+;
+
+DESIGN propertyCustomInDesign {
+    PROPERTY(propertyCustomNote()) { custom = 'propertyCustomStars'; } // what CUSTOM 'propertyCustomStars' says
+    PROPERTY(propertyCustomQty()) { custom = NULL; } // what NOCUSTOM says: no render function, no editor
+}

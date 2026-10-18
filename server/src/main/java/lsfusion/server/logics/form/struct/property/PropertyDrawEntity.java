@@ -111,7 +111,9 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     private final NFProperty<String> askConfirmMessage = NFFact.property();
 
     private final NFProperty<ClassViewType> viewType = NFFact.property(); // assert not null, after initialization
-    private final NFProperty<String> customRenderFunction = NFFact.property();
+    // the property's custom, as its caption is its own: what CUSTOM, SELECT, NOSELECT or NOCUSTOM give it - and the
+    // design's custom and select -, the one given last; null: nothing said, the one the property declares
+    private final NFProperty<String> custom = NFFact.property();
     public static final String SELECT = "<<select>>";
     public static final String NOSELECT = "<<no>>";
     public static final String AUTOSELECT = "<<auto>>";
@@ -242,29 +244,13 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         this.attr.set(attr, version);
     }
 
-    // what the standard view - NOCUSTOM, `custom = NULL` in the design (PropertyDrawView.setCustom) - leaves of the
-    // CUSTOM functions: no renderer, not even the one the property declares, and no editor; SELECT / NOSELECT stay, the
-    // standard view being the property's VIEW, not a value of the render function they share. Given in one option
-    // list with CUSTOM, NOCUSTOM is applied after it (ScriptingFormEntity), so it wins there; across statements the
-    // last one does
-    public void dropCustomFunctions(Version version) {
-        String custom = customRenderFunction.getNF(version);
-        if (isCustomRenderFunction(custom != null ? custom : getInheritedProperty().getCustomRenderFunction()))
-            customRenderFunction.set(Custom.NOCUSTOM, version); // none, and not the one the property declares either
-        customChangeFunction.set(null, version);
-    }
-
-    // whether the FORM gives the property a CUSTOM render function, a view of its own: a custom view above it then does
-    // not draw the property but places it (PropertyDrawView.hasExplicitCustom). A renderer the property declares is the
-    // property's default, not the form's word, and SELECT and an editor alone say nothing of who draws: neither counts
-    public boolean hasCustomRenderFunction() {
-        return isCustomRenderFunction(customRenderFunction.get());
-    }
-
-    // a render function of CUSTOM's, and not SELECT's, NOSELECT's or what NOCUSTOM leaves
-    private static boolean isCustomRenderFunction(String custom) {
-        return custom != null && !custom.equals(NOSELECT) && !custom.startsWith(SELECT)
-                && !custom.equals(Custom.NOCUSTOM);
+    // whether the form gives the property a view of its own, the platform's - the standard one (NOCUSTOM), a CUSTOM
+    // render function or a SELECT -: a custom view above it then does not draw the property but places it
+    // (PropertyDrawView.hasExplicitCustom). What the property declares is its default, not the form's word, NOSELECT
+    // gives no view, and an editor alone says nothing of who draws: none of them counts
+    public boolean hasExplicitCustom() {
+        String custom = this.custom.get();
+        return custom != null && !custom.equals(NOSELECT);
     }
 
     public boolean isExtNull() {
@@ -706,8 +692,11 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return eventID.get();
     }
 
-    public void setCustomRenderFunction(String customRenderFunction, Version version) {
-        this.customRenderFunction.set(customRenderFunction, version);
+    // NOCUSTOM, the standard view, drops CUSTOM's editor too - a SELECT given after it does not bring it back
+    public void setCustom(String custom, Version version) {
+        this.custom.set(custom, version);
+        if (Custom.NOCUSTOM.equals(custom))
+            customChangeFunction.set(null, version);
     }
 
     public void setCustomChangeFunction(String customChangeFunction, Version version) {
@@ -1162,13 +1151,16 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         if(actionOrProperty instanceof PropertyObjectEntity) {
             if(getCustomChangeFunction() != null)
                 return null;
+            // the standard view: no selection from a list, not an automatic one either
+            if(Custom.NOCUSTOM.equals(this.custom.get()))
+                return null;
 
             String elementType = null;
 
             boolean forceSelect = false;
             Boolean forceFilter = null;
 
-            String custom = getCustomRenderFunction();
+            String custom = getCustom();
             if(custom != null) {
                 if(custom.startsWith(SELECT)) {
                     custom = custom.substring(SELECT.length());
@@ -1249,7 +1241,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     }
 
     public boolean isCustomInterpreter() {
-        String custom = getCustomRenderFunction();
+        String custom = getCustom();
         return custom != null && custom.equals(INTERPRETER);
     }
 
@@ -1266,7 +1258,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         if(selectProperty != null)
             return "select" + selectProperty.type + (selectProperty.html ? "HTML" : "") + (selectProperty.changeValue ? "Value" : "") + selectProperty.elementType;
 
-        String custom = getCustomRenderFunction();
+        String custom = getCustom();
         if(custom != null) {
             if(custom.equals(NOSELECT) || custom.startsWith(SELECT))
                 return null;
@@ -1308,8 +1300,8 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return false;
     }
 
-    private String getCustomRenderFunction() {
-        String custom = customRenderFunction.get();
+    private String getCustom() {
+        String custom = this.custom.get();
         if(custom != null)
             return custom.equals(Custom.NOCUSTOM) ? null : custom; // NOCUSTOM: none, and none inherited
         return getInheritedProperty().getCustomRenderFunction();
@@ -1463,7 +1455,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         mapping.sets(askConfirmMessage, src.askConfirmMessage);
 
         mapping.sets(viewType, src.viewType);
-        mapping.sets(customRenderFunction, src.customRenderFunction);
+        mapping.sets(custom, src.custom);
         mapping.sets(customChangeFunction, src.customChangeFunction);
         mapping.sets(eventID, src.eventID);
 

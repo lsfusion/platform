@@ -579,15 +579,15 @@ public class ScriptingFormEntity {
         }
         String customRenderFunction = options.getCustomRenderFunction();
         if (customRenderFunction != null) {
-            property.setCustomRenderFunction(customRenderFunction, version);
+            property.setCustom(customRenderFunction, version);
         }
         String customEditorFunction = options.getCustomEditorFunction();
         if (customEditorFunction != null) {
             property.setCustomChangeFunction(customEditorFunction, version);
         }
-        String custom = options.getCustom(); // NOCUSTOM, the standard view, on the property's view as `custom = NULL`
-        if (custom != null)                  // gives it - after CUSTOM: given together, NOCUSTOM wins
-            property.view.setCustom(custom, version);
+        String custom = options.getCustom(); // NOCUSTOM, the standard view, as `custom = NULL` gives it - after CUSTOM
+        if (custom != null)                  // and SELECT: given together, NOCUSTOM wins
+            property.setCustom(custom, version);
 
         if (options.getToDraw() != null) {
             property.setToDraw(options.getToDraw(), form, version);

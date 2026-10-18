@@ -2,6 +2,7 @@ package lsfusion.server.language.proxy;
 
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.event.InputBindingEvent;
+import lsfusion.server.base.Custom;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.language.converters.KeyStrokeConverter;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
@@ -468,13 +469,26 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.setNotNull(notNull, getVersion());
     }
 
+    // a property's custom is the property's own, as its caption and showIf are (setCaption, setShowIf): `custom = NULL`
+    // says what NOCUSTOM says, and a name what CUSTOM 'name' says
+    @Override
+    public void setCustom(Object custom) {
+        if (isExplicitNull(custom))
+            target.entity.setCustom(Custom.NOCUSTOM, getVersion());
+        else if (custom instanceof LocalizedString)
+            target.entity.setCustom(custom.toString(), getVersion());
+        else
+            throw new UnsupportedOperationException("custom of a property is NULL, the standard view, or the name of its"
+                    + " CUSTOM render function, given as CUSTOM gives it: a string literal");
+    }
+
     @SuppressWarnings("unused")
     public void setSelect(Object select) {
         Version version = getVersion();
         if(select instanceof LocalizedString) {
-            target.entity.setCustomRenderFunction(PropertyDrawEntity.SELECT + select, version);
+            target.entity.setCustom(PropertyDrawEntity.SELECT + select, version);
         } else if(select instanceof PropertyObjectEntity && ((PropertyObjectEntity<?>) select).property.isExplicitNull()) {
-            target.entity.setCustomRenderFunction(PropertyDrawEntity.NOSELECT, version);
+            target.entity.setCustom(PropertyDrawEntity.NOSELECT, version);
         } else {
             throw new UnsupportedOperationException("Unsupported value: " + select);
         }

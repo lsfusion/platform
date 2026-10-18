@@ -2,8 +2,8 @@ MODULE NoCustomNoSelectInReact;
 
 REQUIRE System;
 
-// NOCUSTOM is a word of its own, not a value SELECT / NOSELECT write over: given before NOSELECT it still makes the
-// platform draw the property, which the container then places by its name - and NOEXTID takes that away
+// NOCUSTOM given with NOSELECT wins, whichever is written first - a property has one custom, as it has one caption:
+// the platform draws the property, which the container then places by its name - and NOEXTID takes that away
 CLASS NoSelectItem;
 noSelectQty = DATA INTEGER (NoSelectItem);
 

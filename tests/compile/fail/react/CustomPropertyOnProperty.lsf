@@ -1,0 +1,16 @@
+MODULE CustomPropertyOnProperty;
+
+REQUIRE System;
+
+// a property's custom is its CUSTOM render function, named by a literal as CUSTOM names it - a property computes
+// nothing of it
+customPropertyNote = DATA STRING[50] ();
+customPropertyRenderer = DATA STRING[50] ();
+
+FORM customPropertyOnProperty
+    PROPERTIES() customPropertyNote
+;
+
+DESIGN customPropertyOnProperty {
+    PROPERTY(customPropertyNote()) { custom = customPropertyRenderer(); }
+}

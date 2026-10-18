@@ -267,7 +267,7 @@ In the current platform implementation, if the name and caption are not specifie
 
         Specifying the JavaScript functions responsible for displaying (`renderFunction`) and editing (`editFunction`) the property value. Each function is specified with a [string literal](Literals.md#strliteral) containing its name. If no function is specified after the `CHANGE` keyword, the default editing mechanism is used.
 
-        A render function given here makes the platform draw the value: inside a container a [React component](../how-to/How-to_Custom_React_views.md) draws, the property is then not drawn by that component from its data but placed by it with `<Platform name/>` — per row, for a property in the rows it draws. An editing function alone changes nothing there, and neither does a render function the property declares: the React component still draws the property.
+        A render function given here makes the platform draw the value: inside a container a [React component](../how-to/How-to_Custom_React_views.md) draws, the property is then not drawn by that component from its data but placed by it with `<Platform name/>` — per row, for a property in the rows it draws. An editing function alone changes nothing there, and neither does a render function the property declares: the React component still draws the property. The design attribute `custom` gives the render function too: `custom = 'renderFunction'` on the property's component says what `CUSTOM 'renderFunction'` says.
 
     - `SELECT selectType`
 
@@ -281,10 +281,12 @@ In the current platform implementation, if the name and caption are not specifie
 
         Keyword prohibiting the automatic selection of the view as a list of possible values.
 
+    The property has one custom view: these forms, `NOCUSTOM` below and the design attributes `custom` and `select` replace one another, and the one given last is the one it has. A `SELECT` given here makes the platform draw the value as a render function given in `CUSTOM` does — inside a container a React component draws, the component places the property with `<Platform name/>` —; `NOSELECT` does not.
+
 
 - `NOCUSTOM`
 
-    Keyword specifying the platform's standard view of the value: it drops the custom render and editing functions — the ones given in `CUSTOM`, and the ones the property itself declares —, while `SELECT` and `NOSELECT` stay as given. Inside a container a [React component](../how-to/How-to_Custom_React_views.md) draws, the platform then draws the property and the component places it with `<Platform name/>` — per row, for a property in the rows it draws — rather than drawing it from its data. Given together with `CUSTOM`, `NOCUSTOM` wins. The design attribute `custom = NULL` says the same.
+    Keyword specifying the platform's standard view of the value: no custom render or editing function — neither the ones given in `CUSTOM` nor the ones the property itself declares —, and no selection from a list either, neither a `SELECT` given before nor an automatic one. Inside a container a [React component](../how-to/How-to_Custom_React_views.md) draws, the platform then draws the property and the component places it with `<Platform name/>` — per row, for a property in the rows it draws — rather than drawing it from its data. Given together with `CUSTOM` or `SELECT`, `NOCUSTOM` wins. The design attribute `custom = NULL` says the same.
 
 - `OPTIONS propertyExpression`
 

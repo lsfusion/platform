@@ -1634,19 +1634,11 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         notNull.set(value,version);
     }
 
-    // a property's own view: the standard one the design or the FORM gives it - `custom = NULL`, NOCUSTOM:
-    // Custom.NOCUSTOM (ComponentView.custom) -, or a CUSTOM render function the FORM gives its draw
-    // (PropertyDrawEntity)
+    // a property's own view is what its custom gives - the property's, as its caption is: the design and the FORM give
+    // the same one (PropertyDrawEntity.custom)
     @Override
     public boolean hasExplicitCustom() {
-        return super.hasExplicitCustom() || entity.hasCustomRenderFunction();
-    }
-    // ... and the standard view, the one custom a property takes, drops the draw's CUSTOM renderer and editor too
-    @Override
-    public void setCustom(String value, Version version) {
-        assert Custom.NOCUSTOM.equals(value);
-        super.setCustom(value, version);
-        entity.dropCustomFunctions(version);
+        return entity.hasExplicitCustom();
     }
 
     public boolean isSticky(FormInstanceContext context) {
