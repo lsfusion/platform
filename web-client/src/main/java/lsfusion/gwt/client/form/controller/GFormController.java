@@ -780,9 +780,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // each group's rows first, in the order of the groups: a TABLE whole - a list group's grid, or a tree, at its top
     // group -: its toolbar and what draws its rows, of the table's kind, each decided once - the platform's or React's
     // (initializeGrid, initializeTree) -, then what goes over them and its groups' own controllers (initializeTable);
-    // or a group in PANEL view's own - or TOOLBAR -, with no table; then the form's panel; then the controller of each
-    // property and component, from the questions the platform's controllers were made by: the platform's controller of
-    // it, or what React has of it, which the projection makes from the platform's
+    // or a group in PANEL view's own - or TOOLBAR, or POPUP -, with no table; then the form's panel; then the
+    // controller of each property and component, from the questions the platform's controllers were made by: the
+    // platform's controller of it, or what React has of it, which the projection makes from the platform's
     // (GReactFormData.createPropertyController / createComponentController) - a property's entry where React draws or
     // labels it, a component's descriptor -; then each filter group's; and the projection sets out what it has
     private void initializeControllers() {
@@ -792,7 +792,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
                     initializeTable(group.parent);
             } else if (group.viewType.isList()) // a GRID, whole
                 initializeTable(group.grid);
-            else // in PANEL view - or TOOLBAR -: no table
+            else // in PANEL view - or TOOLBAR, or POPUP -: no table
                 initializeGroupControllers(group, new GPlatformPanelGroupController(), GUserOrdersController.NONE, GUserFiltersController.NONE);
 
         // kept even for React: getPlatformPropertyController/update rely on it; it stays empty when only react-owned

@@ -10,11 +10,11 @@ import lsfusion.gwt.client.form.property.PValue;
 
 import java.util.ArrayList;
 
-// the form's controller of a group in PANEL view - or TOOLBAR -, the platform's: the group shows its current object
-// alone, whose properties the form's panel draws (GPlatformFormPanelController), so there are no rows here - no keys
-// to show, no current row to move, no nodes to open, none of what a row's readers bring (its background, foreground,
-// selection, options) to draw -, and the current key, as the server holds it, is the whole key the form asks for
-// (GGroupObjectValue.EMPTY), as it was while a grid with no table stood for such a group
+// the form's controller of a group in PANEL view - or TOOLBAR, or POPUP -, the platform's: the group shows its current
+// object alone, whose properties the form's panel draws (GPlatformFormPanelController), so there are no rows here - no
+// keys to show, no current row to move, no nodes to open, none of what a row's readers bring (its background,
+// foreground, selection, options) to draw -, and the current key, as the server holds it, is the whole key the form
+// asks for (GGroupObjectValue.EMPTY), as it was while a grid with no table stood for such a group
 public final class GPlatformPanelGroupController implements GGroupController {
     public GGroupObjectValue getSelectedKey() {
         return GGroupObjectValue.EMPTY;
