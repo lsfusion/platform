@@ -91,6 +91,8 @@ import lsfusion.gwt.client.form.property.GShowIfReader;
 import lsfusion.gwt.client.form.property.GValueElementClassReader;
 import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.async.GAsyncInput;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.interop.form.design.ReactProjectionNames;
@@ -3000,6 +3002,29 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject orders = field(field(f.sa.controller, "items"), "orders");
         String refused = refusedChange(orders, parse("{\"property\": \"nosuch\", \"desc\": true}"));
         assertTrue(refused, refused.startsWith("controller.items.orders.change(): unknown property 'nosuch' of object group 'items'"));
+    }
+    // a member's exec() runs the property's change event with no value given; a value the platform asks for before it
+    // runs the event - an input the client knows of in advance - is asked in the cell the change is made in, and a
+    // call has none: the call is refused with what the view does instead, and the form is handed nothing. It used to
+    // go out, the server asked for the value, and the client, opening its editor in no cell, failed the answer - an
+    // Internal Server Error. An event that asks for nothing in advance is run as it was
+    public void testAnExecOfAPropertyThatAsksForAValueIsRefused() {
+        Fixture f = new Fixture(r -> {
+            asksForAString(r.single); // single = DATA STRING (): its change, an input of a string
+            asksForAString(r.panel); // ... and an action that asks for a string first, INPUT s = STRING DO ...
+            r.panel.valueType = GActionType.instance;
+        });
+        assertRefusal("controller.single.exec(): 'single' asks for a value, which a view gives itself: call change(value)", refusedWith(member(f.sa, null, "single"), "exec", null));
+        assertRefusal("controller.items.panel.exec(): 'panel' asks for a value, which no call can give an action", refusedWith(member(f.sb, "items", "panel"), "exec", null));
+        assertTrue(f.edits.toString(), f.edits.isEmpty());
+
+        f.single.asyncExecMap = new HashMap<>(); // its change asks for nothing in advance - an ON CHANGE of its own, say
+        assertNull(refusedWith(member(f.sa, null, "single"), "exec", null));
+        assertEquals(Arrays.asList("cell single@"), f.edits);
+    }
+    private static void asksForAString(GPropertyDraw property) {
+        property.asyncExecMap = new HashMap<>();
+        property.asyncExecMap.put(GEditBindingMap.CHANGE, new GAsyncInput(new GStringType(GExtInt.UNLIMITED, false, false), false, null, null, null));
     }
     // a sorting names a property, never a column of it: a property React draws is never in columns
     private static Column column(GPropertyDraw property) {

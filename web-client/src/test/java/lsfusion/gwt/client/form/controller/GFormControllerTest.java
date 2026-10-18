@@ -7,12 +7,14 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.GFormChangesTest;
+import lsfusion.gwt.client.action.GRequestUserInputAction;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.data.GIntegerType;
+import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.filter.user.GFilterControls;
@@ -25,6 +27,7 @@ import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
@@ -35,7 +38,7 @@ import lsfusion.gwt.client.navigator.window.GWindowFormType;
 // a grid of its own is built with the form's containers, before the controllers, and is sized by the grid's columns,
 // which the form counts before it builds the layout. A delta goes to the controller of each owner it carries something
 // of, and what React keeps nothing of has one that keeps nothing: what the delta carries of it is dropped, and the
-// rest of the delta applied
+// rest of the delta applied. An input the server asks for with no cell to enter it in is cancelled
 public class GFormControllerTest extends GWTTestCase {
     @Override public String getModuleName() { return "lsfusion.gwt.main"; }
 
@@ -136,6 +139,26 @@ public class GFormControllerTest extends GWTTestCase {
         controller.applyRemoteChanges(changes, 1);
         assertTrue(controller.needConfirm());
     }
+
+    // an input asks for its value in the cell the change asking for it was made in; one asked for by no such change - a
+    // view's call, a key of what a React view draws, a form's event - finds no cell: it is cancelled, as a user cancels
+    // one, the action asking for it going on as it then would, and the console says why. The client used to open its
+    // editor in no cell and fail the server's answer - an Internal Server Error
+    public void testAnInputWithNoCellToEnterItInIsCancelled() {
+        GFormController controller = new GFormController(null, null, formContainer(), leafGridForm(), false, "leafGrid", 0, null);
+        GFormActionDispatcher dispatcher = new GFormActionDispatcher(controller); // as the form's after such a change: no cell
+        Object[] answer = new Object[1];
+        String said = consoleErrorsOf(() -> answer[0] = dispatcher.execute(new GRequestUserInputAction(GIntegerType.instance, null, false, false, null, null, null)));
+        assertSame(GUserInputResult.canceled, answer[0]);
+        assertTrue(said, said.contains("no cell to enter it in"));
+    }
+    // what the client writes on the console as an error while run runs (GwtClientUtils.consoleError)
+    private static native String consoleErrorsOf(Runnable run) /*-{
+        var said = [], error = console.error;
+        console.error = function (message) { said.push(message); };
+        try { run.@java.lang.Runnable::run()(); } finally { console.error = error; }
+        return said.join('\n');
+    }-*/;
 
     // a form of one list group whose rows the React view of its grid draws, GRID(items) { custom = 'LeafGrid'; }, with
     // two columns, as the server gives it - with nothing of its toolbar and filters to build

@@ -2507,9 +2507,17 @@ public class GReactFormData {
                 throw refusal(errorPrefix + "the value is missing - pass null to clear it, or call exec() to run the property's change event");
             changeCell(errorPrefix, objectOrKey, GSimpleStateTableView.convertFromJSUndefValue(property, value));
         }
-        // ... exec([row]): the property's change event, or the action, with no value given
+        // ... exec([row]): the property's change event, or the action, with no value given - but a value the platform
+        // asks for before it runs the event - its change type; the group change it makes of the change asks it first
+        // too - is asked in the cell the change is made in, and a call has none: the view gives a property's value
+        // itself, and an action's no call can give. One the event asks for only as it runs finds no cell either, and is
+        // cancelled (GFormActionDispatcher)
         void exec(String surface, JavaScriptObject objectOrKey) {
-            changeCell(controllerPrefix(surface), objectOrKey, PValue.UNDEFINED);
+            String errorPrefix = controllerPrefix(surface);
+            if (property.getChangeType() != null)
+                throw refusal(errorPrefix + "'" + property.integrationSID + "' asks for a value" + (property.isAction()
+                        ? ", which no call can give an action" : ", which a view gives itself: call change(value)"));
+            changeCell(errorPrefix, objectOrKey, PValue.UNDEFINED);
         }
         private void changeCell(String errorPrefix, JavaScriptObject objectOrKey, PValue value) {
             checkShown(errorPrefix);

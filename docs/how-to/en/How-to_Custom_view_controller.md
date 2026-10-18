@@ -133,6 +133,8 @@ function orderView(props) {
 
 A value passed to `change` reaches a property's change handler only when it requests a value from the user — the [default handler](../paradigm/Form_events.md#default), or a handler with a [value request](../paradigm/Value_request_REQUEST.md): the passed value is taken instead of the user's input. `null` is a value like any other. An action has no value to set: its member's `change` is refused, and it is run with `exec`, which passes none — `controller.o.edit.exec(row)` — so an action that asks the user for a value cannot be given one through its member.
 
+A member's call has no cell for the user to enter a value in, so it asks the user for none. Where the platform asks the user for the value before it runs the change handler — the [asynchronous input](../paradigm/Value_request_REQUEST.md) of the default handler, for one — the member's `exec` is refused: the view gives a property's value itself, with `change(value)`, and no member can give an action one. A value the handler requests only as it runs — an input in one branch of it, say — is cancelled, as the user cancels an input, and the handler goes on as it then does; the browser console says why.
+
 `batch(fn)` sends several changes together. Each is a member's own call, as it is outside a batch:
 
 ```js

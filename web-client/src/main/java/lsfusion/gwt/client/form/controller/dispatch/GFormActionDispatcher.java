@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.controller.dispatch;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import lsfusion.gwt.client.action.*;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
@@ -142,6 +143,13 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public Object execute(GRequestUserInputAction action) {
+        // an input asks for its value in the cell the change asking for it was made in; what is no such change - a view's
+        // call, a key of what a React view draws, a form's event - has no cell to ask it in: the input is cancelled, as a
+        // user cancels one, and the action asking for it goes on as it then would
+        if (editContext == null) {
+            GwtClientUtils.consoleError("an input is cancelled, as a user cancels one: there is no cell to enter it in, since what asked for it is no change made in a cell - a view's call, a key of what a React view draws, a form's event. A view gives a property's value itself, with change(value); an action takes no value from a view");
+            return GUserInputResult.canceled;
+        }
         return executeAsyncResult(onResult -> {
             // we'll be optimists and assume that this value will stay
             long dispatchingIndex = getDispatchingIndex();
