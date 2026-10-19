@@ -1,0 +1,135 @@
+MODULE UiPropertyFilter;
+
+REQUIRE TestUtils, SystemEvents;
+
+// the forms UiPropertyFilterIT works on in the browser - a property's filter, FILTER(<property>), drawn or placed by
+// React views (UiPropertyFilter.js) -, and the action it seeds the items with
+
+CLASS UiPfItem 'Item';
+uiPfName 'Name' = DATA ISTRING[50] (UiPfItem);
+uiPfCity 'City' = DATA ISTRING[50] (UiPfItem);
+uiPfPrice 'Price' = DATA INTEGER (UiPfItem);
+uiPfShown = DATA BOOLEAN (UiPfItem); // the items of the test that seeded last: the forms show only them
+
+// over the platform's filter panel - FILTERS(i), in BOX(i) - a view above the grid draws the name's filter, under the
+// form's SHOWIF, and places the city's, which the platform draws as the panel's row (custom = NULL)
+uiPfSearchShown 'Search shown' = DATA LOCAL BOOLEAN ();
+
+FORM uiPfOverPlatform 'Over the platform panel'
+    OBJECTS i = UiPfItem
+    PROPERTIES(i) READONLY uiPfName FILTER, uiPfCity FILTER, uiPfPrice
+    PROPERTIES() uiPfSearchShown
+    FILTERS uiPfShown(i)
+    ORDERS uiPfName(i)
+;
+
+DESIGN uiPfOverPlatform {
+    NEW search FIRST {
+        custom = 'UiPfSearch';
+        MOVE FILTER(uiPfName(i)) { showIf = uiPfSearchShown(); }
+        MOVE FILTER(uiPfCity(i)) { custom = NULL; }
+    }
+}
+
+// a view draws the whole group - its rows, its conditions and its properties' filters
+FORM uiPfBoard 'Whole group'
+    OBJECTS i = UiPfItem
+    PROPERTIES(i) READONLY uiPfName FILTER, uiPfCity FILTER, uiPfPrice
+    FILTERS uiPfShown(i)
+    ORDERS uiPfName(i)
+;
+
+DESIGN uiPfBoard {
+    BOX(i) { custom = 'UiPfBoard'; }
+}
+
+// the name's filter with a React view of its own, in a form the platform draws otherwise
+FORM uiPfOwn 'Filter of its own'
+    OBJECTS i = UiPfItem
+    PROPERTIES(i) READONLY uiPfName FILTER, uiPfCity FILTER, uiPfPrice
+    FILTERS uiPfShown(i)
+    ORDERS uiPfName(i)
+;
+
+DESIGN uiPfOwn {
+    FILTER(uiPfName(i)) { custom = 'UiPfOwn'; }
+}
+
+// a view draws the conditions - FILTERS(i) moved into its container -, the rows the platform's grid, under a container
+// whose SHOWIF a button turns: the name's filter, declared in the conditions' box, is the view's
+uiPfConditionsHidden = DATA LOCAL BOOLEAN ();
+uiPfToggleConditions 'Toggle conditions' () {
+    uiPfConditionsHidden() <- NOT uiPfConditionsHidden();
+}
+
+FORM uiPfInConditions 'In the conditions'
+    OBJECTS i = UiPfItem
+    PROPERTIES(i) READONLY uiPfName FILTER, uiPfPrice
+    PROPERTIES() uiPfToggleConditions
+    FILTERS uiPfShown(i)
+    ORDERS uiPfName(i)
+;
+
+DESIGN uiPfInConditions {
+    NEW conditions FIRST {
+        custom = 'UiPfConditions';
+        NEW conditionsShown {
+            showIf = NOT uiPfConditionsHidden();
+            MOVE FILTERS(i);
+        }
+    }
+}
+
+// the platform's filter panel with no box - FILTERS(i) removed, the panel showing none of its conditions -, a view
+// drawing the name's filter and a LOGICAL one's, whose false compares with NULL, and an action stating the name's
+// on the server
+uiPfCheap 'Cheap' (UiPfItem i) = uiPfPrice(i) < 25;
+
+FORM uiPfNoBox 'No filters box'
+    OBJECTS i = UiPfItem
+    PROPERTIES(i) READONLY uiPfName FILTER, uiPfCheap FILTER, uiPfPrice
+    FILTERS uiPfShown(i)
+    ORDERS uiPfName(i)
+;
+
+uiPfStateAn 'Name contains an' () {
+    FILTER PROPERTY uiPfNoBox.uiPfName(i) FROM 'an';
+}
+
+EXTEND FORM uiPfNoBox
+    PROPERTIES() uiPfStateAn
+;
+
+DESIGN uiPfNoBox {
+    NEW noBox FIRST {
+        custom = 'UiPfNoBox';
+        MOVE FILTER(uiPfName(i));
+        MOVE FILTER(uiPfCheap(i));
+    }
+    REMOVE FILTERS(i);
+}
+
+NAVIGATOR {
+    NEW FOLDER uiPf 'UI property filters' WINDOW toolbar {
+        NEW uiPfOverPlatform;
+        NEW uiPfBoard;
+        NEW uiPfOwn;
+        NEW uiPfInConditions;
+        NEW uiPfNoBox;
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiPropertyFilter.js') <- 1;
+}
+
+// four items shown from now on - name, city, price: Apple, Minsk, 10; Banana, Riga, 20; Cherry, Minsk, 30; Date,
+// Vilnius, 40
+uiPfSeed (ISTRING[50] apple, ISTRING[50] banana, ISTRING[50] cherry, ISTRING[50] date) {
+    uiPfShown(UiPfItem i) <- NULL;
+    NEW i = UiPfItem { uiPfName(i) <- apple; uiPfCity(i) <- 'Minsk'; uiPfPrice(i) <- 10; uiPfShown(i) <- TRUE; }
+    NEW i = UiPfItem { uiPfName(i) <- banana; uiPfCity(i) <- 'Riga'; uiPfPrice(i) <- 20; uiPfShown(i) <- TRUE; }
+    NEW i = UiPfItem { uiPfName(i) <- cherry; uiPfCity(i) <- 'Minsk'; uiPfPrice(i) <- 30; uiPfShown(i) <- TRUE; }
+    NEW i = UiPfItem { uiPfName(i) <- date; uiPfCity(i) <- 'Vilnius'; uiPfPrice(i) <- 40; uiPfShown(i) <- TRUE; }
+    APPLY;
+}
