@@ -22,6 +22,7 @@ The migration file allows you to handle changes to [canonical names](Naming.md#c
 ```
 PROPERTY oldNS.oldName[class1,...,classN] -> newNS.newName[class1,...,classN]
 STORED PROPERTY oldNS.oldName[class1,...,classN] -> newNS.newName[class1,...,classN]
+ACTION oldNS.oldName[class1,...,classN] -> newNS.newName[class1,...,classN]
 FORM PROPERTY oldNS.oldFormName.oldName(object1,...,objectN) -> newNS.newFormName.newName(object1,...,objectN)  
 CLASS oldNS.oldName -> newNS.newName
 OBJECT oldNS.oldClassName.oldName -> newNS.newClassName.newName
@@ -31,11 +32,11 @@ NAVIGATOR oldNS.oldName -> newNS.newName
 
 ### Changing the name of a property or action
 
-When renaming a [property](Properties.md)/[action](Actions.md) and/or when moving it to another [namespace](Naming.md#namespace), the canonical name of the property/action changes. Adding a `PROPERTY` change to the migration file specifying the old and new canonical names will allow you to preserve the security policy settings, as well as settings from the `Reflection.properties` table. If the property is [primary](Data_properties_DATA.md), to preserve data when changing the canonical name of this property **it is necessary** to add a `STORED PROPERTY` change. Then, when the server starts, the field corresponding to this property in the database table will be renamed. Otherwise, the old field will be renamed to the field with the name `<old ID>_deleted` (for example, when deleting a property), and a new field will be created with empty values. Apart from that the `STORED PROPERTY` type is equivalent to the `PROPERTY` type.
+When renaming a [property](Properties.md)/[action](Actions.md) and/or when moving it to another [namespace](Naming.md#namespace), the canonical name of the property/action changes. Adding a `PROPERTY` change to the migration file specifying the old and new canonical names of the property will allow you to preserve the security policy settings, as well as settings from the `Reflection.properties` table. For an action, an `ACTION` change is added in the same way, which will allow you to preserve the security policy settings, as well as references to this action in [scheduler](Scheduler.md) tasks. If the property is [primary](Data_properties_DATA.md), to preserve data when changing the canonical name of this property **it is necessary** to add a `STORED PROPERTY` change. Then, when the server starts, the field corresponding to this property in the database table will be renamed. Otherwise, the old field will be renamed to the field with the name `<old ID>_deleted` (for example, when deleting a property), and a new field will be created with empty values. Apart from that the `STORED PROPERTY` type is equivalent to the `PROPERTY` type.
 
 
 :::info
-On the right side of `STORED PROPERTY` and `PROPERTY` changes it is not necessary to specify a signature, as here the signature is automatically taken from the left side.
+On the right side of `STORED PROPERTY`, `PROPERTY` and `ACTION` changes it is not necessary to specify a signature, as here the signature is automatically taken from the left side.
 :::
 
 ### Changing the name of a property/action on a form
@@ -75,6 +76,7 @@ Since the name of a namespace is used in the canonical names of system elements,
 V0.3.1 {
     STORED PROPERTY Item.gender[Item.Article] -> Item.dataGender[Item.Article] // change of DATA property 
     PROPERTY System.SIDProperty[Reflection.Property] -> Reflection.dbNameProperty[Reflection.Property] // parallel transferring to another namespace and changing of the property name
+    ACTION Item.printLabel[Item.Article] -> Label.printLabel[Item.Article] // transferring of the action to another namespace
     FORM PROPERTY Item.itemForm.name(i) -> Item.itemForm.itemName(i)
 }
  

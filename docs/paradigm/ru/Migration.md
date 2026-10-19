@@ -22,6 +22,7 @@ V<номер версии> {
 ```
 PROPERTY oldNS.oldName[class1,...,classN] -> newNS.newName[class1,...,classN]
 STORED PROPERTY oldNS.oldName[class1,...,classN] -> newNS.newName[class1,...,classN]
+ACTION oldNS.oldName[class1,...,classN] -> newNS.newName[class1,...,classN]
 FORM PROPERTY oldNS.oldFormName.oldName(object1,...,objectN) -> newNS.newFormName.newName(object1,...,objectN)  
 CLASS oldNS.oldName -> newNS.newName
 OBJECT oldNS.oldClassName.oldName -> newNS.newClassName.newName
@@ -31,11 +32,11 @@ NAVIGATOR oldNS.oldName -> newNS.newName
 
 ### Изменение имени свойства или действия
 
-При переименовании [свойства](Properties.md) ([действия](Actions.md)) и/или при переносе его в другое [пространство имен](Naming.md#namespace) происходит изменение канонического имени этого свойства (действия). Добавление изменения типа `PROPERTY` в файл миграции с указанием старого и нового канонических имен позволит сохранить настройки политики безопасности, а также настройки из таблицы `Reflection.properties`. Если же свойство является [первичным](Data_properties_DATA.md), то для сохранения данных при изменении канонического имени такого свойства **необходимо** добавить изменение типа `STORED PROPERTY`. Тогда при запуске сервера соответствующее этому свойству поле в таблице БД будет переименовано. В противном случае старое поле будет переименовано в поле с именем `<старый идентификатор>_deleted`, как в случае удаления свойства, а новое поле будет создано с пустыми значениями. В остальном тип `STORED PROPERTY` эквивалентен типу `PROPERTY`.
+При переименовании [свойства](Properties.md) ([действия](Actions.md)) и/или при переносе его в другое [пространство имен](Naming.md#namespace) происходит изменение канонического имени этого свойства (действия). Добавление изменения типа `PROPERTY` в файл миграции с указанием старого и нового канонических имен свойства позволит сохранить настройки политики безопасности, а также настройки из таблицы `Reflection.properties`. Для действия аналогично добавляется изменение типа `ACTION`, которое позволит сохранить настройки политики безопасности, а также ссылки на это действие в заданиях [планировщика](Scheduler.md). Если же свойство является [первичным](Data_properties_DATA.md), то для сохранения данных при изменении канонического имени такого свойства **необходимо** добавить изменение типа `STORED PROPERTY`. Тогда при запуске сервера соответствующее этому свойству поле в таблице БД будет переименовано. В противном случае старое поле будет переименовано в поле с именем `<старый идентификатор>_deleted`, как в случае удаления свойства, а новое поле будет создано с пустыми значениями. В остальном тип `STORED PROPERTY` эквивалентен типу `PROPERTY`.
 
 
 :::info
-В правой части изменений типа `STORED PROPERTY` и `PROPERTY` необязательно указывать сигнатуру, в этом случае сигнатура автоматически возьмется из левой части.
+В правой части изменений типа `STORED PROPERTY`, `PROPERTY` и `ACTION` необязательно указывать сигнатуру, в этом случае сигнатура автоматически возьмется из левой части.
 :::
 
 ### Изменение имени свойства (действия) на форме
@@ -75,6 +76,7 @@ NAVIGATOR oldNS.oldName -> newNS.newName
 V0.3.1 {
     STORED PROPERTY Item.gender[Item.Article] -> Item.dataGender[Item.Article] // изменение имени DATA свойства
     PROPERTY System.SIDProperty[Reflection.Property] -> Reflection.dbNameProperty[Reflection.Property] // одновременный перенос в другое пространство имен и изменение имени свойства
+    ACTION Item.printLabel[Item.Article] -> Label.printLabel[Item.Article] // перенос действия в другое пространство имен
     FORM PROPERTY Item.itemForm.name(i) -> Item.itemForm.itemName(i)
 }
  
