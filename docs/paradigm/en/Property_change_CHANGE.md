@@ -9,6 +9,8 @@ The source and the condition share the same arguments as the destination propert
 
 The change is performed as one [set operation](Set_operations.md): the source and the condition are computed for all argument sets at once, over the values before the write, after which the write happens — the value written for one argument set does not affect the values computed for the others.
 
+A part of the source that does not depend on the arguments — a constant, a property without parameters, an argument of the action performing the change — can be computed by a query of its own before the argument sets are selected, so an empty selection does not guarantee that a computation failing on such a value (for example, a date read from a text that is not a date) is skipped. Moving the condition into the source does not guarantee that either. The source is computed only for the selected argument sets when the change is made row by row in a [loop](Loop_FOR.md) that is not merged into a set operation. Alternatively, an outer [branch](Branching_CASE_IF_MULTI.md) can guard the change with a condition that explicitly checks that at least one matching argument set exists.
+
 ### Changeable properties {#changeable}
 
 The destination property must be a *mutable* property. Mutable properties are:

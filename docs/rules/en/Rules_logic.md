@@ -285,6 +285,13 @@ title: 'Rules: domain logic'
     The assistant MUST NOT use them to select or pass a value
     through. For that use `expr IF cond` and `OVERRIDE a, b`.
 
+19. The assistant MUST use `GROUP ... WHERE` only with `AGGR`,
+    `NAGGR`, `CONCAT` or `LAST`. For `SUM`, `MAX`, `MIN` and
+    `EQUAL` the condition goes into the aggregated expression
+    with `IF` (`GROUP MAX f(x) IF cond(x) BY k(x)`), because
+    these grouping types do not accept `WHERE` — see the
+    [`GROUP` operator](../language/GROUP_operator.md).
+
 ### Abstract property rules (`+=`)
 
 1. The value class of a `+=` implementation MUST fit within
@@ -463,6 +470,20 @@ title: 'Rules: domain logic'
    NOT use the parameterized form inside an expression
    (`IF fileExists(path)` is wrong).
 
+### Abstract action rules (`ACTION+`)
+
+1. The assistant MUST add an implementation to an abstract
+   action with the `ACTION+` statement — `act(Dog d) + { ... }`,
+   and `act(Dog d) + WHEN cond THEN { ... }` for the `CASE`
+   type — never with `+=`, which extends properties only; see
+   the [`ACTION+` statement](../language/ACTION_plus_statement.md).
+
+2. The assistant SHOULD choose the type of an abstract action
+   by its extension point: `LIST` when every implementation
+   runs in sequence, `MULTI` when the argument classes select
+   the implementation, `CASE` when an explicit condition does
+   — see [action extension](../paradigm/Action_extension.md).
+
 ### Assignment rules (`<-`)
 
 1. The arguments of the changed property on the left side
@@ -518,6 +539,15 @@ title: 'Rules: domain logic'
    parameter context in which the class is not inferred from
    anywhere else, and an `i IS Interaction` condition does
    not set the parameter's class.
+
+5. A string that can exceed the length of the target
+   property's class MUST be cut by an explicit cast to that
+   class — `name(x) <- STRING[100](a(x) + b(x))` — or the
+   property's class widened: a set-based assignment does not
+   guarantee implicit cutting, and a longer value can fail with
+   a database error at the assignment or, for a stored
+   property, at `APPLY` — see
+   [type conversion](../paradigm/Type_conversion.md).
 
 ### Loop rules (`FOR`, `WHILE`)
 

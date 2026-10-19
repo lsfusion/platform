@@ -495,7 +495,7 @@ The server wraps the received text into a module of its own that depends on ever
     RETURN count();
     ```
 
-The response carries the value of `RETURN` or, without it, the file written by `EXPORT` (see [results](../paradigm/Access_from_an_external_system.md#httpresult)). `RETURN` delivers its value from any place in the action, a `NEWSESSION` block included. The result of `EXPORT` is the local property `exportFile[]` of the session the operator ran in: an `EXPORT` inside `NEWSESSION` stays in the new session, and the response comes back empty without an error. So the export is done in the action's own session — after the block, with the values it needs carried over in [nested local properties](../paradigm/Session_management.md#nested) — or `exportFile[]` is listed as nested on the operator, which copies it back:
+The response carries the value of `RETURN` or, without it, the file written by `EXPORT` (see [results](../paradigm/Access_from_an_external_system.md#httpresult)). `RETURN` delivers its value from any place in the action, a `NEWSESSION` block included. The result of `EXPORT` is the local property `exportFile[]` of the session the operator ran in, and each subsequent `EXPORT` writing to `exportFile[]` in the same session replaces the previous file (so of several such exports only the last one is returned): an `EXPORT` inside `NEWSESSION` stays in the new session, and the response comes back empty without an error. So the export is done in the action's own session — after the block, with the values it needs carried over in [nested local properties](../paradigm/Session_management.md#nested) — or `exportFile[]` is listed as nested on the operator, which copies it back:
 
 ```lsf
 run() {
