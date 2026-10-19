@@ -1,0 +1,148 @@
+MODULE UiGridRecord;
+
+REQUIRE TestUtils, SystemEvents;
+
+// the forms UiGridRecordIT works on in the browser - what a DESIGN puts into GRID(g), the grid's record: the popup a
+// classic custom view shows next to the card it clicks, and what a React view around the grid draws or places of it
+// (UiGridRecord.js) -, the action it seeds its items with, and the log the record's events write, which it checks
+
+CLASS UiGridRecordItem 'Item';
+uiGridRecordName 'Name' = DATA STRING[50] (UiGridRecordItem);
+uiGridRecordNote 'Note' = DATA STRING[50] (UiGridRecordItem);
+uiGridRecordCode 'Code' = DATA STRING[50] (UiGridRecordItem);
+uiGridRecordShown = DATA BOOLEAN (UiGridRecordItem); // the items of the test that seeded last: the forms show only them
+uiGridRecordTitle (UiGridRecordItem i) = 'Card of ' + uiGridRecordName(i);
+
+// a bump changes the item's code, and counts itself where the view always reads it
+uiGridRecordBumps 'Bumps' = DATA LOCAL INTEGER ();
+uiGridRecordBump 'Bump' (UiGridRecordItem i) {
+    uiGridRecordCode(i) <- uiGridRecordCode(i) + '+';
+    uiGridRecordBumps() <- uiGridRecordBumps() (+) 1;
+}
+
+// what the record's events did since the seed, in turn, written apart from the form's session
+uiGridRecordLog = DATA TEXT ();
+uiGridRecordSay (TEXT what) {
+    NEWSESSION {
+        uiGridRecordLog() <- CONCAT ', ', uiGridRecordLog(), what;
+        APPLY;
+    }
+}
+
+// the platform draws the grid: a classic custom view of cards (uiGridRecordCards in UiGridRecord.js) pops the record
+// up next to the card it clicks - a card with a computed caption and a SHOWIF, a tabbed container, a collapsible pane
+FORM uiGridRecordCards 'Cards'
+    OBJECTS i = UiGridRecordItem CUSTOM 'uiGridRecordCards'
+    PROPERTIES(i) READONLY uiGridRecordName
+    PROPERTIES(i) PANEL READONLY recordNote = uiGridRecordNote, recordName = uiGridRecordName,
+                                 recordCode = uiGridRecordCode, paneName = uiGridRecordName
+    FILTERS uiGridRecordShown(i)
+    ORDERS uiGridRecordName(i)
+;
+
+DESIGN uiGridRecordCards {
+    GRID(i) {
+        NEW recordCard {
+            caption = uiGridRecordTitle(i);
+            showIf = uiGridRecordNote(i);
+            collapsible = FALSE;
+            MOVE PROPERTY(recordNote);
+        }
+        NEW recordPages {
+            tabbed = TRUE;
+            NEW recordMain { caption = 'Main'; MOVE PROPERTY(recordName); }
+            NEW recordMore { caption = 'More'; MOVE PROPERTY(recordCode); }
+        }
+        NEW recordPane {
+            caption = 'Pane';
+            collapsible = TRUE;
+            MOVE PROPERTY(paneName);
+        }
+    }
+}
+
+EXTEND FORM uiGridRecordCards
+    EVENTS ON TAB recordMore { uiGridRecordSay('more of ' + uiGridRecordName(i)); },
+           ON COLLAPSE recordPane { uiGridRecordSay('pane of ' + uiGridRecordName(i) + ' collapsed'); }
+;
+
+// React draws the grid: the view around it (UiGridRecordBoard) places a card of the record the platform draws, draws
+// another container of it, which it shows or not with useShown, and places a nested React view of it
+FORM uiGridRecordBoard 'Board'
+    OBJECTS j = UiGridRecordItem
+    PROPERTIES(j) READONLY uiGridRecordName
+    PROPERTIES(j) PANEL READONLY placedNote = uiGridRecordNote, drawnCode = uiGridRecordCode
+    PROPERTIES(j) PANEL uiGridRecordBump
+    PROPERTIES() READONLY uiGridRecordBumps
+    FILTERS uiGridRecordShown(j)
+    ORDERS uiGridRecordName(j)
+;
+
+DESIGN uiGridRecordBoard {
+    NEW board FIRST {
+        custom = 'UiGridRecordBoard';
+        MOVE BOX(j);
+        MOVE PROPERTY(uiGridRecordBump(j));
+        MOVE PROPERTY(uiGridRecordBumps());
+    }
+    GRID(j) {
+        NEW recordPlaced {
+            custom = NULL;
+            caption = uiGridRecordTitle(j);
+            showIf = uiGridRecordNote(j);
+            MOVE PROPERTY(placedNote);
+        }
+        NEW recordDrawn {
+            caption = uiGridRecordTitle(j);
+            MOVE PROPERTY(drawnCode);
+        }
+        NEW recordNested {
+            custom = 'UiGridRecordNested';
+            showIf = uiGridRecordNote(j);
+        }
+    }
+}
+
+EXTEND FORM uiGridRecordBoard
+    EVENTS ON COLLAPSE recordPlaced { uiGridRecordSay('placed of ' + uiGridRecordName(j) + ' collapsed'); },
+           ON COLLAPSE recordDrawn { uiGridRecordSay('drawn of ' + uiGridRecordName(j) + ' collapsed'); }
+;
+
+onWebClientInit() + {
+    onWebClientInit('UiGridRecord.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiGridRecord 'UI grid record' WINDOW toolbar {
+        NEW uiGridRecordCards;
+        NEW uiGridRecordBoard;
+    }
+}
+
+// two items shown from now on, the first with a note, the second without one; an empty log
+uiGridRecordSeed (STRING[50] first, STRING[50] second) {
+    uiGridRecordShown(UiGridRecordItem i) <- NULL;
+    uiGridRecordLog() <- NULL;
+    NEW i = UiGridRecordItem {
+        uiGridRecordName(i) <- first;
+        uiGridRecordNote(i) <- 'ripe';
+        uiGridRecordCode(i) <- 'A1';
+        uiGridRecordShown(i) <- TRUE;
+    }
+    NEW i = UiGridRecordItem {
+        uiGridRecordName(i) <- second;
+        uiGridRecordCode(i) <- 'B2';
+        uiGridRecordShown(i) <- TRUE;
+    }
+    APPLY;
+}
+
+// the log started over
+uiGridRecordForget () {
+    uiGridRecordLog() <- NULL;
+    APPLY;
+}
+
+uiGridRecordCheckLog (TEXT expected) {
+    assertEquals(uiGridRecordLog(), expected, CONCAT '', 'the log is "', uiGridRecordLog(), '", not "', expected, '"');
+}
