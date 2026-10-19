@@ -1,0 +1,409 @@
+MODULE UiKeys;
+
+REQUIRE TestUtils, SystemEvents;
+
+// the forms UiKeysIT presses keys and double clicks in, in the browser - the bindings of what React views draw (their
+// views in UiKeys.js) and the platform's own -, the action it seeds them with, and the log the bound actions write,
+// which it checks
+
+CLASS UiKeysItem 'Item';
+uiKeysName 'Name' = DATA STRING[50] (UiKeysItem);
+uiKeysPrice 'Price' = DATA NUMERIC[10,2] (UiKeysItem);
+uiKeysQty 'Qty' = DATA INTEGER (UiKeysItem) CHANGEKEY 'F2';
+uiKeysParent = DATA UiKeysItem (UiKeysItem);
+uiKeysShown = DATA BOOLEAN (UiKeysItem); // the items of the test that seeded last: the forms show only them
+
+// what the bound actions did, in turn, since the test seeded last: each says so in a session of its own, so that the
+// form it runs in keeps its own changes
+uiKeysLog = DATA TEXT ();
+uiKeysSay (TEXT what) {
+    NEWSESSION {
+        uiKeysLog() <- CONCAT ', ', uiKeysLog(), what;
+        APPLY;
+    }
+}
+
+// three items shown from now on - Apple, Banana under Apple, Cherry -, Banana's price alone 100 or less; an empty log
+uiKeysSeed (STRING[50] apple, STRING[50] banana, STRING[50] cherry) {
+    uiKeysShown(UiKeysItem i) <- NULL;
+    uiKeysLog() <- NULL;
+    NEW a = UiKeysItem {
+        uiKeysName(a) <- apple;
+        uiKeysPrice(a) <- 150;
+        uiKeysQty(a) <- 1;
+        uiKeysShown(a) <- TRUE;
+        NEW b = UiKeysItem {
+            uiKeysName(b) <- banana;
+            uiKeysPrice(b) <- 50;
+            uiKeysQty(b) <- 2;
+            uiKeysShown(b) <- TRUE;
+            uiKeysParent(b) <- a;
+        }
+    }
+    NEW c = UiKeysItem {
+        uiKeysName(c) <- cherry;
+        uiKeysPrice(c) <- 300;
+        uiKeysQty(c) <- 3;
+        uiKeysShown(c) <- TRUE;
+    }
+    APPLY;
+}
+
+uiKeysCheckLog (TEXT expected) {
+    assertEquals(uiKeysLog(), expected, CONCAT '', 'the log is "', uiKeysLog(), '", not "', expected, '"');
+}
+
+// a filter group, whose view a React view of its container places (UiKeysBoard) - the filter group's own React view or
+// the platform's widget -, hidden by its SHOWIF; the view of the container draws the rows
+uiKeysKindShown = DATA LOCAL BOOLEAN ();
+uiKeysToggleKind 'Toggle kinds' () {
+    uiKeysKindShown() <- NOT uiKeysKindShown();
+}
+
+FORM uiKeysKindOwn 'Filter group of its own'
+    OBJECTS i = UiKeysItem
+    PROPERTIES(i) READONLY uiKeysName, uiKeysPrice
+    PROPERTIES() uiKeysToggleKind
+    FILTERGROUP uiKeysKind
+        FILTER 'Expensive' uiKeysPrice(i) > 100 'F10'
+        FILTER 'Cheap' uiKeysPrice(i) <= 100 'F11'
+    FILTERS uiKeysShown(i)
+    ORDERS uiKeysName(i)
+;
+
+DESIGN uiKeysKindOwn {
+    NEW board FIRST {
+        custom = 'UiKeysBoard';
+        MOVE BOX(i);
+        MOVE FILTERGROUP(uiKeysKind) { custom = 'UiKeysKindTabs'; showIf = uiKeysKindShown(); }
+    }
+}
+
+FORM uiKeysKindPlaced 'Filter group placed'
+    OBJECTS i = UiKeysItem
+    PROPERTIES(i) READONLY uiKeysName, uiKeysPrice
+    PROPERTIES() uiKeysToggleKind
+    FILTERGROUP uiKeysKind
+        FILTER 'Expensive' uiKeysPrice(i) > 100 'F10'
+        FILTER 'Cheap' uiKeysPrice(i) <= 100 'F11'
+    FILTERS uiKeysShown(i)
+    ORDERS uiKeysName(i)
+;
+
+DESIGN uiKeysKindPlaced {
+    NEW board FIRST {
+        custom = 'UiKeysBoard';
+        MOVE BOX(i);
+        MOVE FILTERGROUP(uiKeysKind) { custom = NULL; showIf = uiKeysKindShown(); }
+    }
+}
+
+// actions a React view draws (UiKeysActionBoard) - a panel one, one in the rows it draws and that one with CONFIRM -,
+// beside a panel action the platform draws, which the view places
+uiKeysBump 'Bump' () { uiKeysSay('bumped'); } CHANGEKEY 'F7';
+uiKeysBumpPlatform 'Bump by the platform' () { uiKeysSay('bumped by the platform'); } CHANGEKEY 'F6';
+uiKeysMark 'Mark' (UiKeysItem i) { uiKeysSay('marked ' + uiKeysName(i)); } CHANGEKEY 'F8';
+uiKeysMarkAsked 'Mark?' (UiKeysItem i) { uiKeysSay('marked when asked ' + uiKeysName(i)); } CHANGEKEY 'ctrl F8' CONFIRM;
+
+FORM uiKeysActions 'Actions'
+    OBJECTS i = UiKeysItem
+    PROPERTIES(i) READONLY uiKeysName
+    PROPERTIES(i) uiKeysMark, uiKeysMarkAsked
+    PROPERTIES() uiKeysBump, uiKeysBumpPlatform
+    FILTERS uiKeysShown(i)
+    ORDERS uiKeysName(i)
+;
+
+DESIGN uiKeysActions {
+    NEW board FIRST {
+        custom = 'UiKeysActionBoard';
+        MOVE BOX(i);
+        MOVE PROPERTY(uiKeysBump());
+        MOVE PROPERTY(uiKeysBumpPlatform()) { custom = NULL; }
+    }
+}
+
+// the form's own toolbar - its close button among them, ESCAPE its key - drawn by a React view (UiKeysToolbarBoard)
+FORM uiKeysToolbar 'Toolbar'
+    OBJECTS i = UiKeysItem
+    PROPERTIES(i) READONLY uiKeysName
+    FILTERS uiKeysShown(i)
+    ORDERS uiKeysName(i)
+;
+
+DESIGN uiKeysToolbar {
+    NEW board FIRST {
+        custom = 'UiKeysToolbarBoard';
+        MOVE BOX(i);
+        MOVE TOOLBARBOX;
+    }
+}
+
+// a property a React view draws (UiKeysScanBoard) whose change asks a value - a field a barcode scanner types into
+uiKeysBarcode 'Barcode' = DATA LOCAL STRING[30] () CHANGEKEY 'F4;editing=all';
+
+FORM uiKeysScan 'Scan'
+    PROPERTIES() uiKeysBarcode
+;
+
+DESIGN uiKeysScan {
+    NEW board FIRST {
+        custom = 'UiKeysScanBoard';
+        MOVE PROPERTY(uiKeysBarcode());
+    }
+}
+
+// the platform's editor of a list property placed in every row a React view draws (UiKeysCards)
+FORM uiKeysRows 'Rows'
+    OBJECTS i = UiKeysItem
+    PROPERTIES(i) READONLY uiKeysName
+    PROPERTIES(i) uiKeysQty
+    FILTERS uiKeysShown(i)
+    ORDERS uiKeysName(i)
+;
+
+DESIGN uiKeysRows {
+    GRID(i) { custom = 'UiKeysCards'; }
+    PROPERTY(uiKeysQty(i)) { custom = NULL; }
+}
+
+// actions a React view draws (UiKeysAskBoard) that ask a value: one whose input the platform knows ahead - INPUT is
+// what it does, an assignment before it aside -, and one that asks it as it runs - INPUT in an IF with no ELSE, which
+// declares no input ahead. What they did they write in the form's own log, which the view shows
+uiKeysAskLog = DATA LOCAL TEXT ();
+uiKeysAsk 'Ask' () {
+    uiKeysAskLog() <- CONCAT ', ', uiKeysAskLog(), 'asked';
+    INPUT s = STRING[30] DO
+        uiKeysAskLog() <- CONCAT ', ', uiKeysAskLog(), 'answered ' + s;
+} CHANGEKEY 'F9';
+uiKeysAskLater 'Ask later' () {
+    uiKeysAskLog() <- CONCAT ', ', uiKeysAskLog(), 'asked later';
+    IF uiKeysAskLog() THEN
+        INPUT s = STRING[30] DO
+            uiKeysAskLog() <- CONCAT ', ', uiKeysAskLog(), 'answered ' + s;
+} CHANGEKEY 'ctrl F9';
+
+FORM uiKeysAsking 'Asking'
+    PROPERTIES() uiKeysAskLog, uiKeysAsk, uiKeysAskLater
+;
+
+DESIGN uiKeysAsking {
+    NEW board FIRST {
+        custom = 'UiKeysAskBoard';
+        MOVE PROPERTY(uiKeysAskLog());
+        MOVE PROPERTY(uiKeysAsk());
+        MOVE PROPERTY(uiKeysAskLater());
+    }
+}
+
+// a form's own event asking a value - the current item changed to one of 100 or less: no change made in a cell asks it
+FORM uiKeysEvent 'Event'
+    OBJECTS i = UiKeysItem
+    PROPERTIES(i) READONLY uiKeysName, uiKeysPrice
+    FILTERS uiKeysShown(i)
+    ORDERS uiKeysName(i)
+    EVENTS ON CHANGE i {
+        IF uiKeysPrice(i) <= 100 THEN {
+            uiKeysSay('asked on ' + uiKeysName(i));
+            INPUT s = STRING[30] DO
+                uiKeysSay('answered ' + s);
+        }
+    }
+;
+
+// the platform's own bindings, on a form with no React view: a panel action's key, a key of an action in the grid's
+// rows, a filter's key, an action of the rows bound to a double click, and the platform's dialog, where a double click
+// on a row, ctrl ENTER and ESCAPE are System.formOk's and System.formClose's
+uiKeysClassicBump 'Bump' () { uiKeysSay('bumped'); } CHANGEKEY 'F7';
+uiKeysClassicMark 'Mark' (UiKeysItem i) { uiKeysSay('marked ' + uiKeysName(i)); } CHANGEKEY 'F8';
+uiKeysClassicOpen 'Open' (UiKeysItem i) { uiKeysSay('opened ' + uiKeysName(i)); } CHANGEMOUSE 'DBLCLK';
+
+FORM uiKeysPickList 'Pick list'
+    OBJECTS i = UiKeysItem
+    PROPERTIES(i) READONLY uiKeysName
+    FILTERS uiKeysShown(i)
+    ORDERS uiKeysName(i)
+;
+
+uiKeysClassicPick 'Pick' () {
+    DIALOG uiKeysPickList OBJECTS i INPUT DO
+        uiKeysSay('picked ' + uiKeysName(i));
+}
+
+FORM uiKeysClassic 'Classic'
+    OBJECTS i = UiKeysItem
+    PROPERTIES(i) READONLY uiKeysName, uiKeysPrice
+    PROPERTIES(i) uiKeysClassicMark, uiKeysClassicOpen
+    PROPERTIES() uiKeysClassicBump, uiKeysClassicPick
+    FILTERGROUP uiKeysClassicKind
+        FILTER 'Expensive' uiKeysPrice(i) > 100 'F10'
+    FILTERS uiKeysShown(i)
+    ORDERS uiKeysName(i)
+;
+
+// a list's standard EDIT, whose double click and ENTER open the item's edit form
+FORM uiKeysItem 'Item'
+    OBJECTS i = UiKeysItem PANEL
+    PROPERTIES(i) uiKeysName
+    EDIT UiKeysItem OBJECT i
+;
+
+FORM uiKeysEdits 'Edits'
+    OBJECTS i = UiKeysItem
+    PROPERTIES(i) READONLY uiKeysName
+    PROPERTIES(i) NEWSESSION EDIT
+    FILTERS uiKeysShown(i)
+    ORDERS uiKeysName(i)
+;
+
+// a panel action and an action in the grid's rows under SHOWIF, turned on and off
+uiKeysOn = DATA LOCAL BOOLEAN ();
+uiKeysSwitch 'Switch' () {
+    uiKeysOn() <- NOT uiKeysOn();
+    uiKeysSay(IF uiKeysOn() THEN 'on' ELSE 'off');
+}
+uiKeysRunOn 'Run' () { uiKeysSay('ran'); } CHANGEKEY 'F7';
+uiKeysMarkOn 'Mark' (UiKeysItem i) { uiKeysSay('marked ' + uiKeysName(i)); } CHANGEKEY 'F8';
+
+FORM uiKeysShowIf 'SHOWIF'
+    OBJECTS i = UiKeysItem
+    PROPERTIES(i) READONLY uiKeysName
+    PROPERTIES(i) uiKeysMarkOn SHOWIF uiKeysOn()
+    PROPERTIES() uiKeysSwitch, uiKeysRunOn SHOWIF uiKeysOn()
+    FILTERS uiKeysShown(i)
+    ORDERS uiKeysName(i)
+;
+
+// actions on the second page of tabs - one with a key, one with a key of showing=all -, and one on the first page
+uiKeysHere 'Here' () { uiKeysSay('here'); } CHANGEKEY 'F9';
+uiKeysThere 'There' () { uiKeysSay('there'); } CHANGEKEY 'F7';
+uiKeysThereAll 'There, showing all' () { uiKeysSay('there, showing all'); } CHANGEKEY 'F6;showing=all';
+
+FORM uiKeysTabs 'Tabs'
+    PROPERTIES() uiKeysHere, uiKeysThere, uiKeysThereAll
+;
+
+DESIGN uiKeysTabs {
+    NEW pages FIRST {
+        tabbed = TRUE;
+        NEW one {
+            caption = 'One';
+            MOVE PROPERTY(uiKeysHere());
+        }
+        NEW two {
+            caption = 'Two';
+            MOVE PROPERTY(uiKeysThere());
+            MOVE PROPERTY(uiKeysThereAll());
+        }
+    }
+}
+
+// one key of actions of two groups
+uiKeysMarkA 'Mark in a' (UiKeysItem i) { uiKeysSay('marked in a ' + uiKeysName(i)); } CHANGEKEY 'F8';
+uiKeysMarkB 'Mark in b' (UiKeysItem i) { uiKeysSay('marked in b ' + uiKeysName(i)); } CHANGEKEY 'F8';
+
+FORM uiKeysGroups 'Two groups'
+    OBJECTS a = UiKeysItem
+    PROPERTIES(a) READONLY uiKeysName
+    PROPERTIES(a) uiKeysMarkA
+    OBJECTS b = UiKeysItem
+    PROPERTIES(b) READONLY uiKeysName
+    PROPERTIES(b) uiKeysMarkB
+    FILTERS uiKeysShown(a), uiKeysShown(b)
+    ORDERS uiKeysName(a), uiKeysName(b)
+;
+
+// one key of two panel actions with no priority given, and one of two with priorities, the higher one first
+uiKeysFirst 'First' () { uiKeysSay('first'); } CHANGEKEY 'F9';
+uiKeysSecond 'Second' () { uiKeysSay('second'); } CHANGEKEY 'F9';
+uiKeysPriority200 'Priority 200' () { uiKeysSay('priority 200'); } CHANGEKEY 'F11;priority=200';
+uiKeysPriority100 'Priority 100' () { uiKeysSay('priority 100'); } CHANGEKEY 'F11;priority=100';
+
+FORM uiKeysPriorities 'Priorities'
+    PROPERTIES() uiKeysFirst, uiKeysSecond, uiKeysPriority200, uiKeysPriority100
+;
+
+// a key and a mouse binding a property gives itself (changeKey, changeMouse = <property>): ctrl F6 at first, changed to
+// ctrl F7, to none and to ctrl F6 again; a double click on a row, with no static binding
+uiKeysGivenKey = DATA LOCAL STRING[20] ();
+uiKeysGivenMouse = DATA LOCAL STRING[20] ();
+uiKeysRunGiven 'Run' () { uiKeysSay('ran'); }
+uiKeysGiveF7 'Key ctrl F7' () {
+    uiKeysGivenKey() <- 'ctrl F7';
+    uiKeysSay('ctrl F7 given');
+}
+uiKeysGiveNone 'No key' () {
+    uiKeysGivenKey() <- NULL;
+    uiKeysSay('no key given');
+}
+uiKeysGiveF6 'Key ctrl F6' () {
+    uiKeysGivenKey() <- 'ctrl F6';
+    uiKeysSay('ctrl F6 given');
+}
+uiKeysOpenGiven 'Open' (UiKeysItem i) { uiKeysSay('opened ' + uiKeysName(i)); }
+
+FORM uiKeysGiven 'Keys given by a property'
+    OBJECTS i = UiKeysItem
+    PROPERTIES(i) READONLY uiKeysName
+    PROPERTIES(i) uiKeysOpenGiven
+    PROPERTIES() uiKeysRunGiven, uiKeysGiveF7, uiKeysGiveNone, uiKeysGiveF6
+    FILTERS uiKeysShown(i)
+    ORDERS uiKeysName(i)
+    EVENTS ON INIT {
+        uiKeysGivenKey() <- 'ctrl F6';
+        uiKeysGivenMouse() <- 'DBLCLK';
+    }
+;
+
+DESIGN uiKeysGiven {
+    PROPERTY(uiKeysRunGiven()) { changeKey = uiKeysGivenKey(); }
+    PROPERTY(uiKeysOpenGiven(i)) { changeMouse = uiKeysGivenMouse(); }
+}
+
+// a panel action with a key, in a column per item (COLUMNS)
+uiKeysColumn 'Column' (UiKeysItem i) { uiKeysSay('column ' + uiKeysName(i)); } CHANGEKEY 'ctrl F8';
+
+FORM uiKeysColumns 'Columns'
+    OBJECTS c = UiKeysItem
+    PROPERTIES(c) READONLY uiKeysName
+    PROPERTIES uiKeysColumn(c) COLUMNS (c) HEADER uiKeysName(c)
+    FILTERS uiKeysShown(c)
+    ORDERS uiKeysName(c)
+;
+
+// a tree, whose own double click opens a node, and an action of its toolbar bound to a double click
+uiKeysOpenNode 'Open' (UiKeysItem i) { uiKeysSay('opened ' + uiKeysName(i)); } CHANGEMOUSE 'DBLCLK';
+
+FORM uiKeysTree 'Tree'
+    TREE nodes t = UiKeysItem PARENT uiKeysParent(t)
+    PROPERTIES(t) READONLY uiKeysName
+    PROPERTIES(t) uiKeysOpenNode TOOLBAR
+    FILTERS uiKeysShown(t)
+    ORDERS uiKeysName(t)
+;
+
+NAVIGATOR {
+    NEW FOLDER uiKeys 'UI keys' WINDOW toolbar {
+        NEW uiKeysKindOwn;
+        NEW uiKeysKindPlaced;
+        NEW uiKeysActions;
+        NEW uiKeysToolbar;
+        NEW uiKeysScan;
+        NEW uiKeysRows;
+        NEW uiKeysAsking;
+        NEW uiKeysEvent;
+        NEW uiKeysClassic;
+        NEW uiKeysEdits;
+        NEW uiKeysShowIf;
+        NEW uiKeysTabs;
+        NEW uiKeysGroups;
+        NEW uiKeysPriorities;
+        NEW uiKeysGiven;
+        NEW uiKeysColumns;
+        NEW uiKeysTree;
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiKeys.js') <- 1;
+}
