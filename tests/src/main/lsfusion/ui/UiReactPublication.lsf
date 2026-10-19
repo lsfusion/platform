@@ -1,0 +1,83 @@
+MODULE UiReactPublication;
+
+REQUIRE System, SystemEvents;
+
+// the forms UiReactPublicationIT works on in the browser - when a React view's projection is published
+// (UiReactPublication.js): the controlled inputs a view writes back through members as the user types, and a window
+// measured as it is shown, with the view drawn -, and the action it seeds the items with
+
+CLASS UiReactPublicationItem 'Item';
+uiReactPublicationName 'Name' = DATA STRING[50] (UiReactPublicationItem);
+// the items of the test that seeded last: the form shows only them
+uiReactPublicationShown = DATA BOOLEAN (UiReactPublicationItem);
+
+uiReactPublicationNote 'Note' = DATA LOCAL STRING[100] ();
+// what only the server's answer to a change of the note shows
+uiReactPublicationEcho 'Echo' () = '[' + uiReactPublicationNote() + ']';
+
+// a view's two controlled inputs: the note's value, and a condition on the items' name
+FORM uiReactPublicationInputs 'Inputs'
+    PROPERTIES() uiReactPublicationNote
+    PROPERTIES() READONLY uiReactPublicationEcho
+    OBJECTS i = UiReactPublicationItem
+    PROPERTIES(i) READONLY uiReactPublicationName
+    FILTERS uiReactPublicationShown(i)
+    ORDERS uiReactPublicationName(i)
+    EVENTS ON INIT { uiReactPublicationNote() <- 'abcdef'; }
+;
+
+DESIGN uiReactPublicationInputs {
+    NEW inputs FIRST {
+        custom = 'UiReactPublicationInputs';
+        MOVE PROPERTY(uiReactPublicationNote());
+        MOVE PROPERTY(uiReactPublicationEcho());
+        MOVE BOX(i);
+    }
+}
+
+// a window with the default main container and a tall view, its container given no base size: sized by what the view
+// draws as the window is shown
+FORM uiReactPublicationTall 'Tall view'
+    PROPERTIES() uiReactPublicationNote
+;
+
+DESIGN uiReactPublicationTall {
+    NEW tall FIRST {
+        custom = 'UiReactPublicationTall';
+        MOVE PROPERTY(uiReactPublicationNote());
+    }
+}
+
+uiReactPublicationOpenTall 'Tall window' () {
+    SHOW uiReactPublicationTall FLOAT;
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiReactPublication.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiReactPublication 'UI React publication' WINDOW toolbar {
+        NEW uiReactPublicationInputs;
+        NEW uiReactPublicationOpenTall;
+    }
+}
+
+uiReactPublicationAdd (STRING[50] name) {
+    NEW i = UiReactPublicationItem {
+        uiReactPublicationName(i) <- name;
+        uiReactPublicationShown(i) <- TRUE;
+    }
+}
+
+// six items shown from now on
+uiReactPublicationSeed (STRING[50] a, STRING[50] b, STRING[50] c, STRING[50] d, STRING[50] e, STRING[50] f) {
+    uiReactPublicationShown(UiReactPublicationItem i) <- NULL;
+    uiReactPublicationAdd(a);
+    uiReactPublicationAdd(b);
+    uiReactPublicationAdd(c);
+    uiReactPublicationAdd(d);
+    uiReactPublicationAdd(e);
+    uiReactPublicationAdd(f);
+    APPLY;
+}
