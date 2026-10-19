@@ -279,6 +279,32 @@ public class GFormControllerTest extends GWTTestCase {
         changes.properties.put(property.changeMouseReader, values);
         controller.applyRemoteChanges(changes, 1);
     }
+    // of two keys of one priority - none given -, the later in the form takes it, whatever order the server sends the
+    // properties in: a key's priority is its slot's, and the form binds every property's in the form's order
+    // (initializeBindings), not as their renderers come
+    public void testOfTwoKeysOfOnePriorityTheLaterInTheFormTakesIt() {
+        GInputBindingEvent f2 = new GInputBindingEvent(new GKeyInputEvent(new GKeyStroke(113)), ANY);
+        for (boolean laterSentFirst : new boolean[] {false, true}) {
+            RowsForm rows = new RowsForm(f2);
+            GPropertyDraw later = rows.perRow(column(rows.form, 23, "later", rows.group), f2);
+            if (laterSentFirst)
+                rows.deliver(later, rows.qty);
+            else
+                rows.deliver(rows.qty, later);
+            GFormController controller = rows.controller();
+            FlowPanel earlierHost = new FlowPanel(), laterHost = new FlowPanel();
+            RootPanel.get().add(earlierHost); RootPanel.get().add(laterHost);
+            try {
+                controller.getRowsPanelController(rows.qty).place(rows.one, rows.qty, earlierHost.getElement());
+                controller.getRowsPanelController(later).place(rows.one, later, laterHost.getElement());
+                assertTrue(press(controller, earlierHost.getElement(), 113));
+                assertTrue(pressed(laterHost.getElement()));
+                assertFalse(pressed(earlierHost.getElement()));
+            } finally {
+                RootPanel.get().remove(earlierHost); RootPanel.get().remove(laterHost);
+            }
+        }
+    }
     // the modes the server gives a binding with none of its own
     private static final GBindingEnv ANY = new GBindingEnv(null, null, null, null, null, null, null, null, null);
     // a form of a grid its own React view draws, the platform's editor of qty in each of its two rows (<Platform
@@ -290,19 +316,33 @@ public class GFormControllerTest extends GWTTestCase {
         final GGroupObjectValue one = new GGroupObjectValue(10, 1), two = new GGroupObjectValue(10, 2);
 
         RowsForm(GInputBindingEvent binding) {
-            qty.platformDrawn = true; // PROPERTY(qty(i)) { custom = NULL; }: the platform draws it in every row
-            qty.cellType = GIntegerType.instance; // ... its editor of its base type, as the server gives it
-            layout(qty); // ... and lays it out as the server says (ClientComponentToGwtConverter.convertPropertyDraw)
-            qty.valueAlignmentHorz = GFlexAlignment.END; qty.valueAlignmentVert = GFlexAlignment.CENTER;
-            qty.panelCommentAlignment = GFlexAlignment.CENTER;
-            qty.valueOverflowHorz = "clip"; qty.valueOverflowVert = "clip";
-            qty.bindingEvents.add(binding);
+            perRow(qty, binding);
+            deliver(qty);
+        }
+        // a property the platform draws in every row, with the binding given
+        GPropertyDraw perRow(GPropertyDraw property, GInputBindingEvent binding) {
+            property.platformDrawn = true; // PROPERTY(qty(i)) { custom = NULL; }: the platform draws it in every row
+            property.cellType = GIntegerType.instance; // ... its editor of its base type, as the server gives it
+            layout(property); // ... and lays it out as the server says (ClientComponentToGwtConverter.convertPropertyDraw)
+            property.valueAlignmentHorz = GFlexAlignment.END; property.valueAlignmentVert = GFlexAlignment.CENTER;
+            property.panelCommentAlignment = GFlexAlignment.CENTER;
+            property.valueOverflowHorz = "clip"; property.valueOverflowVert = "clip";
+            property.bindingEvents.add(binding);
+            return property;
+        }
+        // the rows, and the values of these properties in this order, as the server sends them as the form opens
+        void deliver(GPropertyDraw... properties) {
             GFormChangesDTO changes = GFormChangesTest.noChanges();
             changes.objectsGroupIds = new int[] {group.ID}; changes.objects = new GGroupObjectValue[] {one};
             changes.gridObjectsGroupIds = new int[] {group.ID}; changes.gridObjects = new ArrayList[] {new ArrayList<>(Arrays.asList(one, two))};
-            changes.properties = new GPropertyReaderDTO[] {new GPropertyReaderDTO(qty.ID, DRAW, -1)};
-            changes.propertiesValueKeys = new GGroupObjectValue[][] {{one, two}};
-            changes.propertiesValueValues = new Serializable[][] {{1, 2}};
+            changes.properties = new GPropertyReaderDTO[properties.length];
+            changes.propertiesValueKeys = new GGroupObjectValue[properties.length][];
+            changes.propertiesValueValues = new Serializable[properties.length][];
+            for (int i = 0; i < properties.length; i++) {
+                changes.properties[i] = new GPropertyReaderDTO(properties[i].ID, DRAW, -1);
+                changes.propertiesValueKeys[i] = new GGroupObjectValue[] {one, two};
+                changes.propertiesValueValues[i] = new Serializable[] {1, 2};
+            }
             form.initialFormChanges = changes;
         }
         GFormController controller() {
