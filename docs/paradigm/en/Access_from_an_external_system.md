@@ -49,7 +49,7 @@ For `EXEC`, the action name can be either the action's [compound name](Element_i
 
 The HTTP API is served by two kinds of servers:
 
--   **Application server** - a lightweight HTTP server built into the application server, listening on port `7651` by default. It serves the Action API at `/exec` / `/eval` / `/eval/action`, with `Authorization: Basic` / `Authorization: Bearer` authentication and stateful sessions via the `session` parameter. [Interactive actions](#interactive) here are accepted only through the `Need-Notification-Id` header.
+-   **Application server** - a lightweight HTTP server built into the application server, listening on port `7651` by default. It serves the Action API at `/exec` / `/eval` / `/eval/action`, with `Authorization: Basic` / `Authorization: Bearer` authentication and stateful sessions via the `session` parameter. An authenticated request to a path the Action API does not define — among them the [Form API](#form), the [File API](#files) and the [`/mcp`](MCP_server.md) endpoint, which only the web server serves — is answered with `500` and the body `Something went wrong`. [Interactive actions](#interactive) here are accepted only through the `Need-Notification-Id` header.
 -   **Web server** - a separate web application (deployed in a servlet container such as Tomcat), listening on its own port. It serves the lsFusion web client (the browser-based user interface) and, on the same port, the HTTP API: the same Action API as the application server, plus the [Form API](#form) at `/form` and the browser-redirect variant for [interactive actions](#interactive).
 
 A request is addressed as `http://<server address>:<port><endpoint>` for the corresponding server.

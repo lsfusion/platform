@@ -220,6 +220,16 @@ title: 'Rules: domain logic'
     the division still widens to scale `32` — so both casts
     are needed: `NUMERIC[16,2](NUMERIC[16,2](a(x)) / b(x))`.
 
+    For a `GROUP SUM` over `NUMERIC` whose total can exceed
+    the class of its operand, the assistant MUST widen the
+    operand inside the aggregate
+    (`GROUP SUM NUMERIC[16,2](x)`), not cast the result: the
+    precision of the class is enforced only where the sum is
+    materialized into a column of that class, and the
+    materialization of a subquery happens intermittently,
+    so the overflow can escape a test on a warmed-up
+    server.
+
 15. A parameter's class annotation (`prop(SubClass x)`) is a
     signature, not a runtime filter: it resolves same-named
     properties and sets the signature, but the computed set is

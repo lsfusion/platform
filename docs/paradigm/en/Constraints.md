@@ -5,7 +5,7 @@ title: 'Constraints'
 
 Constraints in the platform determine which values the [data properties](Data_properties_DATA.md) can have and which cannot. In general, a constraint is defined as a property which value should always be `NULL`.
 
-In fact, a constraint is a [simple event](Simple_event.md), where condition is the constrained property and handling is [showing](#message) all the non-`NULL` values (in the [asynchronous message](In_a_print_view_PRINT.md#interactive) mode) and [canceling](Cancel_changes_CANCEL.md) all the changes. As well as for a simple event, you need to specify a base [event](Events.md), which determines when the defined constraint is checked. 
+In fact, a constraint is a [simple event](Simple_event.md), where condition is the constrained property and handling is [showing](#message) all the non-`NULL` values (in the [asynchronous message](In_a_print_view_PRINT.md#interactive) mode) and [canceling](Cancel_changes_CANCEL.md) all the changes. When a constraint on a global event is violated, its cancel ends the apply, so the constraints after it in the execution order of the event handlers are not checked: after the violation is fixed, the next apply can report another one. As well as for a simple event, you need to specify a base [event](Events.md), which determines when the defined constraint is checked. 
 
 Compared to implementation via simple events, constraints have a set of additional advantages:
 

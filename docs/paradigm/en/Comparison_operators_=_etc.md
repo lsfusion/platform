@@ -20,6 +20,8 @@ A comparison result is always either `TRUE` or `NULL`, never `FALSE`: when the c
 
 For equality and ordering comparisons, the two operands must belong to compatible classes — built-in classes of the same family, or user classes related by inheritance.
 
+Values of the `JSON` class are compared as JSON documents, in the [normalized form](Built-in_classes.md) in which they are stored: two values with the same keys and values are equal whatever the order of their keys and the formatting of their text, so `JSON(r'{"a":1,"b":2}') = JSON(r'{"b": 2, "a": 1}')` is `TRUE`. Values of the `JSONTEXT` class are stored and compared as text.
+
 ### Language
 
 Description of common [comparison operators](../language/Comparison_operators.md).  

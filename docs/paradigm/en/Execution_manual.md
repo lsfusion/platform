@@ -19,7 +19,7 @@ For the application server to work, it must have access to the PostgreSQL databa
 
 -   If the database server is located on another computer, and if authorization is enabled on the database server (for example, for Postgres, using the md5 method and if the password postgres is not empty), set the [parameters for connecting to the database server](Launch_parameters.md#connectdb) (e.g. by creating a startup [settings file](Launch_parameters.md#filesettings) in the `$FUSION_DIR$` folder)
 
--   Place [modules](Modules.md) developed in the lsFusion language as files with the extension lsf to the `$FUSION_DIR$` folder (or any subfolder). In addition, the rest of the resource files if any must also be placed there (e.g. report files, compiled Java files, pictures, etc.).
+-   Place [modules](Modules.md) developed in the lsFusion language as files with the extension lsf to the `$FUSION_DIR$` folder (or any subfolder). In addition, the rest of the resource files if any must also be placed there (e.g. report files, compiled Java files, pictures, etc.). A project packaged into one jar file with the [`assemble` profile](Development_manual.md#maven) is placed there too, and that jar file is added to the classpath of the start command below (for example, `-cp ".:lsfusion-server-6.2.jar:<project>.jar"`).
 
 <a className="lsdoc-anchor" id="command"/>
 

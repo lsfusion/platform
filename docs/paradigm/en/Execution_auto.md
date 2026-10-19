@@ -69,7 +69,7 @@ In order to upload the developed logic to the installed application server (Serv
 Place [modules](Modules.md) developed in the lsFusion language as files with an lsf extension in a folder located in the server's [classpath](Launch_parameters.md#appjava) (default value for automatic installation, see below). In addition, the rest of the resource files if any must also be placed there (e.g. report files, compiled Java files, images, etc.). These files may be placed in subfolders of the classpath, as well as inside jar files (zip archives with the jar extension). After all the files have been copied, you need to [restart](#restart) the server.
 
 :::info
-It is often convenient to place all project files inside a single jar file. To generate such a file automatically, you can use [Maven](Development_manual.md#maven) (with assemble and noserver profiles) or the build tools built into the [IDE](IDE.md#build).
+It is often convenient to place all project files inside a single jar file. To generate such a file automatically, you can use [Maven](Development_manual.md#maven) (with the `assemble` profile, without `embed-server`) or the build tools built into the [IDE](IDE.md#build).
 :::
 
 By default, the server's classpath is equal to `$APP_DIR$;$APP_DIR$/*;server.jar`, i.e. the `$APP_DIR$` folder and all its subfolders, all jar files in the `$APP_DIR$` folder (but not its subfolders), and also the jar file of the application server itself.
