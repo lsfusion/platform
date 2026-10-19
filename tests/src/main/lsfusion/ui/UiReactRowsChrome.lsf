@@ -1,0 +1,110 @@
+MODULE UiReactRowsChrome;
+
+REQUIRE System, SystemEvents;
+
+// the forms UiReactRowsChromeIT works on in the browser - the platform's toolbar and filters over the rows a React view
+// draws (UiReactRowsChrome.js), where the design leaves them to the platform or the view places them back with custom =
+// NULL -, and the actions it seeds and changes its items with
+
+CLASS UiRrcItem 'Item';
+uiRrcName 'Name' = DATA STRING[50] (UiRrcItem);
+uiRrcPrice 'Price' = DATA NUMERIC[10,2] (UiRrcItem);
+uiRrcShown = DATA BOOLEAN (UiRrcItem); // the items of the test that seeded last: the forms show only them
+
+// a change made on the form and applied, which a manual update holds back: the dearer item's name gets a '!'
+uiRrcRename 'Rename' () {
+    uiRrcName(UiRrcItem i) <- uiRrcName(i) + '!' WHERE uiRrcShown(i) AND uiRrcPrice(i) > 1;
+    APPLY;
+}
+
+// the rows drawn by a view in a container of its own; the group's box keeps the platform's toolbar and filters
+FORM uiRrcCards 'Rows of a view'
+    OBJECTS i = UiRrcItem
+    PROPERTIES(i) READONLY name = uiRrcName, price = uiRrcPrice
+    PROPERTIES() uiRrcRename
+    FILTERS uiRrcShown(i)
+    ORDERS name
+;
+
+DESIGN uiRrcCards {
+    NEW cards FIRST {
+        custom = 'UiRrcCards';
+        MOVE GRID(i);
+    }
+}
+
+// the whole group drawn by a view, which places the platform's toolbar and filter box back
+FORM uiRrcPlaced 'Toolbar and filters placed back'
+    OBJECTS i = UiRrcItem
+    PROPERTIES(i) READONLY name = uiRrcName, price = uiRrcPrice
+    FILTERS uiRrcShown(i)
+    ORDERS name
+;
+
+DESIGN uiRrcPlaced {
+    BOX(i) {
+        custom = 'UiRrcPlaced';
+        TOOLBARSYSTEM(i) { custom = NULL; }
+        FILTERBOX(i) { custom = NULL; }
+    }
+}
+
+// ... which places the platform's filter box back and draws the toolbar itself
+FORM uiRrcFilterBox 'Filters placed back'
+    OBJECTS i = UiRrcItem
+    PROPERTIES(i) READONLY name = uiRrcName, price = uiRrcPrice
+    FILTERS uiRrcShown(i)
+    ORDERS name
+;
+
+DESIGN uiRrcFilterBox {
+    BOX(i) {
+        custom = 'UiRrcFilterBox';
+        FILTERBOX(i) { custom = NULL; }
+    }
+}
+
+// ... which draws the rows and the conditions, and places the platform's toolbar and filter controls back
+FORM uiRrcControls 'Controls placed back'
+    OBJECTS i = UiRrcItem
+    PROPERTIES(i) READONLY name = uiRrcName, price = uiRrcPrice
+    FILTERS uiRrcShown(i)
+    ORDERS name
+;
+
+DESIGN uiRrcControls {
+    BOX(i) {
+        custom = 'UiRrcControls';
+        TOOLBARSYSTEM(i) { custom = NULL; }
+        FILTERCONTROLS(i) { custom = NULL; }
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiReactRowsChrome.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiRrc 'UI React rows chrome' WINDOW toolbar {
+        NEW uiRrcCards;
+        NEW uiRrcPlaced;
+        NEW uiRrcFilterBox;
+        NEW uiRrcControls;
+    }
+}
+
+// two items shown from now on, the dearer one first by name
+uiRrcSeed (STRING[50] dear, STRING[50] cheap) {
+    uiRrcShown(UiRrcItem i) <- NULL;
+    NEW i = UiRrcItem {
+        uiRrcName(i) <- dear;
+        uiRrcPrice(i) <- 1.50;
+        uiRrcShown(i) <- TRUE;
+    }
+    NEW i = UiRrcItem {
+        uiRrcName(i) <- cheap;
+        uiRrcPrice(i) <- 0.75;
+        uiRrcShown(i) <- TRUE;
+    }
+    APPLY;
+}
