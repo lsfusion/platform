@@ -1,0 +1,51 @@
+MODULE UiGroupView;
+
+REQUIRE System;
+
+// the forms UiGroupViewIT works on in the browser - an object group in POPUP, TOOLBAR and PANEL view: where its
+// properties are drawn for its current object -, and the action it seeds the item with
+
+CLASS UiGroupViewItem 'Item';
+uiGroupViewName 'Name' = DATA STRING[50] (UiGroupViewItem);
+uiGroupViewCode 'Code' = DATA STRING[50] (UiGroupViewItem);
+uiGroupViewShown = DATA BOOLEAN (UiGroupViewItem); // the item of the test that seeded last: the forms show only it
+
+// the group in POPUP view: its property in its popup container, one with a view of its own (PANEL) in its panel
+FORM uiGroupViewPopup 'Popup view'
+    OBJECTS i = UiGroupViewItem POPUP
+    PROPERTIES(i) READONLY uiGroupViewName, uiGroupViewCode PANEL
+    FILTERS uiGroupViewShown(i)
+;
+
+// the group in TOOLBAR view: its property in its toolbar
+FORM uiGroupViewToolbar 'Toolbar view'
+    OBJECTS i = UiGroupViewItem TOOLBAR
+    PROPERTIES(i) READONLY uiGroupViewName
+    FILTERS uiGroupViewShown(i)
+;
+
+// the group in PANEL view, which always opened: its property in its panel
+FORM uiGroupViewPanel 'Panel view'
+    OBJECTS i = UiGroupViewItem PANEL
+    PROPERTIES(i) READONLY uiGroupViewName
+    FILTERS uiGroupViewShown(i)
+;
+
+NAVIGATOR {
+    NEW FOLDER uiGroupView 'UI group view' WINDOW toolbar {
+        NEW uiGroupViewPopup;
+        NEW uiGroupViewToolbar;
+        NEW uiGroupViewPanel;
+    }
+}
+
+// an item, the only one shown from now on
+uiGroupViewSeed (STRING[50] name, STRING[50] code) {
+    uiGroupViewShown(UiGroupViewItem i) <- NULL;
+    NEW i = UiGroupViewItem {
+        uiGroupViewName(i) <- name;
+        uiGroupViewCode(i) <- code;
+        uiGroupViewShown(i) <- TRUE;
+    }
+    APPLY;
+}
