@@ -1,0 +1,331 @@
+MODULE UiFormsWindow;
+
+REQUIRE TestUtils, SystemEvents;
+
+// the FORMS windows UiFormsWindowIT works on in the browser - one that draws a form at a time and closes the form it
+// displaces, one that keeps it, one a React component draws (UiFormsWindow.js) -, the forms opened into them, the
+// launcher in System.forms whose buttons open, activate and close them, and the actions the test seeds and checks with
+
+// bands above System.forms, each as tall as the form it draws: empty, they take no room, and the other browser tests
+// keep the layout they had. They are stacked in POSITION, one under another, and the first is two rows high, so that
+// the layout splits them off above System.forms one by one: side by side, or level with the log window's height, they
+// would take a share of its width instead
+WINDOW uiFormsWindowOne 'One form' FORMS AUTOSIZE POSITION(20, 6, 80, 2) HIDETITLE CLASS 'ui-forms-window-one';
+WINDOW uiFormsWindowKeep 'Kept forms' FORMS NOCLOSE AUTOSIZE POSITION(20, 8, 80, 1) HIDETITLE CLASS 'ui-forms-window-keep';
+WINDOW uiFormsWindowBoard 'Board' FORMS AUTOSIZE POSITION(20, 9, 80, 1) HIDETITLE CLASS 'ui-forms-window-board' CUSTOM 'UiFormsWindowBoard';
+
+CLASS UiFormsWindowItem 'Item';
+uiFormsWindowName 'Name' = DATA STRING[50] (UiFormsWindowItem);
+uiFormsWindowQuantity 'Quantity' = DATA INTEGER (UiFormsWindowItem);
+// the items of the test that seeded last: the forms show only them
+uiFormsWindowShown = DATA BOOLEAN (UiFormsWindowItem);
+uiFormsWindowFirstItem = DATA UiFormsWindowItem ();
+uiFormsWindowSecondItem = DATA UiFormsWindowItem ();
+
+// what the server did, applied in a session of its own so that it outlives the form that did it: how many times the
+// form First was built and closed, and the form Item of an item closed - per item, as two of them close at once -, and
+// the marks the actions leave, in the order they ran
+uiFormsWindowBuilt = DATA INTEGER ();
+uiFormsWindowClosed = DATA INTEGER ();
+uiFormsWindowItemClosed = DATA INTEGER (UiFormsWindowItem);
+uiFormsWindowMarks = DATA TEXT ();
+
+uiFormsWindowMark (STRING mark) {
+    NEWSESSION {
+        uiFormsWindowMarks() <- CONCAT ',', uiFormsWindowMarks(), mark;
+        APPLY;
+    }
+}
+
+uiFormsWindowText 'Text' = DATA LOCAL STRING[50] ();
+
+// ---------------------------------------------------------------- the forms opened into the windows
+
+FORM uiFormsWindowSecond 'Second'
+    PROPERTIES() uiFormsWindowText
+;
+
+// a caption that follows the data: Second's is its text's
+DESIGN uiFormsWindowSecond {
+    caption = CONCAT ' ', 'Second', uiFormsWindowText();
+}
+
+FORM uiFormsWindowThird 'Third'
+    PROPERTIES() uiFormsWindowText
+;
+
+// the children First opens into the window it is in, waiting for them: a docked-modal pair
+uiFormsWindowChildIntoOne 'Child into one' () { SHOW uiFormsWindowThird WINDOW uiFormsWindowOne WAIT; }
+uiFormsWindowChildIntoKeep 'Child into kept' () { SHOW uiFormsWindowThird WINDOW uiFormsWindowKeep WAIT; }
+uiFormsWindowChildIntoBoard 'Child into board' () { SHOW uiFormsWindowThird WINDOW uiFormsWindowBoard WAIT; }
+
+FORM uiFormsWindowFirst 'First'
+    PROPERTIES() uiFormsWindowText, uiFormsWindowChildIntoOne, uiFormsWindowChildIntoKeep, uiFormsWindowChildIntoBoard
+    EVENTS ON INIT {
+        NEWSESSION {
+            uiFormsWindowBuilt() <- uiFormsWindowBuilt() (+) 1;
+            APPLY;
+        }
+    },
+    ON CLOSE {
+        NEWSESSION {
+            uiFormsWindowClosed() <- uiFormsWindowClosed() (+) 1;
+            APPLY;
+        }
+    }
+;
+
+// the items a grid edits, in a session of its own, so that a change it makes is one its close asks about
+FORM uiFormsWindowItems 'Items'
+    OBJECTS i = UiFormsWindowItem
+    PROPERTIES(i) READONLY uiFormsWindowName
+    PROPERTIES(i) uiFormsWindowQuantity
+    FILTERS uiFormsWindowShown(i)
+;
+
+// one item, which two labelled instances of the form tell apart
+FORM uiFormsWindowItem 'Item'
+    OBJECTS i = UiFormsWindowItem PANEL
+    PROPERTIES(i) READONLY uiFormsWindowName
+    EVENTS ON CLOSE {
+        NEWSESSION {
+            uiFormsWindowItemClosed(i) <- uiFormsWindowItemClosed(i) (+) 1;
+            APPLY;
+        }
+    }
+;
+
+// ---------------------------------------------------------------- the launcher's actions
+
+uiFormsWindowFirstIntoOne 'First into one' () { SHOW uiFormsWindowFirst WINDOW uiFormsWindowOne NOWAIT; }
+uiFormsWindowSecondIntoOne 'Second into one' () { SHOW uiFormsWindowSecond WINDOW uiFormsWindowOne NOWAIT; }
+uiFormsWindowBothIntoOne 'Both into one' () {
+    SHOW uiFormsWindowFirst WINDOW uiFormsWindowOne NOWAIT;
+    SHOW uiFormsWindowSecond WINDOW uiFormsWindowOne NOWAIT;
+}
+uiFormsWindowItemsIntoOne 'Items into one' () { SHOW uiFormsWindowItems WINDOW uiFormsWindowOne NOWAIT NEWSESSION; }
+// a docked-modal child aimed at the window from the launcher, a form in another window
+uiFormsWindowSecondIntoOneWait 'Second into one, waiting' () { SHOW uiFormsWindowSecond WINDOW uiFormsWindowOne WAIT; }
+
+uiFormsWindowFirstIntoKeep 'First into kept' () { SHOW uiFormsWindowFirst WINDOW uiFormsWindowKeep NOWAIT; }
+uiFormsWindowSecondIntoKeep 'Second into kept' () { SHOW uiFormsWindowSecond WINDOW uiFormsWindowKeep NOWAIT; }
+uiFormsWindowKeptIntoKeep 'Kept items into kept' () { SHOW 'kept' = uiFormsWindowItems WINDOW uiFormsWindowKeep NOWAIT NEWSESSION; }
+uiFormsWindowLabelledIntoKeep 'Labelled into kept' () {
+    SHOW 'a' = uiFormsWindowItem OBJECTS i = uiFormsWindowFirstItem() WINDOW uiFormsWindowKeep NOWAIT;
+    SHOW 'b' = uiFormsWindowItem OBJECTS i = uiFormsWindowSecondItem() WINDOW uiFormsWindowKeep NOWAIT;
+}
+uiFormsWindowAIntoKeep 'A into kept' () {
+    SHOW 'a' = uiFormsWindowItem OBJECTS i = uiFormsWindowFirstItem() WINDOW uiFormsWindowKeep NOWAIT;
+}
+
+uiFormsWindowFirstIntoBoard 'First into board' () { SHOW uiFormsWindowFirst WINDOW uiFormsWindowBoard NOWAIT; }
+uiFormsWindowSecondIntoBoard 'Second into board' () { SHOW uiFormsWindowSecond WINDOW uiFormsWindowBoard NOWAIT; }
+uiFormsWindowItemsIntoBoard 'Items into board' () { SHOW uiFormsWindowItems WINDOW uiFormsWindowBoard NOWAIT NEWSESSION; }
+
+uiFormsWindowActivateFirst 'Activate first' () { ACTIVATE FORM uiFormsWindowFirst; }
+uiFormsWindowActivateSecond 'Activate second' () { ACTIVATE FORM uiFormsWindowSecond; }
+uiFormsWindowActivateItems 'Activate items' () { ACTIVATE FORM uiFormsWindowItems; }
+uiFormsWindowActivateA 'Activate a' () { ACTIVATE FORM 'a'; }
+uiFormsWindowCloseFirst 'Close first' () { CLOSE FORM uiFormsWindowFirst; }
+uiFormsWindowCloseSecond 'Close second' () { CLOSE FORM uiFormsWindowSecond; }
+uiFormsWindowCloseItems 'Close items' () { CLOSE FORM uiFormsWindowItems; }
+uiFormsWindowCloseKept 'Close kept' () { CLOSE FORM 'kept'; }
+uiFormsWindowCloseA 'Close a' () { CLOSE FORM 'a'; }
+uiFormsWindowCloseEveryItem 'Close every item' () { CLOSE FORM uiFormsWindowItem; }
+
+// an open that reuses the form already there, with a statement and an aspect after it, which the server runs whether
+// or not it builds the form. Nothing before the open waits - a mark's APPLY does -, or the client would not predict
+// the open: what stands after a wait is not known at the click
+uiFormsWindowFirstOnce 'First once' () {
+    SHOW uiFormsWindowFirst WINDOW uiFormsWindowKeep NOWAIT ACTIVATE;
+    uiFormsWindowMark('after');
+}
+AFTER uiFormsWindowFirstOnce() DO uiFormsWindowMark('aspect after');
+
+uiFormsWindowNever = DATA BOOLEAN ();
+// the open the client predicts, in a branch the server does not take
+uiFormsWindowFirstOnceIf 'First once, if' () {
+    IF uiFormsWindowNever() THEN
+        SHOW uiFormsWindowFirst WINDOW uiFormsWindowKeep NOWAIT ACTIVATE;
+    uiFormsWindowMark('not taken');
+}
+
+// the same open in a session of its own; and opens whose label or window the form already there does not have
+uiFormsWindowFirstOnceInSession 'First once, in a session' () {
+    NEWSESSION {
+        SHOW uiFormsWindowFirst WINDOW uiFormsWindowKeep NOWAIT ACTIVATE;
+        uiFormsWindowMark('in a session');
+    }
+}
+uiFormsWindowFirstOnceLabelled 'First once, labelled' () {
+    SHOW 'labelled' = uiFormsWindowFirst WINDOW uiFormsWindowKeep NOWAIT ACTIVATE;
+    uiFormsWindowMark('labelled');
+}
+uiFormsWindowFirstOnceIntoOne 'First once, into one' () {
+    SHOW uiFormsWindowFirst WINDOW uiFormsWindowOne NOWAIT ACTIVATE;
+    uiFormsWindowMark('into one');
+}
+
+// two opens that reuse the form already there in one action: one activation goes with the request, so the second
+// open builds a form, which the client does not show
+uiFormsWindowFirstTwice 'First twice' () {
+    SHOW uiFormsWindowFirst WINDOW uiFormsWindowKeep NOWAIT ACTIVATE;
+    SHOW uiFormsWindowFirst WINDOW uiFormsWindowKeep NOWAIT ACTIVATE;
+}
+
+// an action that closes its own form, then opens First in System.forms with ACTIVATE - run by name from the push form,
+// so that the client predicts neither
+uiFormsWindowCloseAndShowFirst () {
+    formClose();
+    SHOW uiFormsWindowFirst WINDOW NOWAIT ACTIVATE;
+}
+
+// the launcher's button of First once runs, after the action, a handler of its own change as well
+FORM uiFormsWindowLauncher 'Launcher'
+    PROPERTIES() uiFormsWindowText,
+                 uiFormsWindowFirstIntoOne, uiFormsWindowSecondIntoOne, uiFormsWindowBothIntoOne, uiFormsWindowItemsIntoOne,
+                 uiFormsWindowSecondIntoOneWait,
+                 uiFormsWindowFirstIntoKeep, uiFormsWindowSecondIntoKeep, uiFormsWindowKeptIntoKeep, uiFormsWindowLabelledIntoKeep,
+                 uiFormsWindowAIntoKeep,
+                 uiFormsWindowFirstIntoBoard, uiFormsWindowSecondIntoBoard, uiFormsWindowItemsIntoBoard,
+                 uiFormsWindowActivateFirst, uiFormsWindowActivateSecond, uiFormsWindowActivateItems, uiFormsWindowActivateA,
+                 uiFormsWindowCloseFirst, uiFormsWindowCloseSecond, uiFormsWindowCloseItems, uiFormsWindowCloseKept,
+                 uiFormsWindowCloseA, uiFormsWindowCloseEveryItem,
+                 uiFormsWindowFirstOnce ON CHANGE AFTER { uiFormsWindowMark('property after'); },
+                 uiFormsWindowFirstOnceIf, uiFormsWindowFirstOnceInSession, uiFormsWindowFirstOnceLabelled,
+                 uiFormsWindowFirstOnceIntoOne, uiFormsWindowFirstTwice
+;
+
+// ---------------------------------------------------------------- a value a React view supplies
+
+// stored: a change of it is one the form asks about before it closes
+// a form whose close event opens a floating form and leaves a mark, in place of the close itself (a QUERYCLOSE handler
+// replaces it), and the floating form; the open of the first in System.forms with ACTIVATE
+FORM uiFormsWindowCloseTarget 'Close target';
+
+FORM uiFormsWindowCloseSource 'Close source'
+    EVENTS ON QUERYCLOSE {
+        SHOW uiFormsWindowCloseTarget FLOAT NOWAIT;
+        uiFormsWindowMark('query close');
+    }
+;
+
+uiFormsWindowCloseSourceIntoForms () {
+    SHOW uiFormsWindowCloseSource WINDOW NOWAIT ACTIVATE;
+}
+
+uiFormsWindowStored 'Stored' = DATA STRING[50] ();
+uiFormsWindowCloser 'Closer' = DATA LOCAL INTEGER ();
+uiFormsWindowPlain 'Plain' = DATA LOCAL INTEGER ();
+uiFormsWindowOpener 'Opener' = DATA LOCAL INTEGER ();
+
+// a React view (UiFormsWindowPush) changes the four properties: the closer's change closes the form, the plain one's
+// requests no value and leaves a mark, the opener's opens First with ACTIVATE; and it runs by their names First once,
+// the close of the form followed by an open of First, and the open of the close source
+FORM uiFormsWindowPush 'Push'
+    PROPERTIES() uiFormsWindowStored, uiFormsWindowCloser ON CHANGE { formClose(); },
+                 uiFormsWindowPlain ON CHANGE { uiFormsWindowMark('plain'); },
+                 uiFormsWindowOpener ON CHANGE { SHOW uiFormsWindowFirst WINDOW uiFormsWindowKeep NOWAIT ACTIVATE; }
+    CUSTOMS uiFormsWindowFirstOnce, uiFormsWindowCloseAndShowFirst, uiFormsWindowCloseSourceIntoForms
+;
+
+DESIGN uiFormsWindowPush {
+    NEW push FIRST {
+        custom = 'UiFormsWindowPush';
+        MOVE PROPERTY(uiFormsWindowStored());
+        MOVE PROPERTY(uiFormsWindowCloser());
+        MOVE PROPERTY(uiFormsWindowPlain());
+        MOVE PROPERTY(uiFormsWindowOpener());
+    }
+}
+
+// the forms First and Push in System.forms, Push the current one - opened by one element of the navigator, whose panel
+// does not come out while a form is open there
+uiFormsWindowFirstAndPushIntoForms 'First and push into forms' () {
+    SHOW uiFormsWindowFirst WINDOW NOWAIT;
+    SHOW uiFormsWindowPush WINDOW NOWAIT;
+}
+// ... and the close source and Push
+uiFormsWindowCloseSourceAndPushIntoForms 'Close source and push into forms' () {
+    uiFormsWindowCloseSourceIntoForms();
+    SHOW uiFormsWindowPush WINDOW NOWAIT;
+}
+
+// a form with two handlers of its close event, each opening First with ACTIVATE, the close itself kept (NOREPLACE)
+FORM uiFormsWindowEvents 'Events'
+    EVENTS ON QUERYCLOSE NOREPLACE {
+        SHOW uiFormsWindowFirst WINDOW uiFormsWindowKeep NOWAIT ACTIVATE;
+        uiFormsWindowMark('first handler');
+    }
+;
+
+EXTEND FORM uiFormsWindowEvents
+    EVENTS ON QUERYCLOSE NOREPLACE {
+        SHOW uiFormsWindowFirst WINDOW uiFormsWindowKeep NOWAIT ACTIVATE;
+        uiFormsWindowMark('second handler');
+    }
+;
+
+onWebClientInit() + {
+    onWebClientInit('UiFormsWindow.js') <- 1;
+}
+
+// the launcher's actions the navigator runs as well, with nothing open in System.forms
+NAVIGATOR {
+    NEW FOLDER uiFormsWindow 'UI forms window' WINDOW toolbar {
+        NEW uiFormsWindowLauncher;
+        NEW uiFormsWindowPush;
+        NEW uiFormsWindowEvents;
+        NEW uiFormsWindowFirstOnce;
+        NEW uiFormsWindowSecondIntoKeep;
+        NEW uiFormsWindowActivateSecond;
+        NEW uiFormsWindowFirstAndPushIntoForms;
+        NEW uiFormsWindowCloseSourceAndPushIntoForms;
+    }
+}
+
+// two items shown from now on, the first and the second of this test; the counts and the marks start over, and the
+// stored value is none
+uiFormsWindowSeed (STRING[50] first, STRING[50] second) {
+    uiFormsWindowShown(UiFormsWindowItem i) <- NULL;
+    NEW i = UiFormsWindowItem {
+        uiFormsWindowName(i) <- first;
+        uiFormsWindowShown(i) <- TRUE;
+        uiFormsWindowFirstItem() <- i;
+    }
+    NEW i = UiFormsWindowItem {
+        uiFormsWindowName(i) <- second;
+        uiFormsWindowShown(i) <- TRUE;
+        uiFormsWindowSecondItem() <- i;
+    }
+    uiFormsWindowBuilt() <- NULL;
+    uiFormsWindowClosed() <- NULL;
+    uiFormsWindowMarks() <- NULL;
+    uiFormsWindowStored() <- NULL;
+    APPLY;
+}
+
+uiFormsWindowCheckBuilt (INTEGER expected) {
+    assertEquals((OVERRIDE uiFormsWindowBuilt(), 0), expected, CONCAT ' ', 'First was built', (OVERRIDE uiFormsWindowBuilt(), 0), 'times, not', expected);
+}
+
+uiFormsWindowCheckClosed (INTEGER expected) {
+    assertEquals((OVERRIDE uiFormsWindowClosed(), 0), expected, CONCAT ' ', 'First was closed', (OVERRIDE uiFormsWindowClosed(), 0), 'times, not', expected);
+}
+
+// how many times the form Item of the first and of the second item was closed, as "first,second"
+uiFormsWindowItemsClosed () = CONCAT ',', (OVERRIDE uiFormsWindowItemClosed(uiFormsWindowFirstItem()), 0),
+                                          (OVERRIDE uiFormsWindowItemClosed(uiFormsWindowSecondItem()), 0);
+uiFormsWindowCheckItemClosed (STRING expected) {
+    assertEquals(uiFormsWindowItemsClosed(), expected,
+                 CONCAT ' ', 'Item was closed', uiFormsWindowItemsClosed(), 'times, not', expected);
+}
+
+uiFormsWindowCheckStored (STRING expected) {
+    assertEquals(uiFormsWindowStored(), expected,
+                 CONCAT ' ', 'the stored value is', (OVERRIDE uiFormsWindowStored(), 'none'), 'not', expected);
+}
+
+uiFormsWindowCheckMarks (TEXT expected) {
+    assertEquals(uiFormsWindowMarks(), expected, CONCAT ' ', 'the marks are', (OVERRIDE uiFormsWindowMarks(), 'none'), 'not', expected);
+}
