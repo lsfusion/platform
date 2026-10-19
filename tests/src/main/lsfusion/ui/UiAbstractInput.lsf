@@ -1,0 +1,110 @@
+MODULE UiAbstractInput;
+
+REQUIRE TestUtils;
+
+// the form UiAbstractInputIT works on in the browser - the picker of an ABSTRACT object property with two
+// implementations, drawn under a READONLYIF that does not depend on the grid's objects -, and the actions it seeds its
+// documents with and checks their ways by
+
+CLASS UiAbstractInputWay 'Way';
+uiAbstractInputWayName 'Name' = DATA STRING[50] (UiAbstractInputWay);
+
+// the dialogs list their objects by name: the one a test picks is never the first, current one
+FORM uiAbstractInputWays 'Ways'
+    OBJECTS w = UiAbstractInputWay
+    PROPERTIES(w) READONLY uiAbstractInputWayName
+    ORDERS uiAbstractInputWayName(w)
+    LIST UiAbstractInputWay OBJECT w
+;
+
+CLASS UiAbstractInputCarrier 'Carrier';
+uiAbstractInputCarrierName 'Name' = DATA STRING[50] (UiAbstractInputCarrier);
+CLASS UiAbstractInputPost 'Post' : UiAbstractInputCarrier;
+CLASS UiAbstractInputCourier 'Courier' : UiAbstractInputCarrier;
+
+// the dialogs of the carriers, one for each class
+FORM uiAbstractInputPosts 'Posts'
+    OBJECTS c = UiAbstractInputPost
+    PROPERTIES(c) READONLY uiAbstractInputCarrierName
+    ORDERS uiAbstractInputCarrierName(c)
+    LIST UiAbstractInputPost OBJECT c
+;
+
+FORM uiAbstractInputCouriers 'Couriers'
+    OBJECTS c = UiAbstractInputCourier
+    PROPERTIES(c) READONLY uiAbstractInputCarrierName
+    ORDERS uiAbstractInputCarrierName(c)
+    LIST UiAbstractInputCourier OBJECT c
+;
+
+CLASS ABSTRACT UiAbstractInputDocument 'Document';
+uiAbstractInputNumber 'Number' = DATA STRING[50] (UiAbstractInputDocument);
+uiAbstractInputDocument (STRING[50] number) = GROUP AGGR UiAbstractInputDocument d BY uiAbstractInputNumber(d);
+// the documents of the test that seeded last: the form shows only them
+uiAbstractInputShown = DATA BOOLEAN (UiAbstractInputDocument);
+
+CLASS UiAbstractInputOrder 'Order' : UiAbstractInputDocument;
+CLASS UiAbstractInputInvoice 'Invoice' : UiAbstractInputDocument;
+
+// an implementation for each kind of document, both of one class: the ways
+uiAbstractInputOrderWay = DATA UiAbstractInputWay (UiAbstractInputOrder);
+uiAbstractInputInvoiceWay = DATA UiAbstractInputWay (UiAbstractInputInvoice);
+uiAbstractInputWay = ABSTRACT UiAbstractInputWay (UiAbstractInputDocument);
+uiAbstractInputWay (UiAbstractInputOrder d) += uiAbstractInputOrderWay(d);
+uiAbstractInputWay (UiAbstractInputInvoice d) += uiAbstractInputInvoiceWay(d);
+uiAbstractInputNameWay 'Way' (UiAbstractInputDocument d) = uiAbstractInputWayName(uiAbstractInputWay(d));
+
+// an implementation for each kind of document, each of a class of its own: an order's post, an invoice's courier
+uiAbstractInputOrderPost = DATA UiAbstractInputPost (UiAbstractInputOrder);
+uiAbstractInputInvoiceCourier = DATA UiAbstractInputCourier (UiAbstractInputInvoice);
+uiAbstractInputCarrier = ABSTRACT UiAbstractInputCarrier (UiAbstractInputDocument);
+uiAbstractInputCarrier (UiAbstractInputOrder d) += uiAbstractInputOrderPost(d);
+uiAbstractInputCarrier (UiAbstractInputInvoice d) += uiAbstractInputInvoiceCourier(d);
+uiAbstractInputNameCarrier 'Carrier' (UiAbstractInputDocument d) = uiAbstractInputCarrierName(uiAbstractInputCarrier(d));
+
+// NULL, so the columns can be edited: what the condition reads is not the grid's objects
+uiAbstractInputLocked = DATA LOCAL BOOLEAN ();
+
+FORM uiAbstractInputDocuments 'Documents'
+    OBJECTS d = UiAbstractInputDocument
+    PROPERTIES(d) READONLY uiAbstractInputNumber
+    PROPERTIES(d) READONLYIF uiAbstractInputLocked() uiAbstractInputNameWay, uiAbstractInputNameCarrier
+    FILTERS uiAbstractInputShown(d)
+    ORDERS uiAbstractInputNumber(d)
+;
+
+NAVIGATOR {
+    NEW FOLDER uiAbstractInput 'UI abstract input' WINDOW toolbar {
+        NEW uiAbstractInputDocuments;
+    }
+}
+
+// an order and an invoice shown from now on, with no way and no carrier; two ways, a post and two couriers
+uiAbstractInputSeed (STRING[50] order, STRING[50] invoice, STRING[50] firstWay, STRING[50] secondWay, STRING[50] post,
+                     STRING[50] firstCourier, STRING[50] secondCourier) {
+    uiAbstractInputShown(UiAbstractInputDocument d) <- NULL;
+    NEW d = UiAbstractInputOrder {
+        uiAbstractInputNumber(d) <- order;
+        uiAbstractInputShown(d) <- TRUE;
+    }
+    NEW d = UiAbstractInputInvoice {
+        uiAbstractInputNumber(d) <- invoice;
+        uiAbstractInputShown(d) <- TRUE;
+    }
+    NEW w = UiAbstractInputWay { uiAbstractInputWayName(w) <- firstWay; }
+    NEW w = UiAbstractInputWay { uiAbstractInputWayName(w) <- secondWay; }
+    NEW c = UiAbstractInputPost { uiAbstractInputCarrierName(c) <- post; }
+    NEW c = UiAbstractInputCourier { uiAbstractInputCarrierName(c) <- firstCourier; }
+    NEW c = UiAbstractInputCourier { uiAbstractInputCarrierName(c) <- secondCourier; }
+    APPLY;
+}
+
+uiAbstractInputCheckWay (STRING[50] number, STRING[50] expected) {
+    assertEquals(uiAbstractInputNameWay(uiAbstractInputDocument(number)), expected,
+                 CONCAT ' ', 'the way of', number, 'is', (OVERRIDE uiAbstractInputNameWay(uiAbstractInputDocument(number)), 'none'), 'not', expected);
+}
+
+uiAbstractInputCheckCarrier (STRING[50] number, STRING[50] expected) {
+    assertEquals(uiAbstractInputNameCarrier(uiAbstractInputDocument(number)), expected,
+                 CONCAT ' ', 'the carrier of', number, 'is', (OVERRIDE uiAbstractInputNameCarrier(uiAbstractInputDocument(number)), 'none'), 'not', expected);
+}
