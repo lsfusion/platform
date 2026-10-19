@@ -835,8 +835,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }
     }
     private void addBindings(ArrayList<GInputBindingEvent> bindingEvents, GPropertyDraw property, GGroupObject groupObject, Supplier<Widget> widget, BindingExec pressed) {
-        for (GInputBindingEvent bindingEvent : bindingEvents)
-            addBinding(createBindingEvent(bindingEvent.inputEvent, bindingEvent.env, property, bindingEvent.inputEvent instanceof GMouseInputEvent), new Binding(groupObject) {
+        for (GInputBindingEvent bindingEvent : bindingEvents) {
+            Binding binding = new Binding(groupObject) {
                 @Override
                 public boolean showing() {
                     return isShowing(widget.get());
@@ -851,7 +851,14 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
                 public void exec(Event event) {
                     pressed.exec(event);
                 }
-            });
+            };
+            // the slot of its own kind, or of each for the placeholder of a key a property gives itself, which the
+            // server sends with no event and so of no kind (PropertyDrawViewProxy.setChangeKey and setChangeMouse) -
+            // the key it is sent later takes the slot of its kind (addDynamicBinding)
+            GInputEvent inputEvent = bindingEvent.inputEvent;
+            for (boolean mouse : inputEvent != null ? new boolean[] {inputEvent instanceof GMouseInputEvent} : new boolean[] {false, true})
+                addBinding(createBindingEvent(inputEvent, bindingEvent.env, property, mouse), binding);
+        }
     }
     // ... every component, down the design - a grid's record is inside its grid, and so is what it holds -, a property
     // too, as a component (createComponentController)

@@ -271,6 +271,89 @@ public class GFormControllerTest extends GWTTestCase {
             RootPanel.get().remove(host);
         }
     }
+    // ... and one where the design gives the property none of its own - a changeMouse given by a property only: the
+    // server sends its placeholder with no event, of no kind, which the form binds as a key's - gets a slot of its own
+    public void testAMouseBindingOnlyAPropertyGivesItselfIsBound() {
+        RowsForm rows = new RowsForm(new GInputBindingEvent(null, ANY)); // the placeholder (PropertyDrawViewProxy.setChangeMouse)
+        rows.qty.changeMouseReader = new GExtraPropReader(rows.qty.ID, -1, GFormChanges.GPropertyReadType.CHANGEMOUSE);
+        GFormController controller = rows.controller();
+        FlowPanel host = new FlowPanel();
+        RootPanel.get().add(host);
+        try {
+            controller.getRowsPanelController(rows.qty).place(rows.one, rows.qty, host.getElement());
+            assertFalse(doubleClick(controller, host.getElement())); // none yet
+            changeMouse(controller, rows.qty, new GInputBindingEvent(new GMouseInputEvent(GMouseInputEvent.DBLCLK), ANY));
+            assertTrue(doubleClick(controller, host.getElement()));
+            assertTrue(pressed(host.getElement()));
+            changeMouse(controller, rows.qty, null);
+            assertFalse(doubleClick(controller, host.getElement())); // its slot, taken off by a NULL as any
+        } finally {
+            RootPanel.get().remove(host);
+        }
+    }
+    // ... and of two such - one double click, no priority given -, the later in the form takes it, whichever the server
+    // sends its changeMouse first: the placeholders take their slots as the form is made
+    public void testOfTwoMouseBindingsPropertiesGiveThemselvesTheLaterInTheFormTakesIt() {
+        GInputBindingEvent dblclk = new GInputBindingEvent(new GMouseInputEvent(GMouseInputEvent.DBLCLK), ANY);
+        for (boolean laterSentFirst : new boolean[] {false, true}) {
+            RowsForm rows = new RowsForm(new GInputBindingEvent(null, ANY));
+            GPropertyDraw later = rows.perRow(column(rows.form, 23, "later", rows.group), new GInputBindingEvent(null, ANY));
+            rows.qty.changeMouseReader = new GExtraPropReader(rows.qty.ID, -1, GFormChanges.GPropertyReadType.CHANGEMOUSE);
+            later.changeMouseReader = new GExtraPropReader(later.ID, -1, GFormChanges.GPropertyReadType.CHANGEMOUSE);
+            rows.deliver(rows.qty, later);
+            GFormController controller = rows.controller();
+            FlowPanel earlierHost = new FlowPanel(), laterHost = new FlowPanel();
+            RootPanel.get().add(earlierHost); RootPanel.get().add(laterHost);
+            try {
+                controller.getRowsPanelController(rows.qty).place(rows.one, rows.qty, earlierHost.getElement());
+                controller.getRowsPanelController(later).place(rows.one, later, laterHost.getElement());
+                changeMouse(controller, laterSentFirst ? later : rows.qty, dblclk);
+                changeMouse(controller, laterSentFirst ? rows.qty : later, dblclk);
+                assertTrue(doubleClick(controller, earlierHost.getElement()));
+                assertTrue(pressed(laterHost.getElement()));
+                assertFalse(pressed(earlierHost.getElement()));
+            } finally {
+                RootPanel.get().remove(earlierHost); RootPanel.get().remove(laterHost);
+            }
+        }
+    }
+    // ... and a property giving itself both, a changeKey and a changeMouse, with no static one: two placeholders, and
+    // each key takes the slot of its kind - neither takes the other's, in either order, and a NULL takes off its own
+    public void testAKeyAndAMouseBindingAPropertyGivesItselfTakeTheirOwnSlots() {
+        RowsForm rows = new RowsForm(new GInputBindingEvent(null, ANY)); // changeKey's placeholder
+        rows.qty.bindingEvents.add(new GInputBindingEvent(null, ANY)); // ... and changeMouse's
+        rows.qty.changeKeyReader = new GExtraPropReader(rows.qty.ID, -1, GFormChanges.GPropertyReadType.CHANGEKEY);
+        rows.qty.changeMouseReader = new GExtraPropReader(rows.qty.ID, -1, GFormChanges.GPropertyReadType.CHANGEMOUSE);
+        GFormController controller = rows.controller();
+        FlowPanel host = new FlowPanel();
+        RootPanel.get().add(host);
+        try {
+            controller.getRowsPanelController(rows.qty).place(rows.one, rows.qty, host.getElement());
+            changeMouse(controller, rows.qty, new GInputBindingEvent(new GMouseInputEvent(GMouseInputEvent.DBLCLK), ANY));
+            changeKey(controller, rows.qty, new GInputBindingEvent(new GKeyInputEvent(new GKeyStroke(117)), ANY)); // F6
+            assertTrue(doubleClick(controller, host.getElement()));
+            assertTrue(press(controller, host.getElement(), 117));
+            changeKey(controller, rows.qty, null);
+            assertFalse(press(controller, host.getElement(), 117));
+            assertTrue(doubleClick(controller, host.getElement())); // the mouse one stays
+            changeMouse(controller, rows.qty, null);
+            assertFalse(doubleClick(controller, host.getElement()));
+            changeKey(controller, rows.qty, new GInputBindingEvent(new GKeyInputEvent(new GKeyStroke(117)), ANY)); // the other order
+            changeMouse(controller, rows.qty, new GInputBindingEvent(new GMouseInputEvent(GMouseInputEvent.DBLCLK), ANY));
+            assertTrue(press(controller, host.getElement(), 117));
+            assertTrue(doubleClick(controller, host.getElement()));
+        } finally {
+            RootPanel.get().remove(host);
+        }
+    }
+    // the changeKey the server sends for a property, as its reader's value
+    private static void changeKey(GFormController controller, GPropertyDraw property, GInputBindingEvent binding) {
+        GFormChanges changes = new GFormChanges();
+        NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
+        values.put(GGroupObjectValue.EMPTY, binding != null ? new PValue.SerializableValue(binding) : null);
+        changes.properties.put(property.changeKeyReader, values);
+        controller.applyRemoteChanges(changes, 1);
+    }
     // the changeMouse the server sends for a property, as its reader's value
     private static void changeMouse(GFormController controller, GPropertyDraw property, GInputBindingEvent binding) {
         GFormChanges changes = new GFormChanges();
