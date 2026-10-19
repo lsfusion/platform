@@ -3,7 +3,7 @@ slug: "/How-to_Custom_React_views"
 title: 'How-to: Custom React form views'
 ---
 
-A [`DESIGN`](../language/DESIGN_statement.md) container can be rendered by a React component instead of the standard layout. The component receives a projection of the form state and draws the container's whole subtree itself. A table, a toolbar, filter controls and a filter group can be drawn by a React component of their own the same way, instead of the platform's view of them ([A component's own view](#component-views)).
+A [`DESIGN`](../language/DESIGN_statement.md) container can be rendered by a React component instead of the standard layout. The component receives a projection of the form state and draws the container's whole subtree itself. A table, a toolbar, filter controls, a filter group and a property's filter can be drawn by a React component of their own the same way, instead of the platform's view of them ([A component's own view](#component-views)).
 
 This is a web-client feature only. The desktop client deserializes the container and renders its regular (non-React) subtree, and draws a component with a React component of its own with the platform's view, so the design stays usable in both clients.
 
@@ -60,6 +60,7 @@ Every property, group and container the projection carries is an object in `data
 | What `FILTERS(<group>)` holds | The [user filters](#filters) | `data.<group>` |
 | `FILTERCONTROLS(<group>)` | The [filter controls](#filter-controls) | `data.<group>` |
 | `FILTERGROUP(<filterGroup>)` | A [filter group](#filter-groups) | `data.<group>` |
+| A property's filter, `FILTER(<property>)` | The [filter](#property-filters)'s condition | `data.<group>`, under `filter` |
 | `TOOLBARSYSTEM(<group>)` | The [toolbar](#toolbar) | `data.<group>` |
 | The tree, `GRID(TREE <tree>)` | The [tree](#trees)'s current row, the opening of its current node, and its [sortings](#orders) | `data.<tree>` |
 | What `FILTERS(TREE <tree>)` holds, `FILTERCONTROLS(TREE <tree>)`, `TOOLBARSYSTEM(TREE <tree>)` | A [tree](#trees)'s user filters, its [filter controls and toolbar](#tree-toolbar) | `data.<tree>` |
@@ -79,7 +80,7 @@ A component's place is found by walking up from its container: a `CUSTOM REACT` 
 
 So a `MOVE` of a panel property is what decides which engine draws it: inside a custom container React draws it from `data`, outside one the platform draws it where it now stands and it leaves `data`.
 
-A container with a `custom` of its own inside what a React component draws — another React component, an HTML template, `''` — is not drawn by that component: it is drawn by its own view, and the outer component places it like any other [child the platform draws](#placing). So is a table, a toolbar, filter controls or a filter group with a [React component of its own](#component-views).
+A container with a `custom` of its own inside what a React component draws — another React component, an HTML template, `''` — is not drawn by that component: it is drawn by its own view, and the outer component places it like any other [child the platform draws](#placing). So is a table, a toolbar, filter controls, a filter group or a property's filter with a [React component of its own](#component-views).
 
 A property grouped in columns (`COLUMNS`) cannot be projected: its values are addressed by a row-and-column key, and everything here — a row of `list`, an entry of `byKey`, a name on the controller — means one row. So a React container may not carry one — a column of the rows it draws, or a panel property or a property of the empty group standing in it: such a form is rejected when it is built, naming the property. Elsewhere on the form it stays as it is, and a React view simply has no name for it: the [controller](How-to_Custom_view_controller.md) carries what the projection carries, so what is not projected has no member. The same holds whenever a name does not single out one property — two properties of a projected group may share an integration name only when their entries land in different containers, and each view then means the one its own node carries. Within one container they may not, because one entry and one member cannot stand for two properties; nor anywhere, one drawn by the platform included, when a view draws a part that names a property of the group ([Reserved names](#reserved-names)). Give one of them an explicit `EXTID`. Declare an ordinary property if the view has to read those values.
 
@@ -160,6 +161,7 @@ The reservation follows what a row or a node carries:
 | The node of a group in `LIST` view where `FILTERCONTROLS(<group>)` is | The names of the [filter controls](#filter-controls): `addFilter`, `applyFilters`, `resetFilters`, `filtersPending`, `filtersManual` |
 | The node of a group in `LIST` view where `TOOLBARSYSTEM(<group>)` is, unless the design hides it (`visible = FALSE`) | The names of all the [toolbar](#toolbar)'s buttons, whatever the design's `show…` flags say: `manual`, `updatePending`, `update`, `filterControlsVisible`, `listView`, `listViews`, `getCount`, `getSum`, `export` |
 | A group's node where `FILTERGROUP(<filterGroup>)` is | The [filter group](#filter-groups)'s own name, as a property's |
+| A group's node where a property's filter, `FILTER(<property>)`, is drawn | `filter` |
 | The top level, where the node of the empty group is the controller itself as well | The names of the [controller](How-to_Custom_view_controller.md)'s own members: `exec`, `eval`, `evalAction`, `change`, `startEditing`, `stopEditing`, `isEditing`, `batch` |
 
 A tree's own `current` and `expandCurrent` and its sortings, where its rows are drawn, and its user filters, filter controls and toolbar write their names on [its node](#trees). A container carrying just a panel property of the group has none of the names of the other parts, so a property called `list` is refused there by nothing. `__proto__` is reserved everywhere: assigning it does not add a field, it replaces the object's prototype. There is no `meta` object anywhere. A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built. So is a form in which a group whose rows or user filters a view draws, or its toolbar with the sum, carries one name on two properties anywhere, one drawn by the platform included: a [sorting](#orders), a [condition](#filters) or the [toolbar](#toolbar)'s `getSum` names the group's property by that name. Give it an explicit `EXTID`, or rename it. A property such a container draws or places has to have a name at all - the view reaches it by that name alone, its entry and its `<Platform>` alike: one declared `NOEXTID` is rejected the same way - give it an `EXTID`. A name that is empty or carries a dot is rejected too — a qualified name, `o.note`, is split at its last dot —, and so is a group of several objects with no name of its own, `OBJECTS (d = X, t = Y)`, wherever the view carries a part of it: its SID joins the objects' names with dots, so name it, `OBJECTS pair = (d = X, t = Y)`. A property or action the platform draws is named as any other, and all of this holds for it.
@@ -193,7 +195,7 @@ The projection follows what an option describes — a whole column, one cell, or
 | `data.<g>.list[i]` | The row's own options, direct on the row: `background`, `foreground`, `selected` |
 | `data.<g>` | `options` — the group's custom options, where the view draws its rows; `properties` — the property entries this node carries, shown or not |
 | `data.<integrationSID>` | A property of the empty group — its `value`, its attributes, and `hidden` while the form hides it; one the platform draws — the entry that labels it, with no `value` |
-| `data.<componentSID>` | The entry of every other component this view draws or places — a container, declared with `NEW` or generated like `PANEL(o)` or `TOOLBAR(o)`; a grid, like `GRID(o)`, or a tree, like `GRID(TREE t)`; a toolbar, like `TOOLBARSYSTEM(o)`; and any component the platform draws other than a property: its `caption` and `image` when it has them, and `hidden` while the form hides it, keyed by its design component identifier, always at the top level, whatever it is nested in. The entry is always there; a shown component with neither a caption nor an image has an empty one |
+| `data.<componentSID>` | The entry of every other component this view draws or places — a container, declared with `NEW` or generated like `PANEL(o)` or `TOOLBAR(o)`; a grid, like `GRID(o)`, or a tree, like `GRID(TREE t)`; a toolbar, like `TOOLBARSYSTEM(o)`; a property's filter, like `FILTER(name(o))`; and any component the platform draws other than a property: its `caption` and `image` when it has them, and `hidden` while the form hides it, keyed by its design component identifier, always at the top level, whatever it is nested in. The entry is always there; a shown component with neither a caption nor an image has an empty one |
 
 Each attribute is delivered at one point, already resolved: a property's static design value and its per-row `BACKGROUND` / `READONLYIF` / … result are folded into a single effective value before the view sees it, so the view reads an attribute straight from where it lives and never merges a column base with a row override. A list property's whole-column attributes — `caption`, `image`, `footer`, `comment`, `tooltip`, `defaultValue` — are on its column node `data.<g>.<prop>`, while its per-row value and the cell attributes that can vary by row are on the cell `data.<g>.list[i].<prop>`:
 
@@ -1512,6 +1514,90 @@ on that group's node, `data.<group>.<filterGroup>`, never on the tree's, which c
 the whole tree — its user filters, filter controls, toolbar and sortings —, though the platform's design puts a tree's
 filter groups in the tree's `FILTERGROUPS(TREE <tree>)`.
 
+### Property filters (`FILTER`) {#property-filters}
+
+A property declared a [user filter](../paradigm/Interactive_view.md#userfilters) — `PROPERTIES(i) name FILTER`, or
+`USER` in the [filters block](../language/Filters_and_sortings_block.md) — has a filter of its own among the user filters
+of its group: a component the design names `FILTER(name(i))`, by the property's name on the form, which the platform's
+filter panel shows as a condition row there from the start. A property filter a view draws is a part of the group of
+its property there, as a filter group is: on the group's node, under `filter`, by the property's integration name — one
+object for the filters the view draws, with no prototype, as `byKey` is:
+
+```lsf
+FORM items
+    OBJECTS i = Item
+    PROPERTIES(i) name FILTER, price
+;
+
+DESIGN items {
+    NEW search FIRST {
+        custom = 'ItemSearch';
+        MOVE FILTER(name(i));
+    }
+}
+```
+
+```js
+// data.i.filter.name
+{caption: 'Name', type: 'string', compare: '_', negation: false, value: null}
+
+controller.i.filter.name.change('ab');                     // filtered by it
+controller.i.filter.name.change('ab', {negation: true});   // ... by its negation
+controller.i.filter.name.change(null);                     // ... and not any more
+```
+
+| Field | Meaning |
+| --- | --- |
+| `caption` | The property's caption in the design, `null` where the design gives none |
+| `type` | The type of a condition's value: `string`, `number`, `date`, `boolean` or `json` — the FILTER type, by which `value` is read and written |
+| `compare`, `negation` | The comparison of the filter's condition, spelled as `filters` spells it, and whether the condition is negated; while there is no condition, the property's default comparison and `false` |
+| `value` | The value of the filter's condition, `null` while there is none |
+
+The filter's condition is the first condition on its property among the group's user filters — as the platform's row of
+the filter takes the first condition on its column —, whoever states it: the filter, `filters.change`, the platform's
+filter panel, a `FILTER` action. `change(value, options)` states its value: in that condition's place, or, where there
+is none, appended. The options, `{compare, negation}`, either or both, state the condition's comparison — spelled as
+`filters` spells it — and its negation, as the platform's row does with the filter controls shown; what they leave out
+stays as the condition has it, and is the property's default comparison and no negation for a new condition; its
+junction is kept. An option `change` does not know, a comparison that is no comparison of a condition — an unknown one,
+`IN ARRAY` — and a negation that is not `true` or `false` are refused, with no value too, which then takes nothing off.
+No value — absent, `null` or `''` — takes that condition off, whatever the options say, and that one alone: a range's
+other bound stays, as when the platform's row is emptied. It goes with a [batch](How-to_Custom_view_controller.md#batch)
+as `filters.change` does. The condition of a filter on a file property can only be taken off: its `value` is a link to
+the file, not the file a condition compares with.
+
+```jsx
+export function ItemSearch({data, controller}) {
+    if (data['FILTER(name(i))'].hidden) return null;
+    const filter = data.i.filter.name;
+    return <label>{filter.caption}
+        <input value={filter.value ?? ''} onChange={e => controller.i.filter.name.change(e.target.value)}/>
+    </label>;
+}
+```
+
+A property filter does not depend on who draws the group's conditions: this view, which then gets `filters` too, or
+another view — a change is then sent at once —, or the platform's filter panel. Over the platform's panel the filter is
+the panel's own row of it, which the view draws: the panel shows no row of its own for it, and states its condition as
+it states its rows' — at once, or, in its manual apply mode with its filter controls shown, when the user applies the
+conditions, the filter showing the change meanwhile. A filter of a property of a [tree](#trees)'s group is on its
+group's node, as a filter group of a tree's group is. Its [entry](#display-options), `data['FILTER(name(i))']`, says
+whether the form shows the filter — its `SHOWIF`, or a container's above it.
+
+A property filter with `custom = NULL` is the platform's: a row of its filter panel, as a classic form shows it, which
+the view places with `<Platform name="FILTER(name(i))"/>` as any child the platform draws ([placing](#placing)). A
+filter with a React component of its own — `FILTER(name(i)) { custom = 'NameSearch'; }` — draws its part in its own
+view ([A component's own view](#component-views)).
+
+Some combinations are refused when the form is built:
+
+- a filter a view draws of a group in `PANEL` view, which has no user filters;
+- a filter a view draws on a property its condition cannot name or give a value to: one with no integration name
+  (`NOEXTID`), one grouped in columns, an action;
+- a filter the platform has to draw where it builds no filter panel: one given `custom = NULL` in a view where a view
+  draws the group's conditions or the toolbar turns the filters off (`showFilters = FALSE`), and one standing outside
+  React where a view draws the conditions.
+
 ### Replacing only the filters {#custom-filter-panel}
 
 A group's generated boxes — `FILTERS(o)`, `FILTERBOX(o)`, `FILTERGROUPS(o)`, `TOOLBARBOX(o)`, `TOOLBARLEFT(o)`,
@@ -1547,7 +1633,7 @@ group's list — the one the component is shown in `filters`:
 - typing in a column starts no condition (a grid with a quick search searches, as it does anyway), and there is no
   apply button: a change is sent at once, and the manual-apply setting holds nothing back.
 
-The conditions the design declares for the group are not built.
+The property filters the design declares in the box are the component's: it draws them as [property filters](#property-filters).
 
 These commands are there wherever a view draws the FILTERS box of a group in `LIST` view, whatever its
 `TOOLBARSYSTEM(o)` says: `showFilters`, like the toolbar's other `show…` flags, is the platform's alone, and turns off
@@ -1563,7 +1649,7 @@ search box of [`ItemBoard`](#filters), without its list, is such a panel.
 The conditions the component sets are the group's own: a `FILTER` action, a pivot's drill-down and this component all
 change one list, so they cannot disagree.
 
-`TOOLBARSYSTEM(o)`, `FILTERCONTROLS(o)` and `FILTERGROUP(f)` are not containers, but each takes a `custom` of its own, and a React component then draws it in its place ([A component's own view](#component-views)).
+`TOOLBARSYSTEM(o)`, `FILTERCONTROLS(o)`, `FILTERGROUP(f)` and a [property's filter](#property-filters), `FILTER(name(o))`, are not containers, but each takes a `custom` of its own, and a React component then draws it in its place ([A component's own view](#component-views)).
 
 Receiving a group's state does not make a component the only one drawing it. Which components are drawn is decided
 by the design and by what is placed with `<Platform>`, not by what `data` contains — the state is the group's, whoever draws it. So
@@ -1734,10 +1820,11 @@ What the view draws itself the platform does not build: a `custom` on `BOX(o)` d
 
 ### A component's own view {#component-views}
 
-A table, a toolbar, filter controls and a filter group — `GRID(o)`, a tree's `GRID(TREE t)`, `TOOLBARSYSTEM`,
-`FILTERCONTROLS` and `FILTERGROUP(fg)` — take a React component in `custom` as a container does, and the component then
-draws, in their place, what they show of their object group or tree: the rows, the toolbar's buttons, the filter
-controls, the filter selected in the filter group. The rest of the form stays as it is:
+A table, a toolbar, filter controls, a filter group and a property's filter — `GRID(o)`, a tree's `GRID(TREE t)`,
+`TOOLBARSYSTEM`, `FILTERCONTROLS`, `FILTERGROUP(fg)` and `FILTER(<property>)` — take a React component in `custom` as a
+container does, and the component then draws, in their place, what they show of their object group or tree: the rows,
+the toolbar's buttons, the filter controls, the filter selected in the filter group, the property filter's condition.
+The rest of the form stays as it is:
 
 ```lsf
 DESIGN items {
@@ -1750,7 +1837,8 @@ The component gets what a container holding that component alone would get — `
 MOVE GRID(i); }` —: the part of the group or of the tree on its node, under the same names ([the table at the
 top](#the-component)) — the rows and the sortings on `data.i` with `controller.i.change(row)`, the toolbar's state and
 members on `data.j` and `controller.j`, a tree's rows on its groups' nodes and its own on `data.<tree>`, a filter group
-on `data.<group>.<filterGroup>`. Nothing else is on the top level:
+on `data.<group>.<filterGroup>`, a property's filter on `data.<group>.filter.<property>`. Nothing else is on the top
+level:
 
 ```jsx
 export function ItemCards({data, controller}) {
@@ -1774,8 +1862,8 @@ with [`<Platform name row/>`](#live-editor); it places nothing else.
 Some combinations are refused when the form is built:
 
 - a component that shows nothing there — the table, the toolbar or the filter controls of a group in `PANEL` view,
-  which has no rows; a toolbar hidden with `visible = FALSE`; a filter group with no filters or of no object — would
-  give its component nothing to draw;
+  which has no rows, and a filter of its property, which has no user filters to be among; a toolbar hidden with
+  `visible = FALSE`; a filter group with no filters or of no object — would give its component nothing to draw;
 - a table of a group in another list view type than `GRID` — `PIVOT`, `MAP`, `CALENDAR`, `CUSTOM` —, as any view of
   its rows is ([Toolbar](#toolbar));
 - a table the design moves components into — `MOVE PROPERTY(note(i))` inside `GRID(i) { ... }`, the

@@ -1,0 +1,20 @@
+MODULE PropertyFilterOnAction;
+
+REQUIRE System;
+
+// an action declared a user filter: a FILTER a React view draws states a condition, and an action is never filtered by
+CLASS PfActionItem;
+pfActionName = DATA STRING[20] (PfActionItem);
+pfActionMark (PfActionItem i) { pfActionName(i) <- 'marked'; }
+
+FORM propertyFilterOnAction
+    OBJECTS i = PfActionItem
+    PROPERTIES(i) pfActionName, pfActionMark FILTER
+;
+
+DESIGN propertyFilterOnAction {
+    NEW board {
+        custom = 'PfActionBoard';
+        MOVE FILTER(pfActionMark(i));
+    }
+}

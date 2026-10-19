@@ -1,0 +1,18 @@
+MODULE PropertyFilterPlacedWithoutPanel;
+
+REQUIRE System;
+
+// custom = NULL leaves a FILTER to the platform's filter panel, which a React view drawing the group's conditions takes
+// the place of: no panel draws it, and the view, which would, is told not to
+CLASS PfPlacedItem;
+pfPlacedName = DATA STRING[20] (PfPlacedItem);
+
+FORM propertyFilterPlacedWithoutPanel
+    OBJECTS i = PfPlacedItem
+    PROPERTIES(i) pfPlacedName FILTER
+;
+
+DESIGN propertyFilterPlacedWithoutPanel {
+    BOX(i) { custom = 'PfPlacedBoard'; }
+    FILTER(pfPlacedName(i)) { custom = NULL; }
+}

@@ -22,8 +22,8 @@ public interface GComponentController {
     void updateOther(GComponentReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial);
 
     // what keeps a component React keeps nothing of - one React draws that the design does not name
-    // (GReactFormData.createComponentController) -: nothing. The server sends nothing of it (FormView
-    // .reactKeepsNothing); what a delta carries of it all the same is dropped, the rest of the delta applied
+    // (GReactFormData.createComponentController) -: nothing. The server sends nothing of it, the design giving it
+    // nothing to send; what a delta carries of it all the same is dropped, the rest of the delta applied
     GComponentController NONE = new GComponentController() {
         public void updateLabel(GComponentLabelReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
         }

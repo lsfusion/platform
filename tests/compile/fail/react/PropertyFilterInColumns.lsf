@@ -1,0 +1,21 @@
+MODULE PropertyFilterInColumns;
+
+REQUIRE System;
+
+// a property grouped in columns is filtered per column, and a FILTER a React view draws names one property
+CLASS PfColumnsItem;
+CLASS PfColumnsStore;
+pfColumnsQty = DATA INTEGER (PfColumnsItem, PfColumnsStore);
+
+FORM propertyFilterInColumns
+    OBJECTS s = PfColumnsStore
+    OBJECTS i = PfColumnsItem
+    PROPERTIES(i, s) pfColumnsQty COLUMNS (s) FILTER
+;
+
+DESIGN propertyFilterInColumns {
+    NEW board {
+        custom = 'PfColumnsBoard';
+        MOVE FILTER(pfColumnsQty(i,s));
+    }
+}

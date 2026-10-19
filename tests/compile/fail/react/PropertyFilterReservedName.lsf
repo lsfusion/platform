@@ -1,0 +1,23 @@
+MODULE PropertyFilterReservedName;
+
+REQUIRE System;
+
+// a property of a group named like the part of the FILTERs of its properties, on the node where a React view draws one
+// of them
+CLASS PfReservedItem;
+pfReservedName = DATA STRING[20] (PfReservedItem);
+pfReservedNote = DATA STRING[20] (PfReservedItem);
+
+FORM propertyFilterReservedName
+    OBJECTS i = PfReservedItem
+    PROPERTIES(i) pfReservedName FILTER
+    PROPERTIES(i) PANEL pfReservedNote EXTID 'filter'
+;
+
+DESIGN propertyFilterReservedName {
+    NEW board {
+        custom = 'PfReservedBoard';
+        MOVE FILTER(pfReservedName(i));
+        MOVE PROPERTY(pfReservedNote(i));
+    }
+}

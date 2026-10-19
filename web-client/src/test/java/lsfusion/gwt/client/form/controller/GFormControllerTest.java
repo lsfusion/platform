@@ -1,6 +1,9 @@
 package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.dom.client.Document;
+import lsfusion.gwt.client.form.filter.user.controller.GPlatformFiltersController;
+import lsfusion.gwt.client.view.MainFrame;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.junit.client.GWTTestCase;
@@ -30,6 +33,10 @@ import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseInputEvent;
+import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GFilter;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -51,6 +58,7 @@ import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 import static lsfusion.gwt.client.GFormChanges.GPropertyReadType.DRAW;
 
@@ -89,6 +97,10 @@ public class GFormControllerTest extends GWTTestCase {
         for (var name in helpers)
             if (!$wnd[name])
                 $wnd[name] = helpers[name];
+        // ... and the page's setup, which the server writes into the page (main.jsp): none of its arguments here, so
+        // the client takes its defaults - the images of the platform's buttons are addressed from the page's own URL
+        if (!$wnd.pageSetup)
+            $wnd.pageSetup = {};
     }-*/;
 
     public void testAGridOfItsOwnIsSizedByItsColumns() {
@@ -541,6 +553,258 @@ public class GFormControllerTest extends GWTTestCase {
             marked.classList.remove('panel-renderer-value-binding');
     }-*/;
 
+    // the platform's filter panel - FILTERS(items) the platform's, its toolbar showing the filters - makes a fixed row
+    // of each FILTER the design declares: of two FILTERs moved into a react container, the one given custom = NULL in a
+    // view of its own, which the container places, and the one React draws placed nowhere - React draws it, stating it
+    // through the panel (GReactFormData.FilterPart), the one writer of the group's list: applied at once, and no
+    // row of the panel's own shows it again
+    public void testAFilterReactDrawsOverThePlatformsPanelIsItsRow() {
+        FiltersForm filters = new FiltersForm(true);
+        GFormController controller = filters.controller();
+
+        assertNull(controller.getFormLayout().getBaseComponentViews().get(filters.drawn));
+        assertNotNull(controller.getFormLayout().getBaseComponentViews().get(filters.placed));
+        filters.change(controller, "price", 5.0);
+        assertTrue(filters.filters(controller, filters.price));
+        assertNull(filters.panelCondition(controller));
+    }
+
+    // ... a value it states that is NULL - a two-state LOGICAL's false, which the view's value converts to - is a
+    // condition comparing with NULL, as the panel takes one from a list the server reports, not dropped as a cleared
+    // row's value is
+    public void testAFilterReactDrawsOverThePlatformsPanelStatesANullValue() {
+        FiltersForm filters = new FiltersForm(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+
+        panel.changeFilter(filters.drawn, filters.condition(null));
+        assertTrue(filters.filters(controller, filters.price));
+    }
+
+    // ... and the panel's reset takes off the NULL a fixed row has - one React states, and one of the platform's row a list
+    // the server reports has -, as a row's own clearing does: no apply after it has them again
+    public void testThePlatformsPanelsResetTakesOffTheNullsOfItsFixedRows() {
+        FiltersForm filters = new FiltersForm(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+
+        filters.report(controller, new GPropertyFilter(new GFilter(filters.quantity), filters.group, GGroupObjectValue.EMPTY, null, false, GCompare.EQUALS, true));
+        panel.changeFilter(filters.drawn, filters.condition(null));
+        assertTrue(filters.filters(controller, filters.quantity));
+        panel.resetConditions();
+        panel.applyFilters();
+        assertFalse(filters.filters(controller, filters.price));
+        assertFalse(filters.filters(controller, filters.quantity));
+    }
+
+    // ... its FILTERS box removed from the design too, where the panel shows none of the conditions
+    public void testAFilterReactDrawsOverAPanelWithNoFiltersBoxIsItsRow() {
+        FiltersForm filters = new FiltersForm(false);
+        GFormController controller = filters.controller();
+
+        filters.change(controller, "price", 5.0);
+        assertTrue(filters.filters(controller, filters.price));
+    }
+
+    // ... where its fixed rows take their conditions from a list the server reports all the same - the one React draws,
+    // a view showing it, and the platform's placed one -, while the panel takes none of the rest, having nowhere to
+    // show them: each the first on its property, or none
+    public void testAPanelWithNoFiltersBoxsFixedRowsTakeTheServersList() {
+        FiltersForm filters = new FiltersForm(false);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+
+        filters.report(controller, new GPropertyFilter(new GFilter(filters.price), filters.group, GGroupObjectValue.EMPTY, PValue.getPValue(5), GCompare.GREATER),
+                new GPropertyFilter(new GFilter(filters.quantity), filters.group, GGroupObjectValue.EMPTY, PValue.getPValue(2), GCompare.EQUALS));
+        assertEquals(GCompare.GREATER, panel.getFilterCondition(filters.drawn).compare);
+        assertEquals(GCompare.EQUALS, panel.getFilterCondition(filters.placed).compare);
+        filters.report(controller);
+        assertNull(panel.getFilterCondition(filters.drawn));
+        assertNull(panel.getFilterCondition(filters.placed));
+    }
+
+    // ... and a condition of the panel's list all the same: a row of the platform's before it is not the last one, the
+    // junction between them a real one (the design declaring the platform's filter first)
+    public void testAPlatformRowBeforeAFilterReactDrawsIsNotTheLast() {
+        FiltersForm filters = new FiltersForm(true);
+        Collections.reverse(filters.group.grid.filters);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+
+        assertFalse(isLastRow(panel, filters.placed));
+        assertTrue(isLastRow(panel, filters.drawn));
+    }
+
+    // ... and in the panel's manual apply mode - its controls shown - a change waits for the panel's apply, as its own
+    // rows' do: the row holds it, the form's list stays as it was, the apply sends it
+    public void testAFilterReactDrawsWaitsForThePanelsApplyInManualMode() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            FiltersForm filters = new FiltersForm(true);
+            GFormController controller = filters.controller();
+            GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+            panel.setControlsVisible(true);
+
+            filters.change(controller, "price", 5.0);
+            assertFalse(panel.getFilterCondition(filters.drawn).nullValue());
+            assertFalse(filters.filters(controller, filters.price));
+            panel.applyFilters();
+            assertTrue(filters.filters(controller, filters.price));
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
+    // the FILTER of a property of a group in PANEL view - which has no table and shows no user filters - has a
+    // controller all the same, none (GReactFormData.createFilterController): the form tells a group's FILTERs of its
+    // user filters wherever it tells what shows them, a list the server reports for the group as one the form sends
+    public void testAPanelGroupsFilterIsToldOfItsUserFilters() {
+        GForm form = form("panelFilter");
+        GGroupObject group = new GGroupObject();
+        group.ID = 10; group.nativeSID = "g10"; group.sID = "item"; group.viewType = GClassViewType.PANEL;
+        group.objects.add(new GObject(group, "item", 10, "item", GIntegerType.instance));
+        form.groupObjects.add(group);
+        GGrid grid = new GGrid(); // its grid is in the design all the same, its FILTERS box and its FILTERs in it
+        grid.ID = 11; grid.nativeSID = "c11"; grid.sID = "GRID(item)"; grid.groupObject = group;
+        grid.filtersContainer = container(14, "FILTERS(item)", null);
+        group.grid = grid;
+        GPropertyDraw name = column(form, 20, "name", group);
+        name.isList = false;
+        filterIn(21, name, grid.filtersContainer, grid);
+        form.initialFormChanges = GFormChangesTest.noChanges();
+        GFormController controller = new GFormController(null, null, formContainer(), form, false, "panelFilter", 0, null);
+
+        GFormChanges changes = new GFormChanges();
+        ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
+        filters.add(new GPropertyFilter(new GFilter(name), group, GGroupObjectValue.EMPTY, PValue.getPValue(5), GCompare.EQUALS).getFilterDTO());
+        changes.userFilters.put(group, filters);
+        changes.needConfirm = true; // what the form takes after the user filters: the rest of the delta
+        controller.applyRemoteChanges(changes, 1);
+        assertTrue(controller.needConfirm());
+        controller.changeFilters(Collections.singletonList(group), new ArrayList<>()); // ... and a list the form sends
+    }
+
+    // a form of a group whose rows React draws, its filters the platform's, with the FILTERs of two of its properties
+    // moved into a react container - one React draws, MOVE FILTER(price), and one the platform's panel does,
+    // MOVE FILTER(quantity) { custom = NULL; } -, FILTERS(items) in the form or REMOVEd
+    private static final class FiltersForm {
+        final GForm form = new GForm();
+        final GGroupObject group = new GGroupObject();
+        final GPropertyDraw price, quantity;
+        final GContainer board;
+        final GFilter drawn, placed;
+
+        FiltersForm(boolean filtersBox) {
+            form.sID = "propertyFilters";
+            form.mainContainer = new GContainer();
+            form.mainContainer.ID = 1; form.mainContainer.nativeSID = "c1"; form.mainContainer.sID = "main";
+            form.mainContainer.main = true;
+            layout(form.mainContainer);
+            form.mainContainer.lines = 1; form.mainContainer.childrenAlignment = GFlexAlignment.START;
+
+            group.ID = 10; group.nativeSID = "g10"; group.sID = "items"; group.viewType = GClassViewType.LIST;
+            group.objects.add(new GObject(group, "item", 10, "item", GIntegerType.instance));
+            form.groupObjects.add(group);
+            GGrid grid = new GGrid();
+            grid.ID = 11; grid.nativeSID = "c11"; grid.sID = "GRID(items)"; grid.groupObject = group;
+            grid.custom = "RowsGrid"; grid.react = true; // React draws the rows, the filters stay the platform's
+            grid.width = -2; grid.height = -2;
+            grid.lineWidth = -1; grid.lineHeight = -1;
+            grid.container = form.mainContainer; form.mainContainer.children.add(grid);
+            layout(grid);
+            grid.toolbar = new GToolbar(); // hidden, its filters shown: the platform builds its filter panel
+            grid.toolbar.ID = 12; grid.toolbar.sID = "TOOLBARSYSTEM(items)"; grid.toolbar.visible = false;
+            grid.toolbar.showFilters = true;
+            grid.filterControls = new GFilterControls();
+            grid.filterControls.ID = 13; grid.filterControls.sID = "FILTERCONTROLS(items)";
+            grid.filtersContainer = container(14, "FILTERS(items)", filtersBox ? form.mainContainer : null);
+            group.grid = grid;
+            price = column(form, 20, "price", group);
+            quantity = column(form, 21, "quantity", group);
+
+            board = container(15, "board", form.mainContainer);
+            board.custom = "FiltersBoard"; board.react = true;
+            drawn = filterIn(22, price, board, grid);
+            placed = filterIn(23, quantity, board, grid);
+            placed.platformDrawn = true;
+            form.initialFormChanges = GFormChangesTest.noChanges();
+        }
+        GFormController controller() {
+            return new GFormController(null, null, formContainer(), form, false, "propertyFilters", 0, null);
+        }
+        // as the view states a FILTER it draws: through its member, React drawing nothing here
+        void change(GFormController controller, String property, Object value) {
+            changeFilter(reactController(controller.getFormLayout().getContainerView(board)), property, value);
+        }
+        // a condition on price, compared the default way, as a FILTER's member states one
+        GPropertyFilter condition(PValue value) {
+            return new GPropertyFilter(new GFilter(price), group, GGroupObjectValue.EMPTY, value, false, price.getDefaultCompare(), true);
+        }
+        // the server reporting the group's list
+        void report(GFormController controller, GPropertyFilter... conditions) {
+            GFormChanges changes = new GFormChanges();
+            ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
+            for (GPropertyFilter condition : conditions)
+                filters.add(condition.getFilterDTO());
+            changes.userFilters.put(group, filters);
+            controller.applyRemoteChanges(changes, 1);
+        }
+        // whether the form's list - as it sent it last - has a condition on the property
+        boolean filters(GFormController controller, GPropertyDraw property) {
+            for (GPropertyFilter condition : controller.getFilters(group))
+                if (condition.column.property == property)
+                    return true;
+            return false;
+        }
+        // the condition on price the panel holds, in a view of its own - not the design's FILTER React draws -, if any
+        GComponent panelCondition(GFormController controller) {
+            for (GComponent component : controller.getFormLayout().getBaseComponentViews().keySet())
+                if (component instanceof GFilter && component != drawn && ((GFilter) component).property == price)
+                    return component;
+            return null;
+        }
+    }
+
+    // the controller a React container's view is given, and what shows a group's user filters, read where the client
+    // keeps them - neither is anything else's to ask for
+    private static native JavaScriptObject reactController(Object view) /*-{
+        return view.@lsfusion.gwt.client.form.design.view.ReactContainerView::state.@lsfusion.gwt.client.form.design.view.GReactFormData.ViewState::controller;
+    }-*/;
+    private static native Object userFiltersController(GFormController controller, GGroupObject group) /*-{
+        return controller.@lsfusion.gwt.client.form.controller.GFormController::userFiltersControllers.@lsfusion.gwt.client.base.jsni.NativeSIDMap::get(*)(group);
+    }-*/;
+    // whether the panel's row of a FILTER is its last one, its junction hidden - read where the panel keeps its rows
+    private static native boolean isLastRow(GPlatformFiltersController panel, GFilter filter) /*-{
+        var row = panel.@lsfusion.gwt.client.form.filter.user.controller.GPlatformFiltersController::getFilterRow(*)(filter);
+        var view = panel.@lsfusion.gwt.client.form.filter.user.controller.GPlatformFiltersController::conditionViews.@java.util.Map::get(Ljava/lang/Object;)(row);
+        return view.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::isLast;
+    }-*/;
+    private static native void changeFilter(JavaScriptObject controller, String property, Object value) /*-{
+        controller.items.filter[property].change(value);
+    }-*/;
+
+    // a container of a hand-built design, laid out as the server gives it, in its parent
+    private static GContainer container(int id, String sID, GContainer parent) {
+        GContainer container = new GContainer();
+        container.ID = id; container.nativeSID = "c" + id; container.sID = sID;
+        layout(container);
+        container.lines = 1; container.childrenAlignment = GFlexAlignment.START;
+        container.container = parent; // none: REMOVEd from the design
+        if (parent != null)
+            parent.children.add(container);
+        return container;
+    }
+    // ... and a property's FILTER of a table, FILTER(<property>), in it
+    private static GFilter filterIn(int id, GPropertyDraw property, GContainer parent, GGrid grid) {
+        GFilter filter = new GFilter(property);
+        filter.ID = id; filter.nativeSID = "c" + id; filter.sID = "FILTER(" + property.sID + ")";
+        layout(filter);
+        filter.container = parent; parent.children.add(filter);
+        grid.filters.add(filter);
+        return filter;
+    }
+
     // what the server gives every component of a design to be laid out by
     private static void layout(GComponent component) {
         component.span = 1;
@@ -553,6 +817,7 @@ public class GFormControllerTest extends GWTTestCase {
         property.ID = id; property.nativeSID = "p" + id; property.sID = name; property.integrationSID = name;
         property.propertyFormName = name; property.groupObject = group; property.isList = true;
         property.valueType = GIntegerType.instance; property.valueWidth = 80; property.valueHeight = 20;
+        property.valueAlignmentHorz = GFlexAlignment.END; property.valueAlignmentVert = GFlexAlignment.CENTER;
         form.propertyDraws.add(property);
         return property;
     }

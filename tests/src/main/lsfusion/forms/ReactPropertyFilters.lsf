@@ -1,0 +1,45 @@
+MODULE ReactPropertyFilters;
+
+REQUIRE TestUtils;
+
+// a property's FILTER, FILTER(<property>), is a component the design names, under React as anywhere: found by that
+// name - in a form that embeds its form too, after its property renamed there -, its SHOWIF read and its visibility
+// sent where a React view draws or places it, and hidden by a client that names it so where a view places it - the
+// platform's, custom = NULL
+
+CLASS RpfItem 'Item';
+rpfName 'Name' = DATA STRING[20] (RpfItem);
+rpfCity 'City' = DATA STRING[20] (RpfItem);
+rpfShown = DATA BOOLEAN ();
+
+FORM rpfFilters 'Filters'
+    OBJECTS i = RpfItem
+    PROPERTIES(i) rpfName FILTER, rpfCity FILTER
+;
+
+DESIGN rpfFilters {
+    NEW rpfHeader FIRST {
+        custom = 'RpfHeader';
+        MOVE FILTER(rpfName(i)) { showIf = rpfShown(); }                // React draws it
+        MOVE FILTER(rpfCity(i)) { custom = NULL; showIf = rpfShown(); } // the platform's panel's, placed
+    }
+}
+
+FORM rpfNamed 'Named'
+    OBJECTS i = RpfItem
+    PROPERTIES(i) rpfTitle = rpfName FILTER
+;
+
+FORM rpfEmbedding 'Embedding'
+    FORMS rpfNamed (PROPERTIES rpfRenamed = rpfTitle)
+;
+
+testAPropertyFilterIsAComponentOfTheDesign 'A property filter is named and walked as any component under React' () {
+    assertWalked('ReactPropertyFilters.rpfFilters', 'FILTER(rpfName(i))', 'found read sent');
+    assertWalked('ReactPropertyFilters.rpfFilters', 'FILTER(rpfCity(i))', 'found read sent hidable');
+}
+
+testAPropertyFilterFollowsItsPropertyIntoAnEmbeddingForm 'A property filter is named after its property in a form that embeds its form' () {
+    assertWalked('ReactPropertyFilters.rpfNamed', 'FILTER(rpfTitle)', 'found');
+    assertWalked('ReactPropertyFilters.rpfEmbedding', 'FILTER(rpfRenamed)', 'found');
+}

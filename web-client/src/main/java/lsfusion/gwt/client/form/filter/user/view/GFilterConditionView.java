@@ -254,8 +254,10 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     }
     
 
+    // the row of a FILTER a React view places is one view, its caption inside: the host it goes to has no caption
+    // column of a container's to align it in
     public ComponentWidget initView() {
-        boolean alignCaptions = condition.filter.container.isAlignCaptions();
+        boolean alignCaptions = !condition.filter.isPlatformDrawn() && condition.filter.container.isAlignCaptions();
         if(alignCaptions) {
             addCentered(rightPanel);
 
@@ -335,6 +337,19 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         setCompare(condition.compare != null ? condition.compare : condition.column.property.getDefaultCompare());
         setNegation(condition.negation);
         setValue(condition.value);
+    }
+
+    // a fixed row TAKES a condition - a list the server reports states it, or a view through the row's FILTER -: its own
+    // made that one, and shown, a NULL allowed where it has one (a two-state LOGICAL's false)
+    public void takeCondition(GPropertyFilter filter) {
+        condition.override(filter);
+        applyCondition(filter);
+        setAllowNull(filter.nullValue());
+    }
+    // ... and none: its value cleared and a NULL no longer allowed, applied no more; whether it had a value
+    public boolean clearCondition() {
+        setAllowNull(false);
+        return clearValueView();
     }
 
     public void setCompare(GCompare value) {

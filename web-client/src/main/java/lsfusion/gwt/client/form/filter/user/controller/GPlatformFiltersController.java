@@ -13,6 +13,7 @@ import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.user.GFilter;
+import lsfusion.gwt.client.form.filter.user.GFilterConditions;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
@@ -33,7 +34,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 // filters (GUserFiltersController) and what takes their input (GFilterInputController) - the conditions it draws in the
 // FILTERS box show the list as the server reports it, and the input works on them: added with an editor, applied as its
 // rows, reset. Its editors of them are what the controls and the toolbar's button show and apply (GFilterEditors)
-public final class GPlatformFiltersController extends GFilterInputController implements GUserFiltersController, GFilterConditionView.UIHandler, GFilterEditors {
+public final class GPlatformFiltersController extends GFilterInputController implements GUserFiltersController, GFilterConditions, GFilterConditionView.UIHandler, GFilterEditors {
     private final GFormController form;
     private final GContainer filtersContainer;
     private Map<Column, String> columns = new HashMap<>();
@@ -222,7 +223,7 @@ public final class GPlatformFiltersController extends GFilterInputController imp
         Column column = getActualColumn(rows, propertyDraw, columnKey);
 
         for (GPropertyFilter filter : conditionViews.keySet()) {
-            if (filter.column.equals(column)) {
+            if (filter.column.equals(column) && !isDrawnByReact(filter.filter)) { // not a row React draws (addFilterRow)
                 return conditionViews.get(filter);
             }
         }
@@ -234,55 +235,49 @@ public final class GPlatformFiltersController extends GFilterInputController imp
     // conditions; nothing is sent. A fixed condition allows NULL only where the server has it with no value
     @Override
     public void updateFilters(GGroupObject group, ArrayList<GPropertyFilterDTO> filterDTOs) {
-        if (hasFiltersContainer()) {
-            ArrayList<GPropertyFilter> filters = GPropertyFilter.getConditions(form.getForm(), group, filterDTOs);
-            Set<GPropertyFilter> fixedFilters = new LinkedHashSet<>();
-            for (GPropertyFilter condition : new ArrayList<>(conditionViews.keySet())) {
-                if (condition.groupObject.equals(group)) {
-                    if (condition.isFixed()) {
-                        GFilterConditionView conditionView = conditionViews.get(condition);
-                        conditionView.clearValueView();
-                        conditionView.setAllowNull(false);
-                        fixedFilters.add(condition);
-                    } else {
-                        removeConditionViewInner(condition);
-                    }
-                }
-            }
-
-            for (GPropertyFilter filter : filters) {
-                boolean filterExists = false;
-                for (GPropertyFilter fixedFilter : fixedFilters) {
-                    if (filter.column.equals(fixedFilter.column)) {
-                        fixedFilter.override(filter);
-                        GFilterConditionView conditionView = conditionViews.get(fixedFilter);
-                        conditionView.applyCondition(filter);
-                        conditionView.setAllowNull(filter.nullValue());
-                        filterExists = true;
-                        fixedFilters.remove(fixedFilter);
-                        break;
-                    }
-                }
-
-                if (!filterExists) {
-                    addCondition(filter, null, false, false, false);
-                }
-            }
-
-            // hide controls only if no filters are expected. otherwise leave controls visibility unchanged
-            if (filters.isEmpty()) {
-                hideControlsIfEmpty();
-            }
-            updateConditionsLastState();
-
-            // the Apply button is left as it is: the conditions of the tree's other groups may wait for it
-            for (Map.Entry<GPropertyFilter, GFilterConditionView> entry : conditionViews.entrySet()) {
-                if (entry.getKey().groupObject.equals(group)) {
-                    entry.getValue().setApplied(isApplied(entry.getKey(), entry.getValue()));
+        ArrayList<GPropertyFilter> filters = GPropertyFilter.getConditions(form.getForm(), group, filterDTOs);
+        Set<GPropertyFilter> fixedFilters = new LinkedHashSet<>();
+        for (GPropertyFilter condition : new ArrayList<>(conditionViews.keySet())) {
+            if (condition.groupObject.equals(group)) {
+                if (condition.isFixed()) {
+                    conditionViews.get(condition).clearCondition();
+                    fixedFilters.add(condition);
+                } else {
+                    removeConditionViewInner(condition);
                 }
             }
         }
+
+        for (GPropertyFilter filter : filters) {
+            boolean filterExists = false;
+            for (GPropertyFilter fixedFilter : fixedFilters) {
+                if (filter.column.equals(fixedFilter.column)) {
+                    conditionViews.get(fixedFilter).takeCondition(filter);
+                    filterExists = true;
+                    fixedFilters.remove(fixedFilter);
+                    break;
+                }
+            }
+
+            if (!filterExists && hasFiltersContainer()) { // with no box, no condition of its own: its fixed rows alone
+                addCondition(filter, null, false, false, false);
+            }
+        }
+
+        // hide controls only if no filters are expected. otherwise leave controls visibility unchanged
+        if (filters.isEmpty()) {
+            hideControlsIfEmpty();
+        }
+        updateConditionsLastState();
+
+        // the Apply button is left as it is: the conditions of the tree's other groups may wait for it
+        for (Map.Entry<GPropertyFilter, GFilterConditionView> entry : conditionViews.entrySet()) {
+            if (entry.getKey().groupObject.equals(group)) {
+                entry.getValue().setApplied(isApplied(entry.getKey(), entry.getValue()));
+            }
+        }
     }
+
 
     // ... and the ones the form has just sent, which it tells what shows the user filters of each of the box's groups,
     // of whichever kind it holds, before the server answers (GFormController.applyCurrentFilters): a view's part shows
@@ -313,7 +308,7 @@ public final class GPlatformFiltersController extends GFilterInputController imp
         for (GPropertyFilter filter : new LinkedHashMap<>(conditionViews).keySet()) {
             if (filter.isFixed()) {
                 GFilterConditionView filterView = conditionViews.get(filter);
-                if(filterView.clearValueView())
+                if(filterView.clearCondition()) // a NULL it allowed too, or the next apply would have it again
                     changed.add(filterView);
             } else {
                 removeConditionViewInner(filter);
@@ -407,11 +402,66 @@ public final class GPlatformFiltersController extends GFilterInputController imp
             for (GFilter filter : initialFilters) {
                 if (filter.container != null) { // removed in design
                     filter.fixed = true;
-                    addCondition(filter, rows.getSelectedColumnKey(), false);
+                    if (isDrawnByReact(filter))
+                        addFilterRow(filter);
+                    else
+                        addCondition(filter, rows.getSelectedColumnKey(), false);
                 }
             }
             initialFilters = null;
         }
+    }
+
+    // a FILTER React draws over this panel - in a React view, or with one of its own (GReactFormData.FilterPart)
+    private static boolean isDrawnByReact(GFilter filter) {
+        return filter.isReact() || filter.isReactDrawn();
+    }
+    // ... is a fixed row of the panel as any FILTER is - the panel's condition of it, which it states and applies, takes
+    // from a list the server reports and resets with its own -, but placed nowhere, React drawing it: no layout, no focus.
+    // It is a condition of the list all the same: a row before it is not the last, its junction a real one
+    private void addFilterRow(GFilter filter) {
+        GPropertyFilter condition = createNewCondition(rows, filter, GGroupObjectValue.EMPTY);
+        conditionViews.put(condition, new GFilterConditionView(condition, form, rows, this, () -> columns, toggle.isVisible(), false));
+        updateConditionsLastState();
+    }
+    // ... its condition, as the row holds it - an edit the panel's apply has not taken yet too -: none while the row has
+    // none (isApplied), nor before the panel builds its rows (update), which it does with the form's first changes
+    @Override
+    public GPropertyFilter getFilterCondition(GFilter filter) {
+        GPropertyFilter row = getFilterRow(filter);
+        return row != null && isApplied(row, conditionViews.get(row)) ? row : null;
+    }
+    // ... stated - the row taking it, as from a list the server reports (GFilterConditionView.takeCondition) -, and
+    // taken off
+    @Override
+    public void changeFilter(GFilter filter, GPropertyFilter condition) {
+        GPropertyFilter row = getFilterRow(filter);
+        if (row != null) {
+            conditionViews.get(row).takeCondition(condition);
+            filterChanged();
+        }
+    }
+    @Override
+    public void clearFilter(GFilter filter) {
+        GPropertyFilter row = getFilterRow(filter);
+        if (row != null) {
+            conditionViews.get(row).clearCondition();
+            filterChanged();
+        }
+    }
+    private GPropertyFilter getFilterRow(GFilter filter) {
+        for (GPropertyFilter row : conditionViews.keySet())
+            if (row.filter == filter)
+                return row;
+        return null;
+    }
+    // ... either applied at once, or held until the panel's apply in its manual apply mode, as the platform's rows are,
+    // with no focus moved - the view's input keeps it - and no loading marked on a row nobody sees
+    private void filterChanged() {
+        if (isManualApplyMode())
+            enableApplyButton();
+        else
+            applyFilters(false, null);
     }
 
     public void quickEditFilter(Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {

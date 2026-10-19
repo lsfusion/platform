@@ -61,6 +61,8 @@ import lsfusion.gwt.client.form.object.table.controller.GPlatformPropertyControl
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
+import lsfusion.gwt.client.form.filter.user.GFilterConditions;
+import lsfusion.gwt.client.form.filter.user.GFilterController;
 import lsfusion.gwt.client.form.filter.user.view.GFiltersHandler;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.view.GFilterEditors;
@@ -280,8 +282,8 @@ public class GReactFormData {
         GComponent scope = component instanceof GPropertyDraw ? null : nameScope(component);
         return reactOrPlatform(scope, state -> component.isPlatformDrawn() ? new PlatformComponentEntry(state, component, platform) : new ReactComponentEntry(state, component), () -> platform);
     }
-    // ... and WHAT REACT KEEPS NOTHING OF as a component, so nothing is sent for it as one (mirrors
-    // FormView.reactKeepsNothing): a component React draws that the design does not name - no descriptor, no entry to
+    // ... and WHAT REACT KEEPS NOTHING OF as a component, which the design gives nothing to send:
+    // a component React draws that the design does not name - a grid's record -, no descriptor, no entry to
     // go to
     private boolean reactKeepsNothing(GComponent component) {
         return component.sID == null && !component.isPlatformDrawn() && placed(component) != null;
@@ -293,6 +295,14 @@ public class GReactFormData {
         if (filterGroup.filters.isEmpty())
             return null;
         return reactOrPlatform(filterGroupScope(filterGroup), state -> new FilterGroupPart(state.getOrCreateGroupNode(filterGroup.groupObject), filterGroup), platform);
+    }
+    // ... and of a property's FILTER, FILTER(<property>) - the user filter declared on a property of a group -, as of a
+    // filter group: its part, a part of the group of its property, on its node where the filter is drawn
+    // (filterScope), its condition where its table's user filters keep it (`conditions`, createFiltersControllers);
+    // none where the platform draws it - its filter panel makes it, a condition of the panel, wherever the design puts
+    // it (GPlatformFiltersController)
+    public GFilterController createFilterController(GFilter filter, GFilterConditions conditions) {
+        return reactOrPlatform(filterScope(filter), state -> new FilterPart(state.getOrCreateGroupNode(filter.property.groupObject), filter, conditions), () -> GFilterController.NONE);
     }
     // ===== WHAT GOES OVER THE ROWS of a list's group not in a tree, or of a tree, one for all its groups, each of the
     // kind of whoever draws it, made where the form sets the table up (GFormController.initializeGrid,
@@ -321,13 +331,26 @@ public class GReactFormData {
     // builds one (platform), made only then - else neither: no input, and nothing shows them
     // (GUserFiltersController.NONE). The input works on what draws the rows (rows), and the toggle shows the controls
     // and the toolbar's button (GFormController.initializeTable); a group in PANEL view has neither, as the platform
-    // shows it none
-    public Pair<GFilterInputController, GUserFiltersController> createFiltersControllers(GGridProperty table, GTableController rows, GFilterControlsToggle toggle, Supplier<GPlatformFiltersController> platform) {
-        return reactOrPlatform(filtersScope(table.filtersContainer), state -> new Pair<GFilterInputController, GUserFiltersController>(
-                new ReactFilterInputController(table.getGroups(), rows, toggle), new FiltersPart(state.getOrCreateTableNode(table))), () -> {
+    // shows it none. And where the condition of a FILTER of the table's properties is: the panel, its row of the
+    // FILTER, where there is one, else the form's list (ListFilterConditions)
+    public FiltersControllers createFiltersControllers(GGridProperty table, GTableController rows, GFilterControlsToggle toggle, Supplier<GPlatformFiltersController> platform) {
+        return reactOrPlatform(filtersScope(table.filtersContainer), state -> new FiltersControllers(new ReactFilterInputController(table.getGroups(), rows, toggle),
+                new FiltersPart(state.getOrCreateTableNode(table)), listFilterConditions), () -> {
             GPlatformFiltersController panel = platform.get();
-            return new Pair<GFilterInputController, GUserFiltersController>(panel, panel != null ? panel : GUserFiltersController.NONE);
+            return panel != null ? new FiltersControllers(panel, panel, panel) : new FiltersControllers(null, GUserFiltersController.NONE, listFilterConditions);
         });
+    }
+    // ... which the form takes apart
+    public static final class FiltersControllers {
+        public final GFilterInputController input;
+        public final GUserFiltersController userFilters;
+        public final GFilterConditions conditions;
+
+        FiltersControllers(GFilterInputController input, GUserFiltersController userFilters, GFilterConditions conditions) {
+            this.input = input;
+            this.userFilters = userFilters;
+            this.conditions = conditions;
+        }
     }
     // WHAT DRAWS THE ROWS of a TABLE, the form's one question for them, asked with its toolbar
     // (GFormController.initializeGrid, initializeTree): of the GRID of a list's group not in a tree, where React draws
@@ -839,7 +862,30 @@ public class GReactFormData {
                 push(names, propertyEntry.property.integrationSID);
             setField(edit(), "properties", names);
         }
+        // data.<group>.filter: the entries of the FILTERs of its properties drawn here, each by its property's
+        // integration name (FilterPart) - one object for them all, with no prototype, as a name is application data,
+        // copied before a filter writes its entry into it, so a snapshot published before stays as it was
+        JavaScriptObject editFilter() {
+            JavaScriptObject node = edit();
+            JavaScriptObject filters = getOwnField(node, FILTER);
+            JavaScriptObject published = published();
+            if (filters == null || published != null && filters == getOwnField(published, FILTER)) {
+                filters = filters == null ? newBareObject() : copyKeepingPrototype(filters);
+                setField(node, FILTER, filters);
+            }
+            return filters;
+        }
+        // ... and controller.<group>.filter, their members by the same names, made with the first of them
+        JavaScriptObject getFilterMember(JavaScriptObject groupMember) {
+            JavaScriptObject filters = getOwnField(groupMember, FILTER);
+            if (filters == null) {
+                filters = newBareObject();
+                setField(groupMember, FILTER, filters);
+            }
+            return filters;
+        }
     }
+    private static final String FILTER = "filter";
     // a TREE's node: data.<tree>, by the tree's name in the form - TREE t's t -, where what is the tree's, one for all
     // its groups, goes: where React draws its rows, its grid's part - the tree's current row and its own verb -, as a
     // group's node is where the group's rows are; and its user filters, its toolbar and its filter controls (GRID,
@@ -1616,6 +1662,99 @@ public class GReactFormData {
             verbs.changeRegularFilter(filterGroup, filter);
         }
     }
+    // a property's FILTER where React draws it - FILTER(<property>) in a React view, or with a view of its own: a part
+    // of the group of its property, on its node there, under `filter` by its property's integration name - as a filter
+    // group is on the node under its own name -, shaped as a property's entry: the property's caption and the type of
+    // a condition's value (the FILTER type, by which `value` is read and written, as `filters` has it), and the
+    // filter's condition, where it is (`conditions`: over the platform's panel the panel's row of it, else the first on
+    // its property in the form's list), its compare and negation (the property's default compare and none while there
+    // is no condition) and its value (null then). Its member's change(value, options) does what the platform's row
+    // does: puts the value into that condition, or appends one, with the compare and the negation the options state -
+    // {compare, negation}, as the row's compare selector does where the filter controls are shown -, the condition's
+    // own where they state none, and the default way for a new one, its junction kept; no value takes that condition
+    // off, alone - a range's other bound stays. It is told whenever the group's user filters change, after what shows
+    // the FILTERS box is (a GFilterController, beside the GUserFiltersController): the part keeps no condition of its
+    // own
+    private final class FilterPart extends StatePart<GroupNode> implements GFilterController {
+        final GFilter filter;
+        final GFilterConditions conditions;
+
+        FilterPart(GroupNode node, GFilter filter, GFilterConditions conditions) {
+            super(node);
+            this.filter = filter;
+            this.conditions = conditions;
+        }
+
+        // its entry
+        void writeState() {
+            GPropertyDraw property = filter.property;
+            GPropertyFilter condition = conditions.getFilterCondition(filter);
+            JavaScriptObject entry = newObject();
+            setFieldOrNull(entry, "caption", property.caption);
+            setField(entry, "type", GSimpleStateTableView.getJSTypeName(property.getFilterBaseType()));
+            setField(entry, "compare", (condition != null ? condition.compare : property.getDefaultCompare()).toString());
+            setField(entry, "negation", condition != null && condition.negation);
+            setField(entry, "value", condition != null ? GSimpleStateTableView.convertToJSValue(property.getFilterBaseType(), null, true, condition.value.value) : null);
+            setField(node.editFilter(), property.integrationSID, entry);
+        }
+        // its member, under the group's `filter`
+        @Override
+        void putMember(JavaScriptObject groupMember) {
+            String name = filter.property.integrationSID;
+            setField(node.getFilterMember(groupMember), name, makeFilterMember(this, node.name + "." + FILTER + "." + name));
+        }
+
+        // ===== the group's user filters changed, whoever changed them - the server, or the form sending them -, and the
+        // filter shows its condition in them
+        public void updateCondition() {
+            stateChanged();
+        }
+
+        // ===== a call through its member: a value, read by the property's FILTER type as `value` gives it, or none -
+        // absent, null or '' -, and the options, if any, in a batch too. The options are read whatever the value - one
+        // misspelt is refused even where there is none, which takes the condition off all the same. A file's value is a
+        // link to the file, not the file a condition compares with, so its filter's condition can be taken off, not
+        // stated. Shown at once: the panel holds it in its manual apply mode, telling the form nothing
+        void change(String surface, JavaScriptObject value, JavaScriptObject options) {
+            String errorPrefix = controllerPrefix(surface);
+            GPropertyDraw property = filter.property;
+            if (GwtClientUtils.isUndefinedOrNull(options)) // none: as stating neither
+                options = newBareObject();
+            checkAuthorObject(errorPrefix, options, "the options argument", FILTER_OPTIONS);
+            GPropertyFilter condition = conditions.getFilterCondition(filter);
+            GCompare compare = hasOwnField(options, "compare") ? readFilterCompare(errorPrefix, options, property)
+                    : condition != null ? condition.compare : property.getDefaultCompare();
+            boolean negation = hasOwnField(options, "negation") ? readFlag(errorPrefix, options, "negation")
+                    : condition != null && condition.negation;
+            if (isNoValue(value))
+                conditions.clearFilter(filter);
+            else {
+                checkFilterValue(errorPrefix, property);
+                conditions.changeFilter(filter, new GPropertyFilter(new GFilter(property), property.groupObject, GGroupObjectValue.EMPTY,
+                        GSimpleStateTableView.convertFromJSValue(property.getFilterBaseType(), value), negation, compare,
+                        condition == null || condition.junction));
+            }
+            stateChanged();
+        }
+    }
+    // ... where its condition is with no panel of the platform's showing the conditions - a view draws them, or the
+    // toolbar turns the platform's off -: the form's list, its condition the FIRST on its property there, as the
+    // platform's row takes the first on its column, the list it makes handed to the form (Verbs.changeFilters) and
+    // applied at once, as a view's conditions are (FiltersPart)
+    private final class ListFilterConditions implements GFilterConditions {
+        public GPropertyFilter getFilterCondition(GFilter filter) {
+            return getFirstCondition(verbs.getFilters(filter.property.groupObject), filter.property);
+        }
+        public void changeFilter(GFilter filter, GPropertyFilter condition) {
+            GGroupObject group = filter.property.groupObject;
+            verbs.changeFilters(Collections.singletonList(group), withCondition(verbs.getFilters(group), condition));
+        }
+        public void clearFilter(GFilter filter) {
+            GGroupObject group = filter.property.groupObject;
+            verbs.changeFilters(Collections.singletonList(group), withoutFirstCondition(verbs.getFilters(group), filter.property));
+        }
+    }
+    private final GFilterConditions listFilterConditions = new ListFilterConditions();
     // a view's name, as the group's node and its member say it: grid, pivot, custom, map, calendar
     private static String getViewName(GListViewType view) {
         return view.name().toLowerCase();
@@ -2845,7 +2984,7 @@ public class GReactFormData {
     // column, platform-drawn or not, where the rows are - or, for a platform-drawn panel one, where React places it, its entry labelling what
     // the platform draws (an ACTION's saying only whether the form shows it: its caption and image are its button's
     // face). Any other component is named at the top level, where React draws or places it - one the design does not
-    // name, a user filter's, nowhere (mirrors FormView.nameScope)
+    // name, a grid's record, nowhere (mirrors FormView.nameScope)
     private GComponent nameScope(GComponent component) {
         if (component instanceof GPropertyDraw && ((GPropertyDraw) component).isList) // its column, where the rows are
             return rowsScope(((GPropertyDraw) component).groupObject);
@@ -2862,6 +3001,17 @@ public class GReactFormData {
         if (filterGroup.filters.isEmpty())
             return null;
         return filterGroup.groupObject != null ? componentScope(filterGroup) : null;
+    }
+    // ... where a property's FILTER is drawn as a part of its group - as what a FILTERS box holds is (filtersScope),
+    // where the component's content is: the React view it stands in, or its own, whoever draws the group's conditions
+    // -, of a group with user filters; none where the platform draws it (mirrors FormView.filterScope)
+    private GComponent filterScope(GFilter filter) {
+        return hasUserFilters(filter.property.groupObject) ? drawn(filter) : null;
+    }
+    // ... whether a group HAS user filters: a list's group's and a tree's - none in PANEL view, as the platform shows
+    // none for it (mirrors FormView.hasUserFilters)
+    private static boolean hasUserFilters(GGroupObject group) {
+        return group.isInTree() || group.viewType.isList();
     }
     // ... where the FILTERCONTROLS of a table or a tree is drawn as a part of its table - of a list's grid, or of a
     // tree, one for all its groups: the form asks no other (GFormController.initializeTable) - (mirrors
@@ -3032,6 +3182,15 @@ public class GReactFormData {
         return {
             change: function (index) {
                 part.@lsfusion.gwt.client.form.design.view.GReactFormData.FilterGroupPart::change(*)(qualified + ".change()", index === undefined ? null : index);
+            }
+        };
+    }-*/;
+
+    // a property's FILTER, under its group's `filter`: its value changed, and its compare and negation with it
+    private static native JavaScriptObject makeFilterMember(FilterPart part, String qualified) /*-{
+        return {
+            change: function (value, options) {
+                part.@lsfusion.gwt.client.form.design.view.GReactFormData.FilterPart::change(*)(qualified + ".change()", value, options);
             }
         };
     }-*/;
@@ -3223,13 +3382,33 @@ public class GReactFormData {
     // a range's other bound stays -, or is appended
     static ArrayList<GPropertyFilter> withCondition(ArrayList<GPropertyFilter> conditions, GPropertyFilter condition) {
         ArrayList<GPropertyFilter> result = new ArrayList<>(conditions);
-        for (int i = 0; i < result.size(); i++)
-            if (result.get(i).column.property.equals(condition.column.property)) {
-                result.set(i, condition);
-                return result;
-            }
-        result.add(condition);
+        int index = indexOfFirstCondition(result, condition.column.property);
+        if (index >= 0)
+            result.set(index, condition);
+        else
+            result.add(condition);
         return result;
+    }
+    // ... the FIRST condition on a property among a group's - the one a property's FILTER shows and states over the
+    // form's list (ListFilterConditions), as the platform's row of a FILTER takes the first on its column from a list the
+    // server reports (GPlatformFiltersController.updateFilters) -, null for none
+    static GPropertyFilter getFirstCondition(ArrayList<GPropertyFilter> conditions, GPropertyDraw property) {
+        int index = indexOfFirstCondition(conditions, property);
+        return index >= 0 ? conditions.get(index) : null;
+    }
+    // ... and the conditions without it, alone - a range's other bound stays, as when the platform's row is emptied
+    static ArrayList<GPropertyFilter> withoutFirstCondition(ArrayList<GPropertyFilter> conditions, GPropertyDraw property) {
+        ArrayList<GPropertyFilter> result = new ArrayList<>(conditions);
+        int index = indexOfFirstCondition(result, property);
+        if (index >= 0)
+            result.remove(index);
+        return result;
+    }
+    private static int indexOfFirstCondition(ArrayList<GPropertyFilter> conditions, GPropertyDraw property) {
+        for (int i = 0; i < conditions.size(); i++)
+            if (conditions.get(i).column.property.equals(property))
+                return i;
+        return -1;
     }
 
     // can a condition be on this property - and so be listed? Three rules, each said where it belongs: the projection
@@ -3261,20 +3440,27 @@ public class GReactFormData {
     // `value` would otherwise read as "no value" - remove the condition - and a `property` that is there but not a name
     // is not "no property"
     private static String readAuthorObject(String errorPrefix, JavaScriptObject item, String what, String fields) {
-        String fieldList = fields.replace(",", ", ");
-        if (!isJSObject(item))
-            throw refusal(errorPrefix + what + " must be an object {" + fieldList + "}");
-        String unknown = getUnknownField(item, fields);
-        if (unknown != null)
-            throw refusal(errorPrefix + "unknown field '" + unknown + "'; " + what + " has " + fieldList);
+        checkAuthorObject(errorPrefix, item, what, fields);
         String propertySID = getOwnString(item, "property");
         if (propertySID == null)
             throw refusal(errorPrefix + (hasOwnField(item, "property")
                     ? "'property' must be the property's name, as a string" : what + " has no 'property'"));
         return propertySID;
     }
+    // ... the first two of them, which the options of a property filter's change get too: an object, with no field it
+    // does not know
+    private static void checkAuthorObject(String errorPrefix, JavaScriptObject item, String what, String fields) {
+        String fieldList = fields.replace(",", ", ");
+        if (!isJSObject(item))
+            throw refusal(errorPrefix + what + " must be an object {" + fieldList + "}");
+        String unknown = getUnknownField(item, fields);
+        if (unknown != null)
+            throw refusal(errorPrefix + "unknown field '" + unknown + "'; " + what + " has " + fieldList);
+    }
 
     private static final String FILTER_CONDITION_FIELDS = "property,compare,value,negation,or";
+    // ... and the options of a property filter's change, either or both, each read as a condition's field
+    private static final String FILTER_OPTIONS = "compare,negation";
 
     // the property a STATE names - a sorting, a condition, a column the toolbar sums -: the group's ONE property of
     // that name, wherever it is drawn - by this view, by another container, by the platform. A state is the group's,
@@ -3306,14 +3492,19 @@ public class GReactFormData {
     // a link to the file, which is not the file a condition compares with, so a view can take one off, not state one
     private GPropertyFilter readFilterCondition(String errorPrefix, JavaScriptObject condition, GPropertyDraw property,
                                                 JavaScriptObject value) {
-        if (property.getFilterBaseType().getDataType() instanceof GFileType)
-            throw refusal(errorPrefix + "'" + property.integrationSID + "' is a file: a condition on it has"
-                    + " a link to the file for its value, which is not the file, so it can be taken off, not stated");
+        checkFilterValue(errorPrefix, property);
         GCompare compare = readFilterCompare(errorPrefix, condition, property);
         boolean negation = readFlag(errorPrefix, condition, "negation");
         boolean or = readFlag(errorPrefix, condition, "or");
         return new GPropertyFilter(new GFilter(property), property.groupObject, GGroupObjectValue.EMPTY,
                 GSimpleStateTableView.convertFromJSValue(property.getFilterBaseType(), value), negation, compare, !or);
+    }
+    // ... a property a view states a condition with a value on - in `filters`, or through a property's FILTER
+    // (FilterPart.change) -: not a file, whose condition can only be taken off (above)
+    private static void checkFilterValue(String errorPrefix, GPropertyDraw property) {
+        if (property.getFilterBaseType().getDataType() instanceof GFileType)
+            throw refusal(errorPrefix + "'" + property.integrationSID + "' is a file: a condition on it has"
+                    + " a link to the file for its value, which is not the file, so it can be taken off, not stated");
     }
 
     // no `compare` at all is how a view says "the property's own default", which is what it is read as; one that is

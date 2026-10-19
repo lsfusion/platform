@@ -349,10 +349,10 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
             child.fillPropertyComponents(mComponents);
     }
 
-    // the components whose visibility the client is sent, but for what React keeps nothing of
-    // (FormView.reactKeepsNothing, FormEntity.getBaseComponents). A container is not one - the platform hides it
-    // through what it holds - unless a react view has to be told about it (reactShown: FormView.isReactShowIfContainer).
-    // And what is inside each child, walked down: a container's children, a grid's record
+    // the components whose visibility the client is sent (FormEntity.getBaseComponents). A container is not one - the
+    // platform hides it through what it holds - unless a react view has to be told about it (reactShown:
+    // FormView.isReactShowIfContainer). And what is inside each child, walked down: a container's children, a grid's
+    // record
     @Override
     public void fillBaseComponents(MExclSet<ComponentView> mComponents, boolean parentShowIf, Predicate<ContainerView> reactShown) {
         for (ComponentView child : getChildrenIt()) {

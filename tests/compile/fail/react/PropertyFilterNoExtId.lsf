@@ -1,0 +1,19 @@
+MODULE PropertyFilterNoExtId;
+
+REQUIRE System;
+
+// a FILTER a React view draws names its condition by its property's name, which NOEXTID takes away
+CLASS PfNoExtIdItem;
+pfNoExtIdName = DATA STRING[20] (PfNoExtIdItem);
+
+FORM propertyFilterNoExtId
+    OBJECTS i = PfNoExtIdItem
+    PROPERTIES(i) pfNoExtIdName NOEXTID FILTER
+;
+
+DESIGN propertyFilterNoExtId {
+    NEW board {
+        custom = 'PfNoExtIdBoard';
+        MOVE FILTER(pfNoExtIdName(i));
+    }
+}

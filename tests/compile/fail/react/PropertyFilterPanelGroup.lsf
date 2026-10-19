@@ -1,0 +1,20 @@
+MODULE PropertyFilterPanelGroup;
+
+REQUIRE System;
+
+// a group in PANEL view has no user filters - the platform shows it none -, so a FILTER of its property a React view
+// would draw has no condition to show
+CLASS PfPanelItem;
+pfPanelName = DATA STRING[20] (PfPanelItem);
+
+FORM propertyFilterPanelGroup
+    OBJECTS i = PfPanelItem PANEL
+    PROPERTIES(i) pfPanelName FILTER
+;
+
+DESIGN propertyFilterPanelGroup {
+    NEW board {
+        custom = 'PfPanelBoard';
+        MOVE FILTER(pfPanelName(i));
+    }
+}

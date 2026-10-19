@@ -4,6 +4,7 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.design.*;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
+import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
@@ -195,6 +196,17 @@ public class GForm implements Serializable {
             result.add(resultEntry);
         }
         return result;
+    }
+
+    // the FILTERs of a group's properties - FILTER(<property>), one of each property declared a user filter -: those of
+    // its table, its grid's or its tree's, one table for all the tree's groups, on properties of the group (mirrors
+    // FormView.getFilterComponents)
+    public ArrayList<GFilter> getFilterComponents(GGroupObject group) {
+        ArrayList<GFilter> filters = new ArrayList<>();
+        for (GFilter filter : group.getDrawComponent().filters)
+            if (filter.property.groupObject == group)
+                filters.add(filter);
+        return filters;
     }
 
     public ArrayList<GPropertyDraw> getPivotMeasures(GGroupObject group) {

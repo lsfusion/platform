@@ -1,0 +1,18 @@
+MODULE PropertyFilterOutsideReact;
+
+REQUIRE System;
+
+// a FILTER moved out of React where a view draws the group's conditions is the platform's to draw, and a view drawing
+// the conditions leaves the platform no filter panel to draw it with
+CLASS PfOutsideItem;
+pfOutsideName = DATA STRING[20] (PfOutsideItem);
+
+FORM propertyFilterOutsideReact
+    OBJECTS i = PfOutsideItem
+    PROPERTIES(i) pfOutsideName FILTER
+;
+
+DESIGN propertyFilterOutsideReact {
+    FILTERS(i) { custom = 'PfOutsidePanel'; }
+    MOVE FILTER(pfOutsideName(i)) FIRST;
+}

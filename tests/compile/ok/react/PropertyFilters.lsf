@@ -1,0 +1,99 @@
+MODULE PropertyFilters;
+
+REQUIRE System;
+
+// a property's FILTER, FILTER(<property>), under React: drawn by a view as a part of its group - over the platform's
+// panel, beside the view that draws the conditions or in it -, by a React view of its own, or placed (custom = NULL)
+// where the platform's panel draws the conditions; a tree group's too. The filters' part takes its name only where a
+// filter is drawn, and a filter outside React whose conditions no view draws is the platform's alone - of a group in
+// PANEL view too, which shows it nowhere, as before
+CLASS PfItem;
+pfName = DATA STRING[20] (PfItem);
+pfCity = DATA STRING[20] (PfItem);
+pfParent = DATA PfItem (PfItem);
+
+CLASS PfSetting;
+pfSettingName = DATA STRING[20] (PfSetting);
+
+FORM propertyFiltersOverPlatform
+    OBJECTS i = PfItem
+    PROPERTIES(i) pfName FILTER, pfCity FILTER
+;
+
+DESIGN propertyFiltersOverPlatform {
+    NEW header FIRST {
+        custom = 'PfHeader';
+        MOVE FILTER(pfName(i));                   // React draws it, the conditions the platform's panel's
+        MOVE FILTER(pfCity(i)) { custom = NULL; } // the panel's row, which the header places
+    }
+}
+
+FORM propertyFiltersByAView
+    OBJECTS i = PfItem
+    PROPERTIES(i) pfName FILTER, pfCity FILTER
+;
+
+DESIGN propertyFiltersByAView {
+    BOX(i) { custom = 'PfBoard'; } // the rows, the conditions, and the name's filter in FILTERS(i)
+    NEW side {
+        custom = 'PfSide';
+        MOVE FILTER(pfCity(i)); // another view: a part of the group of its own there
+    }
+}
+
+FORM propertyFiltersOfTheirOwn
+    OBJECTS i = PfItem
+    PROPERTIES(i) pfName FILTER, pfCity FILTER
+;
+
+DESIGN propertyFiltersOfTheirOwn {
+    FILTER(pfName(i)) { custom = 'PfSearch'; } // in a classic form, the rest of it the platform's
+    NEW board {
+        custom = 'PfOwnBoard';
+        MOVE FILTER(pfCity(i)) { custom = 'PfCitySearch'; } // ... and placed by the board around it
+    }
+}
+
+FORM propertyFiltersTree
+    TREE tree t = PfItem PARENT pfParent(t)
+    PROPERTIES(t) pfName FILTER
+;
+
+DESIGN propertyFiltersTree {
+    NEW header FIRST {
+        custom = 'PfTreeHeader';
+        MOVE FILTER(pfName(t));
+    }
+}
+
+FORM propertyFiltersPlatformOnly
+    OBJECTS s = PfSetting PANEL
+    PROPERTIES(s) pfSettingName FILTER
+    OBJECTS i = PfItem
+    PROPERTIES(i) pfName FILTER
+    PROPERTIES(i) PANEL pfCity EXTID 'filter'
+;
+
+DESIGN propertyFiltersPlatformOnly {
+    NEW side {
+        custom = 'PfPanelSide';
+        MOVE PROPERTY(pfCity(i)); // no filter is drawn here: the name is free
+    }
+}
+
+FORM propertyFiltersTemplate
+    OBJECTS i = PfItem
+    PROPERTIES(i) pfName FILTER
+;
+
+DESIGN propertyFiltersTemplate {
+    NEW search FIRST {
+        custom = '<div class="search"><Platform:FILTER(pfName(i))></div>'; // its filter, named in a template too
+        MOVE FILTER(pfName(i));
+    }
+}
+
+// a form embedding one with filters: each follows its property, named as the design reaches it there
+FORM propertyFiltersEmbedding
+    FORMS embedded = propertyFiltersOverPlatform
+;

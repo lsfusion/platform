@@ -167,6 +167,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // (GTableController.getUserOrdersController, GReactFormData.createFiltersControllers)
     private final NativeSIDMap<GGroupObject, GUserOrdersController> userOrdersControllers = new NativeSIDMap<>();
     private final NativeSIDMap<GGroupObject, GUserFiltersController> userFiltersControllers = new NativeSIDMap<>();
+    // ... and the controller of each property's FILTER - FILTER(<property>), the user filter declared on a property -,
+    // by the component, of the kind of whoever draws it (GReactFormData.createFilterController), told of its group's
+    // user filters with what shows them (updateFilterConditions)
+    private final NativeSIDMap<GFilter, GFilterController> filterControllers = new NativeSIDMap<>();
     private final NativeSIDMap<GPropertyDraw, GPropertyController> propertyControllers = new NativeSIDMap<>();
     private final NativeSIDMap<GComponent, GComponentController> componentControllers = new NativeSIDMap<>();
     // ... the controller of each filter group with filters - one with none has no view -, of the kind of whoever draws
@@ -795,7 +799,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
             } else if (group.viewType.isList()) // a GRID, whole
                 initializeTable(group.grid);
             else // in PANEL view - or TOOLBAR, or POPUP -: no table
-                initializeGroupControllers(group, new GPlatformPanelGroupController(), GUserOrdersController.NONE, GUserFiltersController.NONE);
+                initializeGroupControllers(group, new GPlatformPanelGroupController(), GUserOrdersController.NONE, GUserFiltersController.NONE, GFilterConditions.NONE);
 
         // kept even for React: getPlatformPropertyController/update rely on it; it stays empty when only react-owned
         // property readers are skipped, so no panel views are built
@@ -912,13 +916,13 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         // shows them - (GReactFormData.createFiltersControllers): a view's, or the platform's panel where its toolbar
         // shows the filters, else neither; then what the rows give for its groups - each group's controller and what
         // shows their user orders, one for all of them -, and each group's own
-        Pair<GFilterInputController, GUserFiltersController> filters = reactData.createFiltersControllers(table, rows, toggle,
+        GReactFormData.FiltersControllers filters = reactData.createFiltersControllers(table, rows, toggle,
                 () -> table.toolbar.showFilters ? new GPlatformFiltersController(this, rows, table.filtersContainer, table.filters, toggle) : null);
-        if (filters.first != null)
-            rows.bindFilter(filters.first);
+        if (filters.input != null)
+            rows.bindFilter(filters.input);
         GUserOrdersController userOrders = rows.getUserOrdersController();
         for (GGroupObject group : table.getGroups())
-            initializeGroupControllers(group, rows.getGroupController(group), userOrders, filters.second);
+            initializeGroupControllers(group, rows.getGroupController(group), userOrders, filters.userFilters, filters.conditions);
     }
     // A TABLE of its KIND: its toolbar and what draws its rows, each of the kind the projection answers, the platform's
     // made only then (GReactFormData's create* factories), given back - what draws the rows and the toolbar - for what
@@ -948,11 +952,14 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // by its table (userOrders, userFilters) - a list's group's, a tree's for all its groups -, none in PANEL view; and
     // where React draws the rows and the platform its platform-drawn properties into each of them - the only rows such
     // a property is drawn in (FormView.isPlatformDrawn) -, the controller of those, made before the properties, whose
-    // controller it is (getPlatformPropertyController)
-    private void initializeGroupControllers(GGroupObject group, GGroupController controller, GUserOrdersController userOrders, GUserFiltersController userFilters) {
+    // controller it is (getPlatformPropertyController); and the controllers of the FILTERs of its properties, their
+    // conditions where its user filters keep them (conditions, GReactFormData.createFilterController), none in PANEL view
+    private void initializeGroupControllers(GGroupObject group, GGroupController controller, GUserOrdersController userOrders, GUserFiltersController userFilters, GFilterConditions conditions) {
         groupControllers.put(group, controller);
         userOrdersControllers.put(group, userOrders);
         userFiltersControllers.put(group, userFilters);
+        for (GFilter filter : form.getFilterComponents(group))
+            filterControllers.put(filter, reactData.createFilterController(filter, conditions));
         for (GPropertyDraw draw : form.propertyDraws)
             if (draw.groupObject == group && draw.isPlatformDrawnPerRow()) {
                 platformRowsPanelControllers.put(group, new GPlatformRowsPanelController(this, group, reactData.getRows(group)));
@@ -1214,6 +1221,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
             if (!filters.equals(currentFilters.get(group))) {
                 currentFilters.put(group, filters);
                 userFiltersControllers.get(group).updateFilters(group, filters);
+                updateFilterConditions(group);
             }
         });
     }
@@ -2320,8 +2328,14 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
             pendingChangeFiltersRequests.put(group, requestIndex);
             // ... and what shows them told of them, before the answer (GUserFiltersController.changeFilters)
             userFiltersControllers.get(group).changeFilters(group, currentFilters.get(group));
+            updateFilterConditions(group);
         }
         return requestIndex;
+    }
+    // ... and the FILTERs of the group's properties, each showing its condition among them
+    private void updateFilterConditions(GGroupObject group) {
+        for (GFilter filter : form.getFilterComponents(group))
+            filterControllers.get(filter).updateCondition();
     }
 
     public void setViewFilters(ArrayList<GPropertyFilter> conditions, int pageSize) {

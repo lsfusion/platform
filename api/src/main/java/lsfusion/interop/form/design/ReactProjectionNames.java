@@ -24,6 +24,9 @@ public class ReactProjectionNames {
     public static final String ORDERS_PART = "orders";
     // the user filters' part, where what FILTERS(g) holds is drawn
     public static final String FILTERS_PART = "filters,filterProperties";
+    // the part of the FILTERs of a group's properties, where FILTER(<property>) is drawn - on the node of the group of
+    // the filter's property, a tree's group's too: one name for all of them, each under it by its property's name
+    public static final String FILTER_PART = "filter";
     // their controls' part, where FILTERCONTROLS(g) is drawn
     public static final String FILTER_CONTROLS_PART = "addFilter,applyFilters,resetFilters,filtersPending,filtersManual";
     // the toolbar's part, where TOOLBARSYSTEM(g) is drawn - every button's, whatever the design's flags say, its

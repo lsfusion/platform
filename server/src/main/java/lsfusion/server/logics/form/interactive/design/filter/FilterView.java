@@ -11,6 +11,8 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import static lsfusion.server.logics.form.interactive.design.object.GroupObjectContainerSet.FILTER_COMPONENT;
+
 public class FilterView<P extends PropertyInterface, AddParent extends IdentityEntity<AddParent, ?>> extends BaseIdentityComponentView<FilterView<P, AddParent>, PropertyDrawView<P, AddParent>> {
     public PropertyDrawView<P, AddParent> property;
 
@@ -19,6 +21,13 @@ public class FilterView<P extends PropertyInterface, AddParent extends IdentityE
 
         this.property = property;
         this.property.filter = this;
+    }
+
+    // its name is the one the design reaches it by, FILTER(name(i)) - by its property's name on the form, so it follows
+    // the property into a form that embeds this one, renamed or not -: the name a React view has for it too
+    @Override
+    public String getSID() {
+        return FILTER_COMPONENT + "(" + property.entity.getSID() + ")";
     }
 
     @Override

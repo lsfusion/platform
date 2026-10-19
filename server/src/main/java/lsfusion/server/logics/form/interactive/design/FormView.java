@@ -161,10 +161,11 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         mainContainer.setHeight(-3, version);
     }
 
+    // a property's FILTER, a component the design names (FilterView.getSID), as any other
     public void addFilter(PropertyDrawEntity filterProperty, Version version) {
         PropertyDrawView propertyDrawView = get(filterProperty);
         if (propertyDrawView.filter == null)
-            getDrawComponent(filterProperty.getNFToDraw(entity, version)).addFilter(genID(), propertyDrawView, version);
+            addComponentToMapping(getDrawComponent(filterProperty.getNFToDraw(entity, version)).addFilter(genID(), propertyDrawView, version), version);
     }
 
     public void addPivotColumn(ImList<PropertyDrawEntityOrPivotColumn> column, Version version) {
@@ -306,16 +307,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         return !group.getViewType().isList() ? null : componentScope(getDrawComponent(group));
     }
 
-    // WHAT REACT KEEPS NOTHING OF as a component: the client has no controller of it, so nothing is sent for it as
-    // one - neither its readers (FormEntity.getPropertyComponents) nor its visibility (FormEntity.getBaseComponents): a
-    // component React draws that the design does not name - a user filter's -, which has no entry to go to. Not a
-    // property, whatever draws it: as a component it is the platform's, and the one reader it has as one is its class
-    // (a design showIf on a property is the property's SHOWIF), which the platform applies to the view it draws the
-    // property in and skips where React draws it (mirrors GReactFormData.reactKeepsNothing)
-    public boolean reactKeepsNothing(ComponentView component) {
-        return component.getSID() == null && component.isReactDrawn();
-    }
-    // ... and WHAT REACT KEEPS NOTHING OF as a PROPERTY: one a React view carries by no name - the platform's own COUNT
+    // WHAT REACT KEEPS NOTHING OF as a PROPERTY: one a React view carries by no name - the platform's own COUNT
     // of a list group, the pivot's, where React draws the group's rows, any other being refused
     // (checkReactProjectionNames) -, which the client keeps nothing of: the form never shows it, so nothing of it is
     // read or sent, whatever the form's state (FormInstance.isPropertyStaticShown). Its SHOWIF alone does not do it: a
@@ -361,7 +353,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // content - a list property's column, platform-drawn or not, where the rows are - or, for a platform-drawn panel
     // one, where React places it, its entry labelling what the platform draws (an ACTION's saying only whether the form
     // shows it: its caption and image are its button's face). Any other component is named by its design identifier at
-    // the top level, where React draws or places it - one the design does not name, a user filter's, nowhere; nor a
+    // the top level, where React draws or places it - one the design does not name, a grid's record, nowhere; nor a
     // React view nothing places, whose caption the platform draws around it (mirrors GReactFormData.nameScope)
     private ComponentView nameScope(ComponentView component) {
         if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isList(entity)) // its column
@@ -385,11 +377,13 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
     // the scopes a group's node appears in - every React view that draws a part of it: its rows; each panel property
     // with an entry, one React draws or one it places (platform-drawn); each filter group of the group,
-    // FILTERGROUP(fg), whose part is the filter selected in it; and, of a list's group, the parts of its TABLE, its
+    // FILTERGROUP(fg), whose part is the filter selected in it; each FILTER of its properties, FILTER(<property>),
+    // whose part is the filter's condition; and, of a list's group, the parts of its TABLE, its
     // grid (addTableScopes). The twin of GReactFormData's createGridController and createTreeController,
-    // createPropertyController, createFilterGroupController and the factories of a table's parts, which make the nodes,
-    // each kind asked here by the scope its factory asks - rowsScope, nameScope, filterGroupScope and a table's, the
-    // twins of the client's -: a branch that gives a component a part adds it to BOTH in one commit, or the two sides
+    // createPropertyController, createFilterGroupController, createFilterController and the factories
+    // of a table's parts, which make the nodes, each kind asked here by the scope its factory asks
+    // - rowsScope, nameScope, filterGroupScope, filterScope and a table's, the twins of the client's
+    // -: a branch that gives a component a part adds it to BOTH in one commit, or the two sides
     // answer differently. What is deliberately absent is the group's calculations (CalculationsView), which React draws
     // nothing of yet, and a tree's table, one for all its groups, whose parts are on the tree's node (getTreeScopes)
     private List<ComponentView> getGroupScopes(GroupObjectEntity group) {
@@ -402,6 +396,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         for (RegularFilterGroupView filterGroup : getRegularFiltersIt())
             if (group.equals(filterGroup.entity.getToDraw(entity)))
                 addScope(scopes, filterGroupScope(filterGroup));
+        for (FilterView filter : getFilterComponents(group))
+            addScope(scopes, filterScope(filter));
         GridView grid = getListGrid(group);
         if (grid != null)
             addTableScopes(scopes, grid);
@@ -450,9 +446,14 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // platform shows none for it (mirrors where GFormController.initializeTable asks GReactFormData for that part, and
     // initializeControllers gives a group in PANEL view none)
     private ComponentView userFiltersScope(GroupObjectEntity group) {
-        if (!group.isInTree() && !group.getViewType().isList())
+        if (!hasUserFilters(group))
             return null;
         return filtersScope(getFiltersContainer(group));
+    }
+    // ... whether a group HAS user filters: a list's group's and a tree's - none in PANEL view, as the platform shows
+    // none for it (mirrors GReactFormData.hasUserFilters)
+    private static boolean hasUserFilters(GroupObjectEntity group) {
+        return group.isInTree() || group.getViewType().isList();
     }
     // ... where a FILTER GROUP is drawn as a part of its group: one with filters - one with none has no view -, of a
     // group - none has no node of its own to go on -, named on its group's node there by its own name (mirrors
@@ -461,6 +462,23 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         if (filterGroup.filters.getList().isEmpty())
             return null;
         return filterGroup.entity.getToDraw(entity) != null ? componentScope(filterGroup) : null;
+    }
+    // ... the FILTERs of a group's properties - FILTER(<property>), one of each property declared a user filter -: the
+    // FILTERs of its table, its grid's or its tree's, one table for all the tree's groups, on properties of the group
+    private List<FilterView> getFilterComponents(GroupObjectEntity group) {
+        List<FilterView> filters = new ArrayList<>();
+        for (FilterView filter : getDrawComponent(group).getFiltersIt())
+            if (group.equals(filter.property.entity.getToDraw(entity)))
+                filters.add(filter);
+        return filters;
+    }
+    // ... and where such a FILTER is drawn as a part of its group - as what a FILTERS box holds is (filtersScope), where
+    // the component's content is: the React view it stands in, or its own, whoever draws the group's conditions -, of a
+    // group with user filters (userFiltersScope), named on its group's node there under `filter` by its property's
+    // integration name, as a filter group is by its own name; none where the platform draws it - its filter panel,
+    // whose condition it is (mirrors GReactFormData.filterScope)
+    private ComponentView filterScope(FilterView filter) {
+        return hasUserFilters(filter.property.entity.getToDraw(entity)) ? filter.getContentReactPlace() : null;
     }
     // ... where the FILTERCONTROLS of a table or a tree is drawn as a part of its table - a list's grid
     // (getListGrid), or a tree, one for all its groups (mirrors GReactFormData.filterControlsScope)
@@ -481,8 +499,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // ... and what those parts WRITE on the node in this scope, which is what a projected name can collide with: the
     // node's own names, and the names of the parts of the group placed in this container - asked once per place a part
     // goes to (mirrors where GReactFormData's createGridController, createTreeController - with the table's sortings -,
-    // createFiltersControllers, createFilterControlsController and createGridToolbarController place the parts; a
-    // filter group's part is named by its own name, claimed as a property's is)
+    // createFiltersControllers, createFilterControlsController, createGridToolbarController and createFilterController
+    // place the parts; a filter group's part is named by its own name, claimed as a property's is)
     private String[] getReservedNodeNames(GroupObjectEntity group, ComponentView scope) {
         // the top level, the empty group's node: named on the controller too, so the controller's names
         if (group == null)
@@ -493,6 +511,9 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             if (group.isInTree())
                 reserved = ArrayUtils.addAll(reserved, TREE_PART_NAMES);
         }
+        // ... and where FILTERs of its properties are drawn, their parts under one name, a tree group's too
+        if (getFilterComponents(group).stream().anyMatch(filter -> filterScope(filter) == scope))
+            reserved = ArrayUtils.addAll(reserved, FILTER_PART_NAMES);
         // ... and the parts of a list's table, on its group's node - a tree's are on the tree's node, which carries no
         // property: the sortings, where its rows are drawn; what FILTERS(g) holds; FILTERCONTROLS(g); TOOLBARSYSTEM(g),
         // its buttons
@@ -776,6 +797,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         checkCustomReactProperty();
         checkCustomTemplatePlaces();
         checkReactRowsListView();
+        checkReactFilterComponents();
         checkCustomReactComponents();
 
         checkReactProjectionNames();
@@ -836,6 +858,58 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         }
     }
 
+    // a property's FILTER, FILTER(<property>), is drawn by React - as a part of its group, in the React view it stands
+    // in or its own, whoever draws the group's conditions (filterScope) - or by the platform's filter panel, whose
+    // condition it is. Refused when the form is built where React has a part in it and no one would draw the filter:
+    // one React draws of a group in PANEL view, which has no user filters; or on a property its condition cannot name -
+    // no integration name, grouped in columns, an action, never filtered by; or one the platform has to draw - placed
+    // by a React view (custom = NULL), or standing outside React while a view draws the group's conditions - where it
+    // builds no panel: the group is in PANEL view, a view draws the conditions, or the toolbar turns the filters off
+    // (showFilters). A filter in no React view of a group whose conditions no view draws is the platform's alone, drawn
+    // or not as before
+    private void checkReactFilterComponents() {
+        for (GroupObjectView groupObject : getGroupObjectsIt()) {
+            GroupObjectEntity group = groupObject.entity;
+            ComponentView conditions = userFiltersScope(group);
+            for (FilterView filter : getFilterComponents(group)) {
+                if (!filter.isInForm())
+                    continue;
+                String filterPrefix = formErrorPrefix() + "'" + filter.getSID() + "' ";
+                ComponentView drawn = componentScope(filter);
+                if (drawn != null) { // React draws it
+                    if (!hasUserFilters(group))
+                        throw new IllegalStateException(filterPrefix + "is drawn by the React view of '" + drawn.getSID()
+                                + "' as a part of object group '" + group.getSID() + "', which is in PANEL view and has no"
+                                + " user filters - the platform shows it none either; take the filter out of the view");
+                    PropertyDrawEntity<?, ?> property = filter.property.entity;
+                    String integrationSID = property.getIntegrationSID();
+                    String noCondition = integrationSID == null ? "has no name a condition could give it (NOEXTID): give it an EXTID"
+                            : !property.getColumnGroupObjects().isEmpty() ? "is grouped in COLUMNS - a condition per column -, and a filter names one property"
+                            : !property.isStaticProperty() ? "is an action, which is never filtered by"
+                            : null;
+                    if (noCondition != null)
+                        throw new IllegalStateException(filterPrefix + "is drawn by the React view of '" + drawn.getSID()
+                                + "', which names the filter's condition by its property's name, and '" + property.getSID()
+                                + "' " + noCondition);
+                    checkProjectedName(integrationSID, "the property of " + filter.getSID());
+                } else if (filter.getReactPlace() != null || conditions != null) { // the platform draws it, React taking part
+                    String noPanel = !hasUserFilters(group) ? "the group is in PANEL view, which has no user filters"
+                            : conditions != null ? "its user filters are drawn by the React view of '" + conditions.getSID() + "'"
+                            : !getDrawComponent(group).toolbarSystem.isShowFilters() ? "its toolbar turns them off (showFilters = FALSE)"
+                            : null;
+                    if (noPanel != null)
+                        throw new IllegalStateException(filterPrefix + (filter.getReactPlace() != null
+                                ? "is given custom = NULL in the React view of '" + filter.getReactPlace().getSID() + "', for the"
+                                  + " platform's filter panel of object group '" + group.getSID() + "' to draw it, but there is"
+                                  + " no such panel: " + noPanel + "; drop custom = NULL for the React view to draw the filter"
+                                : "stands where the platform draws it, but there is no filter panel of object group '"
+                                  + group.getSID() + "' to draw it with: " + noPanel + "; move the filter into a React view,"
+                                  + " which draws it"));
+                }
+            }
+        }
+    }
+
     // a literal `custom` beside a `custom` property is the pair the rest of the design uses (caption / propertyCaption):
     // the literal is what the container starts with, the property recomputes it. The one combination that is not a pair
     // is a React component, which draws the container itself and would never be handed a computed template
@@ -852,10 +926,11 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
     // a component that is not a container is drawn by a React component of its own as what such a view draws of it:
     // the part of a group or of a tree it shows - the rows of a grid or of a tree, the toolbar, the filter controls, a
-    // filter group -, on the node of its owner (getGroupScopes, getTreeScopes). One that shows none here - of a group
-    // in PANEL view, which has no rows, toolbar or filter controls; a toolbar hidden with visible = FALSE; a filter
-    // group with no filters or of no object; a group's calculations, which React draws nothing of - would be drawn by a
-    // view given nothing, so it is refused. And so is a grid whose record holds anything - what the design moves into
+    // filter group, a property's filter -, on the node of its owner (getGroupScopes, getTreeScopes).
+    // One that shows none here - of a group in PANEL view, which has no rows, toolbar or filter
+    // controls; a toolbar hidden with visible = FALSE; a filter group with no filters or of no object;
+    // a group's calculations, which React draws nothing of - would be drawn by a view given nothing,
+    // so it is refused. And so is a grid whose record holds anything - what the design moves into
     // the grid, GRID(o) { MOVE ...; }, which a CUSTOM, MAP or CALENDAR view pops up for a row and rows React draws never
     // show (checkReactRowsListView) -: such a view places no view of the platform's, as a container's places those it
     // holds, so what the record holds is a React container's around the grid, to draw or to place
@@ -1025,7 +1100,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             GroupObjectEntity group = groupObject.entity;
             GridView grid = getListGrid(group);
             if (rowsScope(group) != null || userFiltersScope(group) != null
-                    || grid != null && toolbarScope(grid) != null)
+                    || grid != null && toolbarScope(grid) != null
+                    || getFilterComponents(group).stream().anyMatch(filter -> filterScope(filter) != null))
                 checkStateNames(group);
         }
     }
@@ -1075,6 +1151,9 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     private static final String[] ORDERS_PART_NAMES = reserved(ReactProjectionNames.ORDERS_PART);
     // the user filters' part, where what FILTERS(g) holds is drawn: the conditions, and what a condition can be on
     private static final String[] FILTERS_PART_NAMES = reserved(ReactProjectionNames.FILTERS_PART);
+    // ... and the part of the FILTERs of a group's properties, where FILTER(<property>) is drawn: one name for all of
+    // them, each by its property's name under it (mirrors GReactFormData.FilterPart)
+    private static final String[] FILTER_PART_NAMES = reserved(ReactProjectionNames.FILTER_PART);
     // ... their controls' part, where FILTERCONTROLS(g) is drawn: the same whoever draws the conditions - the add, the
     // apply and the reset, and what the apply button shows (mirrors GReactFormData.FilterControlsPart)
     private static final String[] FILTER_CONTROLS_PART_NAMES = reserved(ReactProjectionNames.FILTER_CONTROLS_PART);

@@ -1624,7 +1624,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     public ImSet<ComponentView> getPropertyComponents() {
         MExclSet<ComponentView> mComponents = SetFact.mExclSet();
         view.mainContainer.fillPropertyComponents(mComponents);
-        return mComponents.immutable().filterFn(component -> !view.reactKeepsNothing(component));
+        return mComponents.immutable();
     }
 
     @IdentityLazy
@@ -1640,7 +1640,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         MExclSet<ComponentView> mContainers = SetFact.mExclSet();
         // raw mainContainer would erase the predicate
         ((ContainerView<?>) view.mainContainer).fillBaseComponents(mContainers, false, view::isReactShowIfContainer);
-        return mContainers.immutable().filterFn(component -> !view.reactKeepsNothing(component));
+        return mContainers.immutable();
     }
 
     public LocalizedString getCaption() {

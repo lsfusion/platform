@@ -14,6 +14,7 @@ public class GroupObjectContainerSet {
     public static final String BOX_CONTAINER = "BOX";
         public static final String FILTERBOX_CONTAINER = "FILTERBOX";
             public static final String FILTERS_CONTAINER = "FILTERS";
+                public static final String FILTER_COMPONENT = "FILTER";
             public static final String FILTER_CONTROLS_COMPONENT = "FILTERCONTROLS";
         public static final String GRID_COMPONENT = "GRID";
         public static final String TOOLBARBOX_CONTAINER = "TOOLBARBOX";

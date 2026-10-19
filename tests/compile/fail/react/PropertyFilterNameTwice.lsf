@@ -1,0 +1,22 @@
+MODULE PropertyFilterNameTwice;
+
+REQUIRE System;
+
+// two properties of a group under one integration name, where a React view draws the FILTER of one of them: the
+// filter's condition names a property of the GROUP by that name, wherever it is drawn, so it would name neither.
+// Nothing else of the group is projected here, so the filter alone refuses it
+CLASS PfTwiceItem;
+pfTwiceName = DATA STRING[20] (PfTwiceItem);
+pfTwiceNote = DATA STRING[20] (PfTwiceItem);
+
+FORM propertyFilterNameTwice
+    OBJECTS i = PfTwiceItem
+    PROPERTIES(i) pfTwiceName EXTID 'title' FILTER, pfTwiceNote EXTID 'title'
+;
+
+DESIGN propertyFilterNameTwice {
+    NEW board {
+        custom = 'PfTwiceBoard';
+        MOVE FILTER(pfTwiceName(i));
+    }
+}
