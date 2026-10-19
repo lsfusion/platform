@@ -1,0 +1,121 @@
+MODULE UiCustomContainer;
+
+REQUIRE TestUtils, SystemEvents;
+
+// the forms UiCustomContainerIT works on in the browser - containers drawn by React components (UiCustomContainer.js,
+// and two no-build .jsx files of web/init) and by an HTML template: the size of a window whose content is such a
+// container, two .jsx files on one page, and the keys in fields a view or a custom cell renderer draws itself and in
+// the platform's own editors
+
+// the content of each is one container the platform does not draw, which draws a block of a fixed size and nothing the
+// platform measures: opened as a window, the form takes the size of what the container drew when it opened
+FORM uiCustomContainerReactSized 'React block';
+
+DESIGN uiCustomContainerReactSized {
+    NEW block FIRST {
+        custom = 'UiCustomContainerBlock';
+    }
+}
+
+FORM uiCustomContainerTemplateSized 'Template block';
+
+DESIGN uiCustomContainerTemplateSized {
+    NEW block FIRST {
+        custom = '<div class="ui-custom-container-template" style="width: 480px; height: 320px"></div>';
+    }
+}
+
+uiCustomContainerReactSizedWindow 'React block window' () { SHOW uiCustomContainerReactSized FLOAT; }
+uiCustomContainerTemplateSizedWindow 'Template block window' () { SHOW uiCustomContainerTemplateSized FLOAT; }
+
+// two containers, each drawn by a component of a .jsx file of its own in web/init
+FORM uiCustomContainerTwo 'Two views';
+
+DESIGN uiCustomContainerTwo {
+    NEW first FIRST {
+        custom = 'UiCustomContainerFirst';
+    }
+    NEW second AFTER first {
+        custom = 'UiCustomContainerSecond';
+    }
+}
+
+// a view that draws two fields and two blocks that take keys, all of its own, and says the user is editing in the
+// second field and the second block while it has the focus; a property the platform draws after them
+uiCustomContainerNote 'Note' = DATA LOCAL STRING[50] ();
+
+FORM uiCustomContainerKeys 'Keys'
+    PROPERTIES() uiCustomContainerNote
+;
+
+DESIGN uiCustomContainerKeys {
+    NEW fields FIRST {
+        custom = 'UiCustomContainerFields';
+    }
+}
+
+// a property whose editor the platform draws: in a form of its own, and placed in a container a React view draws. The
+// form's Record button saves the value the form holds, in a session of its own, after the ones it saved before for the
+// run the test seeded last
+uiCustomContainerText 'Text' = DATA LOCAL STRING[50] ();
+uiCustomContainerRun = DATA STRING[50] ();
+uiCustomContainerEdits = DATA TEXT (STRING[50]);
+
+uiCustomContainerRemember (STRING[50] run, STRING[50] value) {
+    NEWSESSION {
+        uiCustomContainerEdits(run) <- CONCAT ',', uiCustomContainerEdits(run), (OVERRIDE value, 'none');
+        APPLY;
+    }
+}
+uiCustomContainerRecord 'Record' () {
+    uiCustomContainerRemember(uiCustomContainerRun(), uiCustomContainerText());
+}
+
+uiCustomContainerSeed (STRING[50] run) {
+    uiCustomContainerRun() <- run;
+    APPLY;
+}
+uiCustomContainerCheckEdits (STRING[50] run, TEXT expected) {
+    assertEquals(uiCustomContainerEdits(run), expected,
+                 CONCAT ' ', 'the values are', (OVERRIDE uiCustomContainerEdits(run), 'none'), 'not', expected);
+}
+
+FORM uiCustomContainerPlain 'Plain'
+    PROPERTIES() uiCustomContainerText, uiCustomContainerRecord
+;
+
+FORM uiCustomContainerPlaced 'Placed'
+    PROPERTIES() uiCustomContainerText NOCUSTOM
+    PROPERTIES() uiCustomContainerRecord
+;
+
+DESIGN uiCustomContainerPlaced {
+    NEW placed FIRST {
+        custom = 'UiCustomContainerPlaced';
+        MOVE PROPERTY(uiCustomContainerText());
+    }
+}
+
+// a property a custom cell renderer draws, a field of its own in the cell, and a property after it
+uiCustomContainerCellText 'Cell' = DATA LOCAL STRING[50] ();
+uiCustomContainerAfter 'After' = DATA LOCAL STRING[50] ();
+
+FORM uiCustomContainerCell 'Cell'
+    PROPERTIES() uiCustomContainerCellText CUSTOM 'uiCustomContainerCell', uiCustomContainerAfter
+;
+
+onWebClientInit() + {
+    onWebClientInit('UiCustomContainer.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiCustomContainer 'UI custom container' WINDOW toolbar {
+        NEW uiCustomContainerReactSizedWindow;
+        NEW uiCustomContainerTemplateSizedWindow;
+        NEW uiCustomContainerTwo;
+        NEW uiCustomContainerKeys;
+        NEW uiCustomContainerPlain;
+        NEW uiCustomContainerPlaced;
+        NEW uiCustomContainerCell;
+    }
+}
