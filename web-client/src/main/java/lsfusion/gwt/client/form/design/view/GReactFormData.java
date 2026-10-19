@@ -133,8 +133,9 @@ public class GReactFormData {
     // later. The members are made here, beside the entries they mirror, and each holds the state it stands for (a
     // ReactPropertyEntry, a Part): a call through one reads what it names - the row, the value - from that state, and
     // hands the form the edit, which the form shows at once and sends at once or, inside a batch, when the batch ends
-    // (batch)
-    public interface Verbs {
+    // (batch). The form keeps the condition of a property's FILTER where no panel of the platform's shows the
+    // conditions (GFilterConditions): in its list
+    public interface Verbs extends GFilterConditions {
         // ===== the current object of a group whose rows a view draws: one of those rows
         void changeCurrentObject(GGroupObject group, GGroupObjectValue key);
         // ===== a property: its cell - its key (EMPTY: the current objects) and its value (PValue.UNDEFINED: its change
@@ -169,6 +170,23 @@ public class GReactFormData {
         // ... and a group's as the form has them - what a view's part shows, and what one condition stated is merged
         // into: a list of the caller's own
         ArrayList<GPropertyFilter> getFilters(GGroupObject group);
+        // ... and a property's FILTER's condition in them (createFiltersControllers): the FIRST on its property, as the
+        // platform's row takes the first on its column, the list made of it sent at once, as a view's conditions are
+        // (FiltersPart)
+        @Override
+        default GPropertyFilter getFilterCondition(GFilter filter) {
+            return getFirstCondition(getFilters(filter.property.groupObject), filter.property);
+        }
+        @Override
+        default void changeFilter(GFilter filter, GPropertyFilter condition) {
+            GGroupObject group = filter.property.groupObject;
+            changeFilters(Collections.singletonList(group), withCondition(getFilters(group), condition));
+        }
+        @Override
+        default void clearFilter(GFilter filter) {
+            GGroupObject group = filter.property.groupObject;
+            changeFilters(Collections.singletonList(group), withoutFirstCondition(getFilters(group), filter.property));
+        }
         // ===== a filter group of a group: the filter selected in it - null: none -, as its member read it
         void changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter);
         // ===== the widget of the React view that draws what scope holds: the keys of what the view draws are taken
@@ -332,12 +350,12 @@ public class GReactFormData {
     // (GUserFiltersController.NONE). The input works on what draws the rows (rows), and the toggle shows the controls
     // and the toolbar's button (GFormController.initializeTable); a group in PANEL view has neither, as the platform
     // shows it none. And where the condition of a FILTER of the table's properties is: the panel, its row of the
-    // FILTER, where there is one, else the form's list (ListFilterConditions)
+    // FILTER, where there is one, else the form's list (Verbs)
     public FiltersControllers createFiltersControllers(GGridProperty table, GTableController rows, GFilterControlsToggle toggle, Supplier<GPlatformFiltersController> platform) {
         return reactOrPlatform(filtersScope(table.filtersContainer), state -> new FiltersControllers(new ReactFilterInputController(table.getGroups(), rows, toggle),
-                new FiltersPart(state.getOrCreateTableNode(table)), listFilterConditions), () -> {
+                new FiltersPart(state.getOrCreateTableNode(table)), verbs), () -> {
             GPlatformFiltersController panel = platform.get();
-            return panel != null ? new FiltersControllers(panel, panel, panel) : new FiltersControllers(null, GUserFiltersController.NONE, listFilterConditions);
+            return panel != null ? new FiltersControllers(panel, panel, panel) : new FiltersControllers(null, GUserFiltersController.NONE, verbs);
         });
     }
     // ... which the form takes apart
@@ -1737,24 +1755,6 @@ public class GReactFormData {
             stateChanged();
         }
     }
-    // ... where its condition is with no panel of the platform's showing the conditions - a view draws them, or the
-    // toolbar turns the platform's off -: the form's list, its condition the FIRST on its property there, as the
-    // platform's row takes the first on its column, the list it makes handed to the form (Verbs.changeFilters) and
-    // applied at once, as a view's conditions are (FiltersPart)
-    private final class ListFilterConditions implements GFilterConditions {
-        public GPropertyFilter getFilterCondition(GFilter filter) {
-            return getFirstCondition(verbs.getFilters(filter.property.groupObject), filter.property);
-        }
-        public void changeFilter(GFilter filter, GPropertyFilter condition) {
-            GGroupObject group = filter.property.groupObject;
-            verbs.changeFilters(Collections.singletonList(group), withCondition(verbs.getFilters(group), condition));
-        }
-        public void clearFilter(GFilter filter) {
-            GGroupObject group = filter.property.groupObject;
-            verbs.changeFilters(Collections.singletonList(group), withoutFirstCondition(verbs.getFilters(group), filter.property));
-        }
-    }
-    private final GFilterConditions listFilterConditions = new ListFilterConditions();
     // a view's name, as the group's node and its member say it: grid, pivot, custom, map, calendar
     private static String getViewName(GListViewType view) {
         return view.name().toLowerCase();
@@ -3390,7 +3390,7 @@ public class GReactFormData {
         return result;
     }
     // ... the FIRST condition on a property among a group's - the one a property's FILTER shows and states over the
-    // form's list (ListFilterConditions), as the platform's row of a FILTER takes the first on its column from a list the
+    // form's list (Verbs.getFilterCondition), as the platform's row of a FILTER takes the first on its column from a list the
     // server reports (GPlatformFiltersController.updateFilters) -, null for none
     static GPropertyFilter getFirstCondition(ArrayList<GPropertyFilter> conditions, GPropertyDraw property) {
         int index = indexOfFirstCondition(conditions, property);

@@ -4,8 +4,8 @@ package lsfusion.gwt.client.form.filter.user;
 // and states it here -, one for all the FILTERs of a table, set up with its user filters
 // (GReactFormData.createFiltersControllers): the platform's filter panel, where it shows them - its row of the FILTER,
 // which it states as it states its rows, at once or held until its apply in its manual apply mode
-// (GPlatformFiltersController) -, else the form's list, sent at once (GReactFormData.ListFilterConditions); none in
-// PANEL view, which has no user filters (NONE)
+// (GPlatformFiltersController) -, else the form's list, sent at once (GFormController, as GReactFormData.Verbs); none
+// in PANEL view, which has no user filters (NONE)
 public interface GFilterConditions {
     // the FILTER's condition, null for none
     GPropertyFilter getFilterCondition(GFilter filter);
