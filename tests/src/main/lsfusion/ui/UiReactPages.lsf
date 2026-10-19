@@ -1,0 +1,104 @@
+MODULE UiReactPages;
+
+REQUIRE System, SystemEvents;
+
+// the forms UiReactPagesIT works on in the browser - a tabbed container whose pages are React views, each drawing a
+// list group (UiReactPages.js): a CANCEL from a view, from a button the platform draws beside the pages, one that SHOWs
+// a form, and the other page shown afterwards - and the action it seeds the items with
+
+CLASS UiReactPagesItem 'Item';
+uiReactPagesName 'Name' = DATA STRING[50] (UiReactPagesItem);
+uiReactPagesShown = DATA BOOLEAN (UiReactPagesItem); // the items of the test that seeded last: the forms show only them
+
+uiReactPagesCancel 'Cancel' () {
+    CANCEL;
+}
+
+// a change the forms' sessions open with, which a CANCEL drops: an item not saved, shown with the seeded ones
+uiReactPagesUnsaved () {
+    NEW i = UiReactPagesItem {
+        uiReactPagesName(i) <- 'unsaved';
+        uiReactPagesShown(i) <- TRUE;
+    }
+}
+
+// the second page's view runs the CANCEL through its member
+FORM uiReactPagesTabs 'Pages with a cancel'
+    OBJECTS a = UiReactPagesItem PAGESIZE 0
+    PROPERTIES(a) READONLY aName = uiReactPagesName
+    FILTERS uiReactPagesShown(a)
+    ORDERS aName
+    OBJECTS b = UiReactPagesItem PAGESIZE 0
+    PROPERTIES(b) READONLY bName = uiReactPagesName
+    FILTERS uiReactPagesShown(b)
+    ORDERS bName
+    PROPERTIES() cancel = uiReactPagesCancel
+    EVENTS ON INIT uiReactPagesUnsaved()
+;
+
+DESIGN uiReactPagesTabs {
+    NEW pages FIRST {
+        tabbed = TRUE;
+        NEW page1 { caption = 'Page 1'; custom = 'UiReactPagesFirst'; MOVE BOX(a); }
+        NEW page2 { caption = 'Page 2'; custom = 'UiReactPagesCancel'; MOVE BOX(b); MOVE PROPERTY(cancel); }
+    }
+}
+
+// the form a CANCEL SHOWs: a client action the answer carries after the form's changes
+FORM uiReactPagesOther 'Shown after a cancel'
+    OBJECTS o = UiReactPagesItem
+    PROPERTIES(o) READONLY otherName = uiReactPagesName
+    FILTERS uiReactPagesShown(o)
+;
+
+uiReactPagesCancelShow 'Cancel and show' () {
+    CANCEL;
+    SHOW uiReactPagesOther NOWAIT;
+}
+
+// the same pages, the CANCEL from buttons the platform draws beside them, with no page switched
+FORM uiReactPagesButtons 'Pages beside buttons'
+    OBJECTS a = UiReactPagesItem PAGESIZE 0
+    PROPERTIES(a) READONLY aName = uiReactPagesName
+    FILTERS uiReactPagesShown(a)
+    ORDERS aName
+    OBJECTS b = UiReactPagesItem PAGESIZE 0
+    PROPERTIES(b) READONLY bName = uiReactPagesName
+    FILTERS uiReactPagesShown(b)
+    ORDERS bName
+    PROPERTIES() cancel = uiReactPagesCancel, cancelShow = uiReactPagesCancelShow
+    EVENTS ON INIT uiReactPagesUnsaved()
+;
+
+DESIGN uiReactPagesButtons {
+    NEW pages FIRST {
+        tabbed = TRUE;
+        NEW page1 { caption = 'Page 1'; custom = 'UiReactPagesFirst'; MOVE BOX(a); }
+        NEW page2 { caption = 'Page 2'; custom = 'UiReactPagesSecond'; MOVE BOX(b); }
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiReactPages.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiReactPages 'UI React pages' WINDOW toolbar {
+        NEW uiReactPagesTabs;
+        NEW uiReactPagesButtons;
+    }
+}
+
+// two items shown from now on
+uiReactPagesSeed (STRING[50] first, STRING[50] second) {
+    uiReactPagesShown(UiReactPagesItem i) <- NULL;
+    NEW i = UiReactPagesItem {
+        uiReactPagesName(i) <- first;
+        uiReactPagesShown(i) <- TRUE;
+    }
+    NEW i = UiReactPagesItem {
+        uiReactPagesName(i) <- second;
+        uiReactPagesShown(i) <- TRUE;
+    }
+    APPLY;
+}
