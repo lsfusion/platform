@@ -1,13 +1,20 @@
 package lsfusion.gwt.server;
 
+import lsfusion.base.SystemUtils;
 import lsfusion.base.file.RawFileData;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,22 +51,96 @@ public class JsxTransformer {
     // wait on the first one's result. Work still happens on the single engine thread; nothing is parallelised
     private static final ConcurrentHashMap<String, CompletableFuture<RawFileData>> flights = new ConcurrentHashMap<>();
 
-    // a page build transforms every init resource in a row, so a per-resource wait would still let /main wait for
-    // their SUM. The budget is for the whole build, and what is not ready inside it is served as a stub while the
-    // transform carries on - a page that says so beats a request thread parked for minutes
-    private static final long PAGE_BUDGET = TimeUnit.SECONDS.toNanos(30);
+    // seconds a page waits for the transforms of its resources: the web server's jsxTransformTimeout setting. A page build
+    // transforms every init resource in a row, so a per-resource wait would still let /main wait for their SUM. The
+    // budget is for the whole build, and what is not ready inside it is served as a stub while the transform carries on
+    // - a page that says so beats a request thread parked for minutes
+    public static int timeout = 30;
     // nanoTime, not the wall clock: a clock stepped backwards between opening the budget and reading what is left of
     // it would turn 30 seconds into minutes, which is the wait this exists to bound
     private static final ThreadLocal<Long> pageDeadline = new ThreadLocal<>();
     public static void startPageBudget() {
-        pageDeadline.set(System.nanoTime() + PAGE_BUDGET);
+        pageDeadline.set(System.nanoTime() + TimeUnit.SECONDS.toNanos(timeout));
     }
     public static void endPageBudget() {
         pageDeadline.remove();
     }
     private static long remainingWait() {
         Long until = pageDeadline.get();
-        return until == null ? PAGE_BUDGET : Math.max(0, until - System.nanoTime());
+        return until == null ? TimeUnit.SECONDS.toNanos(timeout) : Math.max(0, until - System.nanoTime());
+    }
+
+    // a large file takes minutes to transform, and the memory is empty after every start of the web server, so the
+    // results are also kept on disk: in the web server's temporary folder, which Tomcat keeps across restarts and clears
+    // when the application is redeployed. They lie under the fingerprint of what produced them - the Babel bundle and
+    // this class - so a platform update never serves what an earlier one produced, and drops it
+    private static class Store {
+        static final File folder = new File(FileUtils.APP_DOWNLOAD_FOLDER_PATH, "jsx/" + fingerprint());
+
+        static {
+            File[] fingerprints = folder.getParentFile().listFiles();
+            if (fingerprints != null)
+                for (File stale : fingerprints)
+                    if (!stale.equals(folder))
+                        org.apache.commons.io.FileUtils.deleteQuietly(stale);
+            File[] files = folder.listFiles(); // what a write that never finished left behind
+            if (files != null)
+                for (File file : files)
+                    if (file.getName().endsWith(".tmp"))
+                        org.apache.commons.io.FileUtils.deleteQuietly(file);
+            folder.mkdirs();
+        }
+
+        private static String fingerprint() {
+            try (InputStream bundle = JsxTransformer.class.getResourceAsStream(BUNDLE);
+                 InputStream code = JsxTransformer.class.getResourceAsStream(JsxTransformer.class.getSimpleName() + ".class")) {
+                ByteArrayOutputStream both = new ByteArrayOutputStream();
+                IOUtils.copy(bundle, both);
+                IOUtils.copy(code, both);
+                return SystemUtils.generateID(both.toByteArray());
+            } catch (IOException e) {
+                throw new RuntimeException("failed to read the Babel bundle", e);
+            }
+        }
+
+        static File file(String id) {
+            return new File(folder, SystemUtils.generateID(id.getBytes(StandardCharsets.UTF_8)) + ".js");
+        }
+    }
+
+    // the disk is only a cache: a result it cannot give back is transformed again
+    private static RawFileData readStored(String id) {
+        File file = Store.file(id);
+        if (!file.exists())
+            return null;
+        try {
+            return new RawFileData(file);
+        } catch (IOException e) {
+            logger.warn("lsFusion .jsx: failed to read the stored transform " + file, e);
+            return null;
+        }
+    }
+
+    // written to a file of its own and renamed, so a reader never gets half of it - a crash in the middle leaves only
+    // the temporary file, which the next start deletes
+    private static void store(String id, RawFileData result) {
+        File file = Store.file(id);
+        File written = null;
+        try {
+            written = File.createTempFile(file.getName(), ".tmp", Store.folder);
+            result.write(written);
+            Files.move(written.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException e) {
+            logger.warn("lsFusion .jsx: failed to store the transform " + file + "; it is kept in memory only", e);
+            if (written != null)
+                written.delete();
+        }
+    }
+
+    private static void remember(String id, RawFileData result) {
+        if (cache.size() >= CACHE_LIMIT)
+            cache.clear();
+        cache.put(id, result);
     }
 
     // Babel's recursive-descent work needs a much bigger stack than the JVM default; instead of
@@ -120,13 +201,20 @@ public class JsxTransformer {
         if (cached != null)
             return cached;
 
+        // read here rather than on the engine thread, which may be busy with another file for minutes
+        RawFileData stored = readStored(id);
+        if (stored != null) {
+            remember(id, stored);
+            return stored;
+        }
+
         try {
             return flight(id, resourceName, source).get(remainingWait(), TimeUnit.NANOSECONDS);
         } catch (TimeoutException e) {
             // NOT a failure: the transform is still running and will publish its result, this page just cannot wait
             // for it any longer. The flight is deliberately left alone, so the next request joins it instead of
             // starting a second one, and the load after that is served from the cache
-            return stub(resourceName, "is still being compiled; reload the page in a moment");
+            return stub(resourceName, "is still being compiled after a " + timeout + " s wait (the jsxTransformTimeout setting of the web server); reload the page in a moment");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return stub(resourceName, "was interrupted while compiling");
@@ -176,10 +264,16 @@ public class JsxTransformer {
     private static void runFlight(String id, String resourceName, RawFileData source, CompletableFuture<RawFileData> flight) {
         try {
             checkJavaVersion(); // before any Graal class is touched, so an old JVM gets guidance, not UnsupportedClassVersionError
+            long started = System.nanoTime();
             RawFileData result = new RawFileData(PREAMBLE + transformOnEngineThread(source.getString(StandardCharsets.UTF_8), token(resourceName)), StandardCharsets.UTF_8);
-            if (cache.size() >= CACHE_LIMIT)
-                cache.clear();
-            cache.put(id, result); // published BEFORE the flight retires, so a late joiner finds the result either way
+            long took = System.nanoTime() - started;
+            String compiled = "lsFusion .jsx " + resourceName + " compiled in " + TimeUnit.NANOSECONDS.toMillis(took) + " ms";
+            if (took > TimeUnit.SECONDS.toNanos(timeout)) // what it takes to choose the setting, so it is seen at the default log level
+                logger.error(compiled + ", longer than a page waits for it: " + timeout + " s, the jsxTransformTimeout setting of the web server");
+            else
+                logger.info(compiled);
+            store(id, result); // before anyone gets it, so what a page got a restart finds too
+            remember(id, result); // published BEFORE the flight retires, so a late joiner finds the result either way
             flight.complete(result);
         } catch (Throwable t) {
             flight.completeExceptionally(t); // every waiter gets the same reason and reports it for itself
@@ -219,9 +313,9 @@ public class JsxTransformer {
             return; // unrecognized scheme: don't block, let class loading decide
         }
         if (major < MIN_JAVA || major > MAX_JAVA)
-            throw new RuntimeException("the lightweight .jsx tier requires the server to run on Java " + MIN_JAVA + "-" + MAX_JAVA
+            throw new RuntimeException("the lightweight .jsx tier requires the web server to run on Java " + MIN_JAVA + "-" + MAX_JAVA
                     + " (its JS engine); current JVM is " + System.getProperty("java.version")
-                    + " — run the server on Java " + MIN_JAVA + "-" + MAX_JAVA + ", or use a plain .js resource, or move the component"
+                    + " — run the web server on Java " + MIN_JAVA + "-" + MAX_JAVA + ", or use a plain .js resource, or move the component"
                     + " to the compiled src/main/web tier (which has no server-side JVM requirement)");
     }
 
@@ -249,8 +343,10 @@ public class JsxTransformer {
         return transformFunction.execute(source, token).asString();
     }
 
+    private static final String BUNDLE = "/lsfusion/jsx/babel-rc.min.js";
+
     private static String readBabelBundle() {
-        try (InputStream stream = JsxTransformer.class.getResourceAsStream("/lsfusion/jsx/babel-rc.min.js")) {
+        try (InputStream stream = JsxTransformer.class.getResourceAsStream(BUNDLE)) {
             return new RawFileData(stream).getString(StandardCharsets.UTF_8);
         } catch (Exception e) {
             throw new RuntimeException("failed to read the Babel bundle", e);

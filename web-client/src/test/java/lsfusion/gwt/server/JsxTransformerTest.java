@@ -1,9 +1,14 @@
 package lsfusion.gwt.server;
 
 import lsfusion.base.file.RawFileData;
+import org.apache.commons.io.IOUtils;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +33,15 @@ public class JsxTransformerTest {
         }
         assumeTrue("the lightweight .jsx tier's JS engine supports Java 11-23, this JVM is " + System.getProperty("java.version"),
                 major >= 11 && major <= 23);
+    }
+
+    // the web server's temporary folder, where the transforms are kept between its starts
+    @ClassRule
+    public static final TemporaryFolder webServerTemp = new TemporaryFolder();
+
+    @BeforeClass
+    public static void webServerTempFolder() {
+        FileUtils.APP_DOWNLOAD_FOLDER_PATH = webServerTemp.getRoot().getPath();
     }
 
     private static String transform(String name, String source) {
@@ -147,5 +161,76 @@ public class JsxTransformerTest {
         assertTrue(JsxTransformer.isJsx("web/init/helloBoard.jsx"));
         assertFalse(JsxTransformer.isJsx("web/init/helloBoard.js"));
         assertEquals("web/init/helloBoard.js", JsxTransformer.toJs("web/init/helloBoard.jsx"));
+    }
+
+    // #1907: the transforms were kept in memory only, so every start of the web server transformed again, and the first
+    // page whose .jsx did not fit its wait - a large file takes minutes - got a stub. What an earlier start transformed
+    // is served even to a page that cannot wait at all
+    @Test
+    public void aRestartServesWhatTheEarlierStartTransformed() throws Exception {
+        String source = "function Restarted(props) { return <i>{props.text}</i>; }\n";
+        String transformed = transform("restarted.jsx", source);
+        assertFalse(transformed.startsWith("console.error("));
+
+        Class<?> restarted = new Restart().loadClass(JsxTransformer.class.getName());
+        restarted.getField("timeout").setInt(null, 0);
+        restarted.getMethod("startPageBudget").invoke(null);
+        try {
+            RawFileData served = (RawFileData) restarted.getMethod("transform", String.class, RawFileData.class)
+                    .invoke(null, "restarted.jsx", new RawFileData(source, StandardCharsets.UTF_8));
+            assertEquals(transformed, served.getString(StandardCharsets.UTF_8));
+        } finally {
+            restarted.getMethod("endPageBudget").invoke(null);
+        }
+    }
+
+    // how long a page waits is the web server's jsxTransformTimeout setting: a page it is too short for gets a stub that
+    // names the setting, and the transform goes on for the pages after it
+    @Test
+    public void aPageWaitsAsLongAsTheTimeoutSetting() {
+        String source = "function Impatient(props) { return <u>{props.text}</u>; }\n";
+        int timeout = JsxTransformer.timeout;
+        JsxTransformer.timeout = 0;
+        String stub;
+        try {
+            JsxTransformer.startPageBudget();
+            try {
+                stub = transform("impatient.jsx", source);
+            } finally {
+                JsxTransformer.endPageBudget();
+            }
+        } finally {
+            JsxTransformer.timeout = timeout;
+        }
+        assertTrue(stub.startsWith("console.error("));
+        assertTrue(stub, stub.contains("still being compiled after a 0 s wait (the jsxTransformTimeout setting of the web server)"));
+        assertFalse(transform("impatient.jsx", source).startsWith("console.error(")); // the stubbed page left the transform running
+    }
+
+    // the web server started again: a fresh copy of the transformer, so nothing it kept in memory, and everything else -
+    // its temporary folder among it - the same
+    private static class Restart extends ClassLoader {
+        Restart() {
+            super(JsxTransformerTest.class.getClassLoader());
+        }
+
+        @Override
+        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            String transformer = JsxTransformer.class.getName();
+            if (!name.equals(transformer) && !name.startsWith(transformer + "$"))
+                return super.loadClass(name, resolve);
+            synchronized (getClassLoadingLock(name)) {
+                Class<?> loaded = findLoadedClass(name);
+                if (loaded == null) {
+                    try (InputStream code = getParent().getResourceAsStream(name.replace('.', '/') + ".class")) {
+                        byte[] bytes = IOUtils.toByteArray(code);
+                        loaded = defineClass(name, bytes, 0, bytes.length);
+                    } catch (IOException e) {
+                        throw new ClassNotFoundException(name, e);
+                    }
+                }
+                return loaded;
+            }
+        }
     }
 }

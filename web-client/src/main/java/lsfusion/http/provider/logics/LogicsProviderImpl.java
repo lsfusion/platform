@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.client.controller.remote.proxy.RemoteLogicsLoaderProxy;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.gwt.server.JsxTransformer;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.AppServerNotAvailableException;
@@ -32,6 +33,7 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
     private static final String hostKey = "host";
     private static final String portKey = "port";
     private static final String exportNameKey = "exportName";
+    private static final String jsxTransformTimeoutKey = "jsxTransformTimeout";
 
     private String host; // default host
     private int port; // default port
@@ -74,6 +76,10 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
         String tempDir = ((File) servletContext.getAttribute(ServletContext.TEMPDIR)).getPath(); // appPath + "/WEB-INF/temp";
         FileUtils.APP_DOWNLOAD_FOLDER_PATH = tempDir;
         FileUtils.APP_UPLOAD_FOLDER_PATH = tempDir;
+
+        String jsxTransformTimeout = servletContext.getInitParameter(jsxTransformTimeoutKey);
+        if (jsxTransformTimeout != null)
+            JsxTransformer.timeout = Integer.parseInt(jsxTransformTimeout);
 
         setHost(host);
         setPort(Integer.parseInt(port));
