@@ -1,0 +1,74 @@
+MODULE UiReactVisible;
+
+REQUIRE System, SystemEvents;
+
+// the forms UiReactVisibleIT works on in the browser - a React view in each place the platform hides one without
+// taking it down (UiReactVisible.js): a tab not selected, a collapsed container, a popup container not open, a SHOWIF,
+// and the control, a view the form never hides, whose form goes into a background tab
+
+CLASS UiReactVisibleItem 'Item';
+uiReactVisibleName 'Name' = DATA STRING[50] (UiReactVisibleItem);
+
+uiReactVisibleGated = DATA LOCAL BOOLEAN ();
+uiReactVisibleToggle 'Toggle gated' () {
+    uiReactVisibleGated() <- NOT uiReactVisibleGated();
+}
+
+// opened beside the views, in a tab of its own: the views' form goes into a background tab
+FORM uiReactVisibleOther 'Other'
+    OBJECTS i = UiReactVisibleItem
+    PROPERTIES(i) READONLY uiReactVisibleName
+;
+
+uiReactVisibleOpenOther 'Open other' () {
+    SHOW uiReactVisibleOther NOWAIT;
+}
+
+FORM uiReactVisibleViews 'Views'
+    OBJECTS i = UiReactVisibleItem
+    PROPERTIES(i) READONLY uiReactVisibleName
+    PROPERTIES() uiReactVisibleToggle, uiReactVisibleOpenOther
+;
+
+DESIGN uiReactVisibleViews {
+    NEW tabs FIRST {
+        tabbed = TRUE;
+        NEW firstTab { caption = 'First tab'; MOVE BOX(i); }
+        NEW secondTab { caption = 'Second tab'; NEW secondView { custom = 'UiReactVisibleSecond'; } }
+    }
+    NEW details {
+        caption = 'Details';
+        collapsible = TRUE;
+        collapsed = TRUE;
+        NEW detailsView { custom = 'UiReactVisibleDetails'; }
+    }
+    NEW pop {
+        caption = 'Pop';
+        popup = TRUE;
+        NEW popView { custom = 'UiReactVisiblePop'; }
+    }
+    // the SHOWIF in a container of its own: one right in the form's main container fails the server's assertion
+    // as the SHOWIF shows it (FormInstance.isShowIfHidden goes on up to the main container, which it takes as one
+    // the design hides)
+    NEW gating {
+        NEW gated {
+            showIf = uiReactVisibleGated();
+            NEW gatedView { custom = 'UiReactVisibleGated'; }
+        }
+    }
+    NEW plain {
+        NEW plainView { custom = 'UiReactVisiblePlain'; }
+    }
+    MOVE PROPERTY(uiReactVisibleToggle());
+    MOVE PROPERTY(uiReactVisibleOpenOther());
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiReactVisible.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiReactVisible 'UI React visible' WINDOW toolbar {
+        NEW uiReactVisibleViews;
+    }
+}
