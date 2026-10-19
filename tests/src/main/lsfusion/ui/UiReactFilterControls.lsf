@@ -1,0 +1,151 @@
+MODULE UiReactFilterControls;
+
+REQUIRE System, SystemEvents, Service;
+
+// the forms UiReactFilterControlsIT works on in the browser - a group's filter controls a React view draws
+// (UiReactFilterControls.js), over the conditions it draws, over the platform's filter panel, over the rows it draws;
+// the platform's whole filter box placed back over the rows a view draws; and the platform's filter box or panel moved
+// into a view's container with custom = NULL -, and the actions it seeds its items and sets the manual apply mode with
+
+CLASS UiRfcItem 'Item';
+uiRfcName 'Name' = DATA STRING[50] (UiRfcItem);
+uiRfcPrice 'Price' = DATA NUMERIC[10,2] (UiRfcItem);
+uiRfcShown = DATA BOOLEAN (UiRfcItem); // the items of the test that seeded last: the forms show only them
+
+// the platform's grid; the filter box drawn by a view - the conditions and their controls the view's
+FORM uiRfcConditions 'Controls over the conditions of a view'
+    OBJECTS i = UiRfcItem
+    PROPERTIES(i) READONLY name = uiRfcName, price = uiRfcPrice
+    FILTERS uiRfcShown(i)
+    ORDERS name
+;
+
+DESIGN uiRfcConditions {
+    FILTERBOX(i) { custom = 'UiRfcView'; }
+}
+
+// ... its conditions placed back with custom = NULL: the platform's panel, the controls the view's
+FORM uiRfcPanel 'Controls over the panel'
+    OBJECTS i = UiRfcItem
+    PROPERTIES(i) READONLY name = uiRfcName, price = uiRfcPrice
+    FILTERS uiRfcShown(i)
+    ORDERS name
+;
+
+DESIGN uiRfcPanel {
+    FILTERBOX(i) {
+        custom = 'UiRfcView';
+        FILTERS(i) { custom = NULL; }
+    }
+}
+
+// the whole group drawn by a view: its rows, its conditions and their controls
+FORM uiRfcBox 'Controls over the rows of a view'
+    OBJECTS i = UiRfcItem
+    PROPERTIES(i) READONLY name = uiRfcName, price = uiRfcPrice
+    FILTERS uiRfcShown(i)
+    ORDERS name
+;
+
+DESIGN uiRfcBox {
+    BOX(i) { custom = 'UiRfcView'; }
+}
+
+// ... the conditions placed back with custom = NULL: the platform's panel over the rows of the view
+FORM uiRfcPlaced 'Controls over the panel placed back'
+    OBJECTS i = UiRfcItem
+    PROPERTIES(i) READONLY name = uiRfcName, price = uiRfcPrice
+    FILTERS uiRfcShown(i)
+    ORDERS name
+;
+
+DESIGN uiRfcPlaced {
+    BOX(i) {
+        custom = 'UiRfcView';
+        FILTERS(i) { custom = NULL; }
+    }
+}
+
+// ... the whole filter box placed back with custom = NULL: the platform's conditions and controls over the view's rows,
+// the toolbar the view's
+FORM uiRfcPlatformBox 'Platform filter box over the rows of a view'
+    OBJECTS i = UiRfcItem
+    PROPERTIES(i) READONLY name = uiRfcName, price = uiRfcPrice
+    FILTERS uiRfcShown(i)
+    ORDERS name
+;
+
+DESIGN uiRfcPlatformBox {
+    BOX(i) {
+        custom = 'UiRfcPlatformBoxView';
+        FILTERBOX(i) { custom = NULL; }
+    }
+}
+
+// the platform's grid kept; the filter box, and only the conditions' panel, moved into a view's container of its own
+// with custom = NULL
+FORM uiRfcMovedBox 'Filter box moved'
+    OBJECTS i = UiRfcItem
+    PROPERTIES(i) READONLY name = uiRfcName, price = uiRfcPrice
+    FILTERS uiRfcShown(i)
+    ORDERS name
+;
+
+DESIGN uiRfcMovedBox {
+    NEW host FIRST {
+        custom = 'UiRfcHost';
+        MOVE FILTERBOX(i) { custom = NULL; }
+    }
+}
+
+FORM uiRfcMovedFilters 'Filters moved'
+    OBJECTS i = UiRfcItem
+    PROPERTIES(i) READONLY name = uiRfcName, price = uiRfcPrice
+    FILTERS uiRfcShown(i)
+    ORDERS name
+;
+
+DESIGN uiRfcMovedFilters {
+    NEW host FIRST {
+        custom = 'UiRfcHost';
+        MOVE FILTERS(i) { custom = NULL; }
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiReactFilterControls.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiRfc 'UI React filter controls' WINDOW toolbar {
+        NEW uiRfcConditions;
+        NEW uiRfcPanel;
+        NEW uiRfcBox;
+        NEW uiRfcPlaced;
+        NEW uiRfcPlatformBox;
+        NEW uiRfcMovedBox;
+        NEW uiRfcMovedFilters;
+    }
+}
+
+// two items shown from now on, the dearer one first by name
+uiRfcSeed (STRING[50] dear, STRING[50] cheap) {
+    uiRfcShown(UiRfcItem i) <- NULL;
+    NEW i = UiRfcItem {
+        uiRfcName(i) <- dear;
+        uiRfcPrice(i) <- 1.50;
+        uiRfcShown(i) <- TRUE;
+    }
+    NEW i = UiRfcItem {
+        uiRfcName(i) <- cheap;
+        uiRfcPrice(i) <- 0.75;
+        uiRfcShown(i) <- TRUE;
+    }
+    APPLY;
+}
+
+// the platform's filter panel applying changes by hand or not, for a client that starts after it
+uiRfcManualApply (STRING[10] on) {
+    baseValue(setting('userFiltersManualApplyMode')) <- on;
+    APPLY;
+}
