@@ -1,0 +1,109 @@
+MODULE UiReactToolbar;
+
+REQUIRE System, SystemEvents;
+
+// the forms UiReactToolbarIT works on in the browser - a table's toolbar a React view draws (UiReactToolbar.js): over
+// the platform's grid, over the rows the view draws itself, over a group started in manual update -, and the actions it
+// seeds and changes its items with
+
+CLASS UiRtbItem 'Item';
+uiRtbName 'Name' = DATA STRING[50] (UiRtbItem);
+uiRtbPrice 'Price' = DATA NUMERIC[10,2] (UiRtbItem);
+uiRtbShown = DATA BOOLEAN (UiRtbItem); // the items of the test that seeded last: the forms show only them
+
+// a change made on the form and applied, which a manual update holds back: the dearer item's name gets a '!'
+uiRtbRename 'Rename' () {
+    uiRtbName(UiRtbItem i) <- uiRtbName(i) + '!' WHERE uiRtbShown(i) AND uiRtbPrice(i) > 1;
+    APPLY;
+}
+
+// the toolbar drawn by a view over the platform's grid and filters: TOOLBARSYSTEM moved into a header of its own
+FORM uiRtbHeader 'Toolbar over the grid'
+    OBJECTS i = UiRtbItem
+    PROPERTIES(i) READONLY name = uiRtbName, price = uiRtbPrice
+    PROPERTIES() uiRtbRename
+    FILTERS uiRtbShown(i)
+    ORDERS name
+;
+
+DESIGN uiRtbHeader {
+    NEW header FIRST {
+        custom = 'UiRtbView';
+        MOVE TOOLBARSYSTEM(i);
+    }
+}
+
+// the whole group drawn by the view: its rows, its toolbar and its filters
+FORM uiRtbBox 'Toolbar over the rows of a view'
+    OBJECTS i = UiRtbItem
+    PROPERTIES(i) READONLY name = uiRtbName, price = uiRtbPrice
+    PROPERTIES() uiRtbRename
+    FILTERS uiRtbShown(i)
+    ORDERS name
+;
+
+DESIGN uiRtbBox {
+    BOX(i) { custom = 'UiRtbView'; }
+}
+
+// the toolbar drawn by a view over a group started in manual update, the switch of the platform's toolbar hidden by the
+// design
+FORM uiRtbManual 'Toolbar over a manual update'
+    OBJECTS i = UiRtbItem
+    PROPERTIES(i) READONLY name = uiRtbName, price = uiRtbPrice
+    PROPERTIES() uiRtbRename
+    FILTERS uiRtbShown(i)
+    ORDERS name
+;
+
+DESIGN uiRtbManual {
+    GRID(i) { enableManualUpdate = TRUE; }
+    TOOLBARSYSTEM(i) { showManualUpdate = FALSE; }
+    NEW header FIRST {
+        custom = 'UiRtbView';
+        MOVE TOOLBARSYSTEM(i);
+    }
+}
+
+// a group in PANEL view whose grid a view's container holds: no rows, so no toolbar over them
+FORM uiRtbPanel 'Toolbar of a panel group'
+    OBJECTS i = UiRtbItem PANEL
+    PROPERTIES(i) name = uiRtbName
+    FILTERS uiRtbShown(i)
+;
+
+DESIGN uiRtbPanel {
+    NEW host FIRST {
+        custom = 'UiRtbView';
+        MOVE GRID(i);
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiReactToolbar.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiRtb 'UI React toolbar' WINDOW toolbar {
+        NEW uiRtbHeader;
+        NEW uiRtbBox;
+        NEW uiRtbManual;
+        NEW uiRtbPanel;
+    }
+}
+
+// two items shown from now on, the dearer one first by name
+uiRtbSeed (STRING[50] dear, STRING[50] cheap) {
+    uiRtbShown(UiRtbItem i) <- NULL;
+    NEW i = UiRtbItem {
+        uiRtbName(i) <- dear;
+        uiRtbPrice(i) <- 1.50;
+        uiRtbShown(i) <- TRUE;
+    }
+    NEW i = UiRtbItem {
+        uiRtbName(i) <- cheap;
+        uiRtbPrice(i) <- 0.75;
+        uiRtbShown(i) <- TRUE;
+    }
+    APPLY;
+}
