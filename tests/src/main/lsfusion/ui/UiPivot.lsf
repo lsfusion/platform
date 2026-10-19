@@ -1,0 +1,108 @@
+MODULE UiPivot;
+
+REQUIRE System, SystemEvents;
+
+// the forms UiPivotIT works on in the browser - a group's pivot: a group in manual update switched to its pivot and
+// back to its table before an update there, on the platform's toolbar and on the toolbar a React view draws
+// (UiPivot.js), and the pivot of a group whose design hides the XLS export button -, and the action it seeds the items
+// with
+
+CLASS UiPivotItem 'Item';
+uiPivotName 'Name' = DATA STRING[50] (UiPivotItem);
+uiPivotQuantity 'Quantity' = DATA INTEGER (UiPivotItem);
+uiPivotShown = DATA BOOLEAN (UiPivotItem); // the items of the test that seeded last: the forms show only them
+
+// the items shown renamed in a session of their own: a group in automatic update shows the new names at once, one in
+// manual update holds them back
+uiPivotRename 'Rename' () {
+    NEWSESSION {
+        uiPivotName(UiPivotItem i) <- STRING[50](uiPivotName(i) + ' renamed') WHERE uiPivotShown(i);
+        APPLY;
+    }
+}
+
+// a group in manual update from the start, the platform's toolbar showing its switch
+FORM uiPivotManual 'Manual update'
+    OBJECTS i = UiPivotItem
+    PROPERTIES(i) READONLY uiPivotName, uiPivotQuantity
+    PROPERTIES() uiPivotRename
+    FILTERS uiPivotShown(i)
+    ORDERS uiPivotName(i)
+;
+
+DESIGN uiPivotManual {
+    GRID(i) { enableManualUpdate = TRUE; }
+}
+
+// the same group, its toolbar drawn by a React view over the platform's grid, the platform's switch hidden
+FORM uiPivotManualHeader 'Manual update in a header'
+    OBJECTS i = UiPivotItem
+    PROPERTIES(i) READONLY uiPivotName, uiPivotQuantity
+    PROPERTIES() uiPivotRename
+    FILTERS uiPivotShown(i)
+    ORDERS uiPivotName(i)
+;
+
+DESIGN uiPivotManualHeader {
+    GRID(i) { enableManualUpdate = TRUE; }
+    TOOLBARSYSTEM(i) { showManualUpdate = FALSE; }
+    NEW header FIRST {
+        custom = 'UiPivotHeader';
+        MOVE TOOLBARSYSTEM(i);
+    }
+}
+
+// the design hides the group's XLS export button: the group switched to its pivot by the toolbar
+FORM uiPivotExportHidden 'Export hidden'
+    OBJECTS i = UiPivotItem
+    PROPERTIES(i) READONLY uiPivotName, uiPivotQuantity
+    FILTERS uiPivotShown(i)
+    ORDERS uiPivotName(i)
+;
+
+DESIGN uiPivotExportHidden {
+    TOOLBARSYSTEM(i) { showPrintGroupXls = FALSE; }
+}
+
+// ... the group opened as its pivot
+FORM uiPivotExportHiddenPivot 'Export hidden, a pivot'
+    OBJECTS i = UiPivotItem PIVOT
+    PROPERTIES(i) READONLY uiPivotName, uiPivotQuantity
+    FILTERS uiPivotShown(i)
+    ORDERS uiPivotName(i)
+;
+
+DESIGN uiPivotExportHiddenPivot {
+    TOOLBARSYSTEM(i) { showPrintGroupXls = FALSE; }
+}
+
+// the control: the export button shown
+FORM uiPivotExport 'Export shown'
+    OBJECTS i = UiPivotItem
+    PROPERTIES(i) READONLY uiPivotName, uiPivotQuantity
+    FILTERS uiPivotShown(i)
+    ORDERS uiPivotName(i)
+;
+
+onWebClientInit() + {
+    onWebClientInit('UiPivot.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiPivot 'UI pivot' WINDOW toolbar {
+        NEW uiPivotManual;
+        NEW uiPivotManualHeader;
+        NEW uiPivotExportHidden;
+        NEW uiPivotExportHiddenPivot;
+        NEW uiPivotExport;
+    }
+}
+
+// three items shown from now on, their quantities 100, 200 and 300
+uiPivotSeed (STRING[50] first, STRING[50] second, STRING[50] third) {
+    uiPivotShown(UiPivotItem i) <- NULL;
+    NEW i = UiPivotItem { uiPivotName(i) <- first; uiPivotQuantity(i) <- 100; uiPivotShown(i) <- TRUE; }
+    NEW i = UiPivotItem { uiPivotName(i) <- second; uiPivotQuantity(i) <- 200; uiPivotShown(i) <- TRUE; }
+    NEW i = UiPivotItem { uiPivotName(i) <- third; uiPivotQuantity(i) <- 300; uiPivotShown(i) <- TRUE; }
+    APPLY;
+}
