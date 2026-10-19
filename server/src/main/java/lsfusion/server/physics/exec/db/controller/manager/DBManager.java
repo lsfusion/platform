@@ -2526,6 +2526,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                     parser.script();
 
+                    for (String warning : migrationManager.getWarnings())
+                        startLogWarn("Migration script: " + warning);
+
                     checkMigrationScriptParsingErrors(lexer, parser);
 
                     migrationScriptWasRead = true;
@@ -2537,8 +2540,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     private void checkMigrationScriptParsingErrors(MigrationScriptLexer lexer, MigrationScriptParser parser) {
-        if (!lexer.getErrors().isEmpty() || !parser.getErrors().isEmpty()) {
-            String errorsText = Stream.concat(lexer.getErrors().stream(), parser.getErrors().stream()).collect(Collectors.joining("\n"));
+        if (!lexer.getErrors().isEmpty() || !parser.getErrors().isEmpty() || !migrationManager.getErrors().isEmpty()) {
+            String errorsText = Stream.of(lexer.getErrors(), parser.getErrors(), migrationManager.getErrors()).flatMap(List::stream).collect(Collectors.joining("\n"));
             throw new RuntimeException("Migration script parsing completed with the following errors:\n" + errorsText);
         }
     }

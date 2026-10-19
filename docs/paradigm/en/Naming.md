@@ -33,7 +33,7 @@ Item.name
 Sale.Document
 ```
 
-Since properties and actions can have the same names within the same namespace, the full name of a property may not be unique. Therefore, the canonical name of the properties / actions also includes a [signature](Properties.md#type), that is, a list of the canonical names of the classes of the property / action's parameters, separated by commas. If a parameter's class is not determined, then the question mark character `?` is used instead of the canonical class name:
+Since properties and actions can have the same names within the same namespace, the full name of a property may not be unique. Therefore, the canonical name of the properties / actions also includes a [signature](Properties.md#type), that is, a list of the canonical names of the classes of the property / action's parameters, separated by commas without spaces. If a parameter's class is not determined, then the question mark character `?` is used instead of the canonical class name:
 
 ```
 <namespace name>.<Property/action name>[<class1>,...,<classN>]
@@ -46,26 +46,42 @@ Math.sum[?,?]
 
 Since the signature of properties/actions do not have to contain only custom classes, canonical names are also determined for [built-in](Built-in_classes.md) classes: 
 
-| Class name              | Canonical name    |
-| ----------------------- | ----------------- |
-| `INTEGER`               | `INTEGER`         |
-| `LONG`                  | `LONG`            |
-| `DOUBLE`                | `DOUBLE`          |
-| `NUMERIC[ , ]`          | `NUMERIC`         |
-| `BOOLEAN`               | `BOOLEAN`         |
-| `TBOOLEAN`              | `TBOOLEAN`        |
-| `DATE`                  | `DATE`            |
-| `DATETIME`              | `DATETIME`        |
-| `TIME`                  | `TIME`            |
-| `YEAR`                  | `YEAR`            |
-| `STRING`, `STRING[ ]`   | `STRING`          |
-| `ISTRING`, `ISTRING[ ]` | `STRING`          |
-| `BPSTRING[ ]`           | `STRING`          |
-| `BPISTRING[ ]`          | `STRING`          |
-| `TEXT`                  | `STRING`          |
-| `RICHTEXT`              | `STRING`          |
-| `COLOR`                 | `COLOR`           |
-| `FILE`, `RAWFILE`, ...  | `FILE`, `RAWFILE`, ... |
+| Class name                              | Canonical name      |
+| --------------------------------------- | ------------------- |
+| `INTEGER`                               | `INTEGER`           |
+| `LONG`                                  | `LONG`              |
+| `DOUBLE`                                | `DOUBLE`            |
+| `NUMERIC`, `NUMERIC[ , ]`               | `NUMERIC`           |
+| `BOOLEAN`                               | `BOOLEAN`           |
+| `TBOOLEAN`                              | `TBOOLEAN`          |
+| `DATE`                                  | `DATE`              |
+| `DATETIME`, `DATETIME[ ]`               | `DATETIME`          |
+| `ZDATETIME`, `ZDATETIME[ ]`             | `ZDATETIME`         |
+| `TIME`, `TIME[ ]`                       | `TIME`              |
+| `YEAR`                                  | `YEAR`              |
+| `INTERVAL[DATE]`                        | `DATEINTERVAL`      |
+| `INTERVAL[DATETIME]`                    | `DATETIMEINTERVAL`  |
+| `INTERVAL[TIME]`                        | `TIMEINTERVAL`      |
+| `INTERVAL[ZDATETIME]`                   | `ZDATETIMEINTERVAL` |
+| `STRING`, `STRING[ ]`                   | `STRING`            |
+| `ISTRING`, `ISTRING[ ]`                 | `STRING`            |
+| `BPSTRING`, `BPSTRING[ ]`               | `STRING`            |
+| `BPISTRING`, `BPISTRING[ ]`             | `STRING`            |
+| `TEXT`                                  | `STRING`            |
+| `RICHTEXT`                              | `STRING`            |
+| `HTMLTEXT`                              | `STRING`            |
+| `COLOR`                                 | `COLOR`             |
+| `JSON`                                  | `JSON`              |
+| `JSONTEXT`                              | `JSONTEXT`          |
+| `XML`                                   | `XML`               |
+| `HTML`                                  | `HTML`              |
+| `TSVECTOR`                              | `TSVECTOR`          |
+| `TSQUERY`                               | `TSQUERY`           |
+| `FILE`                                  | `FILE`              |
+| `NAMEDFILE`                             | `NAMEDFILE`         |
+| `RAWFILE`, `WORDFILE`, `IMAGEFILE`, ... | `RAWFILE`           |
+| `LINK`                                  | `LINK`              |
+| `RAWLINK`, `WORDLINK`, `IMAGELINK`, ... | `RAWLINK`           |
 
 
 :::info

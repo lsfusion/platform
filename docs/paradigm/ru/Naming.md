@@ -33,7 +33,7 @@ Item.name
 Sale.Document
 ```
 
-Так как в пределах одного пространства имен свойства и действия могут иметь одинаковые имена, то полное имя свойства может быть не уникальным. Поэтому каноническое имя свойств/действий включает в себя еще и [сигнатуру](Properties.md#type), то есть список канонических имен классов параметров свойства/действия, перечисленных через запятую. Если класс параметра не определен, то вместо канонического имени класса используется символ вопросительного знака `?`:
+Так как в пределах одного пространства имен свойства и действия могут иметь одинаковые имена, то полное имя свойства может быть не уникальным. Поэтому каноническое имя свойств/действий включает в себя еще и [сигнатуру](Properties.md#type), то есть список канонических имен классов параметров свойства/действия, перечисленных через запятую без пробелов. Если класс параметра не определен, то вместо канонического имени класса используется символ вопросительного знака `?`:
 
 ```
 <имя пространства имен>.<имя свойства/действия>[<класс1>,...,<классN>]
@@ -46,26 +46,42 @@ Math.sum[?,?]
 
 Так как в сигнатуре свойств/действий могут находиться не только пользовательские классы, то для [встроенных классов](Built-in_classes.md) также определены канонические имена: 
 
-| Имя класса            | Каноническое имя  |
-| --------------------- | ----------------- |
-| `INTEGER`             | `INTEGER`         |
-| `LONG`                | `LONG`            |
-| `DOUBLE`              | `DOUBLE`          |
-| `NUMERIC[ , ]`        | `NUMERIC`         |
-| `BOOLEAN`             | `BOOLEAN`         |
-| `TBOOLEAN`            | `TBOOLEAN`        |
-| `DATE`                | `DATE`            |
-| `DATETIME`            | `DATETIME`        |
-| `TIME`                | `TIME`            |
-| `YEAR`                | `YEAR`            |
-| `STRING, STRING[ ]`   | `STRING`          |
-| `ISTRING, ISTRING[ ]` | `STRING`          |
-| `BPSTRING[ ]`         | `STRING`          |
-| `BPISTRING[ ]`        | `STRING`          |
-| `TEXT`                | `STRING`          |
-| `RICHTEXT`            | `STRING`          |
-| `COLOR`               | `COLOR`           |
-| `FILE`, `RAWFILE`, ...| `FILE`, `RAWFILE`, ... |
+| Имя класса                              | Каноническое имя    |
+| --------------------------------------- | ------------------- |
+| `INTEGER`                               | `INTEGER`           |
+| `LONG`                                  | `LONG`              |
+| `DOUBLE`                                | `DOUBLE`            |
+| `NUMERIC`, `NUMERIC[ , ]`               | `NUMERIC`           |
+| `BOOLEAN`                               | `BOOLEAN`           |
+| `TBOOLEAN`                              | `TBOOLEAN`          |
+| `DATE`                                  | `DATE`              |
+| `DATETIME`, `DATETIME[ ]`               | `DATETIME`          |
+| `ZDATETIME`, `ZDATETIME[ ]`             | `ZDATETIME`         |
+| `TIME`, `TIME[ ]`                       | `TIME`              |
+| `YEAR`                                  | `YEAR`              |
+| `INTERVAL[DATE]`                        | `DATEINTERVAL`      |
+| `INTERVAL[DATETIME]`                    | `DATETIMEINTERVAL`  |
+| `INTERVAL[TIME]`                        | `TIMEINTERVAL`      |
+| `INTERVAL[ZDATETIME]`                   | `ZDATETIMEINTERVAL` |
+| `STRING`, `STRING[ ]`                   | `STRING`            |
+| `ISTRING`, `ISTRING[ ]`                 | `STRING`            |
+| `BPSTRING`, `BPSTRING[ ]`               | `STRING`            |
+| `BPISTRING`, `BPISTRING[ ]`             | `STRING`            |
+| `TEXT`                                  | `STRING`            |
+| `RICHTEXT`                              | `STRING`            |
+| `HTMLTEXT`                              | `STRING`            |
+| `COLOR`                                 | `COLOR`             |
+| `JSON`                                  | `JSON`              |
+| `JSONTEXT`                              | `JSONTEXT`          |
+| `XML`                                   | `XML`               |
+| `HTML`                                  | `HTML`              |
+| `TSVECTOR`                              | `TSVECTOR`          |
+| `TSQUERY`                               | `TSQUERY`           |
+| `FILE`                                  | `FILE`              |
+| `NAMEDFILE`                             | `NAMEDFILE`         |
+| `RAWFILE`, `WORDFILE`, `IMAGEFILE`, ... | `RAWFILE`           |
+| `LINK`                                  | `LINK`              |
+| `RAWLINK`, `WORDLINK`, `IMAGELINK`, ... | `RAWLINK`           |
 
 :::info
 В некоторых случаях элементом сигнатуры свойства может являться не одиночный класс, а множество классов. В этом случае каноническое имя будет иметь более сложный вид.

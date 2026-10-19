@@ -1,6 +1,9 @@
 package lsfusion.server.physics.exec.db.controller.manager;
 
 import lsfusion.base.col.heavy.OrderedMap;
+import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 
 import java.util.*;
 
@@ -140,6 +143,37 @@ public class MigrationManager {
             newSignature = oldSignature;
         }
         addSIDChange(actionCNChanges, version, oldName + oldSignature, newName + newSignature);
+    }
+
+    private final List<String> errors = new ArrayList<>();
+    private final List<String> warnings = new ArrayList<>();
+
+    public List<String> getErrors() {
+        return errors;
+    }
+
+    public List<String> getWarnings() {
+        return warnings;
+    }
+
+    // a signature is compared with canonical names as it is written, so another name of a built-in class can never match;
+    // names of files and links of a specific format only get a warning, since the parser used to accept them
+    public void checkDataClass(String name, int line, int charPositionInLine) {
+        if (ClassCanonicalNameUtils.getCanonicalNameDataClass(name) != null)
+            return;
+
+        String position = "line " + line + ":" + charPositionInLine + " ";
+        DataClass<?> dataClass = ClassCanonicalNameUtils.getScriptedDataClass(name);
+        if (dataClass == null) {
+            errors.add(position + "unknown class " + name + ": a built-in class is written by its canonical name, a custom class by its namespace and name");
+            return;
+        }
+
+        String canonicalName = PropertyCanonicalNameUtils.createSignatureClassName(dataClass);
+        if (canonicalName.equals(PropertyCanonicalNameUtils.commonRawFileClassName) || canonicalName.equals(PropertyCanonicalNameUtils.commonRawLinkClassName))
+            warnings.add(position + name + " is not a canonical class name, so this change renames nothing: use " + canonicalName);
+        else
+            errors.add(position + name + " is not a canonical class name: use " + canonicalName);
     }
 
     public void addClassSIDChange(String version, String oldSID, String newSID) {

@@ -5,7 +5,7 @@ title: 'Migration'
 
 An **lsFusion**-based information system uses a relational database management system for permanent data storage. It should be remembered that after certain changes to the system logic, the platform is unable to determine how the data should be migrated. In these cases, the developer must explicitly define the migration method by creating the special *migration file* `migration.script`, which should be in the CLASSPATH of the application server.
 
-The migration file consists of blocks describing the changes made in the specified version of the database structure. At server startup, all changes from the migration file that have a version higher than the version stored in the database are applied. Changes are applied according to the version, from the lowest version to the highest. If the database structure is changed successfully, the maximum version of all applied blocks is written to the database as the current one. The syntax for the description of each block is as follows:
+The migration file consists of blocks describing the changes made in the specified version of the database structure. At server startup, all changes from the migration file that have a version higher than the version stored in the database are applied. The whole file is parsed each time, so a parsing error in any block, even one already applied, prevents the server from starting. Changes are applied according to the version, from the lowest version to the highest. If the database structure is changed successfully, the maximum version of all applied blocks is written to the database as the current one. The syntax for the description of each block is as follows:
 
 ```
 V<version number> {
@@ -33,6 +33,8 @@ NAVIGATOR oldNS.oldName -> newNS.newName
 ### Changing the name of a property or action
 
 When renaming a [property](Properties.md)/[action](Actions.md) and/or when moving it to another [namespace](Naming.md#namespace), the canonical name of the property/action changes. Adding a `PROPERTY` change to the migration file specifying the old and new canonical names of the property will allow you to preserve the security policy settings, as well as settings from the `Reflection.properties` table. For an action, an `ACTION` change is added in the same way, which will allow you to preserve the security policy settings, as well as references to this action in [scheduler](Scheduler.md) tasks. If the property is [primary](Data_properties_DATA.md), to preserve data when changing the canonical name of this property **it is necessary** to add a `STORED PROPERTY` change. Then, when the server starts, the field corresponding to this property in the database table will be renamed. Otherwise, the old field will be renamed to the field with the name `<old ID>_deleted` (for example, when deleting a property), and a new field will be created with empty values. Apart from that the `STORED PROPERTY` type is equivalent to the `PROPERTY` type.
+
+If a built-in class in a signature is specified by a name other than its [canonical name](Naming.md#canonicalname) (for example, `TEXT` instead of `STRING`), the server reports an error at startup. For files and links of a specific type (for example, `IMAGEFILE` instead of `RAWFILE`), only a warning is issued, but such a change renames nothing.
 
 
 :::info

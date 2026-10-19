@@ -65,22 +65,26 @@ public final class PropertyCanonicalNameUtils {
                 builder.append(",");
             }
             isFirst = false;
-            if (cs instanceof StringClass) {
-                builder.append(commonStringClassName);
-            } else if (cs instanceof NumericClass) {
-                builder.append(commonNumericClassName);
-            } else if (cs instanceof StaticFormatFileClass && !cs.getCanonicalName().equals("FILE")) {
-                builder.append(commonRawFileClassName);
-            } else if (cs instanceof StaticFormatLinkClass && !cs.getCanonicalName().equals("LINK")) {
-                builder.append(commonRawLinkClassName);
-            } else if (cs != null) {
-                builder.append(cs.getCanonicalName());
-            } else {
-                builder.append(UNKNOWNCLASS);
-            }
+            builder.append(createSignatureClassName(cs));
         }
         builder.append(signatureRBracket);
         return builder.toString();
+    }
+
+    static public String createSignatureClassName(ResolveClassSet cs) {
+        if (cs instanceof StringClass) {
+            return commonStringClassName;
+        } else if (cs instanceof NumericClass) {
+            return commonNumericClassName;
+        } else if (cs instanceof StaticFormatFileClass && !cs.getCanonicalName().equals("FILE")) {
+            return commonRawFileClassName;
+        } else if (cs instanceof StaticFormatLinkClass && !cs.getCanonicalName().equals("LINK")) {
+            return commonRawLinkClassName;
+        } else if (cs != null) {
+            return cs.getCanonicalName();
+        } else {
+            return UNKNOWNCLASS;
+        }
     }
     
     static public String makeSafeName(String s) {

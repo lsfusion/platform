@@ -161,7 +161,21 @@ upClassSet
 
 singleClass
 	:	customClass
-	|	PRIMITIVE_TYPE
+	|	dataClass
+	;
+
+dataClass
+@init {
+	String name;
+}
+	:	className=ID { name = $className.text; }
+		(	'['
+			(	first=NUMBER { name += "[" + $first.text; } (',' second=NUMBER { name += "," + $second.text; })?
+			|	type=ID { name += "[" + $type.text; }
+			)
+			']' { name += "]"; }
+		)?
+		{ self.checkDataClass(name, $className.line, $className.pos); }
 	;
 
 	
@@ -198,13 +212,8 @@ fragment NEXT_ID_LETTER	: 	('a'..'z'|'A'..'Z'|'_'|'0'..'9');
 fragment DIGIT		:	'0'..'9';
 fragment DIGITS		:	('0'..'9')+;
 
-PRIMITIVE_TYPE      :   'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATETIME' | 'DATE' | 'YEAR' | 'TIME'
-                    |   'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'VIDEOFILE' | 'DBFFILE' | 'RAWFILE' | 'FILE' | 'EXCELFILE' | 'TEXTFILE' | 'CSVFILE' | 'HTMLFILE' | 'JSONFILE' | 'XMLFILE' | 'TABLEFILE' | 'NAMEDFILE'
-                    |   'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'VIDEOLINK' | 'DBFLINK' | 'RAWLINK' | 'LINK' | 'EXCELLINK' | 'TEXTLINK' | 'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK'
-                    |   'STRING' | 'NUMERIC' | 'COLOR' | 'JSON'
-                    ;
-
 VERSION     :	'V' DIGIT+ ('.' DIGIT+)*;
 ID          :	FIRST_ID_LETTER NEXT_ID_LETTER*;
+NUMBER      :	DIGITS;
 WS          :	(NEWLINE | SPACE) { $channel=HIDDEN; };
 COMMENTS    :	('//' .* '\n') { $channel=HIDDEN; };
