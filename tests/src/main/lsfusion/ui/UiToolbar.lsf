@@ -1,0 +1,107 @@
+MODULE UiToolbar;
+
+REQUIRE System;
+
+// the forms UiToolbarIT works on in the browser - the platform's own toolbar of a grid, no React view on them: its
+// buttons and views, the manual update across a pivot, a group shown as a pivot or in manual update from the start, a
+// manual update whose switch the design hides -, and the actions it seeds and changes its items with
+
+CLASS UiTbrItem 'Item';
+uiTbrName 'Name' = DATA STRING[50] (UiTbrItem);
+uiTbrPrice 'Price' = DATA NUMERIC[10,2] (UiTbrItem);
+uiTbrShown = DATA BOOLEAN (UiTbrItem); // the items of the test that seeded last: the forms show only them
+
+// changes made on the form and applied, which a manual update holds back - the dearer item's name gets a '!', the
+// cheaper one's price is a unit more -, counted where no manual update holds the count back: the form's answer to the
+// change has come once the count shows it
+uiTbrChanges 'Changes' = DATA INTEGER ();
+uiTbrRename 'Rename' () {
+    uiTbrName(UiTbrItem i) <- uiTbrName(i) + '!' WHERE uiTbrShown(i) AND uiTbrPrice(i) > 1;
+    uiTbrChanges() <- (OVERRIDE uiTbrChanges(), 0) + 1;
+    APPLY;
+}
+uiTbrReprice 'Reprice' () {
+    uiTbrPrice(UiTbrItem i) <- uiTbrPrice(i) + 1 WHERE uiTbrShown(i) AND uiTbrPrice(i) < 1;
+    uiTbrChanges() <- (OVERRIDE uiTbrChanges(), 0) + 1;
+    APPLY;
+}
+
+FORM uiTbrItems 'Toolbar'
+    OBJECTS i = UiTbrItem
+    PROPERTIES(i) READONLY name = uiTbrName, price = uiTbrPrice
+    PROPERTIES() uiTbrRename, uiTbrChanges READONLY
+    FILTERS uiTbrShown(i)
+    ORDERS name
+;
+
+// a group shown as a pivot from the start, in automatic update and in manual update
+FORM uiTbrPivotStart 'Pivot from the start'
+    OBJECTS i = UiTbrItem PIVOT
+    PROPERTIES(i) READONLY name = uiTbrName, price = uiTbrPrice
+    PROPERTIES() uiTbrReprice, uiTbrChanges READONLY
+    FILTERS uiTbrShown(i)
+;
+
+FORM uiTbrPivotManual 'Pivot in manual update'
+    OBJECTS i = UiTbrItem PIVOT
+    PROPERTIES(i) READONLY name = uiTbrName, price = uiTbrPrice
+    PROPERTIES() uiTbrReprice, uiTbrChanges READONLY
+    FILTERS uiTbrShown(i)
+;
+
+DESIGN uiTbrPivotManual {
+    GRID(i) { enableManualUpdate = TRUE; }
+}
+
+// a group started in manual update, its switch shown, and hidden by the design
+FORM uiTbrManual 'Manual update from the start'
+    OBJECTS i = UiTbrItem
+    PROPERTIES(i) READONLY name = uiTbrName, price = uiTbrPrice
+    PROPERTIES() uiTbrRename, uiTbrChanges READONLY
+    FILTERS uiTbrShown(i)
+    ORDERS name
+;
+
+DESIGN uiTbrManual {
+    GRID(i) { enableManualUpdate = TRUE; }
+}
+
+FORM uiTbrManualHidden 'Manual update with no switch'
+    OBJECTS i = UiTbrItem
+    PROPERTIES(i) READONLY name = uiTbrName, price = uiTbrPrice
+    PROPERTIES() uiTbrRename, uiTbrChanges READONLY
+    FILTERS uiTbrShown(i)
+    ORDERS name
+;
+
+DESIGN uiTbrManualHidden {
+    GRID(i) { enableManualUpdate = TRUE; }
+    TOOLBARSYSTEM(i) { showManualUpdate = FALSE; }
+}
+
+NAVIGATOR {
+    NEW FOLDER uiTbr 'UI toolbar' WINDOW toolbar {
+        NEW uiTbrItems;
+        NEW uiTbrPivotStart;
+        NEW uiTbrPivotManual;
+        NEW uiTbrManual;
+        NEW uiTbrManualHidden;
+    }
+}
+
+// two items shown from now on, the dearer one first by name, and no change counted yet
+uiTbrSeed (STRING[50] dear, STRING[50] cheap) {
+    uiTbrShown(UiTbrItem i) <- NULL;
+    uiTbrChanges() <- NULL;
+    NEW i = UiTbrItem {
+        uiTbrName(i) <- dear;
+        uiTbrPrice(i) <- 1.50;
+        uiTbrShown(i) <- TRUE;
+    }
+    NEW i = UiTbrItem {
+        uiTbrName(i) <- cheap;
+        uiTbrPrice(i) <- 0.75;
+        uiTbrShown(i) <- TRUE;
+    }
+    APPLY;
+}
