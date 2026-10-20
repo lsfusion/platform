@@ -1,0 +1,142 @@
+MODULE UiFilterGroups;
+
+REQUIRE System, SystemEvents;
+
+// the forms UiFilterGroupsIT works on in the browser - filter groups: drawn by a React view (UiFilterGroups.js), of a
+// group and of a tree's group, and the platform's own - a check box and a list, one that must have a filter selected, a
+// filter's key, the grid's count and sum over them -, and the actions it seeds its items with
+
+CLASS UiFgrCategory 'Category';
+uiFgrCategoryName 'Category' = DATA STRING[50] (UiFgrCategory);
+uiFgrCategoryShown = DATA BOOLEAN (UiFgrCategory); // the category of the test that seeded last: the forms show only it
+
+CLASS UiFgrItem 'Item';
+uiFgrName 'Name' = DATA STRING[50] (UiFgrItem);
+uiFgrPrice 'Price' = DATA NUMERIC[10,2] (UiFgrItem);
+uiFgrCategory = DATA UiFgrCategory (UiFgrItem);
+uiFgrShown = DATA BOOLEAN (UiFgrItem); // the items of the test that seeded last: the forms show only them
+
+// a filter group of the group a view draws whole, its first filter's key F10
+FORM uiFgrView 'Filter group of a view'
+    OBJECTS i = UiFgrItem
+    PROPERTIES(i) READONLY name = uiFgrName, price = uiFgrPrice
+    FILTERS uiFgrShown(i)
+    ORDERS name
+    FILTERGROUP uiFgrKind
+        FILTER 'Dear' uiFgrPrice(i) >= 1 'F10'
+        FILTER 'Cheap' uiFgrPrice(i) < 1
+;
+
+// the server's choice of the filter group's filter: the second, Cheap
+uiFgrKindCheap 'Cheap ones' () { FILTERGROUP uiFgrView.uiFgrKind FROM 2; }
+
+EXTEND FORM uiFgrView
+    PROPERTIES() uiFgrKindCheap
+;
+
+DESIGN uiFgrView {
+    BOX(i) { custom = 'UiFgrView'; }
+}
+
+// a filter group of a tree's group, drawn by a view over the platform's tree
+FORM uiFgrTree 'Filter group of a tree'
+    TREE cats c = UiFgrCategory, i = UiFgrItem
+    PROPERTIES(c) READONLY catName = uiFgrCategoryName
+    PROPERTIES(i) READONLY name = uiFgrName, price = uiFgrPrice
+    FILTERS uiFgrCategory(i) = c, uiFgrCategoryShown(c), uiFgrShown(i)
+    ORDERS catName, name
+    FILTERGROUP uiFgrCheap
+        FILTER 'Cheap' uiFgrPrice(i) < 1
+;
+
+DESIGN uiFgrTree {
+    NEW header FIRST {
+        custom = 'UiFgrView';
+        MOVE FILTERGROUP(uiFgrCheap);
+    }
+}
+
+// the platform's own: a check box - a filter group of one filter - and a list - of several -, each selected by the user
+// and by the server
+FORM uiFgrPlatform 'Filter groups of the platform'
+    OBJECTS i = UiFgrItem
+    PROPERTIES(i) READONLY name = uiFgrName, price = uiFgrPrice
+    FILTERS uiFgrShown(i)
+    ORDERS name
+    FILTERGROUP uiFgrDearOnly
+        FILTER 'Dear only' uiFgrPrice(i) >= 1
+    FILTERGROUP uiFgrByPrice
+        FILTER 'Cheap' uiFgrPrice(i) < 1
+        FILTER 'Not cheap' uiFgrPrice(i) >= 1
+;
+
+uiFgrByPriceNotCheap 'Not cheap ones' () { FILTERGROUP uiFgrPlatform.uiFgrByPrice FROM 2; }
+uiFgrByPriceAll 'All by price' () { FILTERGROUP uiFgrPlatform.uiFgrByPrice FROM 0; }
+uiFgrDearOnlyOn 'Dear only on' () { FILTERGROUP uiFgrPlatform.uiFgrDearOnly FROM 1; }
+uiFgrDearOnlyOff 'Dear only off' () { FILTERGROUP uiFgrPlatform.uiFgrDearOnly FROM 0; }
+
+EXTEND FORM uiFgrPlatform
+    PROPERTIES() uiFgrByPriceNotCheap, uiFgrByPriceAll, uiFgrDearOnlyOn, uiFgrDearOnlyOff
+;
+
+// ... a list that must have a filter selected, its default the second, whose key is F10 - a default at the first would
+// not tell an index offset by an "(All)" from the right one -, and a check box whose filter's key is F9
+FORM uiFgrNoNull 'Filter group with no none'
+    OBJECTS i = UiFgrItem
+    PROPERTIES(i) READONLY name = uiFgrName, price = uiFgrPrice
+    FILTERS uiFgrShown(i)
+    ORDERS name
+    FILTERGROUP uiFgrPrices NONULL
+        FILTER 'Cheap' uiFgrPrice(i) < 1
+        FILTER 'Dear' uiFgrPrice(i) >= 1 'F10' DEFAULT
+;
+
+FORM uiFgrKey 'Filter group with a key'
+    OBJECTS i = UiFgrItem
+    PROPERTIES(i) READONLY name = uiFgrName, price = uiFgrPrice
+    FILTERS uiFgrShown(i)
+    ORDERS name
+    FILTERGROUP uiFgrDearKey
+        FILTER 'Dear only' uiFgrPrice(i) >= 1 'F9'
+;
+
+onWebClientInit() + {
+    onWebClientInit('UiFilterGroups.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiFgr 'UI filter groups' WINDOW toolbar {
+        NEW uiFgrView;
+        NEW uiFgrTree;
+        NEW uiFgrPlatform;
+        NEW uiFgrNoNull;
+        NEW uiFgrKey;
+    }
+}
+
+// a category with two items in it and one with none, shown from now on, the dearer item first by name
+uiFgrSeed (STRING[50] category, STRING[50] emptyCategory, STRING[50] dear, STRING[50] cheap) {
+    uiFgrCategoryShown(UiFgrCategory c) <- NULL;
+    uiFgrShown(UiFgrItem i) <- NULL;
+    NEW c = UiFgrCategory {
+        uiFgrCategoryName(c) <- category;
+        uiFgrCategoryShown(c) <- TRUE;
+        NEW i = UiFgrItem {
+            uiFgrName(i) <- dear;
+            uiFgrPrice(i) <- 1.50;
+            uiFgrCategory(i) <- c;
+            uiFgrShown(i) <- TRUE;
+        }
+        NEW i = UiFgrItem {
+            uiFgrName(i) <- cheap;
+            uiFgrPrice(i) <- 0.75;
+            uiFgrCategory(i) <- c;
+            uiFgrShown(i) <- TRUE;
+        }
+    }
+    NEW c = UiFgrCategory {
+        uiFgrCategoryName(c) <- emptyCategory;
+        uiFgrCategoryShown(c) <- TRUE;
+    }
+    APPLY;
+}
