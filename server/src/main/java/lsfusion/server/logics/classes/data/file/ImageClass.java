@@ -1,5 +1,6 @@
 package lsfusion.server.logics.classes.data.file;
 
+import lsfusion.base.FileUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -47,12 +48,10 @@ public class ImageClass extends RenderedClass {
     }
 
     public String getExtension(RawFileData file) {
-        if (file.getBytes().length >= 2) {
-            if (file.getBytes()[0] == (byte) 0x89 && file.getBytes()[1] == (byte) 0x50) {
-                return "png";
-            } else if (file.getBytes()[0] == (byte) 0x42 && file.getBytes()[1] == (byte) 0x4D) {
-                return "bmp";
-            }
+        if (FileUtils.isPng(file.getBytes())) {
+            return "png";
+        } else if (FileUtils.isBmp(file.getBytes())) {
+            return "bmp";
         }
 
         return super.getExtension(file);

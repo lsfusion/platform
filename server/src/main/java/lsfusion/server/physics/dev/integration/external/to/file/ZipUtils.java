@@ -6,6 +6,7 @@ import com.github.junrar.impl.FileVolumeManager;
 import com.github.junrar.rarfile.FileHeader;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.FileUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 
@@ -44,16 +45,16 @@ public class ZipUtils {
         return zipFile;
     }
 
-    public static Map<String, FileData> unpackFile(RawFileData file, String extension, boolean throwUnsupported) {
-        Map<String, FileData> result;
-        if (extension.equalsIgnoreCase("zip")) {
-            result = unpackZIPFile(file);
-        } else if (extension.equalsIgnoreCase("rar")) {
-            result = unpackRARFile(file, throwUnsupported);
+    public static Map<String, FileData> unpackFile(RawFileData file, boolean throwUnsupported) {
+        if (FileUtils.isZip(file.getBytes())) {
+            return unpackZIPFile(file);
+        } else if (FileUtils.isRar(file.getBytes())) {
+            return unpackRARFile(file, throwUnsupported);
+        } else if (throwUnsupported) {
+            throw new RuntimeException("File is not a zip or rar archive");
         } else {
-            result = new HashMap<>();
+            return new HashMap<>();
         }
-        return result;
     }
 
     private static Map<String, FileData> unpackZIPFile(RawFileData file) {
@@ -127,7 +128,7 @@ public class ZipUtils {
         try {
             inputFile = File.createTempFile("rar", ".rar");
             file.write(inputFile);
-            boolean isRar5 = checkRar5(inputFile, throwUnsupported);
+            boolean isRar5 = checkRar5(file, throwUnsupported);
             if (!isRar5) {
                 Set<File> dirSet = new HashSet<>();
                 File outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
@@ -168,20 +169,10 @@ public class ZipUtils {
         return result;
     }
 
-    private static boolean checkRar5(File file, boolean throwUnsupported) throws IOException {
-        boolean isRar5 = false;
-        try (FileInputStream fis = new FileInputStream(file)) {
-            byte[] header = new byte[8];
-            if (fis.read(header) != 8) {
-                throw new RuntimeException("File too short to be a RAR archive");
-            }
-            if (header[0] == 'R' && header[1] == 'a' && header[2] == 'r' && header[3] == '!' &&
-                    header[4] == 0x1A && header[5] == 0x07 && header[6] == 0x01) { //0x00 - rar4, 0x01 - rar5
-                isRar5 = true;
-                if(throwUnsupported) {
-                    throw new RuntimeException("RAR5 archive is not supported");
-                }
-            }
+    private static boolean checkRar5(RawFileData file, boolean throwUnsupported) {
+        boolean isRar5 = FileUtils.isRar5(file.getBytes());
+        if (isRar5 && throwUnsupported) {
+            throw new RuntimeException("RAR5 archive is not supported");
         }
         return isRar5;
     }
