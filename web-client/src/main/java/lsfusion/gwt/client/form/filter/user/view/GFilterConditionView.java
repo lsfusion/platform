@@ -381,10 +381,13 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         valueView.onAdd(focusValueView);
     }
 
-    public void putSelectedValue() {
+    // whether the cell's value was put: not where the cell shows another value than the one it filters by (differentValue)
+    public boolean putSelectedValue() {
         if (!condition.column.property.differentValue) {
             valueView.putSelectedValue(condition);
+            return true;
         }
+        return false;
     }
     
     public void startEditing(Event keyEvent) {

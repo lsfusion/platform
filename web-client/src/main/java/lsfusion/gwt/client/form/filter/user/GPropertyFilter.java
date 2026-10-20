@@ -92,6 +92,43 @@ public class GPropertyFilter {
         return names.toString();
     }
 
+    // ===== A VALUE GIVEN A COLUMN - a property in one of its columns, the empty key for one not grouped in columns -,
+    // one rule for the platform's panel, which edits its rows in place, and the form's list a view states anew
+    // - the first condition on a column, null for none: the one a value given the column takes the place of - a range's
+    //   other bound stays -, and the one a FILTER shows
+    public static GPropertyFilter getFirst(Iterable<GPropertyFilter> conditions, Column column) {
+        for (GPropertyFilter condition : conditions)
+            if (condition.column.equals(column))
+                return condition;
+        return null;
+    }
+    // - what the value starts from: the first on the column - its comparison, negation and junction kept where whoever
+    //   gives the value states none of them -, or a new one, compared the property's default way
+    public static GPropertyFilter getBase(Column column, GPropertyFilter first) {
+        return first != null ? first : new GPropertyFilter(new GFilter(column.property), column.property.groupObject, column.columnKey, null, null);
+    }
+    // ... and the condition stated from it, with the value, negation, comparison and junction given: a new one, the one
+    // it starts from left as it is
+    public GPropertyFilter restated(PValue value, boolean negation, GCompare compare, boolean junction) {
+        return new GPropertyFilter(new GFilter(column.property), groupObject, column.columnKey, value, negation, compare, junction);
+    }
+    // - a list with a condition in the place of the first on its column - the others keep their places -, or appended;
+    //   or with the first on a column taken out, alone. A list of the caller's own, the one handed left as it is
+    public static ArrayList<GPropertyFilter> withCondition(List<GPropertyFilter> conditions, GPropertyFilter condition) {
+        ArrayList<GPropertyFilter> result = new ArrayList<>(conditions);
+        int index = result.indexOf(getFirst(result, condition.column));
+        if (index >= 0)
+            result.set(index, condition);
+        else
+            result.add(condition);
+        return result;
+    }
+    public static ArrayList<GPropertyFilter> withoutFirst(List<GPropertyFilter> conditions, Column column) {
+        ArrayList<GPropertyFilter> result = new ArrayList<>(conditions);
+        result.remove(getFirst(result, column));
+        return result;
+    }
+
     public boolean nullValue() {
         return value.value == null;
     }

@@ -112,6 +112,7 @@ import lsfusion.gwt.client.form.property.async.GAsyncInput;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 import lsfusion.gwt.client.form.view.Column;
+import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.interop.form.design.ReactProjectionNames;
 import lsfusion.gwt.client.form.object.table.view.GTableView;
 
@@ -3709,11 +3710,12 @@ public class GReactFormDataTest extends GWTTestCase {
         assertNull(field(field(f.sc.controller, "items"), "change"));     // and no row to choose
         assertNull(field(field(f.sa.controller, "items"), "filters"));
         callFilters(field(field(f.sc.controller, "items"), "filters")); // the member hands the form its group's edit
-        // ... read where the member is and handed over as the list it makes: a condition with no value is dropped from
-        // a list, and on its own takes its property's conditions off (each call merges into the list the one before it
-        // handed over, the form telling the part of it)
-        assertEquals(Arrays.asList("changeFilters items price< or", "changeFilters items price= not", "changeFilters items"),
-                f.filtersCalls);
+        // ... read where the member is and handed over as the list it makes: a condition with no value in a list compares
+        // with NULL; one alone takes the place of the first on its property, what it does not state as that one has it,
+        // and with no value takes that one off (each call merges into the list the one before it handed over, the form
+        // telling the part of it)
+        assertEquals(Arrays.asList("changeFilters items price< or price=", "changeFilters items price< not or price=",
+                "changeFilters items price="), f.filtersCalls);
         JavaScriptObject member = field(field(f.sc.controller, "items"), "filters"); // every mistake is refused there,
         String refused = refusedChange(member, parse("{\"property\": \"nosuch\", \"value\": 1}")); // with the call
         assertTrue(refused, refused.contains("controller.items.filters.change(): ") && refused.contains("nosuch"));
@@ -3723,7 +3725,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(refused, refused.contains("'IN ARRAY' is no comparison of a filter condition"));
         assertEquals(3, f.filtersCalls.size()); // ... and the form is handed nothing
         assertNull(field(f.node(), "filters")); // not a part of the rows
-        assertEquals(0, length(field(field(f.snapshots[2], "items"), "filters")));
+        assertEquals(1, length(field(field(f.snapshots[2], "items"), "filters"))); // the one comparing with NULL
         // c carries no column: a condition names the group's property
         callChange(member, parse("{\"property\": \"price\", \"value\": 4}"));
         assertSame(f.price, f.stated.get(0).column.property);
@@ -3751,11 +3753,11 @@ public class GReactFormDataTest extends GWTTestCase {
         // (each merged into the list the form has: the one the call before it handed over)
         callChange(member, parse("{\"property\": \"panel\", \"value\": 7}")); // a property with none: appended
         assertEquals("changeFilters items price>= price< quantity= panel=", f.filtersCalls.get(1));
-        callChange(member, parse("{\"property\": \"price\"}")); // no value: every condition on price goes
-        assertEquals("changeFilters items quantity= panel=", f.filtersCalls.get(2));
+        callChange(member, parse("{\"property\": \"price\"}")); // no value: the first on price off - the other bound stays
+        assertEquals("changeFilters items price< quantity= panel=", f.filtersCalls.get(2));
         callChange(member, valueReadOnce()); // a value read a second time would be none: it is read once
-        assertEquals("changeFilters items quantity= panel= price=", f.filtersCalls.get(3));
-        assertFalse(f.stated.get(2).nullValue());
+        assertEquals("changeFilters items price< quantity= panel=", f.filtersCalls.get(3));
+        assertFalse(f.stated.get(0).nullValue());
     }
 
     // the form tells what shows a group's filters of every list it sends, before the answer (GFormController
@@ -3772,11 +3774,85 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("changeFilters items price> quantity=", f.filtersCalls.get(1));
     }
 
+    // one condition `filters.change` states is a value given its property as a FILTER's member gives one (a FILTER
+    // is a user filter given in advance, one rule for both): in the place of the first condition on the property, what
+    // it does not state of that one's comparison, negation and `or` kept - "price > 100 or ..." given 300 stays "price
+    // > 300 or ..." -, what it states as stated
+    public void testOneConditionKeepsWhatItDoesNotStateOfTheFirstOnItsProperty() {
+        Fixture f = new Fixture(Fixture::filtersBesideRows);
+        GPropertyFilter over = new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(100), true, GCompare.GREATER, false);
+        GPropertyFilter amount = new GPropertyFilter(new GFilter(f.quantity), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(2), GCompare.EQUALS);
+        f.reportFilters(dtos(Arrays.asList(over, amount)));
+        JavaScriptObject member = field(field(f.sa.controller, "items"), "filters");
+        callChange(member, parse("{\"property\": \"price\", \"value\": 300}"));
+        assertEquals("changeFilters items price> not or quantity=", f.filtersCalls.get(0));
+        assertFalse(f.stated.get(0).nullValue());
+        callChange(member, parse("{\"property\": \"price\", \"value\": 300, \"compare\": \"<\", \"negation\": false, \"or\": false}"));
+        assertEquals("changeFilters items price< quantity=", f.filtersCalls.get(1));
+    }
+
+    // a list `filters.change` states is the list of conditions, as FILTER reads one in .lsf: an element with no
+    // value - absent, null, '' - is a condition comparing with NULL ("is empty", negated "is not empty"), not one left
+    // out, a file's too - so the list `filters` gives is taken back as it is, a condition with no value in it, which F3
+    // on an empty cell states, and a LOGICAL's, listed as false, included. A file's with a value is refused, as ever
+    public void testAListsConditionWithNoValueComparesWithNull() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.filtersBesideRows();
+            fixture.property(74, "active", fixture.group, true, fixture.a).valueType = GLogicalType.instance;
+            fixture.property(77, "photo", fixture.group, true, fixture.a).valueType = new GCustomStaticFormatFileType();
+        });
+        JavaScriptObject member = field(field(f.sa.controller, "items"), "filters");
+        callChange(member, parse("[{\"property\": \"price\"}, {\"property\": \"quantity\", \"value\": null, \"negation\": true},"
+                + " {\"property\": \"photo\", \"value\": \"\"}]"));
+        assertEquals("changeFilters items price= quantity= not photo=", f.filtersCalls.get(0));
+        for (GPropertyFilter condition : f.stated)
+            assertTrue(condition.nullValue());
+
+        ArrayList<GPropertyFilter> conditions = new ArrayList<>();
+        conditions.add(new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, null, GCompare.EQUALS));
+        conditions.add(new GPropertyFilter(new GFilter(byName(f.form, "active")), f.group, GGroupObjectValue.EMPTY, null, GCompare.EQUALS));
+        conditions.add(new GPropertyFilter(new GFilter(f.quantity), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(2), GCompare.GREATER));
+        f.reportFilters(dtos(conditions));
+        f.projection.flush();
+        callChange(member, field(f.node(), "filters")); // the list `filters` gives, handed back
+        assertEquals("changeFilters items price= active= quantity>", f.filtersCalls.get(1));
+        assertTrue(f.stated.get(0).nullValue());
+        assertTrue(f.stated.get(1).nullValue());
+        assertFalse(f.stated.get(2).nullValue());
+
+        assertRefusal("'photo' is a file", refusedChange(member, parse("[{\"property\": \"photo\", \"value\": \"logo.png\"}]")));
+        assertEquals(2, f.filtersCalls.size());
+    }
+
+    // ... while one value given a property - the one condition `filters.change` states - with none takes the first
+    // condition on its property off, alone, as an emptied FILTER row of the platform's does: "none" is judged after the
+    // property's FILTER type reads it, so a two-state LOGICAL's false - its NULL - takes it off too, where a three-state
+    // LOGICAL's false is a value
+    public void testOneConditionWithNoValueTakesTheFirstOnItsPropertyOff() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.filtersBesideRows();
+            fixture.property(74, "active", fixture.group, true, fixture.a).valueType = GLogicalType.instance;
+            fixture.property(78, "checked", fixture.group, true, fixture.a).valueType = GLogicalType.threeStateInstance;
+        });
+        GPropertyFilter low = new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(1), GCompare.GREATER_EQUALS);
+        GPropertyFilter high = new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(5), GCompare.LESS_EQUALS);
+        GPropertyFilter active = new GPropertyFilter(new GFilter(byName(f.form, "active")), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(true), GCompare.EQUALS);
+        f.reportFilters(dtos(Arrays.asList(low, high, active)));
+        JavaScriptObject member = field(field(f.sa.controller, "items"), "filters");
+        callChange(member, parse("{\"property\": \"price\", \"value\": null}"));
+        assertEquals("changeFilters items price<= active=", f.filtersCalls.get(0)); // the range's other bound stays
+        callChange(member, parse("{\"property\": \"active\", \"value\": false}"));
+        assertEquals("changeFilters items price<=", f.filtersCalls.get(1));
+        callChange(member, parse("{\"property\": \"checked\", \"value\": false}"));
+        assertEquals("changeFilters items price<= checked=", f.filtersCalls.get(2));
+        assertFalse(f.stated.get(1).nullValue());
+    }
+
     // ===== the projection's non-obvious behaviour, each pinned (React: common's QA, 2026-10-07)
 
     // a condition set elsewhere that compares with no value - the platform's panel can state one - is listed with a
-    // null `value`, so a view that hands the list back takes it off; on a LOGICAL property the filter type's JS value
-    // of nothing is `false`, so there it is listed as false
+    // null `value`, which a view hands back as the same condition (a list's comparing with NULL); on a LOGICAL property
+    // the filter type's JS value of nothing is `false`, so there it is listed as false
     public void testAConditionWithNoValueIsListedAsNullAndOnALogicalPropertyAsFalse() {
         Fixture f = new Fixture(fixture -> {
             fixture.filtersBesideRows();
@@ -4459,7 +4535,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // (withCondition)
     public void testACellStartsTheConditionOfItsColumnComparedTheDefaultWayWithItsValue() {
         Fixture f = new Fixture();
-        GPropertyFilter condition = GReactFormData.getCellCondition(onCell(f.price, 0, PValue.getPValue(5)));
+        GPropertyFilter condition = GReactFormData.getCellCondition(onCell(f.price, 0, PValue.getPValue(5)), new ArrayList<>());
         assertSame(f.price, condition.column.property);
         assertSame(f.group, condition.groupObject);
         assertEquals(GGroupObjectValue.EMPTY, condition.column.columnKey);
@@ -4478,9 +4554,9 @@ public class GReactFormDataTest extends GWTTestCase {
     // by NULL and empty the rows, so none is started. An empty cell of a row is a NULL value all the same
     public void testATableOnNoRowStartsNoCondition() {
         Fixture f = new Fixture();
-        assertNull(GReactFormData.getCellCondition(onCell(f.price, -1, null)));
+        assertNull(GReactFormData.getCellCondition(onCell(f.price, -1, null), new ArrayList<>()));
 
-        GPropertyFilter condition = GReactFormData.getCellCondition(onCell(f.price, 0, null));
+        GPropertyFilter condition = GReactFormData.getCellCondition(onCell(f.price, 0, null), new ArrayList<>());
         assertSame(f.price, condition.column.property);
         assertNull(condition.value.value);
     }
@@ -4491,19 +4567,19 @@ public class GReactFormDataTest extends GWTTestCase {
         Fixture f = new Fixture();
         GPropertyDraw unnamed = f.property(75, "hidden", f.group, true, f.a);
         unnamed.integrationSID = null;
-        assertNull(GReactFormData.getCellCondition(onCell(unnamed, 0, PValue.getPValue(5))));
+        assertNull(GReactFormData.getCellCondition(onCell(unnamed, 0, PValue.getPValue(5)), new ArrayList<>()));
 
         GPropertyDraw action = f.property(73, "approve", f.group, true, f.a);
         action.valueType = GActionType.instance;
-        assertNull(GReactFormData.getCellCondition(onCell(action, 0, null)));
+        assertNull(GReactFormData.getCellCondition(onCell(action, 0, null), new ArrayList<>()));
 
         GPropertyDraw inColumns = f.property(74, "perColumn", f.group, true, f.a);
         inColumns.columnGroupObjects = new ArrayList<>(Arrays.asList(new GGroupObject()));
-        assertNull(GReactFormData.getCellCondition(onCell(inColumns, 0, PValue.getPValue(5))));
+        assertNull(GReactFormData.getCellCondition(onCell(inColumns, 0, PValue.getPValue(5)), new ArrayList<>()));
 
         GPropertyDraw different = f.property(76, "shown", f.group, true, f.a);
         different.differentValue = true;
-        assertNull(GReactFormData.getCellCondition(onCell(different, 0, PValue.getPValue(5))));
+        assertNull(GReactFormData.getCellCondition(onCell(different, 0, PValue.getPValue(5)), new ArrayList<>()));
     }
 
     // F3 on a property already filtered by takes the place of the first condition on it, so a range's other bound stays
@@ -4512,7 +4588,7 @@ public class GReactFormDataTest extends GWTTestCase {
         GPropertyFilter low = condition(f.price, 1), some = condition(f.quantity, 2), high = condition(f.price, 3);
         GPropertyFilter changed = condition(f.price, 5);
 
-        ArrayList<GPropertyFilter> result = GReactFormData.withCondition(new ArrayList<>(Arrays.asList(low, some, high)), changed);
+        ArrayList<GPropertyFilter> result = GPropertyFilter.withCondition(new ArrayList<>(Arrays.asList(low, some, high)), changed);
         assertEquals(Arrays.asList(changed, some, high), result);
     }
 
@@ -4521,11 +4597,91 @@ public class GReactFormDataTest extends GWTTestCase {
         GPropertyFilter some = condition(f.quantity, 2), added = condition(f.price, 5);
 
         ArrayList<GPropertyFilter> conditions = new ArrayList<>(Arrays.asList(some));
-        assertEquals(Arrays.asList(some, added), GReactFormData.withCondition(conditions, added));
+        assertEquals(Arrays.asList(some, added), GPropertyFilter.withCondition(conditions, added));
         assertEquals("the list it was handed stays as it was", Arrays.asList(some), conditions);
     }
     private static GPropertyFilter condition(GPropertyDraw property, int value) {
         return new GPropertyFilter(new GFilter(property), property.groupObject, GGroupObjectValue.EMPTY, PValue.getPValue(value), null);
+    }
+
+    // a value given a column goes by one rule for the platform's panel and the form's list (GPropertyFilter): the
+    // first condition on the COLUMN - a property grouped in columns has one per column key, the platform's panel
+    // stating a condition on one of them; a property not grouped in columns is its one column, the one a view names
+    public void testAConditionIsTheFirstOnItsColumn() {
+        Fixture f = new Fixture();
+        GPropertyDraw perColumn = f.property(74, "perColumn", f.group, true, f.a);
+        perColumn.columnGroupObjects = new ArrayList<>(Arrays.asList(new GGroupObject()));
+        GGroupObjectValue one = new GGroupObjectValue(30, 1), two = new GGroupObjectValue(30, 2);
+        GPropertyFilter first = new GPropertyFilter(new GFilter(perColumn), f.group, one, PValue.getPValue(1), null);
+        GPropertyFilter second = new GPropertyFilter(new GFilter(perColumn), f.group, two, PValue.getPValue(2), null);
+        GPropertyFilter price = condition(f.price, 3);
+        ArrayList<GPropertyFilter> conditions = new ArrayList<>(Arrays.asList(first, second, price));
+
+        assertSame(second, GPropertyFilter.getFirst(conditions, new Column(perColumn, two)));
+        assertSame(price, GPropertyFilter.getFirst(conditions, GReactFormData.getConditionColumn(f.price)));
+        assertNull(GPropertyFilter.getFirst(conditions, GReactFormData.getConditionColumn(f.quantity)));
+        GPropertyFilter changed = second.restated(PValue.getPValue(5), false, GCompare.GREATER, true);
+        assertEquals(Arrays.asList(first, changed, price), GPropertyFilter.withCondition(conditions, changed));
+        assertEquals(Arrays.asList(second, price), GPropertyFilter.withoutFirst(conditions, new Column(perColumn, one)));
+        // a new one on a column: of its property's group and its key, compared the property's default way, AND
+        GPropertyFilter created = GPropertyFilter.getBase(new Column(perColumn, two), null);
+        assertEquals(two, created.column.columnKey);
+        assertSame(f.group, created.groupObject);
+        assertEquals(perColumn.getDefaultCompare(), created.compare);
+        assertFalse(created.negation);
+        assertTrue(created.junction);
+        assertNull(created.value.value);
+    }
+
+    // F3 gives the cell's value to its property as a value is given a property's FILTER (a FILTER is a user filter
+    // given in advance, one rule for both): in the place of the first condition on it, its comparison, negation and
+    // junction kept - "NOT price > 100 OR ..." on a cell of 250 is "NOT price > 250 OR ...", not "price = 250 AND ..." -
+    // and the value's separator escaped by the comparison kept, as the panel's row puts a cell's value into itself; with
+    // none on it, a new one, the default way
+    public void testACellsConditionKeepsTheWayOfTheFirstOnItsProperty() {
+        Fixture f = new Fixture();
+        GPropertyDraw name = f.property(75, "name", f.group, true, f.a);
+        name.valueType = new GStringType(GExtInt.UNLIMITED, false, false);
+        GPropertyFilter over = new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(100), true, GCompare.GREATER, false);
+        GPropertyFilter part = new GPropertyFilter(new GFilter(name), f.group, GGroupObjectValue.EMPTY, PValue.getPValue("ab"), GCompare.CONTAINS);
+        ArrayList<GPropertyFilter> conditions = new ArrayList<>(Arrays.asList(over, part));
+
+        GPropertyFilter condition = GReactFormData.getCellCondition(onCell(f.price, 0, PValue.getPValue(250)), conditions);
+        assertEquals(GCompare.GREATER, condition.compare);
+        assertTrue(condition.negation);
+        assertFalse(condition.junction);
+        assertEquals(PValue.getPValue(250), condition.value.value);
+        assertEquals(Arrays.asList(condition, part), GPropertyFilter.withCondition(conditions, condition));
+
+        // '_' is a pattern's wildcard where a string is compared by containing it, and a plain character by '>'
+        String separator = MainFrame.matchSearchSeparator;
+        MainFrame.matchSearchSeparator = ","; // the client's setting, as the server gives it
+        try {
+            assertEquals(PValue.getPValue("a\\_b"), GReactFormData.getCellCondition(onCell(name, 0, PValue.getPValue("a_b")), conditions).value.value);
+            GPropertyFilter after = new GPropertyFilter(new GFilter(name), f.group, GGroupObjectValue.EMPTY, PValue.getPValue("a"), GCompare.GREATER);
+            assertEquals(PValue.getPValue("a_b"), GReactFormData.getCellCondition(onCell(name, 0, PValue.getPValue("a_b")), new ArrayList<>(Arrays.asList(after))).value.value);
+        } finally {
+            MainFrame.matchSearchSeparator = separator;
+        }
+
+        condition = GReactFormData.getCellCondition(onCell(f.quantity, 0, PValue.getPValue(3)), conditions);
+        assertEquals(f.quantity.getDefaultCompare(), condition.compare);
+        assertFalse(condition.negation);
+        assertTrue(condition.junction);
+    }
+
+    // ... as the table's F3 states it over the conditions a view draws, and Alt+F3 states a new one alone, the default
+    // way: the list stated anew, nothing kept of it
+    public void testF3KeepsTheWayOfTheFirstConditionOnItsPropertyAndAltF3StatesANewOne() {
+        Fixture f = new Fixture(Fixture::filtersApart);
+        RecordingTableController table = onCell(f.price, 0, PValue.getPValue(250));
+        table.bindFilter(viewCommands(f, table, new FilterControlsDouble()));
+        f.reportFilters(dtos(Arrays.asList(
+                new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(100), true, GCompare.GREATER, false),
+                new GPropertyFilter(new GFilter(f.quantity), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(2), GCompare.EQUALS))));
+        table.addFilter(null);
+        table.replaceFilter(null);
+        assertEquals(Arrays.asList(" price> not or quantity=", " price="), table.filtered);
     }
 
     // a FILTERS box's list stated - a group's, or a tree's - is split into its groups' lists, each condition under its
@@ -4593,7 +4749,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // a color and an interval go out as strings of their own, and come back as what they are: a condition `filters`
     // lists, handed back as it is, is the condition it was, and a member given a value in that shape changes the cell
     // to it - one in another shape is refused, not sent as a string the server takes for neither. A file's condition
-    // says a link to the file, which is not the file: it can be taken off, not stated
+    // says a link to the file, which is not the file: it is stated with no value alone
     public void testAValueComesBackAsItWentOut() {
         Fixture f = new Fixture(fixture -> {
             fixture.filtersBesideRows();
@@ -4636,7 +4792,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(refused, refused != null && refused.contains("is not a color"));
 
         // a file's condition: what `filters` would say of its value is a link to the file (a link this test has no
-        // page to build), which is not the file - so a condition on it is not stated, alone or in a list
+        // page to build), which is not the file - so a condition on it with a value is not stated, alone or in a list
         int calls = f.filtersCalls.size();
         refused = refusedChange(member, parse("{\"property\": \"scan\", \"value\": \"files/scan.csv\"}"));
         assertTrue(refused, refused != null && refused.contains("'scan' is a file"));
@@ -5566,14 +5722,62 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(flag(price, "negation"));
 
         int calls = f.filtersCalls.size();
-        assertRefusal("controller.items.filter.price.change(): unknown field 'comapre'; the options argument has compare, negation",
+        assertRefusal("controller.items.filter.price.change(): unknown field 'comapre'; the options argument has compare, negation, or",
                 refusedChangeWith(member, 5.0, parse("{\"comapre\": \">\"}")));
         assertRefusal("unknown compare '~'", refusedChangeWith(member, null, parse("{\"compare\": \"~\"}")));
         assertRefusal("'negation' must be true or false", refusedChangeWith(member, 5.0, parse("{\"negation\": \"yes\"}")));
-        assertRefusal("the options argument must be an object {compare, negation}", refusedChangeWith(member, 5.0, parse("[\">\"]")));
+        assertRefusal("the options argument must be an object {compare, negation, or}", refusedChangeWith(member, 5.0, parse("[\">\"]")));
         assertEquals(calls, f.filtersCalls.size());
         changeWith(member, null, parse("{\"compare\": \"=\"}")); // no value: the condition off, whatever they state
         assertEquals("changeFilters items", f.filtersCalls.get(calls));
+    }
+
+    // ... and its junction (`or`, as `filters` says it), which its state shows - false while it has no condition - and
+    // its options state, as compare and negation: what they leave out as the condition has it, AND for a new one
+    public void testAFiltersMemberStatesItsJunction() {
+        Fixture f = new Fixture(fixture -> fixture.filterIn(fixture.c, fixture.price));
+        JavaScriptObject member = field(member(f.sc, "items", "filter"), "price");
+        f.projection.flush();
+        assertTrue(isFalse(field(field(field(f.snapshots[2], "items"), "filter"), "price"), "or"));
+        changeWith(member, 3.0, parse("{\"or\": true}"));
+        assertEquals("changeFilters items price" + f.price.getDefaultCompare() + " or", f.filtersCalls.get(0));
+        callChange(member, 4.0); // kept
+        assertEquals("changeFilters items price" + f.price.getDefaultCompare() + " or", f.filtersCalls.get(1));
+        f.projection.flush();
+        assertTrue(flag(field(field(field(f.snapshots[2], "items"), "filter"), "price"), "or"));
+        changeWith(member, 4.0, parse("{\"or\": false}"));
+        assertEquals("changeFilters items price" + f.price.getDefaultCompare(), f.filtersCalls.get(2));
+        int calls = f.filtersCalls.size();
+        assertRefusal("'or' must be true or false", refusedChangeWith(member, null, parse("{\"or\": \"yes\"}")));
+        assertEquals(calls, f.filtersCalls.size());
+    }
+
+    // ... and whether it has a condition (`active`): its value is null with none and with one comparing with NULL - a
+    // NULL a list the server reports has, which F3 on an empty cell states -, which `active` tells apart; and a
+    // two-state LOGICAL's false - its NULL - is no value, taking the condition off, as an emptied FILTER row of the
+    // platform's does
+    public void testAFilterSaysWhetherItHasACondition() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.filterIn(fixture.c, fixture.price);
+            GPropertyDraw active = fixture.property(74, "active", fixture.group, true, fixture.a);
+            active.valueType = GLogicalType.instance;
+            fixture.filterIn(fixture.c, active);
+        });
+        f.projection.flush();
+        JavaScriptObject price = field(field(field(f.snapshots[2], "items"), "filter"), "price");
+        assertTrue(isFalse(price, "active"));
+        assertTrue(isNullField(price, "value"));
+        f.reportFilters(dtos(Arrays.asList(new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, null, GCompare.EQUALS))));
+        f.projection.flush();
+        price = field(field(field(f.snapshots[2], "items"), "filter"), "price");
+        assertTrue(flag(price, "active"));
+        assertTrue(isNullField(price, "value"));
+
+        JavaScriptObject member = field(member(f.sc, "items", "filter"), "active");
+        callChange(member, true);
+        assertEquals("changeFilters items price= active=", f.filtersCalls.get(0));
+        callChange(member, false);
+        assertEquals("changeFilters items price=", f.filtersCalls.get(1));
     }
 
     // a file's filter: a condition on a file has a link to the file for its value, not the file it compares with, so

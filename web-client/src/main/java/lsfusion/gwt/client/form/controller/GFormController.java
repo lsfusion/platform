@@ -2330,7 +2330,12 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // ... and the FILTERs of the group's properties, each showing its condition among them
     private void updateFilterConditions(GGroupObject group) {
         for (GFilter filter : form.getFilterComponents(group))
-            filterControllers.get(filter).updateCondition();
+            updateFilterCondition(filter);
+    }
+    // ... and one of them, its condition changed where no list is sent - the platform's panel holding its row's value for
+    // its apply (GPlatformFiltersController.putCellValue)
+    public void updateFilterCondition(GFilter filter) {
+        filterControllers.get(filter).updateCondition();
     }
 
     public void setViewFilters(ArrayList<GPropertyFilter> conditions, int pageSize) {

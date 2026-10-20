@@ -128,7 +128,7 @@ public class UiPropertyFilterIT extends UiTest {
     }
 
     // filters a view draws over the platform's panel with no box: a LOGICAL one - a boolean filter - whose true filters,
-    // whose false compares with NULL, and none takes it off - its value none then, not false -; a condition an action
+    // and whose false - a two-state LOGICAL's NULL - takes it off, as none does; a condition an action
     // states on the server (FILTER PROPERTY) filters the grid and shows in the filter the view draws (#1904)
     @Test
     public void filtersOverAPanelWithNoBox() throws Exception {
@@ -142,8 +142,8 @@ public class UiPropertyFilterIT extends UiTest {
         rows(form, items.get(0), items.get(1));
         assertThat(cheap).hasText("true");
         form.locator(".ui-pf-cheap-false").click();
-        rows(form, items.get(2), items.get(3));
-        assertThat(cheap).hasText("false");
+        rows(form, items);
+        assertThat(cheap).hasText("null");
         form.locator(".ui-pf-cheap-none").click();
         rows(form, items);
         assertThat(cheap).hasText("null");

@@ -125,8 +125,15 @@ public final class GPlatformFiltersController extends GFilterInputController imp
         addCondition(keyEvent, replace, false);
     }
 
+    // F3 (checkExistingFilter) puts the selected cell's value into the first row on its column, or a new one; Alt+F3
+    // (replace), into a new one alone. A FILTER's row React draws is a row as any other - the first, it takes the value
+    // (putCellValue)
     public void addCondition(Event keyEvent, boolean replace, boolean checkExistingFilter) {
-        addCondition(null, null, keyEvent, replace, true, checkExistingFilter);
+        GPropertyFilter first = checkExistingFilter ? GPropertyFilter.getFirst(conditionViews.keySet(), getActualColumn(rows, null, null)) : null;
+        if (first != null && isDrawnByReact(first.filter))
+            putCellValue(first);
+        else
+            addCondition(null, null, keyEvent, replace, true, checkExistingFilter);
     }
 
     public void addCondition(GFilter filter, GGroupObjectValue columnKey, boolean readSelectedValue) {
@@ -201,6 +208,17 @@ public final class GPlatformFiltersController extends GFilterInputController imp
         applyFilters(false, null);
     }
     
+    // the cell's value F3 puts into a FILTER's row React draws, with no editor: its comparison, negation and junction
+    // kept, applied as a row's change is - the controls F3 shows (GPlatformTableController.addFilter) shown first, so
+    // their manual apply mode holds it, the FILTER's part told then, nothing being sent -; none on no row (an empty
+    // grid), which has no value to put
+    private void putCellValue(GPropertyFilter row) {
+        if (rows.getSelectedRow() >= 0 && conditionViews.get(row).putSelectedValue()) {
+            setControlsVisible(true);
+            filterChanged();
+            form.updateFilterCondition(row.filter);
+        }
+    }
     private GFilterConditionView findExistingFilter(GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
         Column column = getActualColumn(rows, propertyDraw, columnKey);
 
@@ -230,24 +248,21 @@ public final class GPlatformFiltersController extends GFilterInputController imp
             }
         }
 
-        for (GPropertyFilter filter : filters) {
-            boolean filterExists = false;
-            for (GPropertyFilter fixedFilter : fixedFilters) {
-                if (filter.column.equals(fixedFilter.column)) {
-                    conditionViews.get(fixedFilter).takeCondition(filter);
-                    filterExists = true;
-                    fixedFilters.remove(fixedFilter);
-                    break;
-                }
-            }
-
-            if (!filterExists && hasFiltersContainer()) { // with no box, no condition of its own: its fixed rows alone
-                addCondition(filter, null, false, false, false);
+        // each fixed row - a FILTER's - takes the first condition on its column (GPropertyFilter.getFirst), as a
+        // FILTER shows its condition where a view draws the conditions; the rest are rows of their own, in their order
+        for (GPropertyFilter fixedFilter : fixedFilters) {
+            GPropertyFilter taken = GPropertyFilter.getFirst(filters, fixedFilter.column);
+            if (taken != null) {
+                conditionViews.get(fixedFilter).takeCondition(taken);
+                filters.remove(taken);
             }
         }
+        if (hasFiltersContainer()) // with no box, no condition of its own: its fixed rows alone
+            for (GPropertyFilter filter : filters)
+                addCondition(filter, null, false, false, false);
 
         // hide controls only if no filters are expected. otherwise leave controls visibility unchanged
-        if (filters.isEmpty()) {
+        if (filterDTOs.isEmpty()) {
             hideControlsIfEmpty();
         }
         updateConditionsLastState();

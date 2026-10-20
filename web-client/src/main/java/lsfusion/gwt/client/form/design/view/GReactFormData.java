@@ -170,22 +170,22 @@ public class GReactFormData {
         // ... and a group's as the form has them - what a view's part shows, and what one condition stated is merged
         // into: a list of the caller's own
         ArrayList<GPropertyFilter> getFilters(GGroupObject group);
-        // ... and a property's FILTER's condition in them (createFiltersControllers): the FIRST on its property, as the
+        // ... and a property's FILTER's condition in them (createFiltersControllers): the FIRST on its column, as the
         // platform's row takes the first on its column, the list made of it sent at once, as a view's conditions are
         // (FiltersPart)
         @Override
         default GPropertyFilter getFilterCondition(GFilter filter) {
-            return getFirstCondition(getFilters(filter.property.groupObject), filter.property);
+            return GPropertyFilter.getFirst(getFilters(filter.property.groupObject), getConditionColumn(filter.property));
         }
         @Override
         default void changeFilter(GFilter filter, GPropertyFilter condition) {
             GGroupObject group = filter.property.groupObject;
-            changeFilters(Collections.singletonList(group), withCondition(getFilters(group), condition));
+            changeFilters(Collections.singletonList(group), GPropertyFilter.withCondition(getFilters(group), condition));
         }
         @Override
         default void clearFilter(GFilter filter) {
             GGroupObject group = filter.property.groupObject;
-            changeFilters(Collections.singletonList(group), withoutFirstCondition(getFilters(group), filter.property));
+            changeFilters(Collections.singletonList(group), GPropertyFilter.withoutFirst(getFilters(group), getConditionColumn(filter.property)));
         }
         // ===== a filter group of a group: the filter selected in it - null: none -, as its member read it
         void changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter);
@@ -1220,7 +1220,9 @@ public class GReactFormData {
             return "it is grouped in columns, and a condition names no column";
         }
         // a call through its member, read here, on the part that holds the conditions (readFilterCondition), and handed
-        // to the form as what it names
+        // to the form as what it names: an array is the list of conditions, as FILTER reads one in .lsf - each a new
+        // condition, what it does not state the default way, one with no value comparing with NULL ("is empty", negated
+        // "is not empty"), as `filters` lists such a condition, so a list `filters` gives is taken back as it is
         @Override
         void changeAll(String surface, JavaScriptObject conditions) {
             String errorPrefix = controllerPrefix(surface);
@@ -1231,29 +1233,24 @@ public class GReactFormData {
                 JavaScriptObject condition = jsArrayGet(conditions, i);
                 GPropertyDraw property = readProperty(itemPrefix, condition);
                 JavaScriptObject value = getOwnField(condition, "value"); // read once: a condition is what was read
-                if (isNoValue(value)) // no value: "not filtered by this", not listed
-                    checkFilterFields(itemPrefix, condition, property);
-                else
-                    result.add(readFilterCondition(itemPrefix, condition, property, value));
+                result.add(readFilterCondition(itemPrefix, condition, GPropertyFilter.getBase(getConditionColumn(property), null), value));
             }
             verbs.changeFilters(node.groups, result);
         }
         // ... one condition, merged into the conditions the server is filtering by - those an earlier call of a batch
-        // stated included -, and the list it makes handed over: with no value, every condition on its property goes -
-        // "this column is not filtered by"; with one, it takes the place of the FIRST on its property, its own `or`
-        // along, or is appended when there is none (withCondition)
+        // stated included -, and the list it makes handed over: a value given its property as a property's FILTER gives
+        // one (FilterPart.change), in the place of the FIRST on the property - what it does not state of the
+        // comparison, negation and `or` as that one has them -, or appended, the default way; no value takes that first
+        // one off, alone - a range's other bound stays (GPropertyFilter.withCondition, withoutFirst)
         @Override
         void changeOne(String surface, JavaScriptObject condition) {
             String errorPrefix = controllerPrefix(surface);
             GPropertyDraw property = readProperty(errorPrefix, condition);
             JavaScriptObject value = getOwnField(condition, "value"); // read once, as in changeAll
             ArrayList<GPropertyFilter> result = getConditions(node.groups);
-            if (isNoValue(value)) {
-                checkFilterFields(errorPrefix, condition, property);
-                result.removeIf(existing -> existing.column.property.equals(property));
-            } else
-                result = withCondition(result, readFilterCondition(errorPrefix, condition, property, value));
-            verbs.changeFilters(node.groups, result);
+            Column column = getConditionColumn(property);
+            GPropertyFilter stated = readFilterCondition(errorPrefix, condition, GPropertyFilter.getBase(column, GPropertyFilter.getFirst(result, column)), value);
+            verbs.changeFilters(node.groups, stated.nullValue() ? GPropertyFilter.withoutFirst(result, column) : GPropertyFilter.withCondition(result, stated));
         }
     }
     // the PLATFORM'S INPUT over the conditions a view draws - GFilterInputController's kind where a view draws what the
@@ -1280,9 +1277,10 @@ public class GReactFormData {
             addCellCondition(false);
         }
         private void addCellCondition(boolean replace) {
-            GPropertyFilter condition = getCellCondition(rows);
+            ArrayList<GPropertyFilter> conditions = replace ? new ArrayList<>() : getConditions(groups);
+            GPropertyFilter condition = getCellCondition(rows, conditions);
             if (condition != null)
-                rows.changeFilter(withCondition(replace ? new ArrayList<>() : getConditions(groups), condition));
+                rows.changeFilter(GPropertyFilter.withCondition(conditions, condition));
         }
         // typing in a column, which the table gives to whichever filter input controller it has, as it gives it its
         // keys: the panel's editor takes the key typed, and here nothing starts - there is no editor to type in, the
@@ -1686,11 +1684,13 @@ public class GReactFormData {
     // group is on the node under its own name -, shaped as a property's entry: the property's caption and the type of
     // a condition's value (the FILTER type, by which `value` is read and written, as `filters` has it), and the
     // filter's condition, where it is (`conditions`: over the platform's panel the panel's row of it, else the first on
-    // its property in the form's list), its compare and negation (the property's default compare and none while there
-    // is no condition) and its value (null then). Its member's change(value, options) does what the platform's row
-    // does: puts the value into that condition, or appends one, with the compare and the negation the options state -
-    // {compare, negation}, as the row's compare selector does where the filter controls are shown -, the condition's
-    // own where they state none, and the default way for a new one, its junction kept; no value takes that condition
+    // its property in the form's list): whether there is one (`active`), its compare, negation and junction - `or`, as
+    // `filters` says it - (the property's default compare, none and AND while there is none) and its value (null then;
+    // one comparing with NULL has null too - false on a LOGICAL -, `active` telling them apart). Its member's
+    // change(value, options) does what the platform's row does, and `filters.change` with one condition
+    // (FiltersPart.changeOne): puts the value into that condition, or appends one, with what the options state -
+    // {compare, negation, or}, as the row's selectors do where the filter controls are shown -, the condition's own
+    // where they state none, and the default way for a new one; no value takes that condition
     // off, alone - a range's other bound stays. It is told whenever the group's user filters change, after what shows
     // the FILTERS box is (a GFilterController, beside the GUserFiltersController): the part keeps no condition of its
     // own
@@ -1711,8 +1711,10 @@ public class GReactFormData {
             JavaScriptObject entry = newObject();
             setFieldOrNull(entry, "caption", property.caption);
             setField(entry, "type", GSimpleStateTableView.getJSTypeName(property.getFilterBaseType()));
+            setField(entry, "active", condition != null);
             setField(entry, "compare", (condition != null ? condition.compare : property.getDefaultCompare()).toString());
             setField(entry, "negation", condition != null && condition.negation);
+            setField(entry, "or", condition != null && !condition.junction); // GPropertyFilter.junction is the conjunction flag
             setField(entry, "value", condition != null ? GSimpleStateTableView.convertToJSValue(property.getFilterBaseType(), null, true, condition.value.value) : null);
             setField(node.editFilter(), property.integrationSID, entry);
         }
@@ -1730,29 +1732,22 @@ public class GReactFormData {
         }
 
         // ===== a call through its member: a value, read by the property's FILTER type as `value` gives it, or none -
-        // absent, null or '' -, and the options, if any, in a batch too. The options are read whatever the value - one
+        // absent, null, '', or one the type reads as NULL, a two-state LOGICAL's false -, and the options, if any, read
+        // as a condition's fields (readFilterCondition), in a batch too. The options are read whatever the value - one
         // misspelt is refused even where there is none, which takes the condition off all the same. A file's value is a
         // link to the file, not the file a condition compares with, so its filter's condition can be taken off, not
         // stated. Shown at once: the panel holds it in its manual apply mode, telling the form nothing
         void change(String surface, JavaScriptObject value, JavaScriptObject options) {
             String errorPrefix = controllerPrefix(surface);
-            GPropertyDraw property = filter.property;
-            if (GwtClientUtils.isUndefinedOrNull(options)) // none: as stating neither
+            if (GwtClientUtils.isUndefinedOrNull(options)) // none: as stating none of them
                 options = newBareObject();
             checkAuthorObject(errorPrefix, options, "the options argument", FILTER_OPTIONS);
-            GPropertyFilter condition = conditions.getFilterCondition(filter);
-            GCompare compare = hasOwnField(options, "compare") ? readFilterCompare(errorPrefix, options, property)
-                    : condition != null ? condition.compare : property.getDefaultCompare();
-            boolean negation = hasOwnField(options, "negation") ? readFlag(errorPrefix, options, "negation")
-                    : condition != null && condition.negation;
-            if (isNoValue(value))
+            GPropertyFilter stated = readFilterCondition(errorPrefix, options,
+                    GPropertyFilter.getBase(getConditionColumn(filter.property), conditions.getFilterCondition(filter)), value);
+            if (stated.nullValue())
                 conditions.clearFilter(filter);
-            else {
-                checkFilterValue(errorPrefix, property);
-                conditions.changeFilter(filter, new GPropertyFilter(new GFilter(property), property.groupObject, GGroupObjectValue.EMPTY,
-                        GSimpleStateTableView.convertFromJSValue(property.getFilterBaseType(), value), negation, compare,
-                        condition == null || condition.junction));
-            }
+            else
+                conditions.changeFilter(filter, stated);
             stateChanged();
         }
     }
@@ -3361,55 +3356,27 @@ public class GReactFormData {
             conditions.addAll(verbs.getFilters(group));
         return conditions;
     }
-    // the condition a cell starts where a view draws the conditions (ReactFilterInputController.addCondition): on its
-    // property and column, compared the property's default way with the cell's value - an empty cell's NULL too. None
+    // the condition a cell starts where a view draws the conditions (ReactFilterInputController.addCondition), among
+    // these: the cell's value - an empty cell's NULL too - given its property as a value is given a property's FILTER
+    // (GPropertyFilter.getBase), its separator escaped by the comparison it gets, as the panel's row escapes it. None
     // where the table is on no row - an empty grid, or a pivot, a map, a calendar or a custom view, which have no cell,
     // though they name a column the panel would start an editor on -, on a cell a view cannot name in a condition, or
     // on one whose value is not the one it filters by (differentValue)
-    static GPropertyFilter getCellCondition(GTableController rows) {
+    static GPropertyFilter getCellCondition(GTableController rows, ArrayList<GPropertyFilter> conditions) {
         GPropertyDraw property = rows.getSelectedFilterProperty();
         if (property == null || rows.getSelectedRow() < 0)
             return null;
         if (!isProjectableCondition(property) || property.differentValue)
             return null;
-        GGroupObjectValue columnKey = rows.getSelectedColumnKey();
-        if (columnKey == null)
-            columnKey = GGroupObjectValue.EMPTY;
-        GCompare compare = property.getDefaultCompare();
-        return new GPropertyFilter(new GFilter(property), property.groupObject, columnKey,
-                PValue.escapeSeparator(rows.getSelectedValue(property, columnKey), compare), compare);
+        Column column = getConditionColumn(property); // the one the table is on: a cell a view names is no column's
+        GPropertyFilter base = GPropertyFilter.getBase(column, GPropertyFilter.getFirst(conditions, column));
+        return base.restated(PValue.escapeSeparator(rows.getSelectedValue(property, column.columnKey), base.compare),
+                base.negation, base.compare, base.junction);
     }
-    // ... which takes the place of the first condition on its property - so the other conditions keep their places and
-    // a range's other bound stays -, or is appended
-    static ArrayList<GPropertyFilter> withCondition(ArrayList<GPropertyFilter> conditions, GPropertyFilter condition) {
-        ArrayList<GPropertyFilter> result = new ArrayList<>(conditions);
-        int index = indexOfFirstCondition(result, condition.column.property);
-        if (index >= 0)
-            result.set(index, condition);
-        else
-            result.add(condition);
-        return result;
-    }
-    // ... the FIRST condition on a property among a group's - the one a property's FILTER shows and states over the
-    // form's list (Verbs.getFilterCondition), as the platform's row of a FILTER takes the first on its column from a list the
-    // server reports (GPlatformFiltersController.updateFilters) -, null for none
-    static GPropertyFilter getFirstCondition(ArrayList<GPropertyFilter> conditions, GPropertyDraw property) {
-        int index = indexOfFirstCondition(conditions, property);
-        return index >= 0 ? conditions.get(index) : null;
-    }
-    // ... and the conditions without it, alone - a range's other bound stays, as when the platform's row is emptied
-    static ArrayList<GPropertyFilter> withoutFirstCondition(ArrayList<GPropertyFilter> conditions, GPropertyDraw property) {
-        ArrayList<GPropertyFilter> result = new ArrayList<>(conditions);
-        int index = indexOfFirstCondition(result, property);
-        if (index >= 0)
-            result.remove(index);
-        return result;
-    }
-    private static int indexOfFirstCondition(ArrayList<GPropertyFilter> conditions, GPropertyDraw property) {
-        for (int i = 0; i < conditions.size(); i++)
-            if (conditions.get(i).column.property.equals(property))
-                return i;
-        return -1;
+    // the column of a condition a view names: the property's own, the empty key - a property grouped in columns is on
+    // none (isProjectableCondition)
+    static Column getConditionColumn(GPropertyDraw property) {
+        return new Column(property, GGroupObjectValue.EMPTY);
     }
 
     // can a condition be on this property - and so be listed? Three rules, each said where it belongs: the projection
@@ -3460,8 +3427,8 @@ public class GReactFormData {
     }
 
     private static final String FILTER_CONDITION_FIELDS = "property,compare,value,negation,or";
-    // ... and the options of a property filter's change, either or both, each read as a condition's field
-    private static final String FILTER_OPTIONS = "compare,negation";
+    // ... and the options of a property filter's change, any of them, each read as a condition's field
+    private static final String FILTER_OPTIONS = "compare,negation,or";
 
     // the property a STATE names - a sorting, a condition, a column the toolbar sums -: the group's ONE property of
     // that name, wherever it is drawn - by this view, by another container, by the platform. A state is the group's,
@@ -3478,42 +3445,40 @@ public class GReactFormData {
         return property;
     }
 
-    // a condition with no value - "not filtered by this" (isNoValue) - states none, and the rest of it is read all the
-    // same: a mistake in a condition that only takes others off is still a mistake, and dropping it would hide it
-    private void checkFilterFields(String errorPrefix, JavaScriptObject condition, GPropertyDraw property) {
-        readFilterCompare(errorPrefix, condition, property);
-        readFlag(errorPrefix, condition, "negation");
-        readFlag(errorPrefix, condition, "or");
-    }
-
-    // ... and one with a value, which the caller read - each field is read once, so the condition is what was read -,
-    // on the property already resolved: the singular call needs the property first, as it merges by property. The
-    // value is the ONE field whose kind is not checked here: it is converted by the property's own FILTER type, the
-    // way `filters` gives it - so a condition `filters` lists is taken back as it is. But for a file's: `filters` says
-    // a link to the file, which is not the file a condition compares with, so a view can take one off, not state one
-    private GPropertyFilter readFilterCondition(String errorPrefix, JavaScriptObject condition, GPropertyDraw property,
+    // a condition a view states - an element of `filters.change`'s list, its one condition, a property FILTER's value
+    // with its options -, from the one it starts from (GPropertyFilter.getBase): `compare`, `negation` and `or` as the
+    // object states them, else as that one has them; the value, read once by the caller, by the property's FILTER type
+    // as `filters` gives it - none, or one the type reads as NULL (a two-state LOGICAL's false), is NULL, which the
+    // caller states (a list) or takes off (one value). The rest is read whatever the value: a mistake in a condition
+    // that only takes one off is still a mistake. A file's is stated with no value alone: `filters` gives a link to the
+    // file, not the file a condition compares with
+    private GPropertyFilter readFilterCondition(String errorPrefix, JavaScriptObject condition, GPropertyFilter base,
                                                 JavaScriptObject value) {
-        checkFilterValue(errorPrefix, property);
-        GCompare compare = readFilterCompare(errorPrefix, condition, property);
-        boolean negation = readFlag(errorPrefix, condition, "negation");
-        boolean or = readFlag(errorPrefix, condition, "or");
-        return new GPropertyFilter(new GFilter(property), property.groupObject, GGroupObjectValue.EMPTY,
-                GSimpleStateTableView.convertFromJSValue(property.getFilterBaseType(), value), negation, compare, !or);
+        GCompare compare = readFilterCompare(errorPrefix, condition, base.compare);
+        boolean negation = readFlag(errorPrefix, condition, "negation", base.negation);
+        boolean or = readFlag(errorPrefix, condition, "or", !base.junction);
+        PValue stated = null;
+        if (!isNoValue(value)) {
+            GPropertyDraw property = base.column.property;
+            checkFilterValue(errorPrefix, property);
+            stated = GSimpleStateTableView.convertFromJSValue(property.getFilterBaseType(), value);
+        }
+        return base.restated(stated, negation, compare, !or);
     }
     // ... a property a view states a condition with a value on - in `filters`, or through a property's FILTER
-    // (FilterPart.change) -: not a file, whose condition can only be taken off (above)
+    // (FilterPart.change) -: not a file, whose condition can only be taken off or compare with NULL (above)
     private static void checkFilterValue(String errorPrefix, GPropertyDraw property) {
         if (property.getFilterBaseType().getDataType() instanceof GFileType)
             throw refusal(errorPrefix + "'" + property.integrationSID + "' is a file: a condition on it has"
-                    + " a link to the file for its value, which is not the file, so it can be taken off, not stated");
+                    + " a link to the file for its value, which is not the file, so it is stated with no value alone");
     }
 
-    // no `compare` at all is how a view says "the property's own default", which is what it is read as; one that is
-    // there but is not the operator string it is spelled with - a number, a boolean - is a mistake, and reading it as
-    // absent would filter by something else without a word
-    private GCompare readFilterCompare(String errorPrefix, JavaScriptObject condition, GPropertyDraw property) {
+    // no `compare` at all is how a view says "as the condition it starts from has it" (readFilterCondition), which is
+    // what it is read as; one that is there but is not the operator string it is spelled with - a number, a boolean -
+    // is a mistake, and reading it as absent would filter by something else without a word
+    private GCompare readFilterCompare(String errorPrefix, JavaScriptObject condition, GCompare absent) {
         if (!hasOwnField(condition, "compare"))
-            return property.getDefaultCompare();
+            return absent;
         String compareSID = getOwnString(condition, "compare");
         if (compareSID == null)
             throw refusal(errorPrefix + "'compare' must be the operator as a string");
@@ -3526,18 +3491,19 @@ public class GReactFormData {
     }
 
     // a flag is a boolean or absent - a truthy string like "false" would otherwise mean true: a condition's `negation`
-    // and `or`. A sorting's `desc` is not a flag: an order with none takes its sorting off (OrdersPart.applyOrder)
-    private boolean readFlag(String errorPrefix, JavaScriptObject entry, String field) {
-        if (!hasOwnField(entry, field)) // absent is false; anything PRESENT has to be the boolean it claims to be,
-            return false;                 // `null` and `undefined` included - they are given, and they are not flags
+    // and `or`, absent as the condition it starts from has them (readFilterCondition). A sorting's `desc` is not a
+    // flag: an order with none takes its sorting off (OrdersPart.applyOrder)
+    private boolean readFlag(String errorPrefix, JavaScriptObject entry, String field, boolean absent) {
+        if (!hasOwnField(entry, field)) // anything PRESENT has to be the boolean it claims to be,
+            return absent;                // `null` and `undefined` included - they are given, and they are not flags
         JavaScriptObject value = getOwnField(entry, field);
         if (!isJSBoolean(value))
             throw refusal(errorPrefix + "'" + field + "' must be true or false");
         return toBoolean(value);
     }
 
-    // no value at all - absent, null, or the empty string an emptied input gives: how a view says "not filtered by
-    // this" and "not sorted by this"
+    // no value at all - absent, null, or the empty string an emptied input gives: how a view says a condition's value
+    // is NULL (readFilterCondition) and "not sorted by this"
     private static native boolean isNoValue(JavaScriptObject v) /*-{ return v === undefined || v === null || v === ''; }-*/;
 
     private static void emitHidden(JavaScriptObject entry, boolean shown) {

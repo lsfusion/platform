@@ -144,7 +144,8 @@ public class UiReactRowsChromeIT extends UiTest {
     // a view drawing the rows and the conditions places the platform's toolbar and filter controls back: the filter
     // button shows the controls - an add and a reset, no apply, and no condition started, as the view draws them -; the
     // add puts in the condition of the first column with the value of the row the view made current, at once, in the
-    // place of the one on that column - one the view states -; the reset takes them off, leaving the controls shown
+    // place of the one on that column - one the view states -, its comparison kept; the reset takes them off, leaving
+    // the controls shown
     @Test
     public void thePlatformsControlsOverTheConditionsTheViewDraws() throws Exception {
         String[] items = seed();
@@ -176,7 +177,7 @@ public class UiReactRowsChromeIT extends UiTest {
         rows(form).nth(1).click();
         assertThat(rows(form).nth(1)).hasClass(Pattern.compile("ui-rrc-current"));
         button(controls, "Add filter").click();
-        waitFor("conditions() === 'name = " + items[1] + "'");
+        waitFor("conditions() === 'name _ " + items[1] + "'"); // the comparison of the one there
         assertThat(rows(form)).hasText(new String[] {items[1]});
         button(controls, "Reset all filters").click();
         waitFor("data.i.filters.length === 0");

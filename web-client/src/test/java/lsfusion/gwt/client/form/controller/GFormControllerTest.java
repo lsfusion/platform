@@ -598,6 +598,26 @@ public class GFormControllerTest extends GWTTestCase {
         assertFalse(filters.filters(controller, filters.quantity));
     }
 
+    // ... and from a list the server reports each fixed row - a FILTER's, the one React draws too - takes the first
+    // condition on its column, as a FILTER shows its condition where a view draws the conditions
+    // (GPropertyFilter.getFirst): a second on the column is a row of the panel's own, the rows of the rest in their order
+    public void testAFixedRowTakesTheFirstConditionOnItsColumn() {
+        FiltersForm filters = new FiltersForm(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+
+        filters.report(controller, new GPropertyFilter(new GFilter(filters.price), filters.group, GGroupObjectValue.EMPTY, PValue.getPValue(1), GCompare.GREATER),
+                new GPropertyFilter(new GFilter(filters.price), filters.group, GGroupObjectValue.EMPTY, PValue.getPValue(5), GCompare.LESS),
+                new GPropertyFilter(new GFilter(filters.quantity), filters.group, GGroupObjectValue.EMPTY, PValue.getPValue(2), GCompare.EQUALS));
+        assertEquals(GCompare.GREATER, panel.getFilterCondition(filters.drawn).compare);
+        assertEquals(GCompare.EQUALS, panel.getFilterCondition(filters.placed).compare);
+        assertNotNull(filters.panelCondition(controller)); // price < 5, a row of its own
+        filters.report(controller, new GPropertyFilter(new GFilter(filters.price), filters.group, GGroupObjectValue.EMPTY, PValue.getPValue(5), GCompare.LESS));
+        assertEquals(GCompare.LESS, panel.getFilterCondition(filters.drawn).compare);
+        assertNull(panel.getFilterCondition(filters.placed));
+        assertNull(filters.panelCondition(controller));
+    }
+
     // ... its FILTERS box removed from the design too, where the panel shows none of the conditions
     public void testAFilterReactDrawsOverAPanelWithNoFiltersBoxIsItsRow() {
         FiltersForm filters = new FiltersForm(false);
@@ -655,6 +675,64 @@ public class GFormControllerTest extends GWTTestCase {
         } finally {
             MainFrame.userFiltersManualApplyMode = manual;
         }
+    }
+
+    // ... and its junction (`or`), which its part states as its comparison and negation, is the junction of the panel's
+    // row
+    public void testAFilterReactDrawsOverThePlatformsPanelStatesItsJunction() {
+        FiltersForm filters = new FiltersForm(true);
+        GFormController controller = filters.controller();
+
+        filters.change(controller, "price", 5.0, "{\"or\": true}");
+        assertFalse(filters.first(controller, filters.price).junction);
+        filters.change(controller, "price", 6.0, "{}");
+        assertFalse(filters.first(controller, filters.price).junction); // kept
+    }
+
+    // F3 over the platform's panel on a column whose first row is of a FILTER React draws: that row takes the cell's
+    // value, as the first row of a column does - a FILTER being a user filter given in advance -, its comparison
+    // kept, applied as the panel applies a row - at once -, with no row of the panel's own added; React draws it, so
+    // there is no editor to start. Where the panel applies by hand - F3 showing its controls, hidden before -, it waits
+    // for the apply, the FILTER's part shown it
+    public void testF3OverThePanelPutsTheCellsValueIntoTheRowOfAFilterReactDraws() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        try {
+            for (boolean byHand : new boolean[]{false, true}) {
+                MainFrame.userFiltersManualApplyMode = byHand;
+                FiltersForm filters = new FiltersForm(true);
+                filters.deliver(true);
+                GFormController controller = filters.controller();
+                GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+                filters.change(controller, "price", 3.0, "{\"compare\": \">\"}"); // the controls hidden: applied at once
+                assertValue(3, filters.first(controller, filters.price).value.value);
+
+                panel.addCondition(null, false, true); // F3, on the current row - its price, the first column -,
+                panel.setControlsVisible(true);        // ... the controls shown then, as the table's F3 does
+                assertNull(filters.panelCondition(controller));
+                assertEquals(5.0, filterValue(filters.view(controller), "price"), 0);
+                assertEquals(GCompare.GREATER, panel.getFilterCondition(filters.drawn).compare);
+                assertValue(byHand ? 3 : 5, filters.first(controller, filters.price).value.value);
+                panel.applyFilters();
+                assertValue(5, filters.first(controller, filters.price).value.value);
+                assertEquals(GCompare.GREATER, filters.first(controller, filters.price).compare);
+            }
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
+    // ... and where no row is current - an empty grid -, F3 has no value to put into it, and no editor to type one in:
+    // the FILTER's condition stays
+    public void testF3OverThePanelOnNoRowLeavesTheRowOfAFilterReactDraws() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.deliver(false);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        filters.change(controller, "price", 3.0, "{\"compare\": \">\"}");
+
+        panel.addCondition(null, false, true); // F3
+        assertValue(3, filters.first(controller, filters.price).value.value);
+        assertEquals(GCompare.GREATER, filters.first(controller, filters.price).compare);
     }
 
     // the FILTER of a property of a group in PANEL view - which has no table and shows no user filters - has a
@@ -833,9 +911,39 @@ public class GFormControllerTest extends GWTTestCase {
         GFormController controller() {
             return new GFormController(null, null, formContainer(), form, false, "propertyFilters", 0, null);
         }
-        // as the view states a FILTER it draws: through its member, React drawing nothing here
+        // as the view states a FILTER it draws: through its member, React drawing nothing here - with its options, as
+        // JSON, too
         void change(GFormController controller, String property, Object value) {
-            changeFilter(reactController(controller.getFormLayout().getContainerView(board)), property, value);
+            changeFilter(reactController(view(controller)), property, value);
+        }
+        void change(GFormController controller, String property, Object value, String options) {
+            changeFilter(reactController(view(controller)), property, value, options);
+        }
+        // the board's view, which draws the FILTERs
+        Object view(GFormController controller) {
+            return controller.getFormLayout().getContainerView(board);
+        }
+        // the rows, the first current, and their prices, as the server sends them as the form opens - or none, the
+        // price column there all the same
+        void deliver(boolean rows) {
+            GGroupObjectValue one = new GGroupObjectValue(group.ID, 1), two = new GGroupObjectValue(group.ID, 2);
+            GFormChangesDTO changes = GFormChangesTest.noChanges();
+            if (rows) {
+                changes.objectsGroupIds = new int[] {group.ID}; changes.objects = new GGroupObjectValue[] {one};
+            }
+            changes.gridObjectsGroupIds = new int[] {group.ID};
+            changes.gridObjects = new ArrayList[] {rows ? new ArrayList<>(Arrays.asList(one, two)) : new ArrayList<>()};
+            changes.properties = new GPropertyReaderDTO[] {new GPropertyReaderDTO(price.ID, DRAW, -1)};
+            changes.propertiesValueKeys = new GGroupObjectValue[][] {rows ? new GGroupObjectValue[] {one, two} : new GGroupObjectValue[0]};
+            changes.propertiesValueValues = new Serializable[][] {rows ? new Serializable[] {5, 7} : new Serializable[0]};
+            form.initialFormChanges = changes;
+        }
+        // the first condition on a property in the form's list, as it sent it last
+        GPropertyFilter first(GFormController controller, GPropertyDraw property) {
+            for (GPropertyFilter condition : controller.getFilters(group))
+                if (condition.column.property == property)
+                    return condition;
+            return null;
         }
         // a FILTER of a string property standing outside React, in a container that aligns captions
         void filterAligned() {
@@ -860,10 +968,7 @@ public class GFormControllerTest extends GWTTestCase {
         }
         // whether the form's list - as it sent it last - has a condition on the property
         boolean filters(GFormController controller, GPropertyDraw property) {
-            for (GPropertyFilter condition : controller.getFilters(group))
-                if (condition.column.property == property)
-                    return true;
-            return false;
+            return first(controller, property) != null;
         }
         // the condition on price the panel holds, in a view of its own - not the design's FILTER React draws -, if any
         GComponent panelCondition(GFormController controller) {
@@ -872,6 +977,11 @@ public class GFormControllerTest extends GWTTestCase {
                     return component;
             return null;
         }
+    }
+
+    // a value is the one stated, said as a number where it is not: a value's toString is not to be called
+    private static void assertValue(int expected, PValue value) {
+        assertTrue("the value is not " + expected, PValue.getPValue(expected).equals(value));
     }
 
     // the controller a React container's view is given, and what shows a group's user filters, read where the client
@@ -889,6 +999,14 @@ public class GFormControllerTest extends GWTTestCase {
     }-*/;
     private static native void changeFilter(JavaScriptObject controller, String property, Object value) /*-{
         controller.items.filter[property].change(value);
+    }-*/;
+    private static native void changeFilter(JavaScriptObject controller, String property, Object value, String options) /*-{
+        controller.items.filter[property].change(value, JSON.parse(options));
+    }-*/;
+    // the value a FILTER React draws shows, as its view is given it now
+    private static native double filterValue(Object view, String property) /*-{
+        var state = view.@lsfusion.gwt.client.form.design.view.ReactContainerView::state;
+        return state.@lsfusion.gwt.client.form.design.view.GReactFormData.ViewState::current()().items.filter[property].value;
     }-*/;
     // the panel's row of a FILTER, its caption, its comparison label, its value cell and the comparison its value is
     // edited by, read where the client keeps them

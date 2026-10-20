@@ -1396,18 +1396,23 @@ until they have explicit `EXTID`s.
 `data.<g>.properties` lists the entries of the node it is on, so on a node that holds only the user filters it is
 empty: the properties a condition can name are the group's, not the node's — `filterProperties` lists them.
 
-The controller takes a condition in the same shape, so a projected condition that has a value can be handed back to
-it as it is. A condition with no `compare` is read with the property's default comparison (its `defaultCompare` in
-`filterProperties`). One on a file property is the exception: its `value` is a link to the file, not the file a
-condition compares with, so the controller refuses one that has a value; one with none takes the conditions on that
-property off, as for any other.
+The controller takes a condition in the same shape, so a projected condition can be handed back to it as it is. What a
+condition leaves out of `compare`, `negation` and `or` is read as below: in an array, as for a new condition — the
+property's default comparison (its `defaultCompare` in `filterProperties`), no negation, AND —; on its own, as the
+condition it takes the place of has it. One on a file property is the exception: its `value` is a link to the file, not
+the file a condition compares with, so the controller refuses one that has a value; one with none is read as any other
+with none.
 
 `controller.<group>.filters.change(condition)` — a member of the group where `filters` is — changes **one**
 condition and leaves the group's other conditions, and their order, alone: it takes the place of the FIRST condition
-on the same property — a range is two conditions on one property, and its other bound stays — or is appended when
-there is none. A condition with no `value` — absent, `null` or `''` — removes EVERY condition on that property. A
-condition set elsewhere that compares with no value (the platform's panel can state one) is listed with a `null`
-`value`, so it does not survive being sent back — except on a `LOGICAL` property, which lists it as `false`.
+on the same property — a range is two conditions on one property, and its other bound stays —, keeping what it does not
+state of that condition's comparison, negation and `or`, or is appended, the default way, when there is none. So
+`{property: 'price', value: 300}` turns `price > 100 OR …` into `price > 300 OR …`. A condition with no `value` —
+absent, `null`, `''`, or one its type reads as `NULL`: `false` of a `BOOLEAN` property (a `TBOOLEAN`'s `false` is a
+value) — takes that first condition off, alone. This is what a [property filter](#property-filters)'s `change` does, and
+F3 in a grid over the conditions a view draws ([Replacing only the filters](#custom-filter-panel)) — but for an empty
+cell, whose F3 states the condition comparing with `NULL`: a `FILTER` being a user filter given in advance, its value
+and a condition added by hand are stated by one rule.
 
 Prefer it to replacing the whole list. A view that rebuilds the list merges into the conditions its handler saw, so
 a handler that holds the list of an earlier render silently drops a filter set since.
@@ -1426,8 +1431,8 @@ export function ItemBoard(props) {
 }
 ```
 
-An empty input clears every condition on `name`, keeping the other properties' conditions: its `value` is `''`, which
-is no value.
+An empty input takes the condition on `name` off — the first one, which the input shows —, keeping the other conditions:
+its `value` is `''`, which is no value.
 
 `filters` follows the group's list as the client sends it and as the server reports it — a list a `FILTER` action
 sets, say — and is rebuilt only then: it keeps its identity across renders in which nothing states its conditions anew
@@ -1443,6 +1448,10 @@ after a pause in the typing — keeps what is being typed in its own state and c
 `controller.<group>.filters.change(conditions)` — the same thing the projection calls `data.<group>.filters`, changed
 where it is read — replaces the whole list at once: an array states them all, a single condition states one. For a
 "clear everything" button (`controller.i.filters.change([])`), or when the view genuinely owns the entire condition set.
+The array is the list of conditions, as `FILTER` reads one in `.lsf`: an element with no `value` is a condition
+comparing with `NULL` — "is empty", with `negation` "is not empty" —, so a condition `filters` lists with a `null`
+`value` — one F3 states on an empty cell, say — is taken back as it is, a `BOOLEAN` property's too, listed with `false`,
+which reads back as `NULL`. A property filtered by no more is one the array leaves out.
 
 Either form reports an author's mistake instead of dropping a condition: an unknown property, an unknown
 comparison or `IN ARRAY`, which no condition compares by, an unknown field in a condition, a `negation` or `or` that
@@ -1452,8 +1461,8 @@ A condition set elsewhere is not listed when it is on a property with no integra
 projection has no name for, on an action, which is not something a form is filtered by, or on a property grouped in
 columns, as a condition here names a property, not one of its columns. The console says which and why.
 
-Handing `data.<group>.filters` back through the array form would therefore take those conditions off, and the ones
-listed with a `null` `value` with them, while changing ONE condition never touches the conditions on other properties.
+Handing `data.<group>.filters` back through the array form would therefore take those conditions off, while changing ONE
+condition never touches the conditions on other properties.
 
 A tree has one filter box for all its groups, `FILTERS(TREE <tree>)`, and its user filters are on [the tree's
 node](#trees). `filters` there lists the conditions of all its groups, those of the upper groups first, and names each
@@ -1477,7 +1486,8 @@ the properties of all its groups, those of the upper groups first. Each is an ob
 | `defaultCompare` | The one that editor starts with — the one the design named, which need not be one of `compares` |
 
 An action, a property grouped in columns and one with no integration SID are not listed: no condition can be on them.
-Nor is a file property: a condition on one is listed in `filters` all the same, and can only be taken off, as above.
+Nor is a file property: a condition on one is listed in `filters` all the same, and is stated with no value alone, as
+above.
 So a view that draws `FILTERS(<group>)` alone builds a condition editor from it, with no property of the group drawn
 there:
 
@@ -1607,7 +1617,7 @@ DESIGN items {
 
 ```js
 // data.i.filter.name
-{caption: 'Name', type: 'string', compare: '_', negation: false, value: null}
+{caption: 'Name', type: 'string', active: false, compare: '_', negation: false, or: false, value: null}
 
 controller.i.filter.name.change('ab');                     // filtered by it
 controller.i.filter.name.change('ab', {negation: true});   // ... by its negation
@@ -1618,21 +1628,23 @@ controller.i.filter.name.change(null);                     // ... and not any mo
 | --- | --- |
 | `caption` | The property's caption in the design, `null` where the design gives none |
 | `type` | The type of a condition's value: `string`, `number`, `date`, `boolean` or `json` — the FILTER type, by which `value` is read and written |
-| `compare`, `negation` | The comparison of the filter's condition, spelled as `filters` spells it, and whether the condition is negated; while there is no condition, the property's default comparison and `false` |
+| `active` | Whether the filter has a condition — one comparing with `NULL` too, whose `value` is `null` as with none (`false` on a `BOOLEAN` property) |
+| `compare`, `negation`, `or` | The comparison of the filter's condition, spelled as `filters` spells it, whether the condition is negated, and whether it is joined to the next one by OR, as `filters` says it; while there is no condition, the property's default comparison, `false` and `false` |
 | `value` | The value of the filter's condition, `null` while there is none |
 
 The filter's condition is the first condition on its property among the group's user filters — as the platform's row of
 the filter takes the first condition on its column —, whoever states it: the filter, `filters.change`, the platform's
-filter panel, a `FILTER` action. `change(value, options)` states its value: in that condition's place, or, where there
-is none, appended. The options, `{compare, negation}`, either or both, state the condition's comparison — spelled as
-`filters` spells it — and its negation, as the platform's row does with the filter controls shown; what they leave out
-stays as the condition has it, and is the property's default comparison and no negation for a new condition; its
-junction is kept. An option `change` does not know, a comparison that is no comparison of a condition — an unknown one,
-`IN ARRAY` — and a negation that is not `true` or `false` are refused, with no value too, which then takes nothing off.
-No value — absent, `null` or `''` — takes that condition off, whatever the options say, and that one alone: a range's
-other bound stays, as when the platform's row is emptied. It goes with a [batch](How-to_Custom_view_controller.md#batch)
-as `filters.change` does. The condition of a filter on a file property can only be taken off: its `value` is a link to
-the file, not the file a condition compares with.
+filter panel, a `FILTER` action. `change(value, options)` states its value as `filters.change` states one condition: in
+that condition's place, or, where there is none, appended. The options, `{compare, negation, or}`, any of them, state
+the condition's comparison — spelled as `filters` spells it —, its negation and its junction, as the platform's row does
+with the filter controls shown; what they leave out stays as the condition has it, and is the property's default
+comparison, no negation and AND for a new condition. An option `change` does not know, a comparison that is no
+comparison of a condition — an unknown one, `IN ARRAY` — and a negation or `or` that is not `true` or `false` are
+refused, with no value too, which then takes nothing off. No value — absent, `null`, `''`, or one its type reads as
+`NULL`: `false` of a `BOOLEAN` property — takes that condition off, whatever the options say, and that one alone: a
+range's other bound stays, as when the platform's row is emptied. It goes with a
+[batch](How-to_Custom_view_controller.md#batch) as `filters.change` does. The condition of a filter on a file property
+can only be taken off: its `value` is a link to the file, not the file a condition compares with.
 
 ```jsx
 export function ItemSearch({data, controller}) {
@@ -1648,7 +1660,9 @@ A property filter does not depend on who draws the group's conditions: this view
 another view — a change is then sent at once —, or the platform's filter panel. Over the platform's panel the filter is
 the panel's own row of it, which the view draws: the panel shows no row of its own for it, and states its condition as
 it states its rows' — at once, or, in its manual apply mode with its filter controls shown, when the user applies the
-conditions, the filter showing the change meanwhile. A filter of a property of a [tree](#trees)'s group is on its
+conditions, the filter showing the change meanwhile. It is a row of the panel as any other is: F3 on a column whose
+first row it is puts the cell's value into it, its comparison, negation and junction kept, and applies it so — React
+drawing the row, no editor opens. A filter of a property of a [tree](#trees)'s group is on its
 group's node, as a filter group of a tree's group is. Its [entry](#display-options), `data['FILTER(name(i))']`, says
 whether the form shows the filter — its `SHOWIF`, or a container's above it.
 
@@ -1690,12 +1704,13 @@ group's list — the one the component is shown in `filters`:
   the list, and their add does what F3 does. Where the component's box holds `FILTERCONTROLS(o)` too, the component
   draws them: they are its [filter controls](#filter-controls), whose `resetFilters()` and `addFilter()` do the same,
   and the toolbar has no filter button;
-- F3 in the grid puts in the condition of its [current cell](#filter-controls) — on that cell's property, compared the
-  property's default way with the cell's value — in the place of the first condition on that column, or at the end. It
-  applies at once, as F3 and Enter do on the platform's panel: there is no editor here to type a value in, the component
-  edits it. Alt+F3 makes it the only condition. None is started where no row is current — an empty grid, or a pivot, a
-  map, a calendar or a custom view, which have no cell —, or on a cell whose property `filterProperties` does not list
-  — a file property's cell excepted: F3 starts a condition on it, which a view can only take off —, or that shows
+- F3 in the grid gives the value of its [current cell](#filter-controls) to that cell's property, as a value is given a
+  [property filter](#property-filters): in the place of the first condition on the property, its comparison, negation
+  and `or` kept, or, where there is none, at the end, compared the property's default way. It applies at once, as F3 and
+  Enter do on the platform's panel: there is no editor here to type a value in, the component edits it. Alt+F3 makes a
+  new condition the only one. None is started where no row is current — an empty grid, or a pivot, a map, a calendar or
+  a custom view, which have no cell —, or on a cell whose property `filterProperties` does not list — a file property's
+  cell excepted: F3 states a condition on it, which a view states with no value alone —, or that shows
   another value than it is filtered by;
 - Shift+F3 and Escape in the grid clear the list;
 - typing in a column starts no condition (a grid with a quick search searches, as it does anyway), and there is no

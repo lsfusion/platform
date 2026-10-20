@@ -18,8 +18,8 @@ public class UiReactFiltersIT extends UiTest {
 
     // a view drawing a group's conditions over the platform's grid (FILTERS(i)) has them as a part of the group - the
     // conditions, what one can be on, and the one member that changes them -: a change of one condition takes the place
-    // of the first on its property or is appended, one with no value - or an empty string - takes every condition on
-    // its property off, and an array states the whole list; the grid follows
+    // of the first on its property or is appended, one with no value - or an empty string - takes that first one off,
+    // and an array states the whole list; the grid follows
     @Test
     public void theConditionsAViewDraws() throws Exception {
         String[] items = seed();
@@ -144,8 +144,9 @@ public class UiReactFiltersIT extends UiTest {
     }
 
     // the platform's filter keys in the grid state the view's list at once, with no condition row of the platform's: F3
-    // puts in the condition of the current cell - in the place of the first on its column, or at the end -, Alt+F3
-    // makes it the only one, Escape and Shift+F3 clear the list; typing in a column starts no condition
+    // gives the current cell's value to its property - in the place of the first condition on it, its comparison kept,
+    // or at the end, compared the default way -, Alt+F3 makes a new one the only one, Escape and Shift+F3 clear the
+    // list; typing in a column starts no condition
     @Test
     public void thePlatformsKeysOverTheConditionsAViewDraws() throws Exception {
         String[] items = seed();
@@ -154,10 +155,10 @@ public class UiReactFiltersIT extends UiTest {
         waitFor("conditions() === 'name _ an'");
         assertThat(names(form)).hasText(new String[] {items[1]});
         key(cell(form, "name", items[1]), "F3");
-        waitFor("conditions() === 'name = " + items[1] + "'");
+        waitFor("conditions() === 'name _ " + items[1] + "'"); // the comparison of the one there
         assertThat(form.locator(".filter:visible")).hasCount(0);
         key(cell(form, "price", "0.75"), "F3");
-        waitFor("conditions() === 'name = " + items[1] + "; price = 0.75'");
+        waitFor("conditions() === 'name _ " + items[1] + "; price = 0.75'");
         key(cell(form, "price", "0.75"), "Alt+F3");
         waitFor("conditions() === 'price = 0.75'");
         key(cell(form, "price", "0.75"), "Escape");
