@@ -99,13 +99,16 @@ public abstract class AStringClass extends TextBasedClass<String> {
         return syntax.getVarStringSQL();
     }
 
+    // an inlined value is copied into the statement once per use, and the driver and the server parse every copy
+    private final static int MAX_INLINE_LENGTH = 1000;
+
     public static boolean isDBSafeString(Object value) {
         if(value == null)
             return false;
 
         assert value instanceof String;
         String string = value.toString();
-        return !string.contains("'") && !string.contains("\\") && !string.contains(String.valueOf(SQLSession.paramPrefix));
+        return string.length() <= MAX_INLINE_LENGTH && !string.contains("'") && !string.contains("\\") && !string.contains(String.valueOf(SQLSession.paramPrefix));
     }
 
     public static String getDBString(Object value) {
