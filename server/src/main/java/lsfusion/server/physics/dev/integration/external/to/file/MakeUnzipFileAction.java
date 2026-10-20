@@ -8,6 +8,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
@@ -28,7 +29,7 @@ public class MakeUnzipFileAction extends InternalAction {
                 String extension = unzippingFile.getExtension();
                 Map<String, FileData> result = ZipUtils.unpackFile(file, extension, true);
                 for (Map.Entry<String, FileData> entry : result.entrySet()) {
-                    findProperty("unzipped[STRING[100]]").change(entry.getValue(), context, new DataObject(entry.getKey()));
+                    findProperty("unzipped[STRING]").change(entry.getValue(), context, new DataObject(entry.getKey(), StringClass.text));
                 }
             }
         } catch (ScriptingErrorLog.SemanticErrorException e) {
