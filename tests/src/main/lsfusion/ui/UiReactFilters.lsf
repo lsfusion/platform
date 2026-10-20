@@ -1,0 +1,178 @@
+MODULE UiReactFilters;
+
+REQUIRE TestUtils, SystemEvents, Service;
+
+// the forms UiReactFiltersIT works on in the browser - a group's user filters a React view draws (UiReactFilters.js):
+// over the platform's grid, also where the form opens with a condition of its own and over a pivot; over the rows the
+// view draws; of a tree -, and the actions it seeds its items with, checks what the form reads and sets the manual
+// apply mode with
+
+CLASS UiRflCategory 'Category';
+uiRflCategoryName 'Category' = DATA STRING[50] (UiRflCategory);
+uiRflCategoryShown = DATA BOOLEAN (UiRflCategory); // the category of the test that seeded last: the forms show only it
+
+CLASS UiRflItem 'Item';
+uiRflName 'Name' = DATA STRING[50] (UiRflItem);
+uiRflPrice 'Price' = DATA NUMERIC[10,2] (UiRflItem);
+uiRflSku 'SKU' = DATA STRING[10] (UiRflItem);
+uiRflCategory = DATA UiRflCategory (UiRflItem);
+uiRflShown = DATA BOOLEAN (UiRflItem); // the items of the test that seeded last: the forms show only them
+
+// what no condition can be on: a property grouped in columns - the price, in the column of the item's category -, an
+// action
+uiRflPriceIn 'Price in' (UiRflItem i, UiRflCategory c) = uiRflPrice(i) IF uiRflCategory(i) = c;
+uiRflAct 'Act' (UiRflItem i) { uiRflShown(i) <- TRUE; }
+
+// the conditions drawn by a view (FILTERS(i)) over the platform's grid, whose toolbar and filter controls stay the
+// platform's
+FORM uiRflConditions 'Conditions of a view'
+    OBJECTS c = UiRflCategory PANEL
+    OBJECTS i = UiRflItem
+    PROPERTIES(i) READONLY name = uiRflName, price = uiRflPrice, sku = uiRflSku
+    PROPERTIES(i) uiRflAct
+    PROPERTIES(i, c) READONLY uiRflPriceIn COLUMNS (c) HEADER uiRflCategoryName(c)
+    FILTERS uiRflShown(i), uiRflCategoryShown(c)
+    ORDERS name
+;
+
+// the form's own conditions, stated and read back
+uiRflFilterPrice 'Filter by price' () { FILTER uiRflConditions.i FROM JSON(r'[{"property": "price", "compare": ">", "value": 1}]'); }
+uiRflFilterNone 'Filter by nothing' () { FILTER uiRflConditions.i FROM JSON(r'[]'); }
+uiRflRead = DATA JSON ();
+uiRflReadFilters 'Read filters' () {
+    FILTERS uiRflConditions.i TO uiRflRead;
+    APPLY;
+}
+
+EXTEND FORM uiRflConditions
+    PROPERTIES() uiRflFilterPrice, uiRflFilterNone, uiRflReadFilters
+;
+
+DESIGN uiRflConditions {
+    FILTERS(i) { custom = 'UiRflView'; }
+}
+
+// ... the form opened with a condition of its own
+FORM uiRflOpened 'Opened with a condition'
+    OBJECTS i = UiRflItem
+    PROPERTIES(i) READONLY name = uiRflName, price = uiRflPrice
+    FILTERS uiRflShown(i)
+    ORDERS name
+    EVENTS ON INIT { FILTER uiRflOpened.i FROM JSON(r'[{"property": "name", "compare": "_", "value": "pp"}]'); }
+;
+
+DESIGN uiRflOpened {
+    FILTERS(i) { custom = 'UiRflView'; }
+}
+
+// ... the platform's table shown as a pivot, whose drill-down states the conditions; and a pivot with no filters in the
+// design
+FORM uiRflPivot 'Pivot under the conditions of a view'
+    OBJECTS i = UiRflItem
+    PROPERTIES(i) READONLY name = uiRflName, price = uiRflPrice, sku = uiRflSku
+    FILTERS uiRflShown(i)
+;
+
+DESIGN uiRflPivot {
+    FILTERS(i) { custom = 'UiRflView'; }
+}
+
+FORM uiRflPivotPlain 'Pivot with no filters'
+    OBJECTS i = UiRflItem
+    PROPERTIES(i) READONLY name = uiRflName, price = uiRflPrice, sku = uiRflSku
+    FILTERS uiRflShown(i)
+;
+
+DESIGN uiRflPivotPlain {
+    REMOVE FILTERBOX(i);
+}
+
+// the whole group drawn by a view: its rows and its conditions on one node
+FORM uiRflBox 'Group of a view'
+    OBJECTS i = UiRflItem
+    PROPERTIES(i) READONLY name = uiRflName, price = uiRflPrice, sku = uiRflSku
+    FILTERS uiRflShown(i)
+    ORDERS name
+;
+
+uiRflBoxFilterPrice 'Filter by price' () { FILTER uiRflBox.i FROM JSON(r'[{"property": "price", "compare": ">", "value": 1}]'); }
+
+EXTEND FORM uiRflBox
+    PROPERTIES() uiRflBoxFilterPrice
+;
+
+DESIGN uiRflBox {
+    BOX(i) { custom = 'UiRflView'; }
+}
+
+// a tree drawn by a view: the conditions of all its groups on the tree's node
+FORM uiRflTree 'Tree of a view'
+    TREE cats c = UiRflCategory, i = UiRflItem
+    PROPERTIES(c) READONLY catName = uiRflCategoryName
+    PROPERTIES(i) READONLY name = uiRflName, price = uiRflPrice
+    FILTERS uiRflCategory(i) = c, uiRflCategoryShown(c), uiRflShown(i)
+    ORDERS catName, name
+;
+
+uiRflTreeFilterPrice 'Filter by price' () { FILTER uiRflTree.i FROM JSON(r'[{"property": "price", "compare": ">", "value": 1}]'); }
+
+EXTEND FORM uiRflTree
+    PROPERTIES() uiRflTreeFilterPrice
+;
+
+DESIGN uiRflTree {
+    BOX(TREE cats) { custom = 'UiRflView'; }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiReactFilters.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiRfl 'UI React filters' WINDOW toolbar {
+        NEW uiRflConditions;
+        NEW uiRflOpened;
+        NEW uiRflPivot;
+        NEW uiRflPivotPlain;
+        NEW uiRflBox;
+        NEW uiRflTree;
+    }
+}
+
+// a category with two items in it, shown from now on: the dearer item first by name, its SKU after the other's
+uiRflSeed (STRING[50] category, STRING[50] dear, STRING[50] cheap) {
+    uiRflCategoryShown(UiRflCategory c) <- NULL;
+    uiRflShown(UiRflItem i) <- NULL;
+    uiRflRead() <- NULL;
+    NEW c = UiRflCategory {
+        uiRflCategoryName(c) <- category;
+        uiRflCategoryShown(c) <- TRUE;
+        NEW i = UiRflItem {
+            uiRflName(i) <- dear;
+            uiRflPrice(i) <- 1.50;
+            uiRflSku(i) <- 'S2';
+            uiRflCategory(i) <- c;
+            uiRflShown(i) <- TRUE;
+        }
+        NEW i = UiRflItem {
+            uiRflName(i) <- cheap;
+            uiRflPrice(i) <- 0.75;
+            uiRflSku(i) <- 'S1';
+            uiRflCategory(i) <- c;
+            uiRflShown(i) <- TRUE;
+        }
+    }
+    APPLY;
+}
+
+// the conditions FILTERS read last, as the JSON the database writes them in: a JSON value compares as the text it was
+// written in, which for the same JSON differs in key order and spaces
+uiRflCheckRead (JSON expected) {
+    assertEquals(STRING(uiRflRead()), STRING(expected), 'FILTERS read ' + STRING(uiRflRead()) + ', not ' + STRING(expected));
+}
+
+// the platform's filter panel applying changes by hand or not, for a client that starts after it
+uiRflManualApply (STRING[10] on) {
+    baseValue(setting('userFiltersManualApplyMode')) <- on;
+    APPLY;
+}
