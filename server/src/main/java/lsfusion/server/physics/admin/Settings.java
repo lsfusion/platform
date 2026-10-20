@@ -154,6 +154,8 @@ public class Settings implements Cloneable {
 
     private int limitMaterializeComplexity = 20;
 
+    private int limitPullCasesComplexity = 1000;
+
     private int limitApplyHintIncrementComplexity = 100;
 
     private long limitApplyHintIncrementStat = 1000;
@@ -474,6 +476,14 @@ public class Settings implements Cloneable {
 
     public void setDisablePoolConnections(boolean disablePoolConnections) {
         this.disablePoolConnections = disablePoolConnections;
+    }
+
+    public int getLimitPullCasesComplexity() {
+        return limitPullCasesComplexity;
+    }
+
+    public void setLimitPullCasesComplexity(int limitPullCasesComplexity) {
+        this.limitPullCasesComplexity = limitPullCasesComplexity;
     }
 
     public boolean isDisablePoolPreparedStatements() {

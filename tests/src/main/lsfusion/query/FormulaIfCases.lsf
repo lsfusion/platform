@@ -1,0 +1,58 @@
+MODULE FormulaIfCases;
+
+REQUIRE TestUtils, Utils;
+
+// #1903: a formula of operands with IF's was made for every combination of their branches, 2^N formulas of all N operands.
+// A sum of 13 of them made a statement of several MB, refused as too long. The results are checked against ones made
+// operand by operand
+
+ifCasesChar (TEXT s, INTEGER n) = FORMULA TEXT 'substr($1, $2, 1)';
+ifCasesText = DATA LOCAL TEXT ();
+
+testFormulaOfManyIfs 'A string sum of many IF operands' () {
+    LOCAL sum = TEXT ();
+    LOCAL expectedRow = TEXT (INTEGER);
+    LOCAL expected = TEXT ();
+    ifCasesText() <- 'abcdefghijklmn';
+    sum() <- GROUP CONCAT ((IF mod(INTEGER i, 2) = 0 THEN ifCasesChar(ifCasesText(), 2) ELSE 'y')
+            + (IF mod(i, 3) = 0 THEN ifCasesChar(ifCasesText(), 3) ELSE 'y')
+            + (IF mod(i, 4) = 0 THEN ifCasesChar(ifCasesText(), 4) ELSE 'y')
+            + (IF mod(i, 5) = 0 THEN ifCasesChar(ifCasesText(), 5) ELSE 'y')
+            + (IF mod(i, 6) = 0 THEN ifCasesChar(ifCasesText(), 6) ELSE 'y')
+            + (IF mod(i, 7) = 0 THEN ifCasesChar(ifCasesText(), 7) ELSE 'y')
+            + (IF mod(i, 8) = 0 THEN ifCasesChar(ifCasesText(), 8) ELSE 'y')
+            + (IF mod(i, 9) = 0 THEN ifCasesChar(ifCasesText(), 9) ELSE 'y')
+            + (IF mod(i, 10) = 0 THEN ifCasesChar(ifCasesText(), 10) ELSE 'y')
+            + (IF mod(i, 11) = 0 THEN ifCasesChar(ifCasesText(), 11) ELSE 'y')
+            + (IF mod(i, 12) = 0 THEN ifCasesChar(ifCasesText(), 12) ELSE 'y')
+            + (IF mod(i, 13) = 0 THEN ifCasesChar(ifCasesText(), 13) ELSE 'y')
+            + ('z' IF NOT mod(i, 14) = 0)) IF iterate(i, 1, 100), ',' ORDER i;
+    expectedRow(INTEGER i) <- (GROUP CONCAT (IF mod(i, INTEGER k) = 0 THEN ifCasesChar(ifCasesText(), k) ELSE 'y')
+            IF iterate(k, 2, 13), '' ORDER k) + 'z' WHERE iterate(i, 1, 100) AND NOT mod(i, 14) = 0;
+    expected() <- GROUP CONCAT expectedRow(INTEGER i), ',' ORDER i;
+    assertNotNull(sum(), 'no sum');
+    assertEquals(sum(), expected(), CONCAT ' ', 'sum', sum(), 'expected', expected());
+}
+
+// a division can be NULL for operands that are not: by zero
+testNullableFormulaOfManyIfs 'A division of a sum of many IF operands' () {
+    LOCAL quotient = NUMERIC[20,4] (INTEGER);
+    LOCAL expected = NUMERIC[20,4] (INTEGER);
+    quotient(INTEGER i) <- ((IF mod(i, 2) = 0 THEN 2 ELSE 1)
+            + (IF mod(i, 3) = 0 THEN 3 ELSE 1)
+            + (IF mod(i, 4) = 0 THEN 4 ELSE 1)
+            + (IF mod(i, 5) = 0 THEN 5 ELSE 1)
+            + (IF mod(i, 6) = 0 THEN 6 ELSE 1)
+            + (IF mod(i, 7) = 0 THEN 7 ELSE 1)
+            + (IF mod(i, 8) = 0 THEN 8 ELSE 1)
+            + (IF mod(i, 9) = 0 THEN 9 ELSE 1)
+            + (IF mod(i, 10) = 0 THEN 10 ELSE 1)
+            + (IF mod(i, 11) = 0 THEN 11 ELSE 1)
+            + (IF mod(i, 12) = 0 THEN 12 ELSE 1)
+            + (IF mod(i, 13) = 0 THEN 13 ELSE 1)) / (IF mod(i, 5) = 0 THEN 0 ELSE 2) WHERE iterate(i, 1, 100);
+    expected(INTEGER i) <- (GROUP SUM (IF mod(i, INTEGER k) = 0 THEN k ELSE 1) IF iterate(k, 2, 13)) / 2
+            WHERE iterate(i, 1, 100) AND NOT mod(i, 5) = 0;
+    assertEquals((GROUP SUM 1 IF quotient(INTEGER i)), 80, 'the rows divided by zero are not NULL');
+    assertNull((GROUP SUM 1 IF (quotient(INTEGER i) OR expected(i)) AND NOT quotient(i) = expected(i)),
+            'the quotient differs from the one made operand by operand');
+}

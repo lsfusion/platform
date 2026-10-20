@@ -1,7 +1,7 @@
 package lsfusion.server.data.expr.formula;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.server.data.expr.BaseExpr;
+import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.classes.data.file.JSONTextClass;
@@ -9,7 +9,7 @@ import lsfusion.server.logics.classes.data.file.JSONTextClass;
 public class JSONBuildSingleArrayFormulaImpl implements FormulaJoinImpl {
 
     @Override
-    public boolean hasNotNull(ImList<BaseExpr> exprs) {
+    public boolean hasNotNull(ImList<? extends Expr> exprs) {
         return false;
     }
 

@@ -18,6 +18,10 @@ import lsfusion.server.data.expr.classes.VariableSingleClassExpr;
 import lsfusion.server.data.expr.join.base.FormulaJoin;
 import lsfusion.server.data.expr.join.inner.InnerBaseJoin;
 import lsfusion.server.data.expr.key.KeyType;
+import lsfusion.server.data.expr.where.cases.CaseExpr;
+import lsfusion.server.data.expr.where.cases.ExprCase;
+import lsfusion.server.data.expr.where.ifs.IfExpr;
+import lsfusion.server.data.expr.where.ifs.NullExpr;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.FJData;
@@ -37,6 +41,7 @@ import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.UnknownClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.physics.admin.Settings;
 
 public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface {
     public final static String MIN2 = "(prm1+prm2-ABS(prm1-prm2))/2"; // пока так сделаем min и проверку на infinite
@@ -118,22 +123,21 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
     }
 
     public static ConcreteClass getStaticClass(FormulaExprInterface expr, KeyType keyType) {
-        FormulaClass result = getStaticValueClass(expr);
+        FormulaClass result = getStaticValueClass(expr.getFormula());
         if(result != null)
             return result;
         Type type = keyType == null ? ((Expr) expr).getSelfType() : ((Expr) expr).getType(keyType);
         return (DataClass) type;
     }
 
-    private static FormulaClass getStaticValueClass(FormulaExprInterface expr) {
-        FormulaJoinImpl formula = expr.getFormula();
+    static FormulaClass getStaticValueClass(FormulaJoinImpl formula) {
         if(formula instanceof CustomFormulaImpl && ((CustomFormulaImpl)formula).valueClass instanceof UnknownClass) // так как это один очень частный случай, генерации id'ков
             return ((CustomFormulaImpl)formula).valueClass;
         return null;
     }
 
     public static AndClassSet getFormulaAndClassSet(FormulaExprInterface expr, final ImMap<VariableSingleClassExpr, AndClassSet> and) {
-        FormulaClass staticValueClass = getStaticValueClass(expr);
+        FormulaClass staticValueClass = getStaticValueClass(expr.getFormula());
         if(staticValueClass != null)
             return staticValueClass;
         DataClass result = (DataClass) expr.getFormula().getType(new ListExprType(expr.getFParams()) {
@@ -283,11 +287,50 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
     }
 
     public static Expr create(final FormulaJoinImpl formula, ImList<? extends Expr> exprs) {
+        if(isPullTooComplex(exprs))
+            return BaseExpr.create(new FormulaCasesExpr(formula, BaseUtils.immutableCast(exprs)));
+
         return new ExprPullWheres<Integer>() {
             protected Expr proceedBase(ImMap<Integer, BaseExpr> map) {
                 return createBase(ListFact.fromIndexedMap(map), formula);
             }
         }.proceed(exprs.toIndexedMap());
+    }
+
+    // pulling the cases of the operands out gives a formula for every combination of the cases, and in each of them every
+    // operand is repeated as many times as there are combinations of the cases of the others
+    private static boolean isPullTooComplex(ImList<? extends Expr> exprs) {
+        long limit = Settings.get().getLimitPullCasesComplexity();
+        int size = exprs.size();
+        long[] casesCounts = new long[size];
+        long count = 1;
+        for(int i = 0; i < size; i++) {
+            casesCounts[i] = getCasesCount(exprs.get(i));
+            if(casesCounts[i] == 0) // the operand is NULL, so is the formula
+                return false;
+            count = Math.min(count * casesCounts[i], limit + 1);
+        }
+        if(count == 1)
+            return false;
+        if(count > limit)
+            return true;
+
+        long complexity = 0;
+        for(int i = 0; i < size; i++)
+            complexity += exprs.get(i).getComplexity(false) * (count / casesCounts[i]);
+        return complexity > limit;
+    }
+
+    private static long getCasesCount(Expr expr) {
+        if(expr instanceof IfExpr)
+            return getCasesCount(((IfExpr) expr).trueExpr) + getCasesCount(((IfExpr) expr).falseExpr);
+        if(expr instanceof CaseExpr) {
+            long count = 0;
+            for(ExprCase exprCase : expr.getCases())
+                count += getCasesCount(exprCase.data);
+            return count;
+        }
+        return expr instanceof NullExpr ? 0 : 1;
     }
 
     private static Expr createBase(ImList<BaseExpr> exprs, final FormulaJoinImpl formula) {

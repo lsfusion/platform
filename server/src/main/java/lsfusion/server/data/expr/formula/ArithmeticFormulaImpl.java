@@ -1,7 +1,7 @@
 package lsfusion.server.data.expr.formula;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.server.data.expr.BaseExpr;
+import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.conversion.ConversionSource;
 import lsfusion.server.data.expr.formula.conversion.TypeConversion;
 import lsfusion.server.data.type.ObjectType;
@@ -44,7 +44,7 @@ public abstract class ArithmeticFormulaImpl extends AbstractFormulaImpl implemen
 
     public abstract String getOperationName();
 
-    public boolean hasNotNull(ImList<BaseExpr> exprs) {
+    public boolean hasNotNull(ImList<? extends Expr> exprs) {
         return false;
     }
 }

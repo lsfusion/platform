@@ -24,7 +24,7 @@ public class WindowFormulaImpl implements FormulaJoinImpl {
     }
 
     @Override
-    public boolean hasNotNull(ImList<BaseExpr> exprs) {
+    public boolean hasNotNull(ImList<? extends Expr> exprs) {
         return false;
     }
 }

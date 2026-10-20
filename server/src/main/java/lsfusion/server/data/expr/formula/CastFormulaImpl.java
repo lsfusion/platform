@@ -1,7 +1,7 @@
 package lsfusion.server.data.expr.formula;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.server.data.expr.BaseExpr;
+import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.DataClass;
 
@@ -33,7 +33,7 @@ public class CastFormulaImpl implements FormulaJoinImpl {
         return this == obj || obj instanceof CastFormulaImpl && castClass.equals(((CastFormulaImpl)obj).castClass);
     }
 
-    public boolean hasNotNull(ImList<BaseExpr> exprs) {
+    public boolean hasNotNull(ImList<? extends Expr> exprs) {
         return castClass.isCastNotNull(exprs.get(0).getSelfType(), Type.CastType.CAST);
     }
 }

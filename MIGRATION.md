@@ -22,6 +22,28 @@ The quickest way back is `settings.enableAPI=1` globally (in `lsfusion.propertie
 it the arbitrary code execution over HTTP for every authenticated user, see
 [Authentication](docs/paradigm/en/Access_from_an_external_system.md#authentication).
 
+### A formula of many `IF` operands is no longer built for every combination of their branches
+
+A formula whose operands have branches - `(IF a THEN x ELSE y) + (IF b THEN z ELSE w)` - was compiled into a formula for
+every combination of the branches, so that a sum of N such operands repeated each of them 2^(N-1) times: a dozen of
+them made a query of megabytes, refused as longer than `queryLengthLimit`, and a large value used in the branches was
+copied into the query hundreds of times (see [issue #1903](https://github.com/lsfusion/platform/issues/1903)). The
+expansion now stops once the complexity of its result would exceed `limitPullCasesComplexity` (`1000` by default), and
+past it the formula is computed once, over the operands with their branches as they are.
+
+Results are unchanged. The formulas below the threshold, which are most of them, compile as before; those above it
+compile into a different and much shorter query, in which the optimizer sees the branches of the operands less
+precisely, so that a particular query of that kind may get a different plan.
+
+#### Quick fallback
+
+```
+settings.limitPullCasesComplexity = 2147483647
+```
+
+restores the expansion of every formula. See the [Working parameters](https://docs.lsfusion.org/Working_parameters/)
+article.
+
 ### The execution order of global events follows from the logic
 
 The order in which global events run is built at startup from the dependencies between them, and
