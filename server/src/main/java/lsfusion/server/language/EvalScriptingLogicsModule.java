@@ -3,12 +3,14 @@ package lsfusion.server.language;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.data.table.IndexType;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.PropertySettings;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
@@ -16,6 +18,7 @@ import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.property.LazyProperty;
+import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -93,6 +96,29 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     public void addScriptedFollows(NamedPropertyUsage mainPropUsage, List<TypedParameter> namedParams, List<PropertyFollowsDebug> resolveOptions, 
                                    LPWithParams rightProp, Event event, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         emitEvalError("=> statement");
+    }
+
+    // the cases of an abstract are finalized only with the whole logics, which an eval module is never part of
+    @Override
+    public LP<?> addScriptedAbstractProp(CaseUnionProperty.Type type, String returnClass, ImList<ValueClass> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast, boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
+        emitEvalError("ABSTRACT operator");
+        return null;
+    }
+
+    @Override
+    public LA addScriptedAbstractAction(ListCaseAction.AbstractType type, ImList<ValueClass> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast, String returnClassName, List<String> returnClassNames) throws ScriptingErrorLog.SemanticErrorException {
+        emitEvalError("ABSTRACT operator");
+        return null;
+    }
+
+    @Override
+    public void addImplementationToAbstractProp(NamedPropertyUsage abstractPropUsage, List<TypedParameter> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
+        emitEvalError("+= statement");
+    }
+
+    @Override
+    public void addImplementationToAbstractAction(NamedPropertyUsage abstractPropUsage, List<TypedParameter> context, LAWithParams implement, LPWithParams when, boolean optimisticAsync) throws ScriptingErrorLog.SemanticErrorException {
+        emitEvalError("ACTION+ statement");
     }
 
     @Override
