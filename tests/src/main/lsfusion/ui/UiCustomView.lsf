@@ -1,0 +1,165 @@
+MODULE UiCustomView;
+
+REQUIRE TestUtils, SystemEvents;
+
+// the forms UiCustomViewIT works on in the browser - React views (UiCustomView.js) that place what the platform draws,
+// change what they draw through their members and call the server through their controller, a custom cell renderer,
+// and the JS functions INTERNAL CLIENT actions of a form and of the navigator run with a controller -, and the actions
+// it seeds the items with and checks what was stored by
+
+CLASS UiCustomViewItem 'Item';
+uiCustomViewName 'Name' = DATA STRING[50] (UiCustomViewItem);
+uiCustomViewQuantity 'Quantity' = DATA INTEGER (UiCustomViewItem);
+// the items of the test that seeded last: the forms show only them
+uiCustomViewShown = DATA BOOLEAN (UiCustomViewItem);
+
+// a view that draws the rows itself and places the platform's editor of the quantity in each (UiCustomViewRows)
+FORM uiCustomViewRows 'Rows'
+    OBJECTS i = UiCustomViewItem
+    PROPERTIES(i) READONLY uiCustomViewName
+    PROPERTIES(i) uiCustomViewQuantity NOCUSTOM
+    FILTERS uiCustomViewShown(i)
+    ORDERS uiCustomViewName(i)
+;
+
+DESIGN uiCustomViewRows {
+    NEW rows FIRST {
+        custom = 'UiCustomViewRows';
+        MOVE BOX(i);
+    }
+}
+
+// a view that places the note the platform draws twice, the first time in a node it never puts in the page
+// (UiCustomViewStray)
+uiCustomViewNote 'Note' = DATA LOCAL STRING[50] ();
+
+FORM uiCustomViewStray 'Stray place'
+    PROPERTIES() uiCustomViewNote NOCUSTOM
+;
+
+DESIGN uiCustomViewStray {
+    NEW stray FIRST {
+        custom = 'UiCustomViewStray';
+        MOVE PROPERTY(uiCustomViewNote());
+    }
+}
+
+// a view that draws the rows and the quantities itself, and changes a quantity through its member
+// (UiCustomViewQuantities)
+FORM uiCustomViewQuantities 'Quantities'
+    OBJECTS i = UiCustomViewItem
+    PROPERTIES(i) READONLY uiCustomViewName
+    PROPERTIES(i) uiCustomViewQuantity
+    FILTERS uiCustomViewShown(i)
+    ORDERS uiCustomViewName(i)
+;
+
+DESIGN uiCustomViewQuantities {
+    NEW quantities FIRST {
+        custom = 'UiCustomViewQuantities';
+        MOVE BOX(i);
+    }
+}
+
+// what a view's calls to the server change and read, in the form's session (UiCustomViewCalls); the platform draws it
+uiCustomViewCount 'Count' = DATA LOCAL INTEGER ();
+uiCustomViewDouble (INTEGER a) {
+    RETURN a * 2;
+}
+
+FORM uiCustomViewCalls 'Calls'
+    PROPERTIES() READONLY uiCustomViewCount
+    CUSTOMS uiCustomViewDouble, uiCustomViewCount
+;
+
+DESIGN uiCustomViewCalls {
+    NEW calls FIRST {
+        custom = 'UiCustomViewCalls';
+    }
+}
+
+// INTERNAL CLIENT actions, each given 21 and the form's controller: a JS function whose answer the action takes, and
+// an asynchronous one, which changes the answer through the controller, in the form's session - followed in its action
+// by a JS function that notes, in the page, whether the change was over when it ran. The action waits for neither, so
+// that the server takes the change while it is not waiting for the client
+uiCustomViewAnswer 'Answer' = DATA LOCAL STRING[100] ();
+uiCustomViewOnClient 'On the client' () {
+    INTERNAL CLIENT 'uiCustomViewOnClient' PARAMS 21 TO uiCustomViewAnswer;
+}
+uiCustomViewThroughServer 'Through the server' () {
+    INTERNAL CLIENT 'uiCustomViewThroughServer' PARAMS 21;
+    INTERNAL CLIENT 'uiCustomViewAfterServer';
+}
+
+FORM uiCustomViewClient 'Client'
+    PROPERTIES() READONLY uiCustomViewAnswer
+    PROPERTIES() uiCustomViewOnClient, uiCustomViewThroughServer
+    CUSTOMS uiCustomViewAnswer
+;
+
+// a property a custom cell renderer draws (uiCustomViewCell), which changes it through its controller and calls the
+// server through the form's controller it reaches from there; the platform draws what the server has of it
+uiCustomViewCellText 'Cell text' = DATA LOCAL STRING[50] ();
+uiCustomViewCellEcho 'Echo' () = uiCustomViewCellText();
+
+FORM uiCustomViewCell 'Cell'
+    PROPERTIES() uiCustomViewCellText CUSTOM 'uiCustomViewCell'
+    PROPERTIES() READONLY uiCustomViewCellEcho
+    CUSTOMS uiCustomViewDouble
+;
+
+// an INTERNAL CLIENT action the navigator runs, given 6 and the navigator's controller: through it, the JS function
+// evaluates a script and runs an action by name, which marks what it is given, in a session of its own
+uiCustomViewNavigatorMarks = DATA TEXT ();
+uiCustomViewNavigatorMark (STRING mark) {
+    uiCustomViewNavigatorMarks() <- CONCAT ',', uiCustomViewNavigatorMarks(), mark;
+    APPLY;
+}
+uiCustomViewFromNavigator 'From the navigator' () {
+    INTERNAL CLIENT 'uiCustomViewFromNavigator' PARAMS 6;
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiCustomView.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiCustomView 'UI custom view' WINDOW toolbar {
+        NEW uiCustomViewRows;
+        NEW uiCustomViewStray;
+        NEW uiCustomViewQuantities;
+        NEW uiCustomViewCalls;
+        NEW uiCustomViewClient;
+        NEW uiCustomViewCell;
+        NEW uiCustomViewFromNavigator;
+    }
+}
+
+// two items shown from now on, under the names given, of the quantities 1 and 2; the navigator's marks start over
+uiCustomViewSeed (STRING[50] first, STRING[50] second) {
+    uiCustomViewShown(UiCustomViewItem i) <- NULL;
+    uiCustomViewNavigatorMarks() <- NULL;
+    NEW i = UiCustomViewItem {
+        uiCustomViewName(i) <- first;
+        uiCustomViewQuantity(i) <- 1;
+        uiCustomViewShown(i) <- TRUE;
+    }
+    NEW i = UiCustomViewItem {
+        uiCustomViewName(i) <- second;
+        uiCustomViewQuantity(i) <- 2;
+        uiCustomViewShown(i) <- TRUE;
+    }
+    APPLY;
+}
+
+uiCustomViewQuantityOf (STRING[50] name) =
+    GROUP MAX uiCustomViewQuantity(UiCustomViewItem i) IF uiCustomViewName(i) = name;
+uiCustomViewCheckQuantity (STRING[50] name, INTEGER expected) {
+    assertEquals(uiCustomViewQuantityOf(name), expected, CONCAT ' ', 'the quantity of', name, 'is',
+                 (OVERRIDE STRING(uiCustomViewQuantityOf(name)), 'none'), 'not', expected);
+}
+
+uiCustomViewCheckNavigatorMarks (STRING expected) {
+    assertEquals((OVERRIDE uiCustomViewNavigatorMarks(), 'none'), expected,
+                 CONCAT ' ', 'the marks are', (OVERRIDE uiCustomViewNavigatorMarks(), 'none'), 'not', expected);
+}
