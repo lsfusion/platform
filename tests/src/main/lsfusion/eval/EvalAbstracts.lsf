@@ -1,0 +1,41 @@
+MODULE EvalAbstracts;
+
+REQUIRE TestUtils;
+
+// abstracts are not allowed in eval code, yet instead of saying so the server failed with a "wrong signature" error or
+// with a ClassCastException TRY could not catch, or took them silently (#1912)
+
+eaExtendedAction ABSTRACT LIST ();
+eaExtendedProperty = ABSTRACT STRING ();
+
+// what the script fails with is in messageCaughtException()
+eaEval (TEXT script) {
+    TRY {
+        EVAL script;
+    } CATCH {
+    }
+}
+
+testEvalAbstractActionIsRefused 'An abstract action declared in EVAL is refused' () {
+    eaEval('act ABSTRACT CASE (STRING); act(STRING s) + WHEN s = \'a\' THEN \{ \} run() \{ act(\'a\'); \}');
+    assertNotNull(messageCaughtException(), 'an abstract action was not refused');
+    assertTrue(messageCaughtException() LIKE '%ABSTRACT operator cannot be used in EVAL module%', 'an abstract action failed with ' + messageCaughtException());
+}
+
+testEvalAbstractPropertyIsRefused 'An abstract property declared in EVAL is refused' () {
+    eaEval('prop = ABSTRACT STRING (STRING); run() \{ \}');
+    assertNotNull(messageCaughtException(), 'an abstract property was not refused');
+    assertTrue(messageCaughtException() LIKE '%ABSTRACT operator cannot be used in EVAL module%', 'an abstract property failed with ' + messageCaughtException());
+}
+
+testEvalActionImplementationIsRefused 'ACTION+ in EVAL is refused' () {
+    eaEval('eaExtendedAction() + \{ \} run() \{ \}');
+    assertNotNull(messageCaughtException(), 'ACTION+ was not refused');
+    assertTrue(messageCaughtException() LIKE '%ACTION+ statement cannot be used in EVAL module%', 'ACTION+ failed with ' + messageCaughtException());
+}
+
+testEvalPropertyImplementationIsRefused '+= in EVAL is refused' () {
+    eaEval('eaExtendedProperty() += \'x\'; run() \{ \}');
+    assertNotNull(messageCaughtException(), '+= was not refused');
+    assertTrue(messageCaughtException() LIKE '%+= statement cannot be used in EVAL module%', '+= failed with ' + messageCaughtException());
+}
