@@ -34,7 +34,6 @@ import java.util.Map;
 public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public interface UIHandler {
-        void addEnterBinding(Widget widget);
         void removeCondition(GPropertyFilter condition);
         void applyFilters(boolean focusFirstComponent, GFilterConditionView changedView);
         void enableApplyButton();
@@ -184,6 +183,12 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
                 confirmed = true;
             }
 
+            // Enter in its value cell applies the conditions, as the panel's apply does
+            @Override
+            public void enterPressed() {
+                uiHandler.applyFilters(true, null);
+            }
+
             @Override
             public void editingCancelled(CancelReason cancelReason) {
                 super.editingCancelled(cancelReason);
@@ -195,7 +200,6 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         valueView.changeProperty(condition, readSelectedValue);
 
         rightPanel.addCentered(valueView);
-        uiHandler.addEnterBinding(valueView.cell);
 
         deleteButton = new GToolbarButton(StaticImage.DELETE_FILTER, messages.formFilterRemoveCondition()) {
             @Override
@@ -298,8 +302,9 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     public void setControlsVisible(boolean visible) {
         controlsVisible = visible;
 
-        propertyLabel.setVisible(!controlsVisible);
-        propertyView.setVisible(controlsVisible);
+        // a fixed row's property - a FILTER's - is the design's: its caption stays, no choice of another
+        propertyLabel.setVisible(!controlsVisible || isFixed());
+        propertyView.setVisible(controlsVisible && !isFixed());
 
         if (isFixed()) {
             compareLabel.setVisible(!controlsVisible);
@@ -340,10 +345,13 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     }
 
     // a fixed row TAKES a condition - a list the server reports states it, or a view through the row's FILTER -: its own
-    // made that one, and shown, a NULL allowed where it has one (a two-state LOGICAL's false)
+    // made that one, and shown, a NULL allowed where it has one (a two-state LOGICAL's false), its comparison and
+    // negation in the label too, its value edited by that comparison, as when they are chosen in the row (compareView)
     public void takeCondition(GPropertyFilter filter) {
         condition.override(filter);
         applyCondition(filter);
+        updateCompareLabelText();
+        valueView.changeCompare(condition.compare);
         setAllowNull(filter.nullValue());
     }
     // ... and none: its value cleared and a NULL no longer allowed, applied no more; whether it had a value
@@ -424,9 +432,12 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         return condition.column.columnKey != null ? condition.column : new Column(condition.column.property, GGroupObjectValue.EMPTY);
     }
 
+    // shown or hidden - by its SHOWIF, with its table - with its caption, a widget apart where its container aligns
+    // captions (initView)
     @Override
     public void setVisible(boolean nVisible) {
         super.setVisible(nVisible);
+        leftPanel.setVisible(nVisible);
 
         if (nVisible) {
             String columnCaption = columnsProvider.getColumns().get(getCaptionColumn());

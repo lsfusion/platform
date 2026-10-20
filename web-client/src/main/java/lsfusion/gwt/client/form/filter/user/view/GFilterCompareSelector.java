@@ -96,8 +96,11 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
         setTitle((negation ? NOT_STRING + " " : "") + currentValue.getTooltipText());
     }
     
+    // the negation of a condition the row takes: kept and shown in the text, as the check box keeps and shows it
     public void setNegation(boolean negation) {
+        this.negation = negation;
         negationCB.setValue(negation);
+        updateText();
     }
 
     public void setAllowNull(boolean allowNull) {

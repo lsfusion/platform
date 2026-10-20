@@ -1,0 +1,30 @@
+MODULE UiPlatformFilterRow;
+
+REQUIRE System;
+
+// the form UiPlatformFilterRowIT works on in the browser - a FILTER of a property the platform draws as a condition
+// row: a fixed row of the platform's filter panel
+
+CLASS UiPfrItem 'Item';
+uiPfrName 'Name' = DATA ISTRING[50] (UiPfrItem);
+
+// the conditions drawn by the platform's filter panel, the name's FILTER its fixed row
+FORM uiPfrPanel 'Filter row of the panel'
+    OBJECTS i = UiPfrItem
+    PROPERTIES(i) READONLY uiPfrName FILTER
+;
+
+// the name's condition stated by the server, compared otherwise than the row compares by default (@, a string's)
+uiPfrNameEquals 'Name equals' () {
+    FILTER uiPfrPanel.i FROM JSON(r'[{"property": "uiPfrName(i)", "compare": "=", "value": "-"}]');
+}
+
+EXTEND FORM uiPfrPanel
+    PROPERTIES() uiPfrNameEquals
+;
+
+NAVIGATOR {
+    NEW FOLDER uiPfr 'UI platform filter rows' WINDOW toolbar {
+        NEW uiPfrPanel;
+    }
+}

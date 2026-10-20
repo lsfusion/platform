@@ -1,10 +1,7 @@
 package lsfusion.gwt.client.form.filter.user.controller;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
@@ -27,8 +24,6 @@ import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
-
-import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
 // the platform's FILTERS of a group, or of a tree for all its groups: its filter panel, both what shows the user
 // filters (GUserFiltersController) and what takes their input (GFilterInputController) - the conditions it draws in the
@@ -53,19 +48,6 @@ public final class GPlatformFiltersController extends GFilterInputController imp
         this.hasFiltersContainer = form.formLayout.getContainerView(filtersContainer) != null;
 
         toggle.bind(this, this); // its commands, and its editors - once what its controls ask of them is set
-    }
-
-    private void processBinding(NativeEvent event, Runnable action) {
-        action.run();
-        stopPropagation(event);
-    }
-
-    @Override
-    public void addEnterBinding(Widget widget) {
-        form.addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER)),
-                new GBindingEnv(null, GBindingMode.ALL, null, null, GBindingMode.ONLY, null, null, GBindingMode.ONLY, null),
-                event -> processBinding(event, () -> applyFilters()),
-                widget, rows.getSelectedGroupObject());
     }
 
     @Override

@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -8,9 +10,14 @@ import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GBindingEnv;
+import lsfusion.gwt.client.form.event.GBindingMode;
+import lsfusion.gwt.client.form.event.GKeyInputEvent;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -52,6 +59,7 @@ public class GDataFilterValueView extends SizedFlexPanel {
         }
 
         cell = new GDataFilterPropertyValue(condition, form, this::valueChanged, this::editingCancelled);
+        addEnterBinding(cell, condition.groupObject);
 
         sizedView = cell.getSizedWidget(true); // true is needed for correct calculation of input field width in filters
         GwtClientUtils.addClassName(sizedView.widget, "filter-data-property-value");
@@ -64,6 +72,22 @@ public class GDataFilterValueView extends SizedFlexPanel {
             filterValue.value = readSelectedValue(condition);
 
         cell.updateValue(filterValue.value);
+    }
+
+    // Enter in the cell alone - the binding's widget says only whether it is shown, and the group's other panel cells
+    // give the form their Enter too -: bound with each cell built, taken back with it (destroy)
+    private void addEnterBinding(GDataFilterPropertyValue cell, GGroupObject group) {
+        GKeyInputEvent enter = new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER));
+        form.addBinding(event -> enter.isEvent(event) && cell.getElement().isOrHasChild(Element.as(event.getEventTarget())),
+                new GBindingEnv(null, GBindingMode.ALL, null, null, GBindingMode.ONLY, null, null, GBindingMode.ONLY, null),
+                null, event -> {
+                    enterPressed();
+                    GwtClientUtils.stopPropagation(event);
+                },
+                cell, group);
+    }
+    // ... what it does: the row applies the conditions (GFilterConditionView)
+    public void enterPressed() {
     }
 
     public void valueChanged(PValue value) {

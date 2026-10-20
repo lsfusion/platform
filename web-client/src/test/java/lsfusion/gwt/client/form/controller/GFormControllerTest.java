@@ -24,6 +24,7 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.data.GIntegerType;
+import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -34,10 +35,12 @@ import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseInputEvent;
 import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.filter.user.GFilterControls;
+import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
@@ -45,6 +48,7 @@ import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GExtraPropReader;
+import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import lsfusion.gwt.client.form.property.PValue;
@@ -682,15 +686,114 @@ public class GFormControllerTest extends GWTTestCase {
         controller.changeFilters(Collections.singletonList(group), new ArrayList<>()); // ... and a list the form sends
     }
 
+    // a fixed row of the platform's panel takes a condition from a list the server reports with its comparison shown:
+    // in the label it shows with its controls hidden, and as the comparison its value is edited by, as when the user
+    // chooses it in the row - the label and the editor kept the comparison the row had before
+    public void testAFixedRowShowsTheComparisonOfAConditionItTakes() {
+        FiltersForm filters = new FiltersForm(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+
+        filters.report(controller, new GPropertyFilter(new GFilter(filters.quantity), filters.group, GGroupObjectValue.EMPTY, PValue.getPValue(2), GCompare.GREATER));
+        GFilterConditionView row = panelRow(panel, filters.placed);
+        assertEquals(">", compareLabel(row).getText());
+        assertEquals(GCompare.GREATER, editorCompare(row));
+    }
+
+    // a fixed row of the panel takes a negated condition from a list the server reports with its negation shown in the
+    // comparison's selector, which its controls show, too - the selector kept the negation it had
+    public void testAFixedRowShowsTheNegationOfAConditionItTakes() {
+        FiltersForm filters = new FiltersForm(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+
+        filters.report(controller, new GPropertyFilter(new GFilter(filters.quantity), filters.group, GGroupObjectValue.EMPTY, PValue.getPValue(2), true, GCompare.GREATER, true));
+        panel.setControlsVisible(true);
+        assertEquals("!>", compareSelector(panelRow(panel, filters.placed)).getElement().getInnerText());
+    }
+
+    // a fixed row of the panel - a FILTER's -, its controls shown, keeps its property, the design's: its caption shown
+    // in place of the choice of another, which it offered
+    public void testAFixedRowKeepsItsPropertyWithItsControlsShown() {
+        FiltersForm filters = new FiltersForm(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        panel.setControlsVisible(true);
+        GFilterConditionView row = panelRow(panel, filters.placed);
+        assertTrue(compareSelector(row).isVisible());
+        assertFalse(propertySelector(row).isVisible());
+    }
+
+    // a row of the platform's panel takes Enter in its value cell alone, its view binding it: in another panel cell of
+    // its group - a panel property's - the key is that cell's, which the panel took, applying its conditions
+    public void testAPanelRowTakesEnterInItsValueCellAlone() {
+        FiltersForm filters = new FiltersForm(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        assertEnterInItsValueCellAlone(filters, controller, panelRow(panel, filters.placed));
+    }
+    // a row given a value, Enter pressed in another panel cell of its group, then in the row's value cell: the row's
+    // condition stated by the second alone
+    private static void assertEnterInItsValueCellAlone(FiltersForm filters, GFormController controller, GFilterConditionView view) {
+        Label cell = new Label(); // another panel cell of the group
+        GFormController.setBindingGroupObject(cell, filters.group);
+        RootPanel.get().add(view); // on the page: a binding holds while its widget is shown
+        RootPanel.get().add(cell);
+        try {
+            view.setValue(new GDataFilterValue(PValue.getPValue(3)));
+            assertFalse(enter(controller, cell.getElement()));
+            assertFalse(filters.filters(controller, filters.quantity));
+            assertTrue(enter(controller, valueCell(view).getElement()));
+            assertTrue(filters.filters(controller, filters.quantity));
+        } finally {
+            RootPanel.get().remove(cell);
+            RootPanel.get().remove(view);
+        }
+    }
+
+    // ... and in the value cell a property changed in the row builds anew: the cell it replaced took its Enter away,
+    // and the new one was given none
+    public void testAPanelRowTakesEnterInItsRebuiltValueCell() {
+        FiltersForm filters = new FiltersForm(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GFilterConditionView view = panelRow(panel, filters.placed);
+        rebuildValueCell(view);
+        assertEnterInItsValueCellAlone(filters, controller, view);
+    }
+
+    // a fixed row of the panel in a container that aligns captions - its FILTER standing outside the FILTERS box -
+    // is hidden with its caption, a widget apart from it (GFilterConditionView.initView): its SHOWIF hid the row alone
+    public void testAFixedRowsAlignedCaptionIsHiddenWithIt() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.filterAligned();
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GFilterConditionView view = panelRow(panel, filters.outside);
+        Widget caption = rowCaption(view);
+        assertFalse(view.getElement().isOrHasChild(caption.getElement()));
+
+        GFormChanges changes = new GFormChanges();
+        NativeHashMap<GGroupObjectValue, PValue> hidden = new NativeHashMap<>();
+        hidden.put(GGroupObjectValue.EMPTY, PValue.getPValue(true));
+        changes.properties.put(filters.outside.showIfReader, hidden);
+        controller.applyRemoteChanges(changes, 1);
+        assertFalse(view.isVisible());
+        assertFalse(caption.isVisible());
+    }
+
     // a form of a group whose rows React draws, its filters the platform's, with the FILTERs of two of its properties
     // moved into a react container - one React draws, MOVE FILTER(price), and one the platform's panel does,
-    // MOVE FILTER(quantity) { custom = NULL; } -, FILTERS(items) in the form or REMOVEd
+    // MOVE FILTER(quantity) { custom = NULL; } -, FILTERS(items) in the form or REMOVEd - and one of a string property
+    // standing outside React (filterAligned)
     private static final class FiltersForm {
         final GForm form = new GForm();
         final GGroupObject group = new GGroupObject();
         final GPropertyDraw price, quantity;
         final GContainer board;
         final GFilter drawn, placed;
+        GPropertyDraw name; // a string property, its FILTER standing outside React - only in filterAligned
+        GFilter outside;
 
         FiltersForm(boolean filtersBox) {
             form.sID = "propertyFilters";
@@ -734,6 +837,14 @@ public class GFormControllerTest extends GWTTestCase {
         void change(GFormController controller, String property, Object value) {
             changeFilter(reactController(controller.getFormLayout().getContainerView(board)), property, value);
         }
+        // a FILTER of a string property standing outside React, in a container that aligns captions
+        void filterAligned() {
+            name = column(form, 24, "name", group);
+            name.valueType = new GStringType(GExtInt.UNLIMITED, false, false);
+            GContainer search = container(26, "search", form.mainContainer);
+            search.alignCaptions = true;
+            outside = filterIn(25, name, search, group.grid);
+        }
         // a condition on price, compared the default way, as a FILTER's member states one
         GPropertyFilter condition(PValue value) {
             return new GPropertyFilter(new GFilter(price), group, GGroupObjectValue.EMPTY, value, false, price.getDefaultCompare(), true);
@@ -773,12 +884,51 @@ public class GFormControllerTest extends GWTTestCase {
     }-*/;
     // whether the panel's row of a FILTER is its last one, its junction hidden - read where the panel keeps its rows
     private static native boolean isLastRow(GPlatformFiltersController panel, GFilter filter) /*-{
-        var row = panel.@lsfusion.gwt.client.form.filter.user.controller.GPlatformFiltersController::getFilterRow(*)(filter);
-        var view = panel.@lsfusion.gwt.client.form.filter.user.controller.GPlatformFiltersController::conditionViews.@java.util.Map::get(Ljava/lang/Object;)(row);
+        var view = @lsfusion.gwt.client.form.controller.GFormControllerTest::panelRow(*)(panel, filter);
         return view.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::isLast;
     }-*/;
     private static native void changeFilter(JavaScriptObject controller, String property, Object value) /*-{
         controller.items.filter[property].change(value);
+    }-*/;
+    // the panel's row of a FILTER, its caption, its comparison label, its value cell and the comparison its value is
+    // edited by, read where the client keeps them
+    private static native GFilterConditionView panelRow(GPlatformFiltersController panel, GFilter filter) /*-{
+        var row = panel.@lsfusion.gwt.client.form.filter.user.controller.GPlatformFiltersController::getFilterRow(*)(filter);
+        return panel.@lsfusion.gwt.client.form.filter.user.controller.GPlatformFiltersController::conditionViews.@java.util.Map::get(Ljava/lang/Object;)(row);
+    }-*/;
+    private static native Widget rowCaption(GFilterConditionView row) /*-{
+        return row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::leftPanel;
+    }-*/;
+    private static native Label compareLabel(GFilterConditionView row) /*-{
+        return row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::compareLabel;
+    }-*/;
+    private static native Widget valueCell(GFilterConditionView row) /*-{
+        return row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::valueView.@lsfusion.gwt.client.form.filter.user.view.GDataFilterValueView::cell;
+    }-*/;
+    private static native GCompare editorCompare(GFilterConditionView row) /*-{
+        var cell = @lsfusion.gwt.client.form.controller.GFormControllerTest::valueCell(*)(row);
+        return cell.@lsfusion.gwt.client.form.filter.user.view.GDataFilterPropertyValue::inputList.@lsfusion.gwt.client.form.property.async.GInputList::compare;
+    }-*/;
+    // a filter row's choices - of its property, of its comparison -, which its controls show
+    private static native Widget propertySelector(GFilterConditionView row) /*-{
+        return row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::propertyView;
+    }-*/;
+    private static native Widget compareSelector(GFilterConditionView row) /*-{
+        return row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::compareView;
+    }-*/;
+    // the row's value cell built anew, as a property chosen in the row builds it (GFilterConditionView.propertyChanged)
+    private static native void rebuildValueCell(GFilterConditionView row) /*-{
+        var condition = row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::condition;
+        row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::valueView.@lsfusion.gwt.client.form.filter.user.view.GDataFilterValueView::changeProperty(*)(condition, false);
+    }-*/;
+    // Enter pressed in an element, as a panel cell gives a key to the form's bindings before it handles the key itself
+    // (GFormController.onPropertyBrowserEvent): whether a binding took it
+    private static native boolean enter(GFormController controller, Element target) /*-{
+        var event = {type: 'keydown', keyCode: 13, shiftKey: false, altKey: false, ctrlKey: false, metaKey: false,
+            target: target, stopPropagation: function () { }, preventDefault: function () { }};
+        var handler = @lsfusion.gwt.client.base.view.EventHandler::new(Lcom/google/gwt/user/client/Event;)(event);
+        controller.@lsfusion.gwt.client.form.controller.GFormController::checkKeyEvent(*)(handler, true, true, true);
+        return handler.@lsfusion.gwt.client.base.view.EventHandler::consumed;
     }-*/;
 
     // a container of a hand-built design, laid out as the server gives it, in its parent
