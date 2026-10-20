@@ -344,7 +344,7 @@ function chatMessageInput() {
     }
 }
 ```
-The _update_ function receives as the _value_ parameter the value of the `message[]` property — a string, or `null` when the property is empty.
+The _update_ function receives as the _value_ parameter the value of the `message[]` property — a string, or `null` when the property is empty. A value of any class arrives converted to a JS value in the same way as in the rows of a [React view](How-to_Custom_React_views.md#the-component), and, files aside, is passed to `change` in the same shape.
 
 The CSS for the created element will look like this:
 ```css

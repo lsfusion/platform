@@ -15,6 +15,8 @@ CONCAT separatorExpr, concatExpr1, ..., concatExprN
 
 Оператор `CONCAT` создает свойство, которое соединяет значения `concatExpr1, ..., concatExprN` в порядке их записи, вставляя между ними разделитель `separatorExpr`. Обработка разделителя и пустых операндов соответствует [объединению `CONCAT`](../paradigm/String_operators_plus_CONCAT_SUBSTRING.md).
 
+Первый операнд — всегда разделитель, даже если он задуман как префикс: `CONCAT 'Итого: ', 'a', 'b'` даёт `'aИтого: b'`, а не `'Итого: ab'`. Текст в начале или в конце результата записывают обычным операндом при пустом разделителе (`CONCAT '', 'Итого: ', 'a', 'b'`) либо добавляют [оператором `+`](Arithmetic_operators.md) (`'Итого: ' + CONCAT ', ', 'a', 'b'`).
+
 ### Параметры
 
 - `separatorExpr`
@@ -35,4 +37,8 @@ lastName = DATA STRING[100] (Person);
 
 // если какая-то часть имени не задана, то эта часть будет пропущена вместе с пробелом
 fullName(Person p) = CONCAT ' ', firstName(p), middleName(p), lastName(p);     
+
+// заголовок — отдельный операнд при пустом разделителе: первый операнд CONCAT всегда разделитель,
+// и CONCAT 'Person: ', firstName(p), lastName(p) дал бы 'JohnPerson: Smith'
+caption(Person p) = CONCAT '', 'Person: ', fullName(p);
 ```

@@ -23,7 +23,7 @@ The `CHANGE` operator creates an action that writes the value of `valueExpr` int
 
 - `expr1, ..., exprN`
 
-    A list of [expressions](Expression.md) or [typed parameters](IDs.md#paramid) defining arguments of the property being changed. When using typed parameters, you can both reference already declared parameters and declare new local parameters. When using expressions, new local parameters cannot be added. A new parameter is declared in this list as a separate argument (`discount(Customer c) <- 15`), while an argument expression can use only parameters declared already — parameters of the action or of an enclosing operator, or typed parameters declared to the left in the same list (`discount(customer(o)) <- 15`): writing into a computed key such as `byId(LONG(Item i)) <- ...` is rejected when the module is loaded, and such a parameter is introduced outside — for example, by the [`FOR` operator](FOR_operator.md) (see the last example). The number of items in this list must equal the number of parameters of the property being changed.
+    A list of [expressions](Expression.md) or [typed parameters](IDs.md#paramid) defining arguments of the property being changed. When using typed parameters, you can both reference already declared parameters and declare new local parameters. When using expressions, new local parameters cannot be added. A new parameter is declared in this list as a separate argument (`discount(Customer c) <- 15`), while an argument expression can use only parameters declared already — parameters of the action or of an enclosing operator, or typed parameters declared to the left in the same list (`discount(customer(o)) <- 15`): writing into a computed key such as `byId(LONG(Item i)) <- ...` is rejected when the module is loaded, and such a parameter is introduced outside — for example, by the [`FOR` operator](FOR_operator.md) (see the `fillInById[]` example). The number of items in this list must equal the number of parameters of the property being changed.
 
 - `valueExpr`
 
@@ -40,7 +40,7 @@ The `CHANGE` operator creates an action that writes the value of `valueExpr` int
 CLASS Customer;
 discount = DATA NUMERIC[5,2] (Customer);
 totalOrders = DATA NUMERIC[14,2] (Customer);
-setDiscount  {
+setDiscount()  {
     discount(Customer c) <- 15 WHERE totalOrders(c) > 100;
 }
 
@@ -55,7 +55,7 @@ setDiscount (Customer c)  {
 // copy property g to property f
 f = DATA INTEGER (INTEGER);
 g = DATA INTEGER (INTEGER);
-copyFG  {
+copyFG()  {
     f(a) <- g(a);
 }
 
@@ -68,7 +68,16 @@ setOrderDiscount (Order o)  {
 
 // the key is an expression over a new parameter: it cannot be declared in the argument list, so i is introduced by the FOR operator
 inById = DATA LOCAL BOOLEAN (LONG);
-fillInById  {
+fillInById()  {
     FOR in(Item i) DO inById(LONG(i)) <- TRUE;
+}
+
+// every block of the value expression, BY included, is written before WHERE: the WHERE condition ends the expression
+CLASS Task;
+category = DATA INTEGER (Task);
+priority = DATA INTEGER (Task);
+rowNum = DATA LOCAL INTEGER (Task);
+numberTasks()  {
+    rowNum(Task t) <- PARTITION SUM 1 ORDER priority(t), t BY category(t) WHERE priority(t);
 }
 ```

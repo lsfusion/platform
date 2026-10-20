@@ -227,7 +227,7 @@ title: 'Rules: domain logic'
     precision of the class is enforced only where the sum is
     materialized into a column of that class, and the
     materialization of a subquery happens intermittently,
-    so the overflow can escape a test on a warmed-up
+    so the overflow can escape a single run, even on a cold
     server.
 
 15. A parameter's class annotation (`prop(SubClass x)`) is a

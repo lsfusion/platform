@@ -152,6 +152,7 @@ A property's `.change` behaves the same way in a batch and out of one, and the f
 | value | how it is passed |
 | --- | --- |
 | a primitive | directly: a number for numeric types, a string, a JS `Date` for `DATE` / `TIME` / `DATETIME` / `ZDATETIME`, a boolean, `null` to clear |
+| an interval, a `COLOR` | in the same string format [received by the view](How-to_Custom_React_views.md#the-component): `<from>.<to>` with the bounds in milliseconds, `#rrggbb`. A value of any other shape is refused |
 | `JSON` | a JS object or array, serialized as JSON |
 | an object (FK value) | the target object's id — `row.key` of its row (for a single-object group it already is its numeric id), or an id-valued property on the form (e.g. `LONG(obj)`) — not a handle |
 
