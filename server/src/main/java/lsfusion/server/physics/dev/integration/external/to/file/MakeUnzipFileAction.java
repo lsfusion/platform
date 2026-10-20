@@ -26,8 +26,7 @@ public class MakeUnzipFileAction extends InternalAction {
             FileData unzippingFile = (FileData) findProperty("unzipping[]").read(context);
             if (unzippingFile != null) {
                 RawFileData file = unzippingFile.getRawFile();
-                String extension = unzippingFile.getExtension();
-                Map<String, FileData> result = ZipUtils.unpackFile(file, extension, true);
+                Map<String, FileData> result = ZipUtils.unpackFile(file, true);
                 for (Map.Entry<String, FileData> entry : result.entrySet()) {
                     findProperty("unzipped[STRING]").change(entry.getValue(), context, new DataObject(entry.getKey(), StringClass.text));
                 }

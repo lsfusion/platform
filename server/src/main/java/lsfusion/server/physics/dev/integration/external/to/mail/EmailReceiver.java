@@ -610,7 +610,7 @@ public class EmailReceiver {
 
     private static Map<String, FileData> unpack(RawFileData byteArray, String fileName, boolean unpack) {
         String extension = BaseUtils.getFileExtension(fileName);
-        Map<String, FileData> attachments = unpack ? ZipUtils.unpackFile(byteArray, extension, false) : new HashMap<>();
+        Map<String, FileData> attachments = unpack && (extension.equalsIgnoreCase("zip") || extension.equalsIgnoreCase("rar")) ? ZipUtils.unpackFile(byteArray, false) : new HashMap<>();
         if (attachments.isEmpty()) {
             attachments.put(fileName, new FileData(byteArray, extension));
         }

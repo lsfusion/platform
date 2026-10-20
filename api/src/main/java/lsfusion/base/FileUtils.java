@@ -411,4 +411,34 @@ public class FileUtils {
     public static String ping(String host) throws IOException {
         return InetAddress.getByName(host).isReachable(5000) ? null : "Host is not reachable";
     }
+
+    public static boolean startsWith(byte[] bytes, int... prefix) {
+        if (bytes.length < prefix.length)
+            return false;
+
+        for (int i = 0; i < prefix.length; i++)
+            if (bytes[i] != (byte) prefix[i])
+                return false;
+        return true;
+    }
+
+    public static boolean isZip(byte[] bytes) {
+        return startsWith(bytes, 'P', 'K', 0x03, 0x04) || startsWith(bytes, 'P', 'K', 0x05, 0x06);
+    }
+
+    public static boolean isRar(byte[] bytes) {
+        return startsWith(bytes, 'R', 'a', 'r', '!', 0x1A, 0x07);
+    }
+
+    public static boolean isRar5(byte[] bytes) {
+        return startsWith(bytes, 'R', 'a', 'r', '!', 0x1A, 0x07, 0x01);
+    }
+
+    public static boolean isPng(byte[] bytes) {
+        return startsWith(bytes, 0x89, 'P');
+    }
+
+    public static boolean isBmp(byte[] bytes) {
+        return startsWith(bytes, 'B', 'M');
+    }
 }

@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.stat.struct.imports.plain.xls;
 
+import lsfusion.base.FileUtils;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.file.RawFileData;
@@ -40,6 +41,6 @@ public class ImportXLSAction extends ImportPlainAction<ImportXLSIterator> {
             if(singleSheetIndex == null)
                 singleSheetIndex = 0;
         }
-        return new ImportXLSIterator(fieldTypes, file, file.getBytes()[0] == 80, wheres, noHeader, singleSheetIndex);
+        return new ImportXLSIterator(fieldTypes, file, FileUtils.isZip(file.getBytes()), wheres, noHeader, singleSheetIndex);
     }
 }
