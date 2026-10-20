@@ -1,0 +1,95 @@
+MODULE UiFilterPanel;
+
+REQUIRE System, Service;
+
+// the forms UiFilterPanelIT works on in the browser - the platform's own filter panel over its grid, no React view on
+// them: its keys, its manual apply mode, a quick filter on another column, the toolbars that turn the filters off -,
+// and the actions it seeds its items and sets the manual apply mode with
+
+CLASS UiFpnCategory 'Category';
+uiFpnCategoryName 'Category' = DATA STRING[50] (UiFpnCategory);
+uiFpnCategoryShown = DATA BOOLEAN (UiFpnCategory); // the category of the test that seeded last: the forms show only it
+
+CLASS UiFpnItem 'Item';
+uiFpnName 'Name' = DATA STRING[50] (UiFpnItem);
+uiFpnPrice 'Price' = DATA NUMERIC[10,2] (UiFpnItem);
+uiFpnCategory = DATA UiFpnCategory (UiFpnItem);
+uiFpnShown = DATA BOOLEAN (UiFpnItem); // the items of the test that seeded last: the forms show only them
+
+FORM uiFpnItems 'Filter panel'
+    OBJECTS i = UiFpnItem
+    PROPERTIES(i) READONLY name = uiFpnName, price = uiFpnPrice
+    FILTERS uiFpnShown(i)
+    ORDERS name
+;
+
+// a condition the server states
+uiFpnFilterDear 'Filter the dear' () { FILTER uiFpnItems.i FROM JSON(r'[{"property": "price", "compare": ">", "value": 1}]'); }
+
+EXTEND FORM uiFpnItems
+    PROPERTIES() uiFpnFilterDear
+;
+
+// a key typed in a price cell starts a condition on the name, one typed in a name cell a condition on the category of a
+// group in PANEL view
+FORM uiFpnQuick 'Quick filter'
+    OBJECTS c = UiFpnCategory PANEL
+    PROPERTIES(c) READONLY catName = uiFpnCategoryName
+    OBJECTS i = UiFpnItem
+    PROPERTIES(i) READONLY name = uiFpnName QUICKFILTER catName, price = uiFpnPrice QUICKFILTER name
+    FILTERS uiFpnCategoryShown(c), uiFpnShown(i)
+    ORDERS name
+;
+
+// a grid's and a tree's toolbars that turn the filters off, the tree's its export too
+FORM uiFpnNoFilters 'No filters'
+    OBJECTS i = UiFpnItem
+    PROPERTIES(i) READONLY name = uiFpnName, price = uiFpnPrice
+    TREE cats c = UiFpnCategory, ti = UiFpnItem
+    PROPERTIES(c) READONLY catName = uiFpnCategoryName
+    PROPERTIES(ti) READONLY tname = uiFpnName
+    FILTERS uiFpnShown(i), uiFpnCategory(ti) = c, uiFpnCategoryShown(c), uiFpnShown(ti)
+    ORDERS name
+;
+
+DESIGN uiFpnNoFilters {
+    TOOLBARSYSTEM(i) { showFilters = FALSE; }
+    TOOLBARSYSTEM(TREE cats) { showFilters = FALSE; showPrintGroupXls = FALSE; }
+}
+
+NAVIGATOR {
+    NEW FOLDER uiFpn 'UI filter panel' WINDOW toolbar {
+        NEW uiFpnItems;
+        NEW uiFpnQuick;
+        NEW uiFpnNoFilters;
+    }
+}
+
+// a category with two items in it, shown from now on, the dearer item first by name
+uiFpnSeed (STRING[50] category, STRING[50] dear, STRING[50] cheap) {
+    uiFpnCategoryShown(UiFpnCategory c) <- NULL;
+    uiFpnShown(UiFpnItem i) <- NULL;
+    NEW c = UiFpnCategory {
+        uiFpnCategoryName(c) <- category;
+        uiFpnCategoryShown(c) <- TRUE;
+        NEW i = UiFpnItem {
+            uiFpnName(i) <- dear;
+            uiFpnPrice(i) <- 1.50;
+            uiFpnCategory(i) <- c;
+            uiFpnShown(i) <- TRUE;
+        }
+        NEW i = UiFpnItem {
+            uiFpnName(i) <- cheap;
+            uiFpnPrice(i) <- 0.75;
+            uiFpnCategory(i) <- c;
+            uiFpnShown(i) <- TRUE;
+        }
+    }
+    APPLY;
+}
+
+// the platform's filter panel applying changes by hand or not, for a client that starts after it
+uiFpnManualApply (STRING[10] on) {
+    baseValue(setting('userFiltersManualApplyMode')) <- on;
+    APPLY;
+}
