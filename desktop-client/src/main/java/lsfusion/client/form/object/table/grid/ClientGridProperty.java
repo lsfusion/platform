@@ -14,6 +14,7 @@ public abstract class ClientGridProperty extends ClientComponent {
     public int captionCharHeight;
 
     public Boolean resizeOverflow;
+    public boolean resizeShrink;
 
     public int lineWidth;
     public int lineHeight;
@@ -42,6 +43,8 @@ public abstract class ClientGridProperty extends ClientComponent {
         captionCharHeight = inStream.readInt();
 
         resizeOverflow = inStream.readBoolean() ? inStream.readBoolean() : null;
+
+        resizeShrink = inStream.readBoolean();
 
         lineWidth = inStream.readInt();
         lineHeight = inStream.readInt();

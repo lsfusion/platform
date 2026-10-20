@@ -68,6 +68,7 @@ public abstract class GridPropertyView<This extends GridPropertyView<This, AddPa
         captionHeight.finalizeChanges();
         captionCharHeight.finalizeChanges();
         resizeOverflow.finalizeChanges();
+        resizeShrink.finalizeChanges();
         valueClass.finalizeChanges();
         propertyValueClass.finalizeChanges();
         lineWidth.finalizeChanges();
@@ -79,6 +80,7 @@ public abstract class GridPropertyView<This extends GridPropertyView<This, AddPa
     protected NFProperty<Integer> captionCharHeight = NFFact.property();
 
     protected NFProperty<Boolean> resizeOverflow = NFFact.property(); // actually it is the max height
+    protected NFProperty<Boolean> resizeShrink = NFFact.property(); // user can resize columns below their value width
 
     protected NFProperty<String> valueClass = NFFact.property();
     protected NFProperty<PropertyObjectEntity> propertyValueClass = NFFact.property();
@@ -158,6 +160,8 @@ public abstract class GridPropertyView<This extends GridPropertyView<This, AddPa
         if(resizeOverflow != null)
             outStream.writeBoolean(resizeOverflow);
 
+        outStream.writeBoolean(isResizeShrink());
+
         outStream.writeInt(getLineWidthValue());
         outStream.writeInt(getLineHeightValue());
 
@@ -194,6 +198,13 @@ public abstract class GridPropertyView<This extends GridPropertyView<This, AddPa
     }
     public void setResizeOverflow(Boolean value, Version version) {
         resizeOverflow.set(value, version);
+    }
+
+    public boolean isResizeShrink() {
+        return nvl(resizeShrink.get(), false);
+    }
+    public void setResizeShrink(Boolean value, Version version) {
+        resizeShrink.set(value, version);
     }
 
     public String getValueClass() {
@@ -278,6 +289,7 @@ public abstract class GridPropertyView<This extends GridPropertyView<This, AddPa
         mapping.sets(captionHeight, src.captionHeight);
         mapping.sets(captionCharHeight, src.captionCharHeight);
         mapping.sets(resizeOverflow, src.resizeOverflow);
+        mapping.sets(resizeShrink, src.resizeShrink);
         mapping.sets(valueClass, src.valueClass);
         mapping.sets(lineWidth, src.lineWidth);
         mapping.sets(lineHeight, src.lineHeight);

@@ -186,6 +186,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public int captionHeight;
     public int captionCharHeight;
 
+    public Boolean resizeShrink;
+
     public transient EditBindingMap editBindingMap;
     private transient PropertyRenderer renderer;
 
@@ -565,6 +567,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         captionWidth = inStream.readInt();
         captionHeight = inStream.readInt();
         captionCharHeight = inStream.readInt();
+
+        resizeShrink = inStream.readBoolean() ? inStream.readBoolean() : null;
 
         changeKey = pool.readObject(inStream);
         showChangeKey = inStream.readBoolean();

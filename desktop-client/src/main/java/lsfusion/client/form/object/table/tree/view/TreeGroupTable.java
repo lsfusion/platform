@@ -1327,6 +1327,13 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         }
 
         @Override
+        protected boolean isColumnResizeShrink(int i) {
+            if(i == 0)
+                return false;
+            return super.isColumnResizeShrink(i - 1);
+        }
+
+        @Override
         protected void setUserWidth(int i, int width) {
             if(i==0) {
                 hierarchicalUserWidth = width;
@@ -1352,6 +1359,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         @Override
         protected Boolean isResizeOverflow() {
             return treeGroup.resizeOverflow;
+        }
+
+        @Override
+        protected boolean isResizeShrink() {
+            return treeGroup.resizeShrink;
         }
     };
 }

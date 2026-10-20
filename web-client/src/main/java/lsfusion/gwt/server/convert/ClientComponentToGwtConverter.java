@@ -425,6 +425,8 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.captionHeight = clientPropertyDraw.captionHeight;
         propertyDraw.captionCharHeight = clientPropertyDraw.captionCharHeight;
 
+        propertyDraw.resizeShrink = clientPropertyDraw.resizeShrink;
+
         propertyDraw.panelColumnVertical = clientPropertyDraw.panelColumnVertical;
         propertyDraw.panelCustom = clientPropertyDraw.panelCustom;
 
@@ -573,6 +575,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         table.boxed = clientTable.boxed;
         table.valueClass = clientTable.valueClass;
         table.resizeOverflow = clientTable.resizeOverflow;
+        table.resizeShrink = clientTable.resizeShrink;
         table.captionHeight = clientTable.captionHeight;
         table.captionCharHeight = clientTable.captionCharHeight;
         table.lineWidth = clientTable.lineWidth;

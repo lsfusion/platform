@@ -1981,5 +1981,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         protected Boolean isResizeOverflow() {
             return groupObject.grid.resizeOverflow;
         }
+
+        @Override
+        protected boolean isResizeShrink() {
+            return groupObject.grid.resizeShrink;
+        }
     };
 }

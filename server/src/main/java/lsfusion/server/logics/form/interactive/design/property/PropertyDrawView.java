@@ -91,6 +91,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     private NFProperty<Integer> captionCharHeight = NFFact.property();
 
     private NFProperty<Boolean> valueFlex = NFFact.property();
+    private NFProperty<Boolean> resizeShrink = NFFact.property(); // null - as in the grid
 
     private NFProperty<String> tag = NFFact.property();
     private NFProperty<String> inputType = NFFact.property();
@@ -563,6 +564,11 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         outStream.writeInt(getCaptionHeight(pool.context));
         outStream.writeInt(getCaptionCharHeight(pool.context));
 
+        Boolean resizeShrink = getResizeShrink();
+        outStream.writeBoolean(resizeShrink != null);
+        if(resizeShrink != null)
+            outStream.writeBoolean(resizeShrink);
+
         pool.writeObject(outStream, getChangeKey());
         outStream.writeBoolean(getShowChangeKey());
         pool.writeObject(outStream, getChangeMouse());
@@ -1007,6 +1013,13 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     }
     public void setValueFlex(Boolean value, Version version) {
         valueFlex.set(value, version);
+    }
+
+    public Boolean getResizeShrink() {
+        return resizeShrink.get();
+    }
+    public void setResizeShrink(Boolean value, Version version) {
+        resizeShrink.set(value, version);
     }
 
     public String getTag(FormInstanceContext context) {
@@ -1746,6 +1759,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         captionHeight.finalizeChanges();
         captionCharHeight.finalizeChanges();
         valueFlex.finalizeChanges();
+        resizeShrink.finalizeChanges();
         tag.finalizeChanges();
         inputType.finalizeChanges();
         valueElementClass.finalizeChanges();
@@ -1825,6 +1839,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         mapping.sets(captionCharHeight, src.captionCharHeight);
 
         mapping.sets(valueFlex, src.valueFlex);
+        mapping.sets(resizeShrink, src.resizeShrink);
 
         mapping.sets(tag, src.tag);
         mapping.sets(inputType, src.inputType);

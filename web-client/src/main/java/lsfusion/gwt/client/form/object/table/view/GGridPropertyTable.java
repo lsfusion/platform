@@ -38,6 +38,7 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -564,11 +565,24 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
             }
         }
 
+        // the resized column is allowed to get narrower than its value width (the other columns keep their bases)
+        boolean shrink = isColumnResizeShrink(column);
+        int[] resizeBasePrefs = intBasePrefs;
+        if(shrink) {
+            resizeBasePrefs = Arrays.copyOf(intBasePrefs, columnCount);
+            resizeBasePrefs[column] = Math.min(resizeBasePrefs[column], RESIZE_SHRINK_MIN_WIDTH);
+        }
+
         int viewWidth = getViewportWidth() - margins;
-        double restDelta = GwtClientUtils.calculateNewFlexes(column, delta, viewWidth, doublePrefs, flexes, intBasePrefs, baseFlexes, flexPrefs, true, isResizeOverflow(), margins, false);
+        double restDelta = GwtClientUtils.calculateNewFlexes(column, delta, viewWidth, doublePrefs, flexes, resizeBasePrefs, baseFlexes, flexPrefs, true, isResizeOverflow(), margins, false);
+
+        if(shrink)
+            restoreShrunkColumnBase(column, viewWidth);
 
         for (int i = 0; i < columnCount; i++) {
-            setUserWidth(i, (int) Math.round(doublePrefs[i]));
+            int userWidth = (int) Math.round(doublePrefs[i]);
+            // a shrinkable column at its base saves no width, so that it follows its base when the base changes (for example, with the font)
+            setUserWidth(i, isColumnResizeShrink(i) && userWidth == intBasePrefs[i] ? null : userWidth);
             setUserFlex(i, flexes[i]);
         }
 
@@ -578,6 +592,27 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
         onResize();
 
         return restDelta;
+    }
+
+    // calculateNewFlexes turns the part of the pref above the lowered base into flex, so the column would be squeezed down to that base when the view narrows:
+    // the pref goes back to the base (or to the width, if it is narrower), the rest of the width stays flex, and the other columns keep their widths
+    private void restoreShrunkColumnBase(int column, int viewWidth) {
+        double totalPref = 0.0;
+        double totalFlex = 0.0;
+        for (int i = 0; i < doublePrefs.length; i++) {
+            totalPref += doublePrefs[i];
+            totalFlex += flexes[i];
+        }
+        double flexWidth = viewWidth - totalPref;
+        if(!(flexWidth > 0.0 && totalFlex > 0.0)) // no free space, the widths are the prefs
+            return;
+
+        double width = doublePrefs[column] + flexWidth * flexes[column] / totalFlex;
+        double pref = Math.min(width, intBasePrefs[column]);
+        // the new flex is the rest of the width at the current px per flex unit (flexWidth / totalFlex), and the move of px from flex to the pref keeps that ratio,
+        // so the flexes of the other columns stay as they are
+        flexes[column] = (width - pref) * totalFlex / flexWidth;
+        doublePrefs[column] = pref;
     }
 
     public Widget getPopupOwnerWidget() {
@@ -645,8 +680,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
 
             GSize pref = basePref;
             Integer userWidth = getUserWidth(i);
-            if(baseFlex > 0 && userWidth != null)
-                pref = pref.max(GSize.getResizeSize(userWidth));
+            if(baseFlex > 0 && userWidth != null) {
+                if(isColumnResizeShrink(i))
+                    pref = GSize.getResizeSize(Math.max(userWidth, RESIZE_SHRINK_MIN_WIDTH));
+                else
+                    pref = pref.max(GSize.getResizeSize(userWidth));
+            }
             prefs[i] = pref;
 
             double flex = baseFlex;
@@ -765,6 +804,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
         return grid.resizeOverflow;
     }
 
+    private static final int RESIZE_SHRINK_MIN_WIDTH = 20;
+
+    // can the user make the column narrower than its value width (only for stretchable columns, the others keep fixed widths)
+    protected boolean isColumnResizeShrink(int i) {
+        if(!(getColumnFlex(i) > 0))
+            return false;
+        Boolean resizeShrink = getColumnPropertyDraw(i).resizeShrink;
+        return resizeShrink != null ? resizeShrink : getGrid().resizeShrink;
+    }
+
     public GSize getUserHeaderHeight() {
         return null;
     }
@@ -777,7 +826,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
         return getColumnPropertyDraw(i).getFlex(RendererType.GRID);
     }
 
-    protected void setUserWidth(int i, int width) {
+    protected void setUserWidth(int i, Integer width) {
         setUserWidth(getColumnPropertyDraw(i), width);
     }
     protected void setUserFlex(int i, double width) {

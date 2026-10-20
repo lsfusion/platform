@@ -56,6 +56,11 @@ public class GridViewProxy extends GridPropertyViewProxy<GridView> {
     }
 
     @SuppressWarnings("unused")
+    public void setResizeShrink(boolean resizeShrink) {
+        target.setResizeShrink(resizeShrink, getVersion());
+    }
+
+    @SuppressWarnings("unused")
     public void setLineWidth(int lineWidth) {
         target.setLineWidth(lineWidth, getVersion());
     }

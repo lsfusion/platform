@@ -200,6 +200,7 @@ To access design components, you can use their names or address property compone
 |`charHeight`|Height of the property value cell in characters (rows); `-1` means the height is derived from the property value type|Integer literal|`-1`|`2`|
 |`charWidth`|Width of the property value cell in characters; `-1` means the width is derived from the property value type|Integer literal|`-1`|`10`|
 |`valueFlex`|Forces the value cell to grow and fill the available width, overriding the type-derived default|Logical literal|depends on the property|`TRUE`<br/>`FALSE`|
+|`resizeShrink`|Allows the user to drag a table column narrower than its width (`charWidth`, `valueWidth` or the one derived from the value class), down to a small minimum. Applies only to stretchable columns (with a positive `flex`); overrides `resizeShrink` of the table|Logical literal|`resizeShrink` of the table|`TRUE`<br/>`FALSE`|
 |`changeKey`|The key that will trigger the property change event. The definition principle is similar to specifying a parameter in [Keystroke.getKeystroke(String)](https://docs.oracle.com/javase/8/docs/api/javax/swing/KeyStroke.html#getKeyStroke-java.lang.String-)|Expression (string value)|`NULL`|`'ctrl F6'`<br/>`'BACK_SPACE'`<br/>`'alt shift X'`|
 |`showChangeKey`|Specifying that the property caption will include that name of the key shortcut that will trigger the change event|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`changeMouse`|The mouse action that will trigger the property change event|Expression (string value)|`NULL`|`'DBLCLK'`|
@@ -277,6 +278,7 @@ To access design components, you can use their names or address property compone
 |`captionHeight`|Header height in pixels|Integer literal|`NULL`|`60`|
 |`captionCharHeight`|Header height in chars|Integer literal|`NULL`|`5`|
 |`resizeOverflow`|Allows the table to grow beyond its allotted space when rows overflow (acts as a maximum height)|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`resizeShrink`|Allows the user to drag the table columns narrower than their widths (`charWidth`, `valueWidth` or the ones derived from the value classes), down to a small minimum. Can be overridden for a column by the property's `resizeShrink`|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`lineWidth`|Number of columns the [default base width](../paradigm/Form_design.md#defaultSizes) of the table is computed from|Integer literal|all the columns when there are at most three, otherwise from three to six by the number of columns|`4`|
 |`lineHeight`|Number of rows the [default base height](../paradigm/Form_design.md#defaultSizes) of the table is computed from|Integer literal|`5`|`10`|
 |`enableManualUpdate`|Enables the manual update mode by default|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|

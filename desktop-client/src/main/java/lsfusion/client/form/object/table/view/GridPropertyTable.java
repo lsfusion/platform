@@ -123,11 +123,20 @@ public abstract class GridPropertyTable {
     }
 
     protected abstract Boolean isResizeOverflow();
+    protected abstract boolean isResizeShrink();
+
+    private static final int RESIZE_SHRINK_MIN_WIDTH = 20;
 
     public void resizeColumn(int column, int delta) {
 //        int body = ;
         int viewWidth = getViewportWidth(); // непонятно откуда этот один пиксель берется (судя по всему padding)
-        SwingUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes, isResizeOverflow());
+
+        // the resized column is allowed to get narrower than its value width, the other columns keep their bases (but not above their widths, since they could have been shrunk before)
+        int[] resizeBasePrefs = new int[prefs.length];
+        for (int i = 0; i < prefs.length; i++)
+            resizeBasePrefs[i] = BaseUtils.min(basePrefs[i], i == column && isColumnResizeShrink(i) ? RESIZE_SHRINK_MIN_WIDTH : (int) prefs[i]);
+
+        SwingUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, resizeBasePrefs, flexes, isResizeOverflow());
         for (int i = 0; i < prefs.length; i++)
             setUserWidth(i, (int) Math.round(prefs[i]));
         updateLayoutWidthColumns();
@@ -159,7 +168,9 @@ public abstract class GridPropertyTable {
             basePrefs[i] = basePref;
 
             Integer userWidth = getUserWidth(i);
-            int pref = flex && userWidth != null ? BaseUtils.max(userWidth, basePref) : basePref;
+            int pref = basePref;
+            if(flex && userWidth != null)
+                pref = BaseUtils.max(userWidth, isColumnResizeShrink(i) ? RESIZE_SHRINK_MIN_WIDTH : basePref);
             prefs[i] = pref;
 
             // тут хитро, дело в том что базовый механизм resizing'а подразумевает что колонка ВСЕГДА получит запрашиваемую ширину (так как дельта mouseOffsetX - mouseX записывается в ширину, и если колонка не получила ее на прошлом шаге то delta вызовется еще раз и еще раз)
@@ -170,6 +181,14 @@ public abstract class GridPropertyTable {
 
     protected boolean isColumnFlex(int i) {
         return getColumnPropertyDraw(i).getFlex() > 0;
+    }
+
+    // can the user make the column narrower than its value width (only for stretchable columns, the others keep fixed widths)
+    protected boolean isColumnResizeShrink(int i) {
+        ClientPropertyDraw property = getColumnPropertyDraw(i);
+        if(!(property.getFlex() > 0))
+            return false;
+        return property.resizeShrink != null ? property.resizeShrink : isResizeShrink();
     }
 
     protected void setUserWidth(int i, int width) {

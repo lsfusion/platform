@@ -453,6 +453,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public int captionHeight;
     public int captionCharHeight;
 
+    public Boolean resizeShrink;
+
     public boolean panelColumnVertical;
     public boolean panelCustom;
 

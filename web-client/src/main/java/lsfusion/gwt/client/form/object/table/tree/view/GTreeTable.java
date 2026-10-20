@@ -673,7 +673,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord, GTreeGroup, 
     }
 
     @Override
-    protected void setUserWidth(int i, int width) {
+    protected void setUserWidth(int i, Integer width) {
         if(i==0) {
             hierarchicalUserWidth = width;
             return;

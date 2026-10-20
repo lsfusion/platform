@@ -40,6 +40,8 @@ public abstract class GGridProperty extends GComponent {
     public int captionHeight;
     public int captionCharHeight;
 
+    public boolean resizeShrink;
+
     public int lineWidth;
     public int lineHeight;
 
