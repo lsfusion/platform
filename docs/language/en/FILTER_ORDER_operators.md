@@ -81,7 +81,7 @@ currentOrders = DATA JSON ();
 // save the current filters of group object o and re-apply them later;
 // savedFilters gets JSON like [{"property": "number", "compare": ">", "negation": false, "value": "1000"}]
 saveFilters ()  { FILTERS orders.o TO savedFilters; }
-restoreFilters ()  { FILTER orders.o FROM savedFilters; }
+restoreFilters ()  { FILTER orders.o FROM savedFilters(); }
 
 // read the current order of group object o;
 // currentOrders gets JSON like [{"property": "date", "desc": true}, {"property": "number", "desc": false}]
@@ -90,9 +90,12 @@ readOrders ()  { ORDERS orders.o TO currentOrders; }
 // order group object o by date, latest first: JSON given by a literal is a raw literal
 sortByDate ()  { ORDER orders.o FROM JSON(r'[{"property": "date", "desc": true}]'); }
 
+// show only the orders with number above 1000, the same way
+filterLarge ()  { FILTER orders.o FROM JSON(r'[{"property": "number", "compare": ">", "value": "1000"}]'); }
+
 // activate the second filter ("Small") in the filter group amount
 showSmall ()  { FILTERGROUP orders.amount FROM 2; }
 
 // filter the customer property by the value 'Acme'
-filterAcme ()  { FILTER PROPERTY orders.customer FROM 'Acme'; }
+filterAcme ()  { FILTER PROPERTY orders.customer(o) FROM 'Acme'; }
 ```

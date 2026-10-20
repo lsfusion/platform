@@ -3,7 +3,7 @@ slug: "/Distribution_UNGROUP"
 title: 'Distribution (UNGROUP)'
 ---
 
-The *distribution* operator creates a property, the [grouping](Grouping_GROUP.md) value of which using sum function will be equal to the value of the specified property (*distributable*). Accordingly, as for a group operator, for a distribution operator multiple properties (*groups*) must be set by which the grouping will take place.
+The *distribution* operator creates a property, the [grouping](Grouping_GROUP.md) value of which using sum function will be equal to the value of the specified property (*distributable*). Accordingly, as for a group operator, for a distribution operator multiple properties (*groups*) must be set by which the grouping will take place. The groups are formed by the values of these properties alone: a condition at the place where the distribution property is used — for example, in an action writing its value for some of the object collections — selects among the computed values and does not narrow the group.
 
 There are many different ways to build this kind of distribution. At present the platform supports the two most commonly used:
 

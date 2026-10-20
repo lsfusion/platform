@@ -495,7 +495,7 @@ The server wraps the received text into a module of its own that depends on ever
     RETURN count();
     ```
 
-The response carries the value of `RETURN` or, without it, the file written by `EXPORT` (see [results](../paradigm/Access_from_an_external_system.md#httpresult)). `RETURN` delivers its value from any place in the action, a `NEWSESSION` block included. The result of `EXPORT` is the local property `exportFile[]` of the session the operator ran in, and each subsequent `EXPORT` writing to `exportFile[]` in the same session replaces the previous file (so of several such exports only the last one is returned): an `EXPORT` inside `NEWSESSION` stays in the new session, and the response comes back empty without an error. So the export is done in the action's own session — after the block, with the values it needs carried over in [nested local properties](../paradigm/Session_management.md#nested) — or `exportFile[]` is listed as nested on the operator, which copies it back:
+By default the response carries the value of `RETURN` or, when the action has no `RETURN` with a value, the file written by `EXPORT` (see [results](../paradigm/Access_from_an_external_system.md#httpresult)). `RETURN` delivers its value from any place in the action, a `NEWSESSION` block included. The result of `EXPORT` is the local property `exportFile[]` of the session the operator ran in, and each subsequent `EXPORT` writing to `exportFile[]` in the same session replaces the previous file (so of several such exports only the last one is returned): an `EXPORT` inside `NEWSESSION` stays in the new session, and the response comes back empty without an error. So the export is done in the action's own session — after the block, with the values it needs carried over in [nested local properties](../paradigm/Session_management.md#nested) — or `exportFile[]` is listed as nested on the operator, which copies it back. An `APPLY` cancelled by a [constraint](../paradigm/Constraints.md) does not fail the request either: the changes are not saved and the action goes on, so without the check below the example would export the count with the unsaved city. The action checks `canceled[]` right after `APPLY` and, if the apply was cancelled, exports `applyMessage[]` and ends with a `RETURN` without a value. A `RETURN` with a value is not used here, because by default an action that contains one returns only that value, even when the `RETURN` is not executed, and its `EXPORT` never reaches the response ([details](../paradigm/Access_from_an_external_system.md#httpresult)):
 
 ```lsf
 run() {
@@ -504,6 +504,10 @@ run() {
             name(ct) <- 'Springfield';
         }
         APPLY;
+        IF canceled() THEN {
+            EXPORT JSON FROM message = applyMessage();
+            RETURN;
+        }
         EXPORT JSON FROM cities = GROUP SUM 1 IF c IS City;
     }
 }

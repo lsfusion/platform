@@ -81,7 +81,7 @@ currentOrders = DATA JSON ();
 // сохранить текущие фильтры группы объектов o и позже применить их обратно;
 // savedFilters получит JSON вида [{"property": "number", "compare": ">", "negation": false, "value": "1000"}]
 saveFilters ()  { FILTERS orders.o TO savedFilters; }
-restoreFilters ()  { FILTER orders.o FROM savedFilters; }
+restoreFilters ()  { FILTER orders.o FROM savedFilters(); }
 
 // прочитать текущий порядок группы объектов o;
 // currentOrders получит JSON вида [{"property": "date", "desc": true}, {"property": "number", "desc": false}]
@@ -90,9 +90,12 @@ readOrders ()  { ORDERS orders.o TO currentOrders; }
 // упорядочить группу объектов o по дате, сначала последние: JSON, заданный литералом, — сырой литерал
 sortByDate ()  { ORDER orders.o FROM JSON(r'[{"property": "date", "desc": true}]'); }
 
+// оставить только заказы с номером больше 1000, тем же способом
+filterLarge ()  { FILTER orders.o FROM JSON(r'[{"property": "number", "compare": ">", "value": "1000"}]'); }
+
 // активировать второй фильтр («Мелкие») в группе фильтров amount
 showSmall ()  { FILTERGROUP orders.amount FROM 2; }
 
 // отфильтровать свойство customer по значению 'Acme'
-filterAcme ()  { FILTER PROPERTY orders.customer FROM 'Acme'; }
+filterAcme ()  { FILTER PROPERTY orders.customer(o) FROM 'Acme'; }
 ```

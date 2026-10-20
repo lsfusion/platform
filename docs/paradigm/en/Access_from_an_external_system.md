@@ -108,7 +108,7 @@ Alternatively, an action that has a [result](Actions.md) returns it directly as 
     run() { RETURN 2 * 21; }
     ```
 
-The value is serialized like any result (a scalar as text, `JSON` / `FILE` as its content). For tabular or multi-field output use [`EXPORT`](Data_export_EXPORT.md) rather than `RETURN`.
+The value is serialized like any result (a scalar as text, `JSON` / `FILE` as its content). For tabular or multi-field output use [`EXPORT`](Data_export_EXPORT.md) rather than `RETURN`. Without result properties in the request, an action that has a result returns only it, even on a path where its `RETURN` is not executed: an `EXPORT` in such an action does not reach the response. Where one path must answer with exported data and another with a value, both paths export, and a `RETURN` without a value only ends the action.
 
 The `MESSAGE` operator is not suitable for returning a value: showing a message is an [interactive](#interactive) operation, and its text never appears in the response body: on a headless call the server collects such messages, but they do not reach the HTTP response (they are returned, for example, by the `lsfusion_eval` MCP tool), and a message with the `NOWAIT` option is additionally written to the server log as `Server message: ...`. Likewise, on a synchronous call a canceled [apply](Apply_changes_APPLY.md) (for example, on a [constraint](Constraints.md) violation) returns no error and shows no message automatically: the request completes as usual and the changes are not saved. To detect this, the action itself must check the `System.canceled[]` property and, if needed, return the error text from the `System.applyMessage[]` property.
 
