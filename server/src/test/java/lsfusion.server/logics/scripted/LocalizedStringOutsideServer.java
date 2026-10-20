@@ -10,10 +10,12 @@ import java.lang.reflect.Field;
 // so that the server need not guess whether a thread without a context is a test or a bug
 public class LocalizedStringOutsideServer {
 
-    public static void init() throws ReflectiveOperationException {
+    public static void init(Class<?>... classes) throws ReflectiveOperationException {
         setCachesDisabled(true);
         try {
             Class.forName(LocalizedString.class.getName());
+            for (Class<?> cls : classes)
+                Class.forName(cls.getName());
         } finally {
             setCachesDisabled(false);
         }

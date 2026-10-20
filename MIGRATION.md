@@ -2,6 +2,20 @@
 
 ## 7.0
 
+### Strings longer than 1000 characters are passed to the database as parameters
+
+A string value in a query - of a string class, `JSON` or `XML` - was written into the query text as
+a literal whatever its length, unless it contained a quote or a backslash, and was copied there for
+every use of the value ([#1903](https://github.com/lsfusion/platform/issues/1903)). A value longer
+than `maxInlineStringLength` characters (`1000` by default) is now passed as a query parameter, as a
+value with a quote always was. The `$N` parameters of `EXTERNAL SQL` and `INTERNAL DB` commands
+follow the same rule.
+
+What an upgrading application can notice: an `EXTERNAL SQL` or `INTERNAL DB` command that puts a
+longer string parameter where the database takes no parameters - in PostgreSQL, a DDL command such
+as `CREATE VIEW v AS SELECT $1` - now fails, there with `there is no parameter $1`. Set
+`maxInlineStringLength` to `2147483647` for the previous behaviour.
+
 ### Field names of one table that differ only in letter case are now reported at startup
 
 Two stored properties of one table whose field names differ only in letter case - `fooBar` and
