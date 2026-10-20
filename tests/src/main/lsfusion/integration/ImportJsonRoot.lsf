@@ -1,0 +1,21 @@
+MODULE ImportJsonRoot;
+
+REQUIRE TestUtils;
+
+// ROOT starts the import from the first key of that name, whatever its value is: one with an object or an array value was
+// not found, failing with "root node ... not found" (#1724, reported again as #1910)
+
+ijrJson () = JSONFILE('\{"policy": "lenient", "profile": \{"startRow": 5, "headerRow": 4\}, "fields": [\{"field": "a"\}, \{"field": "b"\}]\}');
+
+ijrStartRow = DATA LOCAL INTEGER ();
+ijrField = DATA LOCAL STRING (INTEGER);
+
+testImportRootObject 'IMPORT JSON ROOT starts from a key whose value is an object' () {
+    IMPORT JSON ROOT 'profile' FROM ijrJson() TO () ijrStartRow = 'startRow';
+    assertEquals(ijrStartRow(), 5, 'ROOT profile does not give startRow 5');
+}
+
+testImportRootArray 'IMPORT JSON ROOT starts from a key whose value is an array' () {
+    IMPORT JSON ROOT 'fields' FROM ijrJson() TO ijrField = 'field';
+    assertEquals((GROUP CONCAT ijrField(INTEGER i), ',' ORDER i), 'a,b', 'ROOT fields does not give the rows a,b');
+}
