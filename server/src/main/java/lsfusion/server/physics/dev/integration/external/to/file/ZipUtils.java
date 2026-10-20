@@ -82,18 +82,12 @@ public class ZipUtils {
                         if(isInsideDirectory(outputDirectory, new File(outputDirectory.getPath() + "/" + filePath))) { //ignore files that can be unpacked outside the temp dir
                             String[] splitted = filePath.split("/");
 
-                            String fileName;
-                            if (splitted.length > 1) {
-                                StringBuilder path = new StringBuilder();
-                                for (int i = 0; i < splitted.length - 1; i++) {
-                                    path.append("/").append(splitted[i]);
-                                    File dir = new File(outputDirectory.getPath() + path);
-                                    if (dir.mkdirs())
-                                        dirSet.add(dir);
-                                }
-                                fileName = splitted[splitted.length - 1];
-                            } else {
-                                fileName = filePath;
+                            StringBuilder path = new StringBuilder();
+                            for (int i = 0; i < splitted.length - 1; i++) {
+                                path.append("/").append(splitted[i]);
+                                File dir = new File(outputDirectory.getPath() + path);
+                                if (dir.mkdirs())
+                                    dirSet.add(dir);
                             }
 
                             outputFile = new File(outputDirectory.getPath() + "/" + filePath);
@@ -103,7 +97,7 @@ public class ZipUtils {
                                 outputStream.write(buffer, 0, len);
                             }
                             outputStream.close();
-                            result.put(getFileName(result, fileName), new FileData(new RawFileData(outputFile), BaseUtils.getFileExtension(outputFile)));
+                            result.put(getFileName(result, filePath), new FileData(new RawFileData(outputFile), BaseUtils.getFileExtension(outputFile)));
                             BaseUtils.safeDelete(outputFile);
                         }
                     }
@@ -198,8 +192,8 @@ public class ZipUtils {
 
     private static String getFileName(Map<String, FileData> files, String fileName) {
         if (files.containsKey(fileName)) {
-            String name = BaseUtils.getFileName(fileName);
             String extension = BaseUtils.getFileExtension(fileName);
+            String name = extension.isEmpty() ? fileName : fileName.substring(0, fileName.length() - extension.length() - 1);
             int count = 1;
             while (files.containsKey(getFileName(name, count, extension))) {
                 count++;

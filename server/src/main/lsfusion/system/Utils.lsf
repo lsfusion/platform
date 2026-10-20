@@ -73,7 +73,7 @@ makeZipFile '{utils.make.zip.file}' () { makeZipFile(NULL); }
 
 //unzip files
 unzipping '{utils.unzipping}' = DATA LOCAL FILE ();
-unzipped '{utils.unzipped.string}' = DATA LOCAL FILE (STRING[100]);
+unzipped '{utils.unzipped.string}' = DATA LOCAL FILE (STRING);
 makeUnzipFile '{utils.make.unzip.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.MakeUnzipFileAction' ();
 
 resource '{utils.resource.file}' = DATA LOCAL FILE ();
