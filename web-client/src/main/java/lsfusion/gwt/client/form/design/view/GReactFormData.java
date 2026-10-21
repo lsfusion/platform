@@ -22,7 +22,6 @@ import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.form.controller.GController;
 import lsfusion.gwt.client.form.controller.GFormController;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -231,10 +230,6 @@ public class GReactFormData {
             throw refusal(errorPrefix + "the function returned a Promise: a batch is sent when it returns, so"
                     + " what follows an await in it would be made outside it. Await before the batch");
     }
-    private static native boolean isFunction(JavaScriptObject value) /*-{ return typeof value === 'function'; }-*/;
-    private static native boolean isThenable(JavaScriptObject value) /*-{
-        return value != null && typeof value.then === 'function';
-    }-*/;
 
     // a React view's state, made with the view, and its controller with it
     public ViewState addView(GComponent scope, Consumer<JavaScriptObject> publish) {
@@ -1007,7 +1002,7 @@ public class GReactFormData {
         }
         // ... a call through it: an array states the items all at once, anything else one of them, merged into the rest
         void change(String surface, JavaScriptObject items) {
-            if (GSimpleStateTableView.isJSArray(items))
+            if (isJSArray(items))
                 changeAll(surface, items);
             else
                 changeOne(surface, items);
@@ -1117,9 +1112,9 @@ public class GReactFormData {
             // them by it - so a list naming one twice describes no sorting a group can have, whichever of the two
             // carries a direction
             NativeSIDMap<GPropertyDraw, Boolean> named = new NativeSIDMap<>();
-            int size = GSimpleStateTableView.jsArrayLength(orders);
+            int size = jsArrayLength(orders);
             for (int i = 0; i < size; i++) {
-                JavaScriptObject order = GSimpleStateTableView.jsArrayGet(orders, i);
+                JavaScriptObject order = jsArrayGet(orders, i);
                 String prefix = errorPrefix + "order " + i + ": ";
                 GPropertyDraw property = readProperty(prefix, order);
                 if (named.put(property, true) != null)
@@ -1229,10 +1224,10 @@ public class GReactFormData {
         void changeAll(String surface, JavaScriptObject conditions) {
             String errorPrefix = controllerPrefix(surface);
             ArrayList<GPropertyFilter> result = new ArrayList<>();
-            int size = GSimpleStateTableView.jsArrayLength(conditions);
+            int size = jsArrayLength(conditions);
             for (int i = 0; i < size; i++) {
                 String itemPrefix = errorPrefix + "condition " + i + ": ";
-                JavaScriptObject condition = GSimpleStateTableView.jsArrayGet(conditions, i);
+                JavaScriptObject condition = jsArrayGet(conditions, i);
                 GPropertyDraw property = readProperty(itemPrefix, condition);
                 JavaScriptObject value = getOwnField(condition, "value"); // read once: a condition is what was read
                 if (isNoValue(value)) // no value: "not filtered by this", not listed
@@ -1923,14 +1918,14 @@ public class GReactFormData {
             if (position == null)
                 return null; // values can arrive before their row, or outside the current page
             JavaScriptObject current = node.current();
-            JavaScriptObject byKey = field(current, "byKey");
-            JavaScriptObject row = field(byKey, key.toKeyString());
+            JavaScriptObject byKey = getField(current, "byKey");
+            JavaScriptObject row = getField(byKey, key.toKeyString());
             JavaScriptObject original = node.published();
             // Identity tells whether this object still belongs to the published snapshot. A copied or newly
             // inserted row is already writable, including after a reorder within the same batch.
-            if (row == field(field(original, "byKey"), key.toKeyString())) {
-                JavaScriptObject list = field(current, "list");
-                if (list == field(original, "list")) {
+            if (row == getField(getField(original, "byKey"), key.toKeyString())) {
+                JavaScriptObject list = getField(current, "list");
+                if (list == getField(original, "list")) {
                     list = copyArray(list);
                     byKey = copyKeepingPrototype(byKey);
                     setField(node.edit(), "list", list);
@@ -1943,14 +1938,14 @@ public class GReactFormData {
             return row;
         }
         void replaceRows() {
-            JavaScriptObject previous = field(node.current(), "byKey");
+            JavaScriptObject previous = getField(node.current(), "byKey");
             JavaScriptObject list = emptyArray();
             JavaScriptObject byKey = newBareObject();
             JavaScriptObject keys = emptyArray();
             positions.clear();
             int position = 0;
             for (GGroupObjectValue key : rows) {
-                JavaScriptObject row = field(previous, key.toKeyString());
+                JavaScriptObject row = getField(previous, key.toKeyString());
                 if (row == null) {
                     row = newObject();
                     GGroupObjectValue.registerRow(row, key);
@@ -1999,7 +1994,7 @@ public class GReactFormData {
         GGroupObjectValue resolveRow(String errorPrefix, JavaScriptObject objectOrKey) {
             GGroupObjectValue key = GGroupObjectValue.resolveObject(objectOrKey);
             if (key == null)
-                key = GGroupObjectValue.resolveObject(keyedRow(field(node.current(), "byKey"), objectOrKey));
+                key = GGroupObjectValue.resolveObject(keyedRow(getField(node.current(), "byKey"), objectOrKey));
             if (key == null)
                 throw refusal(errorPrefix + "expects a row of '" + node.name + "', its objects handle, or its key;"
                         + " that is none of them, or names no row the group has now");
@@ -2159,13 +2154,8 @@ public class GReactFormData {
                 // come - as a changed cell says it waits for its answer. Closing a node loads nothing, and nor does
                 // opening one with no children, which stays closed (isOpen). There only while it is so
                 boolean loading = table.isPendingExpanding(key) && expanded;
-                if (loading != isField(row, "loading", true)) {
-                    JavaScriptObject edited = editRow(key);
-                    if (loading)
-                        setField(edited, "loading", true);
-                    else
-                        deleteField(edited, "loading");
-                }
+                if (loading != isField(row, "loading", true))
+                    setFlag(editRow(key), "loading", loading);
             }
         }
         // whether the server counts children under a row, loaded or not
@@ -2179,7 +2169,7 @@ public class GReactFormData {
         }
         // the row as it stands now: in the draft, or as published
         JavaScriptObject currentRow(GGroupObjectValue key) {
-            return field(field(node.current(), "byKey"), key.toKeyString());
+            return getField(getField(node.current(), "byKey"), key.toKeyString());
         }
         // ===== a call through its member: expand(row), collapse(row), toggle(row) - a node of the tree, one of the
         // rows drawn here, named as change(row) names a row of its group (resolveGroupRow): a row of a group BELOW
@@ -2516,9 +2506,6 @@ public class GReactFormData {
             this.requestIndex = requestIndex;
         }
     }
-    // whether a row already says so - a field it does not have yet says nothing
-    private static native boolean isNullField(JavaScriptObject row, String field) /*-{ return row[field] === null; }-*/;
-    private static native boolean isField(JavaScriptObject row, String field, boolean value) /*-{ return row[field] === value; }-*/;
 
     // what React writes for a property - its entry, on its node under its name: all of a property React draws, or the
     // labels of a property the platform draws - and whether the form shows it, which the entry says: there from the
@@ -3065,18 +3052,6 @@ public class GReactFormData {
                 present.add(reader);
         return present.toArray(new GPropertyReader[0]);
     }
-    // a copy with the source's own prototype, so a bare byKey (newBareObject) stays bare - GwtClientUtils.copyObject
-    // makes a plain object
-    private static native JavaScriptObject copyKeepingPrototype(JavaScriptObject source) /*-{
-        return Object.assign(Object.create(Object.getPrototypeOf(source)), source);
-    }-*/;
-    private static native JavaScriptObject copyArray(JavaScriptObject source) /*-{ return source.slice(); }-*/;
-    private static native JavaScriptObject field(JavaScriptObject source, String name) /*-{ return source == null ? null : source[name]; }-*/;
-    // a value the design need not give, null where it gives none: a Java field never set is undefined in compiled JS,
-    // and the projection says "none" by null
-    private static native void setFieldOrNull(JavaScriptObject object, String field, Object value) /*-{ object[field] = value == null ? null : value; }-*/;
-    private static native void deleteField(JavaScriptObject target, String name) /*-{ delete target[name]; }-*/;
-    private static native void setArrayElement(JavaScriptObject array, int index, JavaScriptObject value) /*-{ array[index] = value; }-*/;
 
     private GGroupObjectValue getNearObject(ArrayList<GGroupObjectValue> rows, int removedIndex) {
         if (rows.isEmpty())
@@ -3251,13 +3226,6 @@ public class GReactFormData {
             }
         };
     }-*/;
-    // what the server answers a call, as the Promise the call returns: the number - null where there is none -, or
-    // the error, which the form shows too
-    private static JavaScriptObject answerPromise(BiConsumer<Consumer<Number>, Consumer<Throwable>> ask) {
-        return newPromise((resolve, reject) -> ask.accept(
-                number -> resolveNumber(resolve, number != null ? number.doubleValue() : null),
-                error -> rejectError(reject, error.getMessage())));
-    }
     // a call that asks the server and makes no change a batch carries, refused by the form now (Verbs.getRefusal): the
     // reason said on the console - not thrown, as a lookup's refusal is not -, and the call made of nothing; one that
     // answers with a Promise has it rejected with the reason, as a server call's is
@@ -3269,17 +3237,6 @@ public class GReactFormData {
         GwtClientUtils.consoleError(refusal);
         return true;
     }
-    private static native JavaScriptObject newPromise(BiConsumer<JavaScriptObject, JavaScriptObject> body) /*-{
-        return new $wnd.Promise(function (resolve, reject) {
-            body.@java.util.function.BiConsumer::accept(*)(resolve, reject);
-        });
-    }-*/;
-    private static native void resolveNumber(JavaScriptObject resolve, Double value) /*-{
-        resolve(value);
-    }-*/;
-    private static native void rejectError(JavaScriptObject reject, String message) /*-{
-        reject(new $wnd.Error(message));
-    }-*/;
 
     private static native JavaScriptObject makePropertyMember(ReactPropertyEntry propertyEntry, String qualified) /*-{
         var member = {

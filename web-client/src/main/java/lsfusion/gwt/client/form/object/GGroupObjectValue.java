@@ -324,9 +324,8 @@ public class GGroupObjectValue implements Serializable {
     private static native void clearRowKey(JavaScriptObject row) /*-{ delete row[@lsfusion.gwt.client.form.object.GGroupObjectValue::KEY]; }-*/;
 
     public static void clearRowObjects(JavaScriptObject row) { // drop the handle a clone inherited from its template (enumerable → copied by Object.assign)
-        deleteField(row, ROW_OBJECTS);
+        GwtClientUtils.deleteField(row, ROW_OBJECTS);
     }
-    private static native void deleteField(JavaScriptObject row, String field) /*-{ delete row[field]; }-*/;
     private static native JavaScriptObject readField(JavaScriptObject row, String field) /*-{
         return (row !== null && typeof row === 'object') ? row[field] : null;
     }-*/;

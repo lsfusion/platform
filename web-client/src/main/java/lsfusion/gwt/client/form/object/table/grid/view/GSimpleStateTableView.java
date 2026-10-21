@@ -185,13 +185,13 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         // a color and an interval go out as strings of their own (convertToJSValue: the value's toString), and come
         // back as what they are - a string the server is handed for one is no color and no interval to it
         if (type instanceof GColorType) {
-            String color = isString(value) ? toString(value) : null; // "#rrggbb" (ColorDTO)
+            String color = GwtClientUtils.isJSString(value) ? toString(value) : null; // "#rrggbb" (ColorDTO)
             if (color == null || !color.matches("#[0-9a-fA-F]{6}"))
                 throw GwtClientUtils.refusal(notTakenBack(value, "a color", "'#rrggbb'"));
             return PValue.getPValue(new ColorDTO(color.substring(1)));
         }
         if (type instanceof GIntervalType) {
-            String interval = isString(value) ? toString(value) : null; // "<from>.<to>" (GIntervalValue)
+            String interval = GwtClientUtils.isJSString(value) ? toString(value) : null; // "<from>.<to>" (GIntervalValue)
             int dot = interval != null ? interval.indexOf('.') : -1;
             try {
                 if (dot > 0)
@@ -223,7 +223,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             return PValue.getPValue(toDouble(value));
         if (isDate(value))
             return PValue.getPValue(formatJSDateOffsetISO(value));
-        if (isString(value))
+        if (GwtClientUtils.isJSString(value))
             return PValue.getPValue(toString(value));
         return PValue.getPValue(GwtClientUtils.jsonStringify(value)); // object / array
     }
@@ -235,17 +235,13 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
     public static ArrayList<Serializable> encodeUnknownJSValues(JavaScriptObject array) {
         ArrayList<Serializable> result = new ArrayList<>();
-        int length = jsArrayLength(array);
+        int length = GwtClientUtils.jsArrayLength(array);
         for (int i = 0; i < length; i++)
-            result.add(encodeUnknownJSValue(jsArrayGet(array, i)));
+            result.add(encodeUnknownJSValue(GwtClientUtils.jsArrayGet(array, i)));
         return result;
     }
-    public static native boolean isJSArray(JavaScriptObject v) /*-{ return Array.isArray(v); }-*/;
-    public static native int jsArrayLength(JavaScriptObject array) /*-{ return array.length; }-*/;
-    public static native JavaScriptObject jsArrayGet(JavaScriptObject array, int i) /*-{ return array[i]; }-*/;
     private static native boolean isBoolean(JavaScriptObject v) /*-{ return typeof v === 'boolean'; }-*/;
     private static native boolean isNumber(JavaScriptObject v) /*-{ return typeof v === 'number'; }-*/;
-    private static native boolean isString(JavaScriptObject v) /*-{ return typeof v === 'string'; }-*/;
     private static native boolean isDate(JavaScriptObject v) /*-{ return Object.prototype.toString.call(v) === '[object Date]'; }-*/;
     // local components + numeric offset (-getTimezoneOffset() so +03:00 stays +03:00; zero -> +00:00, not Z), seconds always
     private static native String formatJSDateOffsetISO(JavaScriptObject d) /*-{

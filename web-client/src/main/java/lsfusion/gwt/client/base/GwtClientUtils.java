@@ -2141,9 +2141,13 @@ public class GwtClientUtils {
     private static native JavaScriptObject newError(String message)/*-{
         return new Error(message);
     }-*/;
+    // an object's field, null of no object
     public static native JavaScriptObject getField(JavaScriptObject object, String field)/*-{
-        return object[field];
+        return object == null ? null : object[field];
     }-*/;
+    // whether a field holds null, or this boolean - a field not there holds neither
+    public static native boolean isNullField(JavaScriptObject object, String field)/*-{ return object[field] === null; }-*/;
+    public static native boolean isField(JavaScriptObject object, String field, boolean value)/*-{ return object[field] === value; }-*/;
     public static native JavaScriptObject call(JavaScriptObject object)/*-{
         return object();
     }-*/;
@@ -2158,6 +2162,27 @@ public class GwtClientUtils {
     }-*/;
     public static native int getParamsCount(JavaScriptObject object)/*-{
         return object.length;
+    }-*/;
+    public static native boolean isFunction(JavaScriptObject value)/*-{ return typeof value === 'function'; }-*/;
+    public static native boolean isThenable(JavaScriptObject value)/*-{
+        return value != null && typeof value.then === 'function';
+    }-*/;
+    // what ask answers, as a Promise: the number - null where there is none -, or the error
+    public static JavaScriptObject answerPromise(BiConsumer<Consumer<Number>, Consumer<Throwable>> ask) {
+        return newPromise((resolve, reject) -> ask.accept(
+                number -> resolveNumber(resolve, number != null ? number.doubleValue() : null),
+                error -> rejectError(reject, error.getMessage())));
+    }
+    private static native JavaScriptObject newPromise(BiConsumer<JavaScriptObject, JavaScriptObject> body)/*-{
+        return new $wnd.Promise(function (resolve, reject) {
+            body.@java.util.function.BiConsumer::accept(*)(resolve, reject);
+        });
+    }-*/;
+    private static native void resolveNumber(JavaScriptObject resolve, Double value)/*-{
+        resolve(value);
+    }-*/;
+    private static native void rejectError(JavaScriptObject reject, String message)/*-{
+        reject(new $wnd.Error(message));
     }-*/;
     public static native JavaScriptObject newObject()/*-{
         return {};
@@ -2213,16 +2238,31 @@ public class GwtClientUtils {
     }-*/;
     public static native boolean isJSObject(JavaScriptObject value)/*-{ return value !== null && typeof value === 'object' && !Array.isArray(value); }-*/;
     public static native boolean isJSBoolean(JavaScriptObject value)/*-{ return typeof value === 'boolean'; }-*/;
+    public static native boolean isJSString(JavaScriptObject value)/*-{ return typeof value === 'string'; }-*/;
     // the value ALREADY read and checked, not a second read of the field: an own accessor could answer differently
     public static native boolean toBoolean(JavaScriptObject value)/*-{ return !!value; }-*/;
     public static native JsArray emptyArray()/*-{
         return [];
     }-*/;
+    public static native boolean isJSArray(JavaScriptObject value)/*-{ return Array.isArray(value); }-*/;
+    public static native int jsArrayLength(JavaScriptObject array)/*-{ return array.length; }-*/;
+    public static native JavaScriptObject jsArrayGet(JavaScriptObject array, int index)/*-{ return array[index]; }-*/;
+    public static native void setArrayElement(JavaScriptObject array, int index, JavaScriptObject value)/*-{ array[index] = value; }-*/;
     // the one setter: a JS object lands as itself, and so do a String, a Boolean and a Double - GWT hands those three
     // to JS as primitives, so a Boolean is a real true/false rather than a truthy wrapper. An int/Integer is NOT
     // unboxed by JSNI; it goes in as a Double or a String
     public static native void setField(JavaScriptObject object, String field, Object value)/*-{
         object[field] = value;
+    }-*/;
+    // ... and a value that may be none, null then: a Java field never set is undefined in compiled JS
+    public static native void setFieldOrNull(JavaScriptObject object, String field, Object value)/*-{ object[field] = value == null ? null : value; }-*/;
+    public static native void deleteField(JavaScriptObject object, String field)/*-{ delete object[field]; }-*/;
+    // ... and a flag: true while it is set, no field while it is not
+    public static native void setFlag(JavaScriptObject object, String field, boolean flag)/*-{
+        if (flag)
+            object[field] = true;
+        else
+            delete object[field];
     }-*/;
 
     public static native JavaScriptObject replaceField(JavaScriptObject object, String field, JavaScriptObject value)/*-{
@@ -2231,6 +2271,11 @@ public class GwtClientUtils {
     public static native JavaScriptObject copyObject(JavaScriptObject object)/*-{ // shallow clone (enumerable own props only; non-enumerable handles are not copied). Object.assign, not {...} — GWT JSNI rejects object spread
         return Object.assign({}, object);
     }-*/;
+    // ... with the object's own prototype, so a bare one (newBareObject) stays bare - copyObject makes a plain object
+    public static native JavaScriptObject copyKeepingPrototype(JavaScriptObject object)/*-{
+        return Object.assign(Object.create(Object.getPrototypeOf(object)), object);
+    }-*/;
+    public static native JavaScriptObject copyArray(JavaScriptObject array)/*-{ return array.slice(); }-*/;
 
     public static native JavaScriptObject removeField(JavaScriptObject object, String field)/*-{
         if (object[field]) {
