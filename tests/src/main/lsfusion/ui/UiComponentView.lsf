@@ -1,0 +1,160 @@
+MODULE UiComponentView;
+
+REQUIRE System, SystemEvents;
+
+// the forms UiComponentViewIT works on in the browser - a grid, a toolbar, filter controls, a filter group and a tree's
+// grid drawn by a React component of their own (custom on the component, UiComponentView.js), in a form the platform
+// draws otherwise and inside what a React container draws, which places it -, and the action it seeds its items with
+
+CLASS UiCvCategory 'Category';
+uiCvCategoryName 'Category' = DATA STRING[50] (UiCvCategory);
+uiCvCategoryShown = DATA BOOLEAN (UiCvCategory); // the category of the test that seeded last: the forms show only it
+
+CLASS UiCvItem 'Item';
+uiCvName 'Name' = DATA STRING[50] (UiCvItem);
+uiCvPrice 'Price' = DATA NUMERIC[10,2] (UiCvItem);
+uiCvCategory = DATA UiCvCategory (UiCvItem);
+uiCvShown = DATA BOOLEAN (UiCvItem); // the items of the test that seeded last: the forms show only them
+
+// a component hidden by its SHOWIF, and the class of a grid, a caption of a tree its design computes: switched in the
+// form's own session, each switch shown on the form - its answer to the switch come
+uiCvHidden 'Hidden' = DATA LOCAL BOOLEAN ();
+uiCvToggle 'Toggle' () { uiCvHidden() <- NOT uiCvHidden(); }
+uiCvClass 'Class' = DATA LOCAL STRING[20] ();
+uiCvRestyle 'Restyle' () { uiCvClass() <- IF uiCvClass() = 'ui-cv-a' THEN 'ui-cv-b' ELSE 'ui-cv-a'; }
+uiCvCaption 'Caption' = DATA LOCAL STRING[30] ();
+uiCvRecaption 'Recaption' () { uiCvCaption() <- 'Groups of things'; }
+
+// the grid drawn by its own component, a column the platform draws placed per row; the toolbar and the filters over its
+// rows the platform's; its SHOWIF and its computed class
+FORM uiCvGrid 'Grid of its own'
+    OBJECTS i = UiCvItem
+    PROPERTIES(i) READONLY name = uiCvName
+    PROPERTIES(i) READONLY price = uiCvPrice NOCUSTOM
+    PROPERTIES() uiCvToggle, uiCvRestyle, uiCvHidden READONLY, uiCvClass READONLY
+    FILTERS uiCvShown(i)
+    ORDERS name
+;
+
+DESIGN uiCvGrid {
+    GRID(i) {
+        custom = 'UiCvGrid';
+        showIf = NOT uiCvHidden();
+        valueClass = uiCvClass();
+    }
+}
+
+// the toolbar drawn by its own component, over the platform's grid of the same columns as uiCvGrid's
+FORM uiCvToolbar 'Toolbar of its own'
+    OBJECTS i = UiCvItem
+    PROPERTIES(i) READONLY name = uiCvName, price = uiCvPrice
+    FILTERS uiCvShown(i)
+    ORDERS name
+;
+
+DESIGN uiCvToolbar {
+    TOOLBARSYSTEM(i) { custom = 'UiCvToolbar'; }
+}
+
+// a filter group drawn by its own component - the first filter's key F10 -, the rows by a react container; hidden by
+// its SHOWIF
+FORM uiCvFilterGroup 'Filter group of its own'
+    OBJECTS i = UiCvItem
+    PROPERTIES(i) READONLY name = uiCvName
+    PROPERTIES() uiCvToggle, uiCvHidden READONLY
+    FILTERS uiCvShown(i)
+    ORDERS name
+    FILTERGROUP uiCvKind
+        FILTER 'Dear' uiCvPrice(i) >= 1 'F10'
+        FILTER 'Cheap' uiCvPrice(i) < 1
+;
+
+DESIGN uiCvFilterGroup {
+    NEW rows FIRST {
+        custom = 'UiCvRows';
+        MOVE GRID(i);
+    }
+    FILTERGROUP(uiCvKind) {
+        custom = 'UiCvFilterGroup';
+        showIf = NOT uiCvHidden();
+    }
+}
+
+// the filter controls drawn by their own component, over the platform's filters and grid
+FORM uiCvControls 'Filter controls of their own'
+    OBJECTS i = UiCvItem
+    PROPERTIES(i) READONLY name = uiCvName, price = uiCvPrice
+    FILTERS uiCvShown(i)
+    ORDERS name
+;
+
+DESIGN uiCvControls {
+    FILTERCONTROLS(i) { custom = 'UiCvControls'; }
+}
+
+// a toolbar of its own inside what a react container draws, which places it
+FORM uiCvPlaced 'Toolbar of its own placed'
+    OBJECTS i = UiCvItem
+    PROPERTIES(i) READONLY name = uiCvName
+    FILTERS uiCvShown(i)
+    ORDERS name
+;
+
+DESIGN uiCvPlaced {
+    BOX(i) { custom = 'UiCvBoard'; }
+    TOOLBARSYSTEM(i) { custom = 'UiCvPlacedToolbar'; }
+}
+
+// a tree drawn by its own component, its hierarchical caption computed
+FORM uiCvTree 'Tree of its own'
+    TREE cats c = UiCvCategory, i = UiCvItem
+    PROPERTIES(c) READONLY catName = uiCvCategoryName
+    PROPERTIES(i) READONLY name = uiCvName
+    PROPERTIES() uiCvRecaption, uiCvCaption READONLY
+    FILTERS uiCvCategory(i) = c, uiCvCategoryShown(c), uiCvShown(i)
+;
+
+DESIGN uiCvTree {
+    GRID(TREE cats) {
+        custom = 'UiCvTree';
+        hierarchicalCaption = uiCvCaption();
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiComponentView.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiCv 'UI component views' WINDOW toolbar {
+        NEW uiCvGrid;
+        NEW uiCvToolbar;
+        NEW uiCvFilterGroup;
+        NEW uiCvControls;
+        NEW uiCvPlaced;
+        NEW uiCvTree;
+    }
+}
+
+// a category with two items in it, shown from now on, the dearer item first by name
+uiCvSeed (STRING[50] category, STRING[50] dear, STRING[50] cheap) {
+    uiCvCategoryShown(UiCvCategory c) <- NULL;
+    uiCvShown(UiCvItem i) <- NULL;
+    NEW c = UiCvCategory {
+        uiCvCategoryName(c) <- category;
+        uiCvCategoryShown(c) <- TRUE;
+        NEW i = UiCvItem {
+            uiCvName(i) <- dear;
+            uiCvPrice(i) <- 1.50;
+            uiCvCategory(i) <- c;
+            uiCvShown(i) <- TRUE;
+        }
+        NEW i = UiCvItem {
+            uiCvName(i) <- cheap;
+            uiCvPrice(i) <- 0.75;
+            uiCvCategory(i) <- c;
+            uiCvShown(i) <- TRUE;
+        }
+    }
+    APPLY;
+}
