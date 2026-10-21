@@ -1,0 +1,159 @@
+MODULE UiReactBatchChrome;
+
+REQUIRE System, SystemEvents;
+
+// the forms UiReactBatchChromeIT works on in the browser - the members of a table's chrome a React view draws
+// (UiReactBatchChrome.js) called in controller.batch: a toolbar's over the platform's grid, a tree's over the rows the
+// view draws and over the platform's tree, a filter group's -, and the action it seeds its items with
+
+CLASS UiRbcCategory 'Category';
+uiRbcCategoryName 'Category' = DATA STRING[50] (UiRbcCategory);
+// the categories of the test that seeded last: the forms show only them
+uiRbcCategoryShown = DATA BOOLEAN (UiRbcCategory);
+
+CLASS UiRbcItem 'Item';
+uiRbcName 'Name' = DATA STRING[50] (UiRbcItem);
+uiRbcPrice 'Price' = DATA NUMERIC[10,2] (UiRbcItem);
+uiRbcCategory = DATA UiRbcCategory (UiRbcItem);
+uiRbcShown = DATA BOOLEAN (UiRbcItem); // the items of the test that seeded last: the forms show only them
+
+// the toolbar drawn by a view over the platform's grid, the name an ACTIVE PROPERTY - the focus moved in or out of its
+// cell sends a request of the platform's own, which no batch carries
+FORM uiRbcHeader 'Toolbar of a view in a batch'
+    OBJECTS i = UiRbcItem
+    PROPERTIES(i) READONLY name = uiRbcName, price = uiRbcPrice
+    FILTERS uiRbcShown(i)
+    ORDERS name
+;
+
+uiRbcNameActive = ACTIVE PROPERTY uiRbcHeader.name;
+
+EXTEND FORM uiRbcHeader
+    PROPERTIES() READONLY uiRbcNameActive
+;
+
+DESIGN uiRbcHeader {
+    NEW header FIRST {
+        custom = 'UiRbcView';
+        MOVE TOOLBARSYSTEM(i);
+    }
+}
+
+// ... the price an ACTIVE PROPERTY drawn in a div: an editor on it puts an input in the div's place, which takes the
+// focus as it starts
+FORM uiRbcHeaderNumber 'Toolbar of a view over a number in a div'
+    OBJECTS i = UiRbcItem
+    PROPERTIES(i) READONLY name = uiRbcName, price = uiRbcPrice
+    FILTERS uiRbcShown(i)
+    ORDERS name
+;
+
+uiRbcPriceActive = ACTIVE PROPERTY uiRbcHeaderNumber.price;
+
+EXTEND FORM uiRbcHeaderNumber
+    PROPERTIES() READONLY uiRbcPriceActive
+;
+
+DESIGN uiRbcHeaderNumber {
+    NEW header FIRST {
+        custom = 'UiRbcView';
+        MOVE TOOLBARSYSTEM(i);
+    }
+    PROPERTY(price) { tag = 'div'; }
+}
+
+// the whole tree drawn by a view
+FORM uiRbcTreeBox 'Tree of a view in a batch'
+    TREE cats c = UiRbcCategory, i = UiRbcItem
+    PROPERTIES(c) READONLY catName = uiRbcCategoryName
+    PROPERTIES(i) READONLY name = uiRbcName, price = uiRbcPrice
+    FILTERS uiRbcCategory(i) = c, uiRbcCategoryShown(c)
+    ORDERS catName
+;
+
+DESIGN uiRbcTreeBox {
+    BOX(TREE cats) { custom = 'UiRbcView'; }
+}
+
+// the platform's tree, its toolbar and filter controls drawn by a view
+FORM uiRbcTreeHeader 'Tree toolbar of a view in a batch'
+    TREE cats c = UiRbcCategory, i = UiRbcItem
+    PROPERTIES(c) READONLY catName = uiRbcCategoryName
+    PROPERTIES(i) READONLY name = uiRbcName, price = uiRbcPrice
+    FILTERS uiRbcCategory(i) = c, uiRbcCategoryShown(c)
+    ORDERS catName
+;
+
+DESIGN uiRbcTreeHeader {
+    NEW header FIRST {
+        custom = 'UiRbcView';
+        MOVE TOOLBARSYSTEM(TREE cats);
+        MOVE FILTERCONTROLS(TREE cats);
+    }
+}
+
+// a filter group of the group a view draws whole
+FORM uiRbcFilterGroup 'Filter group of a view in a batch'
+    OBJECTS i = UiRbcItem
+    PROPERTIES(i) READONLY name = uiRbcName, price = uiRbcPrice
+    FILTERS uiRbcShown(i)
+    ORDERS name
+    FILTERGROUP uiRbcKind
+        FILTER 'Dear' uiRbcPrice(i) >= 1
+        FILTER 'Cheap' uiRbcPrice(i) < 1
+;
+
+DESIGN uiRbcFilterGroup {
+    BOX(i) { custom = 'UiRbcView'; }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiReactBatchChrome.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiRbc 'UI React batch chrome' WINDOW toolbar {
+        NEW uiRbcHeader;
+        NEW uiRbcHeaderNumber;
+        NEW uiRbcTreeBox;
+        NEW uiRbcTreeHeader;
+        NEW uiRbcFilterGroup;
+    }
+}
+
+// three categories shown from now on, by name the one with two items in it - the dearer one first by name -, another
+// with one item, which only the trees show, and the empty one
+uiRbcSeed (STRING[50] full, STRING[50] empty, STRING[50] dear, STRING[50] cheap, STRING[50] other, STRING[50] otherItem) {
+    uiRbcCategoryShown(UiRbcCategory c) <- NULL;
+    uiRbcShown(UiRbcItem i) <- NULL;
+    NEW c = UiRbcCategory {
+        uiRbcCategoryName(c) <- full;
+        uiRbcCategoryShown(c) <- TRUE;
+        NEW i = UiRbcItem {
+            uiRbcName(i) <- dear;
+            uiRbcPrice(i) <- 1.50;
+            uiRbcCategory(i) <- c;
+            uiRbcShown(i) <- TRUE;
+        }
+        NEW i = UiRbcItem {
+            uiRbcName(i) <- cheap;
+            uiRbcPrice(i) <- 0.75;
+            uiRbcCategory(i) <- c;
+            uiRbcShown(i) <- TRUE;
+        }
+    }
+    NEW c = UiRbcCategory {
+        uiRbcCategoryName(c) <- other;
+        uiRbcCategoryShown(c) <- TRUE;
+        NEW i = UiRbcItem {
+            uiRbcName(i) <- otherItem;
+            uiRbcPrice(i) <- 0.50;
+            uiRbcCategory(i) <- c;
+        }
+    }
+    NEW c = UiRbcCategory {
+        uiRbcCategoryName(c) <- empty;
+        uiRbcCategoryShown(c) <- TRUE;
+    }
+    APPLY;
+}
