@@ -45,7 +45,7 @@ image [KEYPRESS key] [TOOLBAR [quickAccess1 ... quickAccessN]] action
 
 The `INPUT` operator creates an action that requests a value of the given class from the user. For a custom class, without an explicit `LIST`, interactive input opens the class selection form, while a programmatically supplied value is interpreted as the object's id.
 
-The `LIST` block limits the values offered for selection to a specific set. The set is supplied either by a property (`listExpr`), whose values are offered to the user, or by an action (`listAction`), which produces them for the value being entered (allowed for a built-in class only). The `WHERE` block narrows this set further by a given condition.
+The `LIST` block limits the values offered for selection to a specific set. The set is supplied either by a property (`listExpr`), whose values are offered to the user, or by an action (`listAction`), which produces them for the value being entered (allowed for a built-in class only). The `WHERE` block narrows this set further by a given condition. For a value of a numeric class the web client builds no suggestion list.
 
 The `CUSTOM` block replaces the default input editor with a custom one rendered by a given client-side function. The `ACTIONS` block adds extra buttons next to the input control, each running its own action when pressed.
 
@@ -89,7 +89,7 @@ Interactive input of a built-in class value is performed in the editor of the fo
 
 - `listExpr`
 
-    An expression that defines the set of values offered for selection. When inputting a value of a built-in class, it supplies the candidate values shown in the inline list. When inputting a value of a custom class, it maps each candidate object to a displayed value (for example `name(s)`), which is what the user enters: in the editor of the value class of `listExpr` with suggestions from the set, or, when the web client builds a [selection element](../paradigm/Interactive_view.md#select) for the form property, by picking an option right in the field.
+    An expression that defines the set of values offered for selection. When inputting a value of a built-in class, the list offers the distinct values of this expression over all object collections for which it is not `NULL`: the value being entered is not a parameter of the expression, which declares its new parameters itself (for example, `name(Customer c)` offers the names of all customers, and a parameter named like the input result inside the expression is a new parameter too). For suggestions during string input, the expression must return the strings themselves: an expression with a numeric value, such as the number of occurrences of a string, gives no suggestions. When inputting a value of a custom class, it maps each candidate object to a displayed value (for example `name(s)`), which is what the user enters: in the editor of the value class of `listExpr` with suggestions from the set, or, when the web client builds a [selection element](../paradigm/Interactive_view.md#select) for the form property, by picking an option right in the field.
 
 - `listAction`
 
@@ -159,7 +159,7 @@ FORM order
     PROPERTIES(o) customer ON CHANGE changeCustomer(o)
 ;
 
-testFile  {
+testFile()  {
     INPUT f = FILE DO { // requesting a dialog to select a file
         open(f); // opening the selected file
     }
@@ -170,6 +170,11 @@ sku = DATA Sku (OrderDetail);
 // select an object of a custom class, offering skus by their name and keeping only those in stock, and write it back
 changeSku (OrderDetail d)  {
     INPUT s = sku(d) CHANGE LIST name(s) WHERE inStock(s);
+}
+
+// string input with suggestions: the distinct values of the expression over its own parameter are offered
+changeCustomerFromList (Order o)  {
+    INPUT s = customer(o) CHANGE LIST customer(Order oo);
 }
 
 tagName = DATA STRING[100] (Order, INTEGER);

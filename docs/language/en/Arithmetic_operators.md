@@ -27,7 +27,7 @@ There are no dedicated operators for the remainder of division, integer division
 
 - `expression1, expression2`
 
-    [Expressions](Expression.md) whose values will be arguments for arithmetic operators.
+    [Expressions](Expression.md) whose values will be arguments for arithmetic operators. The operands of `(+)` and `(-)` must be numeric: these operators are not defined for strings, date/time values or logical values. Such an expression is not checked when the module is loaded, and the error is raised when a query reading the property is executed. To concatenate strings while skipping `NULL` operands, use the [`CONCAT` operator](CONCAT_operator.md).
 
 ### Examples
 

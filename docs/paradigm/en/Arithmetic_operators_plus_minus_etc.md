@@ -19,6 +19,8 @@ All of these operators return `NULL` if one of the operands is `NULL`. Division 
 |`(+)`   |Summation |Takes two input operands and returns their sum, treating `NULL` as `0`|`3 (+) 5`<br/>`3 (+) NULL`|`8`<br/>`3`|
 |`(-)`   |Difference|Takes two input operands and returns their difference, treating `NULL` as `0`|`5 (-) 3`<br/>`5 (-) NULL`<br/>`5 (-) 5`|`2`<br/>`5`<br/>`NULL`|
 
+Addition and subtraction that treat `NULL` as zero are defined for numeric classes only: they do not work with strings, date/time values or logical values, and the error is raised when the query is executed, not when the module is loaded.
+
 The remainder of division, integer division, and exponentiation have no operators of their own — they are performed by properties of the system module [`Utils`](System_Utils.md):
 
 |Operation|Property|Description|Example|Result|

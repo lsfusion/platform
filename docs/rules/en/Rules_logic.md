@@ -33,7 +33,8 @@ title: 'Rules: domain logic'
    takes the `ELSE` branch, while a non-`NULL` one returns the
    `THEN` value as it is, so `IF TRUE THEN NULL ELSE 1` is
    `NULL` —
-   `MIN` / `MAX`, the `NULL`-tolerant arithmetic `(+)` / `(-)`,
+   `MIN` / `MAX`, the `NULL`-tolerant arithmetic `(+)` / `(-)`
+   (numeric operands only, it does not concatenate strings),
    the `CONCAT` concatenation
    (a `NULL` operand is skipped together with its separator),
    and `GROUP` aggregates (`GROUP SUM`, `GROUP MAX`, etc.) —

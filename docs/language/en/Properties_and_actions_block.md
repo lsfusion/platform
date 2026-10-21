@@ -104,7 +104,7 @@ In all [expressions](Expression.md) and [context-dependent action operators](Act
 
 - `cparam1, ..., cparamN`
 
-    List of common parameters of the block. Each parameter is specified with the name of the object on the form. If this list is defined, then adding a property (action) will require that you specify only its ID without parameters. The object name is specified with [simple ID](IDs.md#id). The list may also be empty: `PROPERTIES()` is a header with zero common parameters, not its absence, so in such a block too a property (action) is specified by its ID alone, and only parameterless properties and actions can be added this way — `PROPERTIES() total, newCustomer` is equivalent to `PROPERTIES total(), newCustomer()`.
+    List of common parameters of the block. Each parameter is specified with the name of the object on the form. If this list is defined, then adding a property (action) will require that you specify only its ID without parameters. An expression or an action operator cannot be added in such a block: for them a block without common parameters is used, and the objects are named in the expression itself. The object name is specified with [simple ID](IDs.md#id). The list may also be empty: `PROPERTIES()` is a header with zero common parameters, not its absence, so in such a block too a property (action) is specified by its ID alone, and only parameterless properties and actions can be added this way — `PROPERTIES() total, newCustomer` is equivalent to `PROPERTIES total(), newCustomer()`.
 
 - `alias`
 
@@ -116,7 +116,7 @@ In all [expressions](Expression.md) and [context-dependent action operators](Act
 
 
 :::info
-In the current platform implementation, if the name and caption are not specified together, then `=` is required when using the expressions and action operators (i.e. `f(a,b)`, but `=a*b+5`)
+In the current platform implementation, `=` is required before an expression or an action operator even when neither the name nor the caption is specified (i.e. `f(a,b)`, but `= a*b+5`)
 :::
 
 - `formPropertyId`

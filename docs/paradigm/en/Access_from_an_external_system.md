@@ -12,8 +12,8 @@ The platform allows external systems to access an lsFusion-based system using va
 An action being called can be defined in one of the three ways:
 
 -   `EXEC` – the name of the action is specified.
--   `EVAL` – code in the lsFusion language is specified. It is assumed that this code contains a declaration of an action named `run`. This is the action that will be called.
--   `EVAL ACTION` – action code in the lsFusion language is specified. The supplied code is the body of the implicitly declared `run` action, so, unlike `EVAL`, it must not be wrapped in a `run(...) { ... }` declaration: the server wraps the supplied text in such a declaration itself, and a nested action declaration fails to parse with `no viable alternative at input '{'`. To access a parameter, the special character `$` and the parameter number (starting from `1`) are used.
+-   `EVAL` – code in the lsFusion language is specified. It is assumed that this code contains a declaration of an action named `run`. This is the action that will be called. Which parts of the module header such code may contain is described in [code execution](Eval_EVAL.md).
+-   `EVAL ACTION` – action code in the lsFusion language is specified. The supplied code is the body of the implicitly declared `run` action, so, unlike `EVAL`, it must not be wrapped in a `run(...) { ... }` declaration: the server wraps the supplied text in such a declaration itself, and a nested action declaration fails to parse with `no viable alternative at input '{'`, while a module header at the start of the code fails with `mismatched input ... expecting '}'`. To access a parameter, the special character `$` and the parameter number (starting from `1`) are used.
 
 For example, the same call in the two forms:
 

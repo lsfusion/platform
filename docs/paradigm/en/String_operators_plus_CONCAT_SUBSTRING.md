@@ -36,7 +36,7 @@ If any operand belongs to the unlimited-length string class `TEXT` (or to one of
 
 ### Language
 
-The summation operator concatenates strings when at least one operand is a string — see the [arithmetic operators](../language/Arithmetic_operators.md).
+The summation operator concatenates strings when at least one operand is a string — see the [arithmetic operators](../language/Arithmetic_operators.md). Its bracketed form, which treats `NULL` as `0`, does not concatenate strings: it is defined for numeric classes only.
 
 To concatenate several values with a delimiter inserted only between operands that are not `NULL`, use the [`CONCAT` operator](../language/CONCAT_operator.md).
 

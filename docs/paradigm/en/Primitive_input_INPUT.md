@@ -15,7 +15,7 @@ If an object of a custom class is requested, the user does not enter it directly
 
 ### Offered values {#list}
 
-The values offered to the user can be limited to a specific set, and that set can be narrowed further by a condition. For a built-in class, such a set is shown to the user as a list of suggestions during input, while for a custom class, it limits the objects available for selection. When such an input serves as the change action of a property on a form, the web client may show the offered objects right in the field as a [selection element](Interactive_view.md#select) — under the conditions and thresholds described there. Otherwise the object is entered in the editor of the displayed value's class with suggestions from the set, or picked in the selection form.
+The values offered to the user can be limited to a specific set, and that set can be narrowed further by a condition. For a built-in class, such a set — the distinct values of the given property over all object collections for which it is not `NULL` — is shown to the user as a list of suggestions when a string value is entered and the property returns strings, while for a custom class, it limits the objects available for selection. When such an input serves as the change action of a property on a form, the web client may show the offered objects right in the field as a [selection element](Interactive_view.md#select) — under the conditions and thresholds described there. Otherwise the object is entered in the editor of the displayed value's class with suggestions from the set, or picked in the selection form.
 
 In addition, if the input is used to [change](Value_input.md#initial) a property, the offered values are by default further limited to those whose selection will not break any [constraint](Constraints.md) existing in the system — the same way as in the [dialog form](In_an_interactive_view_SHOW_DIALOG.md#dialog) of form opening. This limitation can be disabled if needed.
 
@@ -49,7 +49,7 @@ FORM order
     PROPERTIES(o) customer ON CHANGE changeCustomer(o)
 ;
 
-testFile  {
+testFile()  {
     INPUT f = FILE DO { // requesting a dialog to select a file
         open(f); // opening the selected file
     }
@@ -60,5 +60,10 @@ sku = DATA Sku (OrderDetail);
 // selecting an object of a custom class: offering skus by their name and keeping only those in stock
 changeSku (OrderDetail d)  {
     INPUT s = sku(d) CHANGE LIST name(s) WHERE inStock(s);
+}
+
+// string input with suggestions: the distinct values of the property over its own parameter are offered
+changeCustomerFromList (Order o)  {
+    INPUT s = customer(o) CHANGE LIST customer(Order oo);
 }
 ```
