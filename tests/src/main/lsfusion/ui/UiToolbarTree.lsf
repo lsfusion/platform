@@ -1,0 +1,126 @@
+MODULE UiToolbarTree;
+
+REQUIRE System, SystemEvents;
+
+// the forms UiToolbarTreeIT works on in the browser - a tree's toolbar and filter controls: the platform's over the
+// rows a React view draws (UiToolbarTree.js), a view's over the rows it draws and over the platform's tree, and the
+// platform's own over its tree -, and the action it seeds its categories and items with
+
+CLASS UiTtrCategory 'Category';
+uiTtrCategoryName 'Category' = DATA STRING[50] (UiTtrCategory);
+// the categories of the test that seeded last: the forms show only them
+uiTtrCategoryShown = DATA BOOLEAN (UiTtrCategory);
+
+CLASS UiTtrItem 'Item';
+uiTtrName 'Name' = DATA STRING[50] (UiTtrItem);
+uiTtrPrice 'Price' = DATA NUMERIC[10,2] (UiTtrItem);
+uiTtrCategory = DATA UiTtrCategory (UiTtrItem);
+
+// the tree's rows drawn by a view in a container of its own; the tree's box keeps the platform's toolbar and filters
+FORM uiTtrRows 'Rows of a tree of a view'
+    TREE cats c = UiTtrCategory, i = UiTtrItem
+    PROPERTIES(c) READONLY catName = uiTtrCategoryName
+    PROPERTIES(i) READONLY name = uiTtrName, price = uiTtrPrice
+    FILTERS uiTtrCategory(i) = c, uiTtrCategoryShown(c)
+    ORDERS catName
+;
+
+DESIGN uiTtrRows {
+    NEW rows FIRST {
+        custom = 'UiTtrView';
+        MOVE GRID(TREE cats);
+    }
+}
+
+// the whole tree drawn by a view: its rows, its filters, its toolbar and its filter controls
+FORM uiTtrBox 'Tree of a view'
+    TREE cats c = UiTtrCategory, i = UiTtrItem
+    PROPERTIES(c) READONLY catName = uiTtrCategoryName
+    PROPERTIES(i) READONLY name = uiTtrName, price = uiTtrPrice
+    FILTERS uiTtrCategory(i) = c, uiTtrCategoryShown(c)
+    ORDERS catName
+;
+
+DESIGN uiTtrBox {
+    BOX(TREE cats) { custom = 'UiTtrView'; }
+}
+
+// the platform's tree, its toolbar and filter controls drawn by a view
+FORM uiTtrHeader 'Toolbar of a view over a tree'
+    TREE cats c = UiTtrCategory, i = UiTtrItem
+    PROPERTIES(c) READONLY catName = uiTtrCategoryName
+    PROPERTIES(i) READONLY name = uiTtrName, price = uiTtrPrice
+    FILTERS uiTtrCategory(i) = c, uiTtrCategoryShown(c)
+    ORDERS catName
+;
+
+DESIGN uiTtrHeader {
+    NEW header FIRST {
+        custom = 'UiTtrView';
+        MOVE TOOLBARSYSTEM(TREE cats);
+        MOVE FILTERCONTROLS(TREE cats);
+    }
+}
+
+// the platform's own tree, and the conditions the server states on it
+FORM uiTtrPlatform 'Tree of the platform'
+    TREE cats c = UiTtrCategory, i = UiTtrItem
+    PROPERTIES(c) READONLY catName = uiTtrCategoryName
+    PROPERTIES(i) READONLY name = uiTtrName, price = uiTtrPrice
+    FILTERS uiTtrCategory(i) = c, uiTtrCategoryShown(c)
+    ORDERS catName
+;
+
+uiTtrFilterCheap 'Filter by price' () { FILTER uiTtrPlatform.i FROM JSON(r'[{"property": "price", "compare": "<", "value": 1}]'); }
+uiTtrFilterNone 'Filter by nothing' () { FILTER uiTtrPlatform.i FROM JSON(r'[]'); }
+
+EXTEND FORM uiTtrPlatform
+    PROPERTIES() uiTtrFilterCheap, uiTtrFilterNone
+;
+
+onWebClientInit() + {
+    onWebClientInit('UiToolbarTree.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiTtr 'UI toolbar tree' WINDOW toolbar {
+        NEW uiTtrRows;
+        NEW uiTtrBox;
+        NEW uiTtrHeader;
+        NEW uiTtrPlatform;
+    }
+}
+
+// three categories shown from now on, by name the one with two items in it - the dearer one first by name -, another
+// with one cheap item, and the empty one
+uiTtrSeed (STRING[50] full, STRING[50] empty, STRING[50] dear, STRING[50] cheap, STRING[50] other, STRING[50] otherItem) {
+    uiTtrCategoryShown(UiTtrCategory c) <- NULL;
+    NEW c = UiTtrCategory {
+        uiTtrCategoryName(c) <- full;
+        uiTtrCategoryShown(c) <- TRUE;
+        NEW i = UiTtrItem {
+            uiTtrName(i) <- dear;
+            uiTtrPrice(i) <- 1.50;
+            uiTtrCategory(i) <- c;
+        }
+        NEW i = UiTtrItem {
+            uiTtrName(i) <- cheap;
+            uiTtrPrice(i) <- 0.75;
+            uiTtrCategory(i) <- c;
+        }
+    }
+    NEW c = UiTtrCategory {
+        uiTtrCategoryName(c) <- other;
+        uiTtrCategoryShown(c) <- TRUE;
+        NEW i = UiTtrItem {
+            uiTtrName(i) <- otherItem;
+            uiTtrPrice(i) <- 0.50;
+            uiTtrCategory(i) <- c;
+        }
+    }
+    NEW c = UiTtrCategory {
+        uiTtrCategoryName(c) <- empty;
+        uiTtrCategoryShown(c) <- TRUE;
+    }
+    APPLY;
+}
