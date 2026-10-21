@@ -46,6 +46,8 @@ The `(ISTRING path, ...)` actions run on the server by default. The `isClient = 
 | `unzipping[] <- file`             | set the archive to be unpacked                                                |
 | `makeUnzipFile[]` → `unzipped[STRING]` | unpack; result: `STRING` path inside the archive → file                  |
 
+`makeUnzipFile` determines the archive format by the file contents, not by its extension. ZIP and RAR are supported, any other contents cause an error. The keys of `unzipped` are paths inside the archive with `/` as the separator. Directory entries are not returned, and entries that would be unpacked outside the archive (for example, `../a.txt`) are skipped. Password-protected archives are not supported.
+
 ### Console and network
 
 | Action                                                | What it does                                                            |
