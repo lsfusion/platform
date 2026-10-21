@@ -13,9 +13,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -78,38 +76,23 @@ public class ZipUtils {
     private static Map<String, FileData> unpackZIPFile(RawFileData file) {
         Map<String, FileData> result = new HashMap<>();
         File inputFile = null;
-        File outputFile = null;
+        File outputDirectory = null;
         try {
             inputFile = File.createTempFile("zip", ".zip");
             file.write(inputFile);
 
             byte[] buffer = new byte[1024];
-            Set<File> dirSet = new HashSet<>();
-            File outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
+            outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
             if (inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
-                dirSet.add(outputDirectory);
                 ZipInputStream inputStream = new ZipInputStream(Files.newInputStream(inputFile.toPath()), Charset.forName("cp866"));
 
                 ZipEntry ze = inputStream.getNextEntry();
                 while (ze != null) {
-                    if (ze.isDirectory()) {
-                        File dir = new File(outputDirectory.getPath() + "/" + ze.getName());
-                        if (isInsideDirectory(outputDirectory, dir) && dir.mkdirs())
-                            dirSet.add(dir);
-                    } else {
+                    if (!ze.isDirectory()) {
                         String filePath = ze.getName();
-                        if(isInsideDirectory(outputDirectory, new File(outputDirectory.getPath() + "/" + filePath))) { //ignore files that can be unpacked outside the temp dir
-                            String[] splitted = filePath.split("/");
-
-                            StringBuilder path = new StringBuilder();
-                            for (int i = 0; i < splitted.length - 1; i++) {
-                                path.append("/").append(splitted[i]);
-                                File dir = new File(outputDirectory.getPath() + path);
-                                if (dir.mkdirs())
-                                    dirSet.add(dir);
-                            }
-
-                            outputFile = new File(outputDirectory.getPath() + "/" + filePath);
+                        File outputFile = new File(outputDirectory.getPath() + "/" + filePath);
+                        if(isInsideDirectory(outputDirectory, outputFile)) { //ignore files that can be unpacked outside the temp dir
+                            outputFile.getParentFile().mkdirs();
                             FileOutputStream outputStream = new FileOutputStream(outputFile);
                             int len;
                             while ((len = inputStream.read(buffer)) > 0) {
@@ -125,16 +108,11 @@ public class ZipUtils {
                 inputStream.closeEntry();
                 inputStream.close();
             }
-
-            for (File dir : dirSet) {
-                BaseUtils.safeDelete(dir);
-            }
-
         } catch (IOException e) {
             throw Throwables.propagate(e);
         } finally {
             BaseUtils.safeDelete(inputFile);
-            BaseUtils.safeDelete(outputFile);
+            org.apache.commons.io.FileUtils.deleteQuietly(outputDirectory);
         }
         return result;
     }
@@ -142,24 +120,20 @@ public class ZipUtils {
     private static Map<String, FileData> unpackRARFile(RawFileData file) {
         Map<String, FileData> result = new HashMap<>();
         File inputFile = null;
-        File outputFile = null;
+        File outputDirectory = null;
         try {
             inputFile = File.createTempFile("rar", ".rar");
             file.write(inputFile);
-            Set<File> dirSet = new HashSet<>();
-            File outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
+            outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
             if (inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
-                dirSet.add(outputDirectory);
                 try (Archive a = new Archive(inputFile)) {
                     FileHeader fh = a.nextFileHeader();
                     while (fh != null) {
-                        String fileName = fh.getFileName();
-                        outputFile = new File(outputDirectory.getPath() + "/" + fileName);
-                        if (isInsideDirectory(outputDirectory, outputFile)) { //ignore entries that can be unpacked outside the temp dir
-                            File dir = outputFile.getParentFile();
-                            if (dir.mkdirs())
-                                dirSet.add(dir);
-                            if (!outputFile.isDirectory()) {
+                        if (!fh.isDirectory()) {
+                            String fileName = fh.getFileName().replace('\\', '/');
+                            File outputFile = new File(outputDirectory.getPath() + "/" + fileName);
+                            if (isInsideDirectory(outputDirectory, outputFile)) { //ignore entries that can be unpacked outside the temp dir
+                                outputFile.getParentFile().mkdirs();
                                 try (FileOutputStream os = new FileOutputStream(outputFile)) {
                                     a.extractFile(fh, os);
                                 }
@@ -171,15 +145,11 @@ public class ZipUtils {
                     }
                 }
             }
-
-            for (File dir : dirSet) {
-                BaseUtils.safeDelete(dir);
-            }
         } catch (RarException | IOException e) {
             throw Throwables.propagate(e);
         } finally {
             BaseUtils.safeDelete(inputFile);
-            BaseUtils.safeDelete(outputFile);
+            org.apache.commons.io.FileUtils.deleteQuietly(outputDirectory);
         }
         return result;
     }
