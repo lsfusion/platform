@@ -1,0 +1,105 @@
+MODULE UiReactBatch;
+
+REQUIRE TestUtils, SystemEvents;
+
+// the forms UiReactBatchIT works on in the browser - a React view's controller.batch (UiReactBatch.js) and what the
+// platform draws inside such a view: properties and actions with an entry and no member, their editors and buttons in
+// the view's rows; a sorting of the group the server fails; and a classic custom view's batch -, and the actions it
+// seeds its items and checks their notes with
+
+CLASS UiRbItem 'Item';
+uiRbName 'Name' = DATA STRING[50] (UiRbItem);
+uiRbSum 'Sum' = DATA INTEGER (UiRbItem);
+uiRbNote 'Note' = DATA STRING[50] (UiRbItem);
+uiRbQty 'Qty' = DATA INTEGER (UiRbItem);
+uiRbWeight 'Weight' = DATA INTEGER (UiRbItem);
+uiRbApprovals 'Approvals' = DATA INTEGER (UiRbItem);
+uiRbBumps 'Bumps' = DATA INTEGER (UiRbItem);
+uiRbShown = DATA BOOLEAN (UiRbItem); // the items of the test that seeded last: the forms show only them
+uiRbComment 'Comment' = DATA STRING[50] ();
+
+uiRbApprove 'Approve' (UiRbItem i) { uiRbApprovals(i) <- (OVERRIDE uiRbApprovals(i), 0) + 1; }
+uiRbBump 'Bump' (UiRbItem i) { uiRbBumps(i) <- (OVERRIDE uiRbBumps(i), 0) + 1; }
+uiRbIncQty 'Inc qty' (UiRbItem i) { uiRbQty(i) <- (OVERRIDE uiRbQty(i), 0) + 10; }
+
+// a server call a view makes on its controller
+uiRbPings 'Pings' = DATA LOCAL INTEGER ();
+uiRbPing 'Ping' () { uiRbPings() <- (OVERRIDE uiRbPings(), 0) + 1; }
+
+// the SHOWIF of the panel action the platform draws, and a sorting the server fails (ON ORDER), both switched in the
+// form's own session; the failure an Error, as the inline code is wrapped in a catch of Exception, which logs it and
+// goes on
+uiRbApproveHidden = DATA LOCAL BOOLEAN ();
+uiRbToggleApprove 'Toggle approve' () { uiRbApproveHidden() <- NOT uiRbApproveHidden(); }
+uiRbOrdersFail = DATA LOCAL BOOLEAN ();
+uiRbToggleFail 'Toggle fail' () { uiRbOrdersFail() <- NOT uiRbOrdersFail(); }
+uiRbFail 'Fail' INTERNAL <{ if (true) throw new Error("uiRbFail: a sorting failed"); }>;
+
+// React draws the rows of the items (UiRbBoard), and the platform draws in them the quantity's editor and the bump's
+// button in every row, beside the approve and the comment the view places; the weight, a panel property, stands by the
+// box; the side view (UiRbSide) places the note of the current item, and nothing else of the group
+FORM uiRbShape 'Batch of a view'
+    OBJECTS i = UiRbItem
+    PROPERTIES(i) READONLY name = uiRbName, sum = uiRbSum
+    PROPERTIES(i) note = uiRbNote
+    PROPERTIES(i) READONLY approvals = uiRbApprovals, bumps = uiRbBumps, qtyEcho = uiRbQty
+    PROPERTIES(i) incQty = uiRbIncQty GRID
+    PROPERTIES(i) qty = uiRbQty NOCUSTOM
+    PROPERTIES(i) bump = uiRbBump GRID NOCUSTOM
+    PROPERTIES(i) PANEL weight = uiRbWeight
+    PROPERTIES(i) PANEL approve = uiRbApprove SHOWIF NOT uiRbApproveHidden()
+    PROPERTIES(i) PANEL sideNote = uiRbNote
+    PROPERTIES() comment = uiRbComment, toggleApprove = uiRbToggleApprove, toggleFail = uiRbToggleFail
+    FILTERS uiRbShown(i)
+    EVENTS ON ORDER i { IF uiRbOrdersFail() THEN uiRbFail(); }
+    CUSTOMS uiRbPing
+;
+
+DESIGN uiRbShape {
+    NEW board {
+        custom = 'UiRbBoard';
+        MOVE GRID(i);
+        MOVE PROPERTY(approve) { custom = NULL; }
+        MOVE PROPERTY(comment) { custom = NULL; }
+        MOVE PROPERTY(toggleApprove);
+        MOVE PROPERTY(toggleFail);
+    }
+    NEW side {
+        custom = 'UiRbSide';
+        MOVE PROPERTY(sideNote) { custom = NULL; }
+    }
+}
+
+// a classic custom view of the same items (UiRbClassic), changing their notes
+FORM uiRbClassic 'Batch of a classic view'
+    OBJECTS c = UiRbItem CUSTOM 'UiRbClassic'
+    PROPERTIES(c) READONLY name = uiRbName
+    PROPERTIES(c) note = uiRbNote
+    FILTERS uiRbShown(c)
+;
+
+onWebClientInit() + {
+    onWebClientInit('UiReactBatch.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiRb 'UI React batch' WINDOW toolbar {
+        NEW uiRbShape;
+        NEW uiRbClassic;
+    }
+}
+
+// three items shown from now on, in this order - their sums 10, 30, 20, their weights 3, 1, 2, their quantities 1, 2, 3
+uiRbSeed (STRING[50] first, STRING[50] second, STRING[50] third) {
+    uiRbShown(UiRbItem i) <- NULL;
+    NEW i = UiRbItem { uiRbName(i) <- first; uiRbSum(i) <- 10; uiRbWeight(i) <- 3; uiRbQty(i) <- 1; uiRbShown(i) <- TRUE; }
+    NEW i = UiRbItem { uiRbName(i) <- second; uiRbSum(i) <- 30; uiRbWeight(i) <- 1; uiRbQty(i) <- 2; uiRbShown(i) <- TRUE; }
+    NEW i = UiRbItem { uiRbName(i) <- third; uiRbSum(i) <- 20; uiRbWeight(i) <- 2; uiRbQty(i) <- 3; uiRbShown(i) <- TRUE; }
+    APPLY;
+}
+
+// the notes of the items shown, by name, a dash for none: what the check compares with the ones a test expects
+uiRbNotes = GROUP CONCAT uiRbName(UiRbItem i) + ':' + (OVERRIDE uiRbNote(i), '-'), ';' IF uiRbShown(i) ORDER uiRbName(i);
+uiRbCheckNotes (STRING expected) {
+    assertEquals(uiRbNotes(), expected, 'the notes are ' + uiRbNotes() + ', not ' + expected);
+}
