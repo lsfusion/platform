@@ -43,6 +43,7 @@ public class FormPropertyOptions {
     private PropertyObjectEntity footer;
     private ClassViewType viewType;
     private String customRenderFunction;
+    private String select; // SELECT / NOSELECT, apart from the render function (PropertyDrawEntity.setSelect)
     private String customEditorFunction;
     private GroupObjectEntity toDraw;
     private OrderedMap<String, LocalizedString> contextMenuBindings;
@@ -250,6 +251,14 @@ public class FormPropertyOptions {
     
     public void setCustomRenderFunction(String customRenderFunction) {
         this.customRenderFunction = customRenderFunction;
+    }
+
+    public String getSelect() {
+        return select;
+    }
+
+    public void setSelect(String select) {
+        this.select = select;
     }
 
     public void setCustomEditorFunction(String customEditorFunction) {
@@ -554,6 +563,7 @@ public class FormPropertyOptions {
         merged.setFooter(nvl(overrides.getFooter(), footer));
         merged.setViewType(nvl(overrides.getViewType(), viewType));
         merged.setCustomRenderFunction(nvl(overrides.getCustomRenderFunction(), customRenderFunction));
+        merged.setSelect(nvl(overrides.getSelect(), select));
         merged.setCustomEditorFunction(nvl(overrides.getCustomEditorFunction(), customEditorFunction));
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
         merged.setEventActions(nullMerge(overrides.getEventActions(), eventActions));

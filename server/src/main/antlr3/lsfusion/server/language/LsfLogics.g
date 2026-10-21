@@ -858,15 +858,18 @@ propertyClassViewType returns [ClassViewType type]
 	|   'POPUP' {$type = ClassViewType.POPUP;}
 	;
 
-propertyCustomView returns [String customRenderFunction, String customEditorFunction, String selectFunction]
-	:	('CUSTOM'
+propertyCustomView returns [String customRenderFunction, String customEditorFunction]
+	:	'CUSTOM'
 	            ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})
 	        |   ((renderFun=stringLiteral { $customRenderFunction = $renderFun.val;})?
-	            pedt = propertyEditCustomView { $customEditorFunction = $pedt.customEditorFunction; })))
+	            pedt = propertyEditCustomView { $customEditorFunction = $pedt.customEditorFunction; }))
+	;
+
+// the selection, apart from who draws the value (propertyCustomView): SELECT followed by its element type, or NOSELECT
+propertySelectView returns [String select]
+	:	'SELECT' { $select = PropertyDrawEntity.SELECT + PropertyDrawEntity.AUTOSELECT; } ({ input.LA(1)!=ID }? ('AUTO' | type=stringLiteral { $select = PropertyDrawEntity.SELECT + $type.val;}))?
 	    |
-	    'SELECT' { $customRenderFunction = PropertyDrawEntity.SELECT + PropertyDrawEntity.AUTOSELECT; } ({ input.LA(1)!=ID }? ('AUTO' | renderFun=stringLiteral { $customRenderFunction = PropertyDrawEntity.SELECT + $renderFun.val;}))?
-	    |
-	    'NOSELECT' { $customRenderFunction = PropertyDrawEntity.NOSELECT; }
+	    'NOSELECT' { $select = PropertyDrawEntity.NOSELECT; }
 	;
 
 propertyEditCustomView returns [String customEditorFunction]
@@ -1138,6 +1141,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
 		|	customView=propertyCustomView { $options.setCustomRenderFunction($customView.customRenderFunction); $options.setCustomEditorFunction($customView.customEditorFunction); }
+		|	selectView=propertySelectView { $options.setSelect($selectView.select); }
 		|	'NOCUSTOM' { $options.setCustom(Custom.NOCUSTOM); }
 		|	'PIVOT' pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
 		|	'PIVOT' pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
@@ -3335,6 +3339,7 @@ viewTypeSetting [ActionOrPropertySettings ps]
 
 customViewSetting [ActionOrPropertySettings ps]
 	:	customView=propertyCustomView { ps.customRenderFunction = $customView.customRenderFunction; ps.customEditorFunction = $customView.customEditorFunction; }
+	|	selectView=propertySelectView { ps.customRenderFunction = $selectView.select; ps.customEditorFunction = null; } // a property declares one of the two
 	;
 
 flexCharWidthSetting [ActionOrPropertySettings ps]

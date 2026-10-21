@@ -2,8 +2,8 @@ MODULE SelectInReact;
 
 REQUIRE System;
 
-// SELECT is a view of the property's own, the platform's, as a CUSTOM render function is: the container places the
-// property by its name, which NOEXTID takes away
+// SELECT alone says what is drawn, not who draws it: the container draws the property from its data, and reaches it by
+// its name, which NOEXTID takes away
 CLASS SelectItem;
 selectQty = DATA INTEGER (SelectItem);
 

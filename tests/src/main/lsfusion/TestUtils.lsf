@@ -71,9 +71,17 @@ readShownColumns INTERNAL 'lsfusion.tests.ReadShownColumnsAction' ();
 
 // what the open form the action runs in sends its client for a property, by its name in the form, as of the last
 // readSent() of it: the value of its cell for the form's current objects - where the form builds a selection for the
-// property, the list of its options, as JSON
+// property, the list of its options, as JSON -, and the function it tells the client to draw the property by - a render
+// function given in CUSTOM, the platform's element of the property's selection (select<type><element>), or none
 sentInForm = DATA LOCAL TEXT (STRING);
+renderInForm = DATA LOCAL STRING (STRING);
 readSent INTERNAL 'lsfusion.tests.ReadSentAction' (STRING);
+
+// who draws a property of a form, by its name in the form, under the React views of its design - `react`, a React view
+// from its data; `platform`, the platform, a React view placing it; `none`, no React view there - failing unless it is
+// `drawer`
+assertDrawn (STRING form, STRING property, STRING drawer)
+    INTERNAL 'lsfusion.tests.DesignDrawnAction' (STRING, STRING, STRING);
 
 // a list group of the open form the action runs in, by its name, switched to one of its views - GRID, PIVOT, ... -, as
 // the switch on a client's toolbar asks for it: a pivot holds the group's changes back until it is updated

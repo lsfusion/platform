@@ -1,0 +1,63 @@
+MODULE UiSelect;
+
+REQUIRE TestUtils;
+
+// the forms UiSelectIT works on in the browser - a property's selection, its options read all at once, under a React
+// view (web/init/uiSelect.jsx) - and the actions it seeds and checks its orders with
+
+CLASS UiSelectStatus 'Status';
+uiSelectStatusName 'Name' = DATA STRING[30] (UiSelectStatus);
+uiSelectStatus (STRING[30] name) = GROUP AGGR UiSelectStatus s BY uiSelectStatusName(s);
+
+CLASS UiSelectOrder 'Order';
+uiSelectNumber 'Number' = DATA STRING[50] (UiSelectOrder);
+uiSelectOrder (STRING[50] number) = GROUP AGGR UiSelectOrder o BY uiSelectNumber(o);
+uiSelectShown = DATA BOOLEAN (UiSelectOrder); // the orders of the test that seeded last: the forms show only them
+uiSelectStatusOf = DATA UiSelectStatus (UiSelectOrder);
+uiSelectNameStatus 'Status' (UiSelectOrder o) = uiSelectStatusName(uiSelectStatusOf(o));
+
+// a SELECT with NOCUSTOM: the platform draws its element of the selection inside a React view, which places it - per row
+// in the rows it draws; and a SELECT a render function given in CUSTOM draws, given the options as that element is
+FORM uiSelectPlaced 'Placed'
+    OBJECTS o = UiSelectOrder
+    PROPERTIES(o) placedStatus = uiSelectNameStatus SELECT 'buttonGroup' NOCUSTOM
+    PROPERTIES(o) panelStatus = uiSelectNameStatus SELECT 'dropdown' NOCUSTOM PANEL,
+                  fnStatus = uiSelectNameStatus SELECT CUSTOM 'uiSelectFn' PANEL
+    FILTERS uiSelectShown(o)
+    ORDERS uiSelectNumber(o)
+;
+
+DESIGN uiSelectPlaced {
+    NEW board FIRST { custom = 'UiSelectPlaced'; MOVE BOX(o); }
+}
+
+NAVIGATOR {
+    NEW FOLDER uiSelect 'UI select' WINDOW toolbar {
+        NEW uiSelectPlaced;
+    }
+}
+
+// the statuses New, Done, Lost, kept; two orders shown from now on, the first New, the second with no status
+uiSelectSeed (STRING[50] first, STRING[50] second) {
+    IF NOT (GROUP SUM 1 IF UiSelectStatus s IS UiSelectStatus) THEN {
+        NEW s = UiSelectStatus { uiSelectStatusName(s) <- 'New'; }
+        NEW s = UiSelectStatus { uiSelectStatusName(s) <- 'Done'; }
+        NEW s = UiSelectStatus { uiSelectStatusName(s) <- 'Lost'; }
+    }
+    uiSelectShown(UiSelectOrder o) <- NULL;
+    NEW o = UiSelectOrder {
+        uiSelectNumber(o) <- first;
+        uiSelectShown(o) <- TRUE;
+        uiSelectStatusOf(o) <- uiSelectStatus('New');
+    }
+    NEW o = UiSelectOrder {
+        uiSelectNumber(o) <- second;
+        uiSelectShown(o) <- TRUE;
+    }
+    APPLY;
+}
+
+uiSelectCheckStatus (STRING[50] number, STRING[30] expected) {
+    assertEquals(uiSelectNameStatus(uiSelectOrder(number)), expected, CONCAT ' ', 'the status of', number, 'is',
+                 (OVERRIDE uiSelectNameStatus(uiSelectOrder(number)), 'none'), 'not', expected);
+}

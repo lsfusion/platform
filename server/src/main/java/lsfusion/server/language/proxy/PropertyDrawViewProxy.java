@@ -491,9 +491,9 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     public void setSelect(Object select) {
         Version version = getVersion();
         if(select instanceof LocalizedString) {
-            target.entity.setCustom(PropertyDrawEntity.SELECT + select, version);
+            target.entity.setSelect(PropertyDrawEntity.SELECT + select, version);
         } else if(select instanceof PropertyObjectEntity && ((PropertyObjectEntity<?>) select).property.isExplicitNull()) {
-            target.entity.setCustom(PropertyDrawEntity.NOSELECT, version);
+            target.entity.setSelect(PropertyDrawEntity.NOSELECT, version);
         } else {
             throw new UnsupportedOperationException("Unsupported value: " + select);
         }

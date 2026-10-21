@@ -111,9 +111,13 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     private final NFProperty<String> askConfirmMessage = NFFact.property();
 
     private final NFProperty<ClassViewType> viewType = NFFact.property(); // assert not null, after initialization
-    // the property's custom, as its caption is its own: what CUSTOM, SELECT, NOSELECT or NOCUSTOM give it - and the
-    // design's custom and select -, the one given last; null: nothing said, the one the property declares
+    // the property's custom - who draws it -, as its caption is its own: what CUSTOM or NOCUSTOM give it, and the
+    // design's custom, the one given last; null: nothing said, the render function the property declares
     private final NFProperty<String> custom = NFFact.property();
+    // ... and its selection, apart from who draws it: what SELECT or NOSELECT give it, and the design's select, the one
+    // given last; null: nothing said, the selection the property declares, else the automatic one. Whoever draws the
+    // property draws the selection - the platform's element, a render function given in CUSTOM, a React view
+    private final NFProperty<String> select = NFFact.property();
     public static final String SELECT = "<<select>>";
     public static final String NOSELECT = "<<no>>";
     public static final String AUTOSELECT = "<<auto>>";
@@ -244,13 +248,12 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         this.attr.set(attr, version);
     }
 
-    // whether the form gives the property a view of its own, the platform's - the standard one (NOCUSTOM), a CUSTOM
-    // render function or a SELECT -: a custom view above it then does not draw the property but places it
-    // (PropertyDrawView.hasExplicitCustom). What the property declares is its default, not the form's word, NOSELECT
-    // gives no view, and an editor alone says nothing of who draws: none of them counts
+    // whether the form gives the property a view of its own, the platform's - the standard one (NOCUSTOM) or a CUSTOM
+    // render function -: a custom view above it then does not draw the property but places it
+    // (PropertyDrawView.hasExplicitCustom). What the property declares is its default, not the form's word, a
+    // selection says what is drawn, not who draws it, and an editor alone says nothing of who draws: none of them counts
     public boolean hasExplicitCustom() {
-        String custom = this.custom.get();
-        return custom != null && !custom.equals(NOSELECT);
+        return custom.get() != null;
     }
 
     public boolean isExtNull() {
@@ -699,6 +702,17 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
             customChangeFunction.set(null, version);
     }
 
+    // SELECT followed by its element type (AUTOSELECT: the type chosen by the options), or NOSELECT
+    public void setSelect(String select, Version version) {
+        this.select.set(select, version);
+    }
+
+    // whether a custom the property declares is its selection rather than its render function: a property declares
+    // one of the two (ActionOrProperty.setCustomRenderFunction), the form gives each apart
+    private static boolean isSelect(String custom) {
+        return custom.equals(NOSELECT) || custom.startsWith(SELECT);
+    }
+
     public void setCustomChangeFunction(String customChangeFunction, Version version) {
         this.customChangeFunction.set(customChangeFunction, version);
     }
@@ -1138,8 +1152,10 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return isList(entity) && getPropertyExtra(FOOTER) != null;
     }
 
+    // the selection the platform's own element draws (select.js) - what the client's sizing, toolbar and render flags of
+    // a selection are for; none where a render function given in CUSTOM draws it, whose sizing and flags are its own
     public PropertyDrawEntity.Select getCustomSelectProperty(FormInstanceContext context) {
-        return getSelectProperty(context);
+        return getCustom() == null ? getSelectProperty(context) : null;
     }
 
     @ParamLazy
@@ -1151,23 +1167,20 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         if(actionOrProperty instanceof PropertyObjectEntity) {
             if(getCustomChangeFunction() != null)
                 return null;
-            // the standard view: no selection from a list, not an automatic one either
-            if(Custom.NOCUSTOM.equals(this.custom.get()))
-                return null;
 
             String elementType = null;
 
             boolean forceSelect = false;
             Boolean forceFilter = null;
 
-            String custom = getCustom();
-            if(custom != null) {
-                if(custom.startsWith(SELECT)) {
-                    custom = custom.substring(SELECT.length());
+            String selection = getSelect();
+            if(selection != null) {
+                if(selection.startsWith(SELECT)) {
+                    selection = selection.substring(SELECT.length());
 
                     forceSelect = true;
-                    if(!custom.equals(AUTOSELECT)) {
-                        elementType = StringUtils.capitalise(custom);
+                    if(!selection.equals(AUTOSELECT)) {
+                        elementType = StringUtils.capitalise(selection);
 
                         forceFilter = elementType.equals("Input");
                     }
@@ -1175,7 +1188,9 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
                     return null;
             }
 
-            if(!forceSelect && (isGroupCustom(context) || isReactDrawn(context)))
+            // no automatic selection for the standard view, nor where the value is drawn as it is - by a render function,
+            // in the rows of a custom group, by a React view
+            if(!forceSelect && (Custom.NOCUSTOM.equals(custom.get()) || getCustom() != null || isGroupCustom(context) || isReactDrawn(context)))
                 return null;
 
             PropertyObjectEntity<?> property = (PropertyObjectEntity<?>) actionOrProperty;
@@ -1258,14 +1273,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         if(selectProperty != null)
             return "select" + selectProperty.type + (selectProperty.html ? "HTML" : "") + (selectProperty.changeValue ? "Value" : "") + selectProperty.elementType;
 
-        String custom = getCustom();
-        if(custom != null) {
-            if(custom.equals(NOSELECT) || custom.startsWith(SELECT))
-                return null;
-            return custom;
-        }
-
-        return null;
+        return getCustom();
     }
     public boolean isCustomCanBeRenderedInTD(FormInstanceContext context) {
         Select selectProperty = getCustomSelectProperty(context);
@@ -1304,7 +1312,16 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         String custom = this.custom.get();
         if(custom != null)
             return custom.equals(Custom.NOCUSTOM) ? null : custom; // NOCUSTOM: none, and none inherited
-        return getInheritedProperty().getCustomRenderFunction();
+        String declared = getInheritedProperty().getCustomRenderFunction();
+        return declared != null && !isSelect(declared) ? declared : null;
+    }
+    // ... and its selection, apart: the form's, else the one the property declares
+    private String getSelect() {
+        String select = this.select.get();
+        if(select != null)
+            return select;
+        String declared = getInheritedProperty().getCustomRenderFunction();
+        return declared != null && isSelect(declared) ? declared : null;
     }
 
 
@@ -1456,6 +1473,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
         mapping.sets(viewType, src.viewType);
         mapping.sets(custom, src.custom);
+        mapping.sets(select, src.select);
         mapping.sets(customChangeFunction, src.customChangeFunction);
         mapping.sets(eventID, src.eventID);
 

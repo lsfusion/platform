@@ -1,1 +1,1 @@
-the React view of 'board' places it, and a view reaches a property only by its name
+the React view of 'board' draws it, and a view reaches a property only by its name

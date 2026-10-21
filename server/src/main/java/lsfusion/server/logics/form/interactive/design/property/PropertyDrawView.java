@@ -466,7 +466,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
     }
 
     public boolean isDefaultShrinkOverflowVisible(FormInstanceContext context) {
-        return !entity.isList(context) && (isTagInput(context) || entity.getSelectProperty(context) != null); // inputs (incl. multi) + radio + select use shadows
+        return !entity.isList(context) && (isTagInput(context) || entity.getCustomSelectProperty(context) != null); // inputs (incl. multi) + radio + select use shadows
     }
 
     public String getAskConfirmMessage(FormInstanceContext context) {
@@ -866,7 +866,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         return nvl(getAdjustedCharWidth(context), -1);
     }
     private Integer getAdjustedCharWidth(FormInstanceContext context) {
-        PropertyDrawEntity.Select select = entity.getSelectProperty(context);
+        PropertyDrawEntity.Select select = entity.getCustomSelectProperty(context);
         if(select != null) {
             Integer charWidth = this.getCharWidth(); // select.elementType.startsWith("Button") && select.actual ? null :
 
@@ -1028,7 +1028,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
             return tagValue.isEmpty() ? null : tagValue;
 
         if(isCustom(context)) {
-            PropertyDrawEntity.Select select = entity.getSelectProperty(context);
+            PropertyDrawEntity.Select select = entity.getCustomSelectProperty(context);
             if (select != null && select.elementType.equals("Dropdown") && Settings.get().isNoToolbarForSelectDropdownInPanel())
                 return "select";
             return null;
@@ -1610,7 +1610,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         if(toolbarValue != null)
             return toolbarValue;
 
-        if(isCustom(context) && entity.getSelectProperty(context) == null) // we want loading for select props, (entity.isReadOnly(context) || !hasChangeAction(context)) the problem of using hasChangeAction is that for JSON property it is always generated but it's impossible to understand if it is used
+        if(isCustom(context) && entity.getCustomSelectProperty(context) == null) // we want loading for select props, (entity.isReadOnly(context) || !hasChangeAction(context)) the problem of using hasChangeAction is that for JSON property it is always generated but it's impossible to understand if it is used
             return false;
 
         if(!isProperty(context))
@@ -1631,7 +1631,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         if(toolbarActionsValue != null)
             return toolbarActionsValue;
 
-        if (!isProperty(context) || entity.getSelectProperty(context) != null)
+        if (!isProperty(context) || entity.getCustomSelectProperty(context) != null)
             return false;
 
         return true;

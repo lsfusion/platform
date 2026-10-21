@@ -55,3 +55,76 @@ testRsAutomaticSelectionNotForAReactView 'A React view is sent the value of a pa
         };
     }
 }
+
+// a property's selection is apart from who draws the property: SELECT alone, where a React view draws the property,
+// leaves the property to the view; with NOCUSTOM - the platform's view - the platform draws its element of the
+// selection, which the view places; a render function given in CUSTOM draws the selection, given its options as the
+// platform's element is; NOSELECT keeps the render function, SELECT the editor - and a property with an editor of its
+// own has no selection; the design's select and custom = NULL combine the same, whichever comes first. Before, they
+// were one setting, the one given last winning: SELECT made the platform draw the property inside a React view,
+// NOCUSTOM dropped a SELECT, a SELECT dropped a render function and NOSELECT too
+FORM rsSelects 'Selections'
+    OBJECTS o = RsOrder PANEL
+    PROPERTIES(o) projected = rsNameStatus SELECT 'buttonGroup',
+                  placed = rsNameStatus SELECT 'buttonGroup' NOCUSTOM,
+                  drawnBy = rsNameStatus CUSTOM 'rsStatusButtons' SELECT,
+                  plain = rsNameStatus CUSTOM 'rsStatusButtons' NOSELECT,
+                  edited = rsNameStatus CUSTOM CHANGE 'rsStatusEditor' SELECT 'list',
+                  designed = rsNameStatus
+;
+
+DESIGN rsSelects {
+    NEW board FIRST { custom = 'RsBoard'; MOVE BOX(o); }
+    PROPERTY(designed) { select = 'dropdown'; custom = NULL; }
+}
+
+testRsSelectionApartFromWhoDraws 'A selection is apart from who draws the property' () {
+    assertDrawn('ReactSelect.rsSelects', 'projected', 'react');
+    assertDrawn('ReactSelect.rsSelects', 'placed', 'platform');
+    assertDrawn('ReactSelect.rsSelects', 'drawnBy', 'platform');
+    assertDrawn('ReactSelect.rsSelects', 'designed', 'platform');
+    rsSeedStatuses();
+    NEW o = RsOrder {
+        rsStatus(o) <- GROUP MAX RsStatus s IF rsName(s) = 'Done';
+        SHOW rsSelects OBJECTS o = o NOWAIT {
+            readSent('placed');
+            assertEquals(renderInForm('placed'), 'selectNullButtonGroup', CONCAT '', 'SELECT with NOCUSTOM is drawn by ',
+                         (OVERRIDE renderInForm('placed'), 'nothing'), ', not by the element of the platform');
+            readSent('drawnBy');
+            assertEquals(renderInForm('drawnBy'), 'rsStatusButtons', CONCAT '', 'SELECT with CUSTOM is drawn by ',
+                         (OVERRIDE renderInForm('drawnBy'), 'nothing'), ', not by the render function');
+            assertTrue(isSubstring(sentInForm('drawnBy'), '"selected"'), CONCAT '', 'the render function of a selection is sent ',
+                       (OVERRIDE sentInForm('drawnBy'), 'nothing'), ', not the options');
+            readSent('plain');
+            assertEquals(renderInForm('plain'), 'rsStatusButtons', CONCAT '', 'CUSTOM with NOSELECT is drawn by ',
+                         (OVERRIDE renderInForm('plain'), 'nothing'), ', not by the render function');
+            assertEquals(sentInForm('plain'), 'Done', CONCAT '', 'CUSTOM with NOSELECT is sent ',
+                         (OVERRIDE sentInForm('plain'), 'nothing'), ', not the value');
+            readSent('edited');
+            assertTrue(NOT renderInForm('edited'), CONCAT '', 'SELECT given after CUSTOM CHANGE is drawn by ',
+                       renderInForm('edited'), ': the editor is dropped');
+            readSent('designed');
+            assertEquals(renderInForm('designed'), 'selectNullDropdown', CONCAT '', 'select with custom = NULL after it is drawn by ',
+                         (OVERRIDE renderInForm('designed'), 'nothing'), ', not by the element of the platform');
+        };
+    }
+}
+
+// ... and a form embedding another one has its selections as the embedded form has them
+FORM rsEmbedded 'Embedded selections'
+    FORMS rsSelects
+;
+
+testRsSelectionEmbedded 'A form embedding another has its selections apart from who draws them' () {
+    rsSeedStatuses();
+    NEW o = RsOrder {
+        SHOW rsEmbedded OBJECTS o = o NOWAIT {
+            readSent('placed');
+            assertEquals(renderInForm('placed'), 'selectNullButtonGroup', CONCAT '', 'an embedded SELECT with NOCUSTOM is drawn by ',
+                         (OVERRIDE renderInForm('placed'), 'nothing'), ', not by the element of the platform');
+            readSent('drawnBy');
+            assertEquals(renderInForm('drawnBy'), 'rsStatusButtons', CONCAT '', 'an embedded SELECT with CUSTOM is drawn by ',
+                         (OVERRIDE renderInForm('drawnBy'), 'nothing'), ', not by the render function');
+        };
+    }
+}
