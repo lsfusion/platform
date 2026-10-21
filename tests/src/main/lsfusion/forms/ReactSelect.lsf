@@ -128,3 +128,96 @@ testRsSelectionEmbedded 'A form embedding another has its selections apart from 
         };
     }
 }
+
+// a React view is given all the options of a selection at once, also where the platform's element gives only the ones
+// picked and looks the rest up by the text typed - an 'input' of several values
+CLASS RsTag 'Tag';
+rsTagName 'Name' = DATA STRING[20] (RsTag);
+rsIn 'In' = DATA BOOLEAN (RsOrder, RsTag);
+rsTags 'Tags' (RsOrder o) = GROUP CONCAT rsTagName(RsTag t) IF rsIn(o, t), ', ' ORDER rsTagName(t), t;
+rsTagsBackwards 'Tags backwards' (RsOrder o) = GROUP CONCAT rsTagName(RsTag t) IF rsIn(o, t), '; ' ORDER DESC rsTagName(t), t;
+rsUpperTags 'Tags in capitals' (RsOrder o) = upper(rsTagsBackwards(o));
+rsTagsSeparator = DATA STRING ();
+rsComputedTags 'Tags joined as computed' (RsOrder o) = GROUP CONCAT rsTagName(RsTag t) IF rsIn(o, t), rsTagsSeparator() ORDER rsTagName(t), t;
+rsEitherTags 'Tags either way' (RsOrder o) = OVERRIDE rsTagsBackwards(o), rsComputedTags(o);
+rsPaddedName 'Padded name' = DATA BPSTRING (RsTag);
+rsPaddedTags 'Padded tags' (RsOrder o) = GROUP CONCAT rsPaddedName(RsTag t) IF rsIn(o, t), '; ' ORDER rsPaddedName(t), t;
+rsMarked 'Marked' = DATA TBOOLEAN (RsOrder, RsTag);
+rsMarkedTags 'Marked tags' (RsOrder o) = GROUP CONCAT rsTagName(RsTag t) IF rsMarked(o, t), '; ' ORDER rsTagName(t), t;
+rsEitherMarkedTags 'Tags or marked tags' (RsOrder o) = OVERRIDE rsTagsBackwards(o), rsMarkedTags(o);
+
+rsSeedTags () {
+    IF NOT (GROUP SUM 1 IF RsTag t IS RsTag) THEN {
+        NEW t = RsTag { rsTagName(t) <- 'red'; }
+        NEW t = RsTag { rsTagName(t) <- 'green'; }
+        NEW t = RsTag { rsTagName(t) <- 'blue'; }
+        APPLY;
+    }
+}
+
+FORM rsLookup 'Selections looked up by text'
+    OBJECTS o = RsOrder PANEL
+    PROPERTIES(o) viewTags = rsTags SELECT 'input', platformTags = rsTags SELECT 'input'
+    PROPERTIES(o) upperTags = rsUpperTags SELECT 'input', eitherTags = rsEitherTags SELECT 'input', computedTags = rsComputedTags SELECT 'input',
+                  paddedTags = rsPaddedTags SELECT 'input', markedTags = rsMarkedTags SELECT 'input',
+                  eitherMarkedTags = rsEitherMarkedTags SELECT 'input'
+;
+
+DESIGN rsLookup {
+    NEW board FIRST { custom = 'RsBoard'; MOVE PROPERTY(viewTags); }
+}
+
+// a selection of several values says the text a React view joins the options checked by into its value: its GROUP
+// CONCAT's separator where it is a literal - whatever is put over the CONCAT, whatever its names or its condition are -,
+// of a union the one all its cases join by, a comma where there is none
+testRsSeparatorOfSeveralValues 'A selection of several values is sent the separator its value joins the options by' () {
+    rsSeedTags();
+    NEW o = RsOrder {
+        SHOW rsLookup OBJECTS o = o NOWAIT {
+            readSent('viewTags');
+            assertEquals(separatorInForm('viewTags'), ', ', CONCAT '', 'a selection of several values was sent the separator [',
+                         (OVERRIDE separatorInForm('viewTags'), 'none'), '], not [, ]');
+            readSent('upperTags');
+            assertTrue(isSubstring(renderInForm('upperTags'), 'select'), 'upper(tags) has no selection: the test no longer reaches what it tests');
+            assertEquals(separatorInForm('upperTags'), '; ', CONCAT '', 'upper(tags) was sent the separator [',
+                         (OVERRIDE separatorInForm('upperTags'), 'none'), '], not [; ]');
+            readSent('paddedTags');
+            assertTrue(isSubstring(renderInForm('paddedTags'), 'select'), 'the padded tags have no selection: the test no longer reaches what it tests');
+            assertEquals(separatorInForm('paddedTags'), '; ', CONCAT '', 'the padded tags were sent the separator [',
+                         (OVERRIDE separatorInForm('paddedTags'), 'none'), '], not [; ]');
+            readSent('markedTags');
+            assertTrue(isSubstring(renderInForm('markedTags'), 'select'), 'the marked tags have no selection: the test no longer reaches what it tests');
+            assertEquals(separatorInForm('markedTags'), '; ', CONCAT '', 'the marked tags were sent the separator [',
+                         (OVERRIDE separatorInForm('markedTags'), 'none'), '], not [; ]');
+            // ... a comma where the CONCAT's separator is computed, and of a union whose cases join by different texts
+            readSent('computedTags');
+            assertTrue(isSubstring(renderInForm('computedTags'), 'select'), 'the tags joined as computed have no selection: the test no longer reaches what it tests');
+            assertEquals(separatorInForm('computedTags'), ', ', CONCAT '', 'the tags joined as computed were sent the separator [',
+                         (OVERRIDE separatorInForm('computedTags'), 'none'), '], not [, ]');
+            readSent('eitherTags');
+            assertTrue(isSubstring(renderInForm('eitherTags'), 'select'), 'OVERRIDE of tags has no selection: the test no longer reaches what it tests');
+            assertEquals(separatorInForm('eitherTags'), ', ', CONCAT '', 'OVERRIDE of tags was sent the separator [',
+                         (OVERRIDE separatorInForm('eitherTags'), 'none'), '], not [, ]');
+            // ... the cases' own where they all join by one
+            readSent('eitherMarkedTags');
+            assertTrue(isSubstring(renderInForm('eitherMarkedTags'), 'select'), 'OVERRIDE of tags and marked tags has no selection: the test no longer reaches what it tests');
+            assertEquals(separatorInForm('eitherMarkedTags'), '; ', CONCAT '', 'OVERRIDE of tags and marked tags was sent the separator [',
+                         (OVERRIDE separatorInForm('eitherMarkedTags'), 'none'), '], not [; ]');
+        };
+    }
+}
+
+testRsAllOptionsForAReactView 'A React view is given all the options of a selection at once' () {
+    rsSeedTags();
+    NEW o = RsOrder {
+        rsIn(o, RsTag t) <- TRUE WHERE rsTagName(t) = 'red';
+        SHOW rsLookup OBJECTS o = o NOWAIT {
+            readSent('viewTags');
+            assertTrue(isSubstring(sentInForm('viewTags'), '"green"'), CONCAT '', 'a React view was sent ',
+                       (OVERRIDE sentInForm('viewTags'), 'nothing'), ', not all the options');
+            readSent('platformTags');
+            assertFalse(isSubstring(sentInForm('platformTags'), '"green"'), CONCAT '', 'the input of the platform was sent ',
+                        (OVERRIDE sentInForm('platformTags'), 'nothing'), ': the test no longer reaches what it tests');
+        };
+    }
+}

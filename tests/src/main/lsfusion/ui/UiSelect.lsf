@@ -9,12 +9,17 @@ CLASS UiSelectStatus 'Status';
 uiSelectStatusName 'Name' = DATA STRING[30] (UiSelectStatus);
 uiSelectStatus (STRING[30] name) = GROUP AGGR UiSelectStatus s BY uiSelectStatusName(s);
 
+CLASS UiSelectTag 'Tag';
+uiSelectTagName 'Name' = DATA STRING[30] (UiSelectTag);
+
 CLASS UiSelectOrder 'Order';
 uiSelectNumber 'Number' = DATA STRING[50] (UiSelectOrder);
 uiSelectOrder (STRING[50] number) = GROUP AGGR UiSelectOrder o BY uiSelectNumber(o);
 uiSelectShown = DATA BOOLEAN (UiSelectOrder); // the orders of the test that seeded last: the forms show only them
 uiSelectStatusOf = DATA UiSelectStatus (UiSelectOrder);
 uiSelectNameStatus 'Status' (UiSelectOrder o) = uiSelectStatusName(uiSelectStatusOf(o));
+uiSelectIn 'In' = DATA BOOLEAN (UiSelectOrder, UiSelectTag);
+uiSelectTags 'Tags' (UiSelectOrder o) = GROUP CONCAT uiSelectTagName(UiSelectTag t) IF uiSelectIn(o, t), ', ' ORDER uiSelectTagName(t), t;
 
 // a SELECT with NOCUSTOM: the platform draws its element of the selection inside a React view, which places it - per row
 // in the rows it draws; and a SELECT a render function given in CUSTOM draws, given the options as that element is
@@ -31,24 +36,48 @@ DESIGN uiSelectPlaced {
     NEW board FIRST { custom = 'UiSelectPlaced'; MOVE BOX(o); }
 }
 
+// a SELECT alone: the React view draws the selection from all its options and changes it by what is picked - in the
+// panel a selection of one value (the element the platform would choose), one of several values ('input': the
+// platform's own element would get only the ones checked), one whose explicit change takes the option's view; in the
+// rows a button group and a list
+FORM uiSelectPicked 'Picked'
+    OBJECTS o = UiSelectOrder
+    PROPERTIES(o) uiSelectNameStatus SELECT 'buttonGroup', uiSelectTags SELECT 'list'
+    PROPERTIES(o) panelStatus = uiSelectNameStatus SELECT PANEL, panelTags = uiSelectTags SELECT 'input' PANEL,
+                  inputStatus = uiSelectNameStatus SELECT PANEL
+                      ON CHANGE { INPUT s = uiSelectStatusOf(o) LIST uiSelectStatusName(s) DO uiSelectStatusOf(o) <- s; }
+    FILTERS uiSelectShown(o)
+    ORDERS uiSelectNumber(o)
+;
+
+DESIGN uiSelectPicked {
+    NEW board FIRST { custom = 'UiSelectPicker'; MOVE BOX(o); }
+}
+
 NAVIGATOR {
     NEW FOLDER uiSelect 'UI select' WINDOW toolbar {
         NEW uiSelectPlaced;
+        NEW uiSelectPicked;
     }
 }
 
-// the statuses New, Done, Lost, kept; two orders shown from now on, the first New, the second with no status
+// the statuses New, Done, Lost and the tags red, green, blue, kept; two orders shown from now on, the first New and
+// red, the second with no status and no tag
 uiSelectSeed (STRING[50] first, STRING[50] second) {
     IF NOT (GROUP SUM 1 IF UiSelectStatus s IS UiSelectStatus) THEN {
         NEW s = UiSelectStatus { uiSelectStatusName(s) <- 'New'; }
         NEW s = UiSelectStatus { uiSelectStatusName(s) <- 'Done'; }
         NEW s = UiSelectStatus { uiSelectStatusName(s) <- 'Lost'; }
+        NEW t = UiSelectTag { uiSelectTagName(t) <- 'red'; }
+        NEW t = UiSelectTag { uiSelectTagName(t) <- 'green'; }
+        NEW t = UiSelectTag { uiSelectTagName(t) <- 'blue'; }
     }
     uiSelectShown(UiSelectOrder o) <- NULL;
     NEW o = UiSelectOrder {
         uiSelectNumber(o) <- first;
         uiSelectShown(o) <- TRUE;
         uiSelectStatusOf(o) <- uiSelectStatus('New');
+        uiSelectIn(o, UiSelectTag t) <- TRUE WHERE uiSelectTagName(t) = 'red';
     }
     NEW o = UiSelectOrder {
         uiSelectNumber(o) <- second;
@@ -60,4 +89,9 @@ uiSelectSeed (STRING[50] first, STRING[50] second) {
 uiSelectCheckStatus (STRING[50] number, STRING[30] expected) {
     assertEquals(uiSelectNameStatus(uiSelectOrder(number)), expected, CONCAT ' ', 'the status of', number, 'is',
                  (OVERRIDE uiSelectNameStatus(uiSelectOrder(number)), 'none'), 'not', expected);
+}
+
+uiSelectCheckTags (STRING[50] number, STRING expected) {
+    assertEquals(uiSelectTags(uiSelectOrder(number)), expected, CONCAT ' ', 'the tags of', number, 'are',
+                 (OVERRIDE uiSelectTags(uiSelectOrder(number)), 'none'), 'not', expected);
 }

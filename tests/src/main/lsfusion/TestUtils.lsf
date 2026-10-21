@@ -75,6 +75,7 @@ readShownColumns INTERNAL 'lsfusion.tests.ReadShownColumnsAction' ();
 // function given in CUSTOM, the platform's element of the property's selection (select<type><element>), or none
 sentInForm = DATA LOCAL TEXT (STRING);
 renderInForm = DATA LOCAL STRING (STRING);
+separatorInForm = DATA LOCAL STRING (STRING);
 readSent INTERNAL 'lsfusion.tests.ReadSentAction' (STRING);
 
 // who draws a property of a form, by its name in the form, under the React views of its design - `react`, a React view

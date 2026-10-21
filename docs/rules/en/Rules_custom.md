@@ -196,6 +196,10 @@ title: 'Rules: custom views'
    platform's selection — is drawn by the platform with its own
    editor, and the `READONLY` rule of the `view` rules applies
    to it as usual.
+   A property given `SELECT` alone is drawn by the component:
+   its entry carries all its options (`select`), and its
+   member's `change` takes what is picked — an option or its
+   value, of several values the array of them.
 
 3. A change made through the controller is made in the form's
    change session, like an edit in the standard table: the

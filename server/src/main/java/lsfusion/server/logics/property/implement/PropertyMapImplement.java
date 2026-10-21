@@ -244,7 +244,7 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
             if(selectProperty == null)
                 return null;
             return selectProperty.map(mapping);
-        }, select.stat, select.values, select.multi, select.html, select.notNull);
+        }, select.stat, select.values, select.multi, select.html, select.notNull, select.separator);
     }
 
     public boolean mapNameValueUnique() {

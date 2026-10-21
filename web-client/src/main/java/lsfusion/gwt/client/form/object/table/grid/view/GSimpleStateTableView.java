@@ -430,8 +430,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         GPropertyDraw property = gridColumn.property;
         GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(objectsKey, gridColumn.columnKey);
         form.executePropertyEventAction(property, fullKey, newValue, changeRequestIndex -> {
-            if(newValue != PValue.UNDEFINED && property.hasExternalChangeActionForRendering(RendererType.SIMPLE)) // or use the old value instead of the new value in that case
-                form.pendingChangeProperty(property, fullKey, newValue, getValue(property, fullKey), changeRequestIndex);
+            PValue shownValue = property.getExternalChangeRenderValue(newValue, RendererType.SIMPLE);
+            if(shownValue != PValue.UNDEFINED) // or use the old value instead of the new value in that case
+                form.pendingChangeProperty(property, fullKey, shownValue, getValue(property, fullKey), changeRequestIndex);
         });
     }
 

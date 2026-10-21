@@ -30,3 +30,45 @@ window.uiSelectFn = function () {
         }
     };
 };
+
+// a React view drawing the selections from the options it is given, `select.list`, and changing them by what is picked:
+// an option, its value, null - of several values the array of the options checked from now on, or their value, the
+// values joined as the property has them. Every clickable has a text of its own; it hands on what it is given as it
+// draws, window.uiSelectData, for the test to read
+function UiSelectPicker(props) {
+    const { data, controller } = props;
+    const o = data.o;
+    window.uiSelectData = data;
+    const checkedWith = (list, option) => list.filter(each => each === option ? !each.selected : each.selected);
+    return <div>
+        <div>
+            {o.panelStatus.select.list.map(option =>
+                <button key={option.key} onClick={() => controller.o.panelStatus.change(option)}>{'ps ' + option.value}</button>)}
+            <button onClick={() => controller.o.panelStatus.change('Lost')}>ps by value Lost</button>
+            <button onClick={() => controller.o.panelStatus.change(null)}>ps clear</button>
+        </div>
+        <div>
+            {o.panelTags.select.list.map(option =>
+                <label key={option.key}>
+                    <input type="checkbox" checked={!!option.selected}
+                           onChange={() => controller.o.panelTags.change(checkedWith(o.panelTags.select.list, option))}/>
+                    {'pt ' + option.value}
+                </label>)}
+            <button onClick={() => controller.o.panelTags.change('blue, green')}>pt value blue, green</button>
+        </div>
+        <div>
+            {o.inputStatus.select.list.map(option =>
+                <button key={option.key} onClick={() => controller.o.inputStatus.change(option.value)}>{'is ' + option.value}</button>)}
+        </div>
+        {o.list.map((row, i) => <div key={row.key}>
+            {row.uiSelectNameStatus.select.list.map(option =>
+                <button key={option.key} onClick={() => controller.o.uiSelectNameStatus.change(option, row)}>{'r' + (i + 1) + ' ' + option.value}</button>)}
+            {row.uiSelectTags.select.list.map(option =>
+                <label key={option.key}>
+                    <input type="checkbox" checked={!!option.selected}
+                           onChange={() => controller.o.uiSelectTags.change(checkedWith(row.uiSelectTags.select.list, option), row)}/>
+                    {'r' + (i + 1) + ' tag ' + option.value}
+                </label>)}
+        </div>)}
+    </div>;
+}

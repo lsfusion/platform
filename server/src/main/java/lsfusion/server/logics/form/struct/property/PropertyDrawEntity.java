@@ -1135,8 +1135,9 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         public final boolean actual;
         public final boolean html;
         public final boolean changeValue;
+        public final String separator; // Property.Select.separator
 
-        public Select(PropertyObjectEntity property, String type, String elementType, long length, long count, boolean actual, boolean html, boolean changeValue) {
+        public Select(PropertyObjectEntity property, String type, String elementType, long length, long count, boolean actual, boolean html, boolean changeValue, String separator) {
             this.property = property;
             this.type = type;
             this.elementType = elementType;
@@ -1145,6 +1146,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
             this.actual = actual;
             this.html = html;
             this.changeValue = changeValue;
+            this.separator = separator;
         }
     }
 
@@ -1209,6 +1211,9 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
             } else
                 mapSelect = property.getSelectProperty(forceSelect);
 
+            // a React view is given all the options at once, never only the picked ones to look the rest up by text
+            if(isReactDrawn(context))
+                forceFilter = false;
             PropertyObjectEntity.Select select = ActionOrPropertyObjectEntity.getSelectProperty(context, forceFilter, mapSelect);
             if(select != null) {
                 String selectType = null;
@@ -1248,7 +1253,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
                     }
 
                     if (elementType != null)
-                        return new Select(select.property, selectType, elementType, select.length, select.count, select.actual, select.html, changeValue);
+                        return new Select(select.property, selectType, elementType, select.length, select.count, select.actual, select.html, changeValue, select.separator);
                 }
             }
         }

@@ -2248,6 +2248,10 @@ public class GwtClientUtils {
     public static native int jsArrayLength(JavaScriptObject array)/*-{ return array.length; }-*/;
     public static native JavaScriptObject jsArrayGet(JavaScriptObject array, int index)/*-{ return array[index]; }-*/;
     public static native void setArrayElement(JavaScriptObject array, int index, JavaScriptObject value)/*-{ array[index] = value; }-*/;
+    // a value as an array: of it alone, none for no value - for what takes one value or several alike
+    public static native JsArray toArray(JavaScriptObject value)/*-{
+        return value === undefined || value === null ? [] : [value];
+    }-*/;
     // the one setter: a JS object lands as itself, and so do a String, a Boolean and a Double - GWT hands those three
     // to JS as primitives, so a Boolean is a real true/false rather than a truthy wrapper. An int/Integer is NOT
     // unboxed by JSNI; it goes in as a Double or a String

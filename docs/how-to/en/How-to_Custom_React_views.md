@@ -212,7 +212,7 @@ An option the platform computed nothing for is absent — a property with no `BA
 
 | Option | What it is | JS value |
 | --- | --- | --- |
-| `type` | The kind the value was converted by — `number`, `boolean`, `string`, `date`, or `json` (parsed, so the value is whatever the JSON held). It describes the property rather than one of its values, so it sits with the column attributes: `data.<g>.<prop>.type` for a table property, and on the entry itself for a panel or empty-group one. A cell does not carry it | string |
+| `type` | The kind the value was converted by — `number`, `boolean`, `string`, `date`, or `json` (parsed, so the value is whatever the JSON held); of a [selection](#select), `string`: its value is made of the views of its options, which are text, as the platform's own element shows them. It describes the property rather than one of its values, so it sits with the column attributes: `data.<g>.<prop>.type` for a table property, and on the entry itself for a panel or empty-group one. A cell does not carry it | string |
 | `askConfirm` | Whether a change of the property — for an action, running it — asks the user first: `CONFIRM` on the action, or `askConfirm = TRUE` in the design. The platform's own editor and button ask before they send; a view's call through the property's member does not, so a view that wants the question asks it itself, before the call. It is where `type` is | `true` / `false` |
 | `askConfirmMessage` | The question to ask: the design's `askConfirmMessage`, or the platform's own | string; only where `askConfirm` is `true` |
 | `hidden` | Whether the form hides the property now — by its `SHOWIF`, or by the `SHOWIF` of a container above it. It is on the property's entry — the column entry of a table property, the entry itself of a panel or empty-group one — and never on a cell | `true`; absent while the form shows it |
@@ -230,8 +230,9 @@ An option the platform computed nothing for is absent — a property with no `BA
 | `tooltip`, `valueTooltip` | The tooltips of the property and of its value | string |
 | `options` | The property's custom options | parsed JSON value |
 | `defaultValue` | The value editing starts with | string |
+| `select` | What a [selection](#select) adds — its options and how it selects. It is on the cell of a table property, and on the entry itself of a panel or empty-group one | object |
 
-Of these, `caption`, `image`, `footer`, `comment`, `tooltip` and `defaultValue` are the column's own attributes, on the column node `data.<g>.<prop>` — one per column. The rest (`background`, `foreground`, `readOnly`, `disabled`, `placeholder`, `pattern`, `regexp`, `regexpMessage`, `valueTooltip`, `options`, `loading`) are cell attributes, on each row's cell `data.<g>.list[i].<prop>` next to its `value`. The row itself carries `background` and `foreground` — the colors of the row as a whole — and `selected`, which is `true` when the row is selected — directly, not inside any property entry.
+Of these, `caption`, `image`, `footer`, `comment`, `tooltip` and `defaultValue` are the column's own attributes, on the column node `data.<g>.<prop>` — one per column, beside `type`. The rest (`background`, `foreground`, `readOnly`, `disabled`, `placeholder`, `pattern`, `regexp`, `regexpMessage`, `valueTooltip`, `options`, `select`, `loading`) are cell attributes, on each row's cell `data.<g>.list[i].<prop>` next to its `value`. The row itself carries `background` and `foreground` — the colors of the row as a whole — and `selected`, which is `true` when the row is selected — directly, not inside any property entry.
 
 ```jsx
 function Row(props) {
@@ -553,7 +554,7 @@ DESIGN orders {
 }
 ```
 
-`NOCUSTOM` says the platform draws the property, in its standard view: it is a component rather than a value. A `CUSTOM` render function says so too, the platform drawing the value by that function, and so does a `SELECT` given with `NOCUSTOM`, the platform drawing the value as a selection from a list: a `SELECT` alone says what is drawn, not who draws it. The design says the same with the property's `custom`, as with its `caption`: `custom = NULL` is `NOCUSTOM`, and `PROPERTY(quantity(o)) { custom = 'starRating'; }` is `PROPERTIES(o) quantity CUSTOM 'starRating'`. Where it is placed is not said — and cannot be: a grid property has no place of its own in the design, and its renderers go into the rows, so the component drawing the rows is the one that places them. That is the component this `MOVE BOX(o)` gave the group to. A `MOVE` of a grid property is refused when the form is built, `NOCUSTOM` or not. The component names the property as its column entry is keyed, with its group, and gives the row:
+`NOCUSTOM` says the platform draws the property, in its standard view: it is a component rather than a value. A `CUSTOM` render function says so too, the platform drawing the value by that function, and so does a `SELECT` given with `NOCUSTOM`, the platform drawing the value as a selection from a list: a `SELECT` alone says what is drawn, not who draws it ([A selection](#select)). The design says the same with the property's `custom`, as with its `caption`: `custom = NULL` is `NOCUSTOM`, and `PROPERTY(quantity(o)) { custom = 'starRating'; }` is `PROPERTIES(o) quantity CUSTOM 'starRating'`. Where it is placed is not said — and cannot be: a grid property has no place of its own in the design, and its renderers go into the rows, so the component drawing the rows is the one that places them. That is the component this `MOVE BOX(o)` gave the group to. A `MOVE` of a grid property is refused when the form is built, `NOCUSTOM` or not. The component names the property as its column entry is keyed, with its group, and gives the row:
 
 ```jsx
 {data.o.list.map(row => (
@@ -576,6 +577,73 @@ What the author gets and what stays theirs:
 - Its key (`CHANGEKEY`) is one for all the rows, as a grid column's is: pressed anywhere in the form, it opens the editor in the current row, while that row's editor is placed — the editor of a row the component does not render takes no key.
 
 Where no `CUSTOM REACT` container draws the group's rows, `NOCUSTOM` is simply the standard view: the platform's grid draws the property, without a custom render or editing function. A grid property grouped in columns is refused, with the property named, where a React view draws its rows: a per-row editor cannot address a row-and-column cell.
+
+### A selection {#select}
+
+A property given `SELECT` in the `FORM` — or `select` in the design — is shown as a choice among all its possible values: the objects a link can point at, by their view (the statuses an order can have, by their names), or, for a [selection of several values](../paradigm/Interactive_view.md#multiselect), the objects that can be checked (the tags of an order). Inside a container a React component draws, the component draws such a property itself, and the property's entry carries all its options at once:
+
+```lsf
+FORM orders 'Orders'
+    OBJECTS o = Order PANEL
+    PROPERTIES(o) number READONLY, nameStatus SELECT, tags SELECT 'list'
+;
+
+DESIGN orders {
+    NEW card FIRST { custom = 'OrderCard'; MOVE BOX(o); }
+}
+```
+
+```js
+data.o.nameStatus = {
+    value: 'New',              // the value of the option picked
+    type: 'string',
+    select: {                  // what SELECT adds
+        list: [                // all the options, in their order
+            { key: 581, value: 'New', selected: true },
+            { key: 583, value: 'Done' },
+            { key: 584, value: 'Lost' }
+        ]
+    }
+}
+data.o.tags = {
+    value: 'red',              // the property's own: the values of the options checked, joined
+    type: 'string',
+    select: {
+        multi: true, separator: ', ',
+        list: [{ key: 577, value: 'blue' }, { key: 576, value: 'green' },
+               { key: 575, value: 'red', selected: true }]
+    }
+}
+```
+
+`select` is what `SELECT` adds to the entry, in one field. Each option of its `list` has `key` — the id of the object it is (of an option of several objects, as a selection over a group by several objects has, a string of their ids), the same while the option is there, which keys it in React —, `value` — the view it is shown by, a text — and `selected` while it is picked. Of one value, the entry's `value` is the value of the option picked, which is the property's own value; with nothing picked no option is `selected`, and `value` is `null`. Of several values, `select.multi: true`, `value` is the views of the options checked, in the list's order, joined by `select.separator`, and `null` with none checked. `select.separator` is the separator of its `GROUP CONCAT` where it is a literal, not to be localized, of an `OVERRIDE` of several the one they all join by, and a comma, `', '`, otherwise — where it is computed or localized, or the `OVERRIDE` joins by different ones. For the usual `tags(o) = GROUP CONCAT name(t) IF in(o, t), ', ' ORDER name(t), t` this is the property's own value; where the property is something else over the options — an expression over the `GROUP CONCAT` (`upper(tags(o))`), an `OVERRIDE` —, it is still the options checked, joined: `'green, red'` while the property has `'GREEN, RED'`. `select.notNull: true` says the value has to be there, so a view offers no way to clear it. How the selection is drawn is the view's own: the element `SELECT` names is the platform's own element's. For a column, `select` is on each row's cell, `row.nameStatus.select`: what is picked is each row's own. The view of an option is drawn with [`<Caption>`](#caption): it may be HTML.
+
+The property is changed by what is picked, with its member's `change`:
+
+```jsx
+const { Caption } = window.lsfusion;
+
+export function OrderCard(props) {
+    const { data, controller } = props;
+    return <div className="status">
+        {data.o.nameStatus.select.list.map(option =>
+            <button key={option.key} aria-pressed={!!option.selected}
+                    onClick={() => controller.o.nameStatus.change(option)}>
+                <Caption value={option.value}/>
+            </button>)}
+    </div>;
+}
+```
+
+- Of one value, `change` takes an option — an element of `select.list`, or its value: `change('Done')` —, and `null` clears the value; a value that has to be there is not cleared. The option picked already changes nothing, and nothing is sent.
+- Of several values, it takes their value, as `value` has it — the views joined by `select.separator`: `change('green, red')` —, or the array of the options checked from now on, elements of `select.list` or their values: `change(['red', 'green'])`; `null` and `[]` uncheck all of them, and so does `''`. A value that splits back into views more ways than one — a view with the separator in it, or one that joins with it at its edge, or an empty separator — is refused: pass the array then. An option alone — an element of `select.list` — is checked or unchecked: the opposite of what the cell shows now, a pick not answered yet included.
+- A value no option has is refused, and so is a value several options have — options may share a view —: pass the option itself then.
+
+A pick is sent as the platform's own element sends it, one option at a time, picked or no longer: the link is written — `status(o)` gets the status picked —, and for a selection of several values the condition of each option checked or unchecked, `in(o, t)`. A call that checks and unchecks several options sends them in one request, the checks first. The view shows the pick at once — in `select.list` and in `value` —, the cell says `loading` until the answer, and the answer brings the options read again. In a [batch](How-to_Custom_view_controller.md) a pick goes with the rest.
+
+The options are read and sent as a value is: when the form is opened, and again whenever what they depend on changes — their views, which objects they are, what is picked — or the current object or the rows do; each time the cell's options come whole. Where the platform's own element is given only the options picked and looks the others up by the text typed — over many options, or with `SELECT 'input'` —, a view is still given all of them.
+
+The platform also builds a [selection element](../paradigm/Interactive_view.md#select) by itself, for a link with a unique view or a selection of several values; a property a React component draws gets none of that: its entry has options only where a selection is given — `SELECT` in the form or in the property's declaration, `select` in the design. With `NOCUSTOM` — `PROPERTIES(o) nameStatus SELECT 'buttonGroup' NOCUSTOM` — the platform draws its own element of the selection, and the component places it with `<Platform name/>` like any [child the platform draws](#placing), per row in the rows it draws.
 
 ### Extending a container with placed children
 

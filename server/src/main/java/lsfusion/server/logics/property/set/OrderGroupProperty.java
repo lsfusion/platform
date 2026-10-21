@@ -35,6 +35,7 @@ import lsfusion.server.logics.property.classes.infer.CalcClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class OrderGroupProperty<I extends PropertyInterface> extends GroupProperty<I> {
@@ -130,7 +131,7 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
     public <X extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface<I>> getSelectProperty(ImList<Property> viewProperties, boolean forceSelect) {
         ImRevMap<Interface<I>, I> groupMap = getConcatMap();
         if(groupMap != null)
-            return Property.getSelectProperty(getBaseLM(), true, false, forceSelect, groupMap, innerInterfaces, (PropertyMapImplement<?, I>) nameProp, whereProp, null, (PropertyMapImplement<?, I>) nameProp, orders);
+            return Property.getSelectProperty(getBaseLM(), true, false, getSeparator(), forceSelect, groupMap, innerInterfaces, (PropertyMapImplement<?, I>) nameProp, whereProp, null, (PropertyMapImplement<?, I>) nameProp, orders);
 
         return super.getSelectProperty(viewProperties, forceSelect);
     }
@@ -164,6 +165,17 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         }
 
         return super.getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
+    }
+
+    // the text the names are joined by, where it is one given as it is - a literal, not to be localized -, null otherwise
+    private String getSeparator() {
+        PropertyInterfaceImplement<I> separator = props.get(1);
+        if (separator instanceof PropertyMapImplement && ((PropertyMapImplement<?, I>) separator).property instanceof ValueProperty) {
+            Object value = ((ValueProperty) ((PropertyMapImplement<?, I>) separator).property).value;
+            if (value instanceof LocalizedString && !((LocalizedString) value).needToBeLocalized())
+                return ((LocalizedString) value).getSourceString();
+        }
+        return null;
     }
 
     private ImRevMap<Interface<I>, I> getConcatMap() {

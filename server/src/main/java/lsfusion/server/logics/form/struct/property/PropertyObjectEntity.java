@@ -87,14 +87,16 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
 
         public final Type type;
         public final boolean html;
+        public final String separator; // Property.Select.separator
 
-        public Select(PropertyObjectEntity<?> property, long length, long count, boolean actual, Type type, boolean html) {
+        public Select(PropertyObjectEntity<?> property, long length, long count, boolean actual, Type type, boolean html, String separator) {
             this.property = property;
             this.length = length;
             this.count = count;
             this.actual = actual;
             this.type = type;
             this.html = html;
+            this.separator = separator;
         }
     }
     public Property.MapSelect<P> getSelectProperty(boolean forceSelect) { // false - filter selected,

@@ -137,9 +137,10 @@ public class GReactFormData {
     public interface Verbs extends GFilterConditions {
         // ===== the current object of a group whose rows a view draws: one of those rows
         void changeCurrentObject(GGroupObject group, GGroupObjectValue key);
-        // ===== a property: its cell - its key (EMPTY: the current objects) and its value (PValue.UNDEFINED: its change
-        // event, or the action) -, and the suggestion list of the cell, from the server's lookup `actionSID`
-        void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value);
+        // ===== a property: its cell - its key (EMPTY: the current objects), its value (PValue.UNDEFINED: its change
+        // event, or the action) and what the cell shows until the answer (PValue.UNDEFINED: the value it has) -, and the
+        // suggestion list of the cell, from the server's lookup `actionSID`
+        void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue);
         void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount);
         // ===== the nodes of a tree whose rows a view draws: one of a group's rows opened ...
         void expandNode(GGroupObject group, GGroupObjectValue key);
@@ -2585,8 +2586,48 @@ public class GReactFormData {
         // entry is its one cell, a column has one per row
         final void emitCell(JavaScriptObject target, GPropertyReader[] readers, GGroupObjectValue key) {
             if (shown)
-                emitValue(target, property, values.get(property, key));
+                emitValue(target, getValueAt(key));
             emitAttributes(target, readers, key, property);
+        }
+        // ===== its value, as a view is given it (emitValue) and as a view's call changes it back (changeValue): as its
+        // type converts it - a SELECTION's, whose cell holds the list of its options, as ReactSelect gives and changes it
+        private void emitValue(JavaScriptObject target, PValue value) {
+            if (property.select != null)
+                ReactSelect.emit(target, property, value);
+            else
+                setField(target, "value", GSimpleStateTableView.convertToJSValue(property, value, RendererType.SIMPLE, true));
+        }
+        // ... the cell a call names changed to the value it gives - of a selection, by the options it picks
+        // (ReactSelect.change); with none given (UNDEFINED, exec()), its change event run as it is -, the cell showing
+        // until the answer what the change makes of it: one change sent as it is, several in one batch
+        private void changeValue(String errorPrefix, JavaScriptObject objectOrKey, JavaScriptObject value) {
+            checkShown(errorPrefix);
+            GGroupObjectValue key = getMemberKey(errorPrefix, objectOrKey);
+            ArrayList<PValue> changes = new ArrayList<>();
+            PValue shown;
+            if (property.select != null && !isUndefined(value))
+                shown = ReactSelect.change(errorPrefix, property, getCellValue(errorPrefix, key), value, changes);
+            else {
+                PValue change = GSimpleStateTableView.convertFromJSUndefValue(property, value);
+                changes.add(change);
+                shown = property.getExternalChangeRenderValue(change, RendererType.SIMPLE);
+            }
+            Runnable send = () -> {
+                for (PValue change : changes)
+                    verbs.changeProperty(property, key, change, shown);
+            };
+            if (changes.size() > 1)
+                verbs.batch(send);
+            else
+                send.run();
+        }
+        // ... the value of the cell a call names - of a column with no row named, the current row's; refused where there
+        // is none -, a change not answered yet included: what a pick is made against
+        private PValue getCellValue(String errorPrefix, GGroupObjectValue key) {
+            GGroupObjectValue cellKey = getCellKey(key);
+            if (cellKey == null) // a column whose group has no current row, and no row named
+                throw refusal(errorPrefix + "'" + property.groupObject.getSID() + "' has no current row: name the row to pick in");
+            return getValueAt(cellKey);
         }
         // its value in a cell: kept here, the client's own on top (put)
         PValue getValueAt(GGroupObjectValue key) {
@@ -2657,7 +2698,7 @@ public class GReactFormData {
                 throw refusal(errorPrefix + "'" + property.integrationSID + "' is an action, which has no value to set: call exec()");
             if (noValue)
                 throw refusal(errorPrefix + "the value is missing - pass null to clear it, or call exec() to run the property's change event");
-            changeCell(errorPrefix, objectOrKey, GSimpleStateTableView.convertFromJSUndefValue(property, value));
+            changeValue(errorPrefix, objectOrKey, value);
         }
         // ... exec([row]): the property's change event, or the action, with no value given - but a value the platform
         // asks for before it runs the event - its change type; the group change it makes of the change asks it first
@@ -2669,17 +2710,13 @@ public class GReactFormData {
             if (asksValue())
                 throw refusal(errorPrefix + "'" + property.integrationSID + "' asks for a value" + (property.isAction()
                         ? ", which no call can give an action" : ", which a view gives itself: call change(value)"));
-            changeCell(errorPrefix, objectOrKey, PValue.UNDEFINED);
+            changeValue(errorPrefix, objectOrKey, UNDEFINED);
         }
         // whether its change asks a value before it runs - its change type -, in the cell the change is made in, which
         // neither a call nor a binding of a view has: exec() is refused, and no binding is taken (getBindingWidget) -
         // the platform would open its editor there, and the editor is the view's
         private boolean asksValue() {
             return property.getChangeType() != null;
-        }
-        private void changeCell(String errorPrefix, JavaScriptObject objectOrKey, PValue value) {
-            checkShown(errorPrefix);
-            verbs.changeProperty(property, getMemberKey(errorPrefix, objectOrKey), value);
         }
         // ... getValues([row,] value[, mode], ok, fail[, count]): the suggestion list of the cell the call names, from
         // the lookup its mode picks - an unknown one is said on the console, and the call fails
@@ -3276,7 +3313,9 @@ public class GReactFormData {
     }-*/;
 
     private void emitPropertyFacts(JavaScriptObject entry, GPropertyDraw property) {
-        setField(entry, "type", GSimpleStateTableView.getJSTypeName(property.getRenderType(RendererType.SIMPLE)));
+        // the kind of its value - of a selection a text: the views of its options, which the platform's element shows as
+        // text too (ReactSelect)
+        setField(entry, "type", property.select != null ? "string" : GSimpleStateTableView.getJSTypeName(property.getRenderType(RendererType.SIMPLE)));
         // whether a change of it - for an action, running it - asks the user first (CONFIRM, the design's askConfirm),
         // and with what: the platform's own editor and button ask, a view's call does not, so a view asks itself
         setField(entry, "askConfirm", property.askConfirm);
@@ -3504,10 +3543,6 @@ public class GReactFormData {
     private static void emitHidden(JavaScriptObject entry, boolean shown) {
         if (!shown) // an attribute like any other: there while it has a value
             setField(entry, "hidden", true);
-    }
-
-    private static void emitValue(JavaScriptObject entry, GPropertyDraw property, PValue value) {
-        setField(entry, "value", GSimpleStateTableView.convertToJSValue(property, value, RendererType.SIMPLE, true));
     }
 
     private static void emitAttribute(JavaScriptObject entry, GPropertyReader reader, PValue pvalue, GComponent owner) {

@@ -9,6 +9,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
@@ -18,7 +19,8 @@ import java.sql.SQLException;
 // client is sent for the form's current objects (PropertyDrawInstance.getReaderProperty) - where the form builds a
 // selection for the property, the list of its options -, written into sentInForm as text, and the function it tells the
 // client to draw the property by - a render function given in CUSTOM, the platform's element of the property's
-// selection (select<type><element>), or none -, written into renderInForm
+// selection (select<type><element>), or none -, written into renderInForm, and of a selection of several values the
+// text its value joins the options by, written into separatorInForm
 public class ReadSentAction extends InternalAction {
 
     public ReadSentAction(ScriptingLogicsModule LM, ValueClass... classes) {
@@ -34,6 +36,8 @@ public class ReadSentAction extends InternalAction {
         try {
             findProperty("sentInForm[STRING]").change(value != null ? value.toString() : null, context, new DataObject(name));
             findProperty("renderInForm[STRING]").change(property.entity.getCustomRenderFunction(form.context), context, new DataObject(name));
+            PropertyDrawEntity.Select select = property.entity.getSelectProperty(form.context);
+            findProperty("separatorInForm[STRING]").change(select != null ? select.separator : null, context, new DataObject(name));
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }

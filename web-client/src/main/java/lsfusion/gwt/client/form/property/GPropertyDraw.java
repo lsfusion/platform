@@ -57,6 +57,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public boolean customNeedPlaceholder;
     public boolean customNeedReadonly;
     public boolean customNeedDefaultValue;
+    // its selection, null where it is none: what a React view that draws it projects and changes it as
+    // (GReactFormData.ReactPropertyEntry)
+    public GSelect select;
 
     public boolean wrap;
     public boolean wrapWordBreak;
@@ -292,6 +295,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
 
     public boolean hasExternalChangeActionForRendering(RendererType rendererType) {
         return canUseChangeValueForRendering(externalChangeType, rendererType);
+    }
+    // ... and what a cell shows until the answer to its change to the value (WYSIWYG): the value, where the change writes
+    // the value shown - else, a custom action or an unbound input, the value it has (UNDEFINED), the cell loading, as
+    // one with no value does
+    public PValue getExternalChangeRenderValue(PValue value, RendererType rendererType) {
+        return hasExternalChangeActionForRendering(rendererType) ? value : PValue.UNDEFINED;
     }
 
     public boolean disableInputList;

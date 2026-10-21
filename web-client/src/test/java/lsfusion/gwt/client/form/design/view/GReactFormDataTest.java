@@ -18,7 +18,9 @@ import lsfusion.gwt.client.classes.data.GCSVType;
 import lsfusion.gwt.client.classes.data.GColorType;
 import lsfusion.gwt.client.classes.data.GCustomStaticFormatFileType;
 import lsfusion.gwt.client.classes.data.GDateIntervalType;
+import lsfusion.gwt.client.classes.data.GDateType;
 import lsfusion.gwt.client.classes.data.GIntegerType;
+import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
@@ -89,6 +91,7 @@ import lsfusion.gwt.client.form.property.GImageReader;
 import lsfusion.gwt.client.form.property.GLastReader;
 import lsfusion.gwt.client.form.property.GLoadingReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.GSelect;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.GReadOnlyReader;
 import lsfusion.gwt.client.form.property.GPropertyEditType;
@@ -212,6 +215,7 @@ public class GReactFormDataTest extends GWTTestCase {
         GPropertyDraw outerPanel, outerName; // ... and a list property, which GWT draws with the rows
         GPropertyDraw note; // a panel property of the group in a, beside its rows - only in Fixture.withNote()
         GPropertyDraw remark; // a second panel property of the group in b - only in withRemark()
+        GPropertyDraw status, tags; // selections a view draws, of the group in a - only in a test that adds them
         // properties of the group the platform draws - one named `platform`, one with no name, one grouped in columns
         // named `columns` - only in withPlatformProperties()
         GPropertyDraw platformNamed, platformUnnamed, platformInColumns;
@@ -236,6 +240,8 @@ public class GReactFormDataTest extends GWTTestCase {
                                            // the cell a property member changed
         final ArrayList<String> edits = new ArrayList<>(); // ... and every edit it was handed, in order
         PValue changedTo; // ... and the value it changed that cell to
+        // ... and the value of every change, in order, and what its cell was shown as meanwhile
+        final ArrayList<PValue> sent = new ArrayList<>(), shownAs = new ArrayList<>();
         final ArrayList<String> filtersCalls = new ArrayList<>(); // ... and the calls a filters member made, in order
         ArrayList<GPropertyFilter> stated; // ... and the last list of conditions it stated
         final ArrayList<String> toolbarCalls = new ArrayList<>(); // ... and what a toolbar member asked, in order
@@ -295,10 +301,12 @@ public class GReactFormDataTest extends GWTTestCase {
                 return component.getReactPlace();
             }, verbs = new GReactFormData.Verbs() { // the form, as far as a member asks it: what it is handed is kept
                 public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) { chosen = key; edits.add("current " + key.toKeyString()); }
-                public void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value) {
+                public void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue) {
                     changed = key;
                     changedTo = value;
                     edits.add("cell " + property.integrationSID + "@" + key.toKeyString());
+                    sent.add(value);
+                    shownAs.add(shownValue);
                 }
                 public void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) { }
                 public void countRecords(GGroupObject group, java.util.function.Consumer<Number> answer, java.util.function.Consumer<Throwable> failed) {
@@ -481,6 +489,18 @@ public class GReactFormDataTest extends GWTTestCase {
             property.loadingReader = new GLoadingReader(id, group != null ? group.ID : -1);
             return property;
         }
+        // a selection a view draws, of the group in a: its cell the options (PropertyDrawEntity.getSelectProperty), the
+        // value they are of a string, a pick sent as the change of the cell - or, where an explicit change takes the
+        // option's view, as that view
+        GPropertyDraw selection(int id, String name, boolean list, GSelect select) {
+            GPropertyDraw property = property(id, name, group, list, a);
+            property.select = select;
+            property.cellType = GJSONType.instance;
+            property.valueType = new GStringType(GExtInt.UNLIMITED, false, false);
+            property.differentValue = true;
+            property.externalChangeType = select.changeValue ? new GStringType(GExtInt.UNLIMITED, false, false) : GJSONType.instance;
+            return property;
+        }
         // a platform-drawn panel property React places: the design names it PROPERTY(<name>), its integration name is
         // <name>
         GPropertyDraw platformPanel(int id, String name, GGroupObject group, GContainer scope) {
@@ -561,7 +581,7 @@ public class GReactFormDataTest extends GWTTestCase {
             ask("current " + group.getSID() + " " + key.toKeyString());
             controllers.groups.get(group).changeCurrentKey(key);
         }
-        public void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value) { }
+        public void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue) { }
         public void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) { }
         public void countRecords(GGroupObject group, java.util.function.Consumer<Number> answer, java.util.function.Consumer<Throwable> failed) { }
         public void calculateSum(GGroupObject group, GPropertyDraw property, GGroupObjectValue columnKey, java.util.function.Consumer<Number> answer, java.util.function.Consumer<Throwable> failed) { }
@@ -1269,6 +1289,7 @@ public class GReactFormDataTest extends GWTTestCase {
                      function (error) { rejected.@java.util.function.Consumer::accept(Ljava/lang/Object;)(error.message); });
     }-*/;
     private static native JavaScriptObject parse(String json) /*-{ return JSON.parse(json); }-*/;
+    private static native JavaScriptObject pair(JavaScriptObject first, JavaScriptObject second) /*-{ return [first, second]; }-*/;
     private static native void changeAt(JavaScriptObject member, int value, JavaScriptObject row) /*-{ member.change(value, row == null ? undefined : row); }-*/;
     // a batch, as a view begins one: run is what its function does
     private static native void batch(JavaScriptObject controller, Runnable run) /*-{
@@ -3123,6 +3144,354 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("boolean", typeOf(field(f.data(), "single"), "askConfirm"));
     }
 
+    // ===== A SELECTION a view draws (N32): its cell holds the options, as the platform's element gets them - each
+    // option's view, the object it is, whether it is picked -, and its entry gives them as `select`, each by its key -
+    // the object's id -, its value - the view - and `selected` while picked; of one value the value picked is `value`,
+    // the property's own; a call changes it by what is picked, sent as the platform's element sends a pick
+    private static final String STATUS_OPTIONS = "[{\"name\": \"New\", \"objects\": {\"obj2\": 581}, \"selected\": true},"
+            + " {\"name\": \"Done\", \"objects\": {\"obj2\": 583}}, {\"name\": \"Lost\", \"objects\": {\"obj2\": 584}}]";
+    private static final String TAG_OPTIONS = "[{\"name\": \"red\", \"objects\": {\"obj2\": 575}, \"selected\": true},"
+            + " {\"name\": \"green\", \"objects\": {\"obj2\": 576}}, {\"name\": \"blue\", \"objects\": {\"obj2\": 577}}]";
+    private static GFormChanges cell(GPropertyDraw property, GGroupObjectValue key, String value) {
+        GFormChanges changes = new GFormChanges();
+        put(changes, property, key, value);
+        return changes;
+    }
+    private static String json(PValue value) {
+        return value == null ? null : PValue.getStringValue(value);
+    }
+    // the options of a selection's entry: the list of its select
+    private static JavaScriptObject options(JavaScriptObject entry) {
+        return field(field(entry, "select"), "list");
+    }
+
+    public void testASelectionGivesItsOptionsAndTheValuePicked() {
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, null)));
+        f.apply(cell(f.status, GGroupObjectValue.EMPTY, STATUS_OPTIONS));
+        JavaScriptObject status = field(f.node(), "status");
+        JavaScriptObject select = options(status);
+        assertEquals(3, length(select));
+        assertEquals(581.0, number(at(select, 0), "key"), 0.0);
+        assertEquals("New", text(at(select, 0), "value"));
+        assertTrue(flag(at(select, 0), "selected"));
+        assertEquals(583.0, number(at(select, 1), "key"), 0.0);
+        assertEquals("Done", text(at(select, 1), "value"));
+        assertFalse(own(at(select, 1), "selected")); // an attribute absent while false
+        assertEquals("New", text(status, "value")); // the property's own value: the view of the option picked
+        assertFalse(own(field(status, "select"), "multi")); // what SELECT adds is one field: its list, and what it is
+        assertFalse(own(field(status, "select"), "notNull"));
+        assertFalse(own(status, "selectType")); // how it is drawn is the view's own
+        assertEquals("string", text(status, "type")); // the value's kind, not the cell's JSON
+        // nothing picked: no option says so, and the value is null
+        f.apply(cell(f.status, GGroupObjectValue.EMPTY, STATUS_OPTIONS.replace(", \"selected\": true", "")));
+        assertTrue(noValue(field(f.node(), "status")));
+        assertFalse(own(at(options(field(f.node(), "status")), 0), "selected"));
+    }
+
+    // ... of one value the view of the option picked, the first where several are: an explicit change taking the option's
+    // view picks every option of that view
+    public void testOneValueIsTheViewOfTheFirstOptionPicked() {
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, true, null)));
+        f.apply(cell(f.status, GGroupObjectValue.EMPTY, "[{\"name\": \"Done\", \"objects\": {\"obj2\": 583}, \"selected\": true},"
+                + " {\"name\": \"Done\", \"objects\": {\"obj2\": 584}, \"selected\": true}]"));
+        assertEquals("Done", text(field(f.node(), "status"), "value"));
+    }
+
+    // ... a text, whatever its options are shown by - a date as the server sends it, a number -, as the platform's
+    // element shows them, and its type says so
+    public void testASelectionIsGivenItsViewsAsText() {
+        Fixture f = new Fixture(r -> {
+            r.status = r.selection(27, "status", false, new GSelect(false, false, false, null));
+            r.status.valueType = GDateType.instance;
+        });
+        f.apply(cell(f.status, GGroupObjectValue.EMPTY, "[{\"name\": \"2026-01-02\", \"objects\": {\"obj2\": 581}, \"selected\": true},"
+                + " {\"name\": 5, \"objects\": {\"obj2\": 582}}]"));
+        assertEquals("string", text(field(f.node(), "status"), "type"));
+        assertEquals("2026-01-02", text(field(f.node(), "status"), "value"));
+        assertEquals("string", typeOf(at(options(field(f.node(), "status")), 1), "value"));
+        // ... and a value names an option by that text
+        JavaScriptObject member = member(f.sa, "items", "status");
+        assertRefusal("'status' has no option 5", refusedChange(member, parse("5")));
+        callChange(member, "5");
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":582},\"value\":true}", json(f.sent.get(0)));
+    }
+
+    // ... of several values: the options checked, and their values, in the list's order, joined by the separator its
+    // select says too - the property's own value, of a GROUP CONCAT of them -, null with none checked
+    public void testASelectionOfSeveralValuesHasItsOptionsCheckedJoined() {
+        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, ", ")));
+        f.apply(cell(f.tags, GGroupObjectValue.EMPTY, TAG_OPTIONS.replace("\"obj2\": 577}", "\"obj2\": 577}, \"selected\": true")));
+        JavaScriptObject tags = field(f.node(), "tags");
+        assertTrue(flag(field(tags, "select"), "multi"));
+        assertEquals(", ", text(field(tags, "select"), "separator"));
+        assertEquals("red, blue", text(tags, "value"));
+        assertTrue(flag(at(options(tags), 0), "selected"));
+        f.apply(cell(f.tags, GGroupObjectValue.EMPTY, TAG_OPTIONS.replace(", \"selected\": true", "")));
+        assertTrue(noValue(field(f.node(), "tags")));
+        // an option with no view checked is left out of the value, as its GROUP CONCAT leaves it out
+        f.apply(cell(f.tags, GGroupObjectValue.EMPTY, "[{\"objects\": {\"obj2\": 578}, \"selected\": true},"
+                + " {\"name\": \"red\", \"objects\": {\"obj2\": 575}, \"selected\": true}]"));
+        assertEquals("red", text(field(f.node(), "tags"), "value"));
+        f.apply(cell(f.tags, GGroupObjectValue.EMPTY, "[{\"objects\": {\"obj2\": 578}, \"selected\": true}]"));
+        assertTrue(noValue(field(f.node(), "tags")));
+    }
+
+    // ... their value given back as the view is given it - the values joined by the separator -: the options it names
+    // checked from now on, the others unchecked; none for null or an empty value
+    public void testSeveralValuesAreChangedByTheirValue() {
+        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, ", ")));
+        f.apply(cell(f.tags, GGroupObjectValue.EMPTY, TAG_OPTIONS));
+        JavaScriptObject member = member(f.sa, "items", "tags");
+        callChange(member, "blue, green");
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":576},\"value\":true}", json(f.sent.get(0)));
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":577},\"value\":true}", json(f.sent.get(1)));
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":575},\"value\":null}", json(f.sent.get(2)));
+        callChange(member, null);
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":575},\"value\":null}", json(f.sent.get(3)));
+        callChange(member, "");
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":575},\"value\":null}", json(f.sent.get(4)));
+        assertRefusal("'tags' has no option \"yellow\"", refusedChange(member, "red, yellow"));
+        assertEquals(5, f.sent.size());
+    }
+
+    // ... but not split where it splits more ways than one - a view with the separator in it, or one that joins with it at
+    // its edge: the parts could name other options - the array names them
+    public void testSeveralValuesWithTheSeparatorInAViewAreNotSplit() {
+        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, ", ")));
+        f.apply(cell(f.tags, GGroupObjectValue.EMPTY, "[{\"name\": \"red, blue\", \"objects\": {\"obj2\": 1}},"
+                + " {\"name\": \"red\", \"objects\": {\"obj2\": 2}}, {\"name\": \"blue\", \"objects\": {\"obj2\": 3}}]"));
+        JavaScriptObject member = member(f.sa, "items", "tags");
+        assertRefusal("the views of the options of 'tags' do not split back", refusedChange(member, "red, blue"));
+        assertEquals(0, f.sent.size());
+        callChange(member, parse("[\"red, blue\"]"));
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":1},\"value\":true}", json(f.sent.get(0)));
+        // 'a|' and 'b' joined by '||' are 'a|||b' - and so are 'a' and '|b'
+        Fixture g = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, "||")));
+        g.apply(cell(g.tags, GGroupObjectValue.EMPTY, "[{\"name\": \"a|\", \"objects\": {\"obj2\": 1}}, {\"name\": \"b\", \"objects\": {\"obj2\": 2}},"
+                + " {\"name\": \"a\", \"objects\": {\"obj2\": 3}}, {\"name\": \"|b\", \"objects\": {\"obj2\": 4}}]"));
+        assertRefusal("the views of the options of 'tags' do not split back", refusedChange(member(g.sa, "items", "tags"), "a|||b"));
+        assertEquals(0, g.sent.size());
+        callChange(member, ""); // an empty value clears all the same: nothing to split
+        assertEquals(1, f.sent.size()); // none was checked, so nothing changes
+    }
+
+    // a pick is the change of the cell the platform's element sends - the option by its object, picked or no longer -,
+    // sent as it is, the cell showing the options with it picked meanwhile; an option named by its value or by itself
+    public void testAPickIsTheChangeThePlatformsElementSends() {
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, null)));
+        f.apply(cell(f.status, GGroupObjectValue.EMPTY, STATUS_OPTIONS));
+        JavaScriptObject member = member(f.sa, "items", "status");
+        f.edits.clear();
+        callChange(member, "Done");
+        assertEquals(Arrays.asList("cell status@"), f.edits); // one change, in no batch
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":583},\"value\":true}", json(f.sent.get(0)));
+        assertEquals("[{\"name\":\"New\",\"objects\":{\"obj2\":581}},{\"name\":\"Done\",\"objects\":{\"obj2\":583},\"selected\":true},"
+                + "{\"name\":\"Lost\",\"objects\":{\"obj2\":584}}]", json(f.shownAs.get(0)));
+        assertEquals(GGroupObjectValue.EMPTY, f.changed); // a panel property: the current object
+        callChange(member, at(options(field(f.node(), "status")), 2)); // the option itself
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":584},\"value\":true}", json(f.sent.get(1)));
+        callChange(member, null); // cleared: the option picked, no longer
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":581},\"value\":null}", json(f.sent.get(2)));
+        assertRefusal("'status' has no option \"Gone\"", refusedChange(member, "Gone"));
+        callChange(member, "New"); // the option picked: nothing changes, nothing is sent
+        assertEquals(3, f.sent.size());
+    }
+
+    // an option of one value - an element of `select.list`, its key and its view - is named by its key, as a value by its
+    // view: picked, the change made of its objects, the cell showing it picked, it alone; the option picked already
+    // changes nothing, and objects alone, which name no option, are refused
+    public void testAnOptionIsPickedByItsKey() {
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, null)));
+        f.apply(cell(f.status, GGroupObjectValue.EMPTY, STATUS_OPTIONS));
+        JavaScriptObject member = member(f.sa, "items", "status"), select = options(field(f.node(), "status"));
+        assertFalse(own(at(select, 1), "objects"));
+        callChange(member, at(select, 0)); // New, picked already
+        assertEquals(0, f.sent.size());
+        f.edits.clear();
+        callChange(member, at(select, 2)); // Lost
+        assertEquals(Arrays.asList("cell status@"), f.edits);
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":584},\"value\":true}", json(f.sent.get(0)));
+        assertEquals("[{\"name\":\"New\",\"objects\":{\"obj2\":581}},{\"name\":\"Done\",\"objects\":{\"obj2\":583}},"
+                + "{\"name\":\"Lost\",\"objects\":{\"obj2\":584},\"selected\":true}]", json(f.shownAs.get(0)));
+        callChange(member, parse("{\"key\": 583}")); // Done, by its key alone
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":583},\"value\":true}", json(f.sent.get(1)));
+        assertRefusal("'status' has no option", refusedChange(member, parse("{\"objects\": {\"obj2\": 584}}")));
+        assertEquals(2, f.sent.size());
+    }
+
+    // ... of several values, an option alone is checked or unchecked - one change, in no batch -: the opposite of what the
+    // cell shows now, a pick not answered yet included, and not of what the view was given, which may be behind it
+    public void testAnOptionOfSeveralValuesIsToggledAgainstTheCell() {
+        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, ", ")));
+        f.apply(cell(f.tags, GGroupObjectValue.EMPTY, TAG_OPTIONS));
+        JavaScriptObject member = member(f.sa, "items", "tags"), select = options(field(f.node(), "tags"));
+        JavaScriptObject green = at(select, 1);
+        f.edits.clear();
+        callChange(member, green); // unchecked: checked
+        assertEquals(Arrays.asList("cell tags@"), f.edits);
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":576},\"value\":true}", json(f.sent.get(0)));
+        assertEquals("[{\"name\":\"red\",\"objects\":{\"obj2\":575},\"selected\":true},{\"name\":\"green\",\"objects\":{\"obj2\":576},\"selected\":true},"
+                + "{\"name\":\"blue\",\"objects\":{\"obj2\":577}}]", json(f.shownAs.get(0)));
+        // the cell shows the pick (GFormController.setLoadingValueAt): the same option, as the view was given it before
+        // the pick, unchecks it now
+        f.controller(f.tags).setLoadingValueAt(f.tags, GGroupObjectValue.EMPTY, f.shownAs.get(0));
+        callChange(member, green);
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":576},\"value\":null}", json(f.sent.get(1)));
+        callChange(member, at(select, 0)); // red, checked: unchecked
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":575},\"value\":null}", json(f.sent.get(2)));
+        assertRefusal("'tags' is a selection of several values", refusedChange(member, parse("5"))); // neither a value nor an option
+        assertRefusal("'tags' has no option {\"key\":999}", refusedChange(member, parse("{\"key\": 999}"))); // an option it has not
+        assertEquals(3, f.sent.size());
+    }
+
+    // ... shown at once: what the cell is shown as meanwhile is the options with the pick - the form puts it on the
+    // cell (GFormController.setLoadingValueAt) -, the value picked with them
+    public void testAPickIsShownAtOnce() {
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, null)));
+        f.apply(cell(f.status, GGroupObjectValue.EMPTY, STATUS_OPTIONS));
+        callChange(member(f.sa, "items", "status"), "Lost");
+        f.controller(f.status).setLoadingValueAt(f.status, GGroupObjectValue.EMPTY, f.shownAs.get(0));
+        f.projection.flush();
+        JavaScriptObject status = field(f.node(), "status");
+        assertEquals("Lost", text(status, "value"));
+        assertTrue(flag(at(options(status), 2), "selected"));
+        assertFalse(own(at(options(status), 0), "selected"));
+        assertTrue(flag(status, "loading"));
+        // a second pick goes from what is shown: the pick before included
+        callChange(member(f.sa, "items", "status"), null);
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":584},\"value\":null}", json(f.sent.get(1)));
+    }
+
+    // an option is named by one value only: several options of a value are named by themselves; and one that has to
+    // have a value is not cleared
+    public void testAPickNamesOneOption() {
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, true, false, null)));
+        f.apply(cell(f.status, GGroupObjectValue.EMPTY, STATUS_OPTIONS.replace("Lost", "Done")));
+        JavaScriptObject member = member(f.sa, "items", "status");
+        assertTrue(flag(field(field(f.node(), "status"), "select"), "notNull"));
+        assertRefusal("several options of 'status' have the value \"Done\": pass the option itself",
+                refusedChange(member, "Done"));
+        assertRefusal("'status' has to have a value", refusedChange(member, null));
+        assertEquals(0, f.sent.size());
+        callChange(member, at(options(field(f.node(), "status")), 2));
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":584},\"value\":true}", json(f.sent.get(0)));
+    }
+
+    // several values: the options checked from now on, a pick each in one batch - the checks before the unchecks
+    public void testSeveralValuesArePickedInOneBatch() {
+        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, ", ")));
+        f.apply(cell(f.tags, GGroupObjectValue.EMPTY, TAG_OPTIONS));
+        JavaScriptObject member = member(f.sa, "items", "tags");
+        f.edits.clear();
+        callChange(member, parse("[\"blue\", \"green\"]"));
+        assertEquals(Arrays.asList("batch", "cell tags@", "cell tags@", "cell tags@", "sent"), f.edits);
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":576},\"value\":true}", json(f.sent.get(0)));
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":577},\"value\":true}", json(f.sent.get(1)));
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":575},\"value\":null}", json(f.sent.get(2)));
+        assertEquals("[{\"name\":\"red\",\"objects\":{\"obj2\":575}},{\"name\":\"green\",\"objects\":{\"obj2\":576},\"selected\":true},"
+                + "{\"name\":\"blue\",\"objects\":{\"obj2\":577},\"selected\":true}]", json(f.shownAs.get(2)));
+        assertEquals(json(f.shownAs.get(2)), json(f.shownAs.get(0))); // each pick of the batch shows them as after all of them
+        assertRefusal("'tags' is a selection of several values", refusedChange(member, parse("5")));
+        JavaScriptObject select = options(field(f.node(), "tags"));
+        callChange(member, pair(at(select, 0), at(select, 2))); // the options themselves: red stays, blue checked
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":577},\"value\":true}", json(f.sent.get(3)));
+        f.sent.subList(3, f.sent.size()).clear();
+        callChange(member, parse("[]")); // none checked: the one checked, unchecked
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":575},\"value\":null}", json(f.sent.get(3)));
+        assertEquals(4, f.sent.size());
+    }
+
+    // an option of a selection over a group by several objects is those objects: keyed by them all, the JSON of their
+    // ids, and named by that key - two options sharing one of their objects are two options
+    public void testAnOptionOfSeveralObjectsIsKeyedByThemAll() {
+        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, ", ")));
+        f.apply(cell(f.tags, GGroupObjectValue.EMPTY, "[{\"name\": \"a\", \"objects\": {\"obj2\": 1, \"obj3\": 5}},"
+                + " {\"name\": \"b\", \"objects\": {\"obj2\": 2, \"obj3\": 5}, \"selected\": true}]"));
+        JavaScriptObject select = options(field(f.node(), "tags"));
+        assertEquals("[1,5]", text(at(select, 0), "key"));
+        assertEquals("[2,5]", text(at(select, 1), "key"));
+        callChange(member(f.sa, "items", "tags"), parse("[{\"key\": \"[1,5]\"}]"));
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":1,\"obj3\":5},\"value\":true}", json(f.sent.get(0)));
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":2,\"obj3\":5},\"value\":null}", json(f.sent.get(1)));
+    }
+
+    // a column's options are its cell's, each row's own, and a pick names the row as any change of a column does
+    public void testAColumnSelectionIsEachRows() {
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", true, new GSelect(false, false, false, null)));
+        GFormChanges changes = cell(f.status, f.one, STATUS_OPTIONS);
+        put(changes, f.status, f.two, STATUS_OPTIONS.replace(", \"selected\": true", ""));
+        f.apply(changes);
+        assertEquals("New", text(field(f.row("1"), "status"), "value"));
+        assertTrue(noValue(field(f.row("2"), "status")));
+        assertEquals(3, length(options(field(f.row("2"), "status"))));
+        assertNull(refusedChange(member(f.sa, "items", "status"), "Done", f.row("2")));
+        assertEquals(f.two, f.changed);
+        assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":583},\"value\":true}", json(f.sent.get(0)));
+    }
+
+    // ... and with no current row, a call naming no row is refused: there is no cell to pick in
+    public void testAColumnSelectionWithNoCurrentRowNamesTheRow() {
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", true, new GSelect(false, false, false, null)));
+        f.apply(cell(f.status, f.one, STATUS_OPTIONS));
+        f.controller(f.group).changeCurrentKey(null);
+        assertRefusal("'items' has no current row", refusedChange(member(f.sa, "items", "status"), "Done"));
+        assertEquals(0, f.sent.size());
+    }
+
+    // ... and a cell that holds no options: none is named, and clearing sends nothing
+    public void testASelectionWithNoOptionsPicksNone() {
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, null)));
+        f.apply(cell(f.status, GGroupObjectValue.EMPTY, null));
+        JavaScriptObject member = member(f.sa, "items", "status");
+        assertEquals(0, length(options(field(f.node(), "status"))));
+        assertRefusal("'status' has no option \"Done\"", refusedChange(member, "Done"));
+        callChange(member, null);
+        assertEquals(0, f.sent.size());
+    }
+
+    // exec() of a selection whose change asks no value ahead runs its change event as any property's exec() does - one
+    // change, with no value, sent as it is -, not a pick
+    public void testExecOfASelectionIsNoPick() {
+        Fixture f = new Fixture(r -> {
+            r.status = r.selection(27, "status", false, new GSelect(false, false, false, null));
+            r.status.asyncExecMap = new HashMap<>(); // its change - the pick - asks for nothing in advance
+        });
+        f.apply(cell(f.status, GGroupObjectValue.EMPTY, STATUS_OPTIONS));
+        f.edits.clear();
+        assertNull(refusedWith(member(f.sa, "items", "status"), "exec", null));
+        assertEquals(Arrays.asList("cell status@"), f.edits);
+        assertSame(PValue.UNDEFINED, f.sent.get(0));
+    }
+
+    // where an explicit change takes the option's view - an INPUT with a list -, a pick sends that view as text, as the
+    // platform's element does (an option with no view: an empty one, not the null that clears), and clearing sends none
+    public void testAPickOfAnInputSendsTheOptionsView() {
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, true, null)));
+        f.apply(cell(f.status, GGroupObjectValue.EMPTY, STATUS_OPTIONS.replace("{\"name\": \"Lost\", ", "{")));
+        JavaScriptObject member = member(f.sa, "items", "status");
+        callChange(member, "Done");
+        assertEquals("Done", json(f.sent.get(0)));
+        callChange(member, null);
+        assertNull(f.sent.get(1));
+        callChange(member, at(options(field(f.node(), "status")), 2)); // the option with no view
+        assertEquals("", json(f.sent.get(2)));
+    }
+
+    // ... and an explicit change taking the option's view picks every option of that view: one of them picked again
+    // changes nothing - the others are no uncheck that would clear the value -, and a pick sends the view the cell has
+    // for the option named, not one the call carries
+    public void testAnInputsOptionPickedAgainSendsNothing() {
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, true, null)));
+        f.apply(cell(f.status, GGroupObjectValue.EMPTY, "[{\"name\": \"Done\", \"objects\": {\"obj2\": 583}, \"selected\": true},"
+                + " {\"name\": \"Done\", \"objects\": {\"obj2\": 584}, \"selected\": true}, {\"name\": \"Lost\", \"objects\": {\"obj2\": 585}}]"));
+        JavaScriptObject member = member(f.sa, "items", "status");
+        callChange(member, at(options(field(f.node(), "status")), 0));
+        assertEquals(0, f.sent.size());
+        callChange(member, parse("{\"key\": 585, \"value\": \"Gone\"}"));
+        assertEquals("Lost", json(f.sent.get(0)));
+        assertEquals(1, f.sent.size());
+    }
+
     // the member is where the rows are drawn: a draws them, b holds only a panel property of the group
     public void testSortingsAreAMemberWhereTheRowsAre() {
         Fixture f = new Fixture();
@@ -4223,9 +4592,9 @@ public class GReactFormDataTest extends GWTTestCase {
         Fixture f = new Fixture(fixture -> {
             fixture.filtersBesideRows();
             GPropertyDraw tint = fixture.property(74, "tint", fixture.group, true, fixture.a);
-            tint.valueType = tint.externalChangeType = GColorType.instance;
+            tint.cellType = tint.valueType = tint.externalChangeType = GColorType.instance;
             GPropertyDraw period = fixture.property(75, "period", fixture.group, true, fixture.a);
-            period.valueType = period.externalChangeType = GDateIntervalType.instance;
+            period.cellType = period.valueType = period.externalChangeType = GDateIntervalType.instance;
             fixture.property(76, "scan", fixture.group, true, fixture.a).valueType = new GCSVType();
         });
         GPropertyDraw tint = f.form.getPropertyDraw(f.group, "tint"), period = f.form.getPropertyDraw(f.group, "period");

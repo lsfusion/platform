@@ -226,6 +226,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean customNeedReadonly;
     public boolean customNeedDefaultValue;
 
+    // the selection a React view draws itself, whether there is one (the web client's GSelect; the desktop client draws
+    // none)
+    public boolean select;
+    public boolean selectMulti;
+    public boolean selectNotNull;
+    public boolean selectChangeValue;
+    public String selectSeparator;
+
     public String creationScript;
     public String creationPath;
     public String path;
@@ -715,6 +723,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         customNeedPlaceholder = pool.readBoolean(inStream);
         customNeedReadonly = pool.readBoolean(inStream);
         customNeedDefaultValue = pool.readBoolean(inStream);
+
+        select = inStream.readBoolean();
+        if (select) {
+            selectMulti = inStream.readBoolean();
+            selectNotNull = inStream.readBoolean();
+            selectChangeValue = inStream.readBoolean();
+            selectSeparator = pool.readString(inStream);
+        }
 
         eventID = pool.readString(inStream);
 

@@ -1865,14 +1865,18 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         public final boolean html;
 
         public final boolean notNull;
+        // of several values, the text the options checked are joined by into its value: its GROUP CONCAT's separator where
+        // it is one given as it is, of a union the one all its cases join by, a comma otherwise
+        public final String separator;
 
-        public Select(SelectProperty<T> property, Pair<Long, Long> stat, ImList<InputPropertyValueList> values, boolean multi, boolean html, boolean notNull) {
+        public Select(SelectProperty<T> property, Pair<Long, Long> stat, ImList<InputPropertyValueList> values, boolean multi, boolean html, boolean notNull, String separator) {
             this.property = property;
             this.stat = stat;
             this.values = values;
             this.multi = multi;
             this.html = html;
             this.notNull = notNull;
+            this.separator = multi && separator == null ? ", " : separator;
         }
     }
 
@@ -1944,11 +1948,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         ImOrderMap<PropertyMapImplement<?, I>, Boolean> mappedOrders = orders.mapOrderKeys(order -> order.map(mapPropertyInterfaces).getOrderProperty(objectInterface));
 
         // isFull is checked in the isValueUnique
-        return getSelectProperty(baseLM, false, isNotNull, forceSelect, mapPropertyInterfaces, mapPropertyInterfaces.valuesSet().addExcl(objectInterface), name, selected, customClass, mappedWhere, mappedOrders);
+        return getSelectProperty(baseLM, false, isNotNull, null, forceSelect, mapPropertyInterfaces, mapPropertyInterfaces.valuesSet().addExcl(objectInterface), name, selected, customClass, mappedWhere, mappedOrders);
     }
 
     public static <I extends PropertyInterface, T extends PropertyInterface, W extends PropertyInterface>
-            Select<T> getSelectProperty(BaseLogicsModule baseLM, boolean multi, boolean notNull, boolean forceSelect, ImRevMap<T, I> mapPropertyInterfaces, ImSet<I> innerInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, CustomClass customClass, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders) {
+            Select<T> getSelectProperty(BaseLogicsModule baseLM, boolean multi, boolean notNull, String separator, boolean forceSelect, ImRevMap<T, I> mapPropertyInterfaces, ImSet<I> innerInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, CustomClass customClass, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders) {
 
         boolean fallbackToFilterSelected = multi || forceSelect;
 
@@ -2005,7 +2009,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             private PropertyMapImplement<?, T> getSelect(boolean filterSelected) {
                 return getSelectProperty(baseLM, mapPropertyInterfaces, innerInterfaces, name, selected, filterSelected, where, orders);
             }
-        }, new Pair<>(nameType.getAverageCharLength() * whereCount, whereCount), readContextEntity != null ? ListFact.singleton(readContextEntity.map()) : null, multi, nameType instanceof HTMLStringClass || nameType instanceof HTMLTextClass, notNull);
+        }, new Pair<>(nameType.getAverageCharLength() * whereCount, whereCount), readContextEntity != null ? ListFact.singleton(readContextEntity.map()) : null, multi, nameType instanceof HTMLStringClass || nameType instanceof HTMLTextClass, notNull, separator);
     }
 
     private static <I extends PropertyInterface, T extends PropertyInterface, W extends PropertyInterface> PropertyMapImplement<?, T> getSelectProperty(BaseLogicsModule baseLM, ImRevMap<T, I> mapPropertyInterfaces, ImSet<I> innerInterfaces, PropertyMapImplement<?, I> name, PropertyInterfaceImplement<I> selected, boolean filterSelected, PropertyMapImplement<W, I> where, ImOrderMap<? extends PropertyInterfaceImplement<I>, Boolean> orders) {

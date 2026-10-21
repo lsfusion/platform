@@ -312,6 +312,9 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         MList<InputPropertyValueList> mResultValues = ListFact.mList();
         ImList<CalcCase<Interface>> cases = getCases();
         boolean notNull = !cases.isEmpty();
+        // the text the options are joined by, where every case joins them by the same one: Select's comma otherwise
+        String separator = null;
+        boolean firstCase = true;
         MList<PropertyMapImplement<?, Interface>> mJsonWheres = ListFact.mList();
         MList<SelectProperty<Interface>> mJsonProps = ListFact.mList();
         for(CalcCase<Interface> propCase : cases) {
@@ -337,6 +340,8 @@ public class CaseUnionProperty extends IncrementUnionProperty {
             multi = multi || joinProperty.multi;
             html = html || joinProperty.html;
             notNull = notNull && joinProperty.notNull;
+            separator = firstCase || BaseUtils.nullEquals(separator, joinProperty.separator) ? joinProperty.separator : null;
+            firstCase = false;
         }
         ImList<PropertyMapImplement<?, Interface>> jsonWheres = mJsonWheres.immutableList();
         ImList<SelectProperty<Interface>> jsonProps = mJsonProps.immutableList();
@@ -349,7 +354,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                 mJsonCases.add(new CalcCase<>(jsonWheres.get(i), jsonProp));
             }
             return PropertyFact.createUnion(interfaces, isExclusive, mJsonCases.immutableList());
-        }, resultStat, mResultValues != null ? mResultValues.immutableList() : null, multi, html, notNull);
+        }, resultStat, mResultValues != null ? mResultValues.immutableList() : null, multi, html, notNull, separator);
     }
 
     @Override

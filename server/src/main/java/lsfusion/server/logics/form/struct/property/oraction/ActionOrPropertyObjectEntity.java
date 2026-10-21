@@ -95,7 +95,7 @@ public abstract class ActionOrPropertyObjectEntity<P extends PropertyInterface, 
             if(selectProperty == null)
                 return null;
             boolean multi = select.multi;
-            return new PropertyObjectEntity.Select(selectProperty.mapEntityObjects(mapSelect.mapping), stats.first, stats.second, actualStats, multi ? PropertyObjectEntity.Select.Type.MULTI : (select.notNull ? PropertyObjectEntity.Select.Type.NOTNULL : PropertyObjectEntity.Select.Type.NULL), select.html);
+            return new PropertyObjectEntity.Select(selectProperty.mapEntityObjects(mapSelect.mapping), stats.first, stats.second, actualStats, multi ? PropertyObjectEntity.Select.Type.MULTI : (select.notNull ? PropertyObjectEntity.Select.Type.NOTNULL : PropertyObjectEntity.Select.Type.NULL), select.html, select.separator);
         }
         return null;
     }

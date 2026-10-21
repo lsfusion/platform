@@ -714,22 +714,17 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     public void classicChangeProperty(String surface, String name, JavaScriptObject objectOrKey, JavaScriptObject value) {
         GPropertyDraw property = resolveClassicProperty(surface, name); // throws on an unknown or ambiguous name
         GGroupObjectValue objectKey = resolveClassicObject(surface, name, objectOrKey);
-        changeProperty(property, getControllerColumnKey(objectKey), GSimpleStateTableView.convertFromJSUndefValue(property, value));
+        PValue change = GSimpleStateTableView.convertFromJSUndefValue(property, value);
+        changeProperty(property, getControllerColumnKey(objectKey), change, property.getExternalChangeRenderValue(change, RendererType.SIMPLE));
     }
     // the typed core: a resolved property, key and value -> the same classic edit dispatch as a normal user edit - a
     // member's, once it has read what it names (GReactFormData), and the classic changeProperty's. Its cell says it
-    // waits for the answer, whatever draws it and whoever sent it: with the value it shows, or with its own
+    // waits for the answer, whatever draws it and whoever sent it: with the value it is given to show meanwhile, or with
+    // its own (UNDEFINED) - an optimistic overlay (+ optimistic react through the property's controller,
+    // ReactPropertyEntry.setLoadingValueAt), reconciled by requestIndex
     @Override
-    public void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value) {
-        executePropertyEventAction(property, key, value, requestIndex -> {
-            // WYSIWYG guard (like GSimpleStateTableView.changeProperties): only overlay the optimistic value when the
-            // input writes the displayed property value; a non-WYSIWYG change (custom action / unbound input) must wait
-            // for the server, the cell loading with the value it has - as one with no value does (UNDEFINED already).
-            // Optimistic overlay (+ optimistic react through the property's controller,
-            // ReactPropertyEntry.setLoadingValueAt), reconciled by requestIndex
-            PValue shownValue = property.hasExternalChangeActionForRendering(RendererType.SIMPLE) ? value : PValue.UNDEFINED;
-            setLoadingValueAt(property, key, shownValue, requestIndex);
-        });
+    public void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue) {
+        executePropertyEventAction(property, key, value, requestIndex -> setLoadingValueAt(property, key, shownValue, requestIndex));
     }
     // maps the public getPropertyValues `mode` to the server async actionSID (the strings coincide). null/'objects' => OBJECTS
     // (the only mode that returns object handles); 'values' => DISTINCT property values; 'change' => the property's edit-time
