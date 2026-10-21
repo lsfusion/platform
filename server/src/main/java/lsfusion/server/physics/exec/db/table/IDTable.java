@@ -31,6 +31,7 @@ import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.sql.SQLException;
+import java.util.function.Supplier;
 
 // таблица счетчика sID
 public class IDTable extends DBTable {
@@ -80,7 +81,7 @@ public class IDTable extends DBTable {
             ids.add(counters.getKey(i), new Pair<>(0L, -1L));
     }
     
-    public long generateID(SQLSession dataSession, int idType) throws SQLException, SQLHandledException {
+    public long generateID(Supplier<SQLSession> dataSession, int idType) throws SQLException, SQLHandledException {
 
         Long result;
         synchronized (this) {
@@ -101,7 +102,7 @@ public class IDTable extends DBTable {
         return result;
     }
 
-    public Pair<Long, Long>[] generateIDs(long count, SQLSession dataSession, int idType) throws SQLException, SQLHandledException {
+    public Pair<Long, Long>[] generateIDs(long count, Supplier<SQLSession> dataSession, int idType) throws SQLException, SQLHandledException {
         synchronized (this) {
             Pair<Long, Long> id = ids.get(idType);
             long freeID = id.first;
@@ -135,9 +136,10 @@ public class IDTable extends DBTable {
         }
     }
 
-    private long reserveIDs(long count, SQLSession dataSession, int idType) throws SQLException, SQLHandledException {
+    // the session is asked for here, under the lock : what DBManager.getIDSql checks it for holds only there
+    private long reserveIDs(long count, Supplier<SQLSession> dataSession, int idType) throws SQLException, SQLHandledException {
         Result<Long> rFreeID = new Result<>();
-        DBManager.run(dataSession, true, DBManager.ID_TIL, sql -> {
+        DBManager.run(dataSession.get(), true, DBManager.ID_TIL, sql -> {
             rFreeID.set((Long) getGenerateQuery(idType).execute(sql, OperationOwner.unknown).singleValue().get(value) + 1); // замещаем
 
             QueryBuilder<KeyField, PropertyField> updateQuery = new QueryBuilder<>(this, MapFact.singleton(key, new DataObject(idType, idTypeClass)));

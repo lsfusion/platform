@@ -782,6 +782,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private SQLSession idSQL;
     private boolean masterSync;
+    // asked for by IDTable under its lock, as it reserves IDs : outside the master sync the reservations are the only transactions this session runs, each one over before the lock is let go,
+    // so a transaction found open is a reservation nested in another or one left open, and its rollback would take back IDs already handed out. Before the lock it saw other threads' reservations
     private SQLSession getIDSql() {
         assert masterSync || !idSQL.isInTransaction();
         return idSQL;
@@ -919,7 +921,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public long generateID() {
         try {
-            return IDTable.instance.generateID(getIDSql(), IDTable.OBJECT);
+            return IDTable.instance.generateID(this::getIDSql, IDTable.OBJECT);
         } catch (SQLException | SQLHandledException e) {
             throw new RuntimeException(localize("{logics.info.error.reading.user.data}"), e);
         }
@@ -927,7 +929,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public Pair<Long, Long>[] generateIDs(long count) {
         try {
-            return IDTable.instance.generateIDs(count, getIDSql(), IDTable.OBJECT);
+            return IDTable.instance.generateIDs(count, this::getIDSql, IDTable.OBJECT);
         } catch (SQLException | SQLHandledException e) {
             throw new RuntimeException(localize("{logics.info.error.reading.user.data}"), e);
         }

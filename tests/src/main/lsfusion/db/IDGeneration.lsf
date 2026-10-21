@@ -1,0 +1,17 @@
+MODULE IDGeneration;
+
+REQUIRE TestUtils;
+
+// the server hands out object IDs from a pool it reserves in the database, a range at a time, under a lock. An ID
+// asked for while another thread reserves waits for that reservation: an assertion that the counter's session is not
+// in a transaction used to look at it before the lock, saw the other thread's reservation there, and failed the
+// request - now and then an APPLY of the browser tests, or the navigator's synchronization at the server's start (fixed
+// for #1926)
+
+idgFailure = DATA LOCAL STRING ();
+idgGenerateWhileReserving INTERNAL 'lsfusion.tests.GenerateIDWhileReservingAction' ();
+
+testIDWhileAnotherThreadReserves 'An ID asked for while another thread reserves IDs waits for it' () {
+    idgGenerateWhileReserving();
+    assertNull(idgFailure(), idgFailure());
+}
