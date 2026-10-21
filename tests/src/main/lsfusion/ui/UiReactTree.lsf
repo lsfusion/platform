@@ -1,0 +1,208 @@
+MODULE UiReactTree;
+
+REQUIRE TestUtils, SystemEvents;
+
+// the forms UiReactTreeIT works on in the browser - trees of categories and their items: one a React view
+// (UiReactTree.js) draws, opened by the view and by the server and sorted by the view; a recursive one a view draws;
+// the platform's own, opened by a press on a node and by the server, sorted by its header; one whose user filters a
+// view draws -, and the actions it seeds the trees with
+
+CLASS UiRtrCategory 'Category';
+uiRtrCategoryName 'Category' = DATA STRING[50] (UiRtrCategory);
+uiRtrShown = DATA BOOLEAN (UiRtrCategory); // the categories of the test that seeded last: the trees show only them
+
+CLASS UiRtrItem 'Item';
+uiRtrItemName 'Item' = DATA STRING[50] (UiRtrItem);
+uiRtrQty 'Qty' = DATA INTEGER (UiRtrItem);
+uiRtrCode 'Code' = DATA STRING[10] (UiRtrItem);
+uiRtrCategory = DATA UiRtrCategory (UiRtrItem);
+
+// the category of the test that seeded last that has fruits in it, the one the server opens and closes
+uiRtrFruit = DATA UiRtrCategory ();
+
+// a tree a React view (UiRtrDrawn) draws - with the names of the current objects the server reads, and an items'
+// code it may not sort by -, and the server's EXPAND and COLLAPSE of its nodes, its ORDER of a group, its ORDERS read
+// and stated again
+FORM uiRtrDrawn 'Drawn tree'
+    TREE t c = UiRtrCategory, i = UiRtrItem
+    PROPERTIES(c) READONLY cName = uiRtrCategoryName
+    PROPERTIES(c) READONLY PANEL currentCategory = uiRtrCategoryName
+    PROPERTIES(i) READONLY iName = uiRtrItemName, qty = uiRtrQty, code = uiRtrCode
+    PROPERTIES(i) READONLY PANEL currentItem = uiRtrItemName
+    FILTERS uiRtrShown(c), uiRtrCategory(i) = c
+;
+
+DESIGN uiRtrDrawn {
+    BOX(TREE t) { custom = r'UiRtrDrawn'; }
+    PROPERTY(code) { noSort = TRUE; }
+}
+
+uiRtrExpandFruit 'Expand fruit' () { EXPAND DOWN uiRtrDrawn.c OBJECTS c = uiRtrFruit(); }
+uiRtrCollapseFruit 'Collapse fruit' () { COLLAPSE DOWN uiRtrDrawn.c OBJECTS c = uiRtrFruit(); }
+uiRtrExpandAllFruit 'Expand all fruit' () { EXPAND ALL uiRtrDrawn.c OBJECTS c = uiRtrFruit(); }
+uiRtrCollapseAllFruit 'Collapse all fruit' () { COLLAPSE ALL uiRtrDrawn.c OBJECTS c = uiRtrFruit(); }
+uiRtrExpandAllTop 'Expand all top' () { EXPAND ALL TOP uiRtrDrawn.c; }
+uiRtrCollapseAllTop 'Collapse all top' () { COLLAPSE ALL TOP uiRtrDrawn.c; }
+uiRtrOrderItems 'Order items' () { ORDER uiRtrDrawn.i FROM JSON(r'[{"property": "qty", "desc": true}]'); }
+uiRtrSavedOrders = DATA LOCAL JSON ();
+uiRtrSaveOrders 'Save orders' () { ORDERS uiRtrDrawn.i TO uiRtrSavedOrders; }
+uiRtrRestoreOrders 'Restore orders' () { ORDER uiRtrDrawn.i FROM uiRtrSavedOrders(); }
+uiRtrTieQuantities 'Tie quantities' () {
+    uiRtrQty(UiRtrItem i) <- 5 WHERE uiRtrCategory(i) = uiRtrFruit() AND uiRtrItemName(i) != r'Cherry';
+}
+
+EXTEND FORM uiRtrDrawn
+    PROPERTIES() uiRtrExpandFruit, uiRtrCollapseFruit, uiRtrExpandAllFruit, uiRtrCollapseAllFruit, uiRtrExpandAllTop,
+                 uiRtrCollapseAllTop, uiRtrOrderItems, uiRtrSaveOrders, uiRtrRestoreOrders, uiRtrTieQuantities
+;
+
+// a recursive tree - folders in folders - a React view (UiRtrFolders) draws
+CLASS UiRtrFolder 'Folder';
+uiRtrFolderName 'Folder' = DATA STRING[50] (UiRtrFolder);
+uiRtrParent = DATA UiRtrFolder (UiRtrFolder);
+uiRtrFolderShown = DATA BOOLEAN (UiRtrFolder); // the folders of the test that seeded last
+
+FORM uiRtrFolders 'Folders'
+    TREE fs f = UiRtrFolder PARENT uiRtrParent(f)
+    PROPERTIES(f) READONLY fName = uiRtrFolderName
+    FILTERS uiRtrFolderShown(f)
+;
+
+DESIGN uiRtrFolders {
+    BOX(TREE fs) { custom = r'UiRtrFolders'; }
+}
+
+// the platform's own tree, its header the items' columns, the quantity one it does not sort by (noSort), and the
+// server's EXPAND and COLLAPSE of its nodes
+FORM uiRtrPlatform 'Platform tree'
+    TREE t c = UiRtrCategory, i = UiRtrItem
+    PROPERTIES(c) READONLY cName = uiRtrCategoryName
+    PROPERTIES(i) READONLY iName = uiRtrItemName, qty = uiRtrQty
+    FILTERS uiRtrShown(c), uiRtrCategory(i) = c
+;
+
+DESIGN uiRtrPlatform {
+    PROPERTY(qty) { noSort = TRUE; }
+}
+
+uiRtrPlatformExpandFruit 'Expand fruit' () { EXPAND DOWN uiRtrPlatform.c OBJECTS c = uiRtrFruit(); }
+uiRtrPlatformCollapseAllFruit 'Collapse all fruit' () { COLLAPSE ALL uiRtrPlatform.c OBJECTS c = uiRtrFruit(); }
+uiRtrPlatformExpandAllTop 'Expand all top' () { EXPAND ALL TOP uiRtrPlatform.c; }
+uiRtrPlatformCollapseAllTop 'Collapse all top' () { COLLAPSE ALL TOP uiRtrPlatform.c; }
+
+EXTEND FORM uiRtrPlatform
+    PROPERTIES() uiRtrPlatformExpandFruit, uiRtrPlatformCollapseAllFruit, uiRtrPlatformExpandAllTop,
+                 uiRtrPlatformCollapseAllTop
+;
+
+// ... and one with sortings of its own: the categories by name, descending, which has no column in the header, and the
+// items by the quantity the header does not sort by
+FORM uiRtrOrdered 'Ordered tree'
+    TREE t c = UiRtrCategory, i = UiRtrItem
+    PROPERTIES(c) READONLY cName = uiRtrCategoryName
+    PROPERTIES(i) READONLY iName = uiRtrItemName, qty = uiRtrQty
+    FILTERS uiRtrShown(c), uiRtrCategory(i) = c
+    ORDERS cName DESC, qty
+;
+
+DESIGN uiRtrOrdered {
+    PROPERTY(qty) { noSort = TRUE; }
+}
+
+uiRtrOrderedExpandAllTop 'Expand all top' () { EXPAND ALL TOP uiRtrOrdered.c; }
+
+EXTEND FORM uiRtrOrdered
+    PROPERTIES() uiRtrOrderedExpandAllTop
+;
+
+// the platform's own tree whose user filters - one box for all its groups - a React view (UiRtrFilters) draws, with a
+// filter applied to each group by an action, and the items' FILTERS read and stated again
+FORM uiRtrFiltered 'Filtered tree'
+    TREE t c = UiRtrCategory, i = UiRtrItem
+    PROPERTIES(c) READONLY cName = uiRtrCategoryName
+    PROPERTIES(i) READONLY iName = uiRtrItemName, qty = uiRtrQty
+    FILTERS uiRtrShown(c), uiRtrCategory(i) = c
+;
+
+DESIGN uiRtrFiltered {
+    NEW uiRtrFiltersView FIRST {
+        custom = r'UiRtrFilters';
+        MOVE FILTERS(TREE t);
+    }
+}
+
+uiRtrFilteredExpandAllTop 'Expand all top' () { EXPAND ALL TOP uiRtrFiltered.c; }
+uiRtrFilterItems 'Filter items' () { FILTER uiRtrFiltered.i FROM JSON(r'[{"property": "qty", "compare": ">", "value": 2}]'); }
+uiRtrFilterCategories 'Filter categories' () {
+    FILTER uiRtrFiltered.c FROM (JSON FROM property = r'cName', compare = r'=', value = uiRtrCategoryName(uiRtrFruit()));
+}
+uiRtrSavedFilters = DATA LOCAL JSON ();
+uiRtrSaveFilters 'Save filters' () { FILTERS uiRtrFiltered.i TO uiRtrSavedFilters; }
+uiRtrRestoreFilters 'Restore filters' () { FILTER uiRtrFiltered.i FROM uiRtrSavedFilters(); }
+
+EXTEND FORM uiRtrFiltered
+    PROPERTIES() uiRtrFilteredExpandAllTop, uiRtrFilterItems, uiRtrFilterCategories, uiRtrSaveFilters, uiRtrRestoreFilters
+;
+
+onWebClientInit() + {
+    onWebClientInit(r'UiReactTree.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiRtr 'UI React tree' WINDOW toolbar {
+        NEW uiRtrDrawn;
+        NEW uiRtrFolders;
+        NEW uiRtrPlatform;
+        NEW uiRtrOrdered;
+        NEW uiRtrFiltered;
+    }
+}
+
+// three categories shown from now on, named Fruit, Veg and Empty after the prefix given: Fruit with the items Banana
+// of 9, Apple of 5 and Cherry of 1, in this order of their keys, Veg with Potato of 20, Empty with none
+uiRtrSeed (STRING[30] prefix) {
+    uiRtrShown(UiRtrCategory c) <- NULL;
+    NEW c = UiRtrCategory {
+        uiRtrCategoryName(c) <- prefix + ' Fruit';
+        uiRtrShown(c) <- TRUE;
+        uiRtrFruit() <- c;
+        NEW i = UiRtrItem { uiRtrItemName(i) <- 'Banana'; uiRtrQty(i) <- 9; uiRtrCategory(i) <- c; }
+        NEW i = UiRtrItem { uiRtrItemName(i) <- 'Apple'; uiRtrQty(i) <- 5; uiRtrCategory(i) <- c; }
+        NEW i = UiRtrItem { uiRtrItemName(i) <- 'Cherry'; uiRtrQty(i) <- 1; uiRtrCategory(i) <- c; }
+    }
+    NEW c = UiRtrCategory {
+        uiRtrCategoryName(c) <- prefix + ' Veg';
+        uiRtrShown(c) <- TRUE;
+        NEW i = UiRtrItem { uiRtrItemName(i) <- 'Potato'; uiRtrQty(i) <- 20; uiRtrCategory(i) <- c; }
+    }
+    NEW c = UiRtrCategory {
+        uiRtrCategoryName(c) <- prefix + ' Empty';
+        uiRtrShown(c) <- TRUE;
+    }
+    APPLY;
+}
+
+// folders shown from now on, named after the prefix given: Documents with Invoices, Invoices with 2026, and Archive
+// with nothing in it
+uiRtrSeedFolders (STRING[30] prefix) {
+    uiRtrFolderShown(UiRtrFolder f) <- NULL;
+    NEW documents = UiRtrFolder {
+        uiRtrFolderName(documents) <- prefix + ' Documents';
+        uiRtrFolderShown(documents) <- TRUE;
+        NEW invoices = UiRtrFolder {
+            uiRtrFolderName(invoices) <- prefix + ' Invoices';
+            uiRtrParent(invoices) <- documents;
+            uiRtrFolderShown(invoices) <- TRUE;
+            NEW year = UiRtrFolder {
+                uiRtrFolderName(year) <- prefix + ' 2026';
+                uiRtrParent(year) <- invoices;
+                uiRtrFolderShown(year) <- TRUE;
+            }
+        }
+    }
+    NEW archive = UiRtrFolder {
+        uiRtrFolderName(archive) <- prefix + ' Archive';
+        uiRtrFolderShown(archive) <- TRUE;
+    }
+    APPLY;
+}
