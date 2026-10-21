@@ -1,0 +1,252 @@
+MODULE UiReactOrders;
+
+REQUIRE TestUtils, SystemEvents;
+
+// the forms UiReactOrdersIT works on in the browser - sortings: of the rows a React view (UiReactOrders.js) draws and
+// of the platform's grid, by its header -, and the state the server applies - ORDER, FILTER, FILTERGROUP and ACTIVATE
+// a tab from an action, from a handler and as a form opens -, with the user events that count what the user does and
+// what the actions read back; and the action it seeds the items with
+
+CLASS UiRorItem 'Item';
+uiRorName 'Name' = DATA STRING[50] (UiRorItem);
+uiRorPrice 'Price' = DATA NUMERIC[10,2] (UiRorItem);
+uiRorQty 'Qty' = DATA INTEGER (UiRorItem);
+uiRorShown = DATA BOOLEAN (UiRorItem); // the items of the test that seeded last: the forms show only them
+
+// the user events: what the user changes, counted
+uiRorOrdersEvents 'ORDERS events' = DATA LOCAL INTEGER ();
+uiRorFiltersEvents 'FILTERS events' = DATA LOCAL INTEGER ();
+uiRorFiltersPropertyEvents 'FILTERS PROPERTY events' = DATA LOCAL INTEGER ();
+uiRorFilterGroupsEvents 'FILTERGROUPS events' = DATA LOCAL INTEGER ();
+uiRorTabEvents 'TAB events' = DATA LOCAL INTEGER ();
+// ... and the group's own ON FILTER, for any change of its filters but what its handlers change
+uiRorFilterEvents 'FILTER events' = DATA LOCAL INTEGER ();
+
+// what an action reads back of the state it has just applied, at once
+uiRorOrdersRead 'Orders read' = DATA LOCAL JSON ();
+uiRorFiltersRead 'Filters read' = DATA LOCAL JSON ();
+uiRorFilterGroupRead 'Filter group read' = DATA LOCAL INTEGER ();
+
+// the rows of o a React view (UiRorBoard) draws, by the form's own sortings, the price one it may not sort by; of p it
+// has a panel property alone, the platform drawing p's rows
+FORM uiRorBoard 'Board'
+    OBJECTS o = UiRorItem
+    PROPERTIES(o) name = uiRorName, price = uiRorPrice, qty = uiRorQty
+    FILTERS uiRorShown(o)
+    ORDERS price, name DESC
+    OBJECTS p = UiRorItem
+    PROPERTIES(p) pName = uiRorName
+    PROPERTIES(p) PANEL pPrice = uiRorPrice
+    FILTERS uiRorShown(p)
+    PROPERTIES() READONLY uiRorOrdersEvents
+    EVENTS ON ORDERS o { uiRorOrdersEvents() <- uiRorOrdersEvents() (+) 1; }
+;
+
+DESIGN uiRorBoard {
+    BOX(o) {
+        custom = r'UiRorBoard';
+        MOVE PROPERTY(pPrice);
+        MOVE PROPERTY(uiRorOrdersEvents());
+    }
+    PROPERTY(price) { noSort = TRUE; }
+}
+
+// the platform's grid, by the form's own sortings, and an action that only counts its runs: the answer to it shows
+// that the requests sent before it are answered too
+uiRorPings 'Pings' = DATA LOCAL INTEGER ();
+uiRorPing 'Ping' () { uiRorPings() <- uiRorPings() (+) 1; }
+
+FORM uiRorClassic 'Classic'
+    OBJECTS c = UiRorItem
+    PROPERTIES(c) READONLY cName = uiRorName, cPrice = uiRorPrice, cQty = uiRorQty
+    FILTERS uiRorShown(c)
+    ORDERS cPrice, cName DESC
+    PROPERTIES() uiRorPing
+    PROPERTIES() READONLY uiRorPings
+;
+
+// the state the server applies to a grid and a tab strip, and the user events of what the user changes there, which
+// the handlers answer as the switches say
+uiRorEcho = DATA LOCAL BOOLEAN ();
+uiRorOrderOnOrder = DATA LOCAL BOOLEAN ();
+uiRorFilterOnOrder = DATA LOCAL BOOLEAN ();
+uiRorTabLoop = DATA LOCAL BOOLEAN ();
+uiRorNoFilters = DATA LOCAL JSON ();
+
+FORM uiRorState 'State'
+    OBJECTS s = UiRorItem
+    PROPERTIES(s) READONLY sName = uiRorName, sPrice = uiRorPrice, sQty = uiRorQty
+    FILTERS uiRorShown(s)
+    ORDERS sName
+    FILTERGROUP uiRorQtyGroup
+        FILTER 'Qty > 2' uiRorQty(s) > 2
+        FILTER 'Qty <= 2' uiRorQty(s) <= 2
+    OBJECTS t = UiRorItem
+    PROPERTIES(t) READONLY tName 'Second name' = uiRorName
+    FILTERS uiRorShown(t)
+    PROPERTIES() READONLY uiRorOrdersEvents, uiRorFiltersEvents, uiRorFiltersPropertyEvents, uiRorFilterGroupsEvents,
+                          uiRorTabEvents, uiRorFilterEvents, uiRorOrdersRead, uiRorFiltersRead, uiRorFilterGroupRead
+;
+
+DESIGN uiRorState {
+    NEW uiRorTabs FIRST {
+        tabbed = TRUE;
+        NEW uiRorFirst { caption = 'First'; MOVE BOX(s); }
+        NEW uiRorSecond { caption = 'Second'; MOVE BOX(t); }
+    }
+}
+
+// each applying a state and reading it back right after
+uiRorOrderByPrice 'Order by price' () {
+    ORDER uiRorState.s FROM JSON(r'[{"property": "sPrice", "desc": true}]');
+    ORDERS uiRorState.s TO uiRorOrdersRead;
+}
+uiRorFilterQty 'Filter qty' () {
+    FILTER uiRorState.s FROM JSON(r'[{"property": "sQty", "compare": ">", "value": 2}]');
+    FILTERS uiRorState.s TO uiRorFiltersRead;
+}
+uiRorFilterNone 'Filter none' () {
+    FILTER uiRorState.s FROM uiRorNoFilters();
+    FILTERS uiRorState.s TO uiRorFiltersRead;
+}
+uiRorFilterGroupSecond 'Filter group second' () {
+    FILTERGROUP uiRorState.uiRorQtyGroup FROM 2;
+    FILTERGROUPS uiRorState.uiRorQtyGroup TO uiRorFilterGroupRead;
+}
+uiRorFilterGroupNone 'Filter group none' () {
+    FILTERGROUP uiRorState.uiRorQtyGroup FROM 0;
+    FILTERGROUPS uiRorState.uiRorQtyGroup TO uiRorFilterGroupRead;
+}
+uiRorActivateSecond 'Activate second' () { ACTIVATE TAB uiRorState.uiRorSecond; }
+uiRorActivateBoth 'Activate both' () {
+    ACTIVATE TAB uiRorState.uiRorFirst;
+    ACTIVATE TAB uiRorState.uiRorSecond;
+}
+uiRorEchoOn 'Echo on' () { uiRorEcho() <- TRUE; }
+uiRorOrderOnOrderOn 'Order on order on' () { uiRorOrderOnOrder() <- TRUE; }
+uiRorFilterOnOrderOn 'Filter on order on' () { uiRorFilterOnOrder() <- TRUE; }
+uiRorTabLoopOn 'Tab loop on' () { uiRorTabLoop() <- TRUE; }
+
+EXTEND FORM uiRorState
+    PROPERTIES() uiRorOrderByPrice, uiRorFilterQty, uiRorFilterNone, uiRorFilterGroupSecond, uiRorFilterGroupNone,
+                 uiRorActivateSecond, uiRorActivateBoth, uiRorEchoOn, uiRorOrderOnOrderOn, uiRorFilterOnOrderOn,
+                 uiRorTabLoopOn
+    EVENTS
+        // a handler answering the user's sorting with one of its own
+        ON ORDERS s {
+            uiRorOrdersEvents() <- uiRorOrdersEvents() (+) 1;
+            IF uiRorEcho() THEN
+                ORDER uiRorState.s FROM JSON(r'[{"property": "sQty", "desc": true}]');
+        },
+        // ... and one the reading of the group fires, which it reads the rows after, with the sorting or the filter
+        // the handler sets
+        ON ORDER s {
+            IF uiRorOrderOnOrder() THEN
+                ORDER uiRorState.s FROM JSON(r'[{"property": "sQty", "desc": false}]');
+            IF uiRorFilterOnOrder() THEN
+                FILTER uiRorState.s FROM JSON(r'[{"property": "sQty", "compare": ">", "value": 2}]');
+        },
+        ON FILTER s { uiRorFilterEvents() <- uiRorFilterEvents() (+) 1; },
+        ON FILTERS s { uiRorFiltersEvents() <- uiRorFiltersEvents() (+) 1; },
+        ON FILTERS PROPERTY sQty { uiRorFiltersPropertyEvents() <- uiRorFiltersPropertyEvents() (+) 1; },
+        ON FILTERGROUPS uiRorQtyGroup { uiRorFilterGroupsEvents() <- uiRorFilterGroupsEvents() (+) 1; },
+        // ... and one activating both tabs of its own container
+        ON TAB uiRorSecond {
+            uiRorTabEvents() <- uiRorTabEvents() (+) 1;
+            IF uiRorTabLoop() THEN {
+                ACTIVATE TAB uiRorState.uiRorFirst;
+                ACTIVATE TAB uiRorState.uiRorSecond;
+            }
+        }
+;
+
+// what the server sets as the form opens: the sorting, the filter of a filter group and the tab shown
+FORM uiRorInit 'Init'
+    OBJECTS i = UiRorItem
+    PROPERTIES(i) READONLY iName = uiRorName, iPrice = uiRorPrice, iQty = uiRorQty
+    FILTERS uiRorShown(i)
+    FILTERGROUP uiRorInitGroup
+        FILTER 'Init qty > 2' uiRorQty(i) > 2
+        FILTER 'Init qty <= 2' uiRorQty(i) <= 2
+    OBJECTS j = UiRorItem
+    PROPERTIES(j) READONLY jName 'Init second name' = uiRorName
+    FILTERS uiRorShown(j)
+    PROPERTIES() READONLY uiRorFilterGroupsEvents, uiRorTabEvents
+;
+
+DESIGN uiRorInit {
+    NEW uiRorInitTabs FIRST {
+        tabbed = TRUE;
+        NEW uiRorInitFirst { caption = 'Init first'; MOVE BOX(i); }
+        NEW uiRorInitSecond { caption = 'Init second'; MOVE BOX(j); }
+    }
+}
+
+EXTEND FORM uiRorInit
+    EVENTS
+        ON INIT {
+            ORDER uiRorInit.i FROM JSON(r'[{"property": "iPrice", "desc": false}]');
+            FILTERGROUP uiRorInit.uiRorInitGroup FROM 1;
+            ACTIVATE TAB uiRorInit.uiRorInitSecond;
+        },
+        ON FILTERGROUPS uiRorInitGroup { uiRorFilterGroupsEvents() <- uiRorFilterGroupsEvents() (+) 1; },
+        ON TAB uiRorInitFirst { uiRorTabEvents() <- uiRorTabEvents() (+) 1; },
+        ON TAB uiRorInitSecond { uiRorTabEvents() <- uiRorTabEvents() (+) 1; }
+;
+
+// a NONULL filter group of one filter: a check box, which a FILTERGROUP of 0 clears
+FORM uiRorNoNull 'No null'
+    OBJECTS n = UiRorItem
+    PROPERTIES(n) READONLY nName = uiRorName, nQty = uiRorQty
+    FILTERS uiRorShown(n)
+    FILTERGROUP uiRorNoNullGroup NONULL
+        FILTER 'NN qty > 2' uiRorQty(n) > 2
+;
+
+uiRorNoNullNone 'No null none' () {
+    FILTERGROUP uiRorNoNull.uiRorNoNullGroup FROM 0;
+    FILTERGROUPS uiRorNoNull.uiRorNoNullGroup TO uiRorFilterGroupRead;
+}
+
+EXTEND FORM uiRorNoNull
+    PROPERTIES() uiRorNoNullNone
+    PROPERTIES() READONLY uiRorFilterGroupRead
+;
+
+// the default filter of a list, and the first one of a NONULL list, as the form opens
+FORM uiRorDefaults 'Defaults'
+    OBJECTS d = UiRorItem
+    PROPERTIES(d) READONLY dName = uiRorName, dQty = uiRorQty
+    FILTERS uiRorShown(d)
+    FILTERGROUP uiRorDefaultList
+        FILTER 'DF qty > 2' uiRorQty(d) > 2
+        FILTER 'DF qty > 6' uiRorQty(d) > 6 DEFAULT
+    FILTERGROUP uiRorNoNullList NONULL
+        FILTER 'DF qty < 100' uiRorQty(d) < 100
+        FILTER 'DF qty < 0' uiRorQty(d) < 0
+;
+
+onWebClientInit() + {
+    onWebClientInit(r'UiReactOrders.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiRor 'UI React orders' WINDOW toolbar {
+        NEW uiRorBoard;
+        NEW uiRorClassic;
+        NEW uiRorState;
+        NEW uiRorInit;
+        NEW uiRorNoNull;
+        NEW uiRorDefaults;
+    }
+}
+
+// the items shown from now on, named with the suffix given: Apple of 1.5 and 5, Banana of 0.75 and 9, Cherry of 2.25
+// and 1
+uiRorSeed (STRING[30] suffix) {
+    uiRorShown(UiRorItem i) <- NULL;
+    NEW i = UiRorItem { uiRorName(i) <- 'Apple ' + suffix; uiRorPrice(i) <- 1.5; uiRorQty(i) <- 5; uiRorShown(i) <- TRUE; }
+    NEW i = UiRorItem { uiRorName(i) <- 'Banana ' + suffix; uiRorPrice(i) <- 0.75; uiRorQty(i) <- 9; uiRorShown(i) <- TRUE; }
+    NEW i = UiRorItem { uiRorName(i) <- 'Cherry ' + suffix; uiRorPrice(i) <- 2.25; uiRorQty(i) <- 1; uiRorShown(i) <- TRUE; }
+    APPLY;
+}
