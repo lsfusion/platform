@@ -51,6 +51,8 @@ The difference between the two keywords is the class of the returned value. `JSO
 
 A property value of the `JSON` or `JSONTEXT` class (for example, one built by another property with this operator) is embedded into the resulting JSON as a nested object or array rather than as a string. This allows assembling a document with nested structures from separate JSON properties.
 
+Empty arrays and objects do not get into the result: an object group for which no object collection is found is skipped together with its key, just like a `NULL` value. If no value is left in the JSON (there is no object collection, or all values are `NULL`), the property value is `NULL` rather than an empty array or object.
+
 Date and time class values are written to JSON as strings, by default in ISO 8601 formats (for example, `2026-08-17`, `2026-08-17T12:34:56`, and `ZDATETIME` values — the instant in UTC with the `Z` suffix). This behavior is defined by the `useISOTimeFormatsInIntegration` [working parameter](../paradigm/Working_parameters.md): when it is off, the formats of the current locale are used.
 
 When building JSON from a form, the `OBJECTS` block fixes form objects to given values: each such object is constrained to equal [the value passed](../paradigm/Open_form.md#params) and [does not participate](../paradigm/Structured_view.md#objects) in building the object group hierarchy. The `FILTERS` block adds further filter conditions to the form before the build.

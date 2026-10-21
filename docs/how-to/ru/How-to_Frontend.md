@@ -3,7 +3,7 @@ slug: "/How-to_Frontend"
 title: 'How-to: Фронтенд'
 ---
 
-Наиболее простым способом организации взаимодействия React приложения с приложением на базе **lsFusion** является [общение через HTTP-протокол](../paradigm/Access_from_an_external_system.md) посредством JSON API. Для выгрузки списка объектов по заданному условию удобнее всего использовать интерфейс, который находится по Url'у eval/action. На него в BODY можно передать программный код lsFusion, который будет выполнен. При необходимости вернуть данные по запросу необходимо использовать [оператор `EXPORT`](../language/EXPORT_operator.md). По умолчанию, он возвращает данные в формате JSON, которые затем легко обрабатываются при помощи JavaScript.
+Наиболее простым способом организации взаимодействия React приложения с приложением на базе **lsFusion** является [общение через HTTP-протокол](../paradigm/Access_from_an_external_system.md) посредством JSON API. Для выгрузки списка объектов по заданному условию удобнее всего использовать интерфейс, который находится по Url'у eval/action. На него в BODY можно передать программный код lsFusion, который будет выполнен. Данные в ответ на запрос возвращает [оператор `RETURN`](../language/RETURN_operator.md), а JSON из них формирует [оператор `JSON`](../language/JSON_operator.md). Такой JSON затем легко обрабатывается при помощи JavaScript.
 
 
 :::info
@@ -16,15 +16,17 @@ title: 'How-to: Фронтенд'
 
 Для наглядности реализуем простую форму из примера [Турнирная таблица](Score_table.md) (без возможности редактирования).
 
-Оформим считывание плоского набора данных при помощи функции с одним параметром : текстом запроса, к которому добавляется слева `EXPORT FROM`:
+Оформим считывание плоского набора данных при помощи функции с одним параметром : текстом запроса, к которому добавляется слева `RETURN JSON FROM`. Если запросу не соответствует ни одна запись, JSON равен `NULL`, и ответ приходит с пустым телом, поэтому функция разбирает текст ответа сама и в этом случае возвращает пустой массив:
 ```js
 const url = "https://demo.lsfusion.org/hockeystats/eval/action";
 function select(script) {
   const params = {
     method: "post",
-    body: "EXPORT FROM " + script
+    body: "RETURN JSON FROM " + script
   }
-  return fetch(url, params).then(response => response.json());
+  return fetch(url, params)
+    .then(response => response.text())
+    .then(text => text === "" ? [] : JSON.parse(text));
 }
 ```
 
@@ -86,7 +88,7 @@ const url = "https://demo.lsfusion.org/mm/eval/action";
 function select(script, data) {
   var formData = new FormData();
 
-  formData.append("script", "EXPORT FROM " + script);
+  formData.append("script", "RETURN JSON FROM " + script);
   for (var name in data) {
     formData.append(name, data[name]);
   }
@@ -97,7 +99,9 @@ function select(script, data) {
     },
     body: formData
   };
-  return fetch(url, params).then(response => response.json());
+  return fetch(url, params)
+    .then(response => response.text())
+    .then(text => text === "" ? [] : JSON.parse(text));
 }
 ```
 
@@ -238,10 +242,10 @@ IMPORT JSON FROM $5 AS FILE FIELDS LONG item, NUMERIC[16,3] quantity, NUMERIC[16
 ```lsf
     APPLY; 
     IF canceled() THEN 
-        EXPORT FROM message = applyMessage();
+        RETURN JSON FROM message = applyMessage();
 ```
 
-Если изменения не прошли, то сообщение возвращается в BODY ответа в виде JSON с единственным полем `applyMessage`.
+Если изменения не прошли, то сообщение возвращается в BODY ответа в виде JSON с единственным полем `message`.
 
 Общий код, который передается в `evaluate` для, например, создания документа будет выглядеть следующим образом :
 ```lsf
@@ -257,7 +261,7 @@ NEW s = Shipment {
         }
     APPLY; 
     IF canceled() THEN 
-        EXPORT FROM message = applyMessage();
+        RETURN JSON FROM message = applyMessage();
 }
 ```
 
@@ -276,7 +280,7 @@ NEW s = Shipment {
             }
         APPLY; 
         IF canceled() THEN 
-            EXPORT FROM message = applyMessage();
+            RETURN JSON FROM message = applyMessage();
     }
 ```
 
@@ -287,7 +291,7 @@ evaluate("...").then(response =>
         if (text === "") {
             // ok
         } else {
-            console.log(JSON.parse(text).applyMessage);
+            console.log(JSON.parse(text).message);
         }
       })
     );

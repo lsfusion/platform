@@ -3,7 +3,7 @@ slug: "/How-to_Frontend"
 title: 'How-to: Frontend'
 ---
 
-The easiest way to organize the interaction of a React application with an application based on **lsFusion** is [communication via the HTTP protocol](../paradigm/Access_from_an_external_system.md) through the JSON API. To export a list of objects meeting a specified condition, it is most convenient to use the interface located at the eval/action Url. You can pass lsFusion program code to it in BODY, and it will then be executed. If you need to return data from your request, use the [`EXPORT` operator](../language/EXPORT_operator.md). By default it returns data in JSON format, which is then easily processed using JavaScript.
+The easiest way to organize the interaction of a React application with an application based on **lsFusion** is [communication via the HTTP protocol](../paradigm/Access_from_an_external_system.md) through the JSON API. To export a list of objects meeting a specified condition, it is most convenient to use the interface located at the eval/action Url. You can pass lsFusion program code to it in BODY, and it will then be executed. The data is returned in response to the request by the [`RETURN` operator](../language/RETURN_operator.md), and the [`JSON` operator](../language/JSON_operator.md) builds a JSON from it. Such a JSON is then easily processed using JavaScript.
 
 
 :::info
@@ -16,15 +16,17 @@ A safer way would be to create a separate action for each request, with an @@api
 
 For clarity, we implement the simple form from the [Score table](Score_table.md) example (in read-only mode).
 
-We will implement reading flat data set as a function with one parameter – the query text, – to which `EXPORT FROM` is added on the left:
+We will implement reading flat data set as a function with one parameter – the query text, – to which `RETURN JSON FROM` is added on the left. If no record matches the query, the JSON is `NULL` and the response comes back with an empty body, so the function parses the response text itself and returns an empty array in that case:
 ```js
 const url = "https://demo.lsfusion.org/hockeystats/eval/action";
 function select(script) {
   const params = {
     method: "post",
-    body: "EXPORT FROM " + script
+    body: "RETURN JSON FROM " + script
   }
-  return fetch(url, params).then(response => response.json());
+  return fetch(url, params)
+    .then(response => response.text())
+    .then(text => text === "" ? [] : JSON.parse(text));
 }
 ```
 
@@ -88,7 +90,7 @@ const url = "https://demo.lsfusion.org/mm/eval/action";
 function select(script, data) {
   var formData = new FormData();
 
-  formData.append("script", "EXPORT FROM " + script);
+  formData.append("script", "RETURN JSON FROM " + script);
   for (var name in data) {
     formData.append(name, data[name]);
   }
@@ -99,7 +101,9 @@ function select(script, data) {
     },
     body: formData
   };
-  return fetch(url, params).then(response => response.json());
+  return fetch(url, params)
+    .then(response => response.text())
+    .then(text => text === "" ? [] : JSON.parse(text));
 }
 ```
 
@@ -245,10 +249,10 @@ Saving changes may violate a [constraint](../paradigm/Constraints.md). In this c
 ```lsf
 APPLY; 
 IF canceled() THEN 
-    EXPORT FROM message = applyMessage();
+    RETURN JSON FROM message = applyMessage();
 ```
 
-If the changes fail the message is returned in the BODY of the response in JSON form with a single field `applyMessage`.
+If the changes fail the message is returned in the BODY of the response in JSON form with a single field `message`.
 
 The final code that is passed to `evaluate` for, e.g., creating a document will look like this:
 ```lsf
@@ -264,7 +268,7 @@ NEW s = Shipment {
         }
     APPLY; 
     IF canceled() THEN 
-        EXPORT FROM message = applyMessage();
+        RETURN JSON FROM message = applyMessage();
 }
 ```
 For editing (first, existing lines are deleted), accordingly:
@@ -282,7 +286,7 @@ FOR Shipment s = $0 DO {
         }
     APPLY; 
     IF canceled() THEN 
-        EXPORT FROM message = applyMessage();
+        RETURN JSON FROM message = applyMessage();
 }
 ```
 To handle the constraint violation error (since the response status will be 200 in this implementation in both cases), we assume that if the BODY of the answer is empty then there is no error. If there is any text, then this is the JSON containing the text of the constraint. For example, we can use the following code:
@@ -292,7 +296,7 @@ evaluate("...").then(response =>
         if (text === "") {
             // ok
         } else {
-            console.log(JSON.parse(text).applyMessage);
+            console.log(JSON.parse(text).message);
         }
       })
     );

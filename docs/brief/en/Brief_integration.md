@@ -162,7 +162,7 @@ exportSku (Store store) {
 
 ### Access from outside
 
-From outside, an [action](../paradigm/Actions.md) is called with parameters, and the values of the listed properties without parameters come back as the result. The action is specified in one of three ways: `EXEC` — by name, `EVAL` and `EVAL ACTION` — by supplied lsFusion code (from inside, the same code is run by the [`EVAL` operator](../language/EVAL_operator.md)).
+From outside, an [action](../paradigm/Actions.md) is called with parameters, and the result of the action (`RETURN`) or the values of the listed properties without parameters come back as the result. The action is specified in one of three ways: `EXEC` — by name, `EVAL` and `EVAL ACTION` — by supplied lsFusion code (from inside, the same code is run by the [`EVAL` operator](../language/EVAL_operator.md)).
 
 Requests are served by the application server (port `7651`) and by the web server:
 

@@ -214,7 +214,7 @@ Data is exported with the [`EXPORT` operator](../language/EXPORT_operator.md).
 
 3. When a form is exported to a flat format, destinations SHOULD be listed for every exported object group. The group of objects without a name is called `root`.
 
-4. To return a value from an action called by an external system, the assistant MUST use `RETURN`, not `EXPORT`: `RETURN` delivers the value from any place in the action, including after `APPLY` and from inside a `NEWSESSION` block, whereas the result of `EXPORT` stays in the session in which it ran and the response comes back empty.
+4. To return a value from an action called by an external system, the assistant MUST use `RETURN`, not `EXPORT`: `RETURN` delivers the value from any place in the action, including after `APPLY` and from inside a `NEWSESSION` block, whereas the result of `EXPORT` stays in the session in which it ran and the response comes back empty. A JSON SHOULD be returned as an expression — `RETURN JSON FROM ...` or `RETURN JSON(formName ...)` — and other formats by an `EXPORT ... TO f` into a local property of a file class followed by `RETURN f()`. An empty JSON is `NULL`, and the response then comes back with an empty body: if the receiver needs an empty list or depends on the key order, the JSON is exported to a file as well. The assistant MUST NOT combine a `RETURN` with a value and an export without `TO` in one action: an action that contains such a `RETURN` returns only its value, even on paths where it is not executed.
 
 ### Delivering the result
 

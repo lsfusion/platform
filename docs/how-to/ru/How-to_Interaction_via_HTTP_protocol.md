@@ -90,10 +90,8 @@ createCity (FILE f)  {
 
     IMPORT JSON FROM f AS FILE TO() cy = countryId, ne = name;
 
-    IF NOT country(cy()) THEN {
-        EXPORT JSON FROM code = '1', message = 'Некорректный код страны';
-        RETURN;
-    }
+    IF NOT country(cy()) THEN
+        RETURN JSON FROM code = '1', message = 'Некорректный код страны';
 
     NEW c = City {
         name(c) <- ne();
@@ -102,7 +100,7 @@ createCity (FILE f)  {
         APPLY;
     }
 
-    EXPORT JSON FROM code = '0', message = 'OK';
+    RETURN JSON FROM code = '0', message = 'OK';
 }
 ```
 
@@ -114,9 +112,9 @@ http://localhost:7651/exec?action=Location.createCity
 
 Body HTTP-запроса будет передан параметром с типом `FILE`. В локальные свойства `cy` и `ne`, считываются значения из параметров `countryId` и `name` соответственно.
 
-Если не находится страна с соответствующим кодом, то формируется JSON файл с содержанием, описанном в предыдущем примере, и вызывается [оператор `RETURN`](../paradigm/Exit_RETURN.md), чтобы прервать выполнение. В качестве ответа, по умолчанию, используется значение, хранящееся в свойстве `exportFile`.
+Если не находится страна с соответствующим кодом, то [оператор `RETURN`](../paradigm/Exit_RETURN.md) прерывает выполнение и возвращает JSON с содержанием, описанным в предыдущем примере. Этот JSON формирует [оператор `JSON`](../language/JSON_operator.md), а значение `RETURN` по умолчанию передаётся в ответе (см. [результаты](../paradigm/Access_from_an_external_system.md#httpresult)).
 
-В случае, если все действия были завершены успешно, то формируется соответствующий ответ с сообщение ОК.
+В случае, если все действия были завершены успешно, то возвращается соответствующий ответ с сообщением ОК.
 
 ## Пример 3
 
@@ -372,7 +370,7 @@ FORM exportOrders
 ;
 
 getOrdersByDate (DATE d) {
-    EXPORT exportOrders OBJECTS date = d JSON;
+    RETURN JSON(exportOrders OBJECTS date = d);
 }
 ```
 
@@ -391,6 +389,18 @@ Url, на который следует слать HTTP запрос, будет
     ]
 }
 ```
+
+Если заказов от этой даты нет, [оператор `JSON`](../language/JSON_operator.md) возвращает `NULL`, и ответ приходит с пустым телом. Если получателю нужен JSON с пустым списком (`{"order":[]}`), форму выгружают в файл [оператором `EXPORT`](../language/EXPORT_operator.md) и возвращают этот файл:
+
+```lsf
+getOrdersByDateFile (DATE d) {
+    LOCAL f = JSONFILE ();
+    EXPORT exportOrders OBJECTS date = d JSON TO f;
+    RETURN f();
+}
+```
+
+Так же возвращают и результат в формате, отличном от JSON: например, `EXPORT CSV FROM ... TO f` и затем `RETURN f()`.
 
 ## Пример 8
 
@@ -420,9 +430,8 @@ FORM orderAttachments
 ;
 
 getOrderAttachments (LONG orderId) {
-    FOR LONG(Order o AS Order) = orderId DO {
-        EXPORT orderAttachments OBJECTS o = o JSON;
-    }
+    FOR LONG(Order o AS Order) = orderId DO
+        RETURN JSON(orderAttachments OBJECTS o = o);
 }
 ```
 Для формирования HTTP запроса нужно использовать следующий url : http://localhost:7651/exec?action=getOrderAttachments&p=32178.
@@ -450,7 +459,7 @@ http://localhost:7651/exec?action=getOrderAttachment&p=32180. Действие _
 ```lsf
 getOrderAttachment (LONG id) {
     FOR LONG(Attachment a AS Attachment) = id DO
-        exportFile() <- file(a); 
+        RETURN file(a);
 }
 ```
 Запрос вернет файл с _Content-Type_ соответствующим расширению свойства _file_.
@@ -479,7 +488,7 @@ curl -X POST -H "Content-Type: text/plain; charset=utf-8" --data-binary @script.
     cityCount (Country c) = GROUP SUM 1 IF country(City ct) = c;
 
     run() {
-        EXPORT JSON FROM name = name(Country c), cities = cityCount(c);
+        RETURN JSON FROM name = name(Country c), cities = cityCount(c);
     }
     ```
 
@@ -491,20 +500,17 @@ curl -X POST -H "Content-Type: text/plain; charset=utf-8" --data-binary @script.
     RETURN count();
     ```
 
-По умолчанию в ответе возвращается значение `RETURN`, а если в действии нет `RETURN` со значением — файл, записанный оператором `EXPORT` (см. [результаты](../paradigm/Access_from_an_external_system.md#httpresult)). `RETURN` возвращает значение из любого места действия, в том числе из блока `NEWSESSION`. Результат `EXPORT` — локальное свойство `exportFile[]` той сессии, в которой выполнен оператор, и каждый следующий `EXPORT`, записывающий результат в `exportFile[]` в той же сессии, заменяет предыдущий файл (из нескольких таких выгрузок возвращается только последняя): `EXPORT` внутри `NEWSESSION` остаётся в новой сессии, и ответ приходит пустым, без ошибки. Поэтому выгрузку выполняют в собственной сессии действия — после блока, перенеся нужные ей значения во [вложенных локальных свойствах](../paradigm/Session_management.md#nested), — либо указывают `exportFile[]` вложенным в операторе, и оно копируется обратно. `APPLY`, отменённый [ограничением](../paradigm/Constraints.md), тоже не завершает запрос ошибкой: изменения не сохраняются, а действие продолжается, поэтому без проверки ниже пример выгрузил бы количество с несохранённым городом. Действие проверяет `canceled[]` сразу после `APPLY` и при отмене выгружает `applyMessage[]` и завершается оператором `RETURN` без значения. `RETURN` со значением здесь не подходит: по умолчанию действие, в котором он есть, возвращает только это значение, даже если `RETURN` не выполнялся, и его `EXPORT` в ответ не попадает ([подробнее](../paradigm/Access_from_an_external_system.md#httpresult)):
+По умолчанию в ответе возвращается значение `RETURN` (см. [результаты](../paradigm/Access_from_an_external_system.md#httpresult)). `RETURN` возвращает значение из любого места действия, в том числе из блока `NEWSESSION` и после `APPLY`. `APPLY`, отменённый [ограничением](../paradigm/Constraints.md), не завершает запрос ошибкой: изменения не сохраняются, а действие продолжается, поэтому без проверки ниже пример вернул бы количество с несохранённым городом. Действие проверяет `canceled[]` сразу после `APPLY` и при отмене возвращает текст `applyMessage[]`:
 
 ```lsf
 run() {
-    NEWSESSION NESTED (exportFile) {
+    NEWSESSION {
         NEW ct = City {
             name(ct) <- 'Springfield';
         }
         APPLY;
-        IF canceled() THEN {
-            EXPORT JSON FROM message = applyMessage();
-            RETURN;
-        }
-        EXPORT JSON FROM cities = GROUP SUM 1 IF c IS City;
+        IF canceled() THEN RETURN applyMessage();
+        RETURN JSON FROM cities = GROUP SUM 1 IF c IS City;
     }
 }
 ```

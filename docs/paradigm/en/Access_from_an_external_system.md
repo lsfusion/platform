@@ -88,13 +88,9 @@ The platform also fills the following properties with information about the curr
 
 ##### Results {#httpresult}
 
-Properties whose values must be returned as the result are passed in the request string by adding strings like `&return=<property name>` to its end. It is assumed that the values of specified properties are returned in the order of their appearance in the request string. By default, if no result properties are specified, the resulting property is the first one with a non-`NULL` value from the following [list](Built-in_classes.md#export). 
+Properties whose values must be returned as the result are passed in the request string by adding strings like `&return=<property name>` to its end. It is assumed that the values of specified properties are returned in the order of their appearance in the request string. By default, if no result properties are specified, the response carries the [result](Actions.md) of the called action, and if the action has no result, the resulting property is the first one with a non-`NULL` value from the following [list](Built-in_classes.md#export).
 
-The result properties from the default list above are [local](Data_properties_DATA.md#local) (`EXPORT` fills one of them), so they must be filled in the session in which the called action itself runs: for example, a value exported with [`EXPORT`](Data_export_EXPORT.md) inside a [new session](New_session_NEWSESSION_NESTEDSESSION.md) block stays in that session and does not reach the response (this raises no error: unless another result or an HTTP status is supplied explicitly, the call returns status 200 with an empty body), unless it is migrated back as a [nested](Session_management.md#nested) local property. Perform the export in the action's own session — the called action already runs in a separate session, so there is normally no need to open a new one. For the same reason a successful [apply](Apply_changes_APPLY.md) after the export empties the response: applying changes resets ordinary (non-nested) local properties, including the already filled result property. Perform the export after the apply, carrying any values it needs across the apply in nested local properties (see [below](#createdresult) for an example). Each export to the default result property in the called action's session replaces its previous value, so of several such exports only the last one reaches the response: the data to be returned as one file is combined into a single export.
-
-Note also that in such a call [local event](Events.md#local) handlers are not executed on a mere read of the changed properties: of their execution points, the only one that normally occurs here is applying changes (or an explicit call of `System.executeLocalEvents[]`). So a value that a local event handler is supposed to write must be read after applying changes, not right after changing the source data.
-
-Alternatively, an action that has a [result](Actions.md) returns it directly as the response body — the simplest way to get a single value back, and the usual form for [`EVAL` / `EVAL ACTION`](#actiontype):
+An action that has a result returns it directly as the response body — the simplest way to return a value, and the usual form for [`EVAL` / `EVAL ACTION`](#actiontype):
 
 -   `EVAL ACTION` — the supplied code is the action body. End it with `RETURN`:
 
@@ -108,7 +104,11 @@ Alternatively, an action that has a [result](Actions.md) returns it directly as 
     run() { RETURN 2 * 21; }
     ```
 
-The value is serialized like any result (a scalar as text, `JSON` / `FILE` as its content). For tabular or multi-field output use [`EXPORT`](Data_export_EXPORT.md) rather than `RETURN`. Without result properties in the request, an action that has a result returns only it, even on a path where its `RETURN` is not executed: an `EXPORT` in such an action does not reach the response. Where one path must answer with exported data and another with a value, both paths export, and a `RETURN` without a value only ends the action.
+The value is serialized like any result (a scalar as text, `JSON` / `FILE` as its content). A tabular or multi-field result is returned as a value of the `JSON` class built from the given properties or from a form [in a structured view](In_a_structured_view_EXPORT_IMPORT.md), and a result in another format as a file that an [export](Data_export_EXPORT.md) writes it to in a local property. A value of the `JSON` class is stored in a [normalized form](Built-in_classes.md) (key order and formatting are not preserved), and a JSON with no values in it (no records, or only `NULL` values) is `NULL`, in which case the response comes back with an empty body. If the receiver depends on the key order or on an empty list, the JSON is exported to a file as well. The result reaches the response from any place in the action, a [new session](New_session_NEWSESSION_NESTEDSESSION.md) block and a point after an [apply](Apply_changes_APPLY.md) included. Without result properties in the request, an action that has a result returns only it, even on a path where its `RETURN` is not executed: the properties of the default list, including those filled by `EXPORT`, do not reach the response from such an action, so on every path the value is returned by `RETURN`.
+
+The result properties from the default list above are [local](Data_properties_DATA.md#local) (`EXPORT` fills one of them when no target property is given in it), so only the value left in them by the end of the call in the called action's own session reaches the response. A value written inside a new session block does not reach the response, unless the property is migrated back as a [nested](Session_management.md#nested) local property. A successful apply after the write empties the response: applying changes resets ordinary (non-nested) local properties, including the already filled result property. Of several writes to such a property only the last one reaches the response. None of this raises an error: unless another result or an HTTP status is supplied explicitly, the call returns status 200 with an empty body. So the value is returned as the result of the action (see [below](#createdresult) for an example with a created object).
+
+Note also that in such a call [local event](Events.md#local) handlers are not executed on a mere read of the changed properties: of their execution points, the only one that normally occurs here is applying changes (or an explicit call of `System.executeLocalEvents[]`). So a value that a local event handler is supposed to write must be read after applying changes, not right after changing the source data.
 
 The `MESSAGE` operator is not suitable for returning a value: showing a message is an [interactive](#interactive) operation, and its text never appears in the response body: on a headless call the server collects such messages, but they do not reach the HTTP response (they are returned, for example, by the `lsfusion_eval` MCP tool), and each of them is additionally written to the server log as `Server message: ...`. Likewise, on a synchronous call a canceled [apply](Apply_changes_APPLY.md) (for example, on a [constraint](Constraints.md) violation) returns no error and shows no message automatically: the request completes as usual and the changes are not saved. To detect this, the action itself must check the `System.canceled[]` property and, if needed, return the error text from the `System.applyMessage[]` property.
 
@@ -346,7 +346,6 @@ Result:
 ```python
 import json
 import requests
-from requests_toolbelt.multipart import decoder
 
 lsfCode = ("run(INTEGER no, DATE date, FILE detail) {\n"
            "    NEW o = FOrder {\n"
@@ -354,7 +353,7 @@ lsfCode = ("run(INTEGER no, DATE date, FILE detail) {\n"
            "        date(o) <- date;\n"
            "        LOCAL detailId = INTEGER (INTEGER);\n"
            "        LOCAL detailQuantity = INTEGER (INTEGER);\n"
-           "        IMPORT JSON FROM detail TO detailId, detailQuantity;\n"
+           "        IMPORT JSON FROM detail TO detailId = id, detailQuantity = quantity;\n"
            "        FOR imported(INTEGER i) DO {\n"
            "            NEW od = FOrderDetail {\n"
            "                id(od) <- detailId(i);\n"
@@ -364,8 +363,8 @@ lsfCode = ("run(INTEGER no, DATE date, FILE detail) {\n"
            "            }\n"
            "        }\n"
            "        APPLY;\n"
-           "        EXPORT JSON FROM price = price(FOrderDetail od), id = id(od) WHERE order(od) = o;\n"
-           "        EXPORT FROM orderPrice(o), exportFile();\n"
+           "        RETURN JSON FROM sum = orderPrice(o),\n"
+           "                         details = (JSON FROM price = price(FOrderDetail od), id = id(od) WHERE order(od) = o ORDER id(od));\n"
            "    }\n"
            "}")
 
@@ -385,26 +384,24 @@ payload = {'script': lsfCode, 'no': str(order_no), 'date': order_date,
            'detail': ('order.json', order_json, 'text/json')}
 
 response = requests.post(url, files=payload)
-multipart_data = decoder.MultipartDecoder.from_response(response)
+result = response.json()
 
-sum_part, json_part = multipart_data.parts
-sum = int(sum_part.text)
-data = json.loads(json_part.text)
+sum = int(result['sum'])
 
 ##############################################################
 
 print(sum)
-for item in data:
+for item in result['details']:
     print('{0:3}: price {1}'.format(int(item['id']), int(item['price'])))
 
 ##############################################################
-# 205
-#   4: price 5
-#  18: price 5
-#   3: price 5
+# 255
 #   1: price 5
+#   2: price 5
+#   5: price 5
 #  10: price 5
-#  15: price 5
+#  11: price 5
+#  12: price 5
 ```
 
 ### Form API (JavaScript)

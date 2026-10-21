@@ -257,7 +257,7 @@ The result is converted to a JS value:
 | number, string, boolean, or date scalar | a number, string, boolean, or `Date` |
 | `JSON` | a parsed object or array |
 | `JSONTEXT`, `XML` | the raw string |
-| a file — an `EXPORT`, an image, or a file-typed property | a download URL string |
+| a file — an image or a file-typed property | a download URL string |
 | a missing or `NULL` result | `undefined` |
 
 Parameters are passed as plain JS values (a number, string, boolean, `Date`, or an object/array for a `JSON` parameter) and bound positionally. An lsFusion object cannot be passed — its numeric id is passed instead. When the parameter is typed by a class, the platform resolves the id to the object of that class. A row handle (`row.objects`) is not an object reference: for a class-typed parameter the call fails. An error — a missing action or property, a script error, or a runtime exception — rejects the promise with its message.
