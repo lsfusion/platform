@@ -1,0 +1,274 @@
+MODULE UiReactPlacing;
+
+REQUIRE TestUtils, SystemEvents;
+
+// the forms UiReactPlacingIT works on in the browser - what a React view (UiReactPlacing.js) places of what the
+// platform draws, by its name: a panel property, an action, a grid property per row, a container; the mistakes a
+// placement can make; the labels of what it does not place; a view on a page of the platform's tab strip, in a window,
+// under a SHOWIF of a container it draws, in a `tabbed` container it draws -, and the action it seeds the board's
+// category with
+
+CLASS UiRplCategory 'Category';
+uiRplCategoryName 'Name' = DATA STRING[50] (UiRplCategory);
+uiRplCode 'Code' = DATA INTEGER (UiRplCategory);
+uiRplNote 'Note' = DATA STRING[50] (UiRplCategory);
+uiRplShown = DATA BOOLEAN (UiRplCategory); // the category of the test that seeded last: the board shows only it
+
+CLASS UiRplItem 'Item';
+uiRplItemName 'Item' = DATA STRING[50] (UiRplItem);
+uiRplQty 'Qty' = DATA INTEGER (UiRplItem);
+uiRplCategory = DATA UiRplCategory (UiRplItem);
+
+uiRplNoteShown = DATA LOCAL BOOLEAN ();
+uiRplToggleNote 'Toggle note' () { uiRplNoteShown() <- NOT uiRplNoteShown(); }
+uiRplMemo 'Memo' = DATA LOCAL STRING[50] ();
+
+// the board (UiRplBoard) draws the category's items and places the platform's views of the note, of the action that
+// shows and hides it, of the memo and of each item's quantity (NOCUSTOM: drawn per row); the code it draws itself. It
+// stands on a page of a tab strip the platform draws
+FORM uiRplBoard 'Board'
+    OBJECTS c = UiRplCategory PANEL
+    PROPERTIES(c) cName = uiRplCategoryName, cCode = uiRplCode, note = uiRplNote SHOWIF uiRplNoteShown()
+    OBJECTS i = UiRplItem
+    PROPERTIES(i) iName = uiRplItemName, qty = uiRplQty NOCUSTOM
+    PROPERTIES() uiRplToggleNote, uiRplMemo
+    FILTERS uiRplShown(c), uiRplCategory(i) = c
+    ORDERS iName
+    EVENTS ON INIT {
+        uiRplNoteShown() <- TRUE;
+        uiRplMemo() <- 'memo';
+    }
+;
+
+DESIGN uiRplBoard {
+    NEW uiRplPages FIRST {
+        tabbed = TRUE;
+        NEW uiRplBoardPage {
+            caption = 'Board';
+            NEW uiRplBoardView {
+                custom = r'UiRplBoard';
+                MOVE BOX(i);
+                MOVE PROPERTY(cCode); // drawn by the view: it has no view of its own to place
+                MOVE PROPERTY(note) { custom = NULL; }
+                MOVE PROPERTY(uiRplToggleNote()) { custom = NULL; }
+                MOVE PROPERTY(uiRplMemo()) { custom = NULL; }
+            }
+        }
+        NEW uiRplPlainPage {
+            caption = 'Plain';
+            MOVE PROPERTY(cName);
+        }
+    }
+}
+
+// a label is read where it is drawn: the platform's tab strip draws the title of each page - here a property, whose
+// title is its own label, with its caption's class and its change key -, and a React view (UiRplLabels) draws the
+// caption of a child the platform draws that it does not place. Both follow a computed caption while the page or the
+// child is not shown
+uiRplHeader = DATA LOCAL STRING[50] ();
+uiRplHeaderClass = DATA LOCAL STRING[50] ();
+uiRplKey = DATA LOCAL STRING[50] ();
+uiRplTick = DATA LOCAL INTEGER ();
+uiRplFirst 'First' = DATA LOCAL STRING[50] ();
+uiRplSecond = DATA LOCAL STRING[50] ();
+uiRplThird 'Third' = DATA LOCAL STRING[50] ();
+uiRplOther 'Other' = DATA LOCAL STRING[50] ();
+uiRplUnplaced = DATA LOCAL STRING[50] ();
+uiRplBump 'Bump' () {
+    uiRplTick() <- (OVERRIDE uiRplTick(), 0) + 1;
+    uiRplHeader() <- 'Header ' + uiRplTick();
+    uiRplHeaderClass() <- r'ui-rpl-header-' + uiRplTick();
+    uiRplKey() <- r'F6';
+}
+
+FORM uiRplLabels 'Labels'
+    PROPERTIES() READONLY uiRplFirst, uiRplSecond HEADER uiRplHeader(), uiRplThird, uiRplOther,
+                          uiRplUnplaced HEADER uiRplHeader()
+    PROPERTIES() uiRplBump
+    EVENTS ON INIT {
+        uiRplHeader() <- 'Header 0';
+        uiRplHeaderClass() <- r'ui-rpl-header-0';
+        uiRplKey() <- r'F5';
+        uiRplFirst() <- 'first';
+        uiRplSecond() <- 'second';
+        uiRplThird() <- 'third';
+        uiRplOther() <- 'other';
+        uiRplUnplaced() <- 'unplaced';
+    }
+;
+
+DESIGN uiRplLabels {
+    OBJECTS {
+        NEW uiRplLabelTabs {
+            tabbed = TRUE;
+            MOVE PROPERTY(uiRplFirst());
+            MOVE PROPERTY(uiRplSecond()) { captionClass = uiRplHeaderClass(); }
+            MOVE PROPERTY(uiRplThird()) { changeKey = uiRplKey(); }
+        }
+        NEW uiRplLabelsView {
+            custom = r'UiRplLabels';
+            MOVE PROPERTY(uiRplOther()) { custom = NULL; }
+            MOVE PROPERTY(uiRplUnplaced()) { custom = NULL; } // not placed: the view draws only its caption
+        }
+        MOVE PROPERTY(uiRplBump());
+    }
+}
+
+// what a child the platform draws shows and hides by: a container's SHOWIF and a property's, which hide the host the
+// view (UiRplShows) places it in; an action, whose caption is its button's face
+uiRplBoxShown = DATA LOCAL BOOLEAN ();
+uiRplShowsNoteShown = DATA LOCAL BOOLEAN ();
+uiRplShowsNote 'Shown note' = DATA LOCAL STRING[50] ();
+uiRplInBox 'In box' = DATA LOCAL STRING[50] ();
+uiRplGone 'Gone' = DATA LOCAL INTEGER ();
+uiRplGo 'Go' () { uiRplGone() <- (OVERRIDE uiRplGone(), 0) + 1; }
+uiRplToggleBox 'Toggle box' () { uiRplBoxShown() <- NOT uiRplBoxShown(); }
+uiRplToggleShowsNote 'Toggle shown note' () { uiRplShowsNoteShown() <- NOT uiRplShowsNoteShown(); }
+
+FORM uiRplShows 'Shows'
+    PROPERTIES() uiRplShowsNote SHOWIF uiRplShowsNoteShown(), uiRplInBox, uiRplGo, uiRplGone, uiRplToggleBox,
+                 uiRplToggleShowsNote
+    EVENTS ON INIT {
+        uiRplBoxShown() <- TRUE;
+        uiRplShowsNoteShown() <- TRUE;
+        uiRplShowsNote() <- 'shown note';
+        uiRplInBox() <- 'in box';
+    }
+;
+
+DESIGN uiRplShows {
+    OBJECTS {
+        NEW uiRplShowsView {
+            custom = r'UiRplShows';
+            NEW uiRplBox {
+                caption = 'Box';
+                showIf = uiRplBoxShown();
+                custom = NULL;
+                MOVE PROPERTY(uiRplInBox());
+            }
+            MOVE PROPERTY(uiRplShowsNote()) { custom = NULL; comment = 'Note comment'; }
+            MOVE PROPERTY(uiRplGo()) { custom = NULL; }
+            MOVE PROPERTY(uiRplGone());
+            MOVE PROPERTY(uiRplToggleBox());
+            MOVE PROPERTY(uiRplToggleShowsNote());
+        }
+    }
+}
+
+// a form whose content is a React view (UiRplFloating), opened as a window: the window is measured as it opens and
+// keeps that size, so the view has to have drawn by then (#1817). The view's own content is of a fixed size, so the
+// window needs no base size of the container: what is tested is that the window is measured with it drawn
+uiRplFloatText 'Float text' = DATA LOCAL STRING[50] ();
+
+FORM uiRplFloating 'Floating'
+    PROPERTIES() READONLY uiRplFloatText
+    EVENTS ON INIT { uiRplFloatText() <- 'float'; }
+;
+
+DESIGN uiRplFloating {
+    OBJECTS {
+        NEW uiRplFloatingView {
+            custom = r'UiRplFloating';
+            MOVE PROPERTY(uiRplFloatText());
+        }
+    }
+}
+
+uiRplOpenFloating 'Open floating' () { SHOW uiRplFloating FLOAT; }
+
+FORM uiRplFloatOpener 'Float opener'
+    PROPERTIES() uiRplOpenFloating
+;
+
+// a SHOWIF on a container a React view (UiRplShowIf) draws itself, over the filters of a group - a property's filter
+// among them, which the view draws by its name - and over a property the view draws: the container's entry and the
+// filter's say hidden, while the property is hidden by its own SHOWIF and is no component of the platform's
+CLASS UiRplShowIfItem 'Item';
+uiRplShowIfName 'Name' = DATA STRING[20] (UiRplShowIfItem);
+uiRplLabel 'Label' = DATA LOCAL STRING[20] ();
+uiRplContainerHidden = DATA LOCAL BOOLEAN ();
+uiRplToggleContainer 'Toggle container' () { uiRplContainerHidden() <- NOT uiRplContainerHidden(); }
+
+FORM uiRplShowIf 'Show if'
+    OBJECTS i = UiRplShowIfItem
+    PROPERTIES(i) READONLY uiRplShowIfName FILTER
+    PROPERTIES() READONLY uiRplLabel
+    PROPERTIES() uiRplToggleContainer
+    EVENTS ON INIT { uiRplLabel() <- 'label'; }
+;
+
+DESIGN uiRplShowIf {
+    OBJECTS {
+        NEW uiRplShowIfView {
+            custom = r'UiRplShowIf';
+            NEW uiRplShownContainer {
+                showIf = NOT uiRplContainerHidden();
+                MOVE FILTERS(i);
+                MOVE PROPERTY(uiRplLabel()) { showIf = NOT uiRplContainerHidden(); }
+            }
+        }
+        MOVE PROPERTY(uiRplToggleContainer());
+    }
+}
+
+// `tabbed` on a container a React view (UiRplTabbed) draws itself means nothing there: the view lays out every page,
+// so the server reads every page, and an ACTIVATE TAB of a page there is refused
+uiRplFirstPage 'First page' = DATA LOCAL STRING[20] ();
+uiRplSecondPage 'Second page' = DATA LOCAL STRING[20] ();
+
+FORM uiRplTabbed 'Tabbed'
+    PROPERTIES() READONLY uiRplFirstPage, uiRplSecondPage
+    EVENTS ON INIT {
+        uiRplFirstPage() <- 'first';
+        uiRplSecondPage() <- 'second';
+    }
+;
+
+DESIGN uiRplTabbed {
+    OBJECTS {
+        NEW uiRplTabbedView {
+            custom = r'UiRplTabbed';
+            NEW uiRplTabbedPages {
+                tabbed = TRUE;
+                NEW uiRplTabbedFirst { MOVE PROPERTY(uiRplFirstPage()); }
+                NEW uiRplTabbedSecond { MOVE PROPERTY(uiRplSecondPage()); }
+            }
+        }
+    }
+}
+
+uiRplActivateSecond 'Activate second' () { ACTIVATE TAB uiRplTabbed.uiRplTabbedSecond; }
+
+EXTEND FORM uiRplTabbed
+    PROPERTIES() uiRplActivateSecond
+;
+
+onWebClientInit() + {
+    onWebClientInit(r'UiReactPlacing.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiRpl 'UI React placing' WINDOW toolbar {
+        NEW uiRplBoard;
+        NEW uiRplLabels;
+        NEW uiRplShows;
+        NEW uiRplFloatOpener;
+        NEW uiRplShowIf;
+        NEW uiRplTabbed;
+    }
+}
+
+// a category shown from now on, with a code, a note and three items: Banana 9, Apple 5, Cherry 1
+uiRplSeed (STRING[50] name, STRING[50] note) {
+    uiRplShown(UiRplCategory c) <- NULL;
+    NEW c = UiRplCategory {
+        uiRplCategoryName(c) <- name;
+        uiRplCode(c) <- 2;
+        uiRplNote(c) <- note;
+        uiRplShown(c) <- TRUE;
+        NEW i = UiRplItem { uiRplItemName(i) <- 'Banana'; uiRplQty(i) <- 9; uiRplCategory(i) <- c; }
+        NEW i = UiRplItem { uiRplItemName(i) <- 'Apple'; uiRplQty(i) <- 5; uiRplCategory(i) <- c; }
+        NEW i = UiRplItem { uiRplItemName(i) <- 'Cherry'; uiRplQty(i) <- 1; uiRplCategory(i) <- c; }
+    }
+    APPLY;
+}
