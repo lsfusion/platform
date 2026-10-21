@@ -1,0 +1,231 @@
+MODULE UiReactProjection;
+
+REQUIRE TestUtils, SystemEvents, Time, Utils;
+
+// the forms UiReactProjectionIT works on in the browser - what a React view (UiReactProjection.js) is given and changes
+// through its members: an entry the form hides, a value taken back as it went out, a change waiting for its answer, a
+// page the view does not show, a row's own colors, and the classic custom view's changeProperty, which names the whole
+// form -, and the actions it seeds and checks its items with
+
+CLASS UiRpjCategory 'Category';
+uiRpjCategoryName 'Category' = DATA STRING[50] (UiRpjCategory);
+uiRpjCategoryNote 'Note' = DATA STRING[50] (UiRpjCategory);
+uiRpjCategoryShown = DATA BOOLEAN (UiRpjCategory); // the category of the test that seeded last: the forms show only it
+
+CLASS UiRpjItem 'Item';
+uiRpjName 'Name' = DATA STRING[50] (UiRpjItem);
+uiRpjItem (STRING[50] name) = GROUP AGGR UiRpjItem i BY uiRpjName(i);
+uiRpjCategory = DATA UiRpjCategory (UiRpjItem);
+uiRpjShown (UiRpjItem i) = uiRpjCategoryShown(uiRpjCategory(i));
+uiRpjPrice 'Price' = DATA NUMERIC[10,2] (UiRpjItem);
+uiRpjQty 'Qty' = DATA INTEGER (UiRpjItem);
+uiRpjColor 'Color' = DATA COLOR (UiRpjItem);
+uiRpjPeriod 'Period' = DATA INTERVAL[DATE] (UiRpjItem);
+uiRpjFlag = DATA BOOLEAN (UiRpjItem);
+uiRpjBackground (UiRpjItem i) = IF uiRpjFlag(i) THEN RGB(255, 200, 200) ELSE RGB(210, 245, 210);
+
+// entries the form hides, each said by the entry's `hidden`: a column by its SHOWIF and a panel property of the form
+// level by a design showIf - a property's member staying, and refusing its call meanwhile -, and the grid by its own,
+// which has no member; and the name of the current item, a panel property the server reads for the current object
+uiRpjPriceShown = DATA LOCAL BOOLEAN ();
+uiRpjTogglePrice 'Toggle price' () { uiRpjPriceShown() <- NOT uiRpjPriceShown(); }
+uiRpjLabel 'Label' = DATA LOCAL STRING[20] ();
+uiRpjLabelHidden = DATA LOCAL BOOLEAN ();
+uiRpjToggleLabel 'Toggle label' () { uiRpjLabelHidden() <- NOT uiRpjLabelHidden(); }
+uiRpjGridHidden = DATA LOCAL BOOLEAN ();
+uiRpjToggleGrid 'Toggle grid' () { uiRpjGridHidden() <- NOT uiRpjGridHidden(); }
+
+FORM uiRpjMembers 'Members'
+    OBJECTS i = UiRpjItem
+    PROPERTIES(i) name = uiRpjName, price = uiRpjPrice SHOWIF uiRpjPriceShown()
+    PROPERTIES(i) READONLY PANEL currentName = uiRpjName // the server's reading of the current object
+    PROPERTIES() uiRpjLabel, uiRpjTogglePrice, uiRpjToggleLabel, uiRpjToggleGrid
+    FILTERS uiRpjShown(i)
+    ORDERS name
+    EVENTS ON INIT {
+        uiRpjPriceShown() <- TRUE;
+        uiRpjLabel() <- 'label';
+    }
+;
+
+DESIGN uiRpjMembers {
+    NEW uiRpjMembersView FIRST {
+        custom = r'UiRpjMembers';
+        MOVE BOX(i);
+        MOVE PROPERTY(uiRpjLabel()) { showIf = NOT uiRpjLabelHidden(); }
+    }
+    GRID(i) { showIf = NOT uiRpjGridHidden(); }
+}
+
+// a COLOR and an INTERVAL value, which the view hands back to its members as it was given them
+FORM uiRpjValues 'Values'
+    OBJECTS i = UiRpjItem
+    PROPERTIES(i) name = uiRpjName, color = uiRpjColor, period = uiRpjPeriod
+    FILTERS uiRpjShown(i)
+    ORDERS name
+;
+
+DESIGN uiRpjValues {
+    NEW uiRpjValuesView FIRST {
+        custom = r'UiRpjValues';
+        MOVE BOX(i);
+    }
+}
+
+// changes waiting for their answers: of a cell and of an action the view runs through their members, and of a property
+// and an action the platform draws, which the classic custom view of the second group (uiRpjClassic) changes by its
+// changeProperty - the property's own ON CHANGE deciding its value
+uiRpjCounter 'Counter' = DATA LOCAL INTEGER ();
+uiRpjRun 'Run' () { uiRpjCounter() <- (OVERRIDE uiRpjCounter(), 0) + 1; }
+uiRpjNativeNote 'Native note' = DATA LOCAL STRING[20] ();
+uiRpjNativeRun 'Native run' () { uiRpjCounter() <- (OVERRIDE uiRpjCounter(), 0) + 100; }
+
+FORM uiRpjLoading 'Loading'
+    OBJECTS i = UiRpjItem
+    PROPERTIES(i) name = uiRpjName, qty = uiRpjQty
+    PROPERTIES() uiRpjCounter, uiRpjRun,
+                 uiRpjNativeNote ON CHANGE { uiRpjNativeNote() <- 'served'; }, uiRpjNativeRun
+    OBJECTS c = UiRpjItem CUSTOM r'uiRpjClassic'
+    FILTERS uiRpjShown(i), uiRpjShown(c)
+    ORDERS name
+    EVENTS ON INIT { uiRpjNativeNote() <- 'initial'; }
+;
+
+DESIGN uiRpjLoading {
+    NEW uiRpjLoadingView FIRST {
+        custom = r'UiRpjLoading';
+        MOVE BOX(i);
+        MOVE PROPERTY(uiRpjCounter());
+        MOVE PROPERTY(uiRpjRun());
+    }
+}
+
+// a strip of two pages the view (UiRpjPages) draws itself, showing one of them: a property on the page it does not
+// show is not read; one beside the pages is
+uiRpjCount 'Count' = DATA LOCAL INTEGER ();
+uiRpjWitness 'Witness' = DATA LOCAL INTEGER ();
+uiRpjBump 'Bump' () {
+    uiRpjCount() <- (OVERRIDE uiRpjCount(), 0) + 1;
+    uiRpjWitness() <- (OVERRIDE uiRpjWitness(), 0) + 1;
+}
+
+FORM uiRpjPages 'Pages'
+    PROPERTIES() READONLY uiRpjCount, uiRpjWitness
+    PROPERTIES() uiRpjBump
+;
+
+DESIGN uiRpjPages {
+    OBJECTS {
+        NEW uiRpjPagesView {
+            custom = r'UiRpjPages';
+            MOVE PROPERTY(uiRpjWitness());
+            NEW uiRpjPageA;
+            NEW uiRpjPageB { MOVE PROPERTY(uiRpjCount()); }
+        }
+        MOVE PROPERTY(uiRpjBump());
+    }
+}
+
+// a group's own colors of a row, the background of its rows, as a change on the server brings them: an action of the
+// row the view runs through its member changes the flag the background reads, in a session of its own
+uiRpjToggleFlag 'Toggle flag' (UiRpjItem i) {
+    NEWSESSION {
+        uiRpjFlag(i) <- NOT uiRpjFlag(i);
+        APPLY;
+    }
+}
+
+FORM uiRpjColors 'Colors'
+    OBJECTS i = UiRpjItem BACKGROUND uiRpjBackground(i)
+    PROPERTIES(i) READONLY name = uiRpjName
+    PROPERTIES(i) toggle = uiRpjToggleFlag GRID
+    FILTERS uiRpjShown(i)
+    ORDERS name
+;
+
+DESIGN uiRpjColors {
+    NEW uiRpjColorsView FIRST {
+        custom = r'UiRpjColors';
+        MOVE BOX(i);
+    }
+}
+
+// the classic custom view of a group (uiRpjCards) and its changeProperty, which names a property of the whole form -
+// of its own group, another group's, the form level's - by the name alone, and refuses one that names nothing, or
+// two properties, or is given a row that is not one of the property's group
+uiRpjFormNote 'Form note' = DATA STRING[50] ();
+uiRpjTwice 'Twice' = DATA LOCAL STRING[50] ();
+
+FORM uiRpjClassic 'Classic'
+    OBJECTS c = UiRpjCategory PANEL
+    PROPERTIES(c) note = uiRpjCategoryNote, cName = uiRpjCategoryName
+    OBJECTS i = UiRpjItem CUSTOM r'uiRpjCards'
+    PROPERTIES(i) name = uiRpjName, price = uiRpjPrice
+    PROPERTIES() fnote = uiRpjFormNote, twice1 = uiRpjTwice EXTID r'twice', twice2 = uiRpjTwice EXTID r'twice'
+    FILTERS uiRpjCategoryShown(c), uiRpjCategory(i) = c
+    ORDERS name
+;
+
+onWebClientInit() + {
+    onWebClientInit(r'UiReactProjection.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiRpj 'UI React projection' WINDOW toolbar {
+        NEW uiRpjMembers;
+        NEW uiRpjValues;
+        NEW uiRpjLoading;
+        NEW uiRpjPages;
+        NEW uiRpjColors;
+        NEW uiRpjClassic;
+    }
+}
+
+// a category shown from now on, its note, and two items in it: the first priced 10, of qty 1, red, of January 2026;
+// the second priced 20, of qty 2, with no color and no period
+uiRpjSeed (STRING[50] category, STRING[50] note, STRING[50] first, STRING[50] second) {
+    uiRpjCategoryShown(UiRpjCategory c) <- NULL;
+    NEW c = UiRpjCategory {
+        uiRpjCategoryName(c) <- category;
+        uiRpjCategoryNote(c) <- note;
+        uiRpjCategoryShown(c) <- TRUE;
+        NEW i = UiRpjItem {
+            uiRpjName(i) <- first;
+            uiRpjCategory(i) <- c;
+            uiRpjPrice(i) <- 10;
+            uiRpjQty(i) <- 1;
+            uiRpjColor(i) <- RGB(255, 0, 0);
+            uiRpjPeriod(i) <- interval(2026_01_01, 2026_01_31);
+        }
+        NEW i = UiRpjItem {
+            uiRpjName(i) <- second;
+            uiRpjCategory(i) <- c;
+            uiRpjPrice(i) <- 20;
+            uiRpjQty(i) <- 2;
+        }
+    }
+    APPLY;
+}
+
+uiRpjCheckPrice (STRING[50] name, NUMERIC[10,2] expected) {
+    assertEquals(uiRpjPrice(uiRpjItem(name)), expected, CONCAT ' ', 'the price of', name, 'is',
+                 (OVERRIDE STRING(uiRpjPrice(uiRpjItem(name))), 'none'), 'not', expected);
+}
+
+// what the classic changeProperty changed, saved: the note of the category shown, the form's note and an item's name
+uiRpjCheckClassic (STRING[50] note, STRING[50] formNote, STRING[50] item) {
+    LOCAL shownNote = STRING[50] ();
+    shownNote() <- GROUP MAX uiRpjCategoryNote(UiRpjCategory c) IF uiRpjCategoryShown(c);
+    assertEquals(shownNote(), note, CONCAT ' ', 'the note of the category shown is', (OVERRIDE shownNote(), 'none'), 'not', note);
+    assertEquals(uiRpjFormNote(), formNote, CONCAT ' ', 'the form note is', (OVERRIDE uiRpjFormNote(), 'none'), 'not', formNote);
+    assertNotNull(uiRpjItem(item), CONCAT ' ', 'no item is named', item);
+}
+
+uiRpjCheckValues (STRING[50] source, STRING[50] target) {
+    assertEquals(uiRpjColor(uiRpjItem(target)), uiRpjColor(uiRpjItem(source)), CONCAT ' ', 'the color of', target, 'is',
+                 (OVERRIDE colorToHexString(uiRpjColor(uiRpjItem(target))), 'none'), 'not',
+                 colorToHexString(uiRpjColor(uiRpjItem(source))));
+    assertEquals(uiRpjPeriod(uiRpjItem(target)), uiRpjPeriod(uiRpjItem(source)), CONCAT ' ', 'the period of', target, 'is',
+                 (OVERRIDE STRING(from(uiRpjPeriod(uiRpjItem(target)))) + '-' + STRING(to(uiRpjPeriod(uiRpjItem(target)))), 'none'),
+                 'not', STRING(from(uiRpjPeriod(uiRpjItem(source)))) + '-' + STRING(to(uiRpjPeriod(uiRpjItem(source)))));
+}
