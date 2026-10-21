@@ -304,7 +304,7 @@ Four mechanisms run an action on a timer. They differ in where the timer is, whe
 | `NEWTHREAD ... SCHEDULE PERIOD` ([threads](../paradigm/New_threads_NEWTHREAD_NEWEXECUTOR.md)) | the server pool, or the client with `NEWEXECUTOR ... CLIENT` | on the server, in the caller's session (the pool) or in a new session of the connection (`CLIENT`) | the enclosing `NEWEXECUTOR` (with `CLIENT` — the connection) |
 | the [scheduler](../paradigm/Scheduler.md) | the server | on the server, with no client involved | the server: a task configured by the administrator |
 
-Refreshing a form the user is looking at is the form's `SCHEDULE`, with `System.formRefresh[]` as the handler; a background job on the data is a scheduler task; a job of one connection is the navigator's; a delayed or repeated step of an action is `NEWTHREAD`. The form's and the navigator's period is counted from the end of the previous run, with `FIXED` from its start.
+Refreshing a form the user is looking at is the form's `SCHEDULE`, with `System.formRefresh[]` as the handler; a background job on the data is a scheduler task; a job of one connection is the navigator's; a delayed or repeated step of an action is `NEWTHREAD`, and a pause of the action itself between two of its steps — before repeating a failed call, for example — is `System.sleep[LONG]` ([System](../paradigm/System_System.md#sleep)). The form's and the navigator's period is counted from the end of the previous run, with `FIXED` from its start.
 
 ### Order of execution
 

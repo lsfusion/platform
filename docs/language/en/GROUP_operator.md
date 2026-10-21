@@ -87,7 +87,7 @@ For `AGGR` and `NAGGR` using this block explicitly (and not, say, an [`IF` opera
 
 - `groupExpr1, ..., groupExprM`  
 
-    List of group expressions. If the list is omitted and no upper parameters are used, all matching object collections form a single group.
+    List of group expressions. If the list is omitted and no upper parameters are used, all matching object collections form a single group. An object collection for which at least one group expression is `NULL` belongs to no group and does not take part in the aggregation.
 
 - `WITHIN`
 

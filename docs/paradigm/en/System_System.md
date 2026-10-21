@@ -44,19 +44,23 @@ Under the `onlyCheck` filter the apply transaction runs only the handlers that c
 
 ### HTTP request context
 
-The platform fills the following `NESTED LOCAL` properties on an incoming HTTP request and reads them on the outgoing response.
+The platform fills the following `NESTED LOCAL` properties from an incoming HTTP request and reads the response ones when answering it. The last group serves the outgoing [calls to an external system](Access_to_an_external_system_EXTERNAL.md#http): local properties declared without `NESTED`, and the calculated `failedHttp[]`.
 
-**Incoming**: `headers[TEXT]`, `cookies[TEXT]`, `params[TEXT, INTEGER]` (and the shortcut `params[TEXT]`), `fileParams[TEXT, INTEGER]` / `fileParams[TEXT]`, `actionPathInfo[]`, `contentType[]`, `body[]`, `appHost[]`, `appPort[]`, `exportName[]`, `method[]`, `scheme[]`, `webHost[]`, `webPort[]`, `contextPath[]`, `servletPath[]`, `pathInfo[]`, `query[]`, `insecureSSL[]`, `timeoutHttp[]`.
+**Incoming request**: `headers[TEXT]`, `cookies[TEXT]`, `params[TEXT, INTEGER]` (and the shortcut `params[TEXT]`), `fileParams[TEXT, INTEGER]` / `fileParams[TEXT]`, `actionPathInfo[]`, `contentType[]`, `body[]`, `appHost[]`, `appPort[]`, `exportName[]`, `method[]`, `scheme[]`, `webHost[]`, `webPort[]`, `contextPath[]`, `servletPath[]`, `pathInfo[]`, `query[]`.
 
-**Outgoing**: `headersTo[TEXT]`, `cookiesTo[TEXT]`, `statusHttp[]`, `failedHttp[]` (computed as `statusHttp() < 200 OR statusHttp() >= 300`), `statusHttpTo[]`.
+**Outgoing response**: `headersTo[TEXT]`, `cookiesTo[TEXT]`, `statusHttpTo[]`.
 
 **Derived URLs**: `origin[]` (`scheme://webHost:webPort`), `webPath[]` (`origin + contextPath`), `url[]` (`webPath + servletPath + pathInfo`), `apiOriginUrl[STRING]` / `apiOriginUrl[LINK]` (API URL relative to `origin`), `apiContextUrl[STRING]` (API URL relative to `webPath`).
 
-**TCP**: `responseTcp[]`, `timeoutTcp[]`.
+**Calls to an external system**: `timeoutHttp[]` and `insecureSSL[]` are read before an `HTTP` call, and the status of its response is written to `statusHttp[]` ([errors](Access_to_an_external_system_EXTERNAL.md#errors)). `failedHttp[]` is `TRUE` when `statusHttp[]` is below `200` or at least `300`. `timeoutTcp[]` is read before a `TCP` call, and `responseTcp[]` receives its response.
 
 ### Caught-exception state
 
 Inside a `CATCH` block, `messageCaughtException[]`, `javaStackTraceCaughtException[]`, `lsfStackTraceCaughtException[]` give the message, the Java stack trace, and the lsFusion stack trace of the most recently caught exception.
+
+### Pausing execution {#sleep}
+
+`sleep[LONG]` pauses the current action for the given number of milliseconds. Only the thread executing the action waits: the change session and its unsaved changes stay as they are, and the other threads of the server, including [new threads](New_threads_NEWTHREAD_NEWEXECUTOR.md) and [scheduler](Scheduler.md) tasks, keep running. A cancellation request from the [process monitor](Process_monitor.md) ends the pause with an error.
 
 ### Opening files and links
 
@@ -81,7 +85,6 @@ Inside a `CATCH` block, `messageCaughtException[]`, `javaStackTraceCaughtExcepti
 | `navigatorRefresh[]`                              | refresh the navigator                                          |
 | `forceUpdate[STRING]`                             | apply the pending update of an object group (given by its name on the form) that is in manual update mode |
 | `seek[Object]`                                    | locate and activate an object on the current form              |
-| `sleep[LONG]`                                     | pause for the given number of milliseconds                     |
 
 ### Form context flags
 

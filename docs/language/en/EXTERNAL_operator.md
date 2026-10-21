@@ -37,7 +37,7 @@ NOENCODE
 
 ### Description
 
-The `EXTERNAL` operator creates an action that performs a single call to an external system. The call type (`HTTP`, `SQL`, `LSF`, `TCP`, `UDP`, `DBF`) selects the protocol or interface used. Each type accepts its own clauses on top of the shared `PARAMS` and `TO` lists.
+The `EXTERNAL` operator creates an action that performs a single call to an external system. The call type (`HTTP`, `SQL`, `LSF`, `TCP`, `UDP`, `DBF`) selects the protocol or interface used. Each type accepts its own clauses on top of the shared `PARAMS` and `TO` lists. An `HTTP` call whose response status is not `2xx` ends with an error after the `TO`, `HEADERSTO` and `COOKIESTO` properties have been written ([errors](../paradigm/Access_to_an_external_system_EXTERNAL.md#errors)).
 
 ### Parameters
 

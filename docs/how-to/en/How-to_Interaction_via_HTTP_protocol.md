@@ -512,3 +512,60 @@ run() {
     }
 }
 ```
+
+## Example 10
+
+### Task
+
+Similar to [**Example 1**](#example-1).
+
+The service that receives the cities is not always available: it answers `429 Too Many Requests` when called too often and `503 Service Unavailable` while it restarts, and at times the connection to it cannot be opened at all. The request must be repeated several times with a growing pause before the error is shown.
+
+### Solution
+
+```lsf
+postCity 'Send' (City c)  {
+    EXPORT JSON FROM countryId = id(country(c)), name = name(c);
+
+    LOCAL result = FILE();
+    LOCAL responseHeaders = TEXT (TEXT);
+    LOCAL attempt = INTEGER ();
+    LOCAL pause = LONG ();
+    LOCAL wait = LONG ();
+    LOCAL sent = BOOLEAN ();
+
+    timeoutHttp() <- 10000; // no response within 10 s is an error, repeated like a failed connection
+    attempt() <- 1;
+    pause() <- 1000;
+    WHILE NOT sent() AND attempt() <= 5 DO {
+        statusHttp() <- NULL; // a failed connection or a timeout leaves the status unwritten
+        responseHeaders(TEXT h) <- NULL WHERE responseHeaders(h); // the headers of the previous attempt
+        TRY {
+            EXTERNAL HTTP 'http://localhost:7651/exec?action=Location.createCity' HEADERSTO responseHeaders PARAMS exportFile() TO result;
+            sent() <- TRUE;
+        } CATCH {
+            // 429 and 5xx, like a failed connection (NULL status), are worth another attempt; any other status is final
+            IF (statusHttp() < 500 AND statusHttp() != 429) OR attempt() = 5 THEN
+                throwException(messageCaughtException());
+            // the pause: Retry-After (a number of seconds, whatever the spelling of the header name) when the service sends it, otherwise the doubling pause
+            wait() <- OVERRIDE LONG(GROUP MAX responseHeaders(TEXT h) IF lower(h) = 'retry-after') * 1000, pause();
+            sleep(wait());
+            pause() <- pause() * 2;
+            attempt() <- attempt() + 1;
+        }
+    }
+
+    LOCAL code = STRING[10]();
+    LOCAL message = STRING[100]();
+    IMPORT JSON FROM result() TO() code, message;
+    IF NOT code() = '0' THEN {
+        MESSAGE 'Error: ' + message();
+    }
+}
+
+EXTEND FORM cities
+    PROPERTIES(c) postCity
+;
+```
+
+The loop makes up to five attempts. A response with a status outside `2xx` and a failed connection both end the [`EXTERNAL` operator](../paradigm/Access_to_an_external_system_EXTERNAL.md#errors) with an error, which the [`TRY` operator](../paradigm/Exception_handling_TRY.md) intercepts. Each attempt starts by clearing `statusHttp[]` and the captured headers, so that both belong to that attempt alone: the status is written only when a response has arrived, so after a failed connection or a timeout it stays `NULL`, and a header absent from the response would otherwise keep the value captured by an earlier attempt. For a response with a status outside `2xx`, the response body, the captured headers and the status are written before the error is raised, so the recovery action sees them. The statuses `429` and `5xx`, like a missing status, mean that the request is worth repeating. A missing status means only that this attempt recorded no status. The service may already have processed the request, so a request is repeated this way only when repeating it is harmless or the service recognizes a repeated request. Any other status, and the failure of the fifth attempt, is final: `throwException[TEXT]` ends the action with a new error carrying the message of the caught one. The pause before the next attempt is the value of the `Retry-After` header when the service sends it as a number of seconds. When the header is absent or its value is not a number (the header may also carry an HTTP date), the conversion to `LONG` gives `NULL` and the pause of that attempt is used instead: 1, 2, 4 and 8 seconds. The platform keeps the header names in their original spelling, so they are lowercased for the `Retry-After` lookup. `sleep[LONG]` ([System](../paradigm/System_System.md#sleep)) pauses the action itself for that time. `timeoutHttp[]` sets the connection and response timeouts of every attempt to 10 seconds, so a call that gets no response within that time fails and is repeated like a failed connection.

@@ -44,19 +44,23 @@ title: 'System'
 
 ### Контекст HTTP-запроса
 
-Платформа наполняет следующие локальные `NESTED`-свойства при входящем HTTP-запросе и читает их в исходящем ответе.
+Платформа наполняет следующие локальные `NESTED`-свойства из входящего HTTP-запроса и читает свойства ответа, отвечая на него. Последняя группа обслуживает исходящие [обращения к внешней системе](Access_to_an_external_system_EXTERNAL.md#http): локальные свойства, объявленные без `NESTED`, и вычисляемое `failedHttp[]`.
 
-**Входящие**: `headers[TEXT]`, `cookies[TEXT]`, `params[TEXT, INTEGER]` (и сокращение `params[TEXT]`), `fileParams[TEXT, INTEGER]` / `fileParams[TEXT]`, `actionPathInfo[]`, `contentType[]`, `body[]`, `appHost[]`, `appPort[]`, `exportName[]`, `method[]`, `scheme[]`, `webHost[]`, `webPort[]`, `contextPath[]`, `servletPath[]`, `pathInfo[]`, `query[]`, `insecureSSL[]`, `timeoutHttp[]`.
+**Входящий запрос**: `headers[TEXT]`, `cookies[TEXT]`, `params[TEXT, INTEGER]` (и сокращение `params[TEXT]`), `fileParams[TEXT, INTEGER]` / `fileParams[TEXT]`, `actionPathInfo[]`, `contentType[]`, `body[]`, `appHost[]`, `appPort[]`, `exportName[]`, `method[]`, `scheme[]`, `webHost[]`, `webPort[]`, `contextPath[]`, `servletPath[]`, `pathInfo[]`, `query[]`.
 
-**Исходящие**: `headersTo[TEXT]`, `cookiesTo[TEXT]`, `statusHttp[]`, `failedHttp[]` (вычисляется как `statusHttp() < 200 OR statusHttp() >= 300`), `statusHttpTo[]`.
+**Исходящий ответ**: `headersTo[TEXT]`, `cookiesTo[TEXT]`, `statusHttpTo[]`.
 
 **Производные URL**: `origin[]` (`scheme://webHost:webPort`), `webPath[]` (`origin + contextPath`), `url[]` (`webPath + servletPath + pathInfo`), `apiOriginUrl[STRING]` / `apiOriginUrl[LINK]` (URL к API относительно `origin`), `apiContextUrl[STRING]` (URL к API относительно `webPath`).
 
-**TCP**: `responseTcp[]`, `timeoutTcp[]`.
+**Обращения к внешней системе**: `timeoutHttp[]` и `insecureSSL[]` читаются перед вызовом `HTTP`, а статус его ответа записывается в `statusHttp[]` ([ошибки](Access_to_an_external_system_EXTERNAL.md#errors)). `failedHttp[]` истинно, когда `statusHttp[]` меньше `200` или не меньше `300`. `timeoutTcp[]` читается перед вызовом `TCP`, а `responseTcp[]` получает его ответ.
 
 ### Состояние пойманного исключения
 
 Внутри блока `CATCH` доступны `messageCaughtException[]`, `javaStackTraceCaughtException[]`, `lsfStackTraceCaughtException[]` — соответственно текст сообщения, Java-стек и lsFusion-стек последнего пойманного исключения.
+
+### Приостановка выполнения {#sleep}
+
+`sleep[LONG]` приостанавливает текущее действие на заданное число миллисекунд. Ждёт только поток, выполняющий действие: сессия изменений и её несохранённые изменения остаются как есть, а остальные потоки сервера, в том числе [новые потоки](New_threads_NEWTHREAD_NEWEXECUTOR.md) и задачи [планировщика](Scheduler.md), продолжают работать. Запрос на отмену из [монитора процессов](Process_monitor.md) завершает паузу ошибкой.
 
 ### Открытие файлов и ссылок
 
@@ -81,7 +85,6 @@ title: 'System'
 | `navigatorRefresh[]`                              | обновить навигатор                                          |
 | `forceUpdate[STRING]`                             | применить накопленное обновление группы объектов (по её имени на форме) в режиме ручного обновления |
 | `seek[Object]`                                    | найти и активировать объект на текущей форме                 |
-| `sleep[LONG]`                                     | пауза в миллисекундах                                       |
 
 ### Признаки контекста формы
 
