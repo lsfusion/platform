@@ -279,12 +279,13 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         return components.getOrderSet();
     }
 
-    // a group whose rows a React view draws - a container's, or its grid's own - is drawn by React, not the standard
-    // grid, so the server must not apply grid-only behavior to its properties (e.g. autoselect, which would turn a
-    // foreign-key column's value into a JSON candidate list). A box with `custom = NULL` keeps its standard grid, so
-    // its group is not React-owned
-    public boolean isReactDrawnGroup(GroupObjectEntity group) {
-        return rowsScope(group) != null;
+    // a property a React view draws from its data - a column of the rows it draws, or a panel property standing in it,
+    // with no view of its own -, not the platform's view of it, so the server applies nothing to it that only that view
+    // means (the automatic selection, which would turn its value into a JSON list of candidates). One the platform draws
+    // and React places is the platform's (mirrors GReactFormData.isReactDrawn)
+    public boolean isReactDrawn(PropertyDrawEntity property) {
+        PropertyDrawView view = get(property);
+        return nameScope(view) != null && !isPlatformDrawn(view);
     }
 
     // the component that actually DRAWS a group: the tree it belongs to, or its own grid - what a list property's
@@ -317,8 +318,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // (FormInstance.updatePropertiesShowIfs). One the platform draws is the platform's, which keeps it (mirrors
     // GReactFormData.reactKeepsNothing)
     public boolean reactKeepsNothing(PropertyDrawEntity property) {
-        PropertyDrawView view = get(property);
-        return !hasEntry(view) && nameScope(view) != null && !isPlatformDrawn(view);
+        return !hasEntry(get(property)) && isReactDrawn(property);
     }
 
     // where what a COMPONENT draws is drawn - its content: the React view that draws it, its own where its custom is a

@@ -285,7 +285,12 @@ public class GReactFormData {
     // one a view names and carries by no name, the group's own COUNT, unless the platform draws it. Asked of a property
     // as a property: as a component it is asked the component's (createComponentController)
     private boolean reactKeepsNothing(GPropertyDraw property) {
-        return !hasEntry(property) && nameScope(property) != null && !property.isPlatformDrawn();
+        return !hasEntry(property) && isReactDrawn(property);
+    }
+    // whether a React view draws the property from its data - a column of the rows it draws, or a panel property
+    // standing in it -, not the platform, whose property a view only places (mirrors FormView.isReactDrawn)
+    private boolean isReactDrawn(GPropertyDraw property) {
+        return nameScope(property) != null && !property.isPlatformDrawn();
     }
     // ... of a component: NONE of what React keeps nothing of (reactKeepsNothing). A property's is the platform's,
     // whatever draws the property - a property is no owner as a component, all of it being its property controller's

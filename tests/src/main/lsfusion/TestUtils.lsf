@@ -69,6 +69,12 @@ readUpdatePending INTERNAL 'lsfusion.tests.ReadUpdatePendingAction' ();
 shownColumnInForm = DATA LOCAL BOOLEAN (STRING);
 readShownColumns INTERNAL 'lsfusion.tests.ReadShownColumnsAction' ();
 
+// what the open form the action runs in sends its client for a property, by its name in the form, as of the last
+// readSent() of it: the value of its cell for the form's current objects - where the form builds a selection for the
+// property, the list of its options, as JSON
+sentInForm = DATA LOCAL TEXT (STRING);
+readSent INTERNAL 'lsfusion.tests.ReadSentAction' (STRING);
+
 // a list group of the open form the action runs in, by its name, switched to one of its views - GRID, PIVOT, ... -, as
 // the switch on a client's toolbar asks for it: a pivot holds the group's changes back until it is updated
 changeListView INTERNAL 'lsfusion.tests.ChangeListViewAction' (STRING, STRING);

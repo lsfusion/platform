@@ -1,0 +1,57 @@
+MODULE ReactSelect;
+
+REQUIRE TestUtils, Utils;
+
+// a property's selection - the options of a link, read all at once - where a React view draws the property. The view
+// draws the value from its data: the automatic selection, which the platform builds for its own element of such a link,
+// is not built for it - it would hand the view the JSON list of the options instead of the value. Before the fix it was
+// built for a panel property the view draws, and not for a column of the rows it draws
+
+CLASS RsStatus 'Status';
+rsName 'Name' = DATA STRING[20] (RsStatus);
+
+CLASS RsOrder 'Order';
+rsStatus = DATA RsStatus (RsOrder);
+rsNameStatus 'Status' (RsOrder o) = rsName(rsStatus(o));
+
+// the statuses, kept: the form reads how many options a selection has from the database, before it builds one
+rsSeedStatuses () {
+    IF NOT (GROUP SUM 1 IF RsStatus s IS RsStatus) THEN {
+        NEW s = RsStatus { rsName(s) <- 'New'; }
+        NEW s = RsStatus { rsName(s) <- 'Done'; }
+        NEW s = RsStatus { rsName(s) <- 'Lost'; }
+        APPLY;
+    }
+}
+
+FORM rsAutomatic 'Automatic selection'
+    OBJECTS o = RsOrder PANEL
+    PROPERTIES(o) status = rsNameStatus
+;
+
+DESIGN rsAutomatic {
+    NEW board FIRST { custom = 'RsBoard'; MOVE BOX(o); }
+}
+
+// ... and the platform's own panel: its element of the link is the selection, the list of the options
+FORM rsPlatform 'Platform selection'
+    OBJECTS o = RsOrder PANEL
+    PROPERTIES(o) status = rsNameStatus
+;
+
+testRsAutomaticSelectionNotForAReactView 'A React view is sent the value of a panel property it draws, not an automatic selection' () {
+    rsSeedStatuses();
+    NEW o = RsOrder {
+        rsStatus(o) <- GROUP MAX RsStatus s IF rsName(s) = 'Done';
+        SHOW rsAutomatic OBJECTS o = o NOWAIT {
+            readSent('status');
+            assertEquals(sentInForm('status'), 'Done', CONCAT '', 'a panel property a React view draws was sent ',
+                         (OVERRIDE sentInForm('status'), 'nothing'), ' instead of its value');
+        };
+        SHOW rsPlatform OBJECTS o = o NOWAIT {
+            readSent('status');
+            assertTrue(isSubstring(sentInForm('status'), '"selected"'), CONCAT '', 'the platform panel was sent ',
+                       (OVERRIDE sentInForm('status'), 'nothing'), ', not its selection: the test no longer reaches what it tests');
+        };
+    }
+}

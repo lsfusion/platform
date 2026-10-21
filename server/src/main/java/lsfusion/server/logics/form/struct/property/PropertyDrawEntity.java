@@ -1175,7 +1175,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
                     return null;
             }
 
-            if(!forceSelect && (isGroupCustom(context) || isGroupReact(context)))
+            if(!forceSelect && (isGroupCustom(context) || isReactDrawn(context)))
                 return null;
 
             PropertyObjectEntity<?> property = (PropertyObjectEntity<?>) actionOrProperty;
@@ -1388,11 +1388,11 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return isList(context) && (toDraw = getToDraw(context.entity)) != null && toDraw.isCustom();
     }
 
-    // a list group whose rows a React view draws is custom for grid-only purposes too (the view holds the React-ness,
-    // not the group's view type), so autoselect must be skipped just like for a classic custom group
-    public boolean isGroupReact(FormInstanceContext context) {
-        GroupObjectEntity toDraw;
-        return context.view != null && isList(context) && (toDraw = getToDraw(context.entity)) != null && context.view.isReactDrawnGroup(toDraw);
+    // whether a React view draws the property from its data - a column of its rows or a panel property in it -, so it,
+    // not the platform's view, draws the value: no automatic selection for it, as for a classic custom group's rows
+    // (FormView.isReactDrawn)
+    public boolean isReactDrawn(FormInstanceContext context) {
+        return context.view != null && context.view.isReactDrawn(this);
     }
 
     public boolean isGroupSimpleState(FormInstanceContext context) {
