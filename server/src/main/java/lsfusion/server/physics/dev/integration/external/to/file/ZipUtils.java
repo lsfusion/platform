@@ -2,7 +2,6 @@ package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.github.junrar.Archive;
 import com.github.junrar.exception.RarException;
-import com.github.junrar.impl.FileVolumeManager;
 import com.github.junrar.rarfile.FileHeader;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
@@ -49,7 +48,7 @@ public class ZipUtils {
         if (FileUtils.isZip(file.getBytes())) {
             return unpackZIPFile(file);
         } else if (FileUtils.isRar(file.getBytes())) {
-            return unpackRARFile(file, throwUnsupported);
+            return unpackRARFile(file);
         } else if (throwUnsupported) {
             throw new RuntimeException("File is not a zip or rar archive");
         } else {
@@ -121,23 +120,21 @@ public class ZipUtils {
         return result;
     }
 
-    private static Map<String, FileData> unpackRARFile(RawFileData file, boolean throwUnsupported) {
+    private static Map<String, FileData> unpackRARFile(RawFileData file) {
         Map<String, FileData> result = new HashMap<>();
         File inputFile = null;
         File outputFile = null;
         try {
             inputFile = File.createTempFile("rar", ".rar");
             file.write(inputFile);
-            boolean isRar5 = checkRar5(file, throwUnsupported);
-            if (!isRar5) {
-                Set<File> dirSet = new HashSet<>();
-                File outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
-                if (inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
-                    dirSet.add(outputDirectory);
-                    Archive a = new Archive(new FileVolumeManager(inputFile));
+            Set<File> dirSet = new HashSet<>();
+            File outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
+            if (inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
+                dirSet.add(outputDirectory);
+                try (Archive a = new Archive(inputFile)) {
                     FileHeader fh = a.nextFileHeader();
                     while (fh != null) {
-                        String fileName = (fh.isUnicode() ? fh.getFileNameW() : fh.getFileNameString());
+                        String fileName = fh.getFileName();
                         outputFile = new File(outputDirectory.getPath() + "/" + fileName);
                         if (isInsideDirectory(outputDirectory, outputFile)) { //ignore entries that can be unpacked outside the temp dir
                             File dir = outputFile.getParentFile();
@@ -153,12 +150,11 @@ public class ZipUtils {
                         }
                         fh = a.nextFileHeader();
                     }
-                    a.close();
                 }
+            }
 
-                for (File dir : dirSet) {
-                    BaseUtils.safeDelete(dir);
-                }
+            for (File dir : dirSet) {
+                BaseUtils.safeDelete(dir);
             }
         } catch (RarException | IOException e) {
             throw Throwables.propagate(e);
@@ -167,14 +163,6 @@ public class ZipUtils {
             BaseUtils.safeDelete(outputFile);
         }
         return result;
-    }
-
-    private static boolean checkRar5(RawFileData file, boolean throwUnsupported) {
-        boolean isRar5 = FileUtils.isRar5(file.getBytes());
-        if (isRar5 && throwUnsupported) {
-            throw new RuntimeException("RAR5 archive is not supported");
-        }
-        return isRar5;
     }
 
     private static boolean isInsideDirectory(File dir, File file) throws IOException {

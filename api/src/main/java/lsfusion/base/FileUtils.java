@@ -430,10 +430,6 @@ public class FileUtils {
         return startsWith(bytes, 'R', 'a', 'r', '!', 0x1A, 0x07);
     }
 
-    public static boolean isRar5(byte[] bytes) {
-        return startsWith(bytes, 'R', 'a', 'r', '!', 0x1A, 0x07, 0x01);
-    }
-
     public static boolean isPng(byte[] bytes) {
         return startsWith(bytes, 0x89, 'P');
     }
