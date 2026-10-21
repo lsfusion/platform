@@ -227,6 +227,8 @@ public abstract class AbstractContext implements Context {
             else
                 throw new UnsupportedOperationException("requestUserInteraction is not supported in server context, action : " + action.getClass());
         }
+        // there is no one to show the message to, so it is logged the same way as a delayed (NOWAIT) one
+        systemLogger.info("Server message: " + message);
         return null;
     }
 
