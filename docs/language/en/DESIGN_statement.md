@@ -282,7 +282,7 @@ To access design components, you can use their names or address property compone
 |`lineWidth`|Number of columns the [default base width](../paradigm/Form_design.md#defaultSizes) of the table is computed from|Integer literal|all the columns when there are at most three, otherwise from three to six by the number of columns|`4`|
 |`lineHeight`|Number of rows the [default base height](../paradigm/Form_design.md#defaultSizes) of the table is computed from|Integer literal|`5`|`10`|
 |`enableManualUpdate`|Enables the manual update mode by default|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`hierarchicalWidth`|Width of first tree column|Integer literal|`NULL`|`100`|
+|`hierarchicalWidth`|Width of the hierarchical (first) column of the tree in pixels. A positive value is applied. In the web client the column does not take part in the distribution of the table's free width, and a node of level `L` (the top level is `0`) is drawn with `L + 1` indent blocks of `16` pixels each, which may wrap onto a second line of the cell when the column is narrower than their total width|Integer literal|without a positive value, the sum over the object groups of the tree: `20` per ordinary group, `80` per [hierarchical](../paradigm/Interactive_view.md#treegroup) group|`100`|
 |`hierarchicalCaption`|Caption of first tree column|String literal|'Tree'|`Tree caption`|
 
 ### Other properties
