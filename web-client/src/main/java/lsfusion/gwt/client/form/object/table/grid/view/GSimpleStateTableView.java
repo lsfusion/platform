@@ -274,10 +274,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
             return fromObject(imageValue);
         }
-        if(type instanceof GImageType)
-            return fromString(PValue.getImageValue(value).getImageElementSrc(true)); // assert AppFileImage
+        // a link to the file: a cell of a RenderedClass comes as an image made of the file (FormChanges.getConvertData),
+        // whose src it is, a call's result - an image's too - as the path the file is saved under
         if(type instanceof GFileType)
-            return fromString(GwtClientUtils.getAppDownloadURL(PValue.getStringValue(value)));
+            return fromString(PValue.getValue(value) instanceof AppBaseImage ? PValue.getImageValue(value).getImageElementSrc(true) : GwtClientUtils.getAppDownloadURL(PValue.getStringValue(value)));
         if(type instanceof GJSONType)
             return GwtClientUtils.jsonParse(PValue.getCustomStringValue(value));
         if (type instanceof GADateType)

@@ -8,7 +8,9 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
+import lsfusion.gwt.client.base.AppFileImage;
 import lsfusion.gwt.client.base.FocusUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -19,9 +21,12 @@ import lsfusion.gwt.client.classes.data.GColorType;
 import lsfusion.gwt.client.classes.data.GCustomStaticFormatFileType;
 import lsfusion.gwt.client.classes.data.GDateIntervalType;
 import lsfusion.gwt.client.classes.data.GDateType;
+import lsfusion.gwt.client.classes.data.GImageType;
 import lsfusion.gwt.client.classes.data.GIntegerType;
 import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
+import lsfusion.gwt.client.classes.data.GPDFType;
+import lsfusion.gwt.client.classes.data.GRenderedType;
 import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.GUpdateMode;
@@ -70,6 +75,7 @@ import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeController;
@@ -4640,6 +4646,24 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals(calls, f.filtersCalls.size());
         callChange(member, parse("{\"property\": \"scan\"}")); // ... and taken off, as any other property's is
         assertEquals("changeFilters items tint= period=", f.filtersCalls.get(calls));
+    }
+
+    // a file a view is given is a link to it, whatever the server sends it as: a cell of a PDF as an image made of the
+    // file (FormChanges.getConvertData), whose src the link is; a call's result, as the form hands it to the view
+    // (GFormActionDispatcher), as the path the file is saved under - an image's too
+    public void testAFileIsALinkToItWhateverTheServerSendsItAs() {
+        Fixture f = new Fixture(fixture -> {
+            GPropertyDraw scan = fixture.property(93, "scan", fixture.group, true, fixture.a);
+            scan.cellType = scan.valueType = new GPDFType();
+        });
+        JsniTestSupport.installPageSetup();
+        GFormChanges shown = new GFormChanges();
+        put(shown, byName(f.form, "scan"), f.one, PValue.convertFileValue(new AppFileImage("files/scan.pdf", "pdf")));
+        f.apply(shown);
+        assertEquals(GwtClientUtils.getAppDownloadURL("files/scan.pdf"), text(field(f.row("1"), "scan"), "value"));
+        for (GRenderedType type : new GRenderedType[] {new GPDFType(), new GImageType("png")})
+            assertEquals(GwtClientUtils.getAppDownloadURL("files/result"),
+                    GSimpleStateTableView.toString(GSimpleStateTableView.convertToJSValue(type, null, false, PValue.getPValue("files/result"))));
     }
 
     // where the platform draws a group's filters over the rows React draws, its filter input controller asks those rows

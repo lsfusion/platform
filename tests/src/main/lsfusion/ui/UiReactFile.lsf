@@ -1,0 +1,39 @@
+MODULE UiReactFile;
+
+REQUIRE SystemEvents;
+
+// the files UiReactFileIT has a React view (UiReactFile.js) given - the values of its properties and what its calls to
+// the server return - and fetches the links of
+
+// files of the classes whose value the server sends as an image made of the file
+uiRfPdf 'PDF' () = PDFFILE(FILE('a PDF'));
+uiRfVideo 'Video' () = VIDEOFILE(FILE('a video'));
+uiRfImage 'Image' () = IMAGEFILE(FILE('an image'));
+
+// ... and what a call returns, which the server sends as the file itself, saved
+uiRfPdfResult () { RETURN uiRfPdf(); }
+uiRfImageResult () { RETURN uiRfImage(); }
+
+FORM uiRfForm 'React files'
+    PROPERTIES() uiRfPdf, uiRfVideo, uiRfImage
+    CUSTOMS uiRfPdfResult, uiRfImageResult
+;
+
+DESIGN uiRfForm {
+    NEW uiRfBoard FIRST {
+        custom = 'UiReactFileBoard';
+        MOVE PROPERTY(uiRfPdf());
+        MOVE PROPERTY(uiRfVideo());
+        MOVE PROPERTY(uiRfImage());
+    }
+}
+
+NAVIGATOR {
+    NEW FOLDER uiReactFile 'UI React file' WINDOW toolbar {
+        NEW uiRfForm;
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiReactFile.js') <- 1;
+}

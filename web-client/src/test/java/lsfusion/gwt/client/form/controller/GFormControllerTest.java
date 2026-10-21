@@ -74,6 +74,7 @@ public class GFormControllerTest extends GWTTestCase {
 
     @Override protected void gwtSetUp() {
         JsniTestSupport.installMapDelete();
+        JsniTestSupport.installPageSetup();
         installPageHelpers();
     }
     // what the client's page gives it and a test's page does not (webapp/static/js/utils.js): its text and element
@@ -97,10 +98,6 @@ public class GFormControllerTest extends GWTTestCase {
         for (var name in helpers)
             if (!$wnd[name])
                 $wnd[name] = helpers[name];
-        // ... and the page's setup, which the server writes into the page (main.jsp): none of its arguments here, so
-        // the client takes its defaults - the images of the platform's buttons are addressed from the page's own URL
-        if (!$wnd.pageSetup)
-            $wnd.pageSetup = {};
     }-*/;
 
     public void testAGridOfItsOwnIsSizedByItsColumns() {

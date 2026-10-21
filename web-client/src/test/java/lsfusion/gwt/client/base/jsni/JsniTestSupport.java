@@ -9,4 +9,12 @@ public final class JsniTestSupport {
     public static native void installMapDelete() /*-{
         $wnd.jsMapDelete = function(map, key) { return map["delete"](key); };
     }-*/;
+
+    // the page's setup, which the server writes into the page (main.jsp): none of its arguments here, so the client
+    // takes its defaults - the images of the platform's buttons and the links to files are addressed from the page's
+    // own URL
+    public static native void installPageSetup() /*-{
+        if (!$wnd.pageSetup)
+            $wnd.pageSetup = {};
+    }-*/;
 }
