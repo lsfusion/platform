@@ -84,6 +84,8 @@ The first passed file is used to automatically determine a flat file format by i
     - column names are considered to be: `A`, `B`, ..., `Z`, `AA`, ...,  `AE`, ...
     - if a column is not found / does not match the type of the destination property, the value of this column is considered to be `NULL` (in other import formats, in the platform throws an error in these cases).
 
+    When using the `HEADER` option, if a **CSV** record has fewer fields than the header, the missing fields are considered to be `NULL`. Empty lines of a **CSV** file are skipped and are not counted in the row index.
+
 - `ESCAPE` | `NOESCAPE`
 
     Keyword specifying the presence (`ESCAPE`) or absence (`NOESCAPE`) of escaping for special characters (`\r`, `\n`, `"` (double quotes)) and the specified delimiter `separator` in a **CSV** file. It makes sense to use `NOESCAPE` only in cases where the specified delimiter is guaranteed not to occur in the data. The default is `ESCAPE`.
