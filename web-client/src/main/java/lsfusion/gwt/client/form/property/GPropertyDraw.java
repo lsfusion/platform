@@ -414,14 +414,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     // all of this draw's semantic display readers, projected onto its object for react-owned properties; native DOM/CSS
     // presentation (element classes and font) stays owned by the native renderers and is deliberately not projected.
     // declares its own attribute field name + converter (getAttributeField / getAttributeConverter), so GReactFormData iterates generically.
-    // (showIf/changeKey/changeMouse are NOT presentation and are omitted; entries may be null and are skipped. The
-    // loading is: a cell whose change waits for its answer is drawn so.)
+    // (showIf/changeKey/changeMouse are NOT presentation and are omitted; entries may be null and are skipped. Nor is
+    // the loading reader: whether a cell is loading is its entry's to say (GReactFormData.ReactPropertyEntry.isLoading),
+    // as it is a platform's cell's (ActionOrPropertyValue.isLoading))
     public GPropertyReader[] getPresentationReaders() {
         return new GPropertyReader[] {
                 captionReader, readOnlyReader, backgroundReader, foregroundReader, imageReader, footerReader,
                 commentReader, placeholderReader, patternReader, regexpReader,
-                regexpMessageReader, tooltipReader, valueTooltipReader, propertyCustomOptionsReader, defaultValueReader,
-                loadingReader
+                regexpMessageReader, tooltipReader, valueTooltipReader, propertyCustomOptionsReader, defaultValueReader
         };
     }
 

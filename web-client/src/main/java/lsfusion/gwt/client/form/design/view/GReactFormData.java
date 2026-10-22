@@ -217,6 +217,10 @@ public class GReactFormData {
         // ends - when it throws too -, a call being made when it is made. A batch begun inside it is a part of it; a
         // server call on a controller, or a lookup, is refused while it runs
         void batch(Runnable run);
+        // ... and what shows the form's asynchronous requests (GFormController.showAsync): the entry of the property
+        // that shows them, drawAsync - the Refresh button -, where React draws it (ReactPanelPropertyEntry), as the
+        // platform's button of it gives itself (ActionPanelRenderer)
+        void setAsyncView(Consumer<Boolean> asyncView);
     }
 
     // a batch's fn (ViewState.batch): a function, the member calls it makes being sent together
@@ -2577,12 +2581,19 @@ public class GReactFormData {
             attribute(reader, delivered, partial);
         }
         abstract void attribute(GPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> delivered, boolean partial);
-        // a cell of it: its value while the form shows it, and what these readers say of it, for the key - the panel
-        // entry is its one cell, a column has one per row
+        // a cell of it: its value while the form shows it, what these readers say of it, for the key - the panel
+        // entry is its one cell, a column has one per row -, and `loading` while it is loading
         final void emitCell(JavaScriptObject target, GPropertyReader[] readers, GGroupObjectValue key) {
             if (shown)
                 emitValue(target, getValueAt(key));
             emitAttributes(target, readers, key, property);
+            if (isLoading(key))
+                setField(target, "loading", true);
+        }
+        // whether a cell is loading: while its change waits for its answer - the client's own mark, which the answer
+        // takes off (GLoadingReader) -, as the platform's cell is (ActionOrPropertyValue.isLoading)
+        boolean isLoading(GGroupObjectValue key) {
+            return PValue.getBooleanValue(values.get(property.loadingReader, key));
         }
         // ===== its value, as a view is given it (emitValue) and as a view's call changes it back (changeValue): as its
         // type converts it - a SELECTION's, whose cell holds the list of its options, as ReactSelect gives and changes it
@@ -2740,11 +2751,28 @@ public class GReactFormData {
     // a panel or empty-group property's entry: its value and every attribute of it, in one place
     private final class ReactPanelPropertyEntry extends ReactPropertyEntry {
         final GPropertyReader[] readers; // what it is drawn with
+        // whether the form shows its asynchronous requests on it now - on the property that shows them, drawAsync
+        boolean forceLoading;
 
         ReactPanelPropertyEntry(Node node, GPropertyDraw property) {
             super(node, property);
             readers = present(property.getPresentationReaders());
+            if (property.drawAsync)
+                verbs.setAsyncView(this::setForceLoading);
             updateEntry(); // hidden until it is delivered
+        }
+        // rebuilt where it differs: the platform takes them off whenever the last answer comes, shown or not
+        void setForceLoading(boolean forceLoading) {
+            if (this.forceLoading != forceLoading) {
+                this.forceLoading = forceLoading;
+                updateEntry();
+            }
+        }
+        // loading while its change waits for its answer, and while the form shows its requests on it, as the
+        // platform's button of it is (ActionOrPropertyPanelValue.isLoading)
+        @Override
+        boolean isLoading(GGroupObjectValue key) {
+            return super.isLoading(key) || forceLoading;
         }
         // what it is drawn with: every attribute is on its one entry
         void attribute(GPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> delivered, boolean partial) {

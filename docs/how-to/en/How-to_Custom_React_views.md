@@ -216,7 +216,7 @@ An option the platform computed nothing for is absent — a property with no `BA
 | `askConfirm` | Whether a change of the property — for an action, running it — asks the user first: `CONFIRM` on the action, or `askConfirm = TRUE` in the design. The platform's own editor and button ask before they send; a view's call through the property's member does not, so a view that wants the question asks it itself, before the call. It is where `type` is | `true` / `false` |
 | `askConfirmMessage` | The question to ask: the design's `askConfirmMessage`, or the platform's own | string; only where `askConfirm` is `true` |
 | `hidden` | Whether the form hides the property now — by its `SHOWIF`, or by the `SHOWIF` of a container above it. It is on the property's entry — the column entry of a table property, the entry itself of a panel or empty-group one — and never on a cell | `true`; absent while the form shows it |
-| `loading` | Whether a change of the cell still waits for the server's answer, whoever sent it — this view, through the property's member (`change` or `exec`, in a batch or outside one), or another part of the form. An action's cell says it while the action runs. It is on the cell of a table property, and on the entry itself of a panel or empty-group one | `true`; absent otherwise |
+| `loading` | Whether a change of the cell still waits for the server's answer, whoever sent it — this view, through the property's member (`change` or `exec`, in a batch or outside one), or another part of the form. An action's cell says it while the action runs, and the entry of the form's Refresh button while the [form waits for the server](#form-loading). It is on the cell of a table property, and on the entry itself of a panel or empty-group one | `true`; absent otherwise |
 | `caption` | The property's caption | string |
 | `image` | The property's image | string with the image HTML |
 | `footer` | The column's footer value | converted like a cell value |
@@ -671,6 +671,26 @@ Both name their children, so neither is extended from `DESIGN` alone: adding a c
 To read and change form state from the component — selecting a row, changing a property, calling actions — use `props.controller`. Its methods are described in [How-to: Custom view controller](How-to_Custom_view_controller.md).
 
 A component that draws a field of its own also tells the form when the user is editing in it, so that `ENTER` does not move the focus to the next component and `ESCAPE` does not close the window while they are typing — see [Declaring that the user is editing](How-to_Custom_view_controller.md#editing). A component that draws no field of its own has nothing to declare.
+
+<a className="lsdoc-anchor" id="form-loading"/>
+
+While the form waits for the server, the platform shows it on the form's Refresh button (`formRefresh`), and where React draws that button, the button's entry says so: `data.formRefresh.loading` is `true`. The design moves the button into the view's container — `MOVE PROPERTY(formRefresh())` —, and the view draws from the entry what it needs: the button, or only an indicator. What it shows are the form's asynchronous requests, whichever part of the form sent them — a property changed with a value, the current object, sortings and filters changed, a tree's node opened, a [batch](How-to_Custom_view_controller.md#batch), the controller's own `exec`, `eval`, `evalAction` and `change`, a [scheduled](#live-data) run —, from the moment the first of them has waited 20 milliseconds until the answer to the last of them comes. A request answered sooner shows nothing, so that the page does not flicker. A synchronous request does not set it — the run of an action through its member outside a batch is one, unless the platform runs the action asynchronously, as it runs one drawn with `NOWAIT`: it blocks input, and the platform shows its [busy indicator](../paradigm/Interactive_view.md#busy) instead. The entry also says `loading` while the button's own run waits, as an action's does. A Refresh button the platform draws — placed with [`<Platform>`](#placing) or anywhere else on the form — shows it itself, and a form with no Refresh button shows it nowhere. Only the view that draws the button is drawn again when it changes:
+
+```lsf
+DESIGN orders {
+    board {
+        MOVE PROPERTY(formRefresh());
+    }
+}
+```
+
+```jsx
+const { useData } = window.lsfusion;
+
+function Busy() {
+    return useData(d => d.formRefresh.loading) ? <span className="spinner"/> : null;
+}
+```
 
 ### Keys and mouse bindings {#keys}
 

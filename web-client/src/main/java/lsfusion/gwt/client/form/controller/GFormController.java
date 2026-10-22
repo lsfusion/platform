@@ -95,7 +95,6 @@ import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRendere
 import lsfusion.gwt.client.form.property.cell.classes.view.LogicalCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.*;
-import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyContextMenuPopup;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.form.view.FormContainer;
@@ -2548,13 +2547,14 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         return form.propertyDraws;
     }
 
-    private ActionPanelRenderer asyncView;
-    public void setAsyncView(ActionPanelRenderer asyncView) {
+    private Consumer<Boolean> asyncView;
+    @Override
+    public void setAsyncView(Consumer<Boolean> asyncView) {
         this.asyncView = asyncView;
     }
     public void showAsync(boolean set) {
         if(asyncView != null)
-            asyncView.setForceLoading(set);
+            asyncView.accept(set);
     }
 
     public Element getTargetAndPreview(Element element, Event event) {

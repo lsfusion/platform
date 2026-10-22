@@ -8,6 +8,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -16,6 +17,7 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.GFormChangesDTO;
 import lsfusion.gwt.client.GFormChangesTest;
+import lsfusion.gwt.client.RemoteDispatchAsync;
 import lsfusion.gwt.client.action.GRequestUserInputAction;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -23,6 +25,7 @@ import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.data.GIntegerType;
 import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
@@ -49,6 +52,7 @@ import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GExtraPropReader;
 import lsfusion.gwt.client.form.property.GExtInt;
+import lsfusion.gwt.client.form.property.GLoadingReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import lsfusion.gwt.client.form.property.PValue;
@@ -72,7 +76,8 @@ import static lsfusion.gwt.client.GFormChanges.GPropertyReadType.DRAW;
 // which the form counts before it builds the layout. A delta goes to the controller of each owner it carries something
 // of, and what React keeps nothing of has one that keeps nothing: what the delta carries of it is dropped, and the
 // rest of the delta applied. An input the server asks for with no cell to enter it in is cancelled. A key is
-// pressed in the page, and handed to the form's bindings as the form's listener hands it (press)
+// pressed in the page, and handed to the form's bindings as the form's listener hands it (press). The form's
+// dispatcher is told of requests sent and answered, with nothing sent, and its timer runs as it does (inTurn)
 public class GFormControllerTest extends GWTTestCase {
     @Override public String getModuleName() { return "lsfusion.gwt.main"; }
 
@@ -174,6 +179,65 @@ public class GFormControllerTest extends GWTTestCase {
         controller.applyRemoteChanges(changes, 1);
         assertTrue(controller.needConfirm());
     }
+
+    // the form waiting for the server, on its Refresh button React draws - the property that shows it, drawAsync -, as
+    // on the platform's button of it: the button's entry says `loading` from the moment an asynchronous request of the
+    // form's has waited the dispatcher's timeout - one answered sooner shows nothing -, until its answer comes; a view
+    // that does not draw the button is not given anything anew (#1669)
+    public void testTheRefreshButtonReactDrawsSaysWhileTheFormWaitsForTheServer() {
+        GForm form = form("busy");
+        GContainer board = container(2, "board", form.mainContainer), other = container(3, "other", form.mainContainer);
+        board.custom = "Board"; board.react = true; // NEW board { custom = 'Board'; MOVE PROPERTY(formRefresh()); }
+        other.custom = "Other"; other.react = true; // NEW other { custom = 'Other'; }
+        GPropertyDraw refresh = column(form, 20, "formRefresh", null);
+        refresh.isList = false; refresh.valueType = GActionType.instance; refresh.drawAsync = true;
+        refresh.container = board; board.children.add(refresh);
+        form.initialFormChanges = GFormChangesTest.noChanges();
+        GFormController controller = new GFormController(null, null, formContainer(), form, false, "busy", 0, null);
+        Object view = controller.getFormLayout().getContainerView(board);
+        Object otherView = controller.getFormLayout().getContainerView(other);
+        JavaScriptObject otherData = published(otherView);
+        RemoteDispatchAsync dispatcher = dispatcher(controller);
+        assertEquals(0, dispatcher.asyncCount); // nothing sent yet
+
+        dispatcher.onAsyncStarted(); // a request answered before the timeout
+        dispatcher.onAsyncFinished();
+        delayTestFinish(5000);
+        inTurn(() -> {
+            assertNull(loading(published(view), "formRefresh")); // ... shows nothing
+            dispatcher.onAsyncStarted(); // one that waits
+        }, () -> {
+            assertEquals(Boolean.TRUE, loading(published(view), "formRefresh"));
+            dispatcher.onAsyncFinished(); // ... and its answer
+        }, () -> {
+            assertNull(loading(published(view), "formRefresh"));
+            assertSame(otherData, published(otherView));
+            finishTest();
+        });
+    }
+    // the steps, each well after the one before - past the time the form's dispatcher lets a request wait before it
+    // shows it (RemoteDispatchAsync.ASYNC_TIME_OUT) -, in a GWT entry of its own, as a timer runs: what a step writes
+    // outside a change is published when it exits
+    private static void inTurn(Runnable... steps) {
+        new Timer() {
+            int next;
+            @Override
+            public void run() {
+                steps[next++].run();
+                if (next < steps.length)
+                    schedule(200);
+            }
+        }.schedule(200);
+    }
+    // the form's dispatcher, which counts its requests, what a React container's view was last given, and the
+    // `loading` of an entry in it, null where there is none - read where the client keeps them
+    private static native RemoteDispatchAsync dispatcher(GFormController controller) /*-{
+        return controller.@lsfusion.gwt.client.form.controller.GFormController::dispatcher;
+    }-*/;
+    private static native JavaScriptObject published(Object view) /*-{
+        return view.@lsfusion.gwt.client.form.design.view.ReactContainerView::state.@lsfusion.gwt.client.form.design.view.GReactFormData.ViewState::lastPublished;
+    }-*/;
+    private static native Boolean loading(JavaScriptObject data, String name) /*-{ return data[name].loading; }-*/;
 
     // an input asks for its value in the cell the change asking for it was made in; one asked for by no such change - a
     // view's call, a key of what a React view draws, a form's event - finds no cell: it is cancelled, as a user cancels
@@ -1083,6 +1147,7 @@ public class GFormControllerTest extends GWTTestCase {
         property.propertyFormName = name; property.groupObject = group; property.isList = true;
         property.valueType = GIntegerType.instance; property.valueWidth = 80; property.valueHeight = 20;
         property.valueAlignmentHorz = GFlexAlignment.END; property.valueAlignmentVert = GFlexAlignment.CENTER;
+        property.loadingReader = new GLoadingReader(id, group != null ? group.ID : -1); // as the server gives every one
         form.propertyDraws.add(property);
         return property;
     }

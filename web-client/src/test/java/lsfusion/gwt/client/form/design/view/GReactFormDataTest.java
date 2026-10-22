@@ -213,6 +213,7 @@ public class GReactFormDataTest extends GWTTestCase {
         final JavaScriptObject[] snapshots = new JavaScriptObject[3];
         final int[] publications = new int[3];
         Runnable onPublish;
+        java.util.function.Consumer<Boolean> asyncView; // what the form shows its asynchronous requests on, given to it
         // the platform's controller of a group and of a property, as far as the form hands it on
         final RecordingTableController platform = new RecordingTableController();
         // ... and of the components, recording into the platform's log
@@ -337,6 +338,7 @@ public class GReactFormDataTest extends GWTTestCase {
                 }
                 public void expandCurrent(GGroupObject group, GGroupObjectValue key) { }
                 public void published() { }
+                public void setAsyncView(java.util.function.Consumer<Boolean> view) { asyncView = view; }
                 public void expandNode(GGroupObject group, GGroupObjectValue key) { }
                 public void collapseNode(GGroupObject group, GGroupObjectValue key) { }
                 public void expandAll(GGroupObject group) { }
@@ -490,11 +492,9 @@ public class GReactFormDataTest extends GWTTestCase {
             snapshots[index] = data; publications[index]++;
             if (onPublish != null) onPublish.run();
         }
-        // a property of the form, with its loading reader
+        // a property of the form
         GPropertyDraw property(int id, String name, GGroupObject group, boolean list, GContainer scope) {
-            GPropertyDraw property = GReactFormDataTest.property(form, id, name, group, list, scope);
-            property.loadingReader = new GLoadingReader(id, group != null ? group.ID : -1);
-            return property;
+            return GReactFormDataTest.property(form, id, name, group, list, scope);
         }
         // a selection a view draws, of the group in a: its cell the options (PropertyDrawEntity.getSelectProperty), the
         // value they are of a string, a pick sent as the change of the cell - or, where an explicit change takes the
@@ -663,6 +663,7 @@ public class GReactFormDataTest extends GWTTestCase {
             }
         }
         public void published() { }
+        public void setAsyncView(java.util.function.Consumer<Boolean> asyncView) { }
     }
     private static final class TreeFixture {
         final GForm form = new GForm();
@@ -912,12 +913,14 @@ public class GReactFormDataTest extends GWTTestCase {
         table.filters.add(filter);
         return filter;
     }
-    // a property of a form, of a group or of none, a list one or not, drawn in scope - named by its name everywhere
+    // a property of a form, of a group or of none, a list one or not, drawn in scope - named by its name everywhere -,
+    // with its loading reader, as the server gives every property one
     private static GPropertyDraw property(GForm form, int id, String name, GGroupObject group, boolean list, GContainer scope) {
         GPropertyDraw property = new GPropertyDraw();
         property.ID = id; property.nativeSID = "p" + id; property.sID = name; property.integrationSID = name;
         property.groupObject = group; property.isList = list; property.container = scope;
         property.valueType = GIntegerType.instance;
+        property.loadingReader = new GLoadingReader(id, group != null ? group.ID : -1);
         form.propertyDraws.add(property); scope.children.add(property);
         return property;
     }
@@ -2186,6 +2189,58 @@ public class GReactFormDataTest extends GWTTestCase {
         f.controller(f.plain).setLoadingValueAt(f.plain, GGroupObjectValue.EMPTY, PValue.UNDEFINED);
         assertEquals(Arrays.asList(f.nativeProperty, f.plain), f.platform.loading);
         assertTrue(reachesPlatform(f.platform, f.controllers, f.nativeProperty.loadingReader, answered));
+    }
+
+    // ... and the form waiting for the server, where React draws its Refresh button - the property that shows it,
+    // drawAsync -: the button's entry gives itself to the form to show it on, as the platform's button of it does, and
+    // says `loading` while the form shows it there (GFormController.showAsync) or while its own run waits, either kept
+    // when the other goes; only the view that draws it is published anew, and taken off where it is not there it is
+    // nothing to publish. One the platform draws is the platform's to show it on (#1669)
+    public void testTheRefreshButtonReactDrawsSaysWhileTheFormWaitsForTheServer() {
+        GPropertyDraw[] refresh = new GPropertyDraw[1];
+        Fixture f = new Fixture(fixture -> {
+            refresh[0] = fixture.property(48, "formRefresh", null, false, fixture.a);
+            refresh[0].valueType = GActionType.instance;
+            refresh[0].drawAsync = true;
+        });
+        JavaScriptObject b = f.snapshots[1], c = f.snapshots[2], single = field(f.data(), "single");
+        f.asyncView.accept(true);
+        f.projection.publish(); // as the entry it is written in exits
+        assertTrue(flag(field(f.data(), "formRefresh"), "loading"));
+        assertSame(single, field(f.data(), "single"));
+        assertSame(b, f.snapshots[1]);
+        assertSame(c, f.snapshots[2]);
+        f.asyncView.accept(false);
+        f.projection.publish();
+        assertFalse(own(field(f.data(), "formRefresh"), "loading"));
+        JavaScriptObject a = f.data();
+        f.asyncView.accept(false); // the last answer, nothing shown before it
+        f.projection.publish();
+        assertSame(a, f.data());
+        GFormChanges shown = new GFormChanges(); // the form shows it
+        put(shown, refresh[0], GGroupObjectValue.EMPTY, true);
+        f.apply(shown);
+        f.controller(refresh[0]).setLoadingValueAt(refresh[0], GGroupObjectValue.EMPTY, PValue.UNDEFINED); // it runs
+        f.asyncView.accept(true);
+        f.asyncView.accept(false);
+        f.projection.publish();
+        assertTrue(flag(field(f.data(), "formRefresh"), "loading"));
+        f.asyncView.accept(true); // ... and the answer to its run comes while the form's requests are shown on it
+        GFormChanges answer = new GFormChanges();
+        put(answer, refresh[0].loadingReader, GGroupObjectValue.EMPTY, null);
+        answer.updateProperties.add(refresh[0].loadingReader);
+        f.apply(answer);
+        assertTrue(flag(field(f.data(), "formRefresh"), "loading"));
+        f.asyncView.accept(false);
+        f.projection.publish();
+        assertFalse(own(field(f.data(), "formRefresh"), "loading"));
+
+        Fixture placed = new Fixture(fixture -> {
+            GPropertyDraw platform = fixture.platformPanel(48, "formRefresh", null, fixture.b);
+            platform.valueType = GActionType.instance;
+            platform.drawAsync = true;
+        });
+        assertNull(placed.asyncView);
     }
 
     public void testDroppedPropertyComesBackWithItsValues() {

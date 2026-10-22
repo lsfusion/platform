@@ -17,7 +17,7 @@ public class ActionPanelRenderer extends PanelRenderer {
         sizedView = value.getSizedWidget(false);
 
         if (property.drawAsync)
-            form.setAsyncView(this);
+            form.setAsyncView(this::setForceLoading);
 
         finalizeInit();
     }
