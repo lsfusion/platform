@@ -30,7 +30,8 @@ public class RemoteInternalException extends RemoteServerException {
         assert !(e instanceof RemoteMessageException); // should be handled before 
         Throwable throwable = new Throwable(ExceptionUtils.copyMessage(e));
         ExceptionUtils.copyStackTraces(e, throwable);
-        return new Pair<>(throwable.getMessage(), getExStacks(throwable));
+        // the copy has the message and the java stack of the root cause, but the lsf and async stacks only the original has
+        return new Pair<>(throwable.getMessage(), new ExStacks(getJavaStack(throwable), getLsfStack(e), getAsyncStacks(e)));
     }
 
     public static ExStacks getExStacks(Throwable e) {
