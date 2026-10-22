@@ -2,12 +2,12 @@ MODULE ReservedProjectedName;
 
 REQUIRE System;
 
-// a property of the empty group named like a verb every controller of the form carries - here the editing a view
-// declares: its member would shadow the verb
+// a property of the empty group named like what a react view's controller carries beside its members - here the
+// form's controller, `form`: its member would shadow it
 reservedNote = DATA STRING[50] ();
 
 FORM reservedName
-    PROPERTIES() reservedNote EXTID 'startEditing'
+    PROPERTIES() reservedNote EXTID 'form'
 ;
 
 DESIGN reservedName {

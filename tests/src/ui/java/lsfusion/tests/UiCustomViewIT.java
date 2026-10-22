@@ -11,8 +11,8 @@ import static org.junit.Assert.assertEquals;
 
 // what a custom view's controller does (UiCustomView.lsf, its views in UiCustomView.js): the places of a React view
 // that can hold no view - one outside the page, a second one of a row's editor -, a value a React view gives a member,
-// the calls to the server a React view makes through its controller, a custom cell renderer's controller, and the
-// controller an INTERNAL CLIENT action of a form and of the navigator gives the JS function it runs
+// the calls to the server a React view makes through the form's controller, a custom cell renderer's controller, and
+// the controller an INTERNAL CLIENT action of a form and of the navigator gives the JS function it runs
 public class UiCustomViewIT extends UiTest {
 
     private static final String FOLDER = "UiCustomView.uiCustomView";
@@ -69,9 +69,9 @@ public class UiCustomViewIT extends UiTest {
         close(form);
     }
 
-    // the calls a React view makes to the server through its controller resolve to what the server answers, of its
-    // type - eval to the RETURN of its script, exec to the RETURN of the action, evalAction and change to nothing - and
-    // run in the form's session, a change seen by the calls after it and by the form; a call that fails is rejected
+    // the calls a React view makes to the server through the form's controller resolve to what the server answers, of
+    // its type - eval to the RETURN of its script, exec to the RETURN of the action, evalAction and change to nothing -
+    // and run in the form's session, a change seen by the calls after it and by the form; a call that fails is rejected
     // with its error
     @Test
     public void aViewsCallsToTheServer() throws Exception {
@@ -106,7 +106,7 @@ public class UiCustomViewIT extends UiTest {
         call(form, "eval");
         assertThat(form.locator(".ui-custom-view-results li")).hasText(new String[] {"eval: number 42"});
         close(form);
-        assertEquals("Form is closed", page.waitForFunction("() => window.uiCustomViewCalls.eval('run() { RETURN 1; }')"
+        assertEquals("Form is closed", page.waitForFunction("() => window.uiCustomViewCalls.form.eval('run() { RETURN 1; }')"
                 + ".then(() => false, error => error.message)", null,
                 new Page.WaitForFunctionOptions().setTimeout(10_000)).jsonValue());
     }

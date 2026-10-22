@@ -58,9 +58,9 @@ window.UiFormsWindowPush = function (props) {
         e('button', { className: 'ui-forms-window-push-closer', onClick: function () { controller.uiFormsWindowCloser.change(1); } }, 'Change closer'),
         e('button', { className: 'ui-forms-window-push-plain', onClick: function () { controller.uiFormsWindowPlain.change(7); } }, 'Change plain'),
         e('button', { className: 'ui-forms-window-push-opener', onClick: function () { controller.uiFormsWindowOpener.change(1); } }, 'Change opener'),
-        e('button', { className: 'ui-forms-window-push-by-name', onClick: function () { controller.exec('uiFormsWindowFirstOnce'); } }, 'Open by name'),
+        e('button', { className: 'ui-forms-window-push-by-name', onClick: function () { controller.form.exec('uiFormsWindowFirstOnce'); } }, 'Open by name'),
         e('button', { className: 'ui-forms-window-push-close-and-show',
-                      onClick: function () { controller.exec('uiFormsWindowCloseAndShowFirst'); } }, 'Close and show by name'),
+                      onClick: function () { controller.form.exec('uiFormsWindowCloseAndShowFirst'); } }, 'Close and show by name'),
         e('button', { className: 'ui-forms-window-push-close-source',
-                      onClick: function () { controller.exec('uiFormsWindowCloseSourceIntoForms'); } }, 'Close source by name'));
+                      onClick: function () { controller.form.exec('uiFormsWindowCloseSourceIntoForms'); } }, 'Close source by name'));
 };

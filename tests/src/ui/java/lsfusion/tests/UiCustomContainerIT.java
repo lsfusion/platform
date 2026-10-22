@@ -56,10 +56,10 @@ public class UiCustomContainerIT extends UiTest {
         close(form);
     }
 
-    // in a field a view says the user is editing in (controller.startEditing), ENTER does not move the focus to the
-    // next component and ESCAPE does not close the form; in one it says nothing of, both do what they do anywhere else.
-    // Once the field loses the focus, the view takes its word back (stopEditing), and ENTER - which steps aside while
-    // the user is said to edit anywhere in the form, where ESCAPE steps aside only for a key pressed in the field
+    // in a field a view says the user is editing in (controller.form.startEditing), ENTER does not move the focus to
+    // the next component and ESCAPE does not close the form; in one it says nothing of, both do what they do anywhere
+    // else. Once the field loses the focus, the view takes its word back (stopEditing), and ENTER - which steps aside
+    // while the user is said to edit anywhere in the form, where ESCAPE steps aside only for a key pressed in the field
     // edited - moves the focus on again (#1819)
     @Test
     public void enterAndEscapeInAFieldTheViewSaysIsEdited() throws Exception {

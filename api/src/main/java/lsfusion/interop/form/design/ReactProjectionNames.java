@@ -8,9 +8,8 @@ package lsfusion.interop.form.design;
 // this module - and which GWT's unit cache does not see change: after a change here, the client's test sees it once
 // web-client/target/gwt-unitCache is dropped (a build from scratch has none)
 public class ReactProjectionNames {
-    // what a react container's controller carries beside its members: the four verbs every controller has, the
-    // editing a view declares and the batch
-    public static final String CONTROLLER = "exec,eval,evalAction,change,startEditing,stopEditing,isEditing,batch";
+    // what a react container's controller carries beside its members: the form's controller and the batch
+    public static final String CONTROLLER = "form,batch";
     // what every group's node carries, whatever is drawn in its scope: its index, its verb
     public static final String NODE_OWN = "properties,change";
     // the rows' part of a group (RowsPart), a tree's group's too, where the rows are drawn: on the node, and on a row

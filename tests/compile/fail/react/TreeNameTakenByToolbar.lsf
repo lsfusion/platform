@@ -3,19 +3,20 @@ MODULE TreeNameTakenByToolbar;
 REQUIRE System;
 
 // a tree only whose toolbar a React view draws is named in the projection all the same - the toolbar's buttons are
-// members of the tree's node, controller.<tree> -: a tree named like the controller's own verb would take its place
+// members of the tree's node, controller.<tree> -: a tree named like what the controller carries beside its members -
+// here the form's controller - would take its place
 CLASS TreeBarFolder;
 treeBarParent = DATA TreeBarFolder (TreeBarFolder);
 treeBarName = DATA STRING[50] (TreeBarFolder);
 
 FORM treeNameTakenByToolbar
-    TREE change f = TreeBarFolder PARENT treeBarParent(f)
+    TREE form f = TreeBarFolder PARENT treeBarParent(f)
     PROPERTIES(f) treeBarName
 ;
 
 DESIGN treeNameTakenByToolbar {
     NEW bar {
         custom = 'FolderBar';
-        MOVE TOOLBARSYSTEM(TREE change);
+        MOVE TOOLBARSYSTEM(TREE form);
     }
 }

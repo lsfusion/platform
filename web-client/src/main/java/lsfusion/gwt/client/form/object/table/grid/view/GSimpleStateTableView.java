@@ -288,7 +288,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         form.batch(run);
     }
     protected void batchJS(JavaScriptObject run) {
-        batch(() -> GReactFormData.runBatchFunction(GReactFormData.controllerPrefix("batch()"), run));
+        GReactFormData.batch(form, "batch()", run);
     }
 
     protected String getCaption(String property) {

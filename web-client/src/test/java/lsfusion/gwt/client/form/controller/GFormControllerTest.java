@@ -99,6 +99,9 @@ import java.util.Collections;
 import java.util.List;
 
 import static lsfusion.gwt.client.GFormChanges.GPropertyReadType.DRAW;
+import static lsfusion.gwt.client.base.jsni.JsniTestSupport.batch;
+import static lsfusion.gwt.client.base.jsni.JsniTestSupport.field;
+import static lsfusion.gwt.client.base.jsni.JsniTestSupport.own;
 
 // A form's controller as it is made, over a form given whole with nothing behind it - no server, no window: what its
 // constructor builds is what a test reads, and what it is given then is what the server would send. The React view of
@@ -1409,6 +1412,24 @@ public class GFormControllerTest extends GWTTestCase {
         panel.addCondition(null, false, true); // F3
         assertValue(3, filters.first(controller, filters.price).value.value);
         assertEquals(GCompare.GREATER, filters.first(controller, filters.price).compare);
+    }
+
+    // A REACT VIEW'S CONTROLLER NAMES THE FORM'S as `form` - the object the classic surfaces are handed: the server
+    // calls, the editing a view declares, the batch - and carries none of the form's verbs itself; the form's batch is
+    // the form's, as a view's is
+    public void testAViewsControllerNamesTheFormsController() {
+        FiltersForm filters = new FiltersForm(true);
+        GFormController controller = filters.controller();
+        JavaScriptObject board = reactController(controller.getFormLayout().getContainerView(filters.board));
+
+        assertTrue(field(board, "form") == controller.controller);
+        for (String verb : new String[]{"exec", "eval", "evalAction", "change", "startEditing", "stopEditing", "isEditing"}) {
+            assertTrue(verb, own(controller.controller, verb));
+            assertFalse(verb, own(board, verb));
+        }
+        boolean[] batching = {false};
+        batch(controller.controller, () -> batching[0] = controller.isBatching());
+        assertTrue(batching[0]);
     }
 
     // the FILTER of a property of a group in PANEL view - which has no table and shows no user filters -: the group's

@@ -279,8 +279,8 @@ title: 'Rules: custom views'
    more is needed — a value from a React component, several
    values, an array — the call is the form controller's
    `exec(...)` / `change(...)`
-   (`props.controller` in a React component, `controller.form`
-   in a classic view), and the target MUST be listed in the
+   (`controller.form`, in a React component
+   `props.controller.form`), and the target MUST be listed in the
    form's `CUSTOMS` clause.
 
 2. The assistant MUST prefer `CUSTOMS` over `@@api` for a call

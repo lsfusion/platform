@@ -47,8 +47,8 @@ window.UiCustomViewQuantities = function (props) {
     }));
 };
 
-// buttons that call the server through the controller, each listing what its call resolved with - the type and the
-// value - or was rejected with; the controller is kept as window.uiCustomViewCalls, to be called once the form is
+// buttons that call the server through the form's controller, each listing what its call resolved with - the type and
+// the value - or was rejected with; the controller is kept as window.uiCustomViewCalls, to be called once the form is
 // closed
 window.UiCustomViewCalls = function (props) {
     var e = React.createElement, controller = props.controller;
@@ -64,13 +64,13 @@ window.UiCustomViewCalls = function (props) {
         } }, name);
     }
     return e('div', { className: 'ui-custom-view-calls' },
-        button('eval', function () { return controller.eval('run(INTEGER a) { RETURN a * 2; }', 21); }),
-        button('evalAction', function () { return controller.evalAction('UiCustomView.uiCustomViewCount() <- $1;', 5); }),
-        button('read', function () { return controller.eval('run() { RETURN UiCustomView.uiCustomViewCount(); }'); }),
-        button('exec', function () { return controller.exec('uiCustomViewDouble', 4); }),
-        button('change', function () { return controller.change('uiCustomViewCount', 9); }),
-        button('broken', function () { return controller.eval('run() { RETURN 1 +; }'); }),
-        button('missing', function () { return controller.exec('uiCustomViewNoSuchAction'); }),
+        button('eval', function () { return controller.form.eval('run(INTEGER a) { RETURN a * 2; }', 21); }),
+        button('evalAction', function () { return controller.form.evalAction('UiCustomView.uiCustomViewCount() <- $1;', 5); }),
+        button('read', function () { return controller.form.eval('run() { RETURN UiCustomView.uiCustomViewCount(); }'); }),
+        button('exec', function () { return controller.form.exec('uiCustomViewDouble', 4); }),
+        button('change', function () { return controller.form.change('uiCustomViewCount', 9); }),
+        button('broken', function () { return controller.form.eval('run() { RETURN 1 +; }'); }),
+        button('missing', function () { return controller.form.exec('uiCustomViewNoSuchAction'); }),
         e('ul', { className: 'ui-custom-view-results' }, results.map(function (result, index) {
             return e('li', { key: index }, result);
         })));

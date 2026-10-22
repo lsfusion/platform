@@ -267,7 +267,7 @@ public class UiReactPlacingIT extends UiTest {
 
     // `tabbed` on a container a React view draws itself means nothing: the view draws both pages, and the server reads
     // the one no tab strip would show as well; an ACTIVATE TAB of a page there is refused, the reason shown. And the
-    // view's controller declares that the user is editing in an element of the view, and that the user is not
+    // form's controller declares that the user is editing in an element of the view, and that the user is not
     @Test
     public void aTabbedContainerAViewDrawsHasEveryPageRead() throws Exception {
         Locator form = open("UiReactPlacing.uiRpl", "UiReactPlacing.uiRplTabbed");
@@ -275,9 +275,9 @@ public class UiReactPlacingIT extends UiTest {
         assertThat(form.locator(".ui-rpl-second-page")).hasText("second");
         assertEquals("is editing: before, declared, declared no more", "false,true,false", page.evaluate("() => {"
                 + " const controller = window.uiRplTabbedController, element = document.querySelector('.ui-rpl-tabbed');"
-                + " const editing = [controller.isEditing(element)]; controller.startEditing(element);"
-                + " editing.push(controller.isEditing(element)); controller.stopEditing(element);"
-                + " editing.push(controller.isEditing(element)); return editing.join(); }"));
+                + " const editing = [controller.form.isEditing(element)]; controller.form.startEditing(element);"
+                + " editing.push(controller.form.isEditing(element)); controller.form.stopEditing(element);"
+                + " editing.push(controller.form.isEditing(element)); return editing.join(); }"));
 
         form.locator("button[lsfusion-container='PROPERTY(uiRplActivateSecond())']").click();
         Locator refusal = page.locator(".modal.show").filter(new Locator.FilterOptions().setHasText("ACTIVATE TAB is set for"));

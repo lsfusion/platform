@@ -43,7 +43,7 @@ public class UiReactBatchIT extends UiTest {
                 + " typeof controller.i.bump].join()"));
         assertEquals("Qty,false,undefined", eval("board", "[data.i.qty.caption, 'qty' in row(" + js(items[1]) + "), typeof controller.i.qty].join()"));
         assertEquals("Comment,undefined", eval("board", "[data.comment.caption, typeof controller.comment].join()"));
-        assertEquals("function,function,function", eval("board", "[typeof controller.exec, typeof controller.change, typeof controller.batch].join()"));
+        assertEquals("function,function,function", eval("board", "[typeof controller.form.exec, typeof controller.form.change, typeof controller.batch].join()"));
 
         assertEquals("Note,false,object,0,function", eval("side", "[data.i.sideNote.caption, 'list' in data.i, typeof controller.i,"
                 + " Object.keys(controller.i).length, typeof controller.batch].join()"));
@@ -127,7 +127,7 @@ public class UiReactBatchIT extends UiTest {
         close(form);
     }
 
-    // a batch carries changes only: a server call on the controller in it is refused - its Promise rejected with the
+    // a batch carries changes only: a server call in it is refused - its Promise rejected with the
     // reason -, so is a lookup - its fail called, the reason on the console -, neither sent, the batch going on with
     // the change made before them, in one request; another view's batch begun in it is a part of it; outside a batch
     // the server call is made (#1875)
@@ -142,18 +142,18 @@ public class UiReactBatchIT extends UiTest {
         List<String> requests = requests();
         call("board", "window.uiRbRefused = 'pending'; controller.batch(() => { controller.i.note.change('outer');"
                 + " window.uiRbViews.side.controller.batch(() => controller.i.note.change(" + js(note) + "));"
-                + " controller.exec('uiRbPing').then(() => window.uiRbRefused = 'made', e => window.uiRbRefused = e.message); })");
+                + " controller.form.exec('uiRbPing').then(() => window.uiRbRefused = 'made', e => window.uiRbRefused = e.message); })");
         page.waitForConsoleMessage(new Page.WaitForConsoleMessageOptions().setPredicate(message -> message.text().equals("controller.i.note.getValues(): " + REFUSAL)),
                 () -> call("board", "window.uiRbLookup = 'pending'; controller.batch(() => controller.i.note.getValues('', () => window.uiRbLookup = 'made',"
                         + " () => window.uiRbLookup = 'failed'))"));
-        assertEquals("controller.exec(): " + REFUSAL, eval("board", "window.uiRbRefused"));
+        assertEquals("controller.form.exec(): " + REFUSAL, eval("board", "window.uiRbRefused"));
         assertEquals("failed", eval("board", "window.uiRbLookup"));
         waitFor("board", "row(" + js(items[1]) + ").note.value === " + js(note) + " && !row(" + js(items[1]) + ").note.loading");
         assertEquals(0, requests.stream().filter(request -> request.contains(signature("ControllerExecAction")) || request.contains(signature("GetAsyncValues"))
                 || request.contains(signature("GetPriorityAsyncValues"))).count());
         assertEquals(1, count(requests, "ExecuteBatch"));
 
-        assertEquals("ok", eval("board", "controller.exec('uiRbPing').then(() => 'ok')"));
+        assertEquals("ok", eval("board", "controller.form.exec('uiRbPing').then(() => 'ok')"));
         saveAndCheckNotes(form, items, "-", note, "-");
         close(form);
     }

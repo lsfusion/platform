@@ -86,7 +86,7 @@ window.UiRplShowIf = function (props) {
 };
 
 // the view of uiRplTabbed: draws both pages of the `tabbed` container side by side; it hands on its controller
-// (window.uiRplTabbedController) for the test to call its editing verbs with
+// (window.uiRplTabbedController) for the test to call the editing verbs of the form's controller with
 window.UiRplTabbed = function (props) {
     var e = React.createElement, data = props.data;
     window.uiRplTabbedController = props.controller;

@@ -17,8 +17,8 @@ public class UiReactFileIT extends UiTest {
         assertEquals("a PDF", fetch("uiRfData.uiRfPdf.value"));
         assertEquals("a video", fetch("uiRfData.uiRfVideo.value"));
         assertEquals("an image", fetch("uiRfData.uiRfImage.value"));
-        assertEquals("a PDF", fetch("uiRfController.exec('uiRfPdfResult')"));
-        assertEquals("an image", fetch("uiRfController.exec('uiRfImageResult')"));
+        assertEquals("a PDF", fetch("uiRfController.form.exec('uiRfPdfResult')"));
+        assertEquals("an image", fetch("uiRfController.form.exec('uiRfImageResult')"));
         close(form);
     }
 

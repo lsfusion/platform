@@ -199,17 +199,22 @@ public class GReactFormData {
         void setAsyncView(Consumer<Boolean> asyncView);
     }
 
-    // a batch's fn (ViewState.batch): a function, the member calls it makes being sent together
-    private static void checkFunction(String errorPrefix, JavaScriptObject fn) {
+    // A BATCH begun from JS - a React view's controller.batch, the form's controller.form.batch, a custom grid view's
+    // controller.batch (GSimpleStateTableView): fn, a function, run in the form's batch (Verbs.batch), which sends what
+    // it makes when it returns - what was made before a throw too, as it would have gone outside a batch. The batch is
+    // the form's, whoever begins it: a member call of any view made in fn goes with it (the form's server calls are
+    // refused while it runs)
+    public static void batch(Verbs form, String surface, JavaScriptObject fn) {
+        String errorPrefix = controllerPrefix(surface);
         if (!isFunction(fn))
             throw refusal(errorPrefix + "takes a function, the member calls it makes being sent together");
-    }
-    // fn, run at once: what follows an await in it would be made after the batch has ended, so a Promise it returns is
-    // refused - what it made before is sent. A custom grid view's batch runs its fn so too (GSimpleStateTableView)
-    public static void runBatchFunction(String errorPrefix, JavaScriptObject fn) {
-        if (isThenable(GwtClientUtils.call(fn)))
-            throw refusal(errorPrefix + "the function returned a Promise: a batch is sent when it returns, so"
-                    + " what follows an await in it would be made outside it. Await before the batch");
+        // fn, run at once: what follows an await in it would be made after the batch has ended, so a Promise it
+        // returns is refused - what it made before is sent
+        form.batch(() -> {
+            if (isThenable(GwtClientUtils.call(fn)))
+                throw refusal(errorPrefix + "the function returned a Promise: a batch is sent when it returns, so"
+                        + " what follows an await in it would be made outside it. Await before the batch");
+        });
     }
 
     // a React view's state, made with the view, and its controller with it
@@ -434,9 +439,11 @@ public class GReactFormData {
         return views.get(rowsScope(group)).getRowsPart(group);
     }
     // ... and then what the nodes carry of it all, once: a group's rows are there from the start, none of them yet; the
-    // names every node carries; the members that mirror its entries
-    public void initialize() {
-        views.foreachValue(ViewState::initialize);
+    // names every node carries; the members that mirror its entries - and the form's controller, on each view's as
+    // `form`, its calls made once, as each view's own are: a call of it from a view's handler is a change too
+    public void initialize(JavaScriptObject formController) {
+        views.foreachValue(state -> state.initialize(formController));
+        makeCalls(this, formController);
     }
 
     // THE VALUES OF AN OWNER'S READERS, as the server last sent them, with the client's own on top - kept by the owner
@@ -589,8 +596,7 @@ public class GReactFormData {
         JavaScriptObject draft;
         JavaScriptObject lastPublished; // what the view was last given (flush)
         // `props.controller`: made with the state and never replaced, so a view keeps the one it is given. Its members
-        // mirror the entries of `data` and are made with them (initialize); the form gives it what every controller
-        // carries (GFormController.addReactView)
+        // mirror the entries of `data` and are made with them (initialize), beside them the form's controller, `form`
         public final JavaScriptObject controller;
 
         ViewState(GComponent scope, Consumer<JavaScriptObject> publish) {
@@ -683,11 +689,13 @@ public class GReactFormData {
         }
         // what each node sets out once - what each part of it writes, its rows none of them yet, the names it carries
         // and the members of its parts and entries: they are design data, as the entries are -, in the order they are
-        // made; then the empty group's members, on the controller itself
-        void initialize() {
+        // made; then the empty group's members, on the controller itself; and once its calls are made, the form's
+        // controller, whose calls are made once, for all the views (GReactFormData.initialize)
+        void initialize(JavaScriptObject formController) {
             nodes.foreachValue(OwnerNode::initialize);
             top.fillController();
             makeCalls(GReactFormData.this, controller);
+            setField(controller, "form", formController);
         }
 
         // the platform-drawn list property whose per-row renderers a <Platform> places, named as a panel property is -
@@ -704,13 +712,9 @@ public class GReactFormData {
             return rows != null ? rows.getRowPlatformProperty(name.substring(dot + 1)) : null;
         }
 
-        // controller.batch(fn): fn run in the form's batch (Verbs.batch), which sends what it makes when it returns -
-        // what was made before a throw too, as it would have gone outside a batch. fn changes the form through this
-        // view's members: a member of another view called in it goes with this batch
+        // controller.batch(fn): the form's batch (GReactFormData.batch)
         void batch(JavaScriptObject fn) {
-            String errorPrefix = controllerPrefix("batch()");
-            checkFunction(errorPrefix, fn);
-            verbs.batch(() -> runBatchFunction(errorPrefix, fn));
+            GReactFormData.batch(verbs, "batch()", fn);
         }
     }
 
@@ -3123,13 +3127,13 @@ public class GReactFormData {
 
     // ===== THE MEMBERS. A member IS the address: it holds the state it stands for - a property member its property's
     // value, a part's member its part - so a call through it names nothing it changes, and its
-    // arguments come in a fixed order, the value first, then the row. FormView refused a name that would take a
-    // controller verb, a group's own member or `__proto__` when it built the form (claimProjectionName), so none of
-    // them is taken here.
+    // arguments come in a fixed order, the value first, then the row. FormView refused a name that would take what a
+    // controller carries beside its members (`form`, `batch`), a group's own member or `__proto__` when it built the
+    // form (claimProjectionName), so none of them is taken here.
 
-    // every function on a controller - a member's, the controller's own, those every controller carries (extendController)
-    // - is a member's call, a change of what the projection holds (change): made so once the controller is filled, the
-    // members being design data. Objects are members, or the states' members on them, filled in place. What a view can
+    // every function on a controller - a member's, the controller's own, the form's controller's - is a member's call,
+    // a change of what the projection holds (change): made so once the controller is filled, the members being design
+    // data. Objects are members, or the states' members on them, filled in place. What a view can
     // call is only this controller (ReactRoot's context writes nothing here): a way of writing from a view's handler
     // that is not on it - a function added later, a bridge of its own - would be published outside a change, after the
     // handler, which a controlled input bound to what it wrote does not survive

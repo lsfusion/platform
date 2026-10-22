@@ -10,8 +10,8 @@ window.UiCustomContainerBlock = function () {
 // second says the user is editing in it while it has the focus
 window.UiCustomContainerFields = function (props) {
     var e = React.createElement, controller = props.controller;
-    var declaring = { onFocus: function (event) { controller.startEditing(event.target); },
-                      onBlur: function (event) { controller.stopEditing(event.target); } };
+    var declaring = { onFocus: function (event) { controller.form.startEditing(event.target); },
+                      onBlur: function (event) { controller.form.stopEditing(event.target); } };
     return e('div', { className: 'ui-custom-container-fields' },
         e('input', { className: 'ui-custom-container-undeclared' }),
         e('input', Object.assign({ className: 'ui-custom-container-declared' }, declaring)),

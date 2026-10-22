@@ -1,6 +1,9 @@
 package lsfusion.gwt.client.base.jsni;
 
-// what the page gives the client and a GWT test, which runs without the page, has to give it itself
+import com.google.gwt.core.client.JavaScriptObject;
+
+// what the page gives the client and a GWT test, which runs without the page, has to give it itself - and what the
+// client's GWT tests read and call its JS objects with
 public final class JsniTestSupport {
     private JsniTestSupport() {
     }
@@ -16,5 +19,12 @@ public final class JsniTestSupport {
     public static native void installPageSetup() /*-{
         if (!$wnd.pageSetup)
             $wnd.pageSetup = {};
+    }-*/;
+
+    public static native JavaScriptObject field(JavaScriptObject object, String name) /*-{ return object[name]; }-*/;
+    public static native boolean own(JavaScriptObject object, String name) /*-{ return Object.prototype.hasOwnProperty.call(object, name); }-*/;
+    // a batch begun through a controller, run being what its function does
+    public static native void batch(JavaScriptObject controller, Runnable run) /*-{
+        controller.batch(function () { run.@java.lang.Runnable::run()(); });
     }-*/;
 }

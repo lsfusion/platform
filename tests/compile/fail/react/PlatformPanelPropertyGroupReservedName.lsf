@@ -9,13 +9,13 @@ CLASS PlatformExecItem;
 platformExecNote = DATA STRING[50] (PlatformExecItem);
 
 FORM platformPanelGroupReserved
-    OBJECTS exec = PlatformExecItem PANEL
-    PROPERTIES(exec) platformExecNote
+    OBJECTS form = PlatformExecItem PANEL
+    PROPERTIES(form) platformExecNote
 ;
 
 DESIGN platformPanelGroupReserved {
     NEW board {
         custom = 'PlatformExecBoard';
-        MOVE PROPERTY(platformExecNote(exec)) { custom = NULL; }
+        MOVE PROPERTY(platformExecNote(form)) { custom = NULL; }
     }
 }

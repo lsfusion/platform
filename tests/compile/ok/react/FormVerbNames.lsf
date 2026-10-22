@@ -1,0 +1,32 @@
+MODULE FormVerbNames;
+
+REQUIRE System;
+
+// the form's verbs - exec, eval, evalAction, change, startEditing, stopEditing, isEditing - are the form's controller's,
+// controller.form, not a react view's controller's: what a view projects at its top level may take their names - a
+// property of the empty group, an object group whose rows the view draws, a tree whose user filters it draws
+CLASS FormVerbItem;
+formVerbName = DATA STRING[50] (FormVerbItem);
+
+CLASS FormVerbFolder;
+formVerbParent = DATA FormVerbFolder (FormVerbFolder);
+formVerbFolderName = DATA STRING[50] (FormVerbFolder);
+
+formVerbNote = DATA STRING[50] ();
+
+FORM formVerbNames
+    PROPERTIES() formVerbNote EXTID 'startEditing'
+    OBJECTS exec = FormVerbItem
+    PROPERTIES(exec) formVerbName
+    TREE change f = FormVerbFolder PARENT formVerbParent(f)
+    PROPERTIES(f) formVerbFolderName
+;
+
+DESIGN formVerbNames {
+    NEW board {
+        custom = 'FormVerbBoard';
+        MOVE PROPERTY(formVerbNote());
+        MOVE BOX(exec);
+    }
+    FILTERS(TREE change) { custom = 'FormVerbFilters'; }
+}

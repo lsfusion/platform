@@ -1149,9 +1149,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     private static final String[] TOP_NAMES = {
             PROTO,
     };
-    // what a controller carries beside its members: the four verbs every controller has (GController.extendController),
-    // the editing a view declares (GFormController.extendController) and the batch the members' changes are sent
-    // together in. A projected name equal to one of them would have to be dropped, and the verbs are how everything
+    // what a controller carries beside its members: the form's controller, `form`, and the batch the members' changes
+    // are sent together in. A projected name equal to one of them would have to be dropped, and `form` is how everything
     // outside this surface is reached
     private static final String[] CONTROLLER_NAMES = reserved(ReactProjectionNames.CONTROLLER, PROTO);
     // what every group's node reserves, whatever it carries in this scope - its index, its verb: `change` is the verb

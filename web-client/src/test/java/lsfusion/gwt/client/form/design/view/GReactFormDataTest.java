@@ -28,9 +28,7 @@ import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.classes.data.GPDFType;
 import lsfusion.gwt.client.classes.data.GRenderedType;
 import lsfusion.gwt.client.classes.data.GStringType;
-import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.GUpdateMode;
-import lsfusion.gwt.client.form.controller.GController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -122,6 +120,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import static lsfusion.gwt.client.base.jsni.JsniTestSupport.batch;
+import static lsfusion.gwt.client.base.jsni.JsniTestSupport.field;
+import static lsfusion.gwt.client.base.jsni.JsniTestSupport.own;
 
 /** Runs in compiled JavaScript: reference identity and JS object keys are part of the contract. */
 public class GReactFormDataTest extends GWTTestCase {
@@ -1098,6 +1100,8 @@ public class GReactFormDataTest extends GWTTestCase {
         final LinkedHashMap<GRegularFilterGroup, GFilterGroupController> filterGroups = new LinkedHashMap<>();
         final LinkedHashMap<GTreeGroup, GToolbarController<GTreeController>> treeToolbars = new LinkedHashMap<>();
         final ArrayList<String> platformTree = new ArrayList<>(); // what the platform's tree was asked by its toolbar
+        // the form's controller, which the projection names on every view's as `form`, its calls made as a view's own
+        final JavaScriptObject formController = formController();
 
         Controllers(GReactFormData projection, GForm form, RecordingTableController platform, RecordingComponentController platformComponents) {
             this(projection, form, platform, platformComponents, null, null);
@@ -1126,7 +1130,7 @@ public class GReactFormDataTest extends GWTTestCase {
             initializeComponentControllers(form.mainContainer);
             for (GRegularFilterGroup filterGroup : form.regularFilterGroups)
                 filterGroups.put(filterGroup, projection.createFilterGroupController(filterGroup, () -> null));
-            projection.initialize();
+            projection.initialize(formController);
         }
         // A TABLE, whole, as the form makes it (GFormController.initializeTable): its toolbar and rows of its kind,
         // then its filter controls, the filter input controller over its rows, whose button the toolbar takes, what
@@ -1230,8 +1234,6 @@ public class GReactFormDataTest extends GWTTestCase {
         changes.dropProperties.addAll(Arrays.asList(properties));
         return changes;
     }
-    private static native JavaScriptObject field(JavaScriptObject object, String name) /*-{ return object[name]; }-*/;
-    private static native boolean own(JavaScriptObject object, String name) /*-{ return Object.prototype.hasOwnProperty.call(object, name); }-*/;
     private static native double value(JavaScriptObject row, String name) /*-{ return row[name].value; }-*/;
     private static native boolean hasValue(JavaScriptObject entry) /*-{ return Object.prototype.hasOwnProperty.call(entry, "value"); }-*/;
     // a shown cell says its value, null too: none is the server's "no value" for it
@@ -1284,6 +1286,16 @@ public class GReactFormDataTest extends GWTTestCase {
     private static native String refusedChange(JavaScriptObject member, String value, JavaScriptObject row) /*-{
         try { member.change(value, row); return null; } catch (e) { return e.message; }
     }-*/;
+    // the form's controller, as far as these tests call it: one call that sorts twice through a member it is given
+    private static native JavaScriptObject formController() /*-{
+        return {
+            sortTwice: function (member) {
+                member.change({property: 'price', desc: true});
+                member.change({property: 'quantity', desc: false});
+            }
+        };
+    }-*/;
+    private static native void sortTwice(JavaScriptObject formController, JavaScriptObject member) /*-{ formController.sortTwice(member); }-*/;
     // a member of a view's controller, at a group (null: the empty group, the controller itself)
     private static JavaScriptObject member(GReactFormData.ViewState state, String group, String name) {
         JavaScriptObject owner = group == null ? state.controller : field(state.controller, group);
@@ -1314,10 +1326,6 @@ public class GReactFormDataTest extends GWTTestCase {
     private static native JavaScriptObject parse(String json) /*-{ return JSON.parse(json); }-*/;
     private static native JavaScriptObject pair(JavaScriptObject first, JavaScriptObject second) /*-{ return [first, second]; }-*/;
     private static native void changeAt(JavaScriptObject member, int value, JavaScriptObject row) /*-{ member.change(value, row == null ? undefined : row); }-*/;
-    // a batch, as a view begins one: run is what its function does
-    private static native void batch(JavaScriptObject controller, Runnable run) /*-{
-        controller.batch(function () { run.@java.lang.Runnable::run()(); });
-    }-*/;
     private static boolean refuses(JavaScriptObject member, int value) {
         return refusesAt(member, value, null);
     }
@@ -5661,6 +5669,21 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(given.get(0) instanceof PlatformTreeDouble);
     }
 
+    // A VIEW'S CONTROLLER NAMES THE FORM'S, `form` - one object, the form's verbs', which take names -; a call of the
+    // form's controller is a change as a member's is: what it makes in the views is published when it is over, before
+    // it returns (GReactFormData.initialize)
+    public void testAViewsControllerNamesTheFormsController() {
+        Fixture f = new Fixture();
+        JavaScriptObject formController = f.controllers.formController;
+        for (GReactFormData.ViewState state : Arrays.asList(f.sa, f.sb, f.sc))
+            assertTrue(field(state.controller, "form") == formController);
+
+        int published = f.publications[0];
+        sortTwice(formController, member(f.sa, "items", "orders"));
+        assertEquals(" price desc quantity", describeOrders(f.sorted));
+        assertEquals(published + 1, f.publications[0]);
+    }
+
     // EVERY NAME A PART WRITES - on its group's node, in data.<g> and on controller.<g>, and on a row of the group's
     // rows - is one the server reserves for that part there (ReactProjectionNames, of which FormView builds
     // getReservedNodeNames and getReservedRowNames), so no property the server lets through takes it: each part where
@@ -5686,18 +5709,9 @@ public class GReactFormDataTest extends GWTTestCase {
         assertNodeReserved("the rows", rows.node(), field(rows.sa.controller, "items"), columns,
                 ReactProjectionNames.NODE_OWN, ReactProjectionNames.GRID_PART, ReactProjectionNames.ORDERS_PART);
         assertReserved("a row", row, columns, ReactProjectionNames.GRID_ROW);
-        // ... and the controller of the container they are in: its own names - its batch, and the verbs every
-        // controller has, which the form gives it (GController.extendController) -, beside the group's and the
-        // properties'. The editing verbs the form gives it as well (GFormController.addEditingVerbs) want a form, which
-        // these tests do not build
-        new GController() {
-            protected long dispatchExec(String action, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) { return 0; }
-            protected long dispatchEval(String script, boolean evalAction, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) { return 0; }
-            protected long dispatchChange(String property, ArrayList<Serializable> keyParams, Serializable value, GwtActionDispatcher.ServerResponseCallback callback) { return 0; }
-            protected boolean isClosed() { return false; }
-            protected GwtActionDispatcher getControllerDispatcher() { return null; }
-        }.extendController(rows.sa.controller);
-        assertTrue(own(rows.sa.controller, "exec") && own(rows.sa.controller, "batch"));
+        // ... and the controller of the container they are in: its own names - the form's controller and its batch -,
+        // beside the group's and the properties'
+        assertTrue(own(rows.sa.controller, "form") && own(rows.sa.controller, "batch"));
         assertReserved("the controller", rows.sa.controller, "items,single", ReactProjectionNames.CONTROLLER);
 
         // the rows of a tree's groups, one of its nodes asked to open: loading

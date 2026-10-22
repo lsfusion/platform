@@ -381,10 +381,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         protected boolean isClosed() {
             return dispatcher.isFormClosed();
         }
-        // ... and, while a batch runs, a server call: refused as a rejected promise (refusesLookup)
+        // ... and, while a batch runs, a server call: refused as a rejected promise (refusesLookup), named as it is
+        // reached - on the form's controller, controller.form
         @Override
         protected String getRefusal(String surface) {
-            return dispatcher.isBatching() ? getBatchRefusal(surface) : super.getRefusal(surface);
+            return dispatcher.isBatching() ? getBatchRefusal("form." + surface) : super.getRefusal(surface);
         }
         @Override
         protected GwtActionDispatcher getControllerDispatcher() {
@@ -392,13 +393,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }
     };
 
-    // the controller: ONE way to address what the form SHOWS, and it mirrors props.data — what a view READS as
-    // data.<group>.<property> it CHANGES as controller.<group>.<property>.change(...). One PER PROJECTION, so the
-    // two say the same thing: a react view's controller carries exactly its own container's data, and what it
-    // cannot see it does not name. The FORM's controller - the classic surfaces' - has none of this: just the
-    // form-level verbs. The member IS the address, so
-    // there is no second, stringly-typed set of verbs saying the same thing by SID, and a name typed wrong is a member
-    // that does not exist rather than a string the platform has to validate.
+    // THE CONTROLLERS a custom view is given. A REACT VIEW's is built on MEMBERS and mirrors its props.data - what a
+    // view READS as data.<group>.<property> it CHANGES as controller.<group>.<property>.change(...): one PER PROJECTION,
+    // a view's carrying exactly its own container's data, and what it cannot see it does not name
+    // (GReactFormData.ViewState.controller). The member IS the address, so a name typed wrong is a member that does not
+    // exist rather than a string the platform has to validate.
     //   controller.<group>.<property>.change(...) / .getValues(...)   a property drawn on an object group
     //   controller.<property>.change(...) / .getValues(...)           a form-level (no-group) property
     //   controller.<group>.change(row)                                the group's current object
@@ -409,35 +408,22 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     //   controller.<group | tree>.filters.change(...)                 its user filters - a tree's, of all its groups
     //   controller.<group | tree>.<member>                            what a view's parts give - a toolbar, the filter
     //                                                                 controls, a filter group (GReactFormData.Part)
-    //   controller.exec / eval / evalAction / change                  the form-level escape hatch (GController)
     //   controller.batch(() => { ... })                               the members' changes, sent together
+    //   controller.form                                               the form's controller (below)
     // A row is named the way a view has it — a data row, its `objects` handle, or the key the projection gave it (the
     // group is known here, so the key can be looked up). Mutations go through the SAME classic interactive path as a
     // normal edit (optimistic reconciliation + async exec); there is no return value, state flows back as the
     // projection.
-    // the FORM's controller: what the classic surfaces are handed - a custom object group, a custom cell editor,
-    // an INTERNAL CLIENT action - and what `controller.form` is. Just what every controller of the form carries
-    // (extendController): the form-level verbs, which take lsf names and code, and the editing a view declares. The
-    // rest of this surface - the members, and the batch their changes are sent together in - belongs to a PROJECTION
-    // and exists only on one: a member says that `data.<group>.<property>` is there, and an object with no data beside
-    // it has nothing to say that about.
-    public final JavaScriptObject controller = extendController(GwtClientUtils.newObject());
-    // ... so the members live on a PROJECTION: each React view's state carries its own controller beside its own
-    // `props.data`, naming exactly what that data carries (GReactFormData.ViewState.controller). A view that cannot
-    // SEE its neighbour does not name it either; the rest of the form is reached the way anything outside this surface
-    // is - change / exec / eval / evalAction, which every controller carries and which are gated in their own right. A
-    // React view's state is made with the view - a react container's, or a component's that is not a container -, and
-    // its controller with it, to which the form adds what every controller carries
+    // The FORM's controller is built on STRINGS: it projects no data, so it has no member to name anything by, and what
+    // it reaches it is given the name of, which the platform checks when it is called. It is what the classic surfaces
+    // are handed - a custom object group, a custom cell editor, an INTERNAL CLIENT action - and what a React view's
+    // controller names `form`: the server calls, which take lsf names and code (GController), the editing a view
+    // declares, and the form's batch (addFormVerbs)
+    public final JavaScriptObject controller = gController.extendController(addFormVerbs(GwtClientUtils.newObject()));
+    // ... a React view's state is made with the view - a react container's, or a component's that is not a container -,
+    // and its controller with it, which is given the form's once the projection sets out what it has (initialize)
     public GReactFormData.ViewState addReactView(GComponent component, Consumer<JavaScriptObject> publish) {
-        GReactFormData.ViewState state = reactData.addView(component, publish);
-        extendController(state.controller);
-        return state;
-    }
-    // what every controller of the form carries: the verbs every controller has (GController.extendController), and
-    // the editing a view declares in what it drew (FormView.CONTROLLER_NAMES claims all their names)
-    private JavaScriptObject extendController(JavaScriptObject controller) {
-        addEditingVerbs(controller);
-        return gController.extendController(controller);
+        return reactData.addView(component, publish);
     }
     // say that the user has started, and finished, editing in `element`. This is the CUSTOM branch of the form's
     // editing state (customEditElement): while it stands, the bindings that step aside for the form's own open editor
@@ -447,8 +433,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // cancel and only one live at a time. To edit a property from a React view, place the property - <Platform name/> -
     // and the form brings its own editor, with nothing to declare.
     // The element is the caller's to name, from a ref: the form cannot tell which of a view's elements was meant, and
-    // guessing would be wrong exactly where this is used
-    private native void addEditingVerbs(JavaScriptObject controller)/*-{
+    // guessing would be wrong exactly where this is used.
+    // ... and the batch: the form's, whoever begins it - a React view through its own controller, any surface through
+    // the form's (batch)
+    private native JavaScriptObject addFormVerbs(JavaScriptObject controller)/*-{
         var thisObj = this;
         controller.startEditing = function (element) {
             thisObj.@GFormController::startCustomEditing(Lcom/google/gwt/dom/client/Element;)(element);
@@ -459,6 +447,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         controller.isEditing = function (element) {
             return thisObj.@GFormController::isCustomEditing(Lcom/google/gwt/dom/client/Element;)(element);
         };
+        controller.batch = function (fn) {
+            @lsfusion.gwt.client.form.design.view.GReactFormData::batch(*)(thisObj, "form.batch()", fn);
+        };
+        return controller;
     }-*/;
 
     // the (object, value) guess and the dispatch behind the CLASSIC grid view's changeProperty. Held HERE rather than
@@ -534,10 +526,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         return controllerPrefix(surface) + "a batch is running, which carries changes only: make this call before the batch or after it";
     }
     // ... and a call of a view's toolbar that asks the server (GReactFormData.Verbs.getRefusal), as a server call on
-    // the controller
+    // the form's controller is - named as the view's member is
     @Override
     public String getRefusal(String surface) {
-        return gController.getRefusal(surface);
+        return dispatcher.isBatching() ? getBatchRefusal(surface) : gController.getRefusal(surface);
     }
     // ... and whether a batch runs (GPlatformFiltersController.isBatching)
     public boolean isBatching() {
@@ -809,7 +801,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
             if (controller != null)
                 filterGroupControllers.put(filterGroup, controller);
         }
-        reactData.initialize(); // ... and the projection sets out what it has
+        reactData.initialize(controller); // ... and the projection sets out what it has, the form's controller named on its views
         initializeBindings();
     }
     // THE BINDINGS of every filter of a filter group and of every property - keys and mouse ones -, bound here once
