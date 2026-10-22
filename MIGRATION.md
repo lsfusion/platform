@@ -46,6 +46,18 @@ The quickest way back is `settings.enableAPI=1` globally (in `lsfusion.propertie
 it the arbitrary code execution over HTTP for every authenticated user, see
 [Authentication](docs/paradigm/en/Access_from_an_external_system.md#authentication).
 
+### A multipart `/eval` request no longer binds its `script` part to a parameter
+
+In 6.x a `multipart/form-data` request to `/eval` or `/eval/action` that sent the code as a part named
+`script` also bound that part to the first parameter taken by position: `$1` got the text of the
+code, and every value moved one parameter further. The part is now used only as the code, as the
+first body part without that name already was.
+
+What an upgrading application can notice: a client that worked around this by taking its first value
+from `$2` now gets the second value there; it has to take the first one from `$1` again. Parameters
+bound by name are not affected, and neither is the code passed in the query string, in an
+`application/x-www-form-urlencoded` body or as the whole body. There is no setting to go back.
+
 ### The execution order of global events follows from the logic
 
 The order in which global events run is built at startup from the dependencies between them, and

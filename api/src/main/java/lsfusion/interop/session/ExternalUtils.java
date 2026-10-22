@@ -220,13 +220,15 @@ public class ExternalUtils {
         boolean isEvalAction = path.endsWith("/eval/action");
         if (path.endsWith("/eval") || isEvalAction) {
             ExternalRequest.Param paramScript = getParameterValue(params, SCRIPT_PARAM);
-            if (paramScript == null) { // if we don't have script param, we consider the first body param as script
-                int scriptParam = queryParams.size();
-                if(scriptParam < params.size()) {
-                    paramScript = params.get(scriptParam);
-                    params = params.remove(scriptParam);
-                    request.params = params.toArray(new ExternalRequest.Param[params.size()]);;
-                }
+            int scriptParam;
+            if (paramScript == null) // if we don't have script param, we consider the first body param as script
+                scriptParam = queryParams.size();
+            else // a script param from the body is implicit, so it would be taken for the first param of the action as well
+                scriptParam = paramScript.isImplicitParam() ? params.indexOf(paramScript) : params.size();
+            if(scriptParam < params.size()) {
+                paramScript = params.get(scriptParam);
+                params = params.remove(scriptParam);
+                request.params = params.toArray(new ExternalRequest.Param[params.size()]);
             }
             execResult = remoteExec.eval(isEvalAction, paramScript, request);
         } else if (path.endsWith("/exec")) {
