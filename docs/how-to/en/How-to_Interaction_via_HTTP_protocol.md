@@ -486,17 +486,19 @@ curl -X POST -H "Content-Type: text/plain; charset=utf-8" --data-binary @script.
 
 The server wraps the received text into a module of its own that depends on every loaded module, so the text has no `MODULE` or `REQUIRE` header, and the elements of the project are referred to by name. The shape of the text depends on the endpoint:
 
--   `/eval` — a sequence of module statements, one of which declares an action named `run`. The other statements may declare properties that it uses:
+-   `/eval` — a sequence of module statements, one of which declares an action named `run`. The other statements may declare properties and actions that it uses, among them an [`INTERNAL`](../language/INTERNAL_operator.md) action with an inline Java fragment, which has no action statement form and is called from `run[]`:
 
     ```lsf
     cityCount (Country c) = GROUP SUM 1 IF country(City ct) = c;
+    logCount INTERNAL <{ System.out.println("counting cities"); }>;
 
     run() {
+        logCount();
         RETURN JSON FROM name = name(Country c), cities = cityCount(c);
     }
     ```
 
--   `/eval/action` — the body of that action alone: action statements, local property declarations included. An action declaration or a module header in this text does not parse (`no viable alternative at input '{'`, `missing EOF at 'MODULE'`):
+-   `/eval/action` — the body of that action alone: action statements, local property declarations included. A module header, an action declaration and an operator form that declares a standalone action — `INTERNAL` with a class name or an inline Java fragment, for example — are not allowed here (`missing EOF at 'MODULE'`, `no viable alternative at input '{'` or `'<{ ... }>'`): such a declaration goes into a `/eval` script, as above:
 
     ```lsf
     LOCAL count = INTEGER ();

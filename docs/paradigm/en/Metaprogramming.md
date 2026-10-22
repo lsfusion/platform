@@ -36,6 +36,8 @@ EXTEND FORM orderForm
 ;
 ```
 
+The generated code is part of the module in which the metacode is used: the elements it declares belong to that module and its namespace, not to the module that declares the metacode.
+
 ### Lexeme concatenation  {#concat}
 
 Simply substituting an ID for a metacode parameter is often not enough. For example, when creating a large number of new [system elements](Element_identification.md) inside the metacode, you must be able to specify these new names. Passing all the names as metacode parameters can be inconvenient. For this reason the metacode contains the special operation `##`, which operates at the tokens level. This operation can concatenate two adjacent lexemes into one. If one of the concatenated lexemes is a string literal, the concatenation will result in a single string literal.

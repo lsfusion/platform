@@ -364,7 +364,7 @@ As a result, the component will look like this:
 
 Then we add event handlers that will send the message when CTRL+ENTER is pressed,
 and write the entered message to the `message[]` property when the component loses focus.
-The entered text is passed by the _change_ method of the controller: it goes into the change handling of the `message[]` property in the same way as a value entered by the standard editor — for a data property that is writing the value into it.
+The entered text is passed by the _change_ method of the controller: it goes into the change handling of the `message[]` property in the same way as a value entered by the standard editor — for a data property that is writing the value into it. When the passed object goes into the default change action of a property with a custom-class value listed in the `CHECKED BY` block of a [constraint](../language/CONSTRAINT_statement.md), it must be among the values the filter leaves: otherwise the change is refused.
 The `send[]` action is executed by the _exec_ method of the [form controller](How-to_Custom_view_controller.md), available as `controller.form`: a call to the server, which the form allows by listing the action in its `CUSTOMS` clause. The requests are executed on the server in the order of the calls, so by the time `send[]` runs the entered text is already written to `message[]`.
 The handlers are added in the _update_ function:
 ```js
