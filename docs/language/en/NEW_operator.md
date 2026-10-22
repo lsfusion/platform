@@ -45,7 +45,7 @@ To create one object per iteration of a loop, use the `NEW` option of the [`FOR`
 
 - `prm1, ..., prmN`
 
-    List of [typed parameters](IDs.md#paramid) used as arguments of `propertyId`. Must reference parameters introduced in the `WHERE` block, listed in the order in which they first occur in `whereExpr` and each at most once: a different order or a repeated parameter is not rejected when the module is loaded, and the action fails at execution. Existing context parameters are not allowed. The number of parameters must equal the number of parameters of `propertyId`. Each set of values of `prm1, ..., prmN` must correspond to exactly one created object: when the list leaves out a parameter introduced in `WHERE` and the condition holds for several values of that parameter at the same values of the listed ones, several objects are created for one such set and the write fails at execution.
+    List of [typed parameters](IDs.md#paramid) used as arguments of `propertyId`. Must reference parameters introduced in the `WHERE` block, in any order and each at most once. Existing context parameters are not allowed. The number of parameters must equal the number of parameters of `propertyId`. Each set of values of `prm1, ..., prmN` must correspond to exactly one created object: when the list leaves out a parameter introduced in `WHERE` and the condition holds for several values of that parameter at the same values of the listed ones, several objects are created for one such set and the write fails at execution.
 
 - `alias`
 
@@ -72,10 +72,10 @@ newSkus ()  {
     }
 }
 
-// bulk form with two parameters: the arguments of TO are listed in the order in which the parameters first occur in WHERE
+// bulk form with two parameters: the arguments of TO may go in another order than the parameters in WHERE
 newSkuPairs ()  {
     LOCAL pairSkus = Sku (INTEGER, INTEGER);
-    NEW Sku WHERE iterate(i, 1, 3) AND iterate(j, 1, 2) TO pairSkus(i, j);
+    NEW Sku WHERE iterate(i, 1, 3) AND iterate(j, 1, 2) TO pairSkus(j, i);
 }
 
 // block form: create one Sku and initialize its properties

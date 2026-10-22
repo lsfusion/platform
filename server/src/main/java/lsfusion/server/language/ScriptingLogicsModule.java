@@ -3024,11 +3024,18 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LAWithParams addScriptedAddObjProp(List<TypedParameter> context, String className, NamedPropertyUsage toPropUsage, List<LPWithParams> toPropMapping, LPWithParams whereProperty, List<TypedParameter> newContext, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass cls = findClass(className);
         checks.checkAddActionsClass(cls, className);
-        checks.checkAddObjTOParams(context.size(), toPropMapping);
 
         LPWithParams toProperty = null;
         if (toPropUsage != null && toPropMapping != null) {
-            toProperty = addScriptedJProp(findLPByPropertyUsage(toPropUsage, toPropMapping, newContext), toPropMapping);
+            List<Integer> toParams = getParamsAssertList(toPropMapping);
+            checks.checkAddObjTOParams(toParams, context.size());
+            LP<?> toProp = findLPByPropertyUsage(toPropUsage, toPropMapping, newContext);
+            if (!(toProp.property instanceof DataProperty)) {
+                errLog.emitOnlyDataPropertyIsAllowedError(parser, toPropUsage.name);
+            }
+            checks.checkParamCount(toProp, toParams.size());
+            // the property itself with the arguments in the TO order, not a join over it: the action writes into the data property
+            toProperty = new LPWithParams(toProp, toParams);
         }
 
         if(whereProperty != null)

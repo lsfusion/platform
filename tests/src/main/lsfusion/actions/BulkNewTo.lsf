@@ -1,0 +1,36 @@
+MODULE BulkNewTo;
+
+REQUIRE TestUtils, Utils;
+
+// the TO arguments of the bulk NEW name the parameters of its WHERE, so they go in any order: any order but that of
+// their first occurrence in WHERE used to fail at execution with a ClassCastException (#1917)
+
+CLASS BulkNewItem;
+CLASS BulkNewSource;
+
+bulkNewTo2 = DATA LOCAL BulkNewItem (INTEGER, INTEGER);
+bulkNewTo3 = DATA LOCAL BulkNewItem (BulkNewSource, INTEGER, INTEGER);
+
+bulkNewItems () = GROUP SUM 1 IF BulkNewItem x IS BulkNewItem;
+bulkNewWrittenAt (BulkNewItem x) = GROUP SUM 1 IF bulkNewTo2(INTEGER a, INTEGER b) == x;
+
+testBulkNewToSwappedOrder 'The TO arguments of the bulk NEW in the order opposite to WHERE' () {
+    NEW BulkNewItem WHERE iterate(INTEGER i, 1, 2) AND iterate(INTEGER j, 1, 3) TO bulkNewTo2(j, i);
+
+    assertEquals(bulkNewItems(), 6, 'objects created: ' + bulkNewItems());
+    assertEquals((GROUP SUM 1 IF bulkNewWrittenAt(BulkNewItem x) == 1), 6, 'objects written once each: ' + (GROUP SUM 1 IF bulkNewWrittenAt(BulkNewItem x) == 1));
+    assertNotNull(bulkNewTo2(3, 2), 'no object at j = 3, i = 2');
+    assertNull(bulkNewTo2(2, 3), 'an object at j = 2, i = 3');
+}
+
+testBulkNewToRotatedOrder 'The TO arguments of the bulk NEW rotated, one of them of a custom class, with an outer parameter in WHERE' () {
+    NEW BulkNewSource WHERE iterate(INTEGER k, 1, 2);
+
+    FOR iterate(INTEGER n, 2, 2) DO
+        NEW BulkNewItem WHERE iterate(INTEGER i, 1, n) AND BulkNewSource s IS BulkNewSource AND iterate(INTEGER j, 1, 3) TO bulkNewTo3(s, j, i);
+
+    assertEquals(bulkNewItems(), 12, 'objects created: ' + bulkNewItems());
+    assertEquals((GROUP SUM 1 IF bulkNewTo3(BulkNewSource s, INTEGER j, INTEGER i)), 12, 'arguments written: ' + (GROUP SUM 1 IF bulkNewTo3(BulkNewSource s, INTEGER j, INTEGER i)));
+    assertEquals((GROUP SUM 1 IF bulkNewTo3(BulkNewSource s, 3, 2)), 2, 'objects at j = 3, i = 2: ' + (GROUP SUM 1 IF bulkNewTo3(BulkNewSource s, 3, 2)));
+    assertNull((GROUP SUM 1 IF bulkNewTo3(BulkNewSource s, 2, 3)), 'objects at j = 2, i = 3');
+}

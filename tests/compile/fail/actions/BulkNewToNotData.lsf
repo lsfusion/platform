@@ -1,0 +1,14 @@
+MODULE BulkNewToNotData;
+
+REQUIRE System, Utils;
+
+// the bulk NEW writes only into a DATA property, and any other one after TO is reported at load: it used to fail at
+// execution with a ClassCastException, as the TO arguments in another order did (#1917)
+
+CLASS Item;
+
+toAbstract = ABSTRACT Item (INTEGER);
+
+run () {
+    NEW Item WHERE iterate(INTEGER i, 1, 3) TO toAbstract(i);
+}

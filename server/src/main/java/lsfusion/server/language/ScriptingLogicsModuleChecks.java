@@ -632,14 +632,13 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkAddObjTOParams(int contextSize, List<LPWithParams> toPropMapping) throws ScriptingErrorLog.SemanticErrorException {
-        if (toPropMapping != null) {
-            for (LPWithParams param : toPropMapping) {
-                if (param.usedParams.get(0) < contextSize) {
-                    errLog.emitAddObjToPropertyError(parser);
-                }
+    public void checkAddObjTOParams(List<Integer> toParams, int contextSize) throws ScriptingErrorLog.SemanticErrorException {
+        for (int param : toParams) {
+            if (param < contextSize) {
+                errLog.emitAddObjToPropertyError(parser);
             }
         }
+        checkDistinctParameters(toParams);
     }
 
     public void checkAbstractTypes(boolean isCase, boolean implIsCase) throws ScriptingErrorLog.SemanticErrorException {

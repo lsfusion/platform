@@ -1,0 +1,14 @@
+MODULE BulkNewToRepeatedParameter;
+
+REQUIRE System, Utils;
+
+// a parameter repeated in the TO list of the bulk NEW is reported at load: it used to fail at execution with a
+// ClassCastException (#1917)
+
+CLASS Item;
+
+to2 = DATA LOCAL Item (INTEGER, INTEGER);
+
+run () {
+    NEW Item WHERE iterate(INTEGER i, 1, 2) TO to2(i, i);
+}
