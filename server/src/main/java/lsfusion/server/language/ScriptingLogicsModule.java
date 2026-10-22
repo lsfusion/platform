@@ -4564,7 +4564,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public <O extends ObjectSelector> LAWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormIntegrationType exportType,
                                                                            LPWithParams sheetNameProperty, LPWithParams rootProperty, LPWithParams tagProperty, boolean attr, Boolean hasHeader,
-                                                                           String separator, boolean noEscape, FormSelectTop<LPWithParams> selectTop, String charset, NamedPropertyUsage propUsage,
+                                                                           LPWithParams separatorProperty, boolean noEscape, FormSelectTop<LPWithParams> selectTop, LPWithParams charsetProperty, NamedPropertyUsage propUsage,
                                                                            OrderedMap<GroupObjectEntity, NamedPropertyUsage> propUsages, List<TypedParameter> objectsContext,
                                                                            List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
 
@@ -4625,6 +4625,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         ValueClass sheetName = sheetNameProperty != null ? getValueClassByParamProperty(sheetNameProperty, params) : null;
         ValueClass root = rootProperty != null ? getValueClassByParamProperty(rootProperty, params) : null;
         ValueClass tag = tagProperty != null ? getValueClassByParamProperty(tagProperty, params) : null;
+        ValueClass separator = separatorProperty != null ? getValueClassByParamProperty(separatorProperty, params) : null;
+        ValueClass charset = charsetProperty != null ? getValueClassByParamProperty(charsetProperty, params) : null;
 
         CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
@@ -4637,6 +4639,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         mapping.addAll(selectTop.getParams());
 
+        if(charsetProperty != null)
+            mapping.add(charsetProperty);
+
         if(sheetNameProperty != null)
             mapping.add(sheetNameProperty);
 
@@ -4645,6 +4650,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if(tagProperty != null)
             mapping.add(tagProperty);
+
+        if(separatorProperty != null)
+            mapping.add(separatorProperty);
 
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(action, mapping);
@@ -4928,7 +4936,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LAWithParams addScriptedExportAction(List<TypedParameter> oldContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals,
                                                 List<LPWithParams> exprs, List<LPTrivialLA> propUsages, LPWithParams whereProperty, NamedPropertyUsage fileProp,
                                                 LPWithParams sheetNameProperty, LPWithParams rootProperty, LPWithParams tagProperty,
-                                                String separator, Boolean hasHeader, boolean noEscape, SelectTop<LPWithParams> selectTop, String charset, boolean attr,
+                                                LPWithParams separatorProperty, Boolean hasHeader, boolean noEscape, SelectTop<LPWithParams> selectTop, LPWithParams charsetProperty, boolean attr,
                                                 List<LPWithParams> orderProperties, List<Boolean> orderDescendings, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
 
         if(selectTop == null)
@@ -4990,6 +4998,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         ValueClass sheetName = sheetNameProperty != null ? getValueClassByParamProperty(sheetNameProperty, oldContext) : null;
         ValueClass root = rootProperty != null ? getValueClassByParamProperty(rootProperty, oldContext) : null;
         ValueClass tag = tagProperty != null ? getValueClassByParamProperty(tagProperty, oldContext) : null;
+        ValueClass separator = separatorProperty != null ? getValueClassByParamProperty(separatorProperty, oldContext) : null;
+        ValueClass charset = charsetProperty != null ? getValueClassByParamProperty(charsetProperty, oldContext) : null;
 
         ImList<ValueClass> explicitInnerClasses = getValueClassesFromTypedParams(oldContext.size(), resultInterfaces, newContext);
 
@@ -4997,12 +5007,16 @@ public class ScriptingLogicsModule extends LogicsModule {
                     whereProperty != null, sheetName, root, tag, separator, hasHeader, noEscape, selectTop.mapValues(this, oldContext), charset, attr, resultParams.toArray());
 
         mapping.addAll(selectTop.getParams());
+        if(charsetProperty != null)
+            mapping.add(charsetProperty);
         if(sheetNameProperty != null)
             mapping.add(sheetNameProperty);
         if(rootProperty != null)
             mapping.add(rootProperty);
         if(tagProperty != null)
             mapping.add(tagProperty);
+        if(separatorProperty != null)
+            mapping.add(separatorProperty);
 
         if(mapping.size() > resultInterfaces.size()) { // optimization
             return addScriptedJoinAProp(result, mapping);
@@ -5278,8 +5292,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAWithParams addScriptedImportAction(FormIntegrationType format, LPWithParams fileProp, List<String> ids, List<Boolean> literals, List<NamedPropertyUsage> propUsages,
                                                 List<Boolean> nulls, LAWithParams doAction, LAWithParams elseAction, List<TypedParameter> context, List<TypedParameter> newContext,
-                                                NamedPropertyUsage wherePropertyUsage, LPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, boolean noEscape,
-                                                String charset, LPWithParams root, List<TypedParameter> fieldParams, List<String> toParamClasses, boolean attr,
+                                                NamedPropertyUsage wherePropertyUsage, LPWithParams sheet, boolean sheetAll, LPWithParams separator, boolean noHeader, boolean noEscape,
+                                                LPWithParams charset, LPWithParams root, List<TypedParameter> fieldParams, List<String> toParamClasses, boolean attr,
                                                 LPWithParams whereProp, LPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
 
         if(fileProp == null)
@@ -5330,9 +5344,13 @@ public class ScriptingLogicsModule extends LogicsModule {
             params.add(memoProp);
         if(sheet != null)
             params.add(sheet);
+        if(separator != null)
+            params.add(separator);
+        if(charset != null)
+            params.add(charset);
 
-        LA importAction = addImportPropertyAProp(format, params.size(), exPropUsages, paramClasses, whereLCP, separator,
-                    noHeader, noEscape, charset, sheetAll, attr, hasRoot, hasWhere, getUParams(props.toArray(new LP[props.size()])));
+        LA importAction = addImportPropertyAProp(format, params.size(), exPropUsages, paramClasses, whereLCP, separator != null,
+                    noHeader, noEscape, charset != null, sheetAll, attr, hasRoot, hasWhere, getUParams(props.toArray(new LP[props.size()])));
         return proceedImportDoClause(noParams, doAction, elseAction, context, newContext, whereLCP, props, nulls != null ? ListFact.fromJavaList(nulls) : null, addScriptedJoinAProp(importAction, params));
     }
 
@@ -5348,7 +5366,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedImportFormAction(FormIntegrationType format, List<TypedParameter> context, LPWithParams fileProp, OrderedMap<GroupObjectEntity, LPWithParams> fileProps,
-                                                    FormEntity formEntity, LPWithParams sheet, boolean sheetAll, boolean noHeader, boolean noEscape, boolean attr, String charset, String separator,
+                                                    FormEntity formEntity, LPWithParams sheet, boolean sheetAll, boolean noHeader, boolean noEscape, boolean attr, LPWithParams charset, LPWithParams separator,
                                                     LPWithParams rootProp, LPWithParams whereProp, LPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
         format = adjustImportFormatFromFileType(format, fileProp, fileProps, context);
 
@@ -5390,9 +5408,13 @@ public class ScriptingLogicsModule extends LogicsModule {
             params.add(rootProp);
         if(sheet != null)
             params.add(sheet);
+        if(separator != null)
+            params.add(separator);
+        if(charset != null)
+            params.add(charset);
 
         ImOrderSet<GroupObjectEntity> groupFiles = fileProps != null ? SetFact.fromJavaOrderSet(fileProps.keyList()) : SetFact.EMPTYORDER();
-        return addScriptedJoinAProp(addImportFAProp(format, formEntity, params.size(), groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasRoot, hasWhere, !groupFiles.isEmpty()), params);
+        return addScriptedJoinAProp(addImportFAProp(format, formEntity, params.size(), groupFiles, sheetAll, separator != null, noHeader, noEscape, charset != null, hasRoot, hasWhere, !groupFiles.isEmpty()), params);
     }
 
     public LP addTypeProp(ValueClass valueClass, boolean bIs) {

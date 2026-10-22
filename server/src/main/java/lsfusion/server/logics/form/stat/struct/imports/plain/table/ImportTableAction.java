@@ -15,8 +15,8 @@ import java.io.IOException;
 
 public class ImportTableAction extends ImportPlainAction<ImportTableIterator> {
 
-    public ImportTableAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean hasWhere) {
-        super(paramsCount, groupFiles, formEntity, charset, hasWhere);
+    public ImportTableAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, boolean hasWhere) {
+        super(paramsCount, groupFiles, formEntity, null, hasWhere, false);
     }
 
     @Override

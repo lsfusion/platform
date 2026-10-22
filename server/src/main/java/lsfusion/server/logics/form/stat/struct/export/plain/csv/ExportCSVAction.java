@@ -33,30 +33,33 @@ public class ExportCSVAction<O extends ObjectSelector> extends ExportPlainAction
     // csv
     private final boolean noHeader;
     private final boolean noEscape;
-    private final String separator;
+    private final ClassPropertyInterface separatorInterface;
 
     public ExportCSVAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                            ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, FormSelectTop<ValueClass> selectTop, String charset, boolean noHeader,
-                           String separator, boolean noEscape) {
+                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, FormSelectTop<ValueClass> selectTop, ValueClass charset, boolean noHeader,
+                           ValueClass separator, boolean noEscape) {
         this(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, noHeader, separator, noEscape, false);
     }
 
     public ExportCSVAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                            ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, FormSelectTop<ValueClass> selectTop, String charset, boolean noHeader,
-                           String separator, boolean noEscape, boolean useCaptionInsteadOfIntegrationSID) {
+                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, FormSelectTop<ValueClass> selectTop, ValueClass charset, boolean noHeader,
+                           ValueClass separator, boolean noEscape, boolean useCaptionInsteadOfIntegrationSID) {
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop,
-                nvl(charset, ExternalUtils.defaultCSVCharset), useCaptionInsteadOfIntegrationSID);
-        
+                ExternalUtils.defaultCSVCharset, charset, useCaptionInsteadOfIntegrationSID, separator != null ? new ValueClass[] {separator} : new ValueClass[0]);
+
         this.noHeader = noHeader;
         this.noEscape = noEscape;
-        this.separator = separator != null ? separator : ExternalUtils.defaultCSVSeparator;
+
+        ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
+        this.separatorInterface = separator != null ? orderInterfaces.get(orderInterfaces.size() - 1) : null;
     }
 
     @Override
     protected ExportPlainWriter getWriter(ExecutionContext<ClassPropertyInterface> context, ImOrderMap<String, Type> fieldTypes, boolean singleRow) throws IOException {
-        return new ExportCSVWriter(fieldTypes, noHeader, noEscape, separator, charset);
+        String separator = separatorInterface != null ? (String) context.getKeyObject(separatorInterface) : null;
+        return new ExportCSVWriter(fieldTypes, noHeader, noEscape, nvl(separator, ExternalUtils.defaultCSVSeparator), getCharset(context));
     }
 
     public RawFileData exportReport(StaticExportData exportData, StaticDataGenerator.Hierarchy hierarchy) throws IOException {

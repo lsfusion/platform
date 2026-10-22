@@ -39,12 +39,12 @@ groupId1 = propertyId1, ..., groupIdM = propertyIdM
 `exportFormat` может задаваться одним из следующих вариантов:
 
 ```
-JSON [CHARSET charsetStr]
-XML [HEADER | NOHEADER] [ROOT rootExpr] [TAG tagExpr] [ATTR] [CHARSET charsetStr]
-CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
+JSON [CHARSET charsetExpr]
+XML [HEADER | NOHEADER] [ROOT rootExpr] [TAG tagExpr] [ATTR] [CHARSET charsetExpr]
+CSV [separatorExpr] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetExpr]
 XLS [SHEET sheetExpr] [HEADER | NOHEADER]
 XLSX [SHEET sheetExpr] [HEADER | NOHEADER]
-DBF [CHARSET charsetStr]
+DBF [CHARSET charsetExpr]
 TABLE
 ```
 
@@ -145,9 +145,9 @@ TABLE
 
     Ключевое слово, указывающее на экспорт значений в атрибуты родительского тега. Если не указывается, то значения экспортируются в дочерние теги. Применяется только для экспорта в **XML**.
 
-- `separator`
+- `separatorExpr`
 
-    Разделитель в **CSV** файле. [Строковый литерал](Literals.md#strliteral). Если не указывается, то по умолчанию берётся разделитель `;`.
+    [Выражение](Expression.md) строкового класса, значение которого задаёт разделитель в **CSV** файле. Вычисляется при выполнении действия. Если не указывается или его значение равно `NULL`, то берётся разделитель `;`.
 
 - `HEADER | NOHEADER`
 
@@ -159,15 +159,15 @@ TABLE
 
 - `ESCAPE | NOESCAPE`
 
-    Ключевое слово, указывающее на присутствие (`ESCAPE`) или отсутствие (`NOESCAPE`) в **CSV** файле экранирования спецсимволов(`\r`, `\n`, `"` (двойные кавычки) и указанного разделителя (`separator`). `NOESCAPE` имеет смысл использовать, только в случаях, когда в данных гарантировано не будет заданного разделителя. По умолчанию используется `ESCAPE`.
+    Ключевое слово, указывающее на присутствие (`ESCAPE`) или отсутствие (`NOESCAPE`) в **CSV** файле экранирования спецсимволов(`\r`, `\n`, `"` (двойные кавычки) и указанного разделителя (`separatorExpr`). `NOESCAPE` имеет смысл использовать, только в случаях, когда в данных гарантировано не будет заданного разделителя. По умолчанию используется `ESCAPE`.
 
-- `CHARSET charsetStr`
+- `CHARSET charsetExpr`
 
     Опция, указывающая кодировку, используемую при экспорте.
 
-    - `charsetStr`
+    - `charsetExpr`
     
-        Cтроковый литерал, определяющий кодировку. По умолчанию для `JSON`, `XML`, `CSV` используется `UTF-8`, для `DBF` - `CP1251`.
+        [Выражение](Expression.md) строкового класса, значение которого задаёт название кодировки. Вычисляется при выполнении действия; неподдерживаемое название кодировки приводит к ошибке выполнения действия. Если его значение равно `NULL`, используется кодировка по умолчанию: для `JSON`, `XML`, `CSV` - `UTF-8`, для `DBF` - `CP1251`.
 
 - `sheetExpr`
 
@@ -199,11 +199,16 @@ weight = DATA NUMERIC[10,2] (Sku);
 
 in = DATA BOOLEAN (Store, Sku);
 
+csvSeparator = DATA STRING (Store);
+csvCharset = DATA STRING (Store);
+
 exportSkus (Store store)  {
     // выгружаем в DBF все Sku, для которых задано in (Store, Sku) для нужного склада
     EXPORT DBF CHARSET 'CP866' FROM id(Sku s), name(s), weight(s) WHERE in(store, s); 
     // выгружает CSV без строки заголовков и без экранирования спецсимволов
     EXPORT CSV NOHEADER NOESCAPE FROM id(Sku s), name(s), weight(s) WHERE in(store, s); 
+    // выгружает CSV с разделителем и кодировкой склада, если они не заданы - со значениями по умолчанию
+    EXPORT CSV csvSeparator(store) HEADER CHARSET csvCharset(store) FROM id(Sku s), name(s), weight(s) WHERE in(store, s);
     // выгружает JSON, сортируем по свойству name[Sku] в порядке убывания
     EXPORT FROM id(Sku s), name(s), weight(s) WHERE in(store, s) ORDER name(s) DESC; 
     // выгружает JSON {"ff":"HI"}, так как по умолчанию получает имя value, а платформа объект {"value":"HI"} 

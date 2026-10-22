@@ -25,14 +25,14 @@ public class ExportDBFAction<O extends ObjectSelector> extends ExportPlainAction
 
     public ExportDBFAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                            ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, FormSelectTop<ValueClass> selectTop, String charset) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset != null ? charset : ExternalUtils.defaultDBFCharset);
+                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, FormSelectTop<ValueClass> selectTop, ValueClass charset) {
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, ExternalUtils.defaultDBFCharset, charset);
     }
 
     @Override
     protected ExportPlainWriter getWriter(ExecutionContext<ClassPropertyInterface> context, ImOrderMap<String, Type> fieldTypes, boolean singleRow) throws IOException {
         try {
-            return new ExportDBFWriter(fieldTypes, charset);
+            return new ExportDBFWriter(fieldTypes, getCharset(context));
         } catch (JDBFException e) {
             throw Throwables.propagate(e);
         }

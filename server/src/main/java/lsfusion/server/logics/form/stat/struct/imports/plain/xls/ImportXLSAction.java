@@ -20,8 +20,8 @@ public class ImportXLSAction extends ImportPlainAction<ImportXLSIterator> {
     private final boolean sheetAll;
     private final PropertyInterface sheetInterface;
 
-    public ImportXLSAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean hasWhere, boolean noHeader, boolean sheetAll) {
-        super(paramsCount, groupFiles, formEntity, charset, hasWhere);
+    public ImportXLSAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, boolean hasWhere, boolean noHeader, boolean sheetAll) {
+        super(paramsCount, groupFiles, formEntity, null, hasWhere, false);
         this.noHeader = noHeader;
         this.sheetAll = sheetAll;
 

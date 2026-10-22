@@ -1,0 +1,170 @@
+MODULE ImportExportOptions;
+
+REQUIRE TestUtils, Utils;
+
+// the CSV separator and the CHARSET of IMPORT / EXPORT are expressions evaluated when the action runs, a NULL value
+// standing for the default (#1883). They become extra params of the action, so a few cases also check that they and TOP
+// each get their own value
+
+ieoName = DATA LOCAL STRING (INTEGER);
+ieoCode = DATA LOCAL STRING (INTEGER);
+
+ieoSeparator = DATA LOCAL STRING ();
+ieoCharset = DATA LOCAL STRING ();
+
+ieoImportedName = DATA LOCAL STRING (INTEGER);
+ieoImportedCode = DATA LOCAL STRING (INTEGER);
+ieoImportedNameByCode (STRING code) = GROUP MAX ieoImportedName(INTEGER r) IF ieoImportedCode(r) = code;
+
+ieoFailed = DATA LOCAL BOOLEAN ();
+
+ieoFill () {
+    ieoName(1) <- 'Мінск';
+    ieoCode(1) <- 'MSQ';
+    ieoName(2) <- 'Гродна';
+    ieoCode(2) <- 'GNA';
+}
+
+testIeoCsvSeparatorExpression 'EXPORT and IMPORT CSV take the separator from an expression' () {
+    ieoFill();
+    ieoSeparator() <- '|';
+    EXPORT CSV ieoSeparator() NOHEADER FROM ieoName(i), ieoCode(i) WHERE ieoName(i);
+    fileToString(exportFile(), 'UTF-8');
+    assertTrue(isSubstring(resultString(), 'Мінск|MSQ'), 'the separator of EXPORT: ' + resultString());
+
+    IMPORT CSV ieoSeparator() NOHEADER FROM exportFile() TO ieoImportedName, ieoImportedCode;
+    assertEquals(ieoImportedNameByCode('MSQ'), 'Мінск', 'the separator of IMPORT');
+}
+
+testIeoCsvLiterals 'EXPORT and IMPORT CSV still take literals, escapes included' () {
+    ieoFill();
+    EXPORT CSV '\t' NOHEADER CHARSET 'CP1251' FROM ieoName(i), ieoCode(i) WHERE ieoName(i);
+    fileToString(exportFile(), 'CP1251');
+    assertTrue(isSubstring(resultString(), 'Мінск\tMSQ'), 'the literal separator and CHARSET of EXPORT: ' + resultString());
+
+    IMPORT CSV '\t' NOHEADER CHARSET 'CP1251' FROM exportFile() TO ieoImportedName, ieoImportedCode;
+    assertEquals(ieoImportedNameByCode('MSQ'), 'Мінск', 'the literal separator and CHARSET of IMPORT');
+}
+
+testIeoCsvNullSeparator 'a NULL separator of CSV stands for ;' () {
+    ieoFill();
+    EXPORT CSV ieoSeparator() NOHEADER FROM ieoName(i), ieoCode(i) WHERE ieoName(i);
+    fileToString(exportFile(), 'UTF-8');
+    assertTrue(isSubstring(resultString(), 'Мінск;MSQ'), 'the default separator of EXPORT: ' + resultString());
+
+    IMPORT CSV ieoSeparator() NOHEADER FROM exportFile() TO ieoImportedName, ieoImportedCode;
+    assertEquals(ieoImportedNameByCode('MSQ'), 'Мінск', 'the default separator of IMPORT');
+}
+
+testIeoCsvCharsetExpression 'EXPORT and IMPORT CSV take CHARSET from an expression' () {
+    ieoFill();
+    ieoCharset() <- 'CP1251';
+    EXPORT CSV NOHEADER CHARSET ieoCharset() FROM ieoName(i), ieoCode(i) WHERE ieoName(i);
+    fileToString(exportFile(), 'CP1251');
+    assertTrue(isSubstring(resultString(), 'Мінск;MSQ'), 'EXPORT not in CP1251: ' + resultString());
+    fileToString(exportFile(), 'UTF-8');
+    assertFalse(isSubstring(resultString(), 'Мінск'), 'EXPORT in UTF-8');
+
+    IMPORT CSV NOHEADER CHARSET ieoCharset() FROM exportFile() TO ieoImportedName, ieoImportedCode;
+    assertEquals(ieoImportedNameByCode('MSQ'), 'Мінск', 'IMPORT not in CP1251');
+}
+
+testIeoCsvNullCharset 'a NULL CHARSET of CSV stands for UTF-8' () {
+    ieoFill();
+    EXPORT CSV NOHEADER CHARSET ieoCharset() FROM ieoName(i), ieoCode(i) WHERE ieoName(i);
+    fileToString(exportFile(), 'UTF-8');
+    assertTrue(isSubstring(resultString(), 'Мінск;MSQ'), 'EXPORT not in UTF-8: ' + resultString());
+
+    IMPORT CSV NOHEADER CHARSET ieoCharset() FROM exportFile() TO ieoImportedName, ieoImportedCode;
+    assertEquals(ieoImportedNameByCode('MSQ'), 'Мінск', 'IMPORT not in UTF-8');
+}
+
+testIeoCsvUnsupportedCharset 'an unsupported CHARSET fails the action' () {
+    ieoFill();
+    ieoCharset() <- 'NO-SUCH-CHARSET';
+    TRY {
+        EXPORT CSV CHARSET ieoCharset() FROM ieoName(i) WHERE ieoName(i);
+    } CATCH {
+        ieoFailed() <- TRUE;
+    }
+    assertTrue(ieoFailed(), 'EXPORT with an unsupported CHARSET did not fail');
+}
+
+testIeoDbfCharsetExpression 'EXPORT and IMPORT DBF take CHARSET from an expression' () {
+    ieoFill();
+    ieoCharset() <- 'UTF-8';
+    EXPORT DBF CHARSET ieoCharset() FROM name = ieoName(i), code = ieoCode(i) WHERE ieoName(i);
+    IMPORT DBF CHARSET ieoCharset() FROM exportFile() TO ieoImportedName = name, ieoImportedCode = code;
+    assertEquals(ieoImportedNameByCode('MSQ'), 'Мінск', 'the CHARSET of DBF');
+}
+
+testIeoJsonCharsetExpression 'EXPORT and IMPORT JSON take CHARSET from an expression' () {
+    ieoFill();
+    ieoCharset() <- 'CP1251';
+    EXPORT JSON CHARSET ieoCharset() FROM name = ieoName(i), code = ieoCode(i) WHERE ieoName(i);
+    fileToString(exportFile(), 'CP1251');
+    assertTrue(isSubstring(resultString(), 'Мінск'), 'EXPORT not in CP1251: ' + resultString());
+
+    IMPORT JSON CHARSET ieoCharset() FROM exportFile() TO ieoImportedName = name, ieoImportedCode = code;
+    assertEquals(ieoImportedNameByCode('MSQ'), 'Мінск', 'IMPORT not in CP1251');
+}
+
+testIeoXmlCharsetExpression 'EXPORT and IMPORT XML take CHARSET from an expression' () {
+    ieoFill();
+    ieoCharset() <- 'CP1251';
+    // without the header the encoding of the document is the one IMPORT is given
+    EXPORT XML NOHEADER CHARSET ieoCharset() FROM name = ieoName(i), code = ieoCode(i) WHERE ieoName(i);
+    fileToString(exportFile(), 'CP1251');
+    assertTrue(isSubstring(resultString(), 'Мінск'), 'EXPORT not in CP1251: ' + resultString());
+
+    IMPORT XML CHARSET ieoCharset() FROM exportFile() TO ieoImportedName = name, ieoImportedCode = code;
+    assertEquals(ieoImportedNameByCode('MSQ'), 'Мінск', 'IMPORT not in CP1251');
+}
+
+testIeoCsvSeparatorWithTop 'the separator and TOP of EXPORT CSV get their own values' () {
+    ieoFill();
+    ieoSeparator() <- '|';
+    EXPORT CSV ieoSeparator() NOHEADER FROM ieoName(i), ieoCode(i) WHERE ieoName(i) ORDER ieoCode(i) TOP 1;
+    fileToString(exportFile(), 'UTF-8');
+    assertTrue(isSubstring(resultString(), 'Гродна|GNA'), 'the first row: ' + resultString());
+    assertFalse(isSubstring(resultString(), 'MSQ'), 'more than TOP rows: ' + resultString());
+}
+
+testIeoXmlRootWithTop 'ROOT and TOP of EXPORT XML get their own values' () {
+    ieoFill();
+    EXPORT XML ROOT 'cities' FROM name = ieoName(i) WHERE ieoName(i) ORDER ieoCode(i) TOP 1;
+    fileToString(exportFile(), 'UTF-8');
+    assertTrue(isSubstring(resultString(), '<cities'), 'the root: ' + resultString());
+    assertFalse(isSubstring(resultString(), 'Мінск'), 'more than TOP rows: ' + resultString());
+}
+
+CLASS IeoCity;
+ieoCityName = DATA STRING (IeoCity);
+ieoCityCode = DATA STRING (IeoCity);
+
+FORM ieoCities
+    OBJECTS c = IeoCity
+    PROPERTIES(c) ieoCityName, ieoCityCode
+    ORDERS ieoCityCode(c)
+;
+
+ieoCitiesFile = DATA LOCAL FILE ();
+
+FORM ieoImportCities
+    OBJECTS r = INTEGER
+    PROPERTIES(r) ieoImportedName, ieoImportedCode
+;
+
+testIeoFormCsvOptions 'EXPORT and IMPORT of a form take the separator and CHARSET from expressions' () {
+    NEW c = IeoCity { ieoCityName(c) <- 'Мінск'; ieoCityCode(c) <- 'MSQ'; }
+    NEW c = IeoCity { ieoCityName(c) <- 'Гродна'; ieoCityCode(c) <- 'GNA'; }
+    ieoSeparator() <- '|';
+    ieoCharset() <- 'CP1251';
+    EXPORT ieoCities CSV ieoSeparator() NOHEADER CHARSET ieoCharset() TOP 1 TO c = ieoCitiesFile;
+    fileToString(ieoCitiesFile(), 'CP1251');
+    assertTrue(isSubstring(resultString(), 'Гродна|GNA'), 'EXPORT of a form: ' + resultString());
+    assertFalse(isSubstring(resultString(), 'MSQ'), 'more than TOP rows: ' + resultString());
+
+    IMPORT ieoImportCities CSV ieoSeparator() NOHEADER CHARSET ieoCharset() FROM r = ieoCitiesFile();
+    assertEquals(ieoImportedNameByCode('GNA'), 'Гродна', 'IMPORT of a form');
+}

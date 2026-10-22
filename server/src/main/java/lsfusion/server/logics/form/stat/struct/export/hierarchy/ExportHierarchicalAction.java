@@ -49,9 +49,9 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
                                     FormIntegrationType staticType,
                                     LP exportFile,
                                     FormSelectTop<ValueClass> selectTop,
-                                    String charset,
+                                    ValueClass charset,
                                     ValueClass root, ValueClass tag) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, charset != null ? charset : ExternalUtils.defaultXMLJSONCharset, getExtraParams(root, tag));
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, ExternalUtils.defaultXMLJSONCharset, charset, getExtraParams(root, tag));
 
         ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
         if (tag != null)
@@ -80,6 +80,7 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
+        String charset = getCharset(context);
         //pseudo charset utf-8-bom to write BOM bytes
         if (charset.equals("UTF-8-BOM")) {
             outputStream.write(239);
@@ -89,14 +90,14 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
         }
 
         try (PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, charset)))) {
-            writeRootNode(out, rootNode);
+            writeRootNode(out, rootNode, charset);
         }
         writeResult(exportFile, staticType, context, new RawFileData(outputStream), charset);
     }
 
     protected abstract T createRootNode(String root, String tag);
 
-    protected abstract void writeRootNode(PrintWriter printWriter, T rootNode) throws IOException;
+    protected abstract void writeRootNode(PrintWriter printWriter, T rootNode, String charset) throws IOException;
 
     @Override
     protected ImMap<Property, Boolean> aspectChangeExtProps(ImSet<Action<?>> recursiveAbstracts) {

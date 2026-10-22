@@ -19,11 +19,11 @@ public class ImportDBFAction extends ImportPlainAction<ImportDBFIterator> {
 
     private final PropertyInterface memoInterface;
 
-    public ImportDBFAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean hasWhere) {
-        super(paramsCount, groupFiles, formEntity, charset != null ? charset : ExternalUtils.defaultDBFCharset, hasWhere);
+    public ImportDBFAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, boolean hasWhere, boolean hasCharset) {
+        super(paramsCount, groupFiles, formEntity, ExternalUtils.defaultDBFCharset, hasWhere, hasCharset);
 
         int shift = groupFiles.size() + (hasWhere ? 1 : 0);
-        memoInterface =  shift < paramsCount ? getOrderInterfaces().get(shift) : null;
+        memoInterface =  shift < paramsCount - (hasCharset ? 1 : 0) ? getOrderInterfaces().get(shift) : null;
     }
 
     @Override
@@ -33,6 +33,6 @@ public class ImportDBFAction extends ImportPlainAction<ImportDBFIterator> {
             FileData memoObject = (FileData) context.getKeyObject(memoInterface);
             memo = memoObject != null ? memoObject.getRawFile() : null;
         }
-        return new ImportDBFIterator(fieldTypes, file, charset, wheres, memo);
+        return new ImportDBFIterator(fieldTypes, file, getCharset(context), wheres, memo);
     }
 }

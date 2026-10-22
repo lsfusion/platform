@@ -39,12 +39,12 @@ groupId1 = propertyId1, ..., groupIdM = propertyIdM
 `exportFormat` can be specified by one of the following options:
 
 ```
-JSON [CHARSET charsetStr]
-XML [HEADER | NOHEADER] [ROOT rootExpr] [TAG tagExpr] [ATTR] [CHARSET charsetStr]
-CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
+JSON [CHARSET charsetExpr]
+XML [HEADER | NOHEADER] [ROOT rootExpr] [TAG tagExpr] [ATTR] [CHARSET charsetExpr]
+CSV [separatorExpr] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetExpr]
 XLS [SHEET sheetExpr] [HEADER | NOHEADER]
 XLSX [SHEET sheetExpr] [HEADER | NOHEADER]
-DBF [CHARSET charsetStr]
+DBF [CHARSET charsetExpr]
 TABLE
 ```
 
@@ -144,9 +144,9 @@ When a form is exported to a hierarchical format (**JSON**, **XML**), a single f
 
     A keyword that specifies that values should be exported to the attributes of the parent tag. If not specified, the values are exported to child tags. Only applicable for export to **XML**.
 
-- `separator`
+- `separatorExpr`
 
-    Delimiter in a **CSV** file. [String literal](Literals.md#strliteral). If not specified, then the default delimiter is `;`.
+    [Expression](Expression.md) of a string class whose value is the delimiter in a **CSV** file. It is evaluated when the action is executed. If it is not specified or its value is `NULL`, the delimiter `;` is used.
 
 - `HEADER | NOHEADER`
 
@@ -158,15 +158,15 @@ When a form is exported to a hierarchical format (**JSON**, **XML**), a single f
 
 - `ESCAPE | NOESCAPE`
 
-    Keywords specifying the presence (`ESCAPE`) or absence (`NOESCAPE`) of escaping for special characters (`\r`, `\n`, `"` (double quotes) and the specified delimiter (`separator`) in a **CSV** file. It makes sense to use `NOESCAPE` only in cases where the specified delimiter is guaranteed not to occur in the data. The default is `ESCAPE`.
+    Keywords specifying the presence (`ESCAPE`) or absence (`NOESCAPE`) of escaping for special characters (`\r`, `\n`, `"` (double quotes) and the specified delimiter (`separatorExpr`) in a **CSV** file. It makes sense to use `NOESCAPE` only in cases where the specified delimiter is guaranteed not to occur in the data. The default is `ESCAPE`.
 
-- `CHARSET charsetStr`
+- `CHARSET charsetExpr`
 
     An option specifying the encoding used for export.
 
-    - `charsetStr`
+    - `charsetExpr`
      
-        String literal that defines the encoding. Default value for `JSON`, `XML`, `CSV` is `UTF-8`, for `DBF` is `CP1251`.
+        [Expression](Expression.md) of a string class whose value is the name of the encoding. It is evaluated when the action is executed; an unsupported encoding name fails the action. If its value is `NULL`, the default is used: `UTF-8` for `JSON`, `XML`, `CSV`, `CP1251` for `DBF`.
 
 - `sheetExpr`
 
@@ -198,11 +198,16 @@ weight = DATA NUMERIC[10,2] (Sku);
 
 in = DATA BOOLEAN (Store, Sku);
 
+csvSeparator = DATA STRING (Store);
+csvCharset = DATA STRING (Store);
+
 exportSkus (Store store)  {
     // uploading to DBF all Sku for which in (Store, Sku) is specified for the desired warehouse
     EXPORT DBF CHARSET 'CP866' FROM id(Sku s), name(s), weight(s) WHERE in(store, s); 
     // uploads to CSV without header line and escaping special characters
     EXPORT CSV NOHEADER NOESCAPE FROM id(Sku s), name(s), weight(s) WHERE in(store, s); 
+    // uploads to CSV with the delimiter and the encoding of the warehouse, the default ones are used when they are not set
+    EXPORT CSV csvSeparator(store) HEADER CHARSET csvCharset(store) FROM id(Sku s), name(s), weight(s) WHERE in(store, s);
     // uploads JSON, sorting by property name[Sku] in descending order
     EXPORT FROM id(Sku s), name(s), weight(s) WHERE in(store, s) ORDER name(s) DESC; 
     // uploads JSON {"ff":"HI"}, as by default it gets the name value, and the platform

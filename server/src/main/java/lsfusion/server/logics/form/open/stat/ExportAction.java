@@ -19,19 +19,30 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.io.IOException;
 import java.sql.SQLException;
 
 public abstract class ExportAction<O extends ObjectSelector> extends FormStaticAction<O, FormIntegrationType> {
-    protected String charset;
-    
-    public ExportAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImOrderSet<PropertyInterface> orderContextInterfaces,
-                        ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters, FormIntegrationType staticType, FormSelectTop<ValueClass> selectTop, String charset, ValueClass... extraParams) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, extraParams);
+    private final String defaultCharset;
+    private final ClassPropertyInterface charsetInterface;
 
-        this.charset = charset;
+    public ExportAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImOrderSet<PropertyInterface> orderContextInterfaces,
+                        ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters, FormIntegrationType staticType, FormSelectTop<ValueClass> selectTop,
+                        String defaultCharset, ValueClass charset, ValueClass... extraParams) {
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, charset != null ? ArrayUtils.add(extraParams, 0, charset) : extraParams);
+
+        this.defaultCharset = defaultCharset;
+        ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
+        this.charsetInterface = charset != null ? orderInterfaces.get(orderInterfaces.size() - 1 - extraParams.length) : null;
     }
-    
+
+    protected String getCharset(ExecutionContext<ClassPropertyInterface> context) {
+        String charset = charsetInterface != null ? (String) context.getKeyObject(charsetInterface) : null;
+        return charset != null ? charset : defaultCharset;
+    }
+
     protected abstract void export(ExecutionContext<ClassPropertyInterface> context, StaticExportData exportData, StaticDataGenerator.Hierarchy hierarchy) throws IOException, SQLException, SQLHandledException;
 
     @Override

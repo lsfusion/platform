@@ -44,15 +44,15 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
 
     public ExportPlainAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                              ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, FormSelectTop<ValueClass> selectTop, String charset, ValueClass... extraParams) {
-        this(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, false, extraParams);
+                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, FormSelectTop<ValueClass> selectTop, String defaultCharset, ValueClass charset, ValueClass... extraParams) {
+        this(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, defaultCharset, charset, false, extraParams);
     }
 
     public ExportPlainAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                              ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, FormSelectTop<ValueClass> selectTop, String charset,
+                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, FormSelectTop<ValueClass> selectTop, String defaultCharset, ValueClass charset,
                              boolean useCaptionInsteadOfIntegrationSID, ValueClass... extraParams) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, charset, extraParams);
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, defaultCharset, charset, extraParams);
         this.exportFiles = exportFiles;
         this.useCaptionInsteadOfIntegrationSID = useCaptionInsteadOfIntegrationSID;
     }
@@ -70,7 +70,7 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
         for (Map.Entry<GroupObjectEntity, RawFileData> entry : files.entrySet()) {
             LP exportFile = exportFiles.get(entry.getKey() == null ? GroupObjectEntity.NULL : entry.getKey());
             if(exportFile != null)
-                writeResult(exportFile, staticType, context, entry.getValue(), charset);
+                writeResult(exportFile, staticType, context, entry.getValue(), getCharset(context));
         }
     }
 

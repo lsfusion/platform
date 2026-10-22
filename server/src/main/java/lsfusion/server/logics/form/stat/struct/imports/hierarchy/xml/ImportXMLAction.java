@@ -20,8 +20,8 @@ import java.io.InputStreamReader;
 
 public class ImportXMLAction extends ImportHierarchicalAction<XMLNode> {
 
-    public ImportXMLAction(int paramsCount, FormEntity formEntity, String charset, boolean hasRoot, boolean hasWhere) {
-        super(paramsCount, formEntity, charset, hasRoot, hasWhere);
+    public ImportXMLAction(int paramsCount, FormEntity formEntity, boolean hasRoot, boolean hasWhere, boolean hasCharset) {
+        super(paramsCount, formEntity, null, hasRoot, hasWhere, hasCharset);
     }
 
     private void fillNamespaceElements(Element element, GroupParseNode groupParseNode) {
@@ -32,20 +32,20 @@ public class ImportXMLAction extends ImportHierarchicalAction<XMLNode> {
     }
 
     @Override
-    public XMLNode getRootNode(RawFileData fileData, String root, FormParseNode formParseNode) {
+    public XMLNode getRootNode(RawFileData fileData, String root, String charset, FormParseNode formParseNode) {
         try {
             if(formParseNode.namespaceElement == null)
                 synchronized (formParseNode) {
                     if(formParseNode.namespaceElement == null) // double check
                         fillNamespaceElements(ExportXMLAction.createRootElement(root, formEntity, true), formParseNode);
                 }
-            return new XMLNode(findRootNode(fileData, root), formParseNode);
+            return new XMLNode(findRootNode(fileData, root, charset), formParseNode);
         } catch (JDOMException | IOException e) {
             throw Throwables.propagate(e);
         }
     }
 
-    public Element findRootNode(RawFileData file, String root) throws JDOMException, IOException {
+    public Element findRootNode(RawFileData file, String root, String charset) throws JDOMException, IOException {
         //if charset is not provided, it's getting from xml header (<?xml version="1.0" encoding="utf-8"?>)
         SAXBuilder builder = XMLNode.createSecureSAXBuilder();
         Document doc = charset != null ? builder.build(new InputStreamReader(new BOMInputStream(file.getInputStream()), charset)) : builder.build(file.getInputStream());

@@ -31,7 +31,7 @@ public class ExportXMLAction<O extends ObjectSelector> extends ExportHierarchica
 
     public ExportXMLAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                            ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                           FormIntegrationType staticType, LP exportFile, FormSelectTop<ValueClass> selectTop, boolean noHeader, String charset, ValueClass root, ValueClass tag) {
+                           FormIntegrationType staticType, LP exportFile, FormSelectTop<ValueClass> selectTop, boolean noHeader, ValueClass charset, ValueClass root, ValueClass tag) {
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFile, selectTop, charset, root, tag);
 
         this.noHeader = noHeader;
@@ -46,7 +46,7 @@ public class ExportXMLAction<O extends ObjectSelector> extends ExportHierarchica
     }
 
     @Override
-    protected void writeRootNode(PrintWriter printWriter, XMLNode rootNode) throws IOException {
+    protected void writeRootNode(PrintWriter printWriter, XMLNode rootNode, String charset) throws IOException {
         Element element = rootNode.element;
         XMLOutputter xmlOutput = new XMLOutputter();
         xmlOutput.setFormat(Format.getRawFormat().setIndent("  ").setEncoding(charset).setOmitDeclaration(noHeader));

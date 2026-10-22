@@ -39,7 +39,8 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
 
         this.staticType = staticType;
 
-        this.selectTopInterfaces = FormAction.getSelectTop(selectTop, getOrderInterfaces());
+        ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
+        this.selectTopInterfaces = FormAction.getSelectTop(selectTop, orderInterfaces.subOrder(0, orderInterfaces.size() - extraValueClasses.length));
     }
 
     protected static void writeResult(LP<?> exportFile, FormStaticType staticType, ExecutionContext<ClassPropertyInterface> context, RawFileData singleFile, String charset) throws SQLException, SQLHandledException {

@@ -48,13 +48,20 @@ import java.util.Map;
 
 public abstract class ImportAction extends SystemAction {
     protected FormEntity formEntity;
-    protected String charset;
+    private final String defaultCharset;
+    private final PropertyInterface charsetInterface;
 
-    public ImportAction(int paramsCount, FormEntity formEntity, String charset) {
+    public ImportAction(int paramsCount, FormEntity formEntity, String defaultCharset, boolean hasCharset) {
         super(LocalizedString.create("Import"), SetFact.toOrderExclSet(paramsCount, i -> new PropertyInterface()));
-        
+
         this.formEntity = formEntity;
-        this.charset = charset;
+        this.defaultCharset = defaultCharset;
+        this.charsetInterface = hasCharset ? getOrderInterfaces().get(paramsCount - 1) : null;
+    }
+
+    protected String getCharset(ExecutionContext<PropertyInterface> context) {
+        String charset = charsetInterface != null ? (String) context.getKeyObject(charsetInterface) : null;
+        return charset != null ? charset : defaultCharset;
     }
 
     // in IMPORT operator adjustImportFormatFromFileType and addAutoImportFAProp are used, so we know the type / extension, and importFileType is in fact calculated in the adjustImportFormatFromFileType

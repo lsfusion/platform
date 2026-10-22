@@ -15,11 +15,11 @@ IMPORT formName [importFormat] [FROM (fileExpr | groupId1 = fileExpr1 [, ..., gr
 `importFormat` can be specified by one of the following options:
 
 ```
-JSON [ROOT rootExpr] [WHERE whereExpr] [CHARSET charsetStr]
-XML [ROOT rootExpr] [ATTR] [WHERE whereExpr] [CHARSET charsetStr]
-CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [WHERE whereExpr] [CHARSET charsetStr]
+JSON [ROOT rootExpr] [WHERE whereExpr] [CHARSET charsetExpr]
+XML [ROOT rootExpr] [ATTR] [WHERE whereExpr] [CHARSET charsetExpr]
+CSV [separatorExpr] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [WHERE whereExpr] [CHARSET charsetExpr]
 XLS [HEADER | NOHEADER] [SHEET (sheetExpr | ALL)] [WHERE whereExpr]
-DBF [MEMO memoExpr] [WHERE whereExpr] [CHARSET charsetStr]
+DBF [MEMO memoExpr] [WHERE whereExpr] [CHARSET charsetExpr]
 TABLE [WHERE whereExpr]
 ```
 
@@ -76,9 +76,9 @@ The first passed file is used to automatically determine a flat file format by i
 
     A keyword that specifies that values should be read from the attributes of an element. If not specified, then reading happens from child elements. Only applicable for import from **XML**.
 
-- `separator`
+- `separatorExpr`
 
-    Delimiter in a **CSV** file. [String literal](Literals.md#strliteral). If not specified, then the default delimiter is `;`.
+    [Expression](Expression.md) of a string class whose value is the delimiter in a **CSV** file. It is evaluated when the action is executed. If it is not specified or its value is `NULL`, the delimiter `;` is used.
 
 - `HEADER` | `NOHEADER`
 
@@ -93,7 +93,7 @@ The first passed file is used to automatically determine a flat file format by i
 
 - `ESCAPE` | `NOESCAPE`
 
-    Keyword specifying the presence (`ESCAPE`) or absence (`NOESCAPE`) of escaping for special characters (`\r`, `\n`, `"` (double quotes)) and the specified delimiter `separator` in a **CSV** file. It makes sense to use `NOESCAPE` only in cases where the specified delimiter is guaranteed not to occur in the data. The default is `ESCAPE`.
+    Keyword specifying the presence (`ESCAPE`) or absence (`NOESCAPE`) of escaping for special characters (`\r`, `\n`, `"` (double quotes)) and the specified delimiter `separatorExpr` in a **CSV** file. It makes sense to use `NOESCAPE` only in cases where the specified delimiter is guaranteed not to occur in the data. The default is `ESCAPE`.
 
 - `SHEET (sheetExpr | ALL)`
 
@@ -107,13 +107,13 @@ The first passed file is used to automatically determine a flat file format by i
     
         A keyword that means that import will be from all sheets of the excel file.
 
-- `CHARSET charsetStr`
+- `CHARSET charsetExpr`
 
     An option specifying the encoding used for import.
 
-    - `charsetStr`
+    - `charsetExpr`
     
-        A string literal that defines the encoding. Default value for `JSON`, `CSV` is `UTF-8`, for `DBF` is `CP1251`.For `XML` the encoding specified in the header is used by default. If it is absent, `UTF-8` is default.
+        [Expression](Expression.md) of a string class whose value is the name of the encoding. It is evaluated when the action is executed; an unsupported encoding name fails the action. If its value is `NULL`, the default is used: `UTF-8` for `JSON`, `CSV`, `CP1251` for `DBF`. For `XML` the encoding specified in the header is used by default. If it is absent, `UTF-8` is default.
 
 - `whereExpr`
 
@@ -184,6 +184,9 @@ import()  {
     LOCAL headField1 = BPSTRING[50] ();
     LOCAL headField2 = BPSTRING[50] ();
 
+    LOCAL csvSeparator = STRING ();
+    LOCAL csvCharset = STRING ();
+
     INPUT f = EXCELFILE DO {
         IMPORT XLS SHEET 2 FROM f TO field1 = C, field2, field3 = F, field4 = A;
         IMPORT XLS SHEET ALL FROM f TO field1 = C, field2, field3 = F, field4 = A;
@@ -211,6 +214,9 @@ import()  {
 
     INPUT f = FILE DO
         IMPORT CSV '*' HEADER CHARSET 'utf-8' FROM f TO field1 = C, field2, field3 = F, field4 = A;
+    // the delimiter and the encoding are calculated when importing, NULL means the default ones
+    INPUT f = FILE DO
+        IMPORT CSV csvSeparator() HEADER CHARSET csvCharset() FROM f TO field1 = C, field2, field3 = F, field4 = A;
     INPUT f = FILE DO
         IMPORT XML ATTR FROM f TO field1, field2;
     INPUT f = FILE DO

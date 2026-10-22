@@ -202,7 +202,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 FormDataManager.ExportResult exportData = formReportManager.getExportData();
                 FormIntegrationType type = FormIntegrationType.CSV;
                 RawFileData file = new ExportCSVAction(null, formReportManager.getFormEntity(), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(),
-                        type, null, FormSelectTop.NULL(), null, false, ";", false, true).exportReport(new StaticExportData(exportData.keys, exportData.properties), exportData.hierarchy);
+                        type, null, FormSelectTop.NULL(), null, false, null, false, true).exportReport(new StaticExportData(exportData.keys, exportData.properties), exportData.hierarchy);
                 return new FileData(new RawFileData(ArrayUtils.addAll(new byte[]{(byte) 0xef, (byte) 0xbb, (byte) 0xbf}, file.getBytes())), type.getExtension()); //add bom bytes
 
             } else {

@@ -23,10 +23,10 @@ public abstract class ImportHierarchicalAction<T extends Node<T>> extends Import
     private final PropertyInterface rootInterface;
     protected final PropertyInterface whereInterface;
 
-    public abstract T getRootNode(RawFileData fileData, String root, FormParseNode formParseNode);
+    public abstract T getRootNode(RawFileData fileData, String root, String charset, FormParseNode formParseNode);
 
-    public ImportHierarchicalAction(int paramsCount, FormEntity formEntity, String charset, boolean hasRoot, boolean hasWhere) {
-        super(paramsCount, formEntity, charset);
+    public ImportHierarchicalAction(int paramsCount, FormEntity formEntity, String defaultCharset, boolean hasRoot, boolean hasWhere, boolean hasCharset) {
+        super(paramsCount, formEntity, defaultCharset, hasCharset);
 
         int shift = 0;
         ImOrderSet<PropertyInterface> interfaces = getOrderInterfaces();
@@ -42,13 +42,14 @@ public abstract class ImportHierarchicalAction<T extends Node<T>> extends Import
 
         ImportHierarchicalIterator iterator = new ImportHierarchicalIterator(wheres);
 
-        RawFileData file = readRawFile(context.getKeyValue(fileInterface), getCharset());
+        String charset = getCharset(context);
+        RawFileData file = readRawFile(context.getKeyValue(fileInterface), charset != null ? charset : ExternalUtils.defaultXMLJSONCharset);
 
         StaticDataGenerator.Hierarchy hierarchy = formEntity.getImportHierarchy();
         FormImportData importData = new FormImportData(formEntity, context);
         if(file != null && file.getLength() > 0) {
             FormParseNode formParseNode = hierarchy.getIntegrationHierarchy();
-            T rootNode = getRootNode(file, root, formParseNode);
+            T rootNode = getRootNode(file, root, charset, formParseNode);
             formParseNode.importNode(rootNode, MapFact.EMPTY(), importData, iterator);
         }
         // filling properties that were not imported (to drop their changes too)
@@ -57,9 +58,4 @@ public abstract class ImportHierarchicalAction<T extends Node<T>> extends Import
                 importData.addProperty(property, property.getImportProperty(), true); // isExclusive can be false, it doesn't matter
         return importData;
     }
-
-    protected String getCharset() {
-        return charset != null ? charset : ExternalUtils.defaultXMLJSONCharset;
-    }
-
 }

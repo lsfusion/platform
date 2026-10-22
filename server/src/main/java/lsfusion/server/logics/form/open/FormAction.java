@@ -75,7 +75,7 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
 
     public static <O extends ObjectSelector> ValueClass[] getValueClasses(FormSelector<O> form, ImList<O> objects, int contextInterfaces, ValueClass[] extraValueClasses, FormSelectTop<ValueClass> selectTop) {
         ImList<ValueClass> objectClasses = objects.mapListValues(o -> form.getBaseClass(o));
-        return ArrayUtils.addAll(ArrayUtils.addAll(ArrayUtils.addAll(objectClasses.toArray(new ValueClass[objectClasses.size()]), BaseUtils.genArray(null, contextInterfaces, ValueClass[]::new)), extraValueClasses), selectTop.getParams().toArray(new ValueClass[0]));
+        return ArrayUtils.addAll(ArrayUtils.addAll(ArrayUtils.addAll(objectClasses.toArray(new ValueClass[objectClasses.size()]), BaseUtils.genArray(null, contextInterfaces, ValueClass[]::new)), selectTop.getParams().toArray(new ValueClass[0])), extraValueClasses);
     }
 
     @Override

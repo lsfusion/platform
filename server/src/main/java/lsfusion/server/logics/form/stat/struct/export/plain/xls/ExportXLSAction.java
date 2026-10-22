@@ -29,9 +29,9 @@ public class ExportXLSAction<O extends ObjectSelector> extends ExportPlainAction
 
     public ExportXLSAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                            ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, FormSelectTop<ValueClass> selectTop, String charset, boolean xlsx,
+                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, FormSelectTop<ValueClass> selectTop, boolean xlsx,
                            boolean noHeader, ValueClass sheetName) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, getExtraParams(sheetName));
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, null, null, getExtraParams(sheetName));
         this.xlsx = xlsx;
         this.noHeader = noHeader;
 

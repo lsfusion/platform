@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.stat.struct.imports.hierarchy.json;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.file.RawFileData;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.logics.form.stat.struct.hierarchy.FormParseNode;
 import lsfusion.server.logics.form.stat.struct.hierarchy.json.JSONNode;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.ImportHierarchicalAction;
@@ -10,14 +11,14 @@ import org.json.JSONException;
 
 public class ImportJSONAction extends ImportHierarchicalAction<JSONNode> {
 
-    public ImportJSONAction(int paramsCount, FormEntity formEntity, String charset, boolean hasRoot, boolean hasWhere) {
-        super(paramsCount, formEntity, charset, hasRoot, hasWhere);
+    public ImportJSONAction(int paramsCount, FormEntity formEntity, boolean hasRoot, boolean hasWhere, boolean hasCharset) {
+        super(paramsCount, formEntity, ExternalUtils.defaultXMLJSONCharset, hasRoot, hasWhere, hasCharset);
     }
 
     @Override
-    public JSONNode getRootNode(RawFileData fileData, String root, FormParseNode formParseNode) {
+    public JSONNode getRootNode(RawFileData fileData, String root, String charset, FormParseNode formParseNode) {
         try {
-            return JSONNode.getJSONNode(JSONReader.readRootObject(fileData, root, getCharset()), true);
+            return JSONNode.getJSONNode(JSONReader.readRootObject(fileData, root, charset), true);
         } catch (JSONException e) {
             throw Throwables.propagate(e);
         }

@@ -15,11 +15,11 @@ IMPORT formName [importFormat] [FROM (fileExpr | groupId1 = fileExpr1 [, ..., gr
 `importFormat` может задаваться одним из следующих вариантов:
 
 ```
-JSON [ROOT rootExpr] [WHERE whereExpr] [CHARSET charsetStr]
-XML [ROOT rootExpr] [ATTR] [WHERE whereExpr] [CHARSET charsetStr]
-CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [WHERE whereExpr] [CHARSET charsetStr]
+JSON [ROOT rootExpr] [WHERE whereExpr] [CHARSET charsetExpr]
+XML [ROOT rootExpr] [ATTR] [WHERE whereExpr] [CHARSET charsetExpr]
+CSV [separatorExpr] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [WHERE whereExpr] [CHARSET charsetExpr]
 XLS [HEADER | NOHEADER] [SHEET (sheetExpr | ALL)] [WHERE whereExpr]
-DBF [MEMO memoExpr] [WHERE whereExpr] [CHARSET charsetStr]
+DBF [MEMO memoExpr] [WHERE whereExpr] [CHARSET charsetExpr]
 TABLE [WHERE whereExpr]
 ```
 
@@ -75,9 +75,9 @@ FIELDS [(objClassId1 objAlias1, objClassId2 objAlias2, ..., objClassIdK objAlias
 
     Ключевое слово, указывающее на чтение значений из атрибутов элемента. Если не указывается, то чтение производится из дочерних элементов. Применяется только для импорта **XML**.
 
-- `separator`
+- `separatorExpr`
 
-    Разделитель в **CSV** файле. [Строковый литерал](Literals.md#strliteral). Если не указывается, то по умолчанию берётся разделитель `;`.
+    [Выражение](Expression.md) строкового класса, значение которого задаёт разделитель в **CSV** файле. Вычисляется при выполнении действия. Если не указывается или его значение равно `NULL`, то берётся разделитель `;`.
 
 - `HEADER` | `NOHEADER`
 
@@ -92,7 +92,7 @@ FIELDS [(objClassId1 objAlias1, objClassId2 objAlias2, ..., objClassIdK objAlias
 
 - `ESCAPE` | `NOESCAPE`
 
-    Ключевое слово, указывающее на присутствие (`ESCAPE`) или отсутствие (`NOESCAPE`) в **CSV** файле экранирования спецсимволов (`\r`, `\n`, `"` (двойные кавычки)) и указанного разделителя `separator`. `NOESCAPE` имеет смысл использовать, только в случаях, когда в данных гарантировано не будет заданного разделителя. По умолчанию используется `ESCAPE`.
+    Ключевое слово, указывающее на присутствие (`ESCAPE`) или отсутствие (`NOESCAPE`) в **CSV** файле экранирования спецсимволов (`\r`, `\n`, `"` (двойные кавычки)) и указанного разделителя `separatorExpr`. `NOESCAPE` имеет смысл использовать, только в случаях, когда в данных гарантировано не будет заданного разделителя. По умолчанию используется `ESCAPE`.
 
 - `SHEET (sheetExpr | ALL)`
 
@@ -106,13 +106,13 @@ FIELDS [(objClassId1 objAlias1, objClassId2 objAlias2, ..., objClassIdK objAlias
 
         Ключевое слово, которое означает, что импорт будет производится из всех листов excel файла.
 
-- `CHARSET charsetStr`
+- `CHARSET charsetExpr`
 
     Опция, указывающая кодировку файла, используемую при импорте.
 
-    - `charsetStr`
+    - `charsetExpr`
 
-        Cтроковый литерал, определяющий кодировку. По умолчанию для `JSON`, `CSV` используется `UTF-8`, для `DBF` - `CP1251`. Для `XML` по умолчанию используется кодировка, указанная в заголовке. При её отсутствии - `UTF-8`.
+        [Выражение](Expression.md) строкового класса, значение которого задаёт название кодировки. Вычисляется при выполнении действия; неподдерживаемое название кодировки приводит к ошибке выполнения действия. Если его значение равно `NULL`, используется кодировка по умолчанию: для `JSON`, `CSV` - `UTF-8`, для `DBF` - `CP1251`. Для `XML` по умолчанию используется кодировка, указанная в заголовке. При её отсутствии - `UTF-8`.
 
 - `whereExpr`
 
@@ -183,6 +183,9 @@ import()  {
     LOCAL headField1 = BPSTRING[50] ();
     LOCAL headField2 = BPSTRING[50] ();
 
+    LOCAL csvSeparator = STRING ();
+    LOCAL csvCharset = STRING ();
+
     INPUT f = EXCELFILE DO {
         IMPORT XLS SHEET 2 FROM f TO field1 = C, field2, field3 = F, field4 = A;
         IMPORT XLS SHEET ALL FROM f TO field1 = C, field2, field3 = F, field4 = A;
@@ -214,6 +217,9 @@ import()  {
 
     INPUT f = FILE DO
         IMPORT CSV '*' HEADER CHARSET 'utf-8' FROM f TO field1 = C, field2, field3 = F, field4 = A;
+    // разделитель и кодировка вычисляются при импорте, NULL означает значения по умолчанию
+    INPUT f = FILE DO
+        IMPORT CSV csvSeparator() HEADER CHARSET csvCharset() FROM f TO field1 = C, field2, field3 = F, field4 = A;
     INPUT f = FILE DO
         IMPORT XML ATTR FROM f TO field1, field2;
     INPUT f = FILE DO

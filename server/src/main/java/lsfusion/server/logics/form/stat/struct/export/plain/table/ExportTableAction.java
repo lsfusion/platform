@@ -23,8 +23,8 @@ public class ExportTableAction<O extends ObjectSelector> extends ExportPlainActi
 
     public ExportTableAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                              ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, FormSelectTop<ValueClass> selectTop, String charset) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset);
+                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, FormSelectTop<ValueClass> selectTop) {
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, null, null);
     }
 
     @Override

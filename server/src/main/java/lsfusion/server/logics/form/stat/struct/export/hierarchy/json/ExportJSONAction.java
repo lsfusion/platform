@@ -26,7 +26,7 @@ public class ExportJSONAction<O extends ObjectSelector> extends ExportHierarchic
 
     public ExportJSONAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                             ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                            FormIntegrationType staticType, LP exportFile, FormSelectTop<ValueClass> selectTop, String charset) {
+                            FormIntegrationType staticType, LP exportFile, FormSelectTop<ValueClass> selectTop, ValueClass charset) {
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFile, selectTop, charset, null, null);
     }
 
@@ -35,7 +35,7 @@ public class ExportJSONAction<O extends ObjectSelector> extends ExportHierarchic
     }
 
     @Override
-    protected void writeRootNode(PrintWriter printWriter, JSONNode rootNode) throws IOException {
+    protected void writeRootNode(PrintWriter printWriter, JSONNode rootNode, String charset) throws IOException {
         try {
             JSONReader.writeRootObject(JSONNode.putJSONNode(rootNode, true), printWriter);
         } catch (JSONException e) {

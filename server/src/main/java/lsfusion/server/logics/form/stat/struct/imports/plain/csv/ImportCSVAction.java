@@ -17,18 +17,20 @@ import java.io.IOException;
 public class ImportCSVAction extends ImportPlainAction<ImportCSVIterator> {
     private boolean noHeader;
     private boolean noEscape;
-    private String separator;
-    
-    public ImportCSVAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean hasWhere, boolean noHeader, boolean noEscape, String separator) {
-        super(paramsCount, groupFiles, formEntity, charset != null ? charset : ExternalUtils.defaultCSVCharset, hasWhere);
+    private final PropertyInterface separatorInterface;
+
+    public ImportCSVAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, boolean hasWhere, boolean noHeader, boolean noEscape, boolean hasSeparator, boolean hasCharset) {
+        super(paramsCount, groupFiles, formEntity, ExternalUtils.defaultCSVCharset, hasWhere, hasCharset);
         this.noHeader = noHeader;
         this.noEscape = noEscape;
-        this.separator = separator == null ? ExternalUtils.defaultCSVSeparator : separator;
+
+        separatorInterface = hasSeparator ? getOrderInterfaces().get(groupFiles.size() + (hasWhere ? 1 : 0)) : null;
     }
 
     @Override
     public ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, String wheres, ExecutionContext<PropertyInterface> context) throws IOException {
-        return new ImportCSVIterator(fieldTypes, file, charset, wheres, noHeader, noEscape, separator);
+        String separator = separatorInterface != null ? (String) context.getKeyObject(separatorInterface) : null;
+        return new ImportCSVIterator(fieldTypes, file, getCharset(context), wheres, noHeader, noEscape, separator != null ? separator : ExternalUtils.defaultCSVSeparator);
     }
 
     protected boolean indexBased() {

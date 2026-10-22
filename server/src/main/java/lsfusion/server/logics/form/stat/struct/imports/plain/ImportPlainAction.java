@@ -32,8 +32,8 @@ public abstract class ImportPlainAction<I extends ImportPlainIterator> extends I
     protected final ImRevMap<GroupObjectEntity, PropertyInterface> fileInterfaces;
     protected final PropertyInterface whereInterface;
 
-    public ImportPlainAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean hasWhere) {
-        super(paramsCount, formEntity, charset);
+    public ImportPlainAction(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String defaultCharset, boolean hasWhere, boolean hasCharset) {
+        super(paramsCount, formEntity, defaultCharset, hasCharset);
 
         this.fileInterfaces = groupFiles.mapSet(getOrderInterfaces());
         whereInterface = hasWhere ? getOrderInterfaces().get(groupFiles.size()) : null;
@@ -134,7 +134,7 @@ public abstract class ImportPlainAction<I extends ImportPlainIterator> extends I
         Map<GroupObjectEntity, RawFileData> files = new HashMap<>();
         for(int i=0,size=fileInterfaces.size();i<size;i++) {
             GroupObjectEntity fileObject = fileInterfaces.getKey(i);
-            files.put(fileObject == GroupObjectEntity.NULL ? null : fileObject, readRawFile(context.getKeyValue(fileInterfaces.getValue(i)), charset));
+            files.put(fileObject == GroupObjectEntity.NULL ? null : fileObject, readRawFile(context.getKeyValue(fileInterfaces.getValue(i)), getCharset(context)));
         }
         return files;
     }
