@@ -2668,7 +2668,9 @@ public class GReactFormData {
             verbs.pressProperty(property, event);
         }
         public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) {
-            GGroupObjectValue cellKey = getCellKey(fullCurrentKey);
+            // no cell while the form does not show it, as the platform's view of it has none then: the answer takes
+            // `loading` off only what the form shows (GFormController.modifyFormChangesWithLoadingPropertyAsyncs)
+            GGroupObjectValue cellKey = shown ? getCellKey(fullCurrentKey) : null;
             if (cellKey == null)
                 return null;
             PValue oldValue = values.get(property, cellKey);

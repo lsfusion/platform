@@ -239,6 +239,31 @@ public class GFormControllerTest extends GWTTestCase {
     }-*/;
     private static native Boolean loading(JavaScriptObject data, String name) /*-{ return data[name].loading; }-*/;
 
+    // a change of a property React draws, made while the form does not show it - the change of another property
+    // predicted for it, the classic changeProperty -, marks no `loading`, as the platform's panel, which has no view of
+    // it then, marks none: the answer takes `loading` off only what the form shows, so a mark made while it was hidden
+    // stayed once it was shown
+    public void testAPropertyReactDrawsMarksNoLoadingWhileHidden() {
+        GForm form = form("hiddenLoading");
+        GContainer board = container(2, "board", form.mainContainer); // NEW board { custom = 'Board'; MOVE PROPERTY(note()); }
+        board.custom = "Board"; board.react = true;
+        GPropertyDraw note = column(form, 20, "note", null);
+        note.isList = false;
+        note.container = board; board.children.add(note);
+        form.initialFormChanges = GFormChangesTest.noChanges(); // the form does not show it yet
+        GFormController controller = new GFormController(null, null, formContainer(), form, false, "hiddenLoading", 0, null);
+        Object view = controller.getFormLayout().getContainerView(board);
+
+        controller.setLoadingValueAt(note, GGroupObjectValue.EMPTY, PValue.UNDEFINED, 1); // a change of it, request 1
+        controller.applyRemoteChanges(new GFormChanges(), 1); // ... answered
+        GFormChanges shown = new GFormChanges();
+        NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
+        values.put(GGroupObjectValue.EMPTY, PValue.getPValue(5));
+        shown.properties.put(note, values);
+        controller.applyRemoteChanges(shown, 2); // ... and then shown
+        assertNull(loading(published(view), "note"));
+    }
+
     // an input asks for its value in the cell the change asking for it was made in; one asked for by no such change - a
     // view's call, a key of what a React view draws, a form's event - finds no cell: it is cancelled, as a user cancels
     // one, the action asking for it going on as it then would, and the console says why. The client used to open its
