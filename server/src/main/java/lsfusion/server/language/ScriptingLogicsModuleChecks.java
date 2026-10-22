@@ -632,13 +632,19 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkAddObjTOParams(List<Integer> toParams, int contextSize) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkAddObjTOParams(List<Integer> toParams, List<TypedParameter> newContext, int contextSize) throws ScriptingErrorLog.SemanticErrorException {
         for (int param : toParams) {
             if (param < contextSize) {
                 errLog.emitAddObjToPropertyError(parser);
             }
         }
         checkDistinctParameters(toParams);
+        // an object is created for every set of the WHERE parameters, so without one of them several objects would go to the same arguments
+        for (int param = contextSize; param < newContext.size(); param++) {
+            if (!toParams.contains(param)) {
+                errLog.emitAddObjToPropertyMissingParamError(parser, newContext.get(param).paramName);
+            }
+        }
     }
 
     public void checkAbstractTypes(boolean isCase, boolean implIsCase) throws ScriptingErrorLog.SemanticErrorException {

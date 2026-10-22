@@ -8,6 +8,7 @@ REQUIRE TestUtils, Utils;
 CLASS BulkNewItem;
 CLASS BulkNewSource;
 
+bulkNewTo1 = DATA LOCAL BulkNewItem (INTEGER);
 bulkNewTo2 = DATA LOCAL BulkNewItem (INTEGER, INTEGER);
 bulkNewTo3 = DATA LOCAL BulkNewItem (BulkNewSource, INTEGER, INTEGER);
 
@@ -33,4 +34,13 @@ testBulkNewToRotatedOrder 'The TO arguments of the bulk NEW rotated, one of them
     assertEquals((GROUP SUM 1 IF bulkNewTo3(BulkNewSource s, INTEGER j, INTEGER i)), 12, 'arguments written: ' + (GROUP SUM 1 IF bulkNewTo3(BulkNewSource s, INTEGER j, INTEGER i)));
     assertEquals((GROUP SUM 1 IF bulkNewTo3(BulkNewSource s, 3, 2)), 2, 'objects at j = 3, i = 2: ' + (GROUP SUM 1 IF bulkNewTo3(BulkNewSource s, 3, 2)));
     assertNull((GROUP SUM 1 IF bulkNewTo3(BulkNewSource s, 2, 3)), 'objects at j = 2, i = 3');
+}
+
+// the TO list has to name every parameter the WHERE introduces (#1918), and a parameter of a GROUP inside the WHERE is
+// the GROUP's own, not one of them
+testBulkNewToInnerGroupParameter 'A parameter of a GROUP inside the WHERE of the bulk NEW stays out of its TO list' () {
+    NEW BulkNewItem WHERE iterate(INTEGER i, 1, 2) AND (GROUP SUM 1 IF iterate(INTEGER x, 1, i)) TO bulkNewTo1(i);
+
+    assertEquals(bulkNewItems(), 2, 'objects created: ' + bulkNewItems());
+    assertNotNull(bulkNewTo1(2), 'no object at i = 2');
 }

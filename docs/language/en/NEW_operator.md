@@ -45,7 +45,7 @@ To create one object per iteration of a loop, use the `NEW` option of the [`FOR`
 
 - `prm1, ..., prmN`
 
-    List of [typed parameters](IDs.md#paramid) used as arguments of `propertyId`. Must reference parameters introduced in the `WHERE` block, in any order and each at most once. Existing context parameters are not allowed. The number of parameters must equal the number of parameters of `propertyId`. Each set of values of `prm1, ..., prmN` must correspond to exactly one created object: when the list leaves out a parameter introduced in `WHERE` and the condition holds for several values of that parameter at the same values of the listed ones, several objects are created for one such set and the write fails at execution.
+    List of [typed parameters](IDs.md#paramid) used as arguments of `propertyId`. Must reference parameters introduced in the `WHERE` block, in any order and each at most once. Existing context parameters are not allowed. The number of parameters must equal the number of parameters of `propertyId`. Each set of values of `prm1, ..., prmN` must correspond to exactly one created object, so the list must contain every parameter introduced in `WHERE`.
 
 - `alias`
 

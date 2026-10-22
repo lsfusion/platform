@@ -1,0 +1,14 @@
+MODULE BulkNewToMissingParameter;
+
+REQUIRE System, Utils;
+
+// a TO list of the bulk NEW without one of the parameters its WHERE introduces is reported at load: it used to write
+// several objects at the same arguments and fail at execution with a database error (#1918)
+
+CLASS Item;
+
+to1 = DATA LOCAL Item (INTEGER);
+
+run () {
+    NEW Item WHERE iterate(INTEGER i, 1, 2) AND iterate(INTEGER j, 1, 3) TO to1(j);
+}

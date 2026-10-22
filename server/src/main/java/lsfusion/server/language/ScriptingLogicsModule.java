@@ -3028,7 +3028,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LPWithParams toProperty = null;
         if (toPropUsage != null && toPropMapping != null) {
             List<Integer> toParams = getParamsAssertList(toPropMapping);
-            checks.checkAddObjTOParams(toParams, context.size());
+            checks.checkAddObjTOParams(toParams, newContext, context.size());
             LP<?> toProp = findLPByPropertyUsage(toPropUsage, toPropMapping, newContext);
             if (!(toProp.property instanceof DataProperty)) {
                 errLog.emitOnlyDataPropertyIsAllowedError(parser, toPropUsage.name);

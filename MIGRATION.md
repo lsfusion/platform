@@ -2,6 +2,30 @@
 
 ## 7.0
 
+### A `TO` list of the bulk `NEW` that cannot be written is now reported at startup
+
+The bulk form `NEW className WHERE whereExpr TO propertyId(prm1, ..., prmN)` creates an object for
+every set of the parameters its `WHERE` introduces and writes it into `propertyId` at them. A `TO`
+list that could not be written that way used to load, and the action failed only when it ran. Such
+a list is now rejected when the logic loads:
+
+- a parameter introduced in `WHERE` that the list leaves out:
+  `local param 'i' introduced in WHERE clause must be used in TO clause`
+  ([#1918](https://github.com/lsfusion/platform/issues/1918)).
+  Several objects went to the same arguments, and the action failed with a database error
+  (`UNIQUE_VIOLATION`) - unless the condition held for one value of the left-out parameter only
+  (`... AND j = 2 * i - 1 TO t(j)`), when the action happened to work;
+- a parameter listed twice (`names of parameters should be distinct`) and a property that is not a
+  `DATA` one (`'p' is only allowed to be DATA property`)
+  ([#1917](https://github.com/lsfusion/platform/issues/1917)). Both failed with a
+  `ClassCastException` whenever the action ran.
+
+What an upgrading application can notice: logic that used to start can now be rejected at startup.
+Only the left-out parameter can reject an action that used to work, and only where the data never
+gave that parameter two values. The fix is to list the parameter in `TO`, giving the property one
+more argument, or to move it into a `GROUP` inside `WHERE`, so that it is not a parameter of the
+`NEW`. There is no setting to switch the check off.
+
 ### The external API is disabled by default
 
 `enableAPI` now defaults to `0` (it was `1`). In 6.x every authenticated user could call any action

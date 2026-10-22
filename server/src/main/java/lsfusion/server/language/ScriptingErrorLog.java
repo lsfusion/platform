@@ -668,6 +668,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "TO clause should use only local parameters introduced in WHERE clause");
     }
 
+    public void emitAddObjToPropertyMissingParamError(ScriptParser parser, String paramName) throws SemanticErrorException {
+        emitSimpleError(parser, format("local param '%s' introduced in WHERE clause must be used in TO clause", paramName));
+    }
+
     public void emitWrongPropertyParametersError(ScriptParser parser, String propertyName) throws SemanticErrorException {
         emitSimpleError(parser, format("wrong parameters are passed to the property '%s'", propertyName));
     }
