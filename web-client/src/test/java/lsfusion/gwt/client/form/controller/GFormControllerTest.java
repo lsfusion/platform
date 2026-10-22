@@ -44,11 +44,15 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
+import lsfusion.gwt.client.form.filter.user.view.GDataFilterPropertyValue;
+import lsfusion.gwt.client.form.filter.user.view.GFilterCompareSelector;
+import lsfusion.gwt.client.form.filter.user.view.GFilterOptionSelector;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GExtraPropReader;
 import lsfusion.gwt.client.form.property.GExtInt;
@@ -56,9 +60,11 @@ import lsfusion.gwt.client.form.property.GLoadingReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.view.FormContainer;
+import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
@@ -67,6 +73,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import static lsfusion.gwt.client.GFormChanges.GPropertyReadType.DRAW;
 
@@ -949,6 +957,434 @@ public class GFormControllerTest extends GWTTestCase {
         assertFalse(caption.isVisible());
     }
 
+    // ===== THE PLATFORM'S FILTER PANEL AS IT IS: what its rows and its input do, pinned before the panel becomes a view
+    // of the table's user filters (the one-owner model: agg handoff/react-common/filters-one-owner)
+
+    // F3 on a column no row is on: a new row of the panel's own takes the cell's value - prepared, not sent -, its apply
+    // button lit: a commit of the value, or the next apply of any row, sends it
+    public void testF3PreparesTheCellsValueInANewRow() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.plainFirst();
+        filters.deliver(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+
+        panel.addCondition(GKeyStroke.createAddUserFilterKeyEvent(), false, true); // F3
+        List<GFilterConditionView> rows = freeRows(panel);
+        assertEquals(1, rows.size());
+        assertSame(filters.amount, rowCondition(rows.get(0)).column.property);
+        assertValue(50, rowCondition(rows.get(0)).value.value);
+        assertTrue(controller.getFilters(filters.group).isEmpty());
+        assertFalse(rows.get(0).isApplied());
+        panel.applyFilters();
+        assertValue(50, filters.first(controller, filters.amount).value.value);
+    }
+
+    // ... on a column a row of the panel's own is on: that row - the first on the column - takes it, none added
+    public void testF3PutsTheCellsValueIntoTheFirstRowOnItsColumn() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.plainFirst();
+        filters.deliver(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        panel.addCondition(filters.condition(filters.amount, PValue.getPValue(1), GCompare.GREATER), null, false, false);
+        panel.applyFilters();
+
+        panel.addCondition(GKeyStroke.createAddUserFilterKeyEvent(), false, true); // F3
+        List<GFilterConditionView> rows = freeRows(panel);
+        assertEquals(1, rows.size());
+        assertValue(50, rowCondition(rows.get(0)).value.value);
+        assertEquals(GCompare.GREATER, rowCondition(rows.get(0)).compare); // its comparison kept
+        assertValue(1, filters.first(controller, filters.amount).value.value); // not sent
+    }
+
+    // ... on the column of a FILTER the platform draws: its fixed row takes it, prepared as a row of the panel's own is
+    public void testF3PutsTheCellsValueIntoAFixedRow() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.quantityFirst();
+        filters.deliver(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+
+        panel.addCondition(GKeyStroke.createAddUserFilterKeyEvent(), false, true); // F3
+        assertValue(2, rowCondition(panelRow(panel, filters.placed)).value.value);
+        assertTrue(freeRows(panel).isEmpty());
+        assertTrue(controller.getFilters(filters.group).isEmpty());
+    }
+
+    // Alt+F3: every condition off, sent at once, and a new row prepared with the cell's value - the only one
+    public void testAltF3SendsTheResetAndPreparesANewRow() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.plainFirst();
+        filters.deliver(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        panel.addCondition(filters.condition(filters.quantity, PValue.getPValue(1), GCompare.EQUALS), null, false, false);
+        panel.applyFilters();
+        assertTrue(filters.filters(controller, filters.quantity));
+
+        panel.addCondition(GKeyStroke.createAddUserFilterKeyEvent(), true, false); // Alt+F3
+        assertTrue(controller.getFilters(filters.group).isEmpty());
+        List<GFilterConditionView> rows = freeRows(panel);
+        assertEquals(1, rows.size());
+        assertValue(50, rowCondition(rows.get(0)).value.value);
+    }
+
+    // typing in a column: its first row, or a new one, takes the cell's value as F3's does - the key starting the
+    // editor -, prepared
+    public void testTypingInAColumnPreparesARow() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.plainFirst();
+        filters.deliver(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+
+        panel.quickEditFilter(GKeyStroke.createAddUserFilterKeyEvent(), filters.amount, GGroupObjectValue.EMPTY);
+        List<GFilterConditionView> rows = freeRows(panel);
+        assertEquals(1, rows.size());
+        assertValue(50, rowCondition(rows.get(0)).value.value);
+        assertTrue(controller.getFilters(filters.group).isEmpty());
+        panel.quickEditFilter(GKeyStroke.createAddUserFilterKeyEvent(), filters.amount, GGroupObjectValue.EMPTY);
+        assertEquals(1, freeRows(panel).size());
+    }
+
+    // the controls' add: a new row on the current column every time, with the cell's value, prepared
+    public void testTheControlsAddPreparesANewRowEveryTime() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.plainFirst();
+        filters.deliver(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+
+        panel.addCondition();
+        panel.addCondition();
+        List<GFilterConditionView> rows = freeRows(panel);
+        assertEquals(2, rows.size());
+        assertValue(50, rowCondition(rows.get(1)).value.value);
+        assertTrue(controller.getFilters(filters.group).isEmpty());
+    }
+
+    // a value committed in a row - its cell's editor reporting it - is sent at once, in the list of every row applied
+    // (a value, or NULL allowed), the rows in the panel's order: its fixed rows first, then its own
+    public void testARowsValueIsSentAtOnceWithTheOtherRows() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.plainFirst();
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        panel.addCondition(filters.condition(filters.amount, null, GCompare.EQUALS), null, false, false);
+        changeRowValue(panelRow(panel, filters.placed), PValue.getPValue(3));
+        assertEquals(Arrays.asList(filters.quantity, filters.amount), sentProperties(controller, filters)); // the amount row allows NULL
+
+        changeRowValue(freeRows(panel).get(0), PValue.getPValue(7));
+        assertValue(7, filters.first(controller, filters.amount).value.value);
+        assertValue(3, filters.first(controller, filters.quantity).value.value);
+    }
+
+    // ... a comparison chosen in it, its negation, its junction, NULL allowed - each sent at once
+    public void testARowsSelectorsSendAtOnce() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.plainFirst();
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        panel.addCondition(filters.condition(filters.amount, PValue.getPValue(5), GCompare.EQUALS), null, false, false);
+        GFilterConditionView row = freeRows(panel).get(0);
+
+        ((GFilterCompareSelector) compareSelector(row)).valueChanged(GCompare.GREATER);
+        assertEquals(GCompare.GREATER, filters.first(controller, filters.amount).compare);
+        ((GFilterCompareSelector) compareSelector(row)).negationChanged(true);
+        assertTrue(filters.first(controller, filters.amount).negation);
+        junctionButton(row).getClickHandler().onClick(null);
+        assertFalse(filters.first(controller, filters.amount).junction);
+        changeRowValue(row, null); // emptied: NULL allowed, a free row's own default - "is empty"
+        assertTrue(filters.first(controller, filters.amount).nullValue());
+        ((GFilterCompareSelector) compareSelector(row)).allowNullChanged(false);
+        assertFalse(filters.filters(controller, filters.amount)); // ... not allowed: sent no more, the row stays
+        assertEquals(1, freeRows(panel).size());
+    }
+
+    // another property chosen in a row the panel adds by hand only lights its apply button, in either mode: the row's
+    // value is to be entered anew, and the form's list keeps the condition it sent before
+    public void testAnotherPropertyChosenInARowIsNotSent() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        try {
+            for (boolean byHand : new boolean[]{false, true}) {
+                MainFrame.userFiltersManualApplyMode = byHand;
+                FiltersForm filters = new FiltersForm(true);
+                filters.deliver(false);
+                GFormController controller = filters.controller();
+                GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+                GPropertyFilter condition = filters.condition(filters.quantity, PValue.getPValue(5), GCompare.EQUALS);
+                panel.addCondition(condition, null, false, false, false);
+                panel.setControlsVisible(true);
+                panel.applyFilters();
+                GFilterConditionView row = panelRow(panel, condition.filter);
+                GToolbarButton apply = applyButton(filterControls(controller, filters));
+                assertFalse(apply.getElement().hasClassName("active"));
+
+                ((GFilterOptionSelector<Column>) propertySelector(row)).valueChanged(new Column(filters.price, GGroupObjectValue.EMPTY));
+                assertSame(filters.price, condition.column.property);
+                assertValue(5, filters.first(controller, filters.quantity).value.value);
+                assertFalse(filters.filters(controller, filters.price));
+                assertTrue(apply.isEnabled());
+                assertTrue(apply.getElement().hasClassName("active"));
+            }
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
+    // a row deleted: the rest sent at once
+    public void testARowDeletedSendsTheRest() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.plainFirst();
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        panel.addCondition(filters.condition(filters.amount, PValue.getPValue(5), GCompare.EQUALS), null, false, false);
+        panel.addCondition(filters.condition(filters.quantity, PValue.getPValue(2), GCompare.EQUALS), null, false, false);
+        panel.applyFilters();
+
+        deleteButton(freeRows(panel).get(0)).getClickHandler().onClick(null);
+        assertEquals(Collections.singletonList(filters.quantity), sentProperties(controller, filters));
+        assertEquals(1, freeRows(panel).size());
+    }
+
+    // Escape in the editor of a row no value was committed in takes the row away - the rest sent -; a row a value was
+    // committed in stays
+    public void testEscapeTakesAwayARowNoValueWasCommittedIn() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.plainFirst();
+        filters.deliver(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        panel.addCondition(); // a new row, its value prepared, not committed
+        GFilterConditionView row = freeRows(panel).get(0);
+
+        cancelRowEditing(row, CancelReason.ESCAPE_PRESSED);
+        assertTrue(freeRows(panel).isEmpty());
+        panel.addCondition();
+        row = freeRows(panel).get(0);
+        changeRowValue(row, PValue.getPValue(9));
+        cancelRowEditing(row, CancelReason.ESCAPE_PRESSED);
+        assertEquals(1, freeRows(panel).size());
+        assertValue(9, filters.first(controller, filters.amount).value.value);
+    }
+
+    // the reset - the controls' button, Shift+F3 -: every condition off, sent at once, the panel's own rows taken away,
+    // its fixed rows emptied, kept
+    public void testTheResetSendsAnEmptyListAndKeepsTheFixedRows() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.plainFirst();
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        panel.addCondition(filters.condition(filters.amount, PValue.getPValue(5), GCompare.EQUALS), null, false, false);
+        changeRowValue(panelRow(panel, filters.placed), PValue.getPValue(3));
+        assertFalse(controller.getFilters(filters.group).isEmpty());
+
+        panel.resetConditions();
+        assertTrue(controller.getFilters(filters.group).isEmpty());
+        assertTrue(freeRows(panel).isEmpty());
+        assertNotNull(panelRow(panel, filters.placed));
+        assertTrue(rowCondition(panelRow(panel, filters.placed)).nullValue());
+    }
+
+    // what a reset has to take off - Escape in the grid asks it: a row of the panel's own, or a fixed row applied
+    public void testThePanelSaysWhetherItHasAnythingToReset() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.plainFirst();
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        assertFalse(panel.hasConditionsToReset());
+        changeRowValue(panelRow(panel, filters.placed), PValue.getPValue(3));
+        assertTrue(panel.hasConditionsToReset());
+        panel.resetConditions();
+        assertFalse(panel.hasConditionsToReset());
+        panel.addCondition(filters.condition(filters.amount, null, GCompare.EQUALS), null, false, false);
+        assertTrue(panel.hasConditionsToReset());
+    }
+
+    // in the manual apply mode - its controls shown - a value committed in a row waits: the row holds it, the form's
+    // list stays as it was, the apply button lit; pressed, it sends the rows and is no longer lit
+    public void testARowsValueWaitsForTheApplyInManualMode() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            FiltersForm filters = new FiltersForm(true);
+            GFormController controller = filters.controller();
+            GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+            panel.setControlsVisible(true);
+            GFilterConditionView row = panelRow(panel, filters.placed);
+            GToolbarButton apply = applyButton(filterControls(controller, filters));
+
+            changeRowValue(row, PValue.getPValue(3));
+            assertValue(3, rowCondition(row).value.value);
+            assertTrue(controller.getFilters(filters.group).isEmpty());
+            assertTrue(apply.isEnabled());
+            assertTrue(apply.getElement().hasClassName("active"));
+            apply.getClickHandler().onClick(null);
+            assertValue(3, filters.first(controller, filters.quantity).value.value);
+            assertFalse(apply.isEnabled());
+            assertFalse(apply.getElement().hasClassName("active"));
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
+    // ... a comparison chosen waits too: nothing sent, so nothing marked loading
+    public void testARowsComparisonWaitsInManualMode() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            FiltersForm filters = new FiltersForm(true);
+            GFormController controller = filters.controller();
+            GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+            panel.setControlsVisible(true);
+            GFilterConditionView row = panelRow(panel, filters.placed);
+            row.setValue(new GDataFilterValue(PValue.getPValue(3)));
+
+            ((GFilterCompareSelector) compareSelector(row)).valueChanged(GCompare.GREATER);
+            assertEquals(GCompare.GREATER, rowCondition(row).compare);
+            assertTrue(controller.getFilters(filters.group).isEmpty());
+            assertFalse(isLoading(controller, row));
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
+    // ... while a row deleted, the reset - Escape in a row's selector, with no popup shown -, and the drill-down are
+    // sent at once, what waits sent with them
+    public void testWhatIsSentAtOnceInManualMode() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            FiltersForm filters = new FiltersForm(true);
+            filters.plainFirst();
+            GFormController controller = filters.controller();
+            GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+            panel.setControlsVisible(true);
+            panel.addCondition(filters.condition(filters.amount, PValue.getPValue(5), GCompare.EQUALS), null, false, false);
+            panel.addCondition(filters.condition(filters.price, PValue.getPValue(1), GCompare.EQUALS), null, false, false);
+            changeRowValue(panelRow(panel, filters.placed), PValue.getPValue(3)); // waits
+            assertTrue(controller.getFilters(filters.group).isEmpty());
+
+            deleteButton(freeRows(panel).get(1)).getClickHandler().onClick(null); // a row deleted
+            assertEquals(Arrays.asList(filters.quantity, filters.amount), sentProperties(controller, filters));
+
+            Widget box = controller.getFormLayout().getContainerView(filters.group.grid.filtersContainer).getView();
+            RootPanel.get().add(box);
+            try {
+                compareSelector(freeRows(panel).get(0)).getElement().dispatchEvent(
+                        Document.get().createKeyDownEvent(false, false, false, false, 27)); // Escape
+                assertTrue(controller.getFilters(filters.group).isEmpty());
+            } finally {
+                RootPanel.get().remove(box);
+            }
+
+            panel.replaceConditions(new ArrayList<>(Collections.singletonList(filters.condition(filters.amount, PValue.getPValue(4), GCompare.EQUALS)))); // a drill-down
+            assertValue(4, filters.first(controller, filters.amount).value.value);
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
+    // ... as Enter in a value cell with no editor open applies every row; and hiding the controls sends nothing - what
+    // waits stays, the apply lit again once they are shown
+    public void testEnterAppliesAndHidingTheControlsSendsNothingInManualMode() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            FiltersForm filters = new FiltersForm(true);
+            GFormController controller = filters.controller();
+            GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+            panel.setControlsVisible(true);
+            GFilterConditionView row = panelRow(panel, filters.placed);
+            GToolbarButton apply = applyButton(filterControls(controller, filters));
+            changeRowValue(row, PValue.getPValue(3));
+
+            panel.setControlsVisible(false);
+            assertTrue(controller.getFilters(filters.group).isEmpty());
+            panel.setControlsVisible(true);
+            assertTrue(apply.getElement().hasClassName("active"));
+
+            RootPanel.get().add(row); // on the page: a binding holds while its widget is shown
+            try {
+                assertTrue(enter(controller, valueCell(row).getElement()));
+            } finally {
+                RootPanel.get().remove(row);
+            }
+            assertValue(3, filters.first(controller, filters.quantity).value.value);
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
+    // a value committed in a row marks it loading till the answer to the list it is sent in; Enter, an apply of
+    // every row, marks none; the rows sent are applied, a row prepared is not
+    public void testARowIsLoadingTillTheAnswerAndAppliedOnceSent() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.plainFirst();
+        filters.deliver(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GFilterConditionView row = panelRow(panel, filters.placed);
+
+        row.setValue(new GDataFilterValue(PValue.getPValue(3)));
+        RootPanel.get().add(row);
+        try {
+            assertTrue(enter(controller, valueCell(row).getElement())); // Enter
+        } finally {
+            RootPanel.get().remove(row);
+        }
+        assertFalse(isLoading(controller, row));
+        assertTrue(row.isApplied());
+        changeRowValue(row, PValue.getPValue(4)); // a value committed
+        assertTrue(isLoading(controller, row));
+        controller.applyRemoteChanges(new GFormChanges(), Integer.MAX_VALUE); // the answer
+        assertFalse(isLoading(controller, row));
+
+        panel.addCondition(GKeyStroke.createAddUserFilterKeyEvent(), false, true); // F3: prepared
+        assertFalse(freeRows(panel).get(0).isApplied());
+    }
+
+    // a list the server reports: the panel's own rows made anew from it, in its order - its fixed rows first take
+    // the first condition on their columns (testAFixedRowTakesTheFirstConditionOnItsColumn) -, nothing sent; one equal
+    // to what the panel sent last changes nothing, its rows the same widgets
+    public void testAServersListMakesThePanelsRowsAnewAndItsEchoChangesNothing() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.plainFirst();
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        panel.addCondition(filters.condition(filters.amount, PValue.getPValue(5), GCompare.EQUALS), null, false, false);
+        panel.applyFilters();
+        GFilterConditionView row = freeRows(panel).get(0);
+
+        filters.report(controller, filters.condition(filters.amount, PValue.getPValue(5), GCompare.EQUALS)); // the echo
+        assertSame(row, freeRows(panel).get(0));
+        filters.report(controller, filters.condition(filters.price, PValue.getPValue(1), GCompare.GREATER),
+                filters.condition(filters.amount, PValue.getPValue(6), GCompare.EQUALS));
+        List<GFilterConditionView> rows = freeRows(panel);
+        assertEquals(1, rows.size()); // price's goes to the FILTER React draws
+        assertNotSame(row, rows.get(0));
+        assertValue(6, rowCondition(rows.get(0)).value.value);
+    }
+
+    // the toolbar's filter button showing the controls with no row of the panel's own adds one, on the current column
+    // - prepared -; the controls hidden once the panel has no row at all
+    public void testShowingTheControlsAddsARowAndNoRowHidesThem() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.plainFirst();
+        filters.noFilters();
+        filters.deliver(true);
+        GFormController controller = filters.controller();
+        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+
+        panel.toggleControlsVisible();
+        assertTrue(panel.isControlsVisible());
+        assertEquals(1, freeRows(panel).size());
+        assertTrue(controller.getFilters(filters.group).isEmpty());
+        deleteButton(freeRows(panel).get(0)).getClickHandler().onClick(null);
+        assertFalse(panel.isControlsVisible());
+    }
+
     // a form of a group whose rows React draws, its filters the platform's, with the FILTERs of two of its properties
     // moved into a react container - one React draws, MOVE FILTER(price), and one the platform's panel does,
     // MOVE FILTER(quantity) { custom = NULL; } -, FILTERS(items) in the form or REMOVEd - and one of a string property
@@ -961,6 +1397,7 @@ public class GFormControllerTest extends GWTTestCase {
         final GFilter drawn, placed;
         GPropertyDraw name; // a string property, its FILTER standing outside React - only in filterAligned
         GFilter outside;
+        GPropertyDraw amount; // a column with no FILTER, the first one - only in plainFirst
 
         FiltersForm(boolean filtersBox) {
             form.sID = "propertyFilters";
@@ -1022,10 +1459,37 @@ public class GFormControllerTest extends GWTTestCase {
             }
             changes.gridObjectsGroupIds = new int[] {group.ID};
             changes.gridObjects = new ArrayList[] {rows ? new ArrayList<>(Arrays.asList(one, two)) : new ArrayList<>()};
-            changes.properties = new GPropertyReaderDTO[] {new GPropertyReaderDTO(price.ID, DRAW, -1)};
-            changes.propertiesValueKeys = new GGroupObjectValue[][] {rows ? new GGroupObjectValue[] {one, two} : new GGroupObjectValue[0]};
-            changes.propertiesValueValues = new Serializable[][] {rows ? new Serializable[] {5, 7} : new Serializable[0]};
+            // price 5 and 7, quantity 2 and 4, amount 50 and 52
+            List<GPropertyDraw> columns = new ArrayList<>(Arrays.asList(price, quantity));
+            if (amount != null)
+                columns.add(amount);
+            changes.properties = new GPropertyReaderDTO[columns.size()];
+            changes.propertiesValueKeys = new GGroupObjectValue[columns.size()][];
+            changes.propertiesValueValues = new Serializable[columns.size()][];
+            for (int i = 0; i < columns.size(); i++) {
+                GPropertyDraw column = columns.get(i);
+                int first = column == price ? 5 : column == quantity ? 2 : 50;
+                changes.properties[i] = new GPropertyReaderDTO(column.ID, DRAW, -1);
+                changes.propertiesValueKeys[i] = rows ? new GGroupObjectValue[] {one, two} : new GGroupObjectValue[0];
+                changes.propertiesValueValues[i] = rows ? new Serializable[] {first, first + 2} : new Serializable[0];
+            }
             form.initialFormChanges = changes;
+        }
+        // a column with no FILTER, first in the form: the one a new condition starts on, a view having no current column
+        void plainFirst() {
+            amount = column(form, 27, "amount", group);
+            form.propertyDraws.remove(amount);
+            form.propertyDraws.add(0, amount);
+        }
+        // ... or quantity first: the column of the FILTER the platform draws
+        void quantityFirst() {
+            form.propertyDraws.remove(quantity);
+            form.propertyDraws.add(0, quantity);
+        }
+        // ... and no FILTER at all: the panel's rows its own alone
+        void noFilters() {
+            group.grid.filters.clear();
+            board.children.clear();
         }
         // the first condition on a property in the form's list, as it sent it last
         GPropertyFilter first(GFormController controller, GPropertyDraw property) {
@@ -1044,7 +1508,11 @@ public class GFormControllerTest extends GWTTestCase {
         }
         // a condition on price, compared the default way, as a FILTER's member states one
         GPropertyFilter condition(PValue value) {
-            return new GPropertyFilter(new GFilter(price), group, GGroupObjectValue.EMPTY, value, false, price.getDefaultCompare(), true);
+            return condition(price, value, price.getDefaultCompare());
+        }
+        // ... and one on a property, compared so
+        GPropertyFilter condition(GPropertyDraw property, PValue value, GCompare compare) {
+            return new GPropertyFilter(new GFilter(property), group, GGroupObjectValue.EMPTY, value, false, compare, true);
         }
         // the server reporting the group's list
         void report(GFormController controller, GPropertyFilter... conditions) {
@@ -1128,6 +1596,56 @@ public class GFormControllerTest extends GWTTestCase {
         var condition = row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::condition;
         row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::valueView.@lsfusion.gwt.client.form.filter.user.view.GDataFilterValueView::changeProperty(*)(condition, false);
     }-*/;
+    // the panel's rows, by their conditions, in its order - its fixed rows first -, read where it keeps them, and the
+    // rows of its own among them (none of a FILTER's)
+    private static native Map<GPropertyFilter, GFilterConditionView> panelRows(GPlatformFiltersController panel) /*-{
+        return panel.@lsfusion.gwt.client.form.filter.user.controller.GPlatformFiltersController::conditionViews;
+    }-*/;
+    private static List<GFilterConditionView> freeRows(GPlatformFiltersController panel) {
+        List<GFilterConditionView> rows = new ArrayList<>();
+        for (Map.Entry<GPropertyFilter, GFilterConditionView> row : panelRows(panel).entrySet())
+            if (!row.getKey().isFixed())
+                rows.add(row.getValue());
+        return rows;
+    }
+    // ... a row's condition, as the row holds it
+    private static native GPropertyFilter rowCondition(GFilterConditionView row) /*-{
+        return row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::condition;
+    }-*/;
+    // ... a value committed in its cell, as its editor commits one - the cell shows it, then reports it -, and the
+    // editor cancelled
+    private static void changeRowValue(GFilterConditionView row, PValue value) {
+        ((GDataFilterPropertyValue) valueCell(row)).changeProperty(value, null);
+    }
+    private static native void cancelRowEditing(GFilterConditionView row, CancelReason reason) /*-{
+        var view = row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::valueView;
+        view.@lsfusion.gwt.client.form.filter.user.view.GDataFilterValueView::editingCancelled(*)(reason);
+    }-*/;
+    // ... its delete and junction buttons
+    private static native GToolbarButton deleteButton(GFilterConditionView row) /*-{
+        return row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::deleteButton;
+    }-*/;
+    private static native GToolbarButton junctionButton(GFilterConditionView row) /*-{
+        return row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::junctionView;
+    }-*/;
+    // ... whether it is marked loading, waiting for the answer to the list it was sent in
+    private static native boolean isLoading(GFormController controller, GFilterConditionView row) /*-{
+        return controller.@lsfusion.gwt.client.form.controller.GFormController::pendingLoadingFilterRequests.@lsfusion.gwt.client.base.jsni.NativeSIDMap::get(*)(row) != null;
+    }-*/;
+    // the platform's filter controls of the group, and their apply button, read where they keep it
+    private static Widget filterControls(GFormController controller, FiltersForm filters) {
+        return controller.getFormLayout().getBaseComponentViews().get(filters.group.grid.filterControls).getShowingWidget();
+    }
+    private static native GToolbarButton applyButton(Widget controls) /*-{
+        return controls.@lsfusion.gwt.client.form.filter.user.view.GFilterControlsView::applyButton;
+    }-*/;
+    // the properties of the conditions the form sent last, in their order
+    private static List<GPropertyDraw> sentProperties(GFormController controller, FiltersForm filters) {
+        List<GPropertyDraw> properties = new ArrayList<>();
+        for (GPropertyFilter condition : controller.getFilters(filters.group))
+            properties.add(condition.column.property);
+        return properties;
+    }
     // Enter pressed in an element, as a panel cell gives a key to the form's bindings before it handles the key itself
     // (GFormController.onPropertyBrowserEvent): whether a binding took it
     private static native boolean enter(GFormController controller, Element target) /*-{
