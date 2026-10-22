@@ -3470,7 +3470,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         else
             mainProps.set(0, patchedWhere);
 
-        Supplier<ConstraintData> constraintCaption = () -> getConstraintData("{logics.property.derived.violate.property.uniqueness.for.objects}", allGroupProps, debugPoint);
+        Supplier<ConstraintData> constraintCaption = () -> getConstraintData(type == GroupingType.EQUAL ? "{logics.property.derived.violate.property.equality.for.objects}" : "{logics.property.derived.violate.property.uniqueness.for.objects}", allGroupProps, debugPoint);
 
         LP gProp = addScriptedGProp(allGroupProps, type, mainProps, orderProps, ordersNotNull, selectTop.CONST(), descending, constraintCaption, whereProp, explicitInnerClasses);
 

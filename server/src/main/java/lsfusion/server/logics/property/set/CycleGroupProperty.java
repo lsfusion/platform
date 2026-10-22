@@ -1,9 +1,9 @@
 package lsfusion.server.logics.property.set;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
@@ -72,8 +72,17 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
             //       (createJoin only keeps interfaces used by the BY-expressions).
             return PropertyFact.createAnd(innerInterfaces, compared, groupProperty).property;
         }
-        PropertyMapImplement<?, Interface<I>> constraintImplement = PropertyFact.createSumGProp(innerInterfaces, getMapInterfaces().values().mergeCol(SetFact.singleton(groupProperty)), one);
-        return PropertyFact.createCompare(constraintImplement, BaseUtils.<PropertyMapImplement<?, Interface<I>>>immutableCast(one), Compare.GREATER).property;
+        // GROUP EQUAL : the rows of one BY key must not have different values, i.e. more than one distinct (BY keys, value) pair per BY key
+        ImList<PropertyInterfaceImplement<I>> keys = getMapInterfaces().values().toList();
+        SumGroupProperty<I> pairs = new SumGroupProperty<>(LocalizedString.NONAME, innerInterfaces, keys.addList(groupProperty), one);
+        // the interfaces of pairs go in the order of the list : the BY keys, then the value
+        SumGroupProperty<Interface<I>> distinctValues = new SumGroupProperty<>(LocalizedString.NONAME, pairs.interfaces,
+                pairs.getFriendlyOrderInterfaces().subOrder(0, keys.size()), PropertyFact.createAnd(PropertyFact.createOne(), pairs.getImplement()));
+        PropertyMapImplement<?, I> compared = PropertyFact.createCompare(
+                PropertyFact.createJoin(new PropertyImplement<>(distinctValues, distinctValues.getMapInterfaces().mapValues(pairKey -> ((Interface<I>) pairKey).implement))),
+                one, Compare.GREATER);
+        // projected back to the inner rows, as for GROUP AGGR, so the constraint shows the conflicting rows with their values
+        return PropertyFact.createAnd(innerInterfaces, compared, groupProperty).property;
     }
 
     @Override

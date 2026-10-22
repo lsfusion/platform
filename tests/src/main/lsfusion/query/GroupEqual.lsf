@@ -1,0 +1,65 @@
+MODULE GroupEqual;
+
+REQUIRE TestUtils;
+
+// GROUP EQUAL constrains the rows of one BY key to have one value (#1876: the constraint used to reject equal values and let different ones through)
+
+CLASS GroupEqualTeam 'Team';
+CLASS GroupEqualGame 'Game';
+geHostTeam 'Host team' = DATA GroupEqualTeam (GroupEqualGame);
+geCity 'City' = DATA STRING[100] (GroupEqualGame);
+
+geTeamCity (GroupEqualTeam t) = GROUP EQUAL geCity(GroupEqualGame g) BY geHostTeam(g);
+
+CLASS GroupEqualMark 'Mark';
+geMark 'Mark' = DATA INTEGER (GroupEqualMark);
+
+geCommonMark () = GROUP EQUAL geMark(GroupEqualMark m);
+
+geNewGame (GroupEqualTeam t, STRING[100] city) {
+    NEW g = GroupEqualGame {
+        geHostTeam(g) <- t;
+        geCity(g) <- city;
+    }
+}
+
+testGroupEqualSameValues 'GROUP EQUAL accepts the rows of one key with equal values' () {
+    NEW t = GroupEqualTeam {
+        geNewGame(t, 'Minsk');
+        geNewGame(t, 'Minsk');
+        APPLY;
+        assertNull(applyMessage(), 'equal values rejected: ' + applyMessage());
+        assertEquals(geTeamCity(t), 'Minsk', 'the common value');
+    }
+}
+
+testGroupEqualDifferentValues 'GROUP EQUAL rejects the rows of one key with different values' () {
+    NEW t = GroupEqualTeam {
+        geNewGame(t, 'Minsk');
+        geNewGame(t, 'Grodno');
+        APPLY;
+        assertNotNull(applyMessage(), 'different values accepted');
+    }
+}
+
+testGroupEqualNullValue 'GROUP EQUAL skips the rows with a NULL value' () {
+    NEW t = GroupEqualTeam {
+        geNewGame(t, 'Minsk');
+        geNewGame(t, NULL);
+        APPLY;
+        assertNull(applyMessage(), 'a NULL value rejected: ' + applyMessage());
+        assertEquals(geTeamCity(t), 'Minsk', 'the common value');
+    }
+}
+
+testGroupEqualNoBy 'GROUP EQUAL without BY checks all the rows' () {
+    NEW m1 = GroupEqualMark { geMark(m1) <- 5; }
+    NEW m2 = GroupEqualMark { geMark(m2) <- 5; }
+    APPLY;
+    assertNull(applyMessage(), 'equal values rejected: ' + applyMessage());
+    assertEquals(geCommonMark(), 5, 'the common value');
+
+    NEW m3 = GroupEqualMark { geMark(m3) <- 6; }
+    APPLY;
+    assertNotNull(applyMessage(), 'different values accepted');
+}
