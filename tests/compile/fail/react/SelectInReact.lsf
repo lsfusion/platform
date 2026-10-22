@@ -9,7 +9,7 @@ selectQty = DATA INTEGER (SelectItem);
 
 FORM selectInReact
     OBJECTS i = SelectItem
-    PROPERTIES(i) selectQty SELECT 'dropdown' NOEXTID
+    PROPERTIES(i) selectQty SELECT NOEXTID
 ;
 
 DESIGN selectInReact {

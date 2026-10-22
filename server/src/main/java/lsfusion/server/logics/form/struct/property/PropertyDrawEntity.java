@@ -1313,12 +1313,21 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return false;
     }
 
-    private String getCustom() {
+    // the render function that draws the property, null for none: the form's CUSTOM, else the one the property declares
+    // - none under NOCUSTOM
+    public String getCustom() {
         String custom = this.custom.get();
         if(custom != null)
             return custom.equals(Custom.NOCUSTOM) ? null : custom; // NOCUSTOM: none, and none inherited
         String declared = getInheritedProperty().getCustomRenderFunction();
         return declared != null && !isSelect(declared) ? declared : null;
+    }
+    // ... the element type the form gives the selection (SELECT 'type', the design's select = 'type'), null where it gives
+    // none: the platform's own element's, how that element draws it (FormView.checkSelectType). What the property declares
+    // is its default, asked of no form
+    public String getSelectType() {
+        String select = this.select.get();
+        return select != null && select.startsWith(SELECT) && !select.equals(SELECT + AUTOSELECT) ? select.substring(SELECT.length()) : null;
     }
     // ... and its selection, apart: the form's, else the one the property declares
     private String getSelect() {

@@ -1,0 +1,27 @@
+MODULE SelectTypesTaken;
+
+REQUIRE System;
+
+// an element type SELECT gives is taken where the platform's own element draws the selection: with NOCUSTOM inside a
+// React view, which places the element; outside one with a custom editor alone, which says how the value is edited,
+// not who draws it. A type the property declares is its default, which a React view drawing the property overrides
+// without a word, and SELECT AUTO gives no type
+CLASS SelectTypesStatus;
+selectTypesName = DATA STRING[20] (SelectTypesStatus);
+CLASS SelectTypesOrder;
+selectTypesStatus = DATA SelectTypesStatus (SelectTypesOrder);
+selectTypesNameStatus (SelectTypesOrder o) = selectTypesName(selectTypesStatus(o));
+selectTypesDeclared (SelectTypesOrder o) = selectTypesName(selectTypesStatus(o)) SELECT 'buttonGroup';
+
+FORM selectTypesTaken
+    OBJECTS o = SelectTypesOrder PANEL
+    PROPERTIES(o) placed = selectTypesNameStatus SELECT 'buttonGroup' NOCUSTOM,
+                  declared = selectTypesDeclared,
+                  automatic = selectTypesNameStatus SELECT AUTO
+    OBJECTS e = SelectTypesOrder PANEL
+    PROPERTIES(e) edited = selectTypesNameStatus CUSTOM CHANGE 'selectTypesEditor' SELECT 'list'
+;
+
+DESIGN selectTypesTaken {
+    NEW board FIRST { custom = 'SelectTypesBoard'; MOVE BOX(o); }
+}

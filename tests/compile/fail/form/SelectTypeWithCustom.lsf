@@ -1,0 +1,16 @@
+MODULE SelectTypeWithCustom;
+
+REQUIRE System;
+
+// the element type SELECT gives is the platform's own element's: a render function given in CUSTOM draws the selection
+// itself, so the type would mean nothing
+CLASS Status;
+name = DATA STRING[20] (Status);
+CLASS Order;
+status = DATA Status (Order);
+nameStatus (Order o) = name(status(o));
+
+FORM orders
+    OBJECTS o = Order
+    PROPERTIES(o) nameStatus CUSTOM 'statusButtons' SELECT 'list'
+;

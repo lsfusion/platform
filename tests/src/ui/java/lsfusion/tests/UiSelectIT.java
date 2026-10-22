@@ -63,7 +63,7 @@ public class UiSelectIT extends UiTest {
 
     // a pick of several values through the view: the options checked from now on - one more, then one more and one less
     // in one call, by their value as the property has it, the values joined by its separator, which the view is given
-    // too; the view is given all the options, though the platform's element of 'input' would get only the ones checked
+    // too, with all the options
     @Test
     public void aPickOfSeveralValues() throws Exception {
         String[] orders = seed();

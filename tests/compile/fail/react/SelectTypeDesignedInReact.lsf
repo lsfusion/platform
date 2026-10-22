@@ -1,0 +1,21 @@
+MODULE SelectTypeDesignedInReact;
+
+REQUIRE System;
+
+// the design's select names the platform's element too: where a React view draws the property, it is refused as SELECT
+// 'type' is
+CLASS Status;
+name = DATA STRING[20] (Status);
+CLASS Order;
+status = DATA Status (Order);
+nameStatus (Order o) = name(status(o));
+
+FORM orders
+    OBJECTS o = Order PANEL
+    PROPERTIES(o) nameStatus
+;
+
+DESIGN orders {
+    NEW board FIRST { custom = 'OrderBoard'; MOVE BOX(o); }
+    PROPERTY(nameStatus(o)) { select = 'dropdown'; }
+}

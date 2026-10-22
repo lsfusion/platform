@@ -1,0 +1,2 @@
+SELECT 'dropdown'
+is the element the platform draws the selection with, but the React view of 'board' draws it from its data

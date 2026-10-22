@@ -794,6 +794,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         // fail one of them instead, naming a consequence rather than the mistake
         checkCustomValue();
         checkCustomTabbed();
+        checkSelectType();
         checkCustomReactProperty();
         checkCustomTemplatePlaces();
         checkReactRowsListView();
@@ -823,6 +824,28 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                             + custom.length() + " characters long, which is more than the " + Custom.MAX_LENGTH
                             + " a written value can carry; a template this size is computed by a property instead");
             }
+    }
+
+    // the element type SELECT gives a property ('list', 'dropdown', ...) is the platform's own element's - how that element
+    // draws the selection -, so it is taken only where that element draws it: refused beside a render function, which
+    // draws the selection itself, and where a React view draws the property from its data. NOCUSTOM, the platform's
+    // view, takes it - inside a React view the platform's element of that type, which the view places
+    private void checkSelectType() {
+        for (PropertyDrawView property : getPropertiesIt()) {
+            String type = property.entity.getSelectType();
+            if (type == null)
+                continue;
+            String typePrefix = formErrorPrefix() + "SELECT '" + type + "' of '" + property.getSID() + "' is the element the"
+                    + " platform draws the selection with, but ";
+            String custom = property.entity.getCustom();
+            if (custom != null)
+                throw new IllegalStateException(typePrefix + "the render function '" + custom + "' draws it; drop the type,"
+                        + " or give NOCUSTOM for the platform's element");
+            if (isReactDrawn(property.entity))
+                throw new IllegalStateException(typePrefix + "the React view of '" + nameScope(property).getSID() + "'"
+                        + " draws it from its data; drop the type, or give NOCUSTOM for the platform's element, which the"
+                        + " view places");
+        }
     }
 
     // a container draws its children ONE way, and tabbed is one of them: with both, whichever the client happens to

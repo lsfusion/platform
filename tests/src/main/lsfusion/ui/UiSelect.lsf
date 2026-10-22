@@ -37,13 +37,12 @@ DESIGN uiSelectPlaced {
 }
 
 // a SELECT alone: the React view draws the selection from all its options and changes it by what is picked - in the
-// panel a selection of one value (the element the platform would choose), one of several values ('input': the
-// platform's own element would get only the ones checked), one whose explicit change takes the option's view; in the
-// rows a button group and a list
+// panel a selection of one value, one of several values, one whose explicit change takes the option's view; in the rows
+// one of each
 FORM uiSelectPicked 'Picked'
     OBJECTS o = UiSelectOrder
-    PROPERTIES(o) uiSelectNameStatus SELECT 'buttonGroup', uiSelectTags SELECT 'list'
-    PROPERTIES(o) panelStatus = uiSelectNameStatus SELECT PANEL, panelTags = uiSelectTags SELECT 'input' PANEL,
+    PROPERTIES(o) uiSelectNameStatus SELECT, uiSelectTags SELECT
+    PROPERTIES(o) panelStatus = uiSelectNameStatus SELECT PANEL, panelTags = uiSelectTags SELECT PANEL,
                   inputStatus = uiSelectNameStatus SELECT PANEL
                       ON CHANGE { INPUT s = uiSelectStatusOf(o) LIST uiSelectStatusName(s) DO uiSelectStatusOf(o) <- s; }
     FILTERS uiSelectShown(o)

@@ -1,0 +1,15 @@
+MODULE SelectTypeWithDeclaredCustom;
+
+REQUIRE System;
+
+// ... and so does a render function the property declares: it draws the selection, as one given in CUSTOM does
+CLASS Status;
+name = DATA STRING[20] (Status);
+CLASS Order;
+status = DATA Status (Order);
+nameStatus (Order o) = name(status(o)) CUSTOM 'statusButtons';
+
+FORM orders
+    OBJECTS o = Order
+    PROPERTIES(o) nameStatus SELECT 'list'
+;

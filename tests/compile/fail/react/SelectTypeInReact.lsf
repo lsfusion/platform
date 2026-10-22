@@ -1,0 +1,20 @@
+MODULE SelectTypeInReact;
+
+REQUIRE System;
+
+// the element type SELECT gives is the platform's own element's: a React view draws the selection from its data, so the
+// type would mean nothing - SELECT alone leaves the selection to the view, SELECT 'type' NOCUSTOM is the platform's
+CLASS Status;
+name = DATA STRING[20] (Status);
+CLASS Order;
+status = DATA Status (Order);
+nameStatus (Order o) = name(status(o));
+
+FORM orders
+    OBJECTS o = Order PANEL
+    PROPERTIES(o) nameStatus SELECT 'buttonGroup'
+;
+
+DESIGN orders {
+    NEW board FIRST { custom = 'OrderBoard'; MOVE BOX(o); }
+}

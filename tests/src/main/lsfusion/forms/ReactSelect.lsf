@@ -62,14 +62,15 @@ testRsAutomaticSelectionNotForAReactView 'A React view is sent the value of a pa
 // platform's element is; NOSELECT keeps the render function, SELECT the editor - and a property with an editor of its
 // own has no selection; the design's select and custom = NULL combine the same, whichever comes first. Before, they
 // were one setting, the one given last winning: SELECT made the platform draw the property inside a React view,
-// NOCUSTOM dropped a SELECT, a SELECT dropped a render function and NOSELECT too
+// NOCUSTOM dropped a SELECT, a SELECT dropped a render function and NOSELECT too. The element type SELECT gives is the
+// platform's element's, taken only where that element draws (the corpus: SelectTypeWithCustom, SelectTypeInReact)
 FORM rsSelects 'Selections'
     OBJECTS o = RsOrder PANEL
-    PROPERTIES(o) projected = rsNameStatus SELECT 'buttonGroup',
+    PROPERTIES(o) projected = rsNameStatus SELECT,
                   placed = rsNameStatus SELECT 'buttonGroup' NOCUSTOM,
                   drawnBy = rsNameStatus CUSTOM 'rsStatusButtons' SELECT,
                   plain = rsNameStatus CUSTOM 'rsStatusButtons' NOSELECT,
-                  edited = rsNameStatus CUSTOM CHANGE 'rsStatusEditor' SELECT 'list',
+                  edited = rsNameStatus CUSTOM CHANGE 'rsStatusEditor' SELECT,
                   designed = rsNameStatus
 ;
 
@@ -129,8 +130,7 @@ testRsSelectionEmbedded 'A form embedding another has its selections apart from 
     }
 }
 
-// a React view is given all the options of a selection at once, also where the platform's element gives only the ones
-// picked and looks the rest up by the text typed - an 'input' of several values
+// a selection of several values: what it is given and how its value joins the options
 CLASS RsTag 'Tag';
 rsTagName 'Name' = DATA STRING[20] (RsTag);
 rsIn 'In' = DATA BOOLEAN (RsOrder, RsTag);
@@ -155,9 +155,9 @@ rsSeedTags () {
     }
 }
 
-FORM rsLookup 'Selections looked up by text'
+FORM rsLookup 'Selections of several values'
     OBJECTS o = RsOrder PANEL
-    PROPERTIES(o) viewTags = rsTags SELECT 'input', platformTags = rsTags SELECT 'input'
+    PROPERTIES(o) viewTags = rsTags SELECT
     PROPERTIES(o) upperTags = rsUpperTags SELECT 'input', eitherTags = rsEitherTags SELECT 'input', computedTags = rsComputedTags SELECT 'input',
                   paddedTags = rsPaddedTags SELECT 'input', markedTags = rsMarkedTags SELECT 'input',
                   eitherMarkedTags = rsEitherMarkedTags SELECT 'input'
@@ -207,17 +207,42 @@ testRsSeparatorOfSeveralValues 'A selection of several values is sent the separa
     }
 }
 
+// a React view is given all the options of a selection at once, also where the platform's element is given only the
+// ones picked and looks the rest up by the text typed: over more options than a drop-down list holds (Settings
+// maxInterfaceStatForValueDropdown, 20)
+CLASS RsLabel 'Label';
+rsLabelName 'Name' = DATA STRING[20] (RsLabel);
+rsLabelled 'Labelled' = DATA BOOLEAN (RsOrder, RsLabel);
+rsLabels 'Labels' (RsOrder o) = GROUP CONCAT rsLabelName(RsLabel l) IF rsLabelled(o, l), ', ' ORDER rsLabelName(l), l;
+
+rsSeedLabels () {
+    IF NOT (GROUP SUM 1 IF RsLabel l IS RsLabel) THEN {
+        FOR iterate(INTEGER i, 1, 25) NEW l = RsLabel DO
+            rsLabelName(l) <- CONCAT '', 'label', STRING(i);
+        APPLY;
+    }
+}
+
+FORM rsAllLabels 'All the labels'
+    OBJECTS o = RsOrder PANEL
+    PROPERTIES(o) viewLabels = rsLabels SELECT, platformLabels = rsLabels SELECT
+;
+
+DESIGN rsAllLabels {
+    NEW board FIRST { custom = 'RsBoard'; MOVE PROPERTY(viewLabels); }
+}
+
 testRsAllOptionsForAReactView 'A React view is given all the options of a selection at once' () {
-    rsSeedTags();
+    rsSeedLabels();
     NEW o = RsOrder {
-        rsIn(o, RsTag t) <- TRUE WHERE rsTagName(t) = 'red';
-        SHOW rsLookup OBJECTS o = o NOWAIT {
-            readSent('viewTags');
-            assertTrue(isSubstring(sentInForm('viewTags'), '"green"'), CONCAT '', 'a React view was sent ',
-                       (OVERRIDE sentInForm('viewTags'), 'nothing'), ', not all the options');
-            readSent('platformTags');
-            assertFalse(isSubstring(sentInForm('platformTags'), '"green"'), CONCAT '', 'the input of the platform was sent ',
-                        (OVERRIDE sentInForm('platformTags'), 'nothing'), ': the test no longer reaches what it tests');
+        rsLabelled(o, RsLabel l) <- TRUE WHERE rsLabelName(l) = 'label1';
+        SHOW rsAllLabels OBJECTS o = o NOWAIT {
+            readSent('viewLabels');
+            assertTrue(isSubstring(sentInForm('viewLabels'), '"label2"'), CONCAT '', 'a React view was sent ',
+                       (OVERRIDE sentInForm('viewLabels'), 'nothing'), ', not all the options');
+            readSent('platformLabels');
+            assertFalse(isSubstring(sentInForm('platformLabels'), '"label2"'), CONCAT '', 'the element of the platform was sent ',
+                        (OVERRIDE sentInForm('platformLabels'), 'nothing'), ': the test no longer reaches what it tests');
         };
     }
 }

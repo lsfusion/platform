@@ -1,0 +1,19 @@
+MODULE SelectTypeInReactRows;
+
+REQUIRE System;
+
+// ... and so it is in the rows a React view draws, each row's cell drawn from its data
+CLASS Status;
+name = DATA STRING[20] (Status);
+CLASS Order;
+status = DATA Status (Order);
+nameStatus (Order o) = name(status(o));
+
+FORM orders
+    OBJECTS o = Order
+    PROPERTIES(o) nameStatus SELECT 'list'
+;
+
+DESIGN orders {
+    NEW board FIRST { custom = 'OrderRows'; MOVE BOX(o); }
+}
