@@ -3,7 +3,7 @@ slug: "/AI"
 title: 'AI'
 ---
 
-This section contains the guidance that helps AI assistants — and the developers prompting them — read and write **lsFusion** code correctly. The same materials are served to AI tools through the lsFusion MCP server and published here so they can also be read directly.
+This section contains the guidance that helps AI assistants — and the developers prompting them — read and write **lsFusion** code correctly. The same materials are served to AI tools through the lsFusion MCP server and published here so they can also be read directly. The per-area articles of the Brief and the Rules are requested by name through the `rules` and `brief` parameters of the `lsfusion_get_guidance` tool.
 
 ### [Brief](../brief/Brief.md)
 A concise map of **lsFusion** elements — properties, actions, forms, and the core operators — written for quick understanding and code generation. It is deliberately compact, and detailed syntax is looked up in the rest of the documentation as needed.

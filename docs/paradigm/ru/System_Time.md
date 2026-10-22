@@ -34,7 +34,7 @@ title: 'Time'
 | `toDate[DATETIME]` / `toTime[DATETIME]`           | принимают `DATETIME`, возвращают его дату как `DATE` / его время как `TIME`; встроенные приведения класса `DATE(...)` / `TIME(...)`                          |
 | `toDateTime[DATE]` / `toZDateTime[DATE]`          | принимают `DATE`, возвращают `DATETIME` / `ZDATETIME` на полночь этой даты; встроенные приведения класса `DATETIME(...)` / `ZDATETIME(...)`                  |
 | `toDateTime[DATE, TIME]`                          | собирает `DATETIME` из `DATE` и `TIME`; PG `$1 + $2` (дата плюс время)                                                                                       |
-| `toSeconds[TIME]`                                 | принимает `TIME`, возвращает число секунд от полуночи как `INTEGER`; PG `extract(epoch from $1)`                                                             |
+| `toSeconds[TIME]`                                 | принимает `TIME`, возвращает число секунд от полуночи как `LONG`, целое число секунд с отбрасыванием дробной части; PG `trunc(extract(epoch from $1))`                                                             |
 | `toTime[INTEGER]`                                 | принимает счёт секунд, возвращает `TIME` через столько секунд после полуночи; PG `TIME '00:00' + INTERVAL '1 second' * $1` (счёт от 86400 и больше, а также отрицательный, заворачивается по 24-часовому циферблату) |
 | `toZDateTime[LONG]`                               | принимает Unix-время в секундах (несмотря на имя параметра `millis` в исходнике), возвращает `ZDATETIME`; PG `to_timestamp(CAST($1 AS NUMERIC))`                                                   |
 | `toDateFormat[STRING, STRING]`                    | разбирает `DATE` из первой строки по шаблону формата во второй; PG `to_date($1, $2)`                                                                         |
@@ -42,7 +42,7 @@ title: 'Time'
 | `toDateISO[DATE]`                                 | форматирует `DATE` как строку `'YYYY-MM-DD'`; PG `to_char($1, 'YYYY-MM-DD')`                                                                                 |
 | `toDateDDMMYY[DATE]` / `toDateDDMMYYYY[DATE]`     | форматируют `DATE` как `'DD.MM.YY'` / `'DD.MM.YYYY'`; PG `to_char($1, 'DD.MM.YY')` / `to_char($1, 'DD.MM.YYYY')`                                              |
 | `toMilliseconds[DATETIME]` → `resultMilliseconds[]`| встроенное java-действие: принимает `DATETIME` и записывает его Unix-время в миллисекундах (`LONG`) в локальное свойство `resultMilliseconds[]`, которое читается затем |
-| `getMilliSeconds[ZDATETIME]` / `getSeconds[ZDATETIME]` | принимают `ZDATETIME`, возвращают Unix-время в миллисекундах / секундах как `LONG`; PG `extract(epoch from $1) * 1000`, причём `getSeconds` делит это на 1000 |
+| `getMilliSeconds[ZDATETIME]` / `getSeconds[ZDATETIME]` | принимают `ZDATETIME`, возвращают Unix-время в миллисекундах / секундах как `LONG`; PG `trunc(extract(epoch from $1) * 1000)`, причём `getSeconds` делит это на 1000 |
 
 ### Извлечение компонентов
 
@@ -72,10 +72,10 @@ title: 'Time'
 | `sumMinutes[…]`                                           | прибавляет указанное число минут; перегружено для `TIME`, `DATETIME`, `ZDATETIME`, возвращает тот же класс; PG `$1 + $2 * interval '1 minute'`. Для `TIME` результат ведётся по 24-часовому циферблату и заворачивается через полночь (например, `23:30` + 60 → `00:30`, а отрицательный счёт уводит назад за `00:00`); для `DATETIME` / `ZDATETIME` переходит в соседние сутки, сдвигая дату |
 | `sumSeconds[…]`                                           | прибавляет указанное число секунд; те же перегрузки и тот же заворот по 24 часам для `TIME`, что и у `sumMinutes[…]`; PG `$1 + $2 * interval '1 second'`      |
 | `subtractSeconds[DATETIME, LONG]` / `subtractSeconds[ZDATETIME, LONG]` | вычитают указанное число секунд из `DATETIME` / `ZDATETIME`, возвращают тот же класс; PG `$1 - $2 * interval '1 second'`                         |
-| `subtractSeconds[TIME, TIME]` / `subtractSeconds[DATETIME, DATETIME]` / `subtractSeconds[ZDATETIME, ZDATETIME]` | разность двух значений одного класса в секундах как `INTEGER`, считается как **второй** аргумент минус **первый** (`subtractSeconds(a, b) = b - a`, положительно, когда `b` — более поздняя величина); PG `extract(epoch from (b - a))` |
+| `subtractSeconds[TIME, TIME]` / `subtractSeconds[DATETIME, DATETIME]` / `subtractSeconds[ZDATETIME, ZDATETIME]` | разность двух значений одного класса в целых секундах как `LONG` (дробная часть отбрасывается), считается как **второй** аргумент минус **первый** (`subtractSeconds(a, b) = b - a`, неотрицательно, когда `b` — более поздняя величина). Направление обратно одноимённому `subtractSeconds[DATETIME, LONG]`, который вычитает второй аргумент из первого, и `secondsBetweenDates[DATETIME, DATETIME]` ниже. Число секунд, прошедших с момента, — в рецептах ниже; PG `trunc(extract(epoch from (b - a)))` |
 | `daysBetweenDates[DATE, DATE]`                            | разность двух дат в днях как `INTEGER`, считается как **первый** аргумент минус **второй** (`daysBetweenDates(a, b) = a - b`, положительно, когда `a` — более поздняя дата); PG `$1 - $2`. Порядок операндов обратен `subtractSeconds` |
 | `daysBetweenDatesIncl[DATE, DATE]`                        | число дней между двумя датами с учётом обоих концов: **первый** аргумент минус **второй**, плюс 1 (`daysBetweenDatesIncl(a, b) = a - b + 1`) — тот же порядок операндов, что у `daysBetweenDates[DATE, DATE]` |
-| `secondsBetweenDates[DATETIME, DATETIME]`                 | разность двух моментов в секундах как `INTEGER`, считается как **первый** аргумент минус **второй** (`secondsBetweenDates(a, b) = a - b`, положительно, когда `a` — более поздний момент); PG `extract(epoch from $1) - extract(epoch from $2)` |
+| `secondsBetweenDates[DATETIME, DATETIME]`                 | разность двух моментов в целых секундах как `LONG` (дробная часть отбрасывается), считается как **первый** аргумент минус **второй** (`secondsBetweenDates(a, b) = a - b`, неотрицательно, когда `a` — более поздний момент); PG `trunc(extract(epoch from $1) - extract(epoch from $2))` |
 | `dateTimeToDateTime[DATE, TIME]`                          | собирает `DATETIME` из `DATE` и `TIME` через приведение текста; PG `to_timestamp(<дата> \|\| <время>, 'YYYY-MM-DDHH24:MI:SS.MS')::timestamp`                    |
 | `dateFromYearWeekDay[INTEGER, INTEGER, INTEGER]`          | собирает `DATE` по году, номеру недели ISO 8601 и дню недели ISO (1 = понедельник … 7 = воскресенье); PG `to_date($1 \|\| ' ' \|\| $2 \|\| ' ' \|\| $3, 'IYYY IW ID')` |
 | `distanceDOWDOW[DOW, DOW]`                                | расстояние вперёд в днях от первого дня недели до второго, с заворотом по неделе 0–6: `number[DOW]` второго минус `number[DOW]` первого, плюс 7, когда результат был бы отрицательным |
@@ -108,7 +108,7 @@ title: 'Time'
 
 ### Рецепты
 
-Самые частые в расписаниях вычисления дат — это композиции свойств выше. Счёт дней везде целый; `d` — любая `DATE`.
+Самые частые в расписаниях вычисления дат — это композиции свойств выше. Счёт дней везде целый. `d` — любая `DATE`, а `t` — любой `DATETIME`.
 
 ```lsf
 // сегодня плюс N дней (N может быть отрицательным)
@@ -128,6 +128,11 @@ numberM(extractDOW(d))
 // первый и последний день месяца d
 firstDayOfMonth(d)
 lastDayOfMonth(d)
+
+// число секунд, прошедших с момента t, неотрицательно, пока t в прошлом:
+// более поздний момент — первый аргумент secondsBetweenDates и второй аргумент subtractSeconds
+secondsBetweenDates(currentDateTime(), t)
+subtractSeconds(t, currentDateTime())
 ```
 
 ### Связано

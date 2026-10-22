@@ -17,6 +17,8 @@ The monitor is opened by the `Administration > System > Process monitor` form an
 
 The monitor collects the list of java threads by walking the JVM thread groups. The [working parameter](Working_parameters.md) `useSafeMonitorProcess` (`false` by default) switches the collection to the standard snapshot of all JVM threads: it is more complete but noticeably more expensive, as it captures the stack of every thread. The process dump and the periodic measurement of the memory allocated by threads collect the list of threads the same way.
 
+The monitor shows a snapshot, not a live view: the list is collected when the form opens, when the process type filter changes, by the refresh button and right after `Cancel process` and `Kill process`, while `Cancel java-process` and `Kill java-process` leave it as it was. An interrupted thread may not have finished by the next collection, so the effect of a cancellation is seen on a later refresh.
+
 ### Columns
 
 Each monitor row combines two aspects of a single logical process: the server thread (Java) and the SQL query associated with it (if the process is working with the database at that moment). Some columns relate to the java thread, others to the database query.
@@ -91,7 +93,7 @@ Four actions are available for each process in the monitor:
 
 |Action|What it does|When to use|
 |---|---|---|
-|Cancel process|Cancels the process's SQL query if it has one; otherwise sends the java thread a cancellation request through the standard interruption mechanism — the thread finishes its current operation and exits at the next interruption-flag check|A regular cancellation of a long or stuck process|
+|Cancel process|Cancels the query the process is executing: the java thread executing it is interrupted and the statement is cancelled, and a query with no java thread behind it is cancelled on the database server. When the process has no running query (it has no SQL process, or its `Status (SQL)` is `idle`, for example while the thread sleeps between the retries of an apply after update conflicts), sends the java thread a cancellation request through the standard interruption mechanism — the thread finishes its current operation and exits at the next interruption-flag check|A regular cancellation of a long or stuck process|
 |Kill process|Forcibly terminates the database process if a query is active; otherwise forcibly terminates the java thread|A last resort: the process does not respond to cancellation|
 |Cancel java-process|Sends the java thread a cancellation request even when the row is an SQL process|Cancel the java side of an SQL process without touching the query|
 |Kill java-process|Forcibly terminates the java thread of an SQL process|A last resort on the java side of an SQL process|

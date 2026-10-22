@@ -34,7 +34,7 @@ A `ZDATETIME` is converted to `DATE`, `DATETIME` and `TIME` by [type conversion]
 | `toDate[DATETIME]` / `toTime[DATETIME]`           | take a `DATETIME`, return its date part as `DATE` / its time part as `TIME`; built-in `DATE(...)` / `TIME(...)` class casts                                |
 | `toDateTime[DATE]` / `toZDateTime[DATE]`          | take a `DATE`, return a `DATETIME` / `ZDATETIME` at midnight of that date; built-in `DATETIME(...)` / `ZDATETIME(...)` class casts                          |
 | `toDateTime[DATE, TIME]`                          | combine a `DATE` and a `TIME` into a `DATETIME`; PG `$1 + $2` (date plus time)                                                                             |
-| `toSeconds[TIME]`                                 | takes a `TIME`, returns seconds since midnight as `INTEGER`; PG `extract(epoch from $1)`                                                                   |
+| `toSeconds[TIME]`                                 | takes a `TIME`, returns seconds since midnight as `LONG`, whole seconds with the fraction truncated; PG `trunc(extract(epoch from $1))`                                                                   |
 | `toTime[INTEGER]`                                 | takes a second count, returns the `TIME` that many seconds after midnight; PG `TIME '00:00' + INTERVAL '1 second' * $1` (counts of 86400 or more, or negative, wrap over the 24-hour clock) |
 | `toZDateTime[LONG]`                               | takes a Unix time in seconds (despite the parameter name `millis` in the source), returns `ZDATETIME`; PG `to_timestamp(CAST($1 AS NUMERIC))`                                                        |
 | `toDateFormat[STRING, STRING]`                    | parse a `DATE` from the first string by the format pattern in the second; PG `to_date($1, $2)`                                                             |
@@ -42,7 +42,7 @@ A `ZDATETIME` is converted to `DATE`, `DATETIME` and `TIME` by [type conversion]
 | `toDateISO[DATE]`                                 | formats a `DATE` as a `'YYYY-MM-DD'` string; PG `to_char($1, 'YYYY-MM-DD')`                                                                                |
 | `toDateDDMMYY[DATE]` / `toDateDDMMYYYY[DATE]`     | format a `DATE` as `'DD.MM.YY'` / `'DD.MM.YYYY'`; PG `to_char($1, 'DD.MM.YY')` / `to_char($1, 'DD.MM.YYYY')`                                                |
 | `toMilliseconds[DATETIME]` → `resultMilliseconds[]` | a built-in Java action: takes a `DATETIME` and writes its Unix time in milliseconds (`LONG`) to the local property `resultMilliseconds[]`, which you read afterwards |
-| `getMilliSeconds[ZDATETIME]` / `getSeconds[ZDATETIME]` | take a `ZDATETIME`, return Unix time in milliseconds / seconds as `LONG`; PG `extract(epoch from $1) * 1000`, with `getSeconds` dividing that by 1000   |
+| `getMilliSeconds[ZDATETIME]` / `getSeconds[ZDATETIME]` | take a `ZDATETIME`, return Unix time in milliseconds / seconds as `LONG`; PG `trunc(extract(epoch from $1) * 1000)`, with `getSeconds` dividing that by 1000   |
 
 ### Extracting parts
 
@@ -72,10 +72,10 @@ A `ZDATETIME` is converted to `DATE`, `DATETIME` and `TIME` by [type conversion]
 | `sumMinutes[…]`                                           | adds the given number of minutes; overloaded for `TIME`, `DATETIME`, `ZDATETIME`, returns the same class; PG `$1 + $2 * interval '1 minute'`. On `TIME` the result runs over a 24-hour clock and wraps past midnight (e.g. `23:30` + 60 → `00:30`, a negative count moves back past `00:00`); on `DATETIME` / `ZDATETIME` it rolls into the neighbouring day, moving the date part |
 | `sumSeconds[…]`                                           | adds the given number of seconds; same overloads, and the same 24-hour wrap on `TIME` as `sumMinutes[…]`; PG `$1 + $2 * interval '1 second'`                 |
 | `subtractSeconds[DATETIME, LONG]` / `subtractSeconds[ZDATETIME, LONG]` | subtract the given number of seconds from a `DATETIME` / `ZDATETIME`, return the same class; PG `$1 - $2 * interval '1 second'`                  |
-| `subtractSeconds[TIME, TIME]` / `subtractSeconds[DATETIME, DATETIME]` / `subtractSeconds[ZDATETIME, ZDATETIME]` | difference of two same-class values in seconds as `INTEGER`, computed as the **second** argument minus the **first** (`subtractSeconds(a, b) = b - a`, positive when `b` is the later value); PG `extract(epoch from (b - a))` |
+| `subtractSeconds[TIME, TIME]` / `subtractSeconds[DATETIME, DATETIME]` / `subtractSeconds[ZDATETIME, ZDATETIME]` | difference of two same-class values in whole seconds as `LONG` (the fraction is truncated), computed as the **second** argument minus the **first** (`subtractSeconds(a, b) = b - a`, non-negative when `b` is the later value). The direction is the opposite of the same-named `subtractSeconds[DATETIME, LONG]`, which subtracts its second argument from the first, and of `secondsBetweenDates[DATETIME, DATETIME]` below. Seconds elapsed since a moment are in the recipes below; PG `trunc(extract(epoch from (b - a)))` |
 | `daysBetweenDates[DATE, DATE]`                            | difference of two dates in days as `INTEGER`, computed as the **first** argument minus the **second** (`daysBetweenDates(a, b) = a - b`, positive when `a` is the later date); PG `$1 - $2`. Note the operand order is the opposite of `subtractSeconds` |
 | `daysBetweenDatesIncl[DATE, DATE]`                        | inclusive day count between two dates, counting both ends: the **first** argument minus the **second**, plus 1 (`daysBetweenDatesIncl(a, b) = a - b + 1`) — the same operand order as `daysBetweenDates[DATE, DATE]` |
-| `secondsBetweenDates[DATETIME, DATETIME]`                 | difference of two moments in seconds as `INTEGER`, computed as the **first** argument minus the **second** (`secondsBetweenDates(a, b) = a - b`, positive when `a` is the later moment); PG `extract(epoch from $1) - extract(epoch from $2)` |
+| `secondsBetweenDates[DATETIME, DATETIME]`                 | difference of two moments in whole seconds as `LONG` (the fraction is truncated), computed as the **first** argument minus the **second** (`secondsBetweenDates(a, b) = a - b`, non-negative when `a` is the later moment); PG `trunc(extract(epoch from $1) - extract(epoch from $2))` |
 | `dateTimeToDateTime[DATE, TIME]`                          | combines a `DATE` and a `TIME` into a `DATETIME` through a text round-trip; PG `to_timestamp(<date> \|\| <time>, 'YYYY-MM-DDHH24:MI:SS.MS')::timestamp`        |
 | `dateFromYearWeekDay[INTEGER, INTEGER, INTEGER]`          | builds a `DATE` from year, ISO-8601 week number, and ISO day of week (1 = Monday … 7 = Sunday); PG `to_date($1 \|\| ' ' \|\| $2 \|\| ' ' \|\| $3, 'IYYY IW ID')`     |
 | `distanceDOWDOW[DOW, DOW]`                                | forward distance in days from the first day of week to the second, wrapping over the 0–6 week: `number[DOW]` of the second minus that of the first, plus 7 when that would be negative |
@@ -108,7 +108,7 @@ Lookup by number runs the other way: `month[INTEGER]`, `DOW[INTEGER]`. The forms
 
 ### Recipes
 
-The most common date calculations in schedules are compositions of the properties above. Day counts are whole days, and `d` is any `DATE`.
+The most common date calculations in schedules are compositions of the properties above. Day counts are whole days, `d` is any `DATE`, and `t` is any `DATETIME`.
 
 ```lsf
 // today plus N days (N may be negative)
@@ -128,6 +128,11 @@ numberM(extractDOW(d))
 // first and last day of d's month
 firstDayOfMonth(d)
 lastDayOfMonth(d)
+
+// seconds elapsed since the moment t, non-negative while t is in the past:
+// the later moment is the first argument of secondsBetweenDates and the second argument of subtractSeconds
+secondsBetweenDates(currentDateTime(), t)
+subtractSeconds(t, currentDateTime())
 ```
 
 ### See also
