@@ -1,0 +1,46 @@
+MODULE HttpUntypedParams;
+
+REQUIRE TestUtils;
+
+// a parameter declared without a class gets it from how it is used, and a value passed over http is parsed as that
+// class. Inside JSON FROM and EXPORT FROM it got none since #1489: the value stayed a string, and comparing it with a
+// DATE failed with a NullPointerException
+
+CLASS HupOrder;
+hupNumber = DATA STRING (HupOrder);
+hupDate = DATA DATE (HupOrder);
+
+hupJson (d) { RETURN JSON FROM number = hupNumber(HupOrder o) WHERE hupDate(o) = d; }
+hupExport (d) { EXPORT JSON FROM number = hupNumber(HupOrder o) WHERE hupDate(o) = d; }
+
+hupSeed () {
+    IF NOT (GROUP SUM 1 IF HupOrder o IS HupOrder) THEN {
+        NEW o = HupOrder {
+            hupNumber(o) <- 'hup42';
+            hupDate(o) <- 2018_11_12;
+        }
+        APPLY;
+    }
+}
+
+// what an action of this module answers over http to the date 2018-11-12, or what the call fails with
+hupResponse = DATA LOCAL STRING ();
+hupCall (STRING action) {
+    TRY {
+        EXTERNAL HTTP GET origin() + '/exec?action=HttpUntypedParams.' + action + '&p=2018-11-12' TO hupResponse;
+    } CATCH {
+        hupResponse() <- messageCaughtException();
+    }
+}
+
+testJsonFromUntypedParam 'JSON FROM takes the class of a parameter declared without one from its WHERE' () {
+    hupSeed();
+    hupCall('hupJson');
+    assertTrue(hupResponse() LIKE '%hup42%', 'JSON FROM answered ' + (OVERRIDE hupResponse(), 'nothing'));
+}
+
+testExportFromUntypedParam 'EXPORT FROM takes the class of a parameter declared without one from its WHERE' () {
+    hupSeed();
+    hupCall('hupExport');
+    assertTrue(hupResponse() LIKE '%hup42%', 'EXPORT FROM answered ' + (OVERRIDE hupResponse(), 'nothing'));
+}

@@ -39,8 +39,8 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
 
         this.interactive = interactive;
 
-        // remove null
-        ImMap<P, ValueClass> interfaceClasses = Property.getExplicitCalcInterfaces(innerInterfaces.getSet(), explicitInnerClasses != null ? innerInterfaces.mapList(explicitInnerClasses) : null, () -> {
+        // remove null : the classes are inferred from where only for the interfaces missing from the explicit ones, so a parameter declared without a class has to be missing to get one
+        ImMap<P, ValueClass> interfaceClasses = Property.getExplicitCalcInterfaces(innerInterfaces.getSet(), explicitInnerClasses != null ? innerInterfaces.mapList(explicitInnerClasses).removeNulls() : null, () -> {
             if (where instanceof PropertyMapImplement) // it'not clear what to do with parameter as where
                 return ((PropertyMapImplement<M, P>) where).mapInterfaceClasses(ClassType.forPolicy);
             return MapFact.EMPTY();
