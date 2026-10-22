@@ -86,8 +86,8 @@ import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
-import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.Column;
+import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
@@ -100,8 +100,11 @@ import java.util.List;
 
 import static lsfusion.gwt.client.GFormChanges.GPropertyReadType.DRAW;
 import static lsfusion.gwt.client.base.jsni.JsniTestSupport.batch;
+import static lsfusion.gwt.client.base.jsni.JsniTestSupport.call;
 import static lsfusion.gwt.client.base.jsni.JsniTestSupport.field;
+import static lsfusion.gwt.client.base.jsni.JsniTestSupport.objects;
 import static lsfusion.gwt.client.base.jsni.JsniTestSupport.own;
+import static lsfusion.gwt.client.base.jsni.JsniTestSupport.parse;
 
 // A form's controller as it is made, over a form given whole with nothing behind it - no server, no window: what its
 // constructor builds is what a test reads, and what it is given then is what the server would send. The React view of
@@ -1430,6 +1433,24 @@ public class GFormControllerTest extends GWTTestCase {
         boolean[] batching = {false};
         batch(controller.controller, () -> batching[0] = controller.isBatching());
         assertTrue(batching[0]);
+    }
+
+    // CONTROLLER.FORM over the rows the platform draws: the current object it chooses is the form's current one at
+    // once - the grid names it, so what the form asks next is of its row, before the server answers and the grid shows
+    // it -, and the sortings and the update mode it changes are the form's, which the platform's grid and toolbar are
+    // told of
+    public void testTheFormsControllerChoosesARowThePlatformDraws() {
+        GFormController controller = manualUpdateGrid();
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        GPropertyDraw price = controller.getForm().propertyDraws.get(0);
+        GGroupObjectValue two = new GGroupObjectValue(10, 2);
+
+        call(controller.controller, "changeObject", "items", objects(two)); // what a view has of a row it does not draw
+        assertEquals(two, group.getRowKey(controller.getFullCurrentKey(price, GGroupObjectValue.EMPTY)));
+        call(controller.controller, "changeOrders", "items", parse("[{\"property\": \"price\", \"desc\": true}]"));
+        assertEquals(Boolean.FALSE, controller.getOrders(group).get(new Column(price, GGroupObjectValue.EMPTY)));
+        call(controller.controller, "changeManual", "items", true);
+        assertTrue(controller.isManualUpdate(group));
     }
 
     // the FILTER of a property of a group in PANEL view - which has no table and shows no user filters -: the group's

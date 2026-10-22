@@ -148,12 +148,12 @@ public class GReactFormData {
         // platform's toolbar's button over these rows (TreeTablePart): an edit, as expandAll is
         void expandCurrent(GGroupObject group, GGroupObjectValue key);
         // ===== the sortings of a table whose rows a view draws - a grid's group's, or a tree's, top down -, as its
-        // member read them (OrdersPart.changeAll): the whole list, each sorting on the property it resolved, of that
+        // member read them (OrdersTableList.changeAll): the whole list, each sorting on the property it resolved, of that
         // property's group, true - ascending; each group's its own list, in its priority order, which the form shows at
         // once and sends, each group's as a group's is
         void changeOrders(List<GGroupObject> groups, LinkedHashMap<Column, Boolean> orders);
         // ... and a group's as the form has them - what one order its member states is merged into
-        // (OrdersPart.changeOne), as the platform's header merges a click into them: the form's own map, read, never
+        // (OrdersTableList.changeOne), as the platform's header merges a click into them: the form's own map, read, never
         // changed
         LinkedHashMap<Column, Boolean> getOrders(GGroupObject group);
         // ===== the user filters of a table's groups - a group's, or a tree's, top down -, as the table's model sends
@@ -204,13 +204,13 @@ public class GReactFormData {
     // it makes when it returns - what was made before a throw too, as it would have gone outside a batch. The batch is
     // the form's, whoever begins it: a member call of any view made in fn goes with it (the form's server calls are
     // refused while it runs)
-    public static void batch(Verbs form, String surface, JavaScriptObject fn) {
+    public static void batch(Verbs verbs, String surface, JavaScriptObject fn) {
         String errorPrefix = controllerPrefix(surface);
         if (!isFunction(fn))
             throw refusal(errorPrefix + "takes a function, the member calls it makes being sent together");
         // fn, run at once: what follows an await in it would be made after the batch has ended, so a Promise it
         // returns is refused - what it made before is sent
-        form.batch(() -> {
+        verbs.batch(() -> {
             if (isThenable(GwtClientUtils.call(fn)))
                 throw refusal(errorPrefix + "the function returned a Promise: a batch is sent when it returns, so"
                         + " what follows an await in it would be made outside it. Await before the batch");
@@ -350,12 +350,14 @@ public class GReactFormData {
                 userFilters.addView(view);
         }
         GFilterInputController input = reactOrPlatform(filtersScope(table.filtersContainer), state -> {
-            userFilters.addView(new FiltersPart(state.getOrCreateTableNode(table), userFilters));
+            userFilters.addView(new FiltersPart(state.getOrCreateTableNode(table), table, userFilters));
             return new ReactFilterInputController(rows, toggle, userFilters);
         }, () -> platform.addBox(table.filtersContainer, userFilters));
         if (input != null)
             toggle.bind(input, userFilters, platform);
-        return new FiltersControllers(input, userFilters);
+        FiltersControllers filters = new FiltersControllers(input, userFilters);
+        tableFilters.put(table, filters);
+        return filters;
     }
     // ... what of a table's user filters THE PLATFORM draws, as the projection asks it where it answers that the
     // platform draws one of them (GPlatformFilterRows), and as the toggle drives it (GFilterControlsToggle.Rows): the
@@ -399,26 +401,35 @@ public class GReactFormData {
             this.userFilters = userFilters;
         }
     }
+    // what the form's controller reaches a TABLE by (CONTROLLER.FORM), kept as the projection's factories make it, as
+    // a member is given what it works on as it is made: what draws each table's rows, of the table's kind, whichever
+    // answered (gridRows, treeRows - createGridController, createTreeController), and each table's user filters, their
+    // model and the input over them (tableFilters - createFiltersControllers)
+    private final NativeSIDMap<GGrid, GGridController> gridRows = new NativeSIDMap<>();
+    private final NativeSIDMap<GTreeGroup, GTreeController> treeRows = new NativeSIDMap<>();
+    private final NativeSIDMap<GGridProperty, FiltersControllers> tableFilters = new NativeSIDMap<>();
     // WHAT DRAWS THE ROWS of a TABLE, the form's one question for them, asked with its toolbar
     // (GFormController.initializeGrid, initializeTree): of the GRID of a list's group not in a tree, where React draws
     // them, its table's part on the group's node there, with its group's rows' part ...
     public GGridController createGridController(GGrid grid, GToolbarController<GGridController> toolbar, Supplier<GGridController> platform) {
-        return createTableController(grid, toolbar, state -> state.createGridTablePart(grid), platform);
+        return createTableController(grid, gridRows, toolbar, state -> state.createGridTablePart(grid), platform);
     }
     // ... of a TREE, one for all its groups: where React draws them, its table's part on the tree's node there
     // (FormView.getTreeScopes), with the rows' part of each of its groups, which it keeps ...
     public GTreeController createTreeController(GTreeGroup tree, GToolbarController<GTreeController> toolbar, Supplier<GTreeController> platform) {
-        return createTableController(tree, toolbar, state -> state.createTreeTablePart(tree), platform);
+        return createTableController(tree, treeRows, toolbar, state -> state.createTreeTablePart(tree), platform);
     }
     // ... either: the table's part, of the table's kind (part), given to the toolbar as it is made, as the platform's
     // table gives itself to it, where React draws the rows - where the table is drawn -, else the platform's table
-    // (platform), made only then
-    private <R extends GTableController> R createTableController(GGridProperty table, GToolbarController<R> toolbar, Function<ViewState, R> part, Supplier<R> platform) {
-        return reactOrPlatform(componentScope(table), state -> {
-            R rows = part.apply(state);
-            toolbar.addRows(rows);
-            return rows;
+    // (platform), made only then; kept by the table, whichever answered (rows)
+    private <T extends GGridProperty, R extends GTableController> R createTableController(T table, NativeSIDMap<T, R> rows, GToolbarController<R> toolbar, Function<ViewState, R> part, Supplier<R> platform) {
+        R drawn = reactOrPlatform(componentScope(table), state -> {
+            R made = part.apply(state);
+            toolbar.addRows(made);
+            return made;
         }, platform);
+        rows.put(table, drawn);
+        return drawn;
     }
     // ... the one choice each of the factories above makes: what React has of a component it draws in a React view
     // (scope) - a part of its owner there, or an entry, made by react -, else the platform's (platform), made only then
@@ -440,9 +451,11 @@ public class GReactFormData {
     }
     // ... and then what the nodes carry of it all, once: a group's rows are there from the start, none of them yet; the
     // names every node carries; the members that mirror its entries - and the form's controller, on each view's as
-    // `form`, its calls made once, as each view's own are: a call of it from a view's handler is a change too
+    // `form`, with its methods (CONTROLLER.FORM), its calls made once, as each view's own are: a call of it from a
+    // view's handler is a change too
     public void initialize(JavaScriptObject formController) {
         views.foreachValue(state -> state.initialize(formController));
+        addFormMethods(this, formController);
         makeCalls(this, formController);
     }
 
@@ -603,7 +616,7 @@ public class GReactFormData {
             this.scope = scope;
             this.publish = publish;
             this.top = new TopNode(this);
-            this.controller = makeController(this);
+            this.controller = makeController(verbs);
         }
         JavaScriptObject current() { return draft != null ? draft : data; }
         JavaScriptObject edit() {
@@ -712,10 +725,6 @@ public class GReactFormData {
             return rows != null ? rows.getRowPlatformProperty(name.substring(dot + 1)) : null;
         }
 
-        // controller.batch(fn): the form's batch (GReactFormData.batch)
-        void batch(JavaScriptObject fn) {
-            GReactFormData.batch(verbs, "batch()", fn);
-        }
     }
 
     // the DESCRIPTOR of a component React draws or places: its entry at its container's top level, keyed by its SID -
@@ -815,8 +824,8 @@ public class GReactFormData {
     // the owner placed on it (Part), each writing its own there
     private abstract class OwnerNode extends Node {
         final String name; // the owner's name in the form: data.<name>, controller.<name>
-        // the groups of the owner, in the order their conditions and properties are listed (FiltersPart): the group,
-        // or the tree's, top down
+        // the groups of the owner, in the order the rows' parts of a table are asked (TablePart): the group, or the
+        // tree's, top down
         final List<GGroupObject> groups;
         final ArrayList<Part<?>> parts = new ArrayList<>(); // in the order they are placed
         final JavaScriptObject member = newObject(); // controller.<name>, put on the controller with its members
@@ -862,11 +871,6 @@ public class GReactFormData {
         }
         // what the owner is, as a message names it
         abstract String describe();
-        // ... a property of them as the owner's lists name it - its user filters' conditions and what they can be on -,
-        // a call naming it back so
-        abstract String getPropertyName(GPropertyDraw property);
-        // ... and the property such a name names - refused where there is none
-        abstract GPropertyDraw readPropertyName(String errorPrefix, String name);
         // a property one of the owner's lists leaves out, as the projection does not name it there - for the reason
         // given: reported once per list and property
         void reportUnnameable(GPropertyDraw property, String field, String what, String why) {
@@ -890,15 +894,7 @@ public class GReactFormData {
         String describe() {
             return "the group";
         }
-        // a property of the group, by its integration name; the group's one property of that name, given back
-        // (readStateProperty)
-        String getPropertyName(GPropertyDraw property) {
-            return property.integrationSID;
-        }
-        GPropertyDraw readPropertyName(String errorPrefix, String name) {
-            return readStateProperty(errorPrefix, group, name);
-        }
-        // ... and data.<group>.properties: the names of the entries it carries, in the form's order; design data, like
+        // data.<group>.properties: the names of the entries it carries, in the form's order; design data, like
         // them
         @Override
         void initialize() {
@@ -947,24 +943,6 @@ public class GReactFormData {
         String describe() {
             return "the tree";
         }
-        // a property of a group of the tree, by its group's name and its integration name, c.name, as a <Platform>
-        // names a property of a group - each of the group of its property, in the tree's order of the groups, as the
-        // platform's panel shows them and a list a view states is sent, each group's its own
-        String getPropertyName(GPropertyDraw property) {
-            return getName(property);
-        }
-        // ... and a name a view gives back: split at its FIRST dot - a group's name has none
-        // (FormView.checkProjectedGroupSID), an integration name may: a property the platform draws is asked to have
-        // none by nothing (FormView.checkProjectedName) -, a group of the tree, and its one property of that name
-        GPropertyDraw readPropertyName(String errorPrefix, String name) {
-            int dot = name.indexOf('.');
-            String groupSID = dot >= 0 ? name.substring(0, dot) : null;
-            for (GGroupObject group : groups)
-                if (group.getSID().equals(groupSID))
-                    return readStateProperty(errorPrefix, group, name.substring(dot + 1));
-            throw refusal(errorPrefix + "'" + name + "' names no property of a group of tree '" + this.name
-                    + "': a condition names one by its group's name and its own, " + groups.get(0).getSID() + ".<name>");
-        }
     }
     // a PART on a node - of a GROUP: its rows, its filter groups; of a TABLE, on the table's node - a list group's, or
     // the tree's -: its rows as a whole, its sortings, user filters, filter controls and toolbar -, placed in the
@@ -1004,60 +982,33 @@ public class GReactFormData {
             writeState();
         }
     }
-    // ... whose state is a LIST, under its name on the node (field) - a table's sortings (OrdersPart), its user
-    // filters (FiltersPart) -, always there, empty while there is none, and whose member, beside the table's own,
-    // states it (makeListMember): all of it, by an array, or one item, merged into the rest
+    // ... whose state is a LIST of its table's, under the list's name on the table's node (TableList.field) - its
+    // sortings (OrdersPart), its user filters (FiltersPart) -, always there, empty while there is none, and whose
+    // member, beside the table's own, states it, as the list reads a call (TableList.change)
     private abstract class ListPart extends Part<OwnerNode> {
-        final String field; // data.<name>.<field>, controller.<name>.<field>
-        // an item as a message names it and the fields it carries, and what the rows are by its property: "an order",
-        // ORDER_FIELDS, "sorted" - "a condition", FILTER_CONDITION_FIELDS, "filtered"
-        final String item, itemFields, listedBy;
+        final GGridProperty table; // whose list it is
+        final TableList list; // ... and which
 
-        ListPart(OwnerNode node, String field, String item, String itemFields, String listedBy) {
+        ListPart(OwnerNode node, GGridProperty table, TableList list) {
             super(node);
-            this.field = field;
-            this.item = item;
-            this.itemFields = itemFields;
-            this.listedBy = listedBy;
+            this.table = table;
+            this.list = list;
         }
         @Override
         void initialize() {
-            setField(node.edit(), field, emptyArray());
+            setField(node.edit(), list.field, emptyArray());
         }
         @Override
         void putMember(JavaScriptObject ownerMember) {
-            setField(ownerMember, field, makeListMember(this, node.name + "." + field + ".change()"));
+            setField(ownerMember, list.field, makeListMember(list, table, node.name + "." + list.field + ".change()"));
         }
-        // ... a call through it: an array states the items all at once, anything else one of them, merged into the rest
-        void change(String surface, JavaScriptObject items) {
-            if (isJSArray(items))
-                changeAll(surface, items);
-            else
-                changeOne(surface, items);
-        }
-        abstract void changeAll(String surface, JavaScriptObject items);
-        abstract void changeOne(String surface, JavaScriptObject item);
-
-        // whether an item can be on the property - and so be listed -, and which rule it fails, in words
-        abstract boolean canList(GPropertyDraw property);
-        abstract String whyNot(GPropertyDraw property);
         // an item on a property no item can be on is not listed: it would describe the rows by something nothing can
         // address - reported once per property
         boolean isListed(GPropertyDraw property) {
-            if (canList(property))
+            if (list.canList(property))
                 return true;
-            node.reportUnnameable(property, field, listedBy, whyNot(property));
+            node.reportUnnameable(property, list.field, list.listedBy, list.whyNot(property));
             return false;
-        }
-        // ... and the property an item the AUTHOR wrote names (readAuthorObject), by the name the list gives it - an
-        // object carrying only fields this call knows, the property named as the node names it
-        // (OwnerNode.readPropertyName) -, refused, by the same rule, where no item can be on it
-        GPropertyDraw readProperty(String errorPrefix, JavaScriptObject item) {
-            GPropertyDraw property = node.readPropertyName(errorPrefix, readAuthorObject(errorPrefix, item, this.item, itemFields));
-            if (!canList(property))
-                throw refusal(errorPrefix + "'" + node.getPropertyName(property) + "' cannot be " + listedBy
-                        + " by here: " + whyNot(property));
-            return property;
         }
     }
     // a TABLE's USER ORDERS where React draws its rows - of a list's group not in a tree, or of a tree, one list for
@@ -1065,12 +1016,12 @@ public class GReactFormData {
     // of its filters - placed on the table's node where its rows are drawn, a sorting being the order those are drawn
     // in, made with the rows' part of the table (TablePart). `orders` lists the sortings of the table's groups, group
     // by group, top down, each in its priority order - a group's sortings are its own: no group's outrank another's -,
-    // each property named as the node names it (OwnerNode.getPropertyName). It is rebuilt only when the form hands over
+    // each property named as the table's lists name it (getListName). It is rebuilt only when the form hands over
     // another list of a group - so it keeps its identity across renders in which nothing sorts the table anew. The
     // lists are the form's (Verbs.getOrders): the part keeps only what it publishes
     private final class OrdersPart extends ListPart implements GUserOrdersController {
-        OrdersPart(OwnerNode node) {
-            super(node, "orders", "an order", ORDER_FIELDS, "sorted");
+        OrdersPart(OwnerNode node, GGridProperty table) {
+            super(node, table, ordersList);
         }
         // a group's sortings as the form has them now: its own ORDERS in the first changes, then every list the server
         // reports - an ORDER action's too -, handed over only when it is another one; the other groups' as the form
@@ -1079,33 +1030,141 @@ public class GReactFormData {
         public void updateOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
             writeOrders();
         }
-        // ... and as the form changes them - its member's, or the platform's header's -: shown at once, the same way
+        // ... and as the form changes them - a member's, the form's controller's, or the platform's header's -: shown
+        // at once, the same way
         @Override
         public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
             writeOrders();
         }
-        // `orders`, the sortings in the SAME shape the .lsf ORDER operator reads and writes: the property as the node
-        // names it, and `desc`, the server's and the operator's spelling (the client keeps ascending). A sorting is
-        // named as a condition is, wherever its property is drawn - here, in another container, by the platform
-        // (OwnerNode.readPropertyName) -, so what a view reads it can hand back - one a sorting can name (canList)
+        // `orders`, the sortings in the SAME shape the .lsf ORDER operator reads and writes: the property as the
+        // table's lists name it, and `desc`, the server's and the operator's spelling (the client keeps ascending). A
+        // sorting is named as a condition is, wherever its property is drawn - here, in another container, by the
+        // platform (readListName) -, so what a view reads it can hand back - one a sorting can name (canList)
         void writeOrders() {
             JavaScriptObject array = emptyArray();
-            for (GGroupObject group : node.groups)
+            for (GGroupObject group : table.getGroups())
                 for (Map.Entry<Column, Boolean> order : verbs.getOrders(group).entrySet()) {
                     GPropertyDraw property = order.getKey().property;
                     if (!isListed(property))
                         continue;
                     JavaScriptObject entry = newObject();
-                    setField(entry, "property", node.getPropertyName(property));
+                    setField(entry, "property", getListName(table, property));
                     setField(entry, "desc", !order.getValue());
                     push(array, entry);
                 }
-            setField(node.edit(), field, array);
+            setField(node.edit(), list.field, array);
         }
-        // can a sorting be on this property? Two rules: the projection addresses a property by its integration SID, and
-        // a sorting names one property, not one of its COLUMNS - a property grouped in columns is sorted per column,
-        // and no name here says which. The property may be the platform's to draw, so the form being built says nothing
-        // about it
+    }
+    // the USER FILTERS where React draws them - what a FILTERS box holds: a part of their own, of the group the box is
+    // of or of the tree, one box for all its groups, on the table's node where the box's content is - the node a
+    // group's rows are drawn on when the two are in one container -, the conditions of the table's groups, each on a
+    // property named as the table's lists name it (getListName, readListName). `filters` is the working list
+    // of the table's user filters (GUserFiltersController), its active conditions - what the server is filtering by,
+    // and in the manual apply mode what waits for the apply too -: the model tells the part whenever it changes, and
+    // the array is rebuilt only then - so it keeps its identity across renders in which nothing states them anew. The
+    // part keeps only what it publishes. It is the view's view of them, the platform's panel being the other: the
+    // commands over them, where the platform wires them up, are an object of their own (ReactFilterInputController)
+    private final class FiltersPart extends ListPart implements GUserFiltersController.View {
+        final GUserFiltersController userFilters;
+
+        FiltersPart(OwnerNode node, GGridProperty table, GUserFiltersController userFilters) {
+            super(node, table, filtersList);
+            this.userFilters = userFilters;
+        }
+        // ... and what a condition can be on, design data written once (filterProperties)
+        @Override
+        void initialize() {
+            super.initialize();
+            setField(node.edit(), "filterProperties", getFilterProperties(table));
+        }
+        // the table's user filters changed, whoever changed them - the server, a writer, the platform's input -: a view
+        // shows their working list, a change waiting for the apply in the manual apply mode too
+        public void changed(GUserFiltersController.Change change) {
+            writeFilters();
+        }
+
+        // the conditions, in the SAME shape the .lsf FILTER operator reads them - compare by its operator
+        // string, `or` for the junction - so one vocabulary describes a condition in .lsf and in the projection; only
+        // the property is named as the table's lists name it (getListName), where FILTER names it by its name on
+        // the form (they differ under an EXTID) - one a condition can be on (canList)
+        void writeFilters() {
+            JavaScriptObject array = emptyArray();
+            for (GPropertyFilter condition : userFilters.getConditions()) {
+                GPropertyDraw property = condition.column.property;
+                if (!isListed(property))
+                    continue;
+                JavaScriptObject entry = newObject();
+                setField(entry, "property", getListName(table, property));
+                setField(entry, "compare", condition.compare.toString());
+                // the FILTER type, the one the platform's own filter editor uses for this cell
+                // - and the one a condition is read back with (readFilterCondition)
+                // - and no property: one named `image` draws its own value as an image, while a condition's is plain
+                setField(entry, "value", JSValueConverter.convertToJSValue(property.getFilterBaseType(), null, true, condition.value.value));
+                setField(entry, "negation", condition.negation);
+                // GPropertyFilter.junction is the conjunction flag; .lsf says `or`
+                setField(entry, "or", !condition.junction);
+                push(array, entry);
+            }
+            setField(node.edit(), list.field, array);
+        }
+    }
+
+    // ===== A TABLE'S LIST - its sortings (OrdersTableList), its user filters' conditions (FiltersTableList) -: what an
+    // item of it is and what its property can be (canList), and what a call states - all of it, by an array, or one
+    // item, merged into the rest -, whoever makes the call: a view's member, where it draws the list (ListPart), or the
+    // form's controller, by the table's name (CONTROLLER.FORM: changeOrders). An item names its property
+    // as the table's lists name it (getListName); the sortings are handed to the form as each group's own (Verbs), the
+    // conditions to the table's user filters (GUserFiltersController)
+    private abstract class TableList {
+        final String field; // data.<name>.<field>, controller.<name>.<field>
+        // an item as a message names it and the fields it carries, and what the rows are by its property: "an order",
+        // ORDER_FIELDS, "sorted" - "a condition", FILTER_CONDITION_FIELDS, "filtered"
+        final String item, itemFields, listedBy;
+
+        TableList(String field, String item, String itemFields, String listedBy) {
+            this.field = field;
+            this.item = item;
+            this.itemFields = itemFields;
+            this.listedBy = listedBy;
+        }
+        // ... a call: an array states the items all at once, anything else one of them, merged into the rest
+        void change(String surface, GGridProperty table, JavaScriptObject items) {
+            if (isJSArray(items))
+                changeAll(surface, table, items);
+            else
+                changeOne(surface, table, items);
+        }
+        abstract void changeAll(String surface, GGridProperty table, JavaScriptObject items);
+        abstract void changeOne(String surface, GGridProperty table, JavaScriptObject item);
+
+        // whether an item can be on the property - and so be listed -, and which rule it fails, in words
+        abstract boolean canList(GPropertyDraw property);
+        abstract String whyNot(GPropertyDraw property);
+        // ... and the property an item the AUTHOR wrote names (readAuthorObject), by the name the table's lists give it
+        // - an object carrying only fields this call knows (readListName) -, refused, by the same rule, where no item
+        // can be on it
+        GPropertyDraw readProperty(String errorPrefix, GGridProperty table, JavaScriptObject item) {
+            GPropertyDraw property = readListName(errorPrefix, table, readAuthorObject(errorPrefix, item, this.item, itemFields));
+            if (!canList(property))
+                throw refusal(errorPrefix + "'" + getListName(table, property) + "' cannot be " + listedBy
+                        + " by here: " + whyNot(property));
+            return property;
+        }
+    }
+    // the SORTINGS of a table, as a call states them: read - each naming its property by the name `orders` gives it,
+    // not by a member: a state is data, written in the shape the projection publishes it (readProperty) - and handed
+    // to the form as the list they make, which the form splits into its groups' lists, each of the group of its
+    // properties (Verbs.changeOrders). An order is {property, desc}, the SAME shape `orders` projects and the .lsf ORDER
+    // operator reads; one with no `desc` is not a sorting, so it removes the one on that property. An array states them
+    // all, its order being each group's priority - a group none of it names is sorted by nothing then
+    private final class OrdersTableList extends TableList {
+        OrdersTableList() {
+            super("orders", "an order", ORDER_FIELDS, "sorted");
+        }
+        // can a sorting be on this property? Two rules: the projection addresses a property by its integration SID,
+        // and a sorting names one property, not one of its COLUMNS - a property grouped in columns is sorted per
+        // column, and no name here says which. The property may be the platform's to draw, so the form being built
+        // says nothing about it
         boolean canList(GPropertyDraw property) {
             return property.integrationSID != null && !property.hasColumnGroupObjects();
         }
@@ -1114,25 +1173,8 @@ public class GReactFormData {
                 return "no integration SID";
             return "it is grouped in columns, and a sorting names no column";
         }
-        // ... and the sortings of all its groups as the form has them, one map, group by group
-        LinkedHashMap<Column, Boolean> getOrders() {
-            LinkedHashMap<Column, Boolean> orders = new LinkedHashMap<>();
-            for (GGroupObject group : node.groups)
-                orders.putAll(verbs.getOrders(group));
-            return orders;
-        }
-
-        // ===== a call through its member - a sorting is the state of the rows, so its member is where they are drawn,
-        // a view that does not draw them has none: the table's sortings, as the view states them, read here - with the
-        // rows -, each naming its property by the name `orders` gives it, not by a member: a state is data, written in
-        // the shape the projection publishes it (readProperty) - a call names what it changes by its member
-        // (ReactPropertyEntry.change) -, and handed to the form as the list they make, which the form splits into its
-        // groups' lists, each of the group of its properties (Verbs.changeOrders). An order is {property, desc}, the
-        // SAME shape `orders` projects and the .lsf ORDER operator reads; one with no `desc` is not a sorting, so it
-        // removes the one on that property. An array states them all, its order being each group's priority - a group
-        // none of it names is sorted by nothing then
         @Override
-        void changeAll(String surface, JavaScriptObject orders) {
+        void changeAll(String surface, GGridProperty table, JavaScriptObject orders) {
             String errorPrefix = controllerPrefix(surface);
 
             LinkedHashMap<Column, Boolean> result = new LinkedHashMap<>();
@@ -1144,28 +1186,30 @@ public class GReactFormData {
             for (int i = 0; i < size; i++) {
                 JavaScriptObject order = jsArrayGet(orders, i);
                 String prefix = errorPrefix + "order " + i + ": ";
-                GPropertyDraw property = readProperty(prefix, order);
+                GPropertyDraw property = readProperty(prefix, table, order);
                 if (named.put(property, true) != null)
-                    throw refusal(prefix + "'" + node.getPropertyName(property) + "' is already in this list");
-                applyOrder(prefix, order, property, result);
+                    throw refusal(prefix + "'" + getListName(table, property) + "' is already in this list");
+                applyOrder(prefix, table, order, property, result);
             }
-            verbs.changeOrders(node.groups, result);
+            verbs.changeOrders(table.getGroups(), result);
         }
         // ... one order, merged into the table's sortings as the form has them - every one of them, those it does not
         // name included, and those an earlier call of a batch stated
         @Override
-        void changeOne(String surface, JavaScriptObject order) {
+        void changeOne(String surface, GGridProperty table, JavaScriptObject order) {
             String errorPrefix = controllerPrefix(surface);
-            LinkedHashMap<Column, Boolean> result = getOrders();
-            applyOrder(errorPrefix, order, readProperty(errorPrefix, order), result);
-            verbs.changeOrders(node.groups, result);
+            LinkedHashMap<Column, Boolean> result = new LinkedHashMap<>();
+            for (GGroupObject group : table.getGroups())
+                result.putAll(verbs.getOrders(group));
+            applyOrder(errorPrefix, table, order, readProperty(errorPrefix, table, order), result);
+            verbs.changeOrders(table.getGroups(), result);
         }
         // what one order the author wrote does to sortings: with no direction it is not a sorting, and takes the one on
         // its property off - which a noSort property has to be able to say, as a default ORDERS on one is listed; with
         // a direction it sorts by the property - refused for a noSort one - in place when the property is sorted
         // already (a map keeps a key where it is), appended when not. `desc` is read once, as every field of what an
         // author wrote is
-        void applyOrder(String errorPrefix, JavaScriptObject order, GPropertyDraw property, LinkedHashMap<Column, Boolean> result) {
+        void applyOrder(String errorPrefix, GGridProperty table, JavaScriptObject order, GPropertyDraw property, LinkedHashMap<Column, Boolean> result) {
             Column column = new Column(property, GGroupObjectValue.EMPTY); // a sorting names none in columns
             JavaScriptObject desc = getOwnField(order, "desc");
             if (isNoValue(desc)) {
@@ -1175,61 +1219,15 @@ public class GReactFormData {
             if (!isJSBoolean(desc))
                 throw refusal(errorPrefix + "'desc' must be true or false");
             if (property.noSort)
-                throw refusal(errorPrefix + "'" + node.getPropertyName(property) + "' cannot be sorted by");
+                throw refusal(errorPrefix + "'" + getListName(table, property) + "' cannot be sorted by");
             result.put(column, !toBoolean(desc));
         }
     }
-    // the USER FILTERS where React draws them - what a FILTERS box holds: a part of their own, of the group the box is
-    // of or of the tree, one box for all its groups, on the table's node where the box's content is - the node a
-    // group's rows are drawn on when the two are in one container -, the conditions of the table's groups, each on a
-    // property named as the node names it (OwnerNode.getPropertyName, readPropertyName). `filters` is the working list
-    // of the table's user filters (GUserFiltersController), its active conditions - what the server is filtering by,
-    // and in the manual apply mode what waits for the apply too -: the model tells the part whenever it changes, and
-    // the array is rebuilt only then - so it keeps its identity across renders in which nothing states them anew. The
-    // part keeps only what it publishes. It is the view's view of them, the platform's panel being the other: the
-    // commands over them, where the platform wires them up, are an object of their own (ReactFilterInputController)
-    private final class FiltersPart extends ListPart implements GUserFiltersController.View {
-        final GUserFiltersController userFilters;
-
-        FiltersPart(OwnerNode node, GUserFiltersController userFilters) {
-            super(node, "filters", "a condition", FILTER_CONDITION_FIELDS, "filtered");
-            this.userFilters = userFilters;
-        }
-        // ... and what a condition can be on, design data written once (filterProperties)
-        @Override
-        void initialize() {
-            super.initialize();
-            setField(node.edit(), "filterProperties", getFilterProperties(node));
-        }
-        // the table's user filters changed, whoever changed them - the server, a writer, the platform's input -: a view
-        // shows their working list, a change waiting for the apply in the manual apply mode too
-        public void changed(GUserFiltersController.Change change) {
-            writeFilters();
-        }
-
-        // the conditions, in the SAME shape the .lsf FILTER operator reads them - compare by its operator
-        // string, `or` for the junction - so one vocabulary describes a condition in .lsf and in the projection; only
-        // the property is named as the node names it (getPropertyName), where FILTER names it by its name on
-        // the form (they differ under an EXTID) - one a condition can be on (canList)
-        void writeFilters() {
-            JavaScriptObject array = emptyArray();
-            for (GPropertyFilter condition : userFilters.getConditions()) {
-                GPropertyDraw property = condition.column.property;
-                if (!isListed(property))
-                    continue;
-                JavaScriptObject entry = newObject();
-                setField(entry, "property", node.getPropertyName(property));
-                setField(entry, "compare", condition.compare.toString());
-                // the FILTER type, the one the platform's own filter editor uses for this cell
-                // - and the one a condition is read back with (readFilterCondition)
-                // - and no property: one named `image` draws its own value as an image, while a condition's is plain
-                setField(entry, "value", JSValueConverter.convertToJSValue(property.getFilterBaseType(), null, true, condition.value.value));
-                setField(entry, "negation", condition.negation);
-                // GPropertyFilter.junction is the conjunction flag; .lsf says `or`
-                setField(entry, "or", !condition.junction);
-                push(array, entry);
-            }
-            setField(node.edit(), field, array);
+    // the CONDITIONS of a table's user filters, as a call states them: read (readFilterCondition) and written into the
+    // table's user filters, the one model of its groups' (GUserFiltersController)
+    private final class FiltersTableList extends TableList {
+        FiltersTableList() {
+            super("filters", "a condition", FILTER_CONDITION_FIELDS, "filtered");
         }
         // can a condition be on this property (isProjectableCondition), and which rule it fails
         boolean canList(GPropertyDraw property) {
@@ -1242,24 +1240,24 @@ public class GReactFormData {
                 return "an action, which the server is never asked to filter by";
             return "it is grouped in columns, and a condition names no column";
         }
-        // a call through its member, read here, on the part that holds the conditions (readFilterCondition), and handed
-        // to the model as what it names: an array is the list of conditions, as FILTER reads one in .lsf - each a new
-        // condition, what it does not state the default way, one with no value comparing with NULL ("is empty", negated
-        // "is not empty"), as `filters` lists such a condition, so a list `filters` gives is taken back as it is; it
-        // replaces the conditions a view can name, the rest keeping their places
+        // a call, read here (readFilterCondition) and handed to the table's user filters (GUserFiltersController) as
+        // what it names: an array is the list of conditions, as FILTER reads one in .lsf - each a new condition, what
+        // it does not state the default way, one with no value comparing with NULL ("is empty", negated "is not
+        // empty"), as `filters` lists such a condition, so a list `filters` gives is taken back as it is; it replaces
+        // the conditions a view can name, the rest keeping their places
         @Override
-        void changeAll(String surface, JavaScriptObject conditions) {
+        void changeAll(String surface, GGridProperty table, JavaScriptObject conditions) {
             String errorPrefix = controllerPrefix(surface);
             ArrayList<GPropertyFilter> result = new ArrayList<>();
             int size = jsArrayLength(conditions);
             for (int i = 0; i < size; i++) {
                 String itemPrefix = errorPrefix + "condition " + i + ": ";
                 JavaScriptObject condition = jsArrayGet(conditions, i);
-                GPropertyDraw property = readProperty(itemPrefix, condition);
+                GPropertyDraw property = readProperty(itemPrefix, table, condition);
                 JavaScriptObject value = getOwnField(condition, "value"); // read once: a condition is what was read
                 result.add(readFilterCondition(itemPrefix, condition, GPropertyFilter.getBase(getConditionColumn(property), null), value));
             }
-            userFilters.changeConditions(result, GReactFormData::isProjectableCondition);
+            getUserFilters(table).changeConditions(result, GReactFormData::isProjectableCondition);
         }
         // ... one condition, in the working list - those an earlier call of a batch stated included -: a value given
         // its property as a property's FILTER gives one (FilterPart.change), in the place of the FIRST active one on
@@ -1267,10 +1265,11 @@ public class GReactFormData {
         // memory -, or appended, the default way; no value takes that first one off, alone - a range's other bound
         // stays (GUserFiltersController.putCondition, removeCondition)
         @Override
-        void changeOne(String surface, JavaScriptObject condition) {
+        void changeOne(String surface, GGridProperty table, JavaScriptObject condition) {
             String errorPrefix = controllerPrefix(surface);
-            GPropertyDraw property = readProperty(errorPrefix, condition);
+            GPropertyDraw property = readProperty(errorPrefix, table, condition);
             JavaScriptObject value = getOwnField(condition, "value"); // read once, as in changeAll
+            GUserFiltersController userFilters = getUserFilters(table);
             Column column = getConditionColumn(property);
             GPropertyFilter stated = readFilterCondition(errorPrefix, condition, GPropertyFilter.getBase(column, userFilters.getValueBase(column, false)), value);
             if (stated.nullValue())
@@ -1279,6 +1278,8 @@ public class GReactFormData {
                 userFilters.putCondition(stated);
         }
     }
+    private final OrdersTableList ordersList = new OrdersTableList();
+    private final FiltersTableList filtersList = new FiltersTableList();
     // the PLATFORM'S INPUT over the conditions a view draws - GFilterInputController's kind where a view draws what the
     // box holds (createFiltersControllers): the keys of the table, the controls' add, apply and reset. Each writes into
     // the table's user filters (GUserFiltersController), the box's part showing them (FiltersPart). A condition is
@@ -1344,7 +1345,7 @@ public class GReactFormData {
         // its members, on the table's own: a toolbar's - and its kind's own
         @Override
         void putMember(JavaScriptObject tableMember) {
-            addToolbarMembers(this, tableMember, node.name);
+            addToolbarMembers(GReactFormData.this, this, table, tableMember, node.name);
         }
         boolean isFilterControlsVisible() {
             return filter != null && filter.isControlsVisible();
@@ -1376,11 +1377,6 @@ public class GReactFormData {
                         + "draws neither the conditions nor FILTERCONTROLS here, or its toolbar turns its filters off (showFilters)");
             if (value != filter.isControlsVisible())
                 filter.toggleControlsVisible();
-        }
-        // ... and the export, a request (refused): the server's report of the rows - the group's, or the tree's
-        void exportRows(String surface) {
-            if (!refused(surface))
-                verbs.runTableReport(table);
         }
     }
     // ... of a LIST's group - TOOLBARSYSTEM(g): a part of the group of its own. Its buttons are all a group's toolbar
@@ -1421,7 +1417,7 @@ public class GReactFormData {
         @Override
         void putMember(JavaScriptObject groupMember) {
             super.putMember(groupMember);
-            addGridToolbarMembers(this, groupMember, node.name);
+            addGridToolbarMembers(GReactFormData.this, node.group, groupMember, node.name);
         }
 
         // ===== the group's toolbar controller: the view the table shows now, the changes the server holds back, and
@@ -1438,66 +1434,6 @@ public class GReactFormData {
         public void showUpdateMode(boolean manual) {
             updatePending = false;
             stateChanged();
-        }
-        // ===== a call through its member, checked here, and handed to the form - each one but the filter button's a
-        // request (refused)
-        JavaScriptObject getCount(String surface) {
-            String refusal = verbs.getRefusal(surface);
-            if (refusal != null)
-                return GController.rejectedControllerPromise(refusal);
-            return answerPromise((answer, failed) -> verbs.countRecords(node.group, answer, failed));
-        }
-        // ... a column's: a number property of the group, named as a state names one - not one grouped in columns, as
-        // the call names no column
-        JavaScriptObject getSum(String surface, String propertySID) {
-            String refusal = verbs.getRefusal(surface);
-            if (refusal != null)
-                return GController.rejectedControllerPromise(refusal);
-            String errorPrefix = controllerPrefix(surface);
-            if (propertySID == null)
-                throw refusal(errorPrefix + "takes the name of the property to sum, as a string");
-            GPropertyDraw property = readStateProperty(errorPrefix, node.group, propertySID);
-            if (property.hasColumnGroupObjects())
-                throw refusal(errorPrefix + "'" + propertySID + "' is grouped in columns, and a sum names no column");
-            if (!(property.getValueType() instanceof GIntegralType))
-                throw refusal(errorPrefix + "'" + propertySID + "' is not a number");
-            return answerPromise((answer, failed) -> verbs.calculateSum(node.group, property, GGroupObjectValue.EMPTY, answer, failed));
-        }
-        // the manual update turned on or off, as the platform's toggle does - the form telling the toolbar the mode
-        // (showUpdateMode)
-        void changeManual(String surface, Object manual) {
-            boolean value = readBoolean(controllerPrefix(surface), manual);
-            if (refused(surface)) // before the mode changes
-                return;
-            verbs.changeUpdateMode(node.group, value ? GUpdateMode.MANUAL : GUpdateMode.AUTO);
-        }
-        // ... and the changes it holds back brought now, as the platform's button does
-        void forceUpdate(String surface) {
-            if (!refused(surface))
-                verbs.changeUpdateMode(node.group, GUpdateMode.FORCE);
-        }
-        // the table's rows shown as another view, one of those the design gives them, as the platform's button does -
-        // none where no table of the platform's draws the rows: no name is one of its views then
-        void changeListView(String surface, Object name) {
-            if (refused(surface))
-                return;
-            GListViewController views = rows.getListViewController();
-            List<GListViewType> listViews = views != null ? views.getListViews() : new ArrayList<>();
-            GListViewType view = null;
-            StringBuilder names = new StringBuilder(); // the names it takes, said where it is given another
-            for (GListViewType listView : listViews) {
-                String viewName = getViewName(listView);
-                if (viewName.equals(name))
-                    view = listView;
-                names.append(names.length() > 0 ? ", " : "").append(viewName);
-            }
-            if (view == null) {
-                if (listViews.isEmpty())
-                    throw refusal(controllerPrefix(surface) + "has no view to switch to: no table of the platform's draws the rows");
-                throw refusal(controllerPrefix(surface) + "takes the name of a view of the table: " + names);
-            }
-            if (view != views.getListView())
-                views.changeListView(view);
         }
     }
     // ... of a TREE - TOOLBARSYSTEM(TREE t): a part of the tree, one toolbar for all its groups, on the tree's node,
@@ -1638,13 +1574,13 @@ public class GReactFormData {
             for (GRegularFilter filter : filterGroup.filters)
                 push(captions, filter.caption);
             setField(entry, "filters", captions);
-            setField(entry, "canClear", offersNone());
+            setField(entry, "canClear", offersNone(filterGroup));
             setField(node.edit(), filterGroup.name, entry);
         }
         // its member, on the group's own
         @Override
         void putMember(JavaScriptObject groupMember) {
-            setField(groupMember, filterGroup.name, makeFilterGroupMember(this, node.name + "." + filterGroup.name));
+            setField(groupMember, filterGroup.name, makeFilterGroupMember(GReactFormData.this, filterGroup, node.name + "." + filterGroup.name));
         }
 
         // ===== the filter group's controller: the filter the server reports selected - in its delta, published with
@@ -1659,35 +1595,7 @@ public class GReactFormData {
         // ===== a filter's key, as the platform's widget takes it: selected - in a group of one filter, the platform's
         // check box, taken off where it is selected already; a group of several's list only selects
         public void onBinding(GRegularFilter filter) {
-            select(filter == selected && filterGroup.filters.size() == 1 ? null : filter);
-        }
-        // whether none may be selected, as the platform's widget offers it: a group of one filter is its check box,
-        // cleared whatever NONULL says - the server takes a NONULL group's null too (FilterGroupAction) -, a group of
-        // several its list, with "(All)" unless NONULL
-        private boolean offersNone() {
-            return filterGroup.filters.size() == 1 || !filterGroup.noNull;
-        }
-        // ... and a call through its member: the index of one of its filters, or null for none where none is offered
-        void change(String surface, Object index) {
-            String errorPrefix = controllerPrefix(surface);
-            int size = filterGroup.filters.size();
-            if (index == null) {
-                if (!offersNone())
-                    throw refusal(errorPrefix + "takes the index of one of its filters, 0 to " + (size - 1)
-                            + ": one has to be selected");
-                select(null);
-                return;
-            }
-            double value = index instanceof Double ? (Double) index : -1;
-            if (value != Math.floor(value) || value < 0 || value >= size)
-                throw refusal(errorPrefix + "takes the index of one of its filters, 0 to " + (size - 1)
-                        + (offersNone() ? ", or null for none" : ""));
-            select(filterGroup.filters.get((int) value));
-        }
-        // ... the one asked for, sent even where it is shown: what the server holds may be other - a batch that failed
-        // leaves the filter it selected shown -, and asked again, it is set again
-        private void select(GRegularFilter filter) {
-            verbs.changeRegularFilter(filterGroup, filter);
+            verbs.changeRegularFilter(filterGroup, filter == selected && filterGroup.filters.size() == 1 ? null : filter);
         }
     }
     // a property's FILTER where React draws it - FILTER(<property>) in a React view, or with a view of its own: a part
@@ -1981,20 +1889,9 @@ public class GReactFormData {
         void change(String surface, JavaScriptObject objectOrKey) {
             verbs.changeCurrentObject(node.group, resolveGroupRow(controllerPrefix(surface), objectOrKey));
         }
-        // the row of THIS group a call names (resolveRow), narrowed by the group's own rule - which both checks and
-        // cuts. A key that is not this group's row at all answers null: it would otherwise set the objects it does
-        // carry and blank the rest, which the server only asserts about (so: nothing at all in production). An empty
-        // key names no row either: passed on, it would clear the group's current objects, which choosing a row among
-        // those drawn does not offer. And in a TREE a row of a group BELOW carries the path past this one: accepted (it
-        // holds one row of every group above), but what it names is the path down to here - the deeper half names
-        // rows of other groups, which the server asserts about too, and the projection would keep as a current object
-        // no row of this group is found by
+        // the row of THIS group a call names (resolveRow), narrowed by the group's own rule (readGroupRow)
         GGroupObjectValue resolveGroupRow(String errorPrefix, JavaScriptObject objectOrKey) {
-            GGroupObjectValue key = resolveRow(errorPrefix, objectOrKey);
-            GGroupObjectValue rowKey = key.isEmpty() ? null : node.group.getRowKey(key);
-            if (rowKey == null)
-                throw refusal(errorPrefix + "that row is not a row of '" + node.name + "'");
-            return rowKey;
+            return readGroupRow(errorPrefix, node.group, resolveRow(errorPrefix, objectOrKey));
         }
         // a row of this group, named however the view has it: the row, its `objects` handle, or the key the projection
         // gave it - a name only here, where the rows are, looked up in the index built with them
@@ -2231,9 +2128,9 @@ public class GReactFormData {
         // rows are drawn in
         final OrdersPart orders;
 
-        TablePart(N node) {
+        TablePart(N node, GGridProperty table) {
             super(node);
-            orders = new OrdersPart(node);
+            orders = new OrdersPart(node, table);
         }
         // the rows' part of the group a condition starts on: the top group's - a grid's one group - but where the tree
         // has a current node (TreeTablePart)
@@ -2304,7 +2201,7 @@ public class GReactFormData {
     // its buttons that need no table, which the toolbar makes: React's rows build nothing of the platform's
     private final class GridTablePart extends TablePart<GroupNode, GridRowsPart> implements GGridController {
         GridTablePart(GroupNode node) {
-            super(node);
+            super(node, node.group.grid);
         }
         public void addToolbarButtons(GGridController.Toolbar toolbar) {
             toolbar.addButtonsWithoutTable();
@@ -2329,7 +2226,7 @@ public class GReactFormData {
         boolean touched;
 
         TreeTablePart(TreeNode node) {
-            super(node);
+            super(node, node.tree);
         }
         // what it writes, there from the start: no current row yet
         @Override
@@ -3125,6 +3022,267 @@ public class GReactFormData {
         return (typeof token === 'string' || typeof token === 'number') ? byKey[String(token)] : null;
     }-*/;
 
+    // ===== WHAT A CALL DOES - of a view's member, or of the form's controller, by name (CONTROLLER.FORM, below)
+    // -: once what it names is known, the same, whoever draws what it changes. A member binds what it names - the row
+    // of its group, its filter group, its toolbar's group -, the form's controller reads it from the names it is given
+
+    // the row of a GROUP a call names, narrowed by the group's own rule - which both checks and cuts. A key that is not
+    // the group's row at all answers null: it would otherwise set the objects it does carry and blank the rest, which
+    // the server only asserts about (so: nothing at all in production). An empty key names no row either: passed on, it
+    // would clear the group's current objects, which choosing a row does not offer. And in a TREE a row of a group
+    // BELOW carries the path past this one: accepted (it holds one row of every group above), but what it names is the
+    // path down to here - the deeper half names rows of other groups, which the server asserts about too, and the
+    // projection would keep as a current object no row of this group is found by
+    private static GGroupObjectValue readGroupRow(String errorPrefix, GGroupObject group, GGroupObjectValue key) {
+        GGroupObjectValue rowKey = key.isEmpty() ? null : group.getRowKey(key);
+        if (rowKey == null)
+            throw refusal(errorPrefix + "that row is not a row of '" + group.getSID() + "'");
+        return rowKey;
+    }
+
+    // a FILTER GROUP's filter selected: the index of one of its filters, or null for none where none is offered - sent
+    // even where it is shown: what the server holds may be other - a batch that failed leaves the filter it selected
+    // shown -, and asked again, it is set again; what shows the filter group is told of it by the form
+    // (Verbs.changeRegularFilter)
+    private void selectFilter(String surface, GRegularFilterGroup filterGroup, Object index) {
+        String errorPrefix = controllerPrefix(surface);
+        int size = filterGroup.filters.size();
+        GRegularFilter filter = null;
+        if (index == null) {
+            if (!offersNone(filterGroup))
+                throw refusal(errorPrefix + "takes the index of one of its filters, 0 to " + (size - 1)
+                        + ": one has to be selected");
+        } else {
+            double value = index instanceof Double ? (Double) index : -1;
+            if (value != Math.floor(value) || value < 0 || value >= size)
+                throw refusal(errorPrefix + "takes the index of one of its filters, 0 to " + (size - 1)
+                        + (offersNone(filterGroup) ? ", or null for none" : ""));
+            filter = filterGroup.filters.get((int) value);
+        }
+        verbs.changeRegularFilter(filterGroup, filter);
+    }
+    // ... whether none may be selected, as the platform's widget offers it: a group of one filter is its check box,
+    // cleared whatever NONULL says - the server takes a NONULL group's null too (FilterGroupAction) -, a group of
+    // several its list, with "(All)" unless NONULL
+    private static boolean offersNone(GRegularFilterGroup filterGroup) {
+        return filterGroup.filters.size() == 1 || !filterGroup.noNull;
+    }
+
+    // what a TOOLBAR does - each a request, refused while the form refuses one (refused) -: the count of a list group's
+    // rows and the sum of a column of them, each the Promise of the server's answer ...
+    private JavaScriptObject countRecords(String surface, GGroupObject group) {
+        String refusal = verbs.getRefusal(surface);
+        if (refusal != null)
+            return GController.rejectedControllerPromise(refusal);
+        return answerPromise((answer, failed) -> verbs.countRecords(group, answer, failed));
+    }
+    // ... a column's: a number property of the group, named as a state names one - not one grouped in columns, as the
+    // call names no column
+    private JavaScriptObject calculateSum(String surface, GGroupObject group, String propertySID) {
+        String refusal = verbs.getRefusal(surface);
+        if (refusal != null)
+            return GController.rejectedControllerPromise(refusal);
+        String errorPrefix = controllerPrefix(surface);
+        if (propertySID == null)
+            throw refusal(errorPrefix + "takes the name of the property to sum, as a string");
+        GPropertyDraw property = readStateProperty(errorPrefix, group, propertySID);
+        if (property.hasColumnGroupObjects())
+            throw refusal(errorPrefix + "'" + propertySID + "' is grouped in columns, and a sum names no column");
+        if (!(property.getValueType() instanceof GIntegralType))
+            throw refusal(errorPrefix + "'" + propertySID + "' is not a number");
+        return answerPromise((answer, failed) -> verbs.calculateSum(group, property, GGroupObjectValue.EMPTY, answer, failed));
+    }
+    // ... the export of a table's rows: the server's report of them - a list group's, or a tree's
+    private void runTableReport(String surface, GGridProperty table) {
+        if (!refused(surface))
+            verbs.runTableReport(table);
+    }
+    // ... a list group's manual update turned on or off, as the platform's toggle does - what shows the group's
+    // toolbar told by the form, nothing held back yet (Verbs.changeUpdateMode)
+    private void changeManualUpdate(String surface, GGroupObject group, Object manual) {
+        boolean value = readBoolean(controllerPrefix(surface), manual);
+        if (refused(surface)) // before the mode changes
+            return;
+        verbs.changeUpdateMode(group, value ? GUpdateMode.MANUAL : GUpdateMode.AUTO);
+    }
+    // ... and the changes it holds back brought now, as the platform's button does
+    private void forceUpdate(String surface, GGroupObject group) {
+        if (!refused(surface))
+            verbs.changeUpdateMode(group, GUpdateMode.FORCE);
+    }
+    // ... and a list group's rows shown as another view, one of those the design gives them, as the platform's button
+    // does - none where no table of the platform's draws the rows (gridRows, GGridController.getListViewController): no
+    // name is one of its views then
+    private void switchListView(String surface, GGroupObject group, Object name) {
+        if (refused(surface))
+            return;
+        GListViewController views = gridRows.get(group.grid).getListViewController();
+        if (views == null)
+            throw refusal(controllerPrefix(surface) + "has no view to switch to: no table of the platform's draws the rows");
+        GListViewType view = null;
+        StringBuilder names = new StringBuilder(); // the names it takes, said where it is given another
+        for (GListViewType listView : views.getListViews()) {
+            String viewName = getViewName(listView);
+            if (viewName.equals(name))
+                view = listView;
+            names.append(names.length() > 0 ? ", " : "").append(viewName);
+        }
+        if (view == null)
+            throw refusal(controllerPrefix(surface) + "takes the name of a view of the table: " + names);
+        if (view != views.getListView())
+            views.changeListView(view);
+    }
+
+    // ===== CONTROLLER.FORM - the form's controller: what a React view's controller names `form`, a classic view's
+    // `controller.form`, an INTERNAL CLIENT action's argument (GFormController.controller) - is built on STRINGS: it
+    // projects no data, so it has no member to name anything by, and what it reaches it is given the name of, checked
+    // when the call is made - a group by its SID, a tree by its name, a TABLE by its list group's SID or its tree's
+    // name, a filter group by its name. Its methods, one per call a member makes, do what that member does (WHAT A CALL
+    // DOES) to the form's state, whoever draws it - a view, another view, the platform, which shows it as it shows the
+    // form's own edits -, the way across containers. Each is the member's call with the address read from its names,
+    // given the call as a message names it (surface) by what puts it on the controller, as a member's is
+    // (addFormMethods)
+
+    // the current object of a group: a row of it - the row, or its `objects` handle
+    private void changeObject(String surface, String name, JavaScriptObject objectOrKey) {
+        String errorPrefix = controllerPrefix(surface);
+        GGroupObject group = readGroup(form, errorPrefix, name);
+        verbs.changeCurrentObject(group, readFormRow(errorPrefix, group, objectOrKey));
+    }
+    // ... a node of a tree's group, opened or closed, and every node of it and of the groups below it
+    private void expand(String surface, String name, JavaScriptObject objectOrKey) {
+        String errorPrefix = controllerPrefix(surface);
+        GGroupObject group = readTreeGroup(errorPrefix, name);
+        verbs.expandNode(group, readFormRow(errorPrefix, group, objectOrKey));
+    }
+    private void collapse(String surface, String name, JavaScriptObject objectOrKey) {
+        String errorPrefix = controllerPrefix(surface);
+        GGroupObject group = readTreeGroup(errorPrefix, name);
+        verbs.collapseNode(group, readFormRow(errorPrefix, group, objectOrKey));
+    }
+    private void expandAll(String surface, String name) {
+        verbs.expandAll(readTreeGroup(controllerPrefix(surface), name));
+    }
+    private void collapseAll(String surface, String name) {
+        verbs.collapseAll(readTreeGroup(controllerPrefix(surface), name));
+    }
+    // ... and a tree's current node opened with every node under it, and the tree from the current node's group down -
+    // by whatever draws the tree's rows, as the toolbar's buttons open it
+    private void expandCurrent(String surface, String name) {
+        treeRows.get(readTree(controllerPrefix(surface), name)).expandCurrent();
+    }
+    private void expandTree(String surface, String name) {
+        treeRows.get(readTree(controllerPrefix(surface), name)).expandTree();
+    }
+    // a table's sortings
+    private void changeOrders(String surface, String name, JavaScriptObject orders) {
+        ordersList.change(surface, readTable(controllerPrefix(surface), name), orders);
+    }
+    // ... a filter group's filter selected
+    private void changeFilterGroup(String surface, String name, Object index) {
+        selectFilter(surface, readFilterGroup(controllerPrefix(surface), name), index);
+    }
+    // ... and what a table's toolbar does: of a list group, the count and a column's sum, the manual update and what
+    // it holds back, the view switch; of either table, the export
+    private JavaScriptObject getCount(String surface, String name) {
+        return countRecords(surface, readGridGroup(controllerPrefix(surface), name));
+    }
+    private JavaScriptObject getSum(String surface, String name, String propertySID) {
+        return calculateSum(surface, readGridGroup(controllerPrefix(surface), name), propertySID);
+    }
+    private void changeManual(String surface, String name, Object manual) {
+        changeManualUpdate(surface, readGridGroup(controllerPrefix(surface), name), manual);
+    }
+    private void update(String surface, String name) {
+        forceUpdate(surface, readGridGroup(controllerPrefix(surface), name));
+    }
+    private void changeListView(String surface, String name, Object view) {
+        switchListView(surface, readGridGroup(controllerPrefix(surface), name), view);
+    }
+    private void exportTable(String surface, String name) {
+        runTableReport(surface, readTable(controllerPrefix(surface), name));
+    }
+    // the user filters of a table, its groups' one model
+    private GUserFiltersController getUserFilters(GGridProperty table) {
+        return tableFilters.get(table).userFilters;
+    }
+
+    // ... and the names, each read as the call needs it - a name is a string, and one that names nothing, or names
+    // what the call has nothing to do with, is refused. A GROUP, by its SID - as the classic changeProperty reads the
+    // group half of a name too (GFormController.resolveClassicProperty)
+    public static GGroupObject readGroup(GForm form, String errorPrefix, String name) {
+        if (name == null)
+            throw refusal(errorPrefix + "takes the name of an object group, as a string");
+        GGroupObject group = form.getGroupObject(name);
+        if (group == null)
+            throw refusal(errorPrefix + "unknown object group '" + name + "'");
+        return group;
+    }
+    // ... a group of a tree, whose rows are the tree's nodes
+    private GGroupObject readTreeGroup(String errorPrefix, String name) {
+        GGroupObject group = readGroup(form, errorPrefix, name);
+        if (!group.isInTree())
+            throw refusal(errorPrefix + "'" + name + "' is not a group of a tree: its rows are no nodes to open");
+        return group;
+    }
+    // ... a TREE, by its name
+    private GTreeGroup readTree(String errorPrefix, String name) {
+        if (name == null)
+            throw refusal(errorPrefix + "takes the name of a tree, as a string");
+        GTreeGroup tree = form.getTreeGroup(name);
+        if (tree == null)
+            throw refusal(errorPrefix + "unknown tree '" + name + "'");
+        return tree;
+    }
+    // ... a TABLE - what sortings, user filters and a toolbar are of -: a list group's grid by the group's SID, a tree
+    // by its name. A group of a tree has the tree's: the tree is named, as `data` names it
+    private GGridProperty readTable(String errorPrefix, String name) {
+        if (name == null)
+            throw refusal(errorPrefix + "takes the name of an object group or of a tree, as a string");
+        GGroupObject group = form.getGroupObject(name);
+        GTreeGroup tree = form.getTreeGroup(name);
+        if (group != null && tree != null)
+            throw refusal(errorPrefix + "'" + name + "' names an object group and a tree, so it does not say which");
+        if (tree != null)
+            return tree;
+        if (group == null)
+            throw refusal(errorPrefix + "unknown object group or tree '" + name + "'");
+        if (group.isInTree())
+            throw refusal(errorPrefix + "'" + name + "' is a group of tree '" + group.parent.name + "', whose sortings,"
+                    + " user filters and toolbar are the tree's: name the tree");
+        if (!group.viewType.isList())
+            throw refusal(errorPrefix + "'" + name + "' has no table: it is not in LIST view");
+        return group.grid;
+    }
+    // ... a list group's, whose toolbar has the count, the sum, the manual update and the view switch: a table that is
+    // no tree
+    private GGroupObject readGridGroup(String errorPrefix, String name) {
+        return readTable(errorPrefix, name).match(grid -> grid.groupObject, tree -> {
+            throw refusal(errorPrefix + "takes the name of a list group, whose toolbar this is: '" + name + "' is a tree");
+        });
+    }
+    // ... a FILTER GROUP, by its name: one with filters - one with none has no view, and nothing to select
+    private GRegularFilterGroup readFilterGroup(String errorPrefix, String name) {
+        if (name == null)
+            throw refusal(errorPrefix + "takes the name of a filter group, as a string");
+        GRegularFilterGroup filterGroup = form.getRegularFilterGroup(name);
+        if (filterGroup == null)
+            throw refusal(errorPrefix + "unknown filter group '" + name + "'");
+        if (filterGroup.filters.isEmpty())
+            throw refusal(errorPrefix + "filter group '" + name + "' has no filters");
+        return filterGroup;
+    }
+    // ... and a ROW of a group: the row, or its `objects` handle - what a view has of rows it does not draw, a lookup's
+    // objects among them (getValues) -, not a key: a key names a row only in the view that draws the rows, in its index
+    // of them, and the view that draws them has their member
+    private static GGroupObjectValue readFormRow(String errorPrefix, GGroupObject group, JavaScriptObject objectOrKey) {
+        GGroupObjectValue key = GGroupObjectValue.resolveObject(objectOrKey);
+        if (key == null)
+            throw refusal(errorPrefix + "expects a row of '" + group.getSID() + "' or its objects handle; a key names a"
+                    + " row only in the view that draws the rows, through its member");
+        return readGroupRow(errorPrefix, group, key);
+    }
+
     // ===== THE MEMBERS. A member IS the address: it holds the state it stands for - a property member its property's
     // value, a part's member its part - so a call through it names nothing it changes, and its
     // arguments come in a fixed order, the value first, then the row. FormView refused a name that would take what a
@@ -3157,10 +3315,10 @@ public class GReactFormData {
     // a controller, with what no single member can own: the batch its members' changes are sent together in, as many as
     // the function makes, of whatever groups and properties - no change of its own, each named by the member that makes
     // it
-    private static native JavaScriptObject makeController(ViewState state) /*-{
+    private static native JavaScriptObject makeController(Verbs verbs) /*-{
         return {
             batch: function (fn) {
-                state.@lsfusion.gwt.client.form.design.view.GReactFormData.ViewState::batch(*)(fn);
+                @lsfusion.gwt.client.form.design.view.GReactFormData::batch(*)(verbs, "batch()", fn);
             }
         };
     }-*/;
@@ -3207,23 +3365,23 @@ public class GReactFormData {
         };
     }-*/;
 
-    // a LIST STATE's member - the group's sortings, what the group or the tree is FILTERED by, where its FILTERS is -:
+    // a LIST STATE's member - the table's sortings, what the group or the tree is FILTERED by, where its FILTERS is -:
     // an array states the items all at once, its order being the priority of sortings, anything else states one of
-    // them and leaves the rest - the shape the state has in `data` (ListPart.change). `surface` is the call as a
+    // them and leaves the rest - the shape the state has in `data` (TableList.change). `surface` is the call as a
     // message names it
-    private static native JavaScriptObject makeListMember(ListPart part, String surface) /*-{
+    private static native JavaScriptObject makeListMember(TableList list, GGridProperty table, String surface) /*-{
         return {
             change: function (items) {
-                part.@lsfusion.gwt.client.form.design.view.GReactFormData.ListPart::change(*)(surface, items);
+                list.@lsfusion.gwt.client.form.design.view.GReactFormData.TableList::change(*)(surface, table, items);
             }
         };
     }-*/;
 
-    // a FILTER GROUP, on its group's member: change(index) selects one of its filters - null: none
-    private static native JavaScriptObject makeFilterGroupMember(FilterGroupPart part, String qualified) /*-{
+    // a FILTER GROUP, on its group's member: change(index) selects one of its filters - null: none (selectFilter)
+    private static native JavaScriptObject makeFilterGroupMember(GReactFormData projection, GRegularFilterGroup filterGroup, String qualified) /*-{
         return {
             change: function (index) {
-                part.@lsfusion.gwt.client.form.design.view.GReactFormData.FilterGroupPart::change(*)(qualified + ".change()", index === undefined ? null : index);
+                projection.@lsfusion.gwt.client.form.design.view.GReactFormData::selectFilter(*)(qualified + ".change()", filterGroup, index === undefined ? null : index);
             }
         };
     }-*/;
@@ -3252,40 +3410,98 @@ public class GReactFormData {
     }-*/;
 
     // a TOOLBAR's, of either table, on the table's member: the filter button's state's member and the export - of the
-    // rows, or of the tree -, whatever the design's flags say, which are the platform's. `export` is a word the
-    // language reserves, so it is set by a string, and named otherwise here
-    private static native void addToolbarMembers(ToolbarPart<?, ?> part, JavaScriptObject member, String sid) /*-{
+    // rows, or of the tree (runTableReport) -, whatever the design's flags say, which are the platform's. `export` is
+    // a word the language reserves, so it is set by a string, and named otherwise here
+    private static native void addToolbarMembers(GReactFormData projection, ToolbarPart<?, ?> part, GGridProperty table, JavaScriptObject member, String sid) /*-{
         member.filterControlsVisible = {
             change: function (shown) {
                 part.@lsfusion.gwt.client.form.design.view.GReactFormData.ToolbarPart::changeFilterControlsVisible(*)(sid + ".filterControlsVisible.change()", shown);
             }
         };
         member['export'] = function () {
-            part.@lsfusion.gwt.client.form.design.view.GReactFormData.ToolbarPart::exportRows(*)(sid + ".export()");
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::runTableReport(*)(sid + ".export()", table);
         };
     }-*/;
     // ... and a group's own, on the group's member: the count and a column's sum, each the Promise of the server's
     // answer, as a request is (getValues), the update the manual update holds back, and the members of the states it
-    // writes on the group's node, as `filters`' is - all of them, whatever the design's flags say
-    private static native void addGridToolbarMembers(GridToolbarPart part, JavaScriptObject member, String sid) /*-{
+    // writes on the group's node, as `filters`' is - all of them, whatever the design's flags say; each the call the
+    // form's controller makes for the group (WHAT A CALL DOES)
+    private static native void addGridToolbarMembers(GReactFormData projection, GGroupObject group, JavaScriptObject member, String sid) /*-{
         member.getCount = function () {
-            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridToolbarPart::getCount(*)(sid + ".getCount()");
+            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::countRecords(*)(sid + ".getCount()", group);
         };
         member.getSum = function (property) {
-            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridToolbarPart::getSum(*)(sid + ".getSum()", typeof property === 'string' ? property : null);
+            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::calculateSum(*)(sid + ".getSum()", group, typeof property === 'string' ? property : null);
         };
         member.manual = {
             change: function (value) {
-                part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridToolbarPart::changeManual(*)(sid + ".manual.change()", value);
+                projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeManualUpdate(*)(sid + ".manual.change()", group, value);
             }
         };
         member.update = function () {
-            part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridToolbarPart::forceUpdate(*)(sid + ".update()");
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::forceUpdate(*)(sid + ".update()", group);
         };
         member.listView = {
             change: function (name) {
-                part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridToolbarPart::changeListView(*)(sid + ".listView.change()", name);
+                projection.@lsfusion.gwt.client.form.design.view.GReactFormData::switchListView(*)(sid + ".listView.change()", group, name);
             }
+        };
+    }-*/;
+
+    // CONTROLLER.FORM's methods, on it: each takes the names of what it reaches first, as strings - anything else is
+    // no name, and is refused (null) -, then what the member it stands for takes; each is given the call as a message
+    // names it (surface), quoting the first name. `export` is set by a string, as a toolbar's member is
+    private static native void addFormMethods(GReactFormData projection, JavaScriptObject controller) /*-{
+        var name = function (value) {
+            return typeof value === 'string' ? value : null;
+        };
+        var surface = function (method, value) {
+            return "form." + method + "(" + (typeof value === 'string' ? "'" + value + "'" : "") + ")";
+        };
+        controller.changeObject = function (group, row) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeObject(*)(surface('changeObject', group), name(group), row);
+        };
+        controller.expand = function (group, row) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::expand(*)(surface('expand', group), name(group), row);
+        };
+        controller.collapse = function (group, row) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::collapse(*)(surface('collapse', group), name(group), row);
+        };
+        controller.expandAll = function (group) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::expandAll(*)(surface('expandAll', group), name(group));
+        };
+        controller.collapseAll = function (group) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::collapseAll(*)(surface('collapseAll', group), name(group));
+        };
+        controller.expandCurrent = function (tree) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::expandCurrent(*)(surface('expandCurrent', tree), name(tree));
+        };
+        controller.expandTree = function (tree) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::expandTree(*)(surface('expandTree', tree), name(tree));
+        };
+        controller.changeOrders = function (table, orders) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeOrders(*)(surface('changeOrders', table), name(table), orders);
+        };
+        controller.changeFilterGroup = function (filterGroup, index) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeFilterGroup(*)(surface('changeFilterGroup', filterGroup), name(filterGroup), index === undefined ? null : index);
+        };
+        controller.getCount = function (group) {
+            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::getCount(*)(surface('getCount', group), name(group));
+        };
+        controller.getSum = function (group, property) {
+            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::getSum(*)(surface('getSum', group), name(group), name(property));
+        };
+        controller.changeManual = function (group, manual) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeManual(*)(surface('changeManual', group), name(group), manual);
+        };
+        controller.update = function (group) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::update(*)(surface('update', group), name(group));
+        };
+        controller.changeListView = function (group, view) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeListView(*)(surface('changeListView', group), name(group), view);
+        };
+        controller['export'] = function (table) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::exportTable(*)(surface('export', table), name(table));
         };
     }-*/;
     // a call that asks the server and makes no change a batch carries, refused by the form now (Verbs.getRefusal): the
@@ -3358,14 +3574,14 @@ public class GReactFormData {
     // condition editor is built of - its caption in the design, the type of a condition's value (the FILTER type, by
     // which `value` is read and written), the comparisons the platform's own filter editor offers, in the spelling
     // `filters` uses, and the one it starts with (the design's, which need not be one of them)
-    private JavaScriptObject getFilterProperties(OwnerNode node) {
+    private JavaScriptObject getFilterProperties(GGridProperty table) {
         JavaScriptObject properties = emptyArray();
-        for (GGroupObject group : node.groups)
+        for (GGroupObject group : table.getGroups())
             for (GPropertyDraw property : form.propertyDraws)
                 if (property.groupObject == group && isProjectableCondition(property)
                         && !(property.getFilterBaseType().getDataType() instanceof GFileType)) {
                     JavaScriptObject entry = newObject();
-                    setField(entry, "property", node.getPropertyName(property));
+                    setField(entry, "property", getListName(table, property));
                     setFieldOrNull(entry, "caption", property.caption);
                     setField(entry, "type", JSValueConverter.getJSTypeName(property.getFilterBaseType()));
                     JavaScriptObject compares = emptyArray();
@@ -3407,8 +3623,8 @@ public class GReactFormData {
     // (GPropertyDraw.canBeFiltered, which GFormController.getFilterDTOs asks too); and a condition names one property,
     // not one of its COLUMNS - a property grouped in columns is filtered per column, and no name here says which. Its
     // rows may be the platform's, so the form being built says nothing about it. A condition failing it is not listed
-    // (FiltersPart.writeFilters) - and a view naming one is refused (ListPart.readProperty), by the same rule;
-    // FiltersPart.whyNot says which it fails
+    // (FiltersPart.writeFilters) - and a view naming one is refused (TableList.readProperty), by the same rule;
+    // FiltersTableList.whyNot says which it fails
     private static boolean isProjectableCondition(GPropertyDraw property) {
         return property.integrationSID != null && property.canBeFiltered() && !property.hasColumnGroupObjects();
     }
@@ -3453,18 +3669,64 @@ public class GReactFormData {
     // ... and the options of a property filter's change, any of them, each read as a condition's field
     private static final String FILTER_OPTIONS = "compare,negation,or";
 
-    // the property a STATE names - a sorting, a condition, a column the toolbar sums -: the group's ONE property of
-    // that name, wherever it is drawn - by this view, by another container, by the platform. A state is the group's,
-    // and its part need not be where an entry of the property is - FILTERS(g) with a view of its own over the
+    // a property of a TABLE's groups as its lists name it - its sortings, its user filters' conditions and what they
+    // can be on (TableList) -, and as a call names it back: a grid's group's by its integration name, as the group's
+    // node carries it; a tree's by its group's name and its own, c.name, as a <Platform> names a property of a group
+    // (getName) - each of the group of its property, in the tree's order of the groups, as the platform's panel shows
+    // them and a list a view states is sent, each group's its own
+    private static String getListName(GGridProperty table, GPropertyDraw property) {
+        return table.match(grid -> property.integrationSID, tree -> getName(property));
+    }
+    // ... and the property such a name names: the group's one property of that name; a tree's group the one its name
+    // starts with (readGroupProperty)
+    private GPropertyDraw readListName(String errorPrefix, GGridProperty table, String name) {
+        return table.match(grid -> readStateProperty(errorPrefix, grid.groupObject, name),
+                tree -> readGroupProperty(errorPrefix, tree.groups, name, " of tree '" + tree.name + "'"));
+    }
+    // a property named by its group's name and its own, as getName gives it: of the groups given (of: whose they are,
+    // as a message says it), the one whose name and a dot the name starts with, and the group's one property of the
+    // rest (readStateProperty); refused where none does. A group's name has dots where no view projects the group, a
+    // group of several objects being named by their names joined with dots (FormView.checkProjectedGroupSID), and an
+    // integration name may too, so where two groups' names start it, as a group named as the first object of another
+    // is, it does not say which
+    private GPropertyDraw readGroupProperty(String errorPrefix, Iterable<GGroupObject> groups, String name, String of) {
+        GGroupObject named = null;
+        for (GGroupObject group : groups)
+            if (name.startsWith(group.getSID() + ".")) {
+                if (named != null)
+                    throw refusal(errorPrefix + "'" + name + "' starts with the names of groups '" + named.getSID()
+                            + "' and '" + group.getSID() + "'" + of + ", so it does not say which");
+                named = group;
+            }
+        if (named == null)
+            throw refusal(errorPrefix + "'" + name + "' names no property of a group" + of
+                    + ": a property is named by its group's name and its own, <group>.<property>");
+        return readStateProperty(errorPrefix, named, name.substring(named.getSID().length() + 1));
+    }
+
+    // the property a STATE names - a sorting, a condition, a FILTER, a column the toolbar sums -: the group's ONE
+    // property of that name, wherever it is drawn - by this view, by another container, by the platform. A state is the
+    // group's, and its part need not be where an entry of the property is - FILTERS(g) with a view of its own over the
     // platform's grid is where no node names a column, and the rows' node carries no panel property drawn elsewhere -,
-    // so the name is the group's, not a node's. One is all there can be: a form that projects a part of a group's state
-    // is not built with a name the group carries on two properties (FormView.checkStateNames)
+    // so the name is the group's, not a node's. A form that projects a part of a group's state is not built with a name
+    // the group carries on two properties (FormView.checkStateNames); the form's controller names any group's state,
+    // so there a name the group carries twice is refused (readOneProperty)
     private GPropertyDraw readStateProperty(String errorPrefix, GGroupObject group, String propertySID) {
-        assert form.countPropertyDraws(group, propertySID) <= 1;
-        GPropertyDraw property = form.getPropertyDraw(group, propertySID);
+        GPropertyDraw property = readOneProperty(form, errorPrefix, group, propertySID);
         if (property == null)
             throw refusal(errorPrefix + "unknown property '" + propertySID + "' of object group '"
                     + group.getSID() + "'");
+        return property;
+    }
+    // the ONE property of a name a group draws - the empty group's for null -, null for none: a name it draws twice
+    // says not which of them is meant, and is refused - a state's name (readStateProperty), the classic
+    // changeProperty's (GFormController.resolveClassicProperty)
+    public static GPropertyDraw readOneProperty(GForm form, String errorPrefix, GGroupObject group, String integrationSID) {
+        GPropertyDraw property = form.getPropertyDraw(group, integrationSID);
+        if (property != null && form.countPropertyDraws(group, integrationSID) != 1)
+            throw refusal(errorPrefix + "'" + integrationSID + "' is drawn more than once on "
+                    + (group != null ? "group '" + group.getSID() + "'" : "the form level")
+                    + ", so this name does not say which of them is meant; give them explicit EXTIDs");
         return property;
     }
 

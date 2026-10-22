@@ -709,11 +709,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             changeProperty: function (property, object, newValue, type, index) {
                 if (!thisObj.@GSimpleStateTableView::isGridProperty(Ljava/lang/String;)(property))
                     // not a column of THIS grid (e.g. a PANEL action edit/delete): the form controller's job (#1655) -
-                    // forward to its property-change implementation; it resolves the property form-wide (any group,
-                    // incl. form-level) and makes the same (object, value) guess. Taken from the Java field and not
-                    // from the controller OBJECT: the form controller has no stringly-typed changeProperty member -
-                    // there a property is addressed as controller.<group>.<property>.change(...), and that surface
-                    // says only what its members say. This is the CLASSIC one, which names the whole form
+                    // forward to its property-change implementation, the form's controller's changeProperty; it
+                    // resolves the property form-wide (any group, incl. form-level) and makes the same (object, value)
+                    // guess - taken from the Java field, to quote the call as this view's
                     return (thisObj.@lsfusion.gwt.client.form.object.table.grid.view.GStateTableView::form.@lsfusion.gwt.client.form.controller.GFormController::classicChangeProperty)(property, "changeProperty('" + property + "')", object, newValue);
                 if(object !== undefined) {
                     if(newValue === undefined) { //object passed, newValue not passed

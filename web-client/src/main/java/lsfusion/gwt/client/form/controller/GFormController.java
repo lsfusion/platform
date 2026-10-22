@@ -116,6 +116,8 @@ import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.base.GwtSharedUtils.getFromDoubleMap;
 import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.client.form.design.view.GReactFormData.controllerPrefix;
+import static lsfusion.gwt.client.form.design.view.GReactFormData.readGroup;
+import static lsfusion.gwt.client.form.design.view.GReactFormData.readOneProperty;
 import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.isChangeEvent;
 
@@ -418,7 +420,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // it reaches it is given the name of, which the platform checks when it is called. It is what the classic surfaces
     // are handed - a custom object group, a custom cell editor, an INTERNAL CLIENT action - and what a React view's
     // controller names `form`: the server calls, which take lsf names and code (GController), the editing a view
-    // declares, and the form's batch (addFormVerbs)
+    // declares, the form's batch and a property changed by its name, the classic changeProperty (addFormVerbs), and what
+    // a view's members do, for any group, tree or filter group of the form, named by its name, whoever draws it
+    // (GReactFormData.initialize: CONTROLLER.FORM)
     public final JavaScriptObject controller = gController.extendController(addFormVerbs(GwtClientUtils.newObject()));
     // ... a React view's state is made with the view - a react container's, or a component's that is not a container -,
     // and its controller with it, which is given the form's once the projection sets out what it has (initialize)
@@ -434,8 +438,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // and the form brings its own editor, with nothing to declare.
     // The element is the caller's to name, from a ref: the form cannot tell which of a view's elements was meant, and
     // guessing would be wrong exactly where this is used.
-    // ... and the batch: the form's, whoever begins it - a React view through its own controller, any surface through
-    // the form's (batch)
+    // ... the batch: the form's, whoever begins it - a React view through its own controller, any surface through the
+    // form's (batch) -, and a property changed, or its change event run, by its name: the classic changeProperty, the
+    // same function, by the same rule (classicChangeProperty)
     private native JavaScriptObject addFormVerbs(JavaScriptObject controller)/*-{
         var thisObj = this;
         controller.startEditing = function (element) {
@@ -450,14 +455,15 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         controller.batch = function (fn) {
             @lsfusion.gwt.client.form.design.view.GReactFormData::batch(*)(thisObj, "form.batch()", fn);
         };
+        controller.changeProperty = function (property, object, value) {
+            return (thisObj.@GFormController::classicChangeProperty)(property, "form.changeProperty('" + property + "')", object, value);
+        };
         return controller;
     }-*/;
 
-    // the (object, value) guess and the dispatch behind the CLASSIC grid view's changeProperty. Held HERE rather than
-    // on the controller object because the PLATFORM needs it — the classic group view forwards a property that is none
-    // of its own columns to it (#1655) — while an author must not have it: a stringly-typed changeProperty on the
-    // controller is exactly the second interface this surface does without. A Java field is reachable from JSNI and
-    // invisible to a view. A react view's members guess nothing: their arguments come in a fixed order
+    // the (object, value) guess and the dispatch behind the CLASSIC changeProperty - the classic grid view's, which
+    // forwards a property that is none of its own columns to it (#1655), and the form's controller's (addFormVerbs),
+    // each quoting the call as it is made. A react view's members guess nothing: their arguments come in a fixed order
     // (GReactFormData.ReactPropertyEntry)
     public final JavaScriptObject classicChangeProperty = initChangeProperty();
     private native JavaScriptObject initChangeProperty() /*-{
@@ -538,11 +544,13 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
     // ===== custom-controller mutation helpers (CUSTOM REACT + any form-level custom component): a member holds the
     // state of what it changes and reads what a call names from it (GReactFormData), handing the edit over at once -
-    // inside a batch too, which holds back only its request (batch) -, and only the classic grid's changeProperty
-    // still resolves "integrationSID" / "groupSID.integrationSID" by itself; rows/handles resolve via
-    // GGroupObjectValue.resolveObject (the row-carried `objects` handle + raw-GGV accept). Dispatch through the SAME
-    // classic path as a normal edit (executePropertyEventAction / changeGroupObject + setLoadingValueAt) ===== a group
-    // member's change(row), once it has read the row (GReactFormData.RowsPart.change): the group's current object
+    // inside a batch too, which holds back only its request (batch) -, the form's controller reads it from the names
+    // it is given (GReactFormData: CONTROLLER.FORM), and only the classic changeProperty still resolves
+    // "integrationSID" / "groupSID.integrationSID" by itself; rows/handles resolve via GGroupObjectValue.resolveObject
+    // (the row-carried `objects` handle + raw-GGV accept). Dispatch through the SAME classic path as a normal edit
+    // (executePropertyEventAction / changeGroupObject + setLoadingValueAt) ===== a group member's change(row), once it
+    // has read the row (GReactFormData.RowsPart.change), the form's controller's changeObject: the group's current
+    // object
     @Override
     public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) {
         changeGroupObject(group, key);
@@ -581,17 +589,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         getGroupController(group).changeExpandedUnder(key, requestIndex);
     }
 
-    // a property of a group, by a CLASSIC name: the group's one property of that name - a name the group draws twice
-    // says nothing and is refused. Null when the group draws no such property: each caller says so its own way
-    private GPropertyDraw resolveClassicGroupProperty(String errorPrefix, GGroupObject group, String integrationSID) {
-        GPropertyDraw property = form.getPropertyDraw(group, integrationSID);
-        if (property != null && form.countPropertyDraws(group, integrationSID) != 1)
-            throw refusal(errorPrefix + "'" + integrationSID + "' is drawn more than once on "
-                    + (group != null ? "group '" + group.getSID() + "'" : "the form level")
-                    + ", so this name does not say which of them is meant; give them explicit EXTIDs");
-        return property;
-    }
-
     // a property grouped in COLUMNS is one cell per (row, column), and everything here names a ROW. The projection
     // does not carry such a property at all, so a call naming it would land on whatever column happens to be current -
     // a different, real cell, and it would look like it worked. Refused with the reason, as projecting one already is.
@@ -615,12 +612,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         // ask for a group that does not exist: a group of several objects is named by its SID, all of them joined with
         // dots (`OBJECTS d = X, t = Y` is `d.t`)
         int dot = name.lastIndexOf('.');
-        GGroupObject group = dot > 0 ? form.getGroupObject(name.substring(0, dot)) : null;
-        if (dot > 0 && group == null) // it is qualified and names no group of this form: say which half failed
-            throw refusal(errorPrefix + "unknown object group '" + name.substring(0, dot) + "'");
+        GGroupObject group = dot > 0 ? readGroup(form, errorPrefix, name.substring(0, dot)) : null; // qualified: a group of this form, or that half is refused
         String integrationSID = dot > 0 ? name.substring(dot + 1) : name;
 
-        GPropertyDraw property = resolveClassicGroupProperty(errorPrefix, group, integrationSID);
+        GPropertyDraw property = readOneProperty(form, errorPrefix, group, integrationSID); // the group's one of the name
         if (property == null) {
             if (group != null)
                 throw refusal(errorPrefix + "property '" + integrationSID + "' is not drawn on group '" + group.getSID() + "'");

@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.base.jsni;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
 // what the page gives the client and a GWT test, which runs without the page, has to give it itself - and what the
 // client's GWT tests read and call its JS objects with
@@ -27,4 +29,15 @@ public final class JsniTestSupport {
     public static native void batch(JavaScriptObject controller, Runnable run) /*-{
         controller.batch(function () { run.@java.lang.Runnable::run()(); });
     }-*/;
+    public static native JavaScriptObject parse(String json) /*-{ return JSON.parse(json); }-*/;
+    // a call of a controller's method - a member's, the form's -, given what the test gives
+    public static native Object call(JavaScriptObject object, String method, Object... args) /*-{
+        return object[method].apply(object, args);
+    }-*/;
+    // the objects handle a view has of a row it does not draw - a lookup's (getValues)
+    public static JavaScriptObject objects(GGroupObjectValue key) {
+        JavaScriptObject handle = GwtClientUtils.newObject();
+        GGroupObjectValue.registerRow(handle, key);
+        return field(handle, "objects");
+    }
 }

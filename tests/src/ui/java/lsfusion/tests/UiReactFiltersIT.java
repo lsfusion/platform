@@ -299,8 +299,8 @@ public class UiReactFiltersIT extends UiTest {
         call("controller.cats.filters.change({property: 'i.price', compare: '>', value: 1})");
         assertThat(rows(form)).hasText(new String[] {items[0]});
         waitFor("conditions() === 'i.price > 1'");
-        assertEquals("controller.cats.filters.change(): 'price' names no property of a group of tree 'cats': a condition names one by"
-                + " its group's name and its own, c.<name>", refusal("controller.cats.filters.change({property: 'price', compare: '>', value: 1})"));
+        assertEquals("controller.cats.filters.change(): 'price' names no property of a group of tree 'cats': a property is named by"
+                + " its group's name and its own, <group>.<property>", refusal("controller.cats.filters.change({property: 'price', compare: '>', value: 1})"));
         call("controller.cats.filters.change([])");
         assertThat(rows(form)).hasText(items);
         waitFor("conditions() === ''");

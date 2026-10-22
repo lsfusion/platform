@@ -5,6 +5,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.design.*;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.object.GGroupObject;
+import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -59,6 +60,14 @@ public class GForm implements Serializable {
         return null;
     }
 
+    // a filter group, by its name in the form - FILTERGROUP fg's fg -, as the form's controller names one
+    public GRegularFilterGroup getRegularFilterGroup(String name) {
+        for (GRegularFilterGroup filterGroup : regularFilterGroups)
+            if (name.equals(filterGroup.name))
+                return filterGroup;
+        return null;
+    }
+
     public GGroupObject getGroupObject(int id) {
         GGroupObject cache = idGroupObjects.get(id);
         if(cache != null)
@@ -79,6 +88,14 @@ public class GForm implements Serializable {
                 return groupObject;
             }
         }
+        return null;
+    }
+
+    // a tree, by its name in the form - TREE t's t -, as the form's controller names one: the tree its groups are in
+    public GTreeGroup getTreeGroup(String name) {
+        for (GGroupObject groupObject : groupObjects)
+            if (groupObject.isInTree() && name.equals(groupObject.parent.name))
+                return groupObject.parent;
         return null;
     }
 

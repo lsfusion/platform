@@ -122,8 +122,11 @@ import java.util.Map;
 import java.util.function.Function;
 
 import static lsfusion.gwt.client.base.jsni.JsniTestSupport.batch;
+import static lsfusion.gwt.client.base.jsni.JsniTestSupport.call;
 import static lsfusion.gwt.client.base.jsni.JsniTestSupport.field;
+import static lsfusion.gwt.client.base.jsni.JsniTestSupport.objects;
 import static lsfusion.gwt.client.base.jsni.JsniTestSupport.own;
+import static lsfusion.gwt.client.base.jsni.JsniTestSupport.parse;
 
 /** Runs in compiled JavaScript: reference identity and JS object keys are part of the contract. */
 public class GReactFormDataTest extends GWTTestCase {
@@ -931,7 +934,7 @@ public class GReactFormDataTest extends GWTTestCase {
     private static boolean pressed(Fixture f, GPropertyDraw property) {
         int before = f.edits.size();
         f.controllers.properties.get(property).onBinding(property, null);
-        return f.edits.size() > before && f.edits.get(f.edits.size() - 1).equals("press " + property.integrationSID);
+        return f.edits.size() > before && lastOf(f.edits).equals("press " + property.integrationSID);
     }
     // a property's FILTER of a table, FILTER(<property>), in scope, named as the design names it
     private static GFilter filterIn(GContainer scope, GPropertyDraw property, GGridProperty table) {
@@ -1100,8 +1103,9 @@ public class GReactFormDataTest extends GWTTestCase {
         final LinkedHashMap<GRegularFilterGroup, GFilterGroupController> filterGroups = new LinkedHashMap<>();
         final LinkedHashMap<GTreeGroup, GToolbarController<GTreeController>> treeToolbars = new LinkedHashMap<>();
         final ArrayList<String> platformTree = new ArrayList<>(); // what the platform's tree was asked by its toolbar
-        // the form's controller, which the projection names on every view's as `form`, its calls made as a view's own
-        final JavaScriptObject formController = formController();
+        // the form's controller, which the projection names on every view's as `form`, its methods put on it and its
+        // calls made as a view's own
+        final JavaScriptObject formController = GwtClientUtils.newObject();
 
         Controllers(GReactFormData projection, GForm form, RecordingTableController platform, RecordingComponentController platformComponents) {
             this(projection, form, platform, platformComponents, null, null);
@@ -1286,16 +1290,6 @@ public class GReactFormDataTest extends GWTTestCase {
     private static native String refusedChange(JavaScriptObject member, String value, JavaScriptObject row) /*-{
         try { member.change(value, row); return null; } catch (e) { return e.message; }
     }-*/;
-    // the form's controller, as far as these tests call it: one call that sorts twice through a member it is given
-    private static native JavaScriptObject formController() /*-{
-        return {
-            sortTwice: function (member) {
-                member.change({property: 'price', desc: true});
-                member.change({property: 'quantity', desc: false});
-            }
-        };
-    }-*/;
-    private static native void sortTwice(JavaScriptObject formController, JavaScriptObject member) /*-{ formController.sortTwice(member); }-*/;
     // a member of a view's controller, at a group (null: the empty group, the controller itself)
     private static JavaScriptObject member(GReactFormData.ViewState state, String group, String name) {
         JavaScriptObject owner = group == null ? state.controller : field(state.controller, group);
@@ -1310,8 +1304,8 @@ public class GReactFormDataTest extends GWTTestCase {
         try { member.change(value, options); return null; } catch (e) { return e.message; }
     }-*/;
     // ... and what a call of another verb is refused with
-    private static native String refusedWith(JavaScriptObject member, String verb, Object argument) /*-{
-        try { member[verb](argument); return null; } catch (e) { return e.message; }
+    private static native String refusedWith(JavaScriptObject object, String method, Object... args) /*-{
+        try { object[method].apply(object, args); return null; } catch (e) { return e.message; }
     }-*/;
     private static void assertRefusal(String expected, String refused) {
         assertTrue(String.valueOf(refused), refused != null && refused.contains(expected));
@@ -1323,7 +1317,6 @@ public class GReactFormDataTest extends GWTTestCase {
         promise.then(function (value) { resolved.@java.util.function.Consumer::accept(Ljava/lang/Object;)(value); },
                      function (error) { rejected.@java.util.function.Consumer::accept(Ljava/lang/Object;)(error.message); });
     }-*/;
-    private static native JavaScriptObject parse(String json) /*-{ return JSON.parse(json); }-*/;
     private static native JavaScriptObject pair(JavaScriptObject first, JavaScriptObject second) /*-{ return [first, second]; }-*/;
     private static native void changeAt(JavaScriptObject member, int value, JavaScriptObject row) /*-{ member.change(value, row == null ? undefined : row); }-*/;
     private static boolean refuses(JavaScriptObject member, int value) {
@@ -2671,13 +2664,13 @@ public class GReactFormDataTest extends GWTTestCase {
         TreeFixture f = new TreeFixture();
         f.apply(f.page());
         JavaScriptObject cat = field(f.sa.controller, "cat");
-        callNode(cat, "expand", f.row(f.cat, f.c1)); // the row
-        callNode(cat, "collapse", field(f.row(f.cat, f.c2), "objects")); // its objects handle
-        callNode(cat, "expand", field(f.row(f.cat, f.c2), "key")); // its key
-        callNode(cat, "expand", f.row(f.item, f.i27)); // a row BELOW names the node it hangs under here
+        call(cat, "expand", f.row(f.cat, f.c1)); // the row
+        call(cat, "collapse", field(f.row(f.cat, f.c2), "objects")); // its objects handle
+        call(cat, "expand", field(f.row(f.cat, f.c2), "key")); // its key
+        call(cat, "expand", f.row(f.item, f.i27)); // a row BELOW names the node it hangs under here
         assertEquals(Arrays.asList("expand cat 1", "collapse cat 2", "expand cat 2", "expand cat 2"), f.verbs.asked);
         try { // a row ABOVE names no node of the group below
-            callNode(field(f.sa.controller, "item"), "expand", f.row(f.cat, f.c1));
+            call(field(f.sa.controller, "item"), "expand", f.row(f.cat, f.c1));
             fail();
         } catch (RuntimeException e) {
             assertTrue(e.getMessage().contains("not a row of 'item'"));
@@ -2686,8 +2679,6 @@ public class GReactFormDataTest extends GWTTestCase {
         assertFalse(has(field(grid.sa.controller, "items"), "expand"));
         assertFalse(has(field(grid.sa.controller, "items"), "expandAll"));
     }
-    private static native JavaScriptObject callNode(JavaScriptObject member, String verb, Object argument) /*-{ return member[verb](argument); }-*/;
-
     // a page where both categories have children and only 1's are loaded: 2 is closed
     private static GFormChanges closedPage(TreeFixture f) {
         GFormChanges page = new GFormChanges();
@@ -2710,7 +2701,7 @@ public class GReactFormDataTest extends GWTTestCase {
         f.apply(closedPage(f));
         JavaScriptObject cat = field(f.sa.controller, "cat"), c1 = f.row(f.cat, f.c1);
         int publications = f.publications;
-        callNode(cat, "expand", f.row(f.cat, f.c2));
+        call(cat, "expand", f.row(f.cat, f.c2));
         assertTrue(flag(f.row(f.cat, f.c2), "expanded")); // at once, published, before its children
         assertTrue(flag(f.row(f.cat, f.c2), "loading")); // ... and says it waits for the answer
         assertEquals(publications + 1, f.publications);
@@ -2731,7 +2722,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
         assertFalse(own(f.row(f.cat, f.c2), "loading"));
         assertEquals(2.0, number(f.row(f.item, f.i27), "parent"), 0.0);
-        callNode(cat, "collapse", f.row(f.cat, f.c2));
+        call(cat, "collapse", f.row(f.cat, f.c2));
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded")); // closed at once, while its child is still loaded
         assertNotNull(f.row(f.item, f.i27));
         assertFalse(own(f.row(f.cat, f.c2), "loading")); // closing a node loads nothing
@@ -2750,8 +2741,8 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject cat = field(f.sa.controller, "cat"), c2 = f.row(f.cat, f.c2);
         int publications = f.publications;
         batch(f.sa.controller, () -> {
-            callNode(cat, "toggle", c2);
-            callNode(cat, "toggle", c2);
+            call(cat, "toggle", c2);
+            call(cat, "toggle", c2);
         });
         assertEquals(Arrays.asList("batch", "expand cat 2", "collapse cat 2", "sent"), f.verbs.asked);
         assertEquals(publications, f.publications); // nothing to publish: the second toggle undid the first
@@ -2767,7 +2758,7 @@ public class GReactFormDataTest extends GWTTestCase {
         f.apply(closedPage(f));
         JavaScriptObject cat = field(f.sa.controller, "cat");
         int publications = f.publications;
-        callNode(cat, "expand", f.row(f.cat, f.c2));
+        call(cat, "expand", f.row(f.cat, f.c2));
         assertEquals(publications + 1, f.publications);
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
     }
@@ -2814,16 +2805,16 @@ public class GReactFormDataTest extends GWTTestCase {
         TreeFixture f = new TreeFixture();
         f.apply(closedPage(f));
         JavaScriptObject cat = field(f.sa.controller, "cat"), c2 = f.row(f.cat, f.c2);
-        callNode(cat, "toggle", c2); // closed: opened
+        call(cat, "toggle", c2); // closed: opened
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
-        callNode(cat, "toggle", c2); // the same row handed in again: closed again - what was asked is read, not the row
+        call(cat, "toggle", c2); // the same row handed in again: closed again - what was asked is read, not the row
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
         assertEquals(Arrays.asList("expand cat 2", "collapse cat 2"), f.verbs.asked);
         f.answer(openPage(f), 1); // the first answer: the second request is not answered yet, and it wins
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
         f.answer(closedPage(f), 2);
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
-        callNode(cat, "toggle", f.row(f.cat, f.c1)); // its children loaded: open, so closed
+        call(cat, "toggle", f.row(f.cat, f.c1)); // its children loaded: open, so closed
         assertEquals("collapse cat 1", f.verbs.asked.get(2));
     }
     public void testANodeWithNoChildrenStaysClosed() {
@@ -2833,7 +2824,7 @@ public class GReactFormDataTest extends GWTTestCase {
         f.apply(page);
         JavaScriptObject c2 = f.row(f.cat, f.c2);
         int publications = f.publications;
-        callNode(field(f.sa.controller, "cat"), "expand", c2);
+        call(field(f.sa.controller, "cat"), "expand", c2);
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded")); // asked, but there is nothing to open - nor to load
         assertSame(c2, f.row(f.cat, f.c2)); // so nothing is rewritten, nothing published
         assertEquals(publications, f.publications);
@@ -2845,15 +2836,15 @@ public class GReactFormDataTest extends GWTTestCase {
         page.expandables.put(f.item, counts(f.i15, 1, f.i16, 0));
         f.apply(page);
         JavaScriptObject cat = field(f.sa.controller, "cat"), item = field(f.sa.controller, "item");
-        callAll(cat, "expandAll"); // the top group: the whole tree
+        call(cat, "expandAll"); // the top group: the whole tree
         assertTrue(flag(f.row(f.cat, f.c1), "expanded"));
         assertTrue(flag(f.row(f.cat, f.c2), "expanded")); // at once
         assertTrue(flag(f.row(f.item, f.i15), "expanded")); // ... the group below as well
         assertTrue(isFalse(f.row(f.item, f.i16), "expanded")); // ... where a node has children
-        callNode(cat, "collapse", f.row(f.cat, f.c1)); // a node asked after it: the later request wins
+        call(cat, "collapse", f.row(f.cat, f.c1)); // a node asked after it: the later request wins
         assertTrue(isFalse(f.row(f.cat, f.c1), "expanded"));
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
-        callAll(item, "collapseAll"); // a group below: its nodes, not those above it
+        call(item, "collapseAll"); // a group below: its nodes, not those above it
         assertTrue(isFalse(f.row(f.item, f.i15), "expanded"));
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
         assertEquals(Arrays.asList("expand all cat", "collapse cat 1", "collapse all item"), f.verbs.asked);
@@ -2861,8 +2852,8 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(flag(f.row(f.cat, f.c1), "expanded"));
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
         assertTrue(isFalse(f.row(f.item, f.i15), "expanded"));
-        callNode(cat, "collapse", f.row(f.cat, f.c2)); // a node asked before it: the later request, all of them, wins
-        callAll(cat, "expandAll");
+        call(cat, "collapse", f.row(f.cat, f.c2)); // a node asked before it: the later request, all of them, wins
+        call(cat, "expandAll");
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
         GFormChanges older = new GFormChanges(); // the answer to the earlier one leaves it - and brings a row the later
         GGroupObjectValue i18 = TreeFixture.itemKey(2, 8); // one was not asked of: it says what its rows say
@@ -2873,7 +2864,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
         assertTrue(isFalse(f.row(f.item, i18), "expanded"));
         f.answer(openPage(f), 5);
-        callAll(cat, "collapseAll");
+        call(cat, "collapseAll");
         assertTrue(isFalse(f.row(f.cat, f.c1), "expanded"));
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded")); // at once
         GFormChanges collapsed = new GFormChanges(); // ... and its answer takes the items away
@@ -2881,7 +2872,7 @@ public class GReactFormDataTest extends GWTTestCase {
         collapsed.parentObjects.put(f.item, rows());
         f.answer(collapsed, 6);
         assertTrue(isFalse(f.row(f.cat, f.c1), "expanded"));
-        callNode(cat, "expand", f.row(f.cat, f.c1)); // what was open below stays open on the server: it comes back so
+        call(cat, "expand", f.row(f.cat, f.c1)); // what was open below stays open on the server: it comes back so
         GFormChanges reopened = new GFormChanges();
         reopened.gridObjects.put(f.item, rows(f.i15, f.i16));
         reopened.parentObjects.put(f.item, rows(GGroupObjectValue.EMPTY, new GGroupObjectValue(61, 5)));
@@ -2894,18 +2885,16 @@ public class GReactFormDataTest extends GWTTestCase {
         f.apply(closedPage(f));
         assertTrue(flag(f.row(f.cat, f.c1), "expanded")); // the items still open the categories they hang under
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
-        callAll(field(f.sa.controller, "cat"), "expandAll"); // ... and asking all of them reaches below
+        call(field(f.sa.controller, "cat"), "expandAll"); // ... and asking all of them reaches below
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
         f.answer(openPage(f), 1); // the items' keys answer it
         assertEquals(2.0, number(f.row(f.item, f.i27), "parent"), 0.0);
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
     }
-    private static native JavaScriptObject callAll(JavaScriptObject member, String verb) /*-{ return member[verb](); }-*/;
-
     public void testAClosedNodeIsHeldClosedByAllAgainstAnEarlierAnswer() {
         TreeFixture f = new TreeFixture();
         f.apply(closedPage(f)); // 1 open, 2 closed - both with children
-        callAll(field(f.sa.controller, "cat"), "collapseAll");
+        call(field(f.sa.controller, "cat"), "collapseAll");
         assertTrue(isFalse(f.row(f.cat, f.c1), "expanded")); // closed at once
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
         f.answer(openPage(f), 0); // an answer to an earlier request opens 2: what was asked of all of them holds it
@@ -2958,10 +2947,10 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(flag(f.row(sub, s11), "expanded"));
         assertTrue(isFalse(f.row(sub, s12), "expanded"));
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
-        callAll(field(f.sa.controller, "sub"), "expandAll"); // the middle group: its nodes and below, not those above
+        call(field(f.sa.controller, "sub"), "expandAll"); // the middle group: its nodes and below, not those above
         assertTrue(flag(f.row(sub, s12), "expanded"));
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
-        callNode(field(f.sa.controller, "cat"), "expand", f.row(f.cat, f.c2)); // a node above, asked after it
+        call(field(f.sa.controller, "cat"), "expand", f.row(f.cat, f.c2)); // a node above, asked after it
         assertEquals(Arrays.asList("expand all sub", "expand cat 2"), f.verbs.asked);
         GFormChanges items = new GFormChanges(); // the first answer: the items' keys - they answer the middle group
         items.gridObjects.put(f.item, rows(i115, i126));
@@ -3049,8 +3038,8 @@ public class GReactFormDataTest extends GWTTestCase {
         f.apply(page);
         JavaScriptObject cat = field(f.sa.controller, "cat"), middle = field(f.sa.controller, "sub");
         batch(f.sa.controller, () -> { // one request, asked of a node of the middle group and of one of the top
-            callNode(middle, "expand", f.row(sub, s12));
-            callNode(cat, "expand", f.row(f.cat, f.c2));
+            call(middle, "expand", f.row(sub, s12));
+            call(cat, "expand", f.row(f.cat, f.c2));
         });
         int request = (int) f.verbs.requestIndex;
         assertTrue(flag(f.row(sub, s12), "loading"));
@@ -3071,8 +3060,8 @@ public class GReactFormDataTest extends GWTTestCase {
         assertFalse(own(f.row(sub, s12), "loading"));
 
         batch(f.sa.controller, () -> { // the same two again, the bottom group's rows coming first this time
-            callNode(middle, "collapse", f.row(sub, s12));
-            callNode(cat, "expand", f.row(f.cat, f.c2));
+            call(middle, "collapse", f.row(sub, s12));
+            call(cat, "expand", f.row(f.cat, f.c2));
         });
         request = (int) f.verbs.requestIndex;
         assertTrue(isFalse(f.row(sub, s12), "expanded"));
@@ -4169,9 +4158,9 @@ public class GReactFormDataTest extends GWTTestCase {
                 f.verbs.filtered);
     }
 
-    // a tree's condition names a property by its group's name and its own, c.name, read up to the FIRST dot: a group's
-    // name has none, as its node is named, while an integration name may - a property the platform draws, which
-    // nothing projects by name, keeps an EXTID with a dot -, and such a name is taken back as `filters` gives it
+    // a tree's condition names a property by its group's name and its own, c.name, read up to the group's dot: the
+    // group's name has none here, as its node is named, while an integration name may - a property the platform draws,
+    // which nothing projects by name, keeps an EXTID with a dot -, and such a name is taken back as `filters` gives it
     public void testATreesConditionNameIsReadUpToTheGroupsDot() {
         TreeFixture f = new TreeFixture(t -> {
             t.treeByThePlatform(); // the platform draws the tree, a view what its FILTERS box holds
@@ -4361,13 +4350,13 @@ public class GReactFormDataTest extends GWTTestCase {
         f.apply(page);
         JavaScriptObject tree = field(f.sa.controller, "t");
         assertEquals("expandCurrent,orders", keysOf(tree)); // the tree's own and its sortings: no toolbar is drawn here
-        callAll(tree, "expandCurrent"); // no current node: nothing to open
+        call(tree, "expandCurrent"); // no current node: nothing to open
         assertTrue(f.verbs.asked.isEmpty());
 
         f.controllers.groups.get(f.cat).updateCurrentKey(f.c1);
         f.projection.flush();
         int publications = f.publications;
-        callAll(tree, "expandCurrent");
+        call(tree, "expandCurrent");
         assertEquals(Arrays.asList("expand current cat 1"), f.verbs.asked);
         assertEquals(publications + 1, f.publications); // shown at once
         assertTrue(flag(f.row(f.cat, c3), "expanded")); // ... all the way down
@@ -4389,7 +4378,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertFalse(own(f.row(f.cat, c4), "loading"));
 
         f.controllers.groups.get(f.item).updateCurrentKey(f.i15); // a node with no children: nothing to open
-        callAll(tree, "expandCurrent");
+        call(tree, "expandCurrent");
         assertEquals(1, f.verbs.asked.size());
     }
 
@@ -4402,8 +4391,8 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject tree = field(f.sa.controller, "t"), cat = field(f.sa.controller, "cat");
         int publications = f.publications;
         batch(f.sa.controller, () -> {
-            callNode(cat, "change", f.row(f.cat, f.c2));
-            callAll(tree, "expandCurrent");
+            call(cat, "change", f.row(f.cat, f.c2));
+            call(tree, "expandCurrent");
         });
         assertEquals(Arrays.asList("batch", "current cat 2", "expand current cat 2", "sent"), f.verbs.asked);
         assertEquals(publications + 1, f.publications); // once, when it ended
@@ -4429,7 +4418,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("expandCurrent,export,filterControlsVisible,orders", keysOf(tree));
         assertTrue(has(field(same.sa.controller, "cat"), "expandAll")); // the whole tree: the top group's
         same.controllers.groups.get(same.cat).updateCurrentKey(same.c2);
-        callAll(tree, "expandCurrent");
+        call(tree, "expandCurrent");
         assertEquals(Arrays.asList("expand current cat 2"), same.verbs.asked); // the rows React draws opened
 
         TreeFixture split = new TreeFixture(t -> t.toolbarIn(t.b())); // ... in two: the rows' and the toolbar's
@@ -4442,8 +4431,8 @@ public class GReactFormDataTest extends GWTTestCase {
         assertFalse(has(platform.sa.controller, "cat")); // the rows are the platform's: no node of a group here
         platform.projection.flush();
         assertFalse(has(field(platform.data, "t"), "current")); // ... nor the tree's current row: the platform's has it
-        callAll(platformTree, "expandCurrent");
-        callAll(platformTree, "expandTree");
+        call(platformTree, "expandCurrent");
+        call(platformTree, "expandTree");
         assertEquals(Arrays.asList("expand current", "expand tree"), platform.controllers.platformTree);
 
         TreeFixture hidden = new TreeFixture(t -> { t.toolbarIn(t.a); t.tree.toolbar.visible = false; });
@@ -4483,12 +4472,12 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(flag(field(f.data, "t"), "filterControlsVisible"));
 
         f.controllers.groups.get(f.cat).updateCurrentKey(f.c2);
-        callAll(tree, "expandCurrent"); // the tree's own, beside the toolbar's members
-        callAll(tree, "export");
+        call(tree, "expandCurrent"); // the tree's own, beside the toolbar's members
+        call(tree, "export");
         assertEquals(Arrays.asList("expand current cat 2", "export tree 60"), f.verbs.asked);
         batch(f.sa.controller, () -> {
-            callAll(tree, "expandCurrent"); // opens nodes: an edit, made in the batch
-            callAll(tree, "export"); // asks the server, changing nothing: refused, not thrown
+            call(tree, "expandCurrent"); // opens nodes: an edit, made in the batch
+            call(tree, "export"); // asks the server, changing nothing: refused, not thrown
         });
         assertEquals(Arrays.asList("batch", "expand current cat 2", "sent"), f.verbs.asked.subList(2, f.verbs.asked.size()));
     }
@@ -4522,7 +4511,7 @@ public class GReactFormDataTest extends GWTTestCase {
         GFormChanges cell = new GFormChanges();
         put(cell, columns[0], f.i16, 160);
         f.apply(cell);
-        callNode(field(f.sa.controller, "cat"), "expand", f.row(f.cat, f.c2));
+        call(field(f.sa.controller, "cat"), "expand", f.row(f.cat, f.c2));
         assertSame(node, field(f.data, "t"));
 
         GFormChanges gone = new GFormChanges(); // the current row taken away - by a filter, say -: none, not the
@@ -4559,7 +4548,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(isFalse(node, "filtersPending"));
         PanelDouble handler = new PanelDouble(); // the tree's filter input controller, binding them
         controls.bind(handler, f.controllers.userFilters.get(f.cat));
-        callAll(tree, "resetFilters");
+        call(tree, "resetFilters");
         assertEquals(Arrays.asList("reset"), handler.calls);
     }
 
@@ -4614,7 +4603,7 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject node = field(f.snapshots[2], "items");
         assertTrue(isFalse(node, "filtersManual"));
         assertTrue(isFalse(node, "filtersPending"));
-        callAll(field(f.sc.controller, "items"), "applyFilters"); // nothing waits
+        call(field(f.sc.controller, "items"), "applyFilters"); // nothing waits
         assertEquals(0, f.filtersCalls.size());
         FilterControlsDouble platform = new FilterControlsDouble(); // the platform's buttons, as the commands bind them
         GFilterInputController commands = viewCommands(f, table, platform);
@@ -5058,7 +5047,7 @@ public class GReactFormDataTest extends GWTTestCase {
         f.projection.change(() -> toolbar.updateState(null)); // ... one which says nothing new: the state stays
         assertTrue(flag(field(f.snapshots[2], "items"), "updatePending"));
         assertEquals(publications, f.publications[2]); // nothing written, nothing published
-        callAll(member, "update");
+        call(member, "update");
         assertEquals("updateMode items FORCE", f.toolbarCalls.get(1));
 
         callChange(field(member, "manual"), true); // on already
@@ -5086,7 +5075,7 @@ public class GReactFormDataTest extends GWTTestCase {
             fixture.group.grid.toolbar.showManualUpdate = false;
         });
         assertTrue(flag(field(hidden.snapshots[2], "items"), "manual"));
-        callAll(field(hidden.sc.controller, "items"), "update"); // the changes held back brought: the mode stays
+        call(field(hidden.sc.controller, "items"), "update"); // the changes held back brought: the mode stays
         assertEquals("updateMode items FORCE", hidden.toolbarCalls.get(0));
         hidden.projection.flush();
         assertTrue(flag(field(hidden.snapshots[2], "items"), "manual"));
@@ -5100,16 +5089,16 @@ public class GReactFormDataTest extends GWTTestCase {
             fixture.property(27, "act", fixture.group, true, fixture.a).valueType = GActionType.instance;
         });
         JavaScriptObject member = field(f.sc.controller, "items");
-        JavaScriptObject sum = callNode(member, "getSum", "price");
+        JavaScriptObject sum = (JavaScriptObject) call(member, "getSum", "price");
         assertEquals("sum items price", f.toolbarCalls.get(0));
         f.answered.accept(12.5);
         assertRefusal("controller.items.getSum(): unknown property 'nope' of object group 'items'", refusedWith(member, "getSum", "nope"));
         assertRefusal("controller.items.getSum(): takes the name of the property to sum, as a string", refusedWith(member, "getSum", 42.0));
         assertRefusal("controller.items.getSum(): 'act' is not a number", refusedWith(member, "getSum", "act"));
-        callAll(member, "export");
+        call(member, "export");
         assertEquals("export 10", f.toolbarCalls.get(1));
 
-        JavaScriptObject count = callAll(member, "getCount");
+        JavaScriptObject count = (JavaScriptObject) call(member, "getCount");
         assertEquals("count items", f.toolbarCalls.get(2));
         delayTestFinish(5000);
         then(sum, total -> then(count, value -> {
@@ -5131,11 +5120,11 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject member = field(f.sc.controller, "items");
         JavaScriptObject[] count = new JavaScriptObject[1];
         batch(f.sc.controller, () -> { // nothing thrown
-            count[0] = callAll(member, "getCount");
-            callNode(member, "getSum", "price");
-            callAll(member, "export");
+            count[0] = (JavaScriptObject) call(member, "getCount");
+            call(member, "getSum", "price");
+            call(member, "export");
             callChange(field(member, "manual"), true);
-            callAll(member, "update");
+            call(member, "update");
             callChange(field(member, "listView"), "grid");
         });
         assertTrue(f.toolbarCalls.isEmpty()); // nothing asked of the form
@@ -5259,11 +5248,11 @@ public class GReactFormDataTest extends GWTTestCase {
             assertTrue(flag(field(f.snapshots[2], "items"), "filtersManual"));
             assertTrue(flag(field(f.snapshots[2], "items"), "filtersPending"));
 
-            callAll(field(f.sc.controller, "items"), "applyFilters");
+            call(field(f.sc.controller, "items"), "applyFilters");
             assertEquals(Arrays.asList("changeFilters items quantity= price="), f.filtersCalls);
             f.projection.flush();
             assertTrue(isFalse(field(f.snapshots[2], "items"), "filtersPending"));
-            callAll(field(f.sc.controller, "items"), "resetFilters");
+            call(field(f.sc.controller, "items"), "resetFilters");
             assertEquals("changeFilters items", f.filtersCalls.get(1));
         } finally {
             MainFrame.userFiltersManualApplyMode = manual;
@@ -5318,9 +5307,9 @@ public class GReactFormDataTest extends GWTTestCase {
         GUserFiltersController userFilters = f.userFilters();
         controls.bind(handler, userFilters); // its commands, and the user filters it shows
         JavaScriptObject member = field(f.sc.controller, "items");
-        callAll(member, "addFilter");
-        callAll(member, "resetFilters");
-        callAll(member, "applyFilters"); // nothing waits
+        call(member, "addFilter");
+        call(member, "resetFilters");
+        call(member, "applyFilters"); // nothing waits
         assertEquals(Arrays.asList("add", "reset", "apply"), handler.calls);
         handler.filtersContainer = false; // no FILTERS box in the design: no add, as the platform has no such button
         assertRefusal("controller.items.addFilter(): has no FILTERS box to add a condition to", refusedWith(member, "addFilter", null));
@@ -5473,18 +5462,18 @@ public class GReactFormDataTest extends GWTTestCase {
         Fixture f = new Fixture(fixture -> fixture.filterGroupIn(fixture.c, false));
         JavaScriptObject member = member(f.sc, "items", "stock");
         callChange(member, 1.0);
-        assertEquals("regularFilter FILTERGROUP(stock) Out of stock", f.edits.get(f.edits.size() - 1));
+        assertEquals("regularFilter FILTERGROUP(stock) Out of stock", lastOf(f.edits));
         f.projection.flush();
         assertEquals(1.0, number(field(field(f.snapshots[2], "items"), "stock"), "value"), 0);
         int edits = f.edits.size();
         callChange(member, 1.0); // selected already: set again
         assertEquals(edits + 1, f.edits.size());
-        assertEquals("regularFilter FILTERGROUP(stock) Out of stock", f.edits.get(f.edits.size() - 1));
+        assertEquals("regularFilter FILTERGROUP(stock) Out of stock", lastOf(f.edits));
         callChange(member, null);
-        assertEquals("regularFilter FILTERGROUP(stock) none", f.edits.get(f.edits.size() - 1));
+        assertEquals("regularFilter FILTERGROUP(stock) none", lastOf(f.edits));
         batch(f.sc.controller, () -> callChange(member, 0.0));
         assertEquals("regularFilter FILTERGROUP(stock) In stock", f.edits.get(f.edits.size() - 2));
-        assertEquals("sent", f.edits.get(f.edits.size() - 1));
+        assertEquals("sent", lastOf(f.edits));
         batch(f.sa.controller, () -> callChange(member, 1.0)); // another view's batch: it goes with it
         assertEquals("regularFilter FILTERGROUP(stock) Out of stock", f.edits.get(f.edits.size() - 2));
         assertRefusal("controller.items.stock.change(): takes the index of one of its filters, 0 to 1, or null for none", refusedChange(member, 2.0));
@@ -5499,7 +5488,7 @@ public class GReactFormDataTest extends GWTTestCase {
         Fixture checkBox = new Fixture(fixture -> fixture.filterGroupIn(fixture.c, true).filters.remove(1));
         assertTrue(flag(field(field(checkBox.snapshots[2], "items"), "stock"), "canClear"));
         callChange(member(checkBox.sc, "items", "stock"), null);
-        assertEquals("regularFilter FILTERGROUP(stock) none", checkBox.edits.get(checkBox.edits.size() - 1));
+        assertEquals("regularFilter FILTERGROUP(stock) none", lastOf(checkBox.edits));
     }
 
     // a filter's key works as the platform's widget's does, through the filter group's part, which the form binds it
@@ -5514,9 +5503,9 @@ public class GReactFormDataTest extends GWTTestCase {
         GFilterGroupController part = f.controllers.filterGroups.get(stock);
         assertSame(f.viewWidget(f.c), part.getBindingWidget());
         part.onBinding(stock.filters.get(0)); // F10
-        assertEquals("regularFilter FILTERGROUP(stock) In stock", f.edits.get(f.edits.size() - 1));
+        assertEquals("regularFilter FILTERGROUP(stock) In stock", lastOf(f.edits));
         part.onBinding(stock.filters.get(0)); // a list: selected again
-        assertEquals("regularFilter FILTERGROUP(stock) In stock", f.edits.get(f.edits.size() - 1));
+        assertEquals("regularFilter FILTERGROUP(stock) In stock", lastOf(f.edits));
         GFormChanges hide = new GFormChanges(); put(hide, stock.showIfReader, GGroupObjectValue.EMPTY, true); f.apply(hide);
         assertNull(part.getBindingWidget()); // the form hides the filter group: the key is not taken
         GFormChanges show = new GFormChanges(); put(show, stock.showIfReader, GGroupObjectValue.EMPTY, null); f.apply(show);
@@ -5526,15 +5515,15 @@ public class GReactFormDataTest extends GWTTestCase {
         GRegularFilterGroup one = single.form.regularFilterGroups.get(0);
         GFilterGroupController check = single.controllers.filterGroups.get(one);
         check.onBinding(one.filters.get(0));
-        assertEquals("regularFilter FILTERGROUP(stock) In stock", single.edits.get(single.edits.size() - 1));
+        assertEquals("regularFilter FILTERGROUP(stock) In stock", lastOf(single.edits));
         check.onBinding(one.filters.get(0)); // a check box: taken off
-        assertEquals("regularFilter FILTERGROUP(stock) none", single.edits.get(single.edits.size() - 1));
+        assertEquals("regularFilter FILTERGROUP(stock) none", lastOf(single.edits));
         Fixture noNull = new Fixture(fixture -> fixture.filterGroupIn(fixture.c, true).filters.remove(1));
         GRegularFilterGroup cleared = noNull.form.regularFilterGroups.get(0);
         GFilterGroupController key = noNull.controllers.filterGroups.get(cleared);
         key.onBinding(cleared.filters.get(0));
         key.onBinding(cleared.filters.get(0)); // NONULL: the check box is cleared all the same
-        assertEquals("regularFilter FILTERGROUP(stock) none", noNull.edits.get(noNull.edits.size() - 1));
+        assertEquals("regularFilter FILTERGROUP(stock) none", lastOf(noNull.edits));
     }
 
     // the key of an action a view draws is the platform's binding, which the form binds for every property, its
@@ -5634,7 +5623,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("pivot", text(field(f.snapshots[2], "items"), "listView")); // published before the call returns
         callChange(field(member, "listView"), "pivot"); // shown already
         assertEquals(1, f.views.changed.size());
-        callAll(member, "export"); // the server's report of the rows, whatever view the platform's table shows
+        call(member, "export"); // the server's report of the rows, whatever view the platform's table shows
         assertEquals(Arrays.asList("export 10"), f.toolbarCalls);
         assertRefusal("controller.items.listView.change(): takes the name of a view of the table: grid, pivot",
                 refusedChange(field(member, "listView"), "map"));
@@ -5667,21 +5656,6 @@ public class GReactFormDataTest extends GWTTestCase {
         List<GTreeController> given = ((TreeToolbarDouble) platform.controllers.treeToolbars.get(platform.tree)).treeRows;
         assertEquals(1, given.size());
         assertTrue(given.get(0) instanceof PlatformTreeDouble);
-    }
-
-    // A VIEW'S CONTROLLER NAMES THE FORM'S, `form` - one object, the form's verbs', which take names -; a call of the
-    // form's controller is a change as a member's is: what it makes in the views is published when it is over, before
-    // it returns (GReactFormData.initialize)
-    public void testAViewsControllerNamesTheFormsController() {
-        Fixture f = new Fixture();
-        JavaScriptObject formController = f.controllers.formController;
-        for (GReactFormData.ViewState state : Arrays.asList(f.sa, f.sb, f.sc))
-            assertTrue(field(state.controller, "form") == formController);
-
-        int published = f.publications[0];
-        sortTwice(formController, member(f.sa, "items", "orders"));
-        assertEquals(" price desc quantity", describeOrders(f.sorted));
-        assertEquals(published + 1, f.publications[0]);
     }
 
     // EVERY NAME A PART WRITES - on its group's node, in data.<g> and on controller.<g>, and on a row of the group's
@@ -5717,7 +5691,7 @@ public class GReactFormDataTest extends GWTTestCase {
         // the rows of a tree's groups, one of its nodes asked to open: loading
         TreeFixture tree = new TreeFixture();
         tree.apply(closedPage(tree));
-        callNode(field(tree.sa.controller, "cat"), "expand", tree.row(tree.cat, tree.c2));
+        call(field(tree.sa.controller, "cat"), "expand", tree.row(tree.cat, tree.c2));
         assertTrue(flag(tree.row(tree.cat, tree.c2), "loading"));
         for (GGroupObject group : Arrays.asList(tree.cat, tree.item)) {
             JavaScriptObject node = field(tree.data, group.getSID()), list = field(node, "list");
@@ -5922,7 +5896,7 @@ public class GReactFormDataTest extends GWTTestCase {
         int calls = f.filtersCalls.size();
         batch(f.sa.controller, () -> callChange(member, 2.0)); // another view's batch: it goes with it
         assertEquals(calls + 1, f.filtersCalls.size());
-        assertEquals("sent", f.edits.get(f.edits.size() - 1));
+        assertEquals("sent", lastOf(f.edits));
     }
 
     // ... and its options state the condition's compare and negation too, either or both - what they leave out stays as
@@ -6096,5 +6070,150 @@ public class GReactFormDataTest extends GWTTestCase {
         for (String name : keysOf(object).split(","))
             if (!name.isEmpty() && !asideNames.contains(name))
                 assertTrue(what + ": it writes '" + name + "', which the server does not reserve there", reserved.contains(name));
+    }
+
+    // CONTROLLER.FORM - `form` on every view's controller - takes names, as strings, and makes the call the member
+    // it stands for makes: b, which draws a panel property only, sorts the rows a draws and chooses among them, and
+    // selects in the filter group c draws - each view publishing what it draws before the call returns, as a call of
+    // its own member would
+    public void testTheFormsControllerChangesWhatAnotherViewDraws() {
+        Fixture f = new Fixture(fixture -> fixture.filterGroupIn(fixture.c, false));
+        JavaScriptObject form = field(f.sb.controller, "form");
+        for (GReactFormData.ViewState state : Arrays.asList(f.sa, f.sb, f.sc)) // one object, on every view's controller
+            assertTrue(field(state.controller, "form") == form);
+        int a = f.publications[0];
+        call(form, "changeOrders", "items", parse("{\"property\": \"price\", \"desc\": true}"));
+        assertEquals(" price desc", describeOrders(f.sorted));
+        assertEquals(a + 1, f.publications[0]);
+        assertEquals("price", text(at(field(f.node(), "orders"), 0), "property"));
+        int c = f.publications[2];
+        call(form, "changeFilterGroup", "stock", 1.0);
+        assertEquals(c + 1, f.publications[2]);
+        assertEquals("regularFilter FILTERGROUP(stock) Out of stock", lastOf(f.edits));
+        assertEquals(1.0, number(field(field(f.snapshots[2], "items"), "stock"), "value"), 0);
+        call(form, "changeObject", "items", f.row("2"));
+        assertEquals(f.two, f.chosen);
+    }
+
+    // ... whoever draws it: where the platform draws the rows - no part of React's beside them -, the call goes the same
+    // way, to the form, which tells what draws them - the platform's toolbar shows the update mode, its table switches
+    // the view -, a row named by what a view has of it, its `objects` handle (a lookup's)
+    public void testTheFormsControllerReachesWhatThePlatformDraws() {
+        ListViewDouble views = new ListViewDouble();
+        Fixture f = new Fixture(fixture -> {
+            fixture.rowsByThePlatform();
+            fixture.views = views;
+        });
+        JavaScriptObject form = field(f.sb.controller, "form");
+        call(form, "changeOrders", "items", parse("[{\"property\": \"quantity\", \"desc\": false}]"));
+        assertEquals(" quantity", describeOrders(f.sorted));
+        call(form, "changeObject", "items", objects(f.two));
+        assertEquals(f.two, f.chosen);
+        call(form, "changeManual", "items", true);
+        assertEquals("updateMode items MANUAL", f.toolbarCalls.get(0));
+        assertEquals(Collections.singletonList(true), ((GridToolbarDouble) f.controllers.toolbars.get(f.group)).manualShown);
+        call(form, "update", "items");
+        assertEquals("updateMode items FORCE", f.toolbarCalls.get(1));
+        call(form, "changeListView", "items", "pivot");
+        assertEquals(Collections.singletonList(GListViewType.PIVOT), views.changed);
+        call(form, "export", "items");
+        assertEquals("export 10", f.toolbarCalls.get(2));
+        call(form, "getCount", "items");
+        assertEquals("count items", f.toolbarCalls.get(3));
+    }
+
+    // ... and a name that names nothing the call reaches is refused, saying why - unknown, of another kind, no string -,
+    // as what the member refuses is, quoted as the form's call, and nothing is handed on
+    public void testTheFormsControllerRefusesWhatItsNamesDoNotReach() {
+        Fixture f = new Fixture();
+        JavaScriptObject form = field(f.sb.controller, "form");
+        assertRefusal("controller.form.changeOrders('nope'): unknown object group or tree 'nope'", refusedWith(form, "changeOrders", "nope", parse("[]")));
+        assertRefusal("controller.form.changeOrders(): takes the name of an object group or of a tree, as a string", refusedWith(form, "changeOrders", 1.0, parse("[]")));
+        assertRefusal("controller.form.changeOrders('items'): order 0: unknown property 'nope' of object group 'items'",
+                refusedWith(form, "changeOrders", "items", parse("[{\"property\": \"nope\", \"desc\": true}]")));
+        assertEquals(0, f.sortedCalls);
+        assertRefusal("controller.form.changeObject('items'): expects a row of 'items' or its objects handle; a key names a row only in the view that draws the rows",
+                refusedWith(form, "changeObject", "items", "1"));
+        assertRefusal("controller.form.changeFilterGroup('stock'): unknown filter group 'stock'", refusedWith(form, "changeFilterGroup", "stock", 0.0));
+        assertRefusal("controller.form.expand('items'): 'items' is not a group of a tree", refusedWith(form, "expand", "items", f.row("1")));
+        assertRefusal("controller.form.expandCurrent('items'): unknown tree 'items'", refusedWith(form, "expandCurrent", "items"));
+        assertRefusal("controller.form.getSum('items'): unknown property 'nope' of object group 'items'", refusedWith(form, "getSum", "items", "nope"));
+        assertTrue(f.edits.isEmpty() && f.filtersCalls.isEmpty() && f.toolbarCalls.isEmpty());
+    }
+
+    // ... a tree's too, whoever draws it: its nodes opened and closed and a level of them, by its groups' names; its
+    // current node with every node under it and the tree from its group down, by the tree's name - and a group of a
+    // tree has no sortings of its own: the tree's are named by the tree's name
+    public void testTheFormsControllerOpensATreeWhoeverDrawsIt() {
+        TreeFixture f = new TreeFixture();
+        f.apply(f.page());
+        JavaScriptObject form = field(f.sa.controller, "form");
+        call(form, "expand", "cat", f.row(f.cat, f.c1));
+        call(form, "collapse", "cat", field(f.row(f.cat, f.c2), "objects"));
+        call(form, "expandAll", "item");
+        assertEquals(Arrays.asList("expand cat 1", "collapse cat 2", "expand all item"), f.verbs.asked);
+        assertRefusal("controller.form.changeOrders('cat'): 'cat' is a group of tree 't', whose sortings, user filters and toolbar are the tree's: name the tree",
+                refusedWith(form, "changeOrders", "cat", parse("[]")));
+        assertRefusal("controller.form.getCount('t'): takes the name of a list group, whose toolbar this is: 't' is a tree", refusedWith(form, "getCount", "t"));
+
+        TreeFixture platform = new TreeFixture(TreeFixture::treeByThePlatform);
+        JavaScriptObject platformForm = field(platform.sa.controller, "form");
+        call(platformForm, "expandCurrent", "t");
+        call(platformForm, "expandTree", "t");
+        assertEquals(Arrays.asList("expand current", "expand tree"), platform.controllers.platformTree);
+    }
+
+    // ... and a call of it inside a view's batch goes with the batch, as a member's does; one asking the server is
+    // refused there, as a member's is - the count's Promise rejected
+    public void testTheFormsControllersCallsGoWithABatch() {
+        Fixture f = new Fixture(fixture -> fixture.filterGroupIn(fixture.c, false));
+        JavaScriptObject form = field(f.sb.controller, "form");
+        JavaScriptObject[] count = new JavaScriptObject[1];
+        batch(f.sb.controller, () -> {
+            call(form, "changeFilterGroup", "stock", 0.0);
+            count[0] = (JavaScriptObject) call(form, "getCount", "items");
+        });
+        assertEquals(Arrays.asList("batch", "regularFilter FILTERGROUP(stock) In stock", "sent"), f.edits);
+        assertTrue(f.toolbarCalls.isEmpty());
+        delayTestFinish(5000);
+        then(count[0], value -> fail("answered: " + value), error -> {
+            assertTrue(String.valueOf(error), String.valueOf(error).contains("controller.form.getCount('items'): a batch is running"));
+            finishTest();
+        });
+    }
+
+    // ... and sorts a tree by the tree's name, each property named as the tree's lists name it, '<group>.<property>' -
+    // one with a dot in its integration name too, read up to the group's dot
+    public void testTheFormsControllerSortsATreeByItsName() {
+        TreeFixture f = new TreeFixture(tree -> tree.column(77, "unit.price", tree.item));
+        call(field(f.sa.controller, "form"), "changeOrders", "t", parse("{\"property\": \"item.unit.price\", \"desc\": true}"));
+        assertEquals("cat item unit.price desc", lastOf(f.verbs.sorted));
+    }
+
+    // ... and a tree the platform draws, no view projecting its groups, by the name of a group of several objects with
+    // no name of its own, theirs joined with dots; an unknown property of a group is refused as a grid's is, and a name
+    // two groups' names start - a group named as the first object of the other is - as not saying which
+    public void testTheFormsControllerSortsATreeByAGroupNamedWithDots() {
+        Function<String, TreeFixture> fixture = catName -> new TreeFixture(tree -> {
+            tree.treeByThePlatform();
+            tree.cat.sID = catName;
+            tree.item.sID = "i.u";
+            property(tree.form, 77, "unit.price", tree.item, true, tree.form.mainContainer);
+        });
+        TreeFixture f = fixture.apply("cat");
+        JavaScriptObject form = field(f.sa.controller, "form");
+        call(form, "changeOrders", "t", parse("{\"property\": \"i.u.unit.price\", \"desc\": true}"));
+        assertEquals("cat i.u unit.price desc", lastOf(f.verbs.sorted));
+        assertRefusal("controller.form.changeOrders('t'): unknown property 'nope' of object group 'i.u'",
+                refusedWith(form, "changeOrders", "t", parse("{\"property\": \"i.u.nope\", \"desc\": true}")));
+
+        assertRefusal("controller.form.changeOrders('t'): 'i.u.unit.price' starts with the names of groups 'i' and 'i.u' of"
+                + " tree 't', so it does not say which", refusedWith(field(fixture.apply("i").sa.controller, "form"), "changeOrders",
+                "t", parse("{\"property\": \"i.u.unit.price\", \"desc\": true}")));
+    }
+
+    // the last of a log
+    private static String lastOf(List<String> log) {
+        return log.get(log.size() - 1);
     }
 }
