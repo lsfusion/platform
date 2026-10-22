@@ -2,7 +2,10 @@ package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.github.junrar.Archive;
 import com.github.junrar.exception.RarException;
+import com.github.junrar.rarfile.BaseBlock;
 import com.github.junrar.rarfile.FileHeader;
+import com.github.junrar.rarfile.rar5.Rar5BaseBlock;
+import com.github.junrar.rarfile.rar5.Rar5BlockType;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.FileUtils;
@@ -12,10 +15,12 @@ import lsfusion.base.file.RawFileData;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 public class ZipUtils {
@@ -62,32 +67,26 @@ public class ZipUtils {
             inputFile = File.createTempFile("zip", ".zip");
             file.write(inputFile);
 
-            byte[] buffer = new byte[1024];
             outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
             if (inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
-                ZipInputStream inputStream = new ZipInputStream(Files.newInputStream(inputFile.toPath()), Charset.forName("cp866"));
-
-                ZipEntry ze = inputStream.getNextEntry();
-                while (ze != null) {
-                    if (!ze.isDirectory()) {
-                        String filePath = ze.getName();
-                        File outputFile = new File(outputDirectory.getPath() + "/" + filePath);
-                        if(isInsideDirectory(outputDirectory, outputFile)) { //ignore files that can be unpacked outside the temp dir
-                            outputFile.getParentFile().mkdirs();
-                            FileOutputStream outputStream = new FileOutputStream(outputFile);
-                            int len;
-                            while ((len = inputStream.read(buffer)) > 0) {
-                                outputStream.write(buffer, 0, len);
+                try (ZipFile zipFile = new ZipFile(inputFile, Charset.forName("cp866"))) {
+                    Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                    while (entries.hasMoreElements()) {
+                        ZipEntry ze = entries.nextElement();
+                        String filePath = ze.getName().replace('\\', '/');
+                        if (!filePath.endsWith("/")) {
+                            File outputFile = new File(outputDirectory.getPath() + "/" + filePath);
+                            if (isInsideDirectory(outputDirectory, outputFile)) { //ignore files that can be unpacked outside the temp dir
+                                outputFile.getParentFile().mkdirs();
+                                try (InputStream inputStream = zipFile.getInputStream(ze)) {
+                                    Files.copy(inputStream, outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                                }
+                                result.put(getFileName(result, filePath), new FileData(new RawFileData(outputFile), BaseUtils.getFileExtension(outputFile)));
+                                BaseUtils.safeDelete(outputFile);
                             }
-                            outputStream.close();
-                            result.put(getFileName(result, filePath), new FileData(new RawFileData(outputFile), BaseUtils.getFileExtension(outputFile)));
-                            BaseUtils.safeDelete(outputFile);
                         }
                     }
-                    ze = inputStream.getNextEntry();
                 }
-                inputStream.closeEntry();
-                inputStream.close();
             }
         } catch (IOException e) {
             throw Throwables.propagate(e);
@@ -124,6 +123,8 @@ public class ZipUtils {
                         }
                         fh = a.nextFileHeader();
                     }
+                    if (a.hasBrokenHeaders() || isTruncatedRar5(a))
+                        throw new RuntimeException("Unexpected end of archive");
                 }
             }
         } catch (RarException | IOException e) {
@@ -133,6 +134,18 @@ public class ZipUtils {
             org.apache.commons.io.FileUtils.deleteQuietly(outputDirectory);
         }
         return result;
+    }
+
+    private static boolean isTruncatedRar5(Archive archive) {
+        boolean rar5 = false;
+        for (BaseBlock block : archive.getHeaders()) {
+            if (block instanceof Rar5BaseBlock) {
+                if (((Rar5BaseBlock) block).getRar5Type() == Rar5BlockType.ENDARC)
+                    return false;
+                rar5 = true;
+            }
+        }
+        return rar5;
     }
 
     private static boolean isInsideDirectory(File dir, File file) throws IOException {
