@@ -127,8 +127,8 @@ externalHTTP()  {
     EXTERNAL HTTP GET 'https://www.cs.cmu.edu/~chuck/lennapg/len_std.jpg' TO exportFile;
     open(exportFile());
 
-    // POST с JSON-телом; фигурные скобки экранируются из-за интернационализации
-    EXTERNAL HTTP 'http://tryonline.lsfusion.org/exec?action=getExamples' PARAMS JSONFILE('\{"mode"=1\}') TO exportFile; 
+    // POST с JSON-телом: в сыром литерале фигурные скобки не выделяют идентификатор локализации
+    EXTERNAL HTTP 'http://tryonline.lsfusion.org/exec?action=getExamples' PARAMS JSONFILE(r'{"mode": 1}') TO exportFile; 
     IMPORT FROM exportFile() FIELDS () TEXT caption, TEXT code DO
         MESSAGE 'Example : ' + caption + ', code : ' + code;
 }

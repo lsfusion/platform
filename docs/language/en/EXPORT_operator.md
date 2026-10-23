@@ -70,6 +70,10 @@ When exporting a form in an `OBJECTS` block, it is possible to add extra filters
 
 When a form is exported to a hierarchical format (**JSON**, **XML**), a single file is generated and written to the `propertyId` property. For flat formats (**CSV**, **XLS**, **XLSX**, **DBF**, **TABLE**) each object group is exported to its own file, so the destinations are specified as a list per object group (`groupId = propertyId`) — not necessarily for all groups: groups not listed are not exported. A form cannot be exported to a single file in a flat format.
 
+Date and time class values in text formats (**JSON**, **XML**, **CSV**) are written as strings, by default in ISO 8601 formats (for example, `2026-08-17`, `2026-08-17T12:34:56`, and `ZDATETIME` values — the instant in UTC with the `Z` suffix). This behavior is defined by the `useISOTimeFormatsInIntegration` [working parameter](../paradigm/Working_parameters.md): when it is off, the formats of the current locale are used. In the **XLS** and **XLSX** formats such values are written as typed date/time values, not as strings. In the **DBF** format, `DATE` and `DATETIME` values are written to a date field (the time part of `DATETIME` is lost), while `TIME` is written as an `HH:mm:ss` string.
+
+When exporting to **JSON**, a string value that starts and ends with a square or curly bracket is [embedded](../paradigm/Structured_view.md#innerjson) into the result as a nested object or array rather than as a string, if it can be parsed as JSON.
+
 ## Parameters
 
 ### Source of export
@@ -92,7 +96,7 @@ When a form is exported to a hierarchical format (**JSON**, **XML**), a single f
 
 - `columnId1, ..., columnIdN`
 
-    A list of column IDs in the resulting file into which data from the corresponding property will be exported. Each list element is either [a simple ID](IDs.md#id) or a [string literal](Literals.md#strliteral). If no ID is specified, it is considered equal to `expr<Column number>` by default.
+    A list of column IDs in the resulting file into which data from the corresponding property will be exported. Each list element is either [a simple ID](IDs.md#id) or a [string literal](Literals.md#strliteral). If no ID is specified, it is considered equal to `expr<Column number>` by default. When exporting to **JSON**, an ID given by a string literal can end with the `:escapeInnerJSON` [postfix](../paradigm/Structured_view.md#extid): it does not get into the key and disables the embedding of JSON values for this column.
 
 - `whereExpr`
 
@@ -172,8 +176,6 @@ When a form is exported to a hierarchical format (**JSON**, **XML**), a single f
 
   Expression whose value is used as the name of the sheet in the exported file. It is used for `XLS` and `XLSX` export formats.
 
-Date and time class values in text formats (**JSON**, **XML**, **CSV**) are written as strings, by default in ISO 8601 formats (for example, `2026-08-17`, `2026-08-17T12:34:56`, and `ZDATETIME` values — the instant in UTC with the `Z` suffix). This behavior is defined by the `useISOTimeFormatsInIntegration` [working parameter](../paradigm/Working_parameters.md): when it is off, the formats of the current locale are used. In the **XLS** and **XLSX** formats such values are written as typed date/time values, not as strings. In the **DBF** format, `DATE` and `DATETIME` values are written to a date field (the time part of `DATETIME` is lost), while `TIME` is written as an `HH:mm:ss` string.
-
 ### Export destination
 
 - `propertyId`
@@ -216,6 +218,9 @@ exportSkus (Store store)  {
     // uploads JSON "HI", as by default it gets the name value, and the platform
     // automatically converts the object {"value": "HI"} to "HI"
     EXPORT FROM 'HI'; 
+    // uploads JSON {"list":[1,2],"text":"[0-9]"}: a string in brackets is embedded as an array
+    // unless the column ID has the :escapeInnerJSON postfix
+    EXPORT JSON FROM list = '[1,2]', 'text:escapeInnerJSON' = '[0-9]';
 }
 ```
 

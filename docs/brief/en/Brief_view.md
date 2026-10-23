@@ -173,7 +173,7 @@ A report need not have a template of its own: if at least one is not found, the 
 
 ### Localizing strings and captions
 
-Localization is reached for when one logic runs in several languages. A user-visible string — the caption of a class, a property, an action, a form, the text of a message — is localized by a string data identifier in curly braces inside a [string literal](../language/String_literal.md#localization). When the value is sent to the client, the platform looks each identifier up in the project files whose name ends with `ResourceBundle`, in the required locale, and substitutes the translation found. If there is no translation, the identifier itself is left without the braces.
+Localization is reached for when one logic runs in several languages. A user-visible string — the caption of a class, a property, an action, a form, the text of a message — is localized by a string data identifier in curly braces inside a [string literal](../language/String_literal.md#localization). The platform looks each identifier up in the project files whose name ends with `ResourceBundle`, in the required locale, and substitutes the translation found. If there is no translation, the identifier itself is left without the braces.
 
 ```lsf
 CLASS Book '{use.case.i18n.book}';

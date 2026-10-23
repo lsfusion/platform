@@ -127,9 +127,9 @@ externalHTTP()  {
     EXTERNAL HTTP GET 'https://www.cs.cmu.edu/~chuck/lennapg/len_std.jpg' TO exportFile;
     open(exportFile());
 
-    // POST with a JSON body parameter; braces are escaped because of internationalization
+    // POST with a JSON body parameter: in a raw literal the braces do not delimit a localization identifier
     EXTERNAL HTTP 'http://tryonline.lsfusion.org/exec?action=getExamples' 
-             PARAMS JSONFILE('\{"mode"=1\}')
+             PARAMS JSONFILE(r'{"mode": 1}')
              TO exportFile; 
     IMPORT FROM exportFile() FIELDS () TEXT caption, TEXT code DO
         MESSAGE 'Example : ' + caption + ', code : ' + code;

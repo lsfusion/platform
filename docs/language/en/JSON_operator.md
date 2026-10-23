@@ -51,6 +51,8 @@ The difference between the two keywords is the class of the returned value. `JSO
 
 A property value of the `JSON` or `JSONTEXT` class (for example, one built by another property with this operator) is embedded into the resulting JSON as a nested object or array rather than as a string. This allows assembling a document with nested structures from separate JSON properties.
 
+A value of a string class is written to JSON as a string even if its text is itself JSON: such strings are [embedded](../paradigm/Structured_view.md#innerjson) only by an export to a file with the `EXPORT` operator. So the `:escapeInnerJSON` postfix is not needed here: in a column ID or an export name it is not recognized and stays part of the key. To embed a ready-made JSON text as an object or array, it is [converted](Type_conversion_operator.md) to the `JSON` or `JSONTEXT` class.
+
 Empty arrays and objects do not get into the result: an object group for which no object collection is found is skipped together with its key, just like a `NULL` value. If no value is left in the JSON (there is no object collection, or all values are `NULL`), the property value is `NULL` rather than an empty array or object.
 
 Date and time class values are written to JSON as strings, by default in ISO 8601 formats (for example, `2026-08-17`, `2026-08-17T12:34:56`, and `ZDATETIME` values — the instant in UTC with the `Z` suffix). This behavior is defined by the `useISOTimeFormatsInIntegration` [working parameter](../paradigm/Working_parameters.md): when it is off, the formats of the current locale are used.
@@ -135,6 +137,12 @@ MESSAGE JSON FROM code = '1', message = 'OK';
 // {"count":3,"items":[{"id":1,"name":"Item 1"},{"id":2,"name":"Item 2"},{"id":3,"name":"Item 3"}]}
 itemsJson () = JSON FROM id = i, name = 'Item ' + i WHERE iterate(i, 1, 3) ORDER i;
 MESSAGE JSON FROM count = 3, items = itemsJson();
+```
+
+```lsf
+// a string value stays a string, while a JSON class value is embedded as an array:
+// {"text":"[1,2]","list":[1,2]}
+MESSAGE JSONTEXT FROM text = '[1,2]', list = JSON('[1,2]');
 ```
 
 ```lsf

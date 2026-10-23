@@ -34,7 +34,7 @@ the name in the first column.
 | `view` | `FORM` blocks and object groups, `ORDERS`, `WAIT` / `NOWAIT`, `DESIGN`, `NAVIGATOR` placement across `WINDOW`s, jrxml and `SUBREPORT`, `ResourceBundle` and reverse translation | writing or extending any `FORM` or `DESIGN`; opening a form with `SHOW` or `DIALOG`; adding anything to `NAVIGATOR`; creating or editing any jrxml, or reasoning about `PRINT`; writing any user-visible caption or `MESSAGE` text |
 | `custom` | the `CUSTOM` option of a form property, the `CUSTOM` view of an object group, a `custom` container on a React component or an HTML template, `props.data` and the controller, `CUSTOMS`, client JS / JSX / CSS modules | choosing a view beyond the table, pivot, calendar or map; handing data to a custom view or a custom container, or building a JSON payload for the client; writing or editing any JavaScript, JSX or CSS for the web client; calling the server from a component |
 | `physical` | `TABLE`, `MATERIALIZED`, `INDEX`, `RECALCULATE`, how to split modules, `REQUIRE` and coupling, `migration.script`, `STORED PROPERTY` vs `PROPERTY` | adding a `TABLE`, an `INDEX` or `MATERIALIZED`; acting on a slow form or query or on a `TOO LONG QUERY` error; creating a module or moving a declaration between modules; renaming or re-namespacing ANY existing property, action or class — omitting this silently destroys stored data |
-| `integration` | flat `IMPORT` vs form import, `EXTID`, staging properties, `EXPORT FROM` vs `EXPORT <form>`, formats, `WHERE`, column ids | writing any `IMPORT`, `EXPORT` or `JSON FROM`; exchanging data with anything outside the application |
+| `integration` | flat `IMPORT` vs form import, `EXTID`, staging properties, `EXPORT FROM` vs `EXPORT <form>`, formats, `WHERE`, column ids | writing any `IMPORT`, `EXPORT` or `JSON FROM`; building JSON text; exchanging data with anything outside the application |
 
 ## Reading an area's rules (MANDATORY)
 
@@ -297,6 +297,19 @@ D. FEEDBACK / REPORTING (`lsfusion_report_feedback`)
 3. String literals MUST use single quotes.
    Double quotes are NOT a valid string literal delimiter
    in lsFusion and MUST NOT be used.
+
+   Curly braces in a plain literal delimit a localization
+   identifier: `'{"id":1}'` silently becomes `"id":1`, and
+   `'{"id": 1}'` prevents the server from starting. A literal
+   whose curly braces are part of the text (JSON, a regular
+   expression, a template) SHOULD be written as raw:
+   `r'{"id": 1}'` — the prefix is all it takes, and it takes part
+   in neither localization nor reverse translation. Escaping
+   (`'\{"id": 1\}'`) MAY be used when `${...}` interpolation is
+   needed, which a raw literal does not support, or when single
+   quotes inside make the delimiter form read worse. The
+   assistant MUST NOT leave such braces unescaped in a plain
+   literal.
 
 4. Date and time literals MUST use the underscore formats:
    `2001_01_31` (`DATE`), `2001_01_31_14:30[:00]`

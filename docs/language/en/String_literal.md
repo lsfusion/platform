@@ -29,7 +29,7 @@ A plain literal `'content'` is a sequence of characters between single quotes. S
 
 The `$` character is special only before `{`, `I{`, `R{`, or `M{` (the start of interpolation or an inline sequence). Otherwise it is an ordinary character. To get a plain `$` even before `{`, it must be escaped: `\$`.
 
-Without escaping, `{` and `}` delimit a [localization](#localization) identifier, so `\{` and `\}` are used to insert the braces themselves. In strings where localization is not supported (technical arguments — formulas, charsets, key combinations, etc.), curly braces are ordinary characters, and escaping them is not allowed.
+Without escaping, `{` and `}` delimit a [localization](#localization) identifier, so `\{` and `\}` or a [raw literal](#raw) are used to insert the braces themselves. In strings where localization is not supported (technical arguments — formulas, charsets, key combinations, etc.), curly braces are ordinary characters, and escaping them is not allowed.
 
 Any other escape sequence (`\` with another character), as well as a lone `\` at the end of the literal, is considered an error.
 
@@ -56,11 +56,11 @@ query = 'SELECT *
 
 ## Localization {#localization}
 
-Inside a string literal, string-data identifiers in curly braces (for example, `'{form.title}'`) are replaced, when the value is sent to the client, with the translation corresponding to the [current locale](../paradigm/Internationalization.md#current). If there is no translation for the identifier in any ResourceBundle, the identifier itself (without the curly braces) is substituted in its place.
+Inside a string literal, string-data identifiers in curly braces (for example, `'{form.title}'`) are replaced on the server with the translation corresponding to the [current locale](../paradigm/Internationalization.md#current). The value of a literal is translated when it is computed, so the translation is also substituted into a value that is not sent to the client — for example, one exported to a file or compared with another value. If there is no translation for the identifier in any ResourceBundle, the identifier itself (without the curly braces) is substituted in its place.
 
 If the server is started with the `logics.lsfStrLiteralsLanguage` [parameter](../paradigm/Launch_parameters.md) (reverse translation of literals), which specifies the language of the string literals in the code, a plain (non-localizable) literal can automatically become localizable. If its value (excluding leading and trailing spaces) matches the value of a ResourceBundle entry in that language, at code parse time the literal is replaced with that entry's identifier and then behaves like the localizable literal `'{id}'`. Leading and trailing spaces are preserved, and an empty literal or one consisting only of spaces is not replaced.
 
-Curly braces that should be just part of the string must be escaped: `\{` and `\}`.
+The identifier cannot be empty and cannot contain whitespace characters or curly braces, otherwise the literal is considered an error. Curly braces that should be just part of the string must be escaped: `\{` and `\}`.
 
 ### Examples
 
@@ -120,7 +120,7 @@ If the order's number is `100` and the customer name is `Smith`, the value of `l
 banner () = HTML('<img src="$R{images/banner.png}">');   // the file images/banner.png is embedded into HTML
 ```
 
-## Raw literal
+## Raw literal {#raw}
 
 A literal with the `r` (or `R`) prefix records its content as is: escape sequences are not interpreted, the backslash and curly braces are ordinary characters, and localization and reverse translation are not performed (only `\r\n` is normalized to `\n`). The value class of such a literal is `STRING[N]`. Using it is convenient for strings with many backslashes or curly braces, where constant escaping would hurt readability: Windows paths, regular expressions, formats, JSON fragments.
 
@@ -131,6 +131,7 @@ The `r'...'` form does not allow a single quote inside. To use a quote inside, t
 ```lsf
 filePath = r'C:\reports\sales.xlsx';         // backslashes are ordinary characters
 quoted = r!'don't stop'!;                    // a quote inside — the delimiter form
+body = r'{"mode": 1}';                       // curly braces are ordinary characters, not a localization identifier
 ```
 
 ## Value class

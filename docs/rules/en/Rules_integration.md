@@ -206,6 +206,14 @@ Data is exported with the [`EXPORT` operator](../language/EXPORT_operator.md).
 
 3. The encoding SHOULD be determined by the receiving side's requirements rather than by the default: recipients of **DBF** files usually expect a single-byte encoding other than `UTF-8`.
 
+### Values in JSON
+
+1. JSON with data SHOULD be built with the `JSON FROM` operator or an `EXPORT JSON` export (nested structures with nested `JSON FROM`) rather than by gluing strings with `+` or with `${...}` interpolation: gluing does not escape the values, so a quote or a backslash in the data breaks the document.
+
+2. A ready-made JSON text (a response from an external system, a stored document) SHOULD be embedded after converting it to the `JSON` or `JSONTEXT` class (`JSON(...)`, `JSONTEXT(...)`): such a value is embedded as an object or array both in `JSON FROM` and in `EXPORT JSON`. `JSON FROM` writes a string as a string even if its text is JSON, so the assistant SHOULD NOT rely on `EXPORT JSON` embedding a string with JSON text by itself: moving the expression into `JSON FROM` changes the result.
+
+3. In `EXPORT JSON` the assistant MUST mark a string column whose value may start and end with a bracket (arbitrary text, user input, a mask, a regular expression) with the `:escapeInnerJSON` postfix in a column ID given by a string literal (`'text:escapeInnerJSON' = ...`) or in `EXTID`: otherwise the export parses the value as JSON, so `'[ACME]'` turns into the array `["ACME"]`, and `'[AA] [BB]'` into `["AA"]`. The assistant MUST NOT use this postfix in `JSON FROM`: there it is not recognized and stays part of the key.
+
 ### Result destination
 
 1. The destination property in `TO` SHOULD be declared local to the export action and of a file class (`FILE`, `RAWFILE`, `JSONFILE`) rather than being a shared property: one property shared by several exports makes the result depend on the execution order.

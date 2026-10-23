@@ -240,3 +240,5 @@ jsonKeyword ( formName [OBJECTS objName1 = expr1, ..., objNameK = exprK]
 ```
 
 `jsonKeyword` — это `JSON` или `JSONTEXT`.
+
+Значение класса `JSON` или `JSONTEXT` встраивается в результат объектом или массивом, а строка записывается строкой, даже если её текст — JSON. `EXPORT JSON`, наоборот, [встраивает](../paradigm/Structured_view.md#innerjson) и строку, которая начинается и кончается скобкой, если её удаётся разобрать как JSON.
