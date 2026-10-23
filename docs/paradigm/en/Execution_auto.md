@@ -136,14 +136,14 @@ Platform components are also updated separately from each other. To do this, you
 | OS                               | Command                       |
 |----------------------------------|-------------------------------|
 | RHEL 8+ / CentOS 8+ / Fedora 35+ | `dnf update lsfusion6-server` |
-| Ubuntu 18+ / Debian 9+           | `apt update lsfusion6-server` |
+| Ubuntu 18+ / Debian 9+           | `apt update && apt install --only-upgrade lsfusion6-server` |
 
 #### Web server (Client)
 
 | OS                               | Command                       |
 |----------------------------------|-------------------------------|
 | RHEL 8+ / CentOS 8+ / Fedora 35+ | `dnf update lsfusion6-client` |
-| Ubuntu 18+ / Debian 9+           | `apt update lsfusion6-client` |
+| Ubuntu 18+ / Debian 9+           | `apt update && apt install --only-upgrade lsfusion6-client` |
 <!--- comment to prevent multiple error messages in IDEA --->
 
 #### Unstable versions

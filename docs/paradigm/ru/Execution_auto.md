@@ -149,14 +149,14 @@ Classpath сервера по умолчанию устанавливается 
 | ОС                               | Команда                       |
 |----------------------------------|-------------------------------|
 | RHEL 8+ / CentOS 8+ / Fedora 35+ | `dnf update lsfusion6-server` |
-| Ubuntu 18+ / Debian 9+           | `apt update lsfusion6-server` |
+| Ubuntu 18+ / Debian 9+           | `apt update && apt install --only-upgrade lsfusion6-server` |
 
 #### Веб-сервер (Client)
 
 | ОС                               | Команда                       |
 |----------------------------------|-------------------------------|
 | RHEL 8+ / CentOS 8+ / Fedora 35+ | `dnf update lsfusion6-client` |
-| Ubuntu 18+ / Debian 9+           | `apt update lsfusion6-client` |
+| Ubuntu 18+ / Debian 9+           | `apt update && apt install --only-upgrade lsfusion6-client` |
 <!--- comment to prevent multiple error messages in IDEA --->
 
 #### Нестабильные версии

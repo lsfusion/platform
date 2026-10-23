@@ -37,6 +37,8 @@ The value is in a serialized form that depends on the element:
 - for a filter group (`FILTERGROUP` / `FILTERGROUPS`) — `INTEGER`: the number of the active filter in the group, counting from 1, or 0 when no filter is active, in a `NONULL` group too; a number naming no filter of the group changes nothing;
 - for a property's filter (`FILTER PROPERTY` / `FILTERS PROPERTY`) — `STRING`: the property's filter value.
 
+When the group object has no user orders or no user filters, `ORDERS` and `FILTERS` write an empty `JSON` value of zero length — not `NULL` and not `[]`: a test for `NULL` does not detect it, and the web client shows it as an empty string. `ORDER` and `FILTER` take all three alike: an empty value, `[]` and `NULL` each clear the user orders or the user filters of the group object.
+
 `ORDER` and `FILTER` skip an item that names a property of another group object or a property with the `COLUMNS` option, since an item names no column. A filter condition with no comparison gets the default comparison of the property.
 
 If the `FROM` or `TO` block is omitted, the corresponding property of the [`UserEvents`](../paradigm/System_UserEvents.md) system module is used by default (`orders`, `filters`, `filterGroups`, `filtersProperty`), through which these operators are usually invoked.

@@ -55,6 +55,8 @@ A module is read from top to bottom, so an element of the module in which the se
 
 If the current set contains candidates from the namespace in which the search is performed, all other candidates are deleted from the set of candidates, and the selection operation is completed. If not, a similar action is repeated for *priority* namespaces of the module in which the search is being performed (in the order in which these priority namespaces were set). If nothing is found for them either, the set of candidates remains unchanged.
 
+This selection comes before the [selection of more specific classes of parameters](#concrete): a candidate of the current namespace whose parameter classes merely match the call — an abstract property declared for a base class, for instance — wins over a property of another namespace declared for the class of the argument itself, and the reference binds to it with no diagnostic (an abstract property with no implementation for that class then returns `NULL`). The example of module `ResolveC` below shows the selection between `ResolveA.f[A]` and `ResolveB.f[B]`.
+
 ### Number of parameters matches {#metacode}
 
 The number of parameters of the candidate is equal to the number of parameters of the call.

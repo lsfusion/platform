@@ -33,7 +33,7 @@ For an abstract property in the [mutually exclusive](../paradigm/Property_extens
 
 - `param1, ..., paramN`
 
-    List of [typed parameters](IDs.md#paramid) of the implementation being added. Defines its signature. The list may be empty. The number of parameters and their classes must be compatible with the signature of the abstract property. These parameters can be used in `implementationExpr` and, for the `CASE` form, in `conditionExpr`.
+    List of [typed parameters](IDs.md#paramid) of the implementation being added. For the `MULTI` and `VALUE` forms, their classes are the signature of the implementation. For the `CASE` form, they only type the parameters in the expressions and add no class restriction to the selection condition: the classes for which the implementation is selected follow from `conditionExpr` alone. The list may be empty. The number of parameters and their classes must be compatible with the signature of the abstract property. These parameters can be used in `implementationExpr` and, for the `CASE` form, in `conditionExpr`.
 
 - `conditionExpr`
 

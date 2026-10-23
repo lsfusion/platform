@@ -21,7 +21,9 @@ The basic nested mode preserves the property value for all major session-managem
 - after [applying changes](Apply_changes_APPLY.md);
 - after [canceling changes](Cancel_changes_CANCEL.md).
 
-If preservation is required only for part of these operations, a restricted nested mode is used: either only for [applying changes](Apply_changes_APPLY.md) and [canceling changes](Cancel_changes_CANCEL.md), or only when entering and leaving a [new session](New_session_NEWSESSION_NESTEDSESSION.md).
+In the basic mode the values therefore travel in both directions through every new session the property takes part in: a value assigned inside the new session — by a form opened there, for instance — is copied back into the session the new one was created from as soon as the creating action ends, and a later new session created from that session receives the values it holds by then, whenever that operation migrates the property.
+
+If preservation is required only for part of these operations, a restricted nested mode is used: either only for [applying changes](Apply_changes_APPLY.md) and [canceling changes](Cancel_changes_CANCEL.md), or only when entering and leaving a [new session](New_session_NEWSESSION_NESTEDSESSION.md). The restricted mode for applying and canceling changes does not by itself copy the property through a new session: the values of such a property — the working storage of one form, for instance — stay in the session they were assigned in unless an operation copies the whole session or selects the property explicitly.
 
 ### Language
 
