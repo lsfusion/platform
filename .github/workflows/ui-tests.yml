@@ -47,12 +47,13 @@ jobs:
           curl -fsS -o "$RUNNER_TEMP/web-client.war" $repo/web-client/$version/web-client-$war.war
           echo "Snapshots: web client $war, server $(snapshot server)" | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Run the browser tests
-        # bf: the dependency tree's poms in parallel, as a cold cache fetches every one through repo.lsfusion.org
+        # bf: the dependency tree's poms in parallel, as a cold cache fetches every one through repo.lsfusion.org;
+        # tomcat: the web container the client is shipped in
         env:
           TESTS: ${{ inputs.tests || 'Ui*IT' }}
         run: >
-          mvn -B -ntp -pl tests verify -Pui -Dui.war="$RUNNER_TEMP/web-client.war" -Dit.test="$TESTS" -Dtest=none
-          -Dsurefire.failIfNoSpecifiedTests=false -Daether.dependencyCollector.impl=bf
+          mvn -B -ntp -pl tests verify -Pui -Dui.war="$RUNNER_TEMP/web-client.war" -Dui.container=tomcat -Dit.test="$TESTS"
+          -Dtest=none -Dsurefire.failIfNoSpecifiedTests=false -Daether.dependencyCollector.impl=bf
       - name: Summary
         if: always()
         run: python3 .github/scripts/ui_tests_summary.py | tee -a "$GITHUB_STEP_SUMMARY"

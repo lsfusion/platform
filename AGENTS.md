@@ -104,7 +104,7 @@ deploy, so run those of a module you change. Where a new test goes:
 - **unit** — plain JUnit in the module's own `src/test/java`, for what needs no server. The web client's GWT tests (`GWTTestCase`) are unit tests too: web-client's surefire configuration runs them compiled to JavaScript in HtmlUnit. The custom-view registry's own JS has a node test, run by hand: `node server/src/test/js/lsfusion-custom-registry-test.js`;
 - **syntax** — `tests/compile/ok/<theme>/X.lsf` has to compile, `tests/compile/fail/<theme>/X.lsf` has to fail with every non-blank line of its `X.expected` somewhere in the output. Run with `dryRun`, which compiles the logic and exits before touching the database: all of `ok` in one run, one run per `fail` module (`LsfCompileTest`, surefire);
 - **server behaviour** — an action named `test*`, without parameters, at the top level of a module under `tests/src/main/lsfusion/<theme>/` (`LsfServerIT`, failsafe). Nothing is registered: modules come off the classpath, and every top-level name beginning with `test` is taken for a test and called, so a helper in a test module goes by another name. Each is called through the external HTTP `/exec`, so it runs in a session of its own and its changes are dropped afterwards — a test that needs them kept has to `APPLY`, and what it applies stays in the database for the tests after it. Assertions live in `TestUtils.lsf` and end in `fail(message)`, which is what the report shows. `/exec` has no client: the runner starts the server with `openFormsWithoutClient`, with which `SHOW ... NOWAIT` opens the form - its `ON INIT` and the `SHOW`'s init block run -, reads it once, as a client gets its first changes - the events that reading fires run (`ON ORDER`, `ON FILTER`, ...) -, and closes it right away, so that is where a test runs the operators of an open form (`ORDER`, `FILTER`, ...); a `SHOW` that waits for the form still fails. All the test modules are one logics, and a script `EVAL` runs sees every one of them: a name two modules declare is ambiguous there, so a test module prefixes its names;
-- **browser** — for what only the web client shows: a class `Ui<Theme>IT extends UiTest` in `tests/src/ui/java/lsfusion/tests/`, with the forms and actions it works on in `tests/src/main/lsfusion/ui/Ui<Theme>.lsf` (failsafe, the `ui` profile). `UiTest` starts a server of its own, the web client's war in a jetty and a browser driven by Playwright, once for all the browser tests of a run, and opens `/main` for each test in a browser context of its own. The test opens its form through the navigator (`open`), finds what it works on with `form`, `cell` and `row`, types with `edit`, and calls the module's actions through `/exec`: `exec` seeds its data, `check` runs an assertion, retried for 10 s, since the server gets what the browser sent a moment after the click. The module prefixes its names and begins none with `test`, which `LsfServerIT` would call as a test; its forms sit in a navigator folder of its own, each under an element named as the form. A test seeds its data in the test method, under names no other attempt has (`System.nanoTime()`): what a failed attempt saved stays in the database for the rerun.
+- **browser** — for what only the web client shows: a class `Ui<Theme>IT extends UiTest` in `tests/src/ui/java/lsfusion/tests/`, with the forms and actions it works on in `tests/src/main/lsfusion/ui/Ui<Theme>.lsf` (failsafe, the `ui` profile). `UiTest` starts a server of its own, the web client's war in a web container and a browser driven by Playwright, once for all the browser tests of a run, and opens `/main` for each test in a browser context of its own. The test opens its form through the navigator (`open`), finds what it works on with `form`, `cell` and `row`, types with `edit`, and calls the module's actions through `/exec`: `exec` seeds its data, `check` runs an assertion, retried for 10 s, since the server gets what the browser sent a moment after the click. The module prefixes its names and begins none with `test`, which `LsfServerIT` would call as a test; its forms sit in a navigator folder of its own, each under an element named as the form. A test seeds its data in the test method, under names no other attempt has (`System.nanoTime()`): what a failed attempt saved stays in the database for the rerun.
 
 ```
 mvn -pl tests -am test                        # the compile corpus only
@@ -147,19 +147,21 @@ mvn -pl tests -am verify -Pui -Dit.test=UiGridIT -Dtest=none -Dsurefire.failIfNo
 in draft mode. `-Dit.test` picks the classes, `'Ui*IT'` all the browser ones, and leaves out the server behaviour
 tests; `-Dtest=none -Dsurefire.failIfNoSpecifiedTests=false` leaves out the compile corpus. `-Dui.war=<path>` takes
 the war from elsewhere, e.g. from another worktree, so that a fresh one need not build its own.
+`-Dui.container` is the web container the war runs in: `jetty` by default, which the client is developed with, or
+`tomcat`, the distribution of the Tomcat it is shipped in.
 `-Dui.browser` is a Playwright channel of an installed browser, `chrome` by default or `msedge`, or `docker`,
 Playwright's image, for a box with no browser: it needs Docker on Linux, where its container on the host's network
-reaches the jetty on `localhost`. `-Dui.headless=false` shows the browser. The server's and jetty's logs are in
-`tests/target/ui`, and a failed test leaves a screenshot, the page and a Playwright trace in
+reaches the web client on `localhost`. `-Dui.headless=false` shows the browser. The server's and the web container's
+logs are in `tests/target/ui`, and a failed test leaves a screenshot, the page and a Playwright trace in
 `tests/target/ui/failures/<Class>.<method>.png|html|zip`, its message listing the errors the page logged. The trace
 steps through the test action by action: drop the zip onto https://trace.playwright.dev, which opens it in the
 browser.
 
-On GitHub Actions, `.github/workflows/ui-tests.yml` runs the browser tests on weekday mornings and by hand (Actions →
-Browser tests → Run workflow, with the classes as `-Dit.test` takes them). It builds only the tests module of its
-branch, against the latest snapshots of the war and the server of the branch's version: a change to the server or
-the client is tested there once deployed, one to the tests at once. A run's page lists the failed tests with what
-they failed with; its `ui-tests` artifact holds the logs and what a failed test left.
+On GitHub Actions, `.github/workflows/ui-tests.yml` runs the browser tests in Tomcat on weekday mornings and by hand
+(Actions → Browser tests → Run workflow, with the classes as `-Dit.test` takes them). It builds only the tests
+module of its branch, against the latest snapshots of the war and the server of the branch's version: a change to
+the server or the client is tested there once deployed, one to the tests at once. A run's page lists the failed
+tests with what they failed with; its `ui-tests` artifact holds the logs and what a failed test left.
 
 The web client under Playwright has habits of its own, which the helpers of `UiTest` keep to. A locator looks
 inside the form's root, `[lsfusion-form=<Module.form>]`: a hidden tab keeps its DOM, with the same names in it. A

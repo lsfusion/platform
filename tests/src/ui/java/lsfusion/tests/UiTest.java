@@ -17,6 +17,7 @@ import org.junit.Rule;
 import org.junit.rules.TestRule;
 import org.junit.runners.model.Statement;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -27,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,24 +44,27 @@ import java.util.regex.Pattern;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static lsfusion.tests.TestServer.BASE;
 
-/** The base of the browser tests: a test server, the web client's war in a jetty of its own and a browser driven by
- *  playwright. The stack is one for all the classes of the run: the first test starts it, the jvm's exit stops it.
- *  Each test gets a browser context of its own with /main open in it. A failed test leaves a screenshot, the page and
- *  a trace in target/ui/failures/<Class>.<method>.*, and its message lists the errors the page logged; one listed in
- *  quarantine.txt as <Class>.<method> is reported as skipped. -Dui.browser is a playwright channel (chrome, msedge) or
- *  docker - playwright's image, for a box with no browser; -Dui.headless=false shows the browser; -Dui.watchdog=<ms>
- *  takes thread dumps of the server and of jetty into target/ui/slow every that many ms a test runs. */
+/** The base of the browser tests: a test server, the web client's war in a web container of its own and a browser
+ *  driven by playwright. The stack is one for all the classes of the run: the first test starts it, the jvm's exit
+ *  stops it. Each test gets a browser context of its own with /main open in it. A failed test leaves a screenshot, the
+ *  page and a trace in target/ui/failures/<Class>.<method>.*, and its message lists the errors the page logged; one
+ *  listed in quarantine.txt as <Class>.<method> is reported as skipped. -Dui.container is the web container, jetty,
+ *  which the client is developed with, or tomcat, which it is shipped in; -Dui.browser is a playwright channel (chrome,
+ *  msedge) or docker - playwright's image, for a box with no browser; -Dui.headless=false shows the browser;
+ *  -Dui.watchdog=<ms> takes thread dumps of the server and of the web container into target/ui/slow every that many ms
+ *  a test runs. */
 public abstract class UiTest {
 
     private static final Path UI = BASE.resolve("target/ui");
     private static final String DATABASE = "lsfusion_test_ui_" + ProcessHandle.current().pid(); // LsfServerIT, in the same jvm, takes lsfusion_test_<pid>
     private static final HttpClient HTTP = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NEVER).build();
     private static final long WATCHDOG = Long.getLong("ui.watchdog", 0);
+    private static final String WEB_CONTAINER = System.getProperty("ui.container", "jetty");
     private static final ScheduledExecutorService DUMPS = Executors.newSingleThreadScheduledExecutor();
     // every load logs these two: chrome has no push api in an incognito context, which a test's is
     private static final Pattern PUSH_API = Pattern.compile("Push API|Registration failed - permission denied");
 
-    private static Process server, jetty;
+    private static Process server, web; // the test server and the web container
     private static int httpPort, webPort;
     private static Playwright playwright;
     private static Browser browser;
@@ -80,8 +85,8 @@ public abstract class UiTest {
             }
     }
 
-    // the server, jetty and the browser start side by side: the web client looks the server up on a request, not at
-    // its own start
+    // the server, the web container and the browser start side by side: the web client looks the server up on a
+    // request, not at its own start
     private static void start() throws Exception {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
@@ -92,7 +97,7 @@ public abstract class UiTest {
         }));
         long started = System.nanoTime();
 
-        int[] ports = TestServer.freePorts(6); // the server's four, jetty's and docker's browser's: taken at once, none comes twice
+        int[] ports = TestServer.freePorts(6); // the server's four, the web container's and docker's browser's: taken at once, none comes twice
         httpPort = ports[0];
         webPort = ports[4];
         Path serverLog = UI.resolve("server.log");
@@ -100,21 +105,35 @@ public abstract class UiTest {
                 "settings.enableAPI=2", "settings.enableUI=2", // anonymous both ways : neither /exec nor the browser logs in
                 "user.language=en", "user.country=US", "user.timezone=UTC"); // the captions and formats follow the server, not the browser
 
-        Path jettyLog = UI.resolve("jetty.log");
-        jetty = new ProcessBuilder(Paths.get(System.getProperty("java.home"), "bin", "java").toString(),
+        Path webLog = UI.resolve(WEB_CONTAINER + ".log");
+        List<String> command = new ArrayList<>(Arrays.asList(Paths.get(System.getProperty("java.home"), "bin", "java").toString(),
                 "--add-opens=java.base/java.util=ALL-UNNAMED", "--add-opens=java.base/java.lang=ALL-UNNAMED", // gwt-rpc serializes LinkedHashMap by reflection
-                "-Djava.io.tmpdir=" + Files.createDirectories(UI.resolve("jetty-tmp")), // its work dirs outlive the forced stop: mvn clean takes them
-                "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StdErrLog", "-Dorg.eclipse.jetty.LEVEL=INFO", // jetty-runner logs nothing otherwise
+                "-Djava.io.tmpdir=" + Files.createDirectories(UI.resolve(WEB_CONTAINER + "-tmp")), // its work dirs outlive the forced stop: mvn clean takes them
                 "-Duser.language=en", "-Duser.country=US", "-Duser.timezone=UTC",
-                "-Dapp.server=localhost", "-Dapp.port=" + ports[1],
-                "-jar", UI.resolve("jetty-runner.jar").toString(), "--port", String.valueOf(webPort), System.getProperty("ui.war"))
-                .redirectErrorStream(true).redirectOutput(jettyLog.toFile()).start();
+                "-Dapp.server=localhost", "-Dapp.port=" + ports[1]));
+        if (WEB_CONTAINER.equals("tomcat")) {
+            // the distribution as the client's docker image runs it, the war as ROOT, only on our port and in an appBase
+            // without the distribution's manager, docs and examples
+            Path home = Paths.get(System.getProperty("ui.tomcat"));
+            Path webapps = Files.createDirectories(UI.resolve("tomcat-webapps"));
+            Files.copy(Paths.get(System.getProperty("ui.war")), webapps.resolve("ROOT.war"), StandardCopyOption.REPLACE_EXISTING);
+            Path config = UI.resolve("tomcat-server.xml");
+            Files.write(config, new String(Files.readAllBytes(home.resolve("conf/server.xml")), StandardCharsets.UTF_8)
+                    .replace("port=\"8005\"", "port=\"-1\"").replace("port=\"8080\"", "port=\"" + webPort + "\"")
+                    .replace("appBase=\"webapps\"", "appBase=\"" + webapps + "\"").getBytes(StandardCharsets.UTF_8));
+            command.addAll(Arrays.asList("-Dcatalina.home=" + home, "-Dcatalina.base=" + home,
+                    "-cp", home.resolve("bin/bootstrap.jar") + File.pathSeparator + home.resolve("bin/tomcat-juli.jar"),
+                    "org.apache.catalina.startup.Bootstrap", "-config", config.toString(), "start"));
+        } else
+            command.addAll(Arrays.asList("-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StdErrLog", "-Dorg.eclipse.jetty.LEVEL=INFO", // jetty-runner logs nothing otherwise
+                    "-jar", UI.resolve("jetty-runner.jar").toString(), "--port", String.valueOf(webPort), System.getProperty("ui.war")));
+        web = new ProcessBuilder(command).redirectErrorStream(true).redirectOutput(webLog.toFile()).start();
 
         playwright = Playwright.create(new Playwright.CreateOptions().setEnv(Collections.singletonMap("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD", "1")));
         String channel = System.getProperty("ui.browser", "chrome");
         if (channel.equals("docker")) {
             // playwright's image of the client's version serves a browser over a websocket, on the host's network, so
-            // that it reaches the jetty on localhost
+            // that it reaches the web client on localhost
             String version = System.getProperty("ui.playwrightVersion");
             int port = ports[5];
             container = "lsfusion-ui-browser-" + ProcessHandle.current().pid();
@@ -150,16 +169,16 @@ public abstract class UiTest {
             } catch (IOException e) { // not listening yet
                 return false;
             }
-        }, jetty, jettyLog, "the web client did not start");
-        System.out.printf(Locale.ROOT, "lsFusion UI test stack up in: browser %.1f s, server %.1f s, web client %.1f s; database %s, logs in %s%n",
-                browserUp, serverUp, (System.nanoTime() - started) / 1e9, DATABASE, UI);
+        }, web, webLog, "the web client did not start");
+        System.out.printf(Locale.ROOT, "lsFusion UI test stack up in: browser %.1f s, server %.1f s, web client in %s %.1f s; database %s, logs in %s%n",
+                browserUp, serverUp, WEB_CONTAINER, (System.nanoTime() - started) / 1e9, DATABASE, UI);
     }
 
     // a throw ends the hook, so what nothing else would stop goes first: the processes and the container outlive the jvm,
     // playwright's driver does not
     private static void stop() throws Exception {
-        if (jetty != null)
-            jetty.destroyForcibly().waitFor();
+        if (web != null)
+            web.destroyForcibly().waitFor();
         if (container != null)
             new ProcessBuilder("docker", "rm", "-f", container).start().waitFor();
         if (server != null)
@@ -213,16 +232,16 @@ public abstract class UiTest {
         }
     };
 
-    // nothing in the logs tells what a stalled test waits for, the threads of the server and of jetty do
+    // nothing in the logs tells what a stalled test waits for, the threads of the server and of the web container do
     private static Runnable dumps(String name) {
         int[] count = {0};
         return () -> {
             count[0]++;
             try {
                 Path slow = Files.createDirectories(UI.resolve("slow"));
-                for (Process process : Arrays.asList(server, jetty))
+                for (Process process : Arrays.asList(server, web))
                     new ProcessBuilder(Paths.get(System.getProperty("java.home"), "bin", "jcmd").toString(), String.valueOf(process.pid()), "Thread.print")
-                            .redirectErrorStream(true).redirectOutput(slow.resolve(name + "-" + count[0] + (process == server ? "-server" : "-jetty") + ".txt").toFile())
+                            .redirectErrorStream(true).redirectOutput(slow.resolve(name + "-" + count[0] + (process == server ? "-server" : "-" + WEB_CONTAINER) + ".txt").toFile())
                             .start().waitFor();
             } catch (Exception e) { // thrown, it would cancel the dumps that follow
                 e.printStackTrace();

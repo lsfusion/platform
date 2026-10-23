@@ -90,7 +90,7 @@
 
     <profiles>
         <profile>
-            <!-- the browser tests: the web client's war in a jetty of its own, against a test server, driven by playwright -->
+            <!-- the browser tests: the web client's war in a web container of its own, against a test server, driven by playwright -->
             <id>ui</id>
             <properties>
                 <playwright.version>1.63.0</playwright.version>
@@ -98,6 +98,8 @@
                 <jetty.version>9.4.58.v20250814</jetty.version>
                 <!-- the installed chrome; -Dui.browser overrides it : see UiTest -->
                 <ui.browser>chrome</ui.browser>
+                <!-- jetty or tomcat; -Dui.container overrides it : see UiTest -->
+                <ui.container>jetty</ui.container>
             </properties>
             <dependencies>
                 <dependency>
@@ -163,8 +165,52 @@
                                 <ui.war>${project.basedir}/../web-client/target/lsfusion-client-${project.version}.war</ui.war>
                                 <ui.playwrightVersion>${playwright.version}</ui.playwrightVersion>
                                 <ui.browser>${ui.browser}</ui.browser>
+                                <ui.container>${ui.container}</ui.container>
+                                <ui.tomcat>${project.build.directory}/ui/apache-tomcat-${tomcat.version}</ui.tomcat>
                             </systemPropertyVariables>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <!-- the tomcat of -Dui.container=tomcat, fetched only then -->
+            <id>ui-tomcat</id>
+            <activation>
+                <property>
+                    <name>ui.container</name>
+                    <value>tomcat</value>
+                </property>
+            </activation>
+            <properties>
+                <!-- the tomcat the web client is shipped in (web-client/Dockerfile) -->
+                <tomcat.version>9.0.123</tomcat.version>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>tomcat</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.apache.tomcat</groupId>
+                                            <artifactId>tomcat</artifactId>
+                                            <version>${tomcat.version}</version>
+                                            <type>zip</type>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${project.build.directory}/ui</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
