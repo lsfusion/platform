@@ -16,6 +16,7 @@ import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.authentication.LSFClientRegistrationRepository;
 import lsfusion.http.authentication.LSFRemoteAuthenticationProvider;
 import lsfusion.http.provider.logics.LogicsProvider;
+import lsfusion.http.provider.logics.LogicsProviderImpl;
 import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.AuthenticationException;
@@ -512,38 +513,46 @@ public class MainController {
 //            return null;
 //        }
 
-        ServerSettings serverSettings = getServerSettings(request, false);
-
-        addStandardModelAttributes(model, request, serverSettings);
-
-        model.addAttribute("logicsName", getLogicsName(serverSettings));
-        model.addAttribute("lsfParams", getLsfParams(serverSettings));
-
         String sessionId;
+        ServerSettings serverSettings;
         LogicsSessionObject.InitSettings initSettings;
+        Result<ServerSettings> rServerSettings = new Result<>();
         try {
             Result<LogicsSessionObject.InitSettings> rInitSettings = new Result<>();
             sessionId = logicsProvider.runRequest(request, (sessionObject, retry) -> {
+                // the settings are read in the same request the navigator is created in, so that the page gets either both
+                // or the "not available" page: read separately, with the failure swallowed, they went missing when that call
+                // failed on the reference to an app server that had been restarted, while the navigator call right after it
+                // already got a fresh one - and the page was built without the server's resources (an unstyled client)
+                ServerSettings settings = LogicsProviderImpl.getServerSettings(request, false, sessionObject);
+                rServerSettings.set(settings);
                 try {
                     String result = navigatorProvider.createNavigator(sessionObject, request);
-                    rInitSettings.set(getInitSettings(navigatorProvider.getNavigatorSessionObject(result).remoteNavigator, serverSettings, request, new ClientInfo(1366, 768, 1.0, ClientType.WEB_DESKTOP, true)));
+                    rInitSettings.set(getInitSettings(navigatorProvider.getNavigatorSessionObject(result).remoteNavigator, settings, request, new ClientInfo(1366, 768, 1.0, ClientType.WEB_DESKTOP, true)));
                     return result;
                 } catch (RemoteMessageException e) {
                     request.getSession().setAttribute(AUTHENTICATION_EXCEPTION, new InternalAuthenticationServiceException(e.getMessage()));
                     throw e;
                 }
             });
+            serverSettings = rServerSettings.result;
             initSettings = rInitSettings.result;
         } catch (AuthenticationException authenticationException) {
             return getRedirectUrl("/logout", null, request);
         } catch (Throwable e) {
+            addStandardModelAttributes(model, request, rServerSettings.result);
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("redirectURL", getDirectUrl("/main", request));
             return "app-not-available";
         }
 
+        addStandardModelAttributes(model, request, serverSettings);
+
+        model.addAttribute("logicsName", getLogicsName(serverSettings));
+        model.addAttribute("lsfParams", getLsfParams(serverSettings));
+
         model.addAttribute("sessionID", sessionId);
-        addResourcesAttributes(model, serverSettings, false, serverSettings != null ? initSettings.mainResourcesBeforeSystem : null, serverSettings != null ? initSettings.mainResourcesAfterSystem : null);
+        addResourcesAttributes(model, serverSettings, false, initSettings.mainResourcesBeforeSystem, initSettings.mainResourcesAfterSystem);
 
         // the page (with its resources, whose .jsx transform above can take a long time) is built: only now does the
         // client's grace to send InitializeNavigator start, so a slow build cannot reap this navigator before its
