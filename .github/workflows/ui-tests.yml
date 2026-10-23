@@ -1,0 +1,69 @@
+name: Browser tests
+
+# The web client's browser tests (tests/src/ui), on weekday mornings and by hand rather than in every deploy. Only the
+# tests module is built: the war and the server are the latest snapshots on repo.lsfusion.org
+on:
+  schedule:
+    - cron: '17 6 * * 1-5' # 09:17 in Minsk, before the day's deploys; off the hour, which GitHub delays the most
+  workflow_dispatch:
+    inputs:
+      tests:
+        description: Test classes, as -Dit.test takes them
+        default: Ui*IT
+
+permissions:
+  contents: read
+
+concurrency: # one run at a time
+  group: ${{ github.workflow }}
+
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 11 # as Jenkins builds
+          cache: maven
+      - name: Set up Maven
+        # a fixed one: the image's changes with the image, and its 3.10 queries every repository the poms name, dead
+        # ones included
+        run: |
+          v=3.9.16
+          curl -fsS https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/$v/apache-maven-$v-bin.tar.gz | tar xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-$v/bin" >> "$GITHUB_PATH"
+      - name: Start Postgres
+        run: docker compose -f tests/compose.yaml up -d db --wait
+      - name: Download the web client
+        # by curl: maven would keep the war twice in its local repository, and the cache would keep a stale copy
+        run: |
+          repo=https://repo.lsfusion.org/lsfusion/platform
+          version=$(sed -n '/<version>/{s|.*<version>\(.*\)</version>.*|\1|p;q}' pom.xml) # the root pom's parent's
+          snapshot() { curl -fsS $repo/$1/$version/maven-metadata.xml | sed -n 's|.*<value>\(.*\)</value>.*|\1|p' | head -1; }
+          war=$(snapshot web-client)
+          curl -fsS -o "$RUNNER_TEMP/web-client.war" $repo/web-client/$version/web-client-$war.war
+          echo "Snapshots: web client $war, server $(snapshot server)" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Run the browser tests
+        # bf: the dependency tree's poms in parallel, as a cold cache fetches every one through repo.lsfusion.org
+        env:
+          TESTS: ${{ inputs.tests || 'Ui*IT' }}
+        run: >
+          mvn -B -ntp -pl tests verify -Pui -Dui.war="$RUNNER_TEMP/web-client.war" -Dit.test="$TESTS" -Dtest=none
+          -Dsurefire.failIfNoSpecifiedTests=false -Daether.dependencyCollector.impl=bf
+      - name: Summary
+        if: always()
+        run: python3 .github/scripts/ui_tests_summary.py | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: ui-tests
+          overwrite: true # on a rerun
+          # what failed tests left, the logs of the server and of the web container, and the server's own
+          path: |
+            tests/target/ui/failures/
+            tests/target/ui/*.log
+            tests/logs/
+          if-no-files-found: ignore

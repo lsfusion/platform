@@ -148,13 +148,18 @@ in draft mode. `-Dit.test` picks the classes, `'Ui*IT'` all the browser ones, an
 tests; `-Dtest=none -Dsurefire.failIfNoSpecifiedTests=false` leaves out the compile corpus. `-Dui.war=<path>` takes
 the war from elsewhere, e.g. from another worktree, so that a fresh one need not build its own.
 `-Dui.browser` is a Playwright channel of an installed browser, `chrome` by default or `msedge`, or `docker`,
-Playwright's image: Jenkins runs that one, and it needs Docker on Linux, where its container on the host's
-network reaches the jetty on `localhost`. After `tests/pom.xml` moves to another Playwright version, remove the
-old one's image from the Jenkins box by hand (2.5 GB, `docker rmi mcr.microsoft.com/playwright:v<old version>`).
-`-Dui.headless=false` shows the browser. The server's and jetty's logs are in `tests/target/ui`, and a failed test
-leaves a screenshot, the page and a Playwright trace in `tests/target/ui/failures/<Class>.<method>.png|html|zip`,
-its message listing the errors the page logged. The trace steps through the test action by action: drop the zip
-onto https://trace.playwright.dev, which opens it in the browser.
+Playwright's image, for a box with no browser: it needs Docker on Linux, where its container on the host's network
+reaches the jetty on `localhost`. `-Dui.headless=false` shows the browser. The server's and jetty's logs are in
+`tests/target/ui`, and a failed test leaves a screenshot, the page and a Playwright trace in
+`tests/target/ui/failures/<Class>.<method>.png|html|zip`, its message listing the errors the page logged. The trace
+steps through the test action by action: drop the zip onto https://trace.playwright.dev, which opens it in the
+browser.
+
+On GitHub Actions, `.github/workflows/ui-tests.yml` runs the browser tests on weekday mornings and by hand (Actions →
+Browser tests → Run workflow, with the classes as `-Dit.test` takes them). It builds only the tests module of its
+branch, against the latest snapshots of the war and the server of the branch's version: a change to the server or
+the client is tested there once deployed, one to the tests at once. A run's page lists the failed tests with what
+they failed with; its `ui-tests` artifact holds the logs and what a failed test left.
 
 The web client under Playwright has habits of its own, which the helpers of `UiTest` keep to. A locator looks
 inside the form's root, `[lsfusion-form=<Module.form>]`: a hidden tab keeps its DOM, with the same names in it. A
