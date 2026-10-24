@@ -1,0 +1,32 @@
+MODULE DesignLogicalLiteralExpression;
+
+REQUIRE System;
+
+// a component option value that starts with a logical literal is an expression, unless the literal is the whole
+// value (fixed for #1933)
+designLiteralFlag = DATA BOOLEAN (INTEGER);
+
+FORM designLogicalLiteralExpression
+    OBJECTS i = INTEGER
+    PROPERTIES(i) designLiteralFlag
+;
+
+DESIGN designLogicalLiteralExpression {
+    NEW trueIf {
+        showIf = TRUE IF designLiteralFlag(i);
+    }
+    NEW trueAnd {
+        showIf = TRUE AND designLiteralFlag(i);
+    }
+    NEW tTrueIf {
+        showIf = TTRUE IF designLiteralFlag(i);
+    }
+    NEW inParentheses {
+        showIf = (TRUE IF designLiteralFlag(i));
+    }
+    NEW literals {
+        horizontal = TRUE;
+        tabbed = FALSE;
+        collapsible = TTRUE;
+    }
+}

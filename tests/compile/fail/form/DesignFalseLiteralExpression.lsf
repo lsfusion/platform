@@ -1,0 +1,18 @@
+MODULE DesignFalseLiteralExpression;
+
+REQUIRE System;
+
+// FALSE at the start of a component option expression is checked as in any other expression, only a bare FALSE
+// value is allowed (#1933)
+designFalseFlag = DATA BOOLEAN (INTEGER);
+
+FORM designFalseLiteralExpression
+    OBJECTS i = INTEGER
+    PROPERTIES(i) designFalseFlag
+;
+
+DESIGN designFalseLiteralExpression {
+    NEW falseIf {
+        showIf = FALSE IF designFalseFlag(i);
+    }
+}

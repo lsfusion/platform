@@ -5893,8 +5893,8 @@ componentPropertyValue returns [Object value] //commented literals are in design
 	//|   i=intLiteral { $value = $i.val; }
 	//|   d=doubleLiteral { $value = $d.val; }
 	|   dim=dimensionLiteral { $value = $dim.val; }
-	|   b=booleanLiteral { $value = $b.val; }
-	|   tb=tbooleanLiteral { $value = $tb.val; }
+	|   {";".equals(input.LT(2).getText())}?=> b=booleanLiteral { $value = $b.val; }
+	|   {";".equals(input.LT(2).getText())}?=> tb=tbooleanLiteral { $value = $tb.val; }
 	|   intB=boundsIntLiteral { $value = $intB.val; }
 	|   doubleB=boundsDoubleLiteral { $value = $doubleB.val; }
 	|   alignment=flexAlignmentLiteral { $value = $alignment.val; }
