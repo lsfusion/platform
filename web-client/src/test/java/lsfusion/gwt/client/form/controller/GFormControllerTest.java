@@ -1,7 +1,10 @@
 package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.dom.client.Document;
-import lsfusion.gwt.client.form.filter.user.controller.GPlatformFiltersController;
+import lsfusion.gwt.client.form.filter.user.controller.GFilterInputController;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
+import lsfusion.gwt.client.form.filter.user.controller.GPlatformFilterController;
+import lsfusion.gwt.client.form.filter.user.controller.GPlatformFilterInputController;
 import lsfusion.gwt.client.view.MainFrame;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
@@ -21,7 +24,6 @@ import lsfusion.gwt.client.RemoteDispatchAsync;
 import lsfusion.gwt.client.action.GRequestUserInputAction;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
@@ -674,7 +676,7 @@ public class GFormControllerTest extends GWTTestCase {
     public void testAFilterReactDrawsOverThePlatformsPanelStatesANullValue() {
         FiltersForm filters = new FiltersForm(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
 
         filters.model(controller).changeFilter(filters.drawn, filters.condition(null));
         assertTrue(filters.filters(controller, filters.price));
@@ -685,7 +687,7 @@ public class GFormControllerTest extends GWTTestCase {
     public void testThePlatformsPanelsResetTakesOffTheNullsOfItsFixedRows() {
         FiltersForm filters = new FiltersForm(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
 
         filters.report(controller, new GPropertyFilter(new GFilter(filters.quantity), filters.group, GGroupObjectValue.EMPTY, null, false, GCompare.EQUALS, true));
         filters.model(controller).changeFilter(filters.drawn, filters.condition(null));
@@ -703,7 +705,7 @@ public class GFormControllerTest extends GWTTestCase {
     public void testAFixedRowTakesTheFirstConditionOnItsColumn() {
         FiltersForm filters = new FiltersForm(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
 
         filters.report(controller, new GPropertyFilter(new GFilter(filters.price), filters.group, GGroupObjectValue.EMPTY, PValue.getPValue(1), GCompare.GREATER),
                 new GPropertyFilter(new GFilter(filters.price), filters.group, GGroupObjectValue.EMPTY, PValue.getPValue(5), GCompare.LESS),
@@ -732,7 +734,7 @@ public class GFormControllerTest extends GWTTestCase {
     public void testAPanelWithNoFiltersBoxsFixedRowsTakeTheServersList() {
         FiltersForm filters = new FiltersForm(false);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
 
         filters.report(controller, new GPropertyFilter(new GFilter(filters.price), filters.group, GGroupObjectValue.EMPTY, PValue.getPValue(5), GCompare.GREATER),
                 new GPropertyFilter(new GFilter(filters.quantity), filters.group, GGroupObjectValue.EMPTY, PValue.getPValue(2), GCompare.EQUALS));
@@ -750,7 +752,7 @@ public class GFormControllerTest extends GWTTestCase {
         FiltersForm filters = new FiltersForm(true);
         Collections.reverse(filters.group.grid.filters);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
 
         assertTrue(isLast(panelRow(panel, filters.placed)));
         filters.change(controller, "price", 5.0);
@@ -763,7 +765,7 @@ public class GFormControllerTest extends GWTTestCase {
     public void testTheNextConditionOnAFiltersColumnTakesItsRowOnceItsOwnIsOff() {
         FiltersForm filters = new FiltersForm(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         filters.report(controller, filters.condition(filters.quantity, PValue.getPValue(2), GCompare.EQUALS),
                 filters.condition(filters.quantity, PValue.getPValue(1), GCompare.GREATER));
         assertEquals(1, freeRows(panel).size()); // the second on quantity, a row of the box's
@@ -783,7 +785,7 @@ public class GFormControllerTest extends GWTTestCase {
         FiltersForm filters = new FiltersForm(true);
         filters.plainFirst();
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         GPropertyFilter amount = new GPropertyFilter(new GFilter(filters.amount), filters.group, GGroupObjectValue.EMPTY, PValue.getPValue(50), false, GCompare.EQUALS, false);
         filters.report(controller, amount, filters.condition(filters.quantity, PValue.getPValue(2), GCompare.EQUALS));
 
@@ -798,7 +800,7 @@ public class GFormControllerTest extends GWTTestCase {
         FiltersForm filters = new FiltersForm(false);
         filters.plainFirst();
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         filters.report(controller, filters.condition(filters.amount, PValue.getPValue(50), GCompare.EQUALS),
                 filters.condition(filters.quantity, PValue.getPValue(2), GCompare.EQUALS));
 
@@ -814,7 +816,7 @@ public class GFormControllerTest extends GWTTestCase {
         try {
             FiltersForm filters = new FiltersForm(true);
             GFormController controller = filters.controller();
-            GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+            GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
             panel.setControlsVisible(true);
 
             filters.change(controller, "price", 5.0);
@@ -852,7 +854,7 @@ public class GFormControllerTest extends GWTTestCase {
                 FiltersForm filters = new FiltersForm(true);
                 filters.deliver(true);
                 GFormController controller = filters.controller();
-                GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+                GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
                 filters.change(controller, "price", 3.0, "{\"compare\": \">\"}"); // the controls hidden: applied at once
                 assertValue(3, filters.first(controller, filters.price).value.value);
 
@@ -878,7 +880,7 @@ public class GFormControllerTest extends GWTTestCase {
         FiltersForm filters = new FiltersForm(true);
         filters.deliver(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         panel.quickEditFilter(null, filters.price, GGroupObjectValue.EMPTY); // typing
         assertNull(filters.slot(controller, filters.drawn));
         assertTrue(freeRows(panel).isEmpty());
@@ -897,7 +899,7 @@ public class GFormControllerTest extends GWTTestCase {
         FiltersForm filters = new FiltersForm(true);
         filters.deliver(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         filters.change(controller, "price", 3.0, "{\"compare\": \">\"}");
         assertTrue(filters.filters(controller, filters.price));
         GFormChanges empty = new GFormChanges(); // the current row's price NULL
@@ -917,7 +919,7 @@ public class GFormControllerTest extends GWTTestCase {
         FiltersForm filters = new FiltersForm(true);
         filters.deliver(false);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         filters.change(controller, "price", 3.0, "{\"compare\": \">\"}");
 
         panel.addCondition(null, false, true); // F3
@@ -960,7 +962,7 @@ public class GFormControllerTest extends GWTTestCase {
     public void testAFixedRowShowsTheComparisonOfAConditionItTakes() {
         FiltersForm filters = new FiltersForm(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
 
         filters.report(controller, new GPropertyFilter(new GFilter(filters.quantity), filters.group, GGroupObjectValue.EMPTY, PValue.getPValue(2), GCompare.GREATER));
         GFilterConditionView row = panelRow(panel, filters.placed);
@@ -973,7 +975,7 @@ public class GFormControllerTest extends GWTTestCase {
     public void testAFixedRowShowsTheNegationOfAConditionItTakes() {
         FiltersForm filters = new FiltersForm(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
 
         filters.report(controller, new GPropertyFilter(new GFilter(filters.quantity), filters.group, GGroupObjectValue.EMPTY, PValue.getPValue(2), true, GCompare.GREATER, true));
         panel.setControlsVisible(true);
@@ -985,7 +987,7 @@ public class GFormControllerTest extends GWTTestCase {
     public void testAFixedRowKeepsItsPropertyWithItsControlsShown() {
         FiltersForm filters = new FiltersForm(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         panel.setControlsVisible(true);
         GFilterConditionView row = panelRow(panel, filters.placed);
         assertTrue(compareSelector(row).isVisible());
@@ -997,7 +999,7 @@ public class GFormControllerTest extends GWTTestCase {
     public void testAPanelRowTakesEnterInItsValueCellAlone() {
         FiltersForm filters = new FiltersForm(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         assertEnterInItsValueCellAlone(filters, controller, panelRow(panel, filters.placed));
     }
     // a value prepared in quantity's row, Enter pressed in another panel cell of its group, then in the row's value
@@ -1024,7 +1026,7 @@ public class GFormControllerTest extends GWTTestCase {
     public void testAPanelRowTakesEnterInItsRebuiltValueCell() {
         FiltersForm filters = new FiltersForm(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         GFilterConditionView view = panelRow(panel, filters.placed);
         rebuildValueCell(view);
         assertEnterInItsValueCellAlone(filters, controller, view);
@@ -1036,7 +1038,7 @@ public class GFormControllerTest extends GWTTestCase {
         FiltersForm filters = new FiltersForm(true);
         filters.filterAligned();
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         GFilterConditionView view = panelRow(panel, filters.outside);
         Widget caption = rowCaption(view);
         assertFalse(view.getElement().isOrHasChild(caption.getElement()));
@@ -1060,7 +1062,7 @@ public class GFormControllerTest extends GWTTestCase {
         filters.plainFirst();
         filters.deliver(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
 
         panel.addCondition(GKeyStroke.createAddUserFilterKeyEvent(), false, true); // F3
         List<GFilterConditionView> rows = freeRows(panel);
@@ -1079,7 +1081,7 @@ public class GFormControllerTest extends GWTTestCase {
         filters.plainFirst();
         filters.deliver(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         filters.model(controller).add(filters.condition(filters.amount, PValue.getPValue(1), GCompare.GREATER));
         panel.applyConditions();
 
@@ -1097,7 +1099,7 @@ public class GFormControllerTest extends GWTTestCase {
         filters.quantityFirst();
         filters.deliver(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
 
         panel.addCondition(GKeyStroke.createAddUserFilterKeyEvent(), false, true); // F3
         assertValue(2, rowCondition(panelRow(panel, filters.placed)).value.value);
@@ -1111,7 +1113,7 @@ public class GFormControllerTest extends GWTTestCase {
         filters.plainFirst();
         filters.deliver(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         filters.model(controller).add(filters.condition(filters.quantity, PValue.getPValue(1), GCompare.EQUALS));
         panel.applyConditions();
         assertTrue(filters.filters(controller, filters.quantity));
@@ -1130,7 +1132,7 @@ public class GFormControllerTest extends GWTTestCase {
         filters.plainFirst();
         filters.deliver(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
 
         panel.quickEditFilter(GKeyStroke.createAddUserFilterKeyEvent(), filters.amount, GGroupObjectValue.EMPTY);
         List<GFilterConditionView> rows = freeRows(panel);
@@ -1147,7 +1149,7 @@ public class GFormControllerTest extends GWTTestCase {
         filters.plainFirst();
         filters.deliver(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
 
         panel.addCondition();
         panel.addCondition();
@@ -1164,7 +1166,7 @@ public class GFormControllerTest extends GWTTestCase {
         FiltersForm filters = new FiltersForm(true);
         filters.plainFirst();
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         filters.model(controller).add(filters.condition(filters.amount, null, GCompare.EQUALS));
         changeRowValue(panelRow(panel, filters.placed), PValue.getPValue(3));
         assertEquals(Arrays.asList(filters.quantity, filters.amount), sentProperties(controller, filters)); // the amount row allows NULL
@@ -1179,7 +1181,7 @@ public class GFormControllerTest extends GWTTestCase {
         FiltersForm filters = new FiltersForm(true);
         filters.plainFirst();
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         filters.model(controller).add(filters.condition(filters.amount, PValue.getPValue(5), GCompare.EQUALS));
         GFilterConditionView row = freeRows(panel).get(0);
 
@@ -1207,7 +1209,7 @@ public class GFormControllerTest extends GWTTestCase {
                 filters.noFilters(); // no FILTER on either property: a slot would show the condition on its own
                 filters.deliver(false);
                 GFormController controller = filters.controller();
-                GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+                GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
                 filters.model(controller).add(filters.condition(filters.quantity, PValue.getPValue(5), GCompare.EQUALS));
                 panel.setControlsVisible(true);
                 panel.applyConditions();
@@ -1233,7 +1235,7 @@ public class GFormControllerTest extends GWTTestCase {
         filters.noFilters();
         filters.deliver(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         GPropertyFilter price = filters.condition(filters.price, PValue.getPValue(5), GCompare.EQUALS);
         GPropertyFilter quantity = filters.condition(filters.quantity, PValue.getPValue(2), GCompare.EQUALS);
         filters.report(controller, price, quantity);
@@ -1252,7 +1254,7 @@ public class GFormControllerTest extends GWTTestCase {
     public void testAnEmptyCellsValuePreparedInAFiltersRowEmptiesIt() {
         FiltersForm filters = new FiltersForm(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         filters.report(controller, filters.condition(filters.quantity, PValue.getPValue(2), GCompare.EQUALS));
         filters.prepare(controller, filters.placed, null);
         assertTrue(freeRows(panel).isEmpty());
@@ -1260,12 +1262,93 @@ public class GFormControllerTest extends GWTTestCase {
         assertTrue(filters.filters(controller, filters.quantity));
     }
 
+    // CASE 7: a FILTER the platform draws over the conditions a React view draws - placed by the view (custom = NULL),
+    // or standing outside React - is a row of the table's user filters as any FILTER's, drawn by the platform's rows of
+    // the FILTERs beside the view's input: a value committed in it sent at once, a condition the view states shown in
+    // it, the view's taking them off emptying it
+    public void testAFilterThePlatformDrawsOverAViewsConditionsIsItsRow() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.boxInBoard();
+        filters.filterAligned();
+        GFormController controller = filters.controller();
+        GFilterInputController input = (GFilterInputController) userFiltersController(controller, filters.group);
+        GFilterConditionView placed = panelRow(input, filters.placed), outside = panelRow(input, filters.outside);
+        assertNotNull(placed);
+        assertNotNull(outside);
+        assertNotNull(controller.getFormLayout().getBaseComponentViews().get(filters.outside));
+
+        changeRowValue(placed, PValue.getPValue(3));
+        assertValue(3, filters.first(controller, filters.quantity).value.value);
+        changeFilters(reactController(filters.view(controller)), "{\"property\": \"quantity\", \"value\": 4}");
+        assertValue(4, rowCondition(placed).value.value);
+        changeFilters(reactController(filters.view(controller)), "[]");
+        assertTrue(rowCondition(placed).nullValue());
+        assertTrue(filters.sent(controller).isEmpty());
+    }
+
+    // ... hidden by its SHOWIF from the start - the value with the form's first changes, which come before its row is
+    // built with them -, its row standing outside React is hidden, over the platform's panel too (one a view places,
+    // the view hides by its entry)
+    public void testAFiltersRowHiddenFromTheStartIsHidden() {
+        for (boolean overAView : new boolean[]{true, false}) {
+            FiltersForm filters = new FiltersForm(true);
+            if (overAView)
+                filters.boxInBoard();
+            filters.filterAligned();
+            filters.deliver(true);
+            filters.hiddenFromTheStart(filters.outside);
+            GFormController controller = filters.controller();
+            assertFalse(controller.getFormLayout().getBaseComponentViews().get(filters.outside).isVisible());
+        }
+    }
+
+    // ... in the manual apply mode, the platform's controls shown by the toolbar's button - which shows the row's
+    // selectors too -, a value committed in it waits for the apply, as any row's
+    public void testAFilterThePlatformDrawsOverAViewWaitsForTheApplyInManualMode() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            FiltersForm filters = new FiltersForm(true);
+            filters.boxInBoard();
+            GFormController controller = filters.controller();
+            GFilterInputController input = (GFilterInputController) userFiltersController(controller, filters.group);
+            GFilterConditionView placed = panelRow(input, filters.placed);
+            assertFalse(compareSelector(placed).isVisible());
+            input.setControlsVisible(true); // the toolbar's button
+            assertTrue(compareSelector(placed).isVisible());
+            changeRowValue(placed, PValue.getPValue(3));
+            assertFalse(filters.filters(controller, filters.quantity));
+            input.applyConditions();
+            assertValue(3, filters.first(controller, filters.quantity).value.value);
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
+    // ... and the view's input takes the table's keys: F3 on the FILTER's column puts the cell's value into its row,
+    // written at once - a FILTER's value -; Escape in the row's selectors takes every condition off
+    public void testF3OverAViewsConditionsPutsTheCellsValueIntoTheRowOfAFilterThePlatformDraws() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.boxInBoard();
+        filters.quantityFirst(); // the current column: quantity, the placed FILTER's
+        filters.deliver(true);
+        GFormController controller = filters.controller();
+        GFilterInputController input = (GFilterInputController) userFiltersController(controller, filters.group);
+        GFilterConditionView placed = panelRow(input, filters.placed);
+        input.addCondition(null, false, true); // F3
+        assertValue(2, filters.first(controller, filters.quantity).value.value);
+        assertValue(2, rowCondition(placed).value.value);
+        filterRows(input, filters.placed).resetConditions(); // Escape in the row's selectors (GFilterConditionView.UIHandler)
+        assertTrue(filters.sent(controller).isEmpty());
+        assertTrue(rowCondition(placed).nullValue());
+    }
+
     // a FILTER's row bound to another entry - its own taken off, the next on its column shown - shows no loading of the
     // one it showed
     public void testAFiltersRowBoundToAnotherEntryIsNotLoading() {
         FiltersForm filters = new FiltersForm(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         filters.report(controller, filters.condition(filters.quantity, PValue.getPValue(2), GCompare.EQUALS),
                 filters.condition(filters.quantity, PValue.getPValue(1), GCompare.GREATER));
         GFilterConditionView row = panelRow(panel, filters.placed);
@@ -1282,7 +1365,7 @@ public class GFormControllerTest extends GWTTestCase {
         filters.plainFirst();
         filters.noFilters(); // no FILTER on quantity: its slot would show its condition
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         filters.model(controller).add(filters.condition(filters.amount, PValue.getPValue(5), GCompare.EQUALS));
         filters.model(controller).add(filters.condition(filters.quantity, PValue.getPValue(2), GCompare.EQUALS));
         panel.applyConditions();
@@ -1299,7 +1382,7 @@ public class GFormControllerTest extends GWTTestCase {
         filters.plainFirst();
         filters.deliver(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         panel.addCondition(); // a new row, its value prepared, not committed
         GFilterConditionView row = freeRows(panel).get(0);
 
@@ -1320,7 +1403,7 @@ public class GFormControllerTest extends GWTTestCase {
         filters.plainFirst();
         filters.deliver(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         filters.report(controller, filters.condition(filters.amount, PValue.getPValue(50), GCompare.EQUALS));
         cancelRowEditing(freeRows(panel).get(0), CancelReason.ESCAPE_PRESSED);
         assertEquals(1, freeRows(panel).size());
@@ -1337,12 +1420,12 @@ public class GFormControllerTest extends GWTTestCase {
     public void testAFiltersRowIsNeverRemoved() {
         FiltersForm filters = new FiltersForm(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         panel.setControlsVisible(true);
         GFilterConditionView row = panelRow(panel, filters.placed);
         assertFalse(deleteButton(row).isVisible());
         changeRowValue(row, PValue.getPValue(3));
-        panel.removeCondition(row);
+        filterRows(panel, filters.placed).removeCondition(row);
         assertSame(row, panelRow(panel, filters.placed));
         assertTrue(filters.filters(controller, filters.quantity));
         panel.resetConditions();
@@ -1356,7 +1439,7 @@ public class GFormControllerTest extends GWTTestCase {
         FiltersForm filters = new FiltersForm(true);
         filters.plainFirst();
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         filters.model(controller).add(filters.condition(filters.amount, PValue.getPValue(5), GCompare.EQUALS));
         changeRowValue(panelRow(panel, filters.placed), PValue.getPValue(3));
         assertFalse(filters.sent(controller).isEmpty());
@@ -1368,12 +1451,12 @@ public class GFormControllerTest extends GWTTestCase {
         assertTrue(rowCondition(panelRow(panel, filters.placed)).nullValue());
     }
 
-    // what a reset has to take off - Escape in the grid asks it: a row of the panel's own, or a fixed row applied
+    // what a reset has to take off - Escape in the grid asks it: a row of the box's, a condition, or a change waiting
     public void testThePanelSaysWhetherItHasAnythingToReset() {
         FiltersForm filters = new FiltersForm(true);
         filters.plainFirst();
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         assertFalse(panel.hasConditionsToReset());
         changeRowValue(panelRow(panel, filters.placed), PValue.getPValue(3));
         assertTrue(panel.hasConditionsToReset());
@@ -1381,6 +1464,21 @@ public class GFormControllerTest extends GWTTestCase {
         assertFalse(panel.hasConditionsToReset());
         filters.model(controller).add(filters.condition(filters.amount, null, GCompare.EQUALS));
         assertTrue(panel.hasConditionsToReset());
+    }
+
+    // a row made while the table is hidden - one of the box's the model gets, the table hidden - is hidden with it, as
+    // the rows there are, and shown with it again
+    public void testARowMadeWhileTheTableIsHiddenIsHidden() {
+        FiltersForm filters = new FiltersForm(true);
+        filters.plainFirst();
+        GFormController controller = filters.controller();
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
+        panel.setVisible(false); // the table hidden
+        filters.model(controller).add(filters.condition(filters.amount, null, GCompare.EQUALS));
+        assertEquals(1, freeRows(panel).size());
+        assertFalse(freeRows(panel).get(0).isVisible());
+        panel.setVisible(true);
+        assertTrue(freeRows(panel).get(0).isVisible());
     }
 
     // in the manual apply mode - its controls shown - a value committed in a row waits: the row holds it, the form's
@@ -1391,7 +1489,7 @@ public class GFormControllerTest extends GWTTestCase {
         try {
             FiltersForm filters = new FiltersForm(true);
             GFormController controller = filters.controller();
-            GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+            GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
             panel.setControlsVisible(true);
             GFilterConditionView row = panelRow(panel, filters.placed);
             GToolbarButton apply = applyButton(filterControls(controller, filters));
@@ -1417,7 +1515,7 @@ public class GFormControllerTest extends GWTTestCase {
         try {
             FiltersForm filters = new FiltersForm(true);
             GFormController controller = filters.controller();
-            GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+            GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
             panel.setControlsVisible(true);
             GFilterConditionView row = panelRow(panel, filters.placed);
             filters.prepare(controller, filters.placed, PValue.getPValue(3)); // a value in the row, not sent
@@ -1439,13 +1537,38 @@ public class GFormControllerTest extends GWTTestCase {
         try {
             FiltersForm filters = new FiltersForm(true);
             GFormController controller = filters.controller();
-            GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+            GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
             panel.setControlsVisible(true);
             GFilterConditionView row = panelRow(panel, filters.placed);
             changeRowValue(row, PValue.getPValue(3));
             panel.applyConditions();
             assertTrue(filters.filters(controller, filters.quantity));
             changeRowValue(row, null);
+            assertTrue(filters.filters(controller, filters.quantity));
+            assertTrue(panel.hasConditionsToReset());
+            panel.resetConditions();
+            assertFalse(filters.filters(controller, filters.quantity));
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
+    // ... and one given back the value it was emptied of: nothing waits, and the server still filters by it - there is
+    // that to reset all the same
+    public void testAFilterGivenBackItsValueInManualModeIsThereToReset() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            FiltersForm filters = new FiltersForm(true);
+            GFormController controller = filters.controller();
+            GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
+            panel.setControlsVisible(true);
+            GFilterConditionView row = panelRow(panel, filters.placed);
+            changeRowValue(row, PValue.getPValue(3));
+            panel.applyConditions();
+            changeRowValue(row, null);
+            changeRowValue(row, PValue.getPValue(3));
+            assertFalse(filters.model(controller).isPending());
             assertTrue(filters.filters(controller, filters.quantity));
             assertTrue(panel.hasConditionsToReset());
             panel.resetConditions();
@@ -1464,7 +1587,7 @@ public class GFormControllerTest extends GWTTestCase {
             FiltersForm filters = new FiltersForm(true);
             filters.plainFirst();
             GFormController controller = filters.controller();
-            GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+            GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
             panel.setControlsVisible(true);
             filters.model(controller).add(filters.condition(filters.amount, PValue.getPValue(5), GCompare.GREATER));
             filters.model(controller).add(filters.condition(filters.amount, PValue.getPValue(9), GCompare.LESS)); // a range
@@ -1499,7 +1622,7 @@ public class GFormControllerTest extends GWTTestCase {
         try {
             FiltersForm filters = new FiltersForm(true);
             GFormController controller = filters.controller();
-            GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+            GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
             panel.setControlsVisible(true);
             GFilterConditionView row = panelRow(panel, filters.placed);
             GToolbarButton apply = applyButton(filterControls(controller, filters));
@@ -1529,7 +1652,7 @@ public class GFormControllerTest extends GWTTestCase {
         filters.plainFirst();
         filters.deliver(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         GFilterConditionView row = panelRow(panel, filters.placed);
 
         filters.prepare(controller, filters.placed, PValue.getPValue(3));
@@ -1559,7 +1682,7 @@ public class GFormControllerTest extends GWTTestCase {
         FiltersForm filters = new FiltersForm(true);
         filters.plainFirst();
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
         filters.model(controller).add(filters.condition(filters.amount, PValue.getPValue(5), GCompare.EQUALS));
         panel.applyConditions();
         GFilterConditionView row = freeRows(panel).get(0);
@@ -1582,7 +1705,7 @@ public class GFormControllerTest extends GWTTestCase {
         filters.noFilters();
         filters.deliver(true);
         GFormController controller = filters.controller();
-        GPlatformFiltersController panel = (GPlatformFiltersController) userFiltersController(controller, filters.group);
+        GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
 
         panel.toggleControlsVisible();
         assertTrue(panel.isControlsVisible());
@@ -1694,6 +1817,25 @@ public class GFormControllerTest extends GWTTestCase {
             form.propertyDraws.remove(quantity);
             form.propertyDraws.add(0, quantity);
         }
+        // ... and a component hidden by its SHOWIF from the start, with the form's first changes - after deliver
+        void hiddenFromTheStart(GComponent component) {
+            GFormChangesDTO changes = form.initialFormChanges;
+            int count = changes.properties.length;
+            changes.properties = Arrays.copyOf(changes.properties, count + 1);
+            changes.propertiesValueKeys = Arrays.copyOf(changes.propertiesValueKeys, count + 1);
+            changes.propertiesValueValues = Arrays.copyOf(changes.propertiesValueValues, count + 1);
+            changes.properties[count] = new GPropertyReaderDTO(component.ID, GFormChanges.GPropertyReadType.COMPONENT_SHOWIF, -1);
+            changes.propertiesValueKeys[count] = new GGroupObjectValue[] {GGroupObjectValue.EMPTY};
+            changes.propertiesValueValues[count] = new Serializable[] {true};
+        }
+        // ... or FILTERS(items) drawn by the board - the conditions a view draws -, the platform drawing the FILTER it
+        // places over them (placed), and one standing outside React (filterAligned)
+        void boxInBoard() {
+            GContainer box = group.grid.filtersContainer;
+            if (box.container != null)
+                box.container.children.remove(box);
+            box.container = board; board.children.add(box);
+        }
         // ... and no FILTER at all: the panel's rows its own alone
         void noFilters() {
             group.grid.filters.clear();
@@ -1785,13 +1927,28 @@ public class GFormControllerTest extends GWTTestCase {
         var state = view.@lsfusion.gwt.client.form.design.view.ReactContainerView::state;
         return state.@lsfusion.gwt.client.form.design.view.GReactFormData.ViewState::current()().items.filter[property].value;
     }-*/;
-    // the panel's row of a FILTER, its caption, its comparison label, its value cell and the comparison its value is
-    // edited by, read where the client keeps them
-    private static GFilterConditionView panelRow(GPlatformFiltersController panel, GFilter filter) {
-        return slotRows(panel).get(filter);
+    // the platform's rows of a FILTER of a table - what reports its row's events -, none where React draws it, read
+    // where the platform keeps its rows of the table's user filters, which its input's toggle drives; and its row: its
+    // caption, its comparison label, its value cell and the comparison its value is edited by, read where the client
+    // keeps them
+    private static GPlatformFilterController filterRows(GFilterInputController input, GFilter filter) {
+        return filterRowsOf(input).get(filter);
     }
-    private static native NativeSIDMap<GFilter, GFilterConditionView> slotRows(GPlatformFiltersController panel) /*-{
-        return panel.@lsfusion.gwt.client.form.filter.user.controller.GPlatformFiltersController::slotRows;
+    private static native NativeSIDMap<GFilter, GPlatformFilterController> filterRowsOf(GFilterInputController input) /*-{
+        var toggle = input.@lsfusion.gwt.client.form.filter.user.controller.GFilterInputController::toggle;
+        var rows = toggle.@lsfusion.gwt.client.form.filter.user.controller.GFilterControlsToggle::rows;
+        return rows.@lsfusion.gwt.client.form.filter.user.controller.GPlatformFilterRows::filters;
+    }-*/;
+    private static GFilterConditionView panelRow(GFilterInputController input, GFilter filter) {
+        GPlatformFilterController rows = filterRows(input, filter);
+        return rows != null ? rowOf(rows) : null;
+    }
+    private static native GFilterConditionView rowOf(GPlatformFilterController rows) /*-{
+        return rows.@lsfusion.gwt.client.form.filter.user.controller.GPlatformFilterController::row;
+    }-*/;
+    // a list a view states through the group's `filters` member, as JSON
+    private static native void changeFilters(JavaScriptObject controller, String conditions) /*-{
+        controller.items.filters.change(JSON.parse(conditions));
     }-*/;
     private static native Widget rowCaption(GFilterConditionView row) /*-{
         return row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::leftPanel;
@@ -1823,10 +1980,12 @@ public class GFormControllerTest extends GWTTestCase {
         return row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::isLast;
     }-*/;
     // the rows of the panel's own - the FILTERS box's, none of a FILTER's -, in its order, read where it keeps them
-    private static native NativeHashMap<GUserFilter, GFilterConditionView> boxRows(GPlatformFiltersController panel) /*-{
-        return panel.@lsfusion.gwt.client.form.filter.user.controller.GPlatformFiltersController::boxRows;
+    private static native NativeHashMap<GUserFilter, GFilterConditionView> boxRows(GPlatformFilterInputController panel) /*-{
+        var rows = panel.@lsfusion.gwt.client.form.filter.user.controller.GPlatformFilterInputController::platformRows;
+        var box = rows.@lsfusion.gwt.client.form.filter.user.controller.GPlatformFilterRows::box;
+        return box.@lsfusion.gwt.client.form.filter.user.controller.GPlatformFiltersController::boxRows;
     }-*/;
-    private static List<GFilterConditionView> freeRows(GPlatformFiltersController panel) {
+    private static List<GFilterConditionView> freeRows(GPlatformFilterInputController panel) {
         List<GFilterConditionView> rows = new ArrayList<>();
         boxRows(panel).foreachValue(rows::add);
         return rows;

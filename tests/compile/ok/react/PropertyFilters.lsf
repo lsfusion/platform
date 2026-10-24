@@ -4,16 +4,20 @@ REQUIRE System;
 
 // a property's FILTER, FILTER(<property>), under React: drawn by a view as a part of its group - over the platform's
 // panel, beside the view that draws the conditions or in it -, by a React view of its own, or placed (custom = NULL)
-// where the platform's panel draws the conditions; a tree group's too. The filters' part takes its name only where a
-// filter is drawn, and a filter outside React whose conditions no view draws is the platform's alone - of a group in
-// PANEL view too, which shows it nowhere, as before
+// where the platform's panel draws the conditions; a tree group's too. Drawn by the platform where a view draws the
+// conditions - placed by a view, or standing outside React -: a row of the group's user filters, on a property a view
+// names no condition by too, and nowhere where the toolbar turns the platform's filters off. The filters' part takes
+// its name only where a filter is drawn, and a filter outside React whose conditions no view draws is the platform's
+// alone - of a group in PANEL view too, which shows it nowhere, as before
 CLASS PfItem;
 pfName = DATA STRING[20] (PfItem);
 pfCity = DATA STRING[20] (PfItem);
 pfParent = DATA PfItem (PfItem);
+pfCode = DATA STRING[20] (PfItem);
 
 CLASS PfSetting;
 pfSettingName = DATA STRING[20] (PfSetting);
+pfStock = DATA INTEGER (PfItem, PfSetting);
 
 FORM propertyFiltersOverPlatform
     OBJECTS i = PfItem
@@ -90,6 +94,46 @@ DESIGN propertyFiltersTemplate {
     NEW search FIRST {
         custom = '<div class="search"><Platform:FILTER(pfName(i))></div>'; // its filter, named in a template too
         MOVE FILTER(pfName(i));
+    }
+}
+
+// the conditions a view draws, and FILTERs the platform draws over them - standing outside React, placed by a view -,
+// on properties a view names no condition by too: one with no integration name, one grouped in columns
+FORM propertyFiltersPlatformOverAView
+    OBJECTS s = PfSetting
+    OBJECTS i = PfItem
+    PROPERTIES(i) pfName FILTER, pfCity FILTER, pfCode NOEXTID FILTER
+    PROPERTIES(i, s) pfStock COLUMNS (s) FILTER
+;
+
+DESIGN propertyFiltersPlatformOverAView {
+    FILTERS(i) { custom = 'PfFilters'; }      // the conditions drawn by a view, the rows by the platform's grid
+    MOVE FILTER(pfName(i)) FIRST;             // standing where the platform draws it
+    MOVE FILTER(pfCode(i)) FIRST;
+    MOVE FILTER(pfStock(i,s)) FIRST;
+}
+
+FORM propertyFiltersPlacedOverAView
+    OBJECTS i = PfItem
+    PROPERTIES(i) pfName FILTER, pfCity FILTER
+;
+
+DESIGN propertyFiltersPlacedOverAView {
+    BOX(i) { custom = 'PfPlacedBoard'; }      // the rows, the conditions and the city's filter drawn by a view
+    FILTER(pfName(i)) { custom = NULL; }      // the platform's row, which the view places
+}
+
+// ... and one the toolbar turns the platform's filters off for: drawn by nobody, as without React
+FORM propertyFiltersPlacedFiltersOff
+    OBJECTS i = PfItem
+    PROPERTIES(i) pfName FILTER
+;
+
+DESIGN propertyFiltersPlacedFiltersOff {
+    TOOLBARSYSTEM(i) { showFilters = FALSE; }
+    NEW search FIRST {
+        custom = 'PfFiltersOffSearch';
+        MOVE FILTER(pfName(i)) { custom = NULL; }
     }
 }
 

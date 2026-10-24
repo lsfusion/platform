@@ -49,6 +49,7 @@ import lsfusion.gwt.client.form.filter.user.*;
 import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterInputController;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterControlsController;
+import lsfusion.gwt.client.form.filter.user.controller.GPlatformFilterRows;
 import lsfusion.gwt.client.form.filter.user.controller.GPlatformFilterControlsController;
 import lsfusion.gwt.client.form.filter.user.controller.GPlatformFiltersController;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterControlsToggle;
@@ -538,7 +539,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     public String getRefusal(String surface) {
         return gController.getRefusal(surface);
     }
-    // ... and whether a batch runs (GPlatformFiltersController.addCondition)
+    // ... and whether a batch runs (GPlatformFiltersController.isBatching)
     public boolean isBatching() {
         return dispatcher.isBatching();
     }
@@ -901,12 +902,14 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         // and what shows them and the toolbar's button (GFilterControlsToggle)
         GFilterControlsController filterControls = reactData.createFilterControlsController(table, () -> table.toolbar.showFilters ? new GPlatformFilterControlsController(this, table.filterControls) : GFilterControlsController.NONE);
         GFilterControlsToggle toggle = new GFilterControlsToggle(() -> formLayout.update(-1), filterControls, made.second);
-        // ... its USER FILTERS - their model, and the input of whoever draws what the FILTERS box holds, given to what
-        // draws the rows (GTableController.bindFilter) - (GReactFormData.createFiltersControllers): a view's, or the
-        // platform's panel where its toolbar shows the filters, else no input; then what the rows give for its groups -
-        // each group's controller and what shows their user orders, one for all of them -, and each group's own
+        // ... its USER FILTERS - their model, what draws each FILTER and the FILTERS box, and the input of whoever
+        // draws what the box holds, given to what draws the rows (GTableController.bindFilter) -
+        // (GReactFormData.createFiltersControllers): the platform's rows - of a FILTER, of the box - only where its
+        // toolbar shows the filters, and no input then where it would draw the box; then what the rows give for its
+        // groups - each group's controller and what shows their user orders, one for all of them -, and each group's
+        // own
         GReactFormData.FiltersControllers filters = reactData.createFiltersControllers(table, rows, toggle,
-                model -> table.toolbar.showFilters ? new GPlatformFiltersController(this, rows, table.filtersContainer, table.filters, model, toggle) : null);
+                table.toolbar.showFilters ? new GPlatformFilterRows(this, rows, toggle) : GReactFormData.PlatformFilters.NONE);
         if (filters.input != null)
             rows.bindFilter(filters.input);
         GUserOrdersController userOrders = rows.getUserOrdersController();
@@ -941,14 +944,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // by its table (userOrders, userFilters) - a list's group's, a tree's for all its groups -, none in PANEL view; and
     // where React draws the rows and the platform its platform-drawn properties into each of them - the only rows such
     // a property is drawn in (FormView.isPlatformDrawn) -, the controller of those, made before the properties, whose
-    // controller it is (getPlatformPropertyController); and the parts of the FILTERs of its properties React draws -
-    // views of its user filters (GReactFormData.createFilterPart), none in PANEL view
+    // controller it is (getPlatformPropertyController)
     private void initializeGroupControllers(GGroupObject group, GGroupController controller, GUserOrdersController userOrders, GUserFiltersController userFilters) {
         groupControllers.put(group, controller);
         userOrdersControllers.put(group, userOrders);
         userFiltersControllers.put(group, userFilters);
-        for (GFilter filter : form.getFilterComponents(group))
-            reactData.createFilterPart(filter, userFilters);
         for (GPropertyDraw draw : form.propertyDraws)
             if (draw.groupObject == group && draw.isPlatformDrawnPerRow()) {
                 platformRowsPanelControllers.put(group, new GPlatformRowsPanelController(this, group, reactData.getRows(group)));
@@ -3511,7 +3511,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
         pendingLoadingFilterRequests.put(filterView, requestIndex);
     }
-    // ... and none, whatever was sent: the row shows another condition now (GPlatformFiltersController)
+    // ... and none, whatever was sent: the row shows another condition now (GPlatformFilterRowsController)
     public void clearLoading(GFilterConditionView filterView) {
         pendingLoadingFilterRequests.remove(filterView);
         filterView.updateLoading(false);

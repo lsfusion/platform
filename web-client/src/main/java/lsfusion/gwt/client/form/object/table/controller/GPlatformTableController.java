@@ -35,11 +35,11 @@ public abstract class GPlatformTableController<P extends GGridProperty, V extend
     // ... and the table's toolbar, of whichever kind it is, which the table gives itself to as it is made, shown and
     // hidden with the rows (update)
     protected final B toolbar;
-    // the controller of the FILTERS box of the table's groups - the grid's group, or the tree's, one box for all of
+    // the input of the user filters of the table's groups - the grid's group, or the tree's, one FILTERS box for all of
     // them - the platform wires up, made over the table once it is made and bound to it then, once (bindFilter): what
     // the keys of the table and the table shown or hidden reach, and what the table tells that it has changed, once per
-    // delta: the platform's panel, or the commands over the conditions a view draws - none where the platform wires
-    // none up (GFormController.initializeTable)
+    // delta: the platform's over its panel, or the commands over the conditions a view draws - none where the platform
+    // wires none up (GFormController.initializeTable)
     private GFilterInputController filter;
 
     protected TableContainer gridView;

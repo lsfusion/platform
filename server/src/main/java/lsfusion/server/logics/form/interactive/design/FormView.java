@@ -475,8 +475,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // ... and where such a FILTER is drawn as a part of its group - as what a FILTERS box holds is (filtersScope), where
     // the component's content is: the React view it stands in, or its own, whoever draws the group's conditions -, of a
     // group with user filters (userFiltersScope), named on its group's node there under `filter` by its property's
-    // integration name, as a filter group is by its own name; none where the platform draws it - its filter panel,
-    // whose condition it is (mirrors GReactFormData.filterScope)
+    // integration name, as a filter group is by its own name; none where the platform draws it - its row of it, a view
+    // of the group's user filters too (mirrors GReactFormData.filterScope)
     private ComponentView filterScope(FilterView filter) {
         return hasUserFilters(filter.property.entity.getToDraw(entity)) ? filter.getContentReactPlace() : null;
     }
@@ -882,14 +882,15 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     }
 
     // a property's FILTER, FILTER(<property>), is drawn by React - as a part of its group, in the React view it stands
-    // in or its own, whoever draws the group's conditions (filterScope) - or by the platform's filter panel, whose
-    // condition it is. Refused when the form is built where React has a part in it and no one would draw the filter:
-    // one React draws of a group in PANEL view, which has no user filters; or on a property its condition cannot name -
-    // no integration name, grouped in columns, an action, never filtered by; or one the platform has to draw - placed
-    // by a React view (custom = NULL), or standing outside React while a view draws the group's conditions - where it
-    // builds no panel: the group is in PANEL view, a view draws the conditions, or the toolbar turns the filters off
-    // (showFilters). A filter in no React view of a group whose conditions no view draws is the platform's alone, drawn
-    // or not as before
+    // in or its own, whoever draws the group's conditions (filterScope) - or by the platform: a row of the group's user
+    // filters, over the conditions its filter panel draws or a view does. Refused when the form is built where React
+    // has a part in it and no one would draw the filter: one React draws of a group in PANEL view, which has no user
+    // filters; or on a property its condition cannot name - no integration name, grouped in columns, an action, never
+    // filtered by; or one the platform has to draw - placed by a React view (custom = NULL), or standing outside React
+    // while a view draws the group's conditions - of a group in PANEL view, or on an action, its row over the
+    // conditions a view draws. One the toolbar turns the platform's filters off for (showFilters) is drawn by nobody,
+    // as without React. A filter in no React view of a group whose conditions no view draws is the platform's alone,
+    // drawn or not as before
     private void checkReactFilterComponents() {
         for (GroupObjectView groupObject : getGroupObjectsIt()) {
             GroupObjectEntity group = groupObject.entity;
@@ -916,18 +917,19 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                                 + "' " + noCondition);
                     checkProjectedName(integrationSID, "the property of " + filter.getSID());
                 } else if (filter.getReactPlace() != null || conditions != null) { // the platform draws it, React taking part
-                    String noPanel = !hasUserFilters(group) ? "the group is in PANEL view, which has no user filters"
-                            : conditions != null ? "its user filters are drawn by the React view of '" + conditions.getSID() + "'"
-                            : !getDrawComponent(group).toolbarSystem.isShowFilters() ? "its toolbar turns them off (showFilters = FALSE)"
-                            : null;
-                    if (noPanel != null)
+                    if (!hasUserFilters(group))
                         throw new IllegalStateException(filterPrefix + (filter.getReactPlace() != null
                                 ? "is given custom = NULL in the React view of '" + filter.getReactPlace().getSID() + "', for the"
                                   + " platform's filter panel of object group '" + group.getSID() + "' to draw it, but there is"
-                                  + " no such panel: " + noPanel + "; drop custom = NULL for the React view to draw the filter"
+                                  + " no such panel: the group is in PANEL view, which has no user filters; drop custom = NULL"
+                                  + " for the React view to draw the filter"
                                 : "stands where the platform draws it, but there is no filter panel of object group '"
-                                  + group.getSID() + "' to draw it with: " + noPanel + "; move the filter into a React view,"
-                                  + " which draws it"));
+                                  + group.getSID() + "' to draw it with: the group is in PANEL view, which has no user filters;"
+                                  + " move the filter into a React view, which draws it"));
+                    if (conditions != null && !filter.property.entity.isStaticProperty())
+                        throw new IllegalStateException(filterPrefix + "is drawn by the platform as a row of the user filters"
+                                + " the React view of '" + conditions.getSID() + "' draws, and '" + filter.property.entity.getSID()
+                                + "' is an action, which is never filtered by");
                 }
             }
         }

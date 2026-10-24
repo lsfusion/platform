@@ -33,7 +33,7 @@ import java.util.Objects;
 
 public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     private static final ClientMessages messages = ClientMessages.Instance.get();
-    // what a row reports to what draws it (GPlatformFiltersController), which decides what it does - the model's
+    // what a row reports to what draws it (GPlatformFilterRowsController), which decides what it does - the model's
     // manual apply mode: its condition changed - its value committed, its comparison, NOT, NULL allowed, junction -,
     // whether its value takes the focus then; another property chosen; its delete button, or Escape in an editor no
     // value was committed in; Enter in its value cell; and Escape in its selectors, with no popup shown

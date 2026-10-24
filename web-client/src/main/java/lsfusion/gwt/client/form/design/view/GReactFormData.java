@@ -44,7 +44,6 @@ import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterInputController;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterControlsToggle;
-import lsfusion.gwt.client.form.filter.user.controller.GPlatformFiltersController;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
@@ -299,16 +298,6 @@ public class GReactFormData {
             return null;
         return reactOrPlatform(filterGroupScope(filterGroup), state -> new FilterGroupPart(state.getOrCreateGroupNode(filterGroup.groupObject), filterGroup), platform);
     }
-    // ... and of a property's FILTER, FILTER(<property>) - the user filter declared on a property of a group -, as of a
-    // filter group: its part, a part of the group of its property, on its node where the filter is drawn
-    // (filterScope), a view of its table's user filters, which it is a slot of (userFilters); none where the platform
-    // draws it - its filter panel draws it, wherever the design puts it (GPlatformFiltersController)
-    public GUserFiltersController.View createFilterPart(GFilter filter, GUserFiltersController userFilters) {
-        FilterPart part = reactOrPlatform(filterScope(filter), state -> new FilterPart(state.getOrCreateGroupNode(filter.property.groupObject), filter, userFilters), () -> null);
-        if (part != null)
-            userFilters.addView(part);
-        return part;
-    }
     // ===== WHAT GOES OVER THE ROWS of a list's group not in a tree, or of a tree, one for all its groups, each of the
     // kind of whoever draws it, made where the form sets the table up (GFormController.initializeGrid,
     // initializeTree), with what draws the rows (createGridController, createTreeController)
@@ -330,20 +319,66 @@ public class GReactFormData {
     }
     // ... and the USER FILTERS of a table - its groups', the grid's group or the tree's, one FILTERS box for all of
     // them -: their model (GUserFiltersController), there with no box too, sending through the form (Verbs), its manual
-    // apply mode by the apply button the toggle shows; and the input of whoever draws what the box holds
-    // (filtersScope): where a view draws it, the commands over the conditions it draws, which take the platform's
-    // input - the keys of the rows, the controls - (ReactFilterInputController), the box's part showing them on the
-    // table's node there (FiltersPart); else the platform's filter panel, which draws them and takes the input, where
-    // it builds one (platform), made only then - else no input. The input works on what draws the rows (rows), and the
-    // toggle shows the controls and the toolbar's button (GFormController.initializeTable); a group in PANEL view has
-    // none (GUserFiltersController.NONE)
-    public FiltersControllers createFiltersControllers(GGridProperty table, GTableController rows, GFilterControlsToggle toggle, Function<GUserFiltersController, GPlatformFiltersController> platform) {
+    // apply mode by the apply button the toggle shows; and what draws each of what the design has of them, chosen here,
+    // once, as for any component - React or the platform -, each a view of the model: each property's FILTER -
+    // FILTER(<property>), the user filter declared on a property of a group -, a part of the group of its property on
+    // its node where the filter is drawn (filterScope, FilterPart), else the platform's row of it
+    // (PlatformFilters.addFilter), none of one the design removes; the FILTERS box, its part on the table's node where
+    // what it holds is drawn (filtersScope, FiltersPart) with the input over the conditions a view draws, which takes
+    // the platform's - the keys of the rows, the controls - (ReactFilterInputController), else the platform's rows of
+    // the box, its filter panel, with the panel's input - (platform, PlatformFilters). The platform's are none where
+    // its toolbar turns its filters off - nor an input then, over a box it would draw -, driven with the table by the
+    // toggle (GFilterControlsToggle), which is bound to the input once all of them are made. The input works on what
+    // draws the rows (rows), and the toggle shows the controls and the toolbar's button
+    // (GFormController.initializeTable); a group in PANEL view has none (GUserFiltersController.NONE)
+    public FiltersControllers createFiltersControllers(GGridProperty table, GTableController rows, GFilterControlsToggle toggle, PlatformFilters platform) {
         GUserFiltersController userFilters = new GUserFiltersController(table.getGroups(), table.filters, verbs, toggle);
+        for (GFilter filter : table.filters) {
+            GUserFiltersController.View view = reactOrPlatform(filterScope(filter),
+                    state -> new FilterPart(state.getOrCreateGroupNode(filter.property.groupObject), filter, userFilters),
+                    () -> filter.container != null ? platform.addFilter(filter, userFilters) : null);
+            if (view != null)
+                userFilters.addView(view);
+        }
         GFilterInputController input = reactOrPlatform(filtersScope(table.filtersContainer), state -> {
             userFilters.addView(new FiltersPart(state.getOrCreateTableNode(table), userFilters));
-            return new ReactFilterInputController(userFilters, rows, toggle);
-        }, () -> platform.apply(userFilters));
+            return new ReactFilterInputController(rows, toggle, userFilters);
+        }, () -> platform.addBox(table.filtersContainer, userFilters));
+        if (input != null)
+            toggle.bind(input, userFilters, platform);
         return new FiltersControllers(input, userFilters);
+    }
+    // ... what of a table's user filters THE PLATFORM draws, as the projection asks it where it answers that the
+    // platform draws one of them (GPlatformFilterRows), and as the toggle drives it (GFilterControlsToggle.Rows): the
+    // row of a FILTER, a view of the model; the box's rows with the panel's input, the box's a view of the model. NONE
+    // where the table's toolbar turns the platform's filters off: it draws nothing, nor gives an input over a box it
+    // would draw
+    public interface PlatformFilters extends GFilterControlsToggle.Rows {
+        GUserFiltersController.View addFilter(GFilter filter, GUserFiltersController userFilters);
+        GFilterInputController addBox(GContainer filtersContainer, GUserFiltersController userFilters);
+
+        PlatformFilters NONE = new PlatformFilters() {
+            public GUserFiltersController.View addFilter(GFilter filter, GUserFiltersController userFilters) {
+                return null;
+            }
+            public GFilterInputController addBox(GContainer filtersContainer, GUserFiltersController userFilters) {
+                return null;
+            }
+            public boolean drawsRows() {
+                return false;
+            }
+            public boolean hasBoxRows() {
+                return false;
+            }
+            public void setControlsVisible(boolean visible) {
+            }
+            public void update() {
+            }
+            public void setVisible(boolean visible) {
+            }
+            public void destroy() {
+            }
+        };
     }
     // ... which the form takes apart
     public static final class FiltersControllers {
@@ -1239,15 +1274,13 @@ public class GReactFormData {
     // the PLATFORM'S INPUT over the conditions a view draws - GFilterInputController's kind where a view draws what the
     // box holds (createFiltersControllers): the keys of the table, the controls' add, apply and reset. Each writes into
     // the table's user filters (GUserFiltersController), the box's part showing them (FiltersPart). A condition is
-    // written at once - there is no editor here, the view edits its value -, so the controls and the toolbar's button
-    // get no editors; what waits in the manual apply mode waits for the controls' apply
+    // written at once - there is no editor here, the view edits its value -; what waits in the manual apply mode waits
+    // for the controls' apply. The platform's rows of the FILTERs it draws over the view's conditions, where it draws
+    // any, are the toggle's, which the controls and the toolbar's button show the selectors of, built, shown and let go
+    // of with the table's rows
     private final class ReactFilterInputController extends GFilterInputController {
-        final GUserFiltersController userFilters;
-
-        ReactFilterInputController(GUserFiltersController userFilters, GTableController rows, GFilterControlsToggle toggle) {
-            super(rows, toggle);
-            this.userFilters = userFilters;
-            toggle.bind(this, null, userFilters); // as the panel binds them: its controls give its commands - with no editors
+        ReactFilterInputController(GTableController rows, GFilterControlsToggle toggle, GUserFiltersController userFilters) {
+            super(rows, toggle, userFilters);
         }
 
         // F3, and the controls' add - the condition of the cell the table is on, in the list; Alt+F3 (replace): alone
@@ -1273,23 +1306,9 @@ public class GReactFormData {
         // view edits a condition's value its own way (decided: a key typed states no condition)
         public void quickEditFilter(Event keyEvent, GPropertyDraw property, GGroupObjectValue columnKey) {
         }
-        // the controls' apply - what waits sent, in the manual apply mode -, and their reset, Shift+F3 and Escape
-        public void applyConditions() {
-            userFilters.apply();
-        }
-        public void resetConditions() {
-            userFilters.reset();
-        }
-        // ... whether there is anything to reset: a condition in the working list, or one the server still filters by
-        public boolean hasConditionsToReset() {
-            return userFilters.hasActive() || userFilters.isPending();
-        }
         // the controls' add, which the design has the FILTERS box for: a view draws what it holds
         public boolean hasFiltersContainer() {
             return true;
-        }
-        // what draws the rows changed: nothing to read anew - the view's part reads the form's list
-        public void update() {
         }
     }
 

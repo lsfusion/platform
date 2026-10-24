@@ -52,7 +52,7 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterInputController;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterControlsController;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterControlsToggle;
-import lsfusion.gwt.client.form.filter.user.view.GFilterEditors;
+import lsfusion.gwt.client.form.filter.user.controller.GPlatformFilterRows;
 import lsfusion.gwt.client.form.filter.user.view.GFiltersHandler;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -820,21 +820,19 @@ public class GReactFormDataTest extends GWTTestCase {
         public void addRows(GTreeController rows) { treeRows.add(rows); }
     }
     // the platform's panel - a filter input controller of a group or of a tree -, as far as its toolbar, its controls
-    // and the projection ask it - its commands and its editors, as the panel is both -: whether its controls are shown,
-    // and the toggle, which tells the toolbar, as the panel does; how many times it was told that what draws the rows
-    // has changed; what it was asked, in order, the FILTERS box and the mode it answers with; and what its editors'
-    // controls were told to show, in order
-    private static final class PanelDouble extends GFilterInputController implements GFilterEditors {
+    // and the projection ask it: whether its controls are shown, and the toggle, which tells the toolbar, as the panel
+    // does; how many times it was told that what draws the rows has changed; and what it was asked, in order, the
+    // FILTERS box and the mode it answers with
+    private static final class PanelDouble extends GFilterInputController {
         GToolbarController<?> toolbar;
         PanelDouble() {
-            super(null, null);
+            super(null, null, null);
         }
         int destroyed; // how many times it was let go of
         public void destroy() { destroyed++; }
         boolean shown;
         int updates;
         final ArrayList<String> calls = new ArrayList<>();
-        final ArrayList<Boolean> editorsShown = new ArrayList<>();
         boolean filtersContainer = true;
 
         public boolean isControlsVisible() { return shown; }
@@ -849,7 +847,33 @@ public class GReactFormDataTest extends GWTTestCase {
         public void addCondition() { calls.add("add"); }
         public void applyConditions() { calls.add("apply"); }
         public void resetConditions() { calls.add("reset"); }
-        public void setConditionsControlsVisible(boolean visible) { editorsShown.add(visible); }
+    }
+    // what of a table's user filters the platform draws as rows, as far as the toggle drives them: whether it draws a
+    // row at all, and what the toggle told their selectors, in order
+    private static final class RowsDouble implements GFilterControlsToggle.Rows {
+        final boolean drawsRows;
+        final ArrayList<Boolean> selectorsShown = new ArrayList<>();
+        RowsDouble(boolean drawsRows) { this.drawsRows = drawsRows; }
+        public boolean drawsRows() { return drawsRows; }
+        public boolean hasBoxRows() { return false; }
+        public void setControlsVisible(boolean visible) { selectorsShown.add(visible); }
+        public void update() { }
+        public void setVisible(boolean visible) { }
+        public void destroy() { }
+    }
+    // ... and the platform's side of a table's user filters, as far as the projection asks it: the FILTERs it is asked
+    // to draw a row of, and how many times it is asked to draw the box - drawing none
+    private static final class PlatformFiltersDouble implements GReactFormData.PlatformFilters {
+        final ArrayList<GFilter> filtersAsked = new ArrayList<>();
+        int boxesAsked;
+        public GUserFiltersController.View addFilter(GFilter filter, GUserFiltersController userFilters) { filtersAsked.add(filter); return null; }
+        public GFilterInputController addBox(GContainer filtersContainer, GUserFiltersController userFilters) { boxesAsked++; return null; }
+        public boolean drawsRows() { return false; }
+        public boolean hasBoxRows() { return false; }
+        public void setControlsVisible(boolean visible) { }
+        public void update() { }
+        public void setVisible(boolean visible) { }
+        public void destroy() { }
     }
 
     // the filter controls, of either kind - a view's, or the platform's where a test says so (shownByToolbar) -, as far
@@ -1112,7 +1136,7 @@ public class GReactFormDataTest extends GWTTestCase {
                 toolbar.addFilterToggle(filter);
             }
             GFilterControlsToggle toggle = new GFilterControlsToggle(() -> { }, controls != null ? controls : GFilterControlsController.NONE, toolbar);
-            GReactFormData.FiltersControllers tableFilters = projection.createFiltersControllers(table, rows, toggle, userFilters -> null);
+            GReactFormData.FiltersControllers tableFilters = projection.createFiltersControllers(table, rows, toggle, GReactFormData.PlatformFilters.NONE);
             GUserOrdersController tableOrders = rows.getUserOrdersController();
             for (GGroupObject group : table.getGroups())
                 initializeGroupControllers(group, rows.getGroupController(group), tableOrders, tableFilters.userFilters);
@@ -1148,14 +1172,11 @@ public class GReactFormDataTest extends GWTTestCase {
             return new Pair<>(rows, toolbar);
         }
         // a group's own controllers: the form's controller of it - what draws its rows gives it -, what shows its user
-        // orders and the model of its user filters, settled by its table, and the parts of its FILTERs React draws
+        // orders and the model of its user filters, settled by its table
         void initializeGroupControllers(GGroupObject group, GGroupController controller, GUserOrdersController groupOrders, GUserFiltersController groupFilters) {
             groups.put(group, controller);
             userOrders.put(group, groupOrders);
             userFilters.put(group, groupFilters);
-            if (group.getDrawComponent() != null) // a hand-built group in PANEL view may have no grid
-                for (GFilter filterComponent : form.getFilterComponents(group))
-                    projection.createFilterPart(filterComponent, groupFilters);
         }
         void initializeComponentControllers(GComponent component) {
             components.put(component, projection.createComponentController(component, platformComponents));
@@ -4586,7 +4607,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // the commands over the conditions a view draws, over what draws the rows, with the controls given, as the form
     // wires them - no toolbar, no panel -, the model they write into the group's now, the server's lists reaching it
     private static GFilterInputController viewCommands(Fixture f, GTableController rows, GFilterControlsController controls) {
-        GReactFormData.FiltersControllers made = f.projection.createFiltersControllers(f.group.grid, rows, new GFilterControlsToggle(null, controls, null), userFilters -> null);
+        GReactFormData.FiltersControllers made = f.projection.createFiltersControllers(f.group.grid, rows, new GFilterControlsToggle(null, controls, null), GReactFormData.PlatformFilters.NONE);
         for (GGroupObject group : f.group.grid.getGroups())
             f.controllers.userFilters.put(group, made.userFilters);
         return made.input;
@@ -5318,7 +5339,7 @@ public class GReactFormDataTest extends GWTTestCase {
     public void testShowFiltersTurnsOffThePlatformsFilterUIOnly() {
         Fixture platform = new Fixture(); // the platform draws the conditions: with no panel, nothing
         GReactFormData.FiltersControllers none = platform.projection.createFiltersControllers(platform.group.grid,
-                new RecordingTableController(), new GFilterControlsToggle(() -> { }, GFilterControlsController.NONE, new GridToolbarDouble()), userFilters -> null);
+                new RecordingTableController(), new GFilterControlsToggle(() -> { }, GFilterControlsController.NONE, new GridToolbarDouble()), GReactFormData.PlatformFilters.NONE);
         assertNull(none.input);
         assertTrue(none.userFilters.getConditions().isEmpty()); // ... their model there all the same, nothing drawing it
         for (boolean showFilters : new boolean[]{true, false}) {
@@ -5329,10 +5350,12 @@ public class GReactFormDataTest extends GWTTestCase {
             GFilterControlsController controls = showFilters ? platformControls : GFilterControlsController.NONE;
             GridToolbarDouble toolbar = new GridToolbarDouble();
             RecordingTableController table = onCell(f.price, 0, PValue.getPValue(5));
+            PlatformFiltersDouble platformFilters = new PlatformFiltersDouble();
             GFilterInputController input = f.projection.createFiltersControllers(f.group.grid, table,
-                    new GFilterControlsToggle(() -> { }, controls, toolbar), userFilters -> {
-                        throw new AssertionError("no panel where a view draws the conditions");
-                    }).input;
+                    new GFilterControlsToggle(() -> { }, controls, toolbar), platformFilters).input;
+            // no rows of the platform's where a view draws the conditions, and no FILTER
+            assertEquals(0, platformFilters.boxesAsked);
+            assertTrue(platformFilters.filtersAsked.isEmpty());
             table.bindFilter(input);
             table.addFilter(null); // F3 on a cell
             assertEquals(Arrays.asList("changeFilters items price="), f.filtersCalls);
@@ -5343,46 +5366,61 @@ public class GReactFormDataTest extends GWTTestCase {
             FilterControlsDouble treePlatformControls = new FilterControlsDouble();
             treePlatformControls.shownByToolbar = true;
             TreeToolbarDouble treeToolbar = new TreeToolbarDouble();
+            PlatformFiltersDouble treePlatformFilters = new PlatformFiltersDouble();
             GFilterInputController treeInput = tree.projection.createFiltersControllers(tree.tree,
                     new RecordingTableController(), new GFilterControlsToggle(() -> { },
-                            showFilters ? treePlatformControls : GFilterControlsController.NONE, treeToolbar), userFilters -> {
-                        throw new AssertionError("no panel where a view draws the conditions");
-                    }).input;
+                            showFilters ? treePlatformControls : GFilterControlsController.NONE, treeToolbar), treePlatformFilters).input;
+            assertEquals(0, treePlatformFilters.boxesAsked);
+            assertTrue(treePlatformFilters.filtersAsked.isEmpty());
             assertNotNull(treeInput);
             assertEquals(showFilters ? 1 : 0, treeToolbar.filterToggles);
             assertSame(showFilters ? treeInput : null, treePlatformControls.handler);
         }
     }
     // the toolbar's filter button shows and hides what of the user filters THE PLATFORM draws, by one rule for every
-    // kind of the controller of FILTERS (GFilterControlsToggle): a button where the platform draws the conditions'
-    // editors - its panel - or the controls, none where a view draws both - the controls then always shown -, and the
-    // controls bound to the controller whoever draws them. Pressed, it shows and hides what of them the platform
-    // draws - the editors, the controls - and lays the form out anew; with no button, nothing changes
+    // kind of what draws FILTERS and FILTER (GFilterControlsToggle): a button where the platform draws rows or the
+    // controls, none where it draws neither - the controls then always shown -, and the controls bound to the input
+    // whoever draws them. Pressed, it shows and hides what of them the platform draws - the rows' selectors, the
+    // controls - and lays the form out anew; with no button, nothing changes
     public void testTheFilterButtonTogglesWhatOfTheFiltersThePlatformDraws() {
-        // the platform's panel or a view's conditions, the platform's controls or a view's: whether there is a button
+        // rows drawn by the platform or none, the platform's controls or a view's: whether there is a button
         boolean[][] cases = {{true, true, true}, {true, false, true}, {false, true, true}, {false, false, false}};
         for (boolean[] c : cases) {
-            String which = (c[0] ? "the panel" : "a view's conditions") + ", " + (c[1] ? "the platform's" : "a view's") + " controls";
+            boolean platformRows = c[0], platformControls = c[1], button = c[2];
+            String which = (platformRows ? "rows of the platform's" : "no row of the platform's") + ", " + (platformControls ? "the platform's" : "a view's") + " controls";
             ToolbarDouble toolbar = new GridToolbarDouble();
             FilterControlsDouble controls = new FilterControlsDouble();
-            controls.shownByToolbar = c[1];
+            controls.shownByToolbar = platformControls;
             int[] relayouts = new int[1];
             GFilterControlsToggle toggle = new GFilterControlsToggle(() -> relayouts[0]++, controls, toolbar);
             PanelDouble filter = new PanelDouble();
-            PanelDouble panel = new PanelDouble(); // the panel's editors, where there are editors
-            toggle.bind(filter, c[0] ? panel : null, GUserFiltersController.NONE);
-            assertEquals(which, c[2] ? 1 : 0, toolbar.filterToggles);
-            assertEquals(which, !c[2], toggle.isVisible()); // with no button, always shown
+            RowsDouble rows = new RowsDouble(platformRows);
+            toggle.bind(filter, GUserFiltersController.NONE, rows);
+            assertEquals(which, button ? 1 : 0, toolbar.filterToggles);
+            assertEquals(which, !button, toggle.isVisible()); // with no button, always shown
             assertSame(which, filter, controls.handler);
-            assertEquals(which, Arrays.asList(!c[2]), controls.shown); // the controls told so once, as they are bound
+            assertEquals(which, Arrays.asList(!button), controls.shown); // the controls told so once, as they are bound
             toggle.setVisible(true);
             toggle.setVisible(false);
-            assertEquals(which, c[2] ? Arrays.asList(false, true, false) : Arrays.asList(true), controls.shown);
-            assertEquals(which, c[0] ? Arrays.asList(true, false) : new ArrayList<Boolean>(), panel.editorsShown);
-            assertEquals(which, c[2] ? Arrays.asList(true, false) : new ArrayList<Boolean>(), toolbar.controlsShown);
-            assertEquals(which, c[2] ? 2 : 0, relayouts[0]);
-            assertEquals(which, !c[2], toggle.isVisible()); // hidden again - or always shown
+            assertEquals(which, button ? Arrays.asList(false, true, false) : Arrays.asList(true), controls.shown);
+            assertEquals(which, button ? Arrays.asList(false, true, false) : Arrays.asList(true), rows.selectorsShown); // as they are bound, then
+            assertEquals(which, button ? Arrays.asList(true, false) : new ArrayList<Boolean>(), toolbar.controlsShown);
+            assertEquals(which, button ? 2 : 0, relayouts[0]);
+            assertEquals(which, !button, toggle.isVisible()); // hidden again - or always shown
         }
+    }
+    // ... where the platform draws rows, which the button is there for (GPlatformFilterRows.drawsRows): a FILTER's row,
+    // for good, or the box's, the box laid out - a box the design lays out nowhere draws none, so it is no reason for
+    // one
+    public void testThePlatformDrawsRowsOfAFilterOrOfABoxLaidOut() {
+        GPlatformFilterRows box = new GPlatformFilterRows(null, null, null);
+        box.addBox(null, GUserFiltersController.NONE); // laid out nowhere
+        assertFalse(box.drawsRows());
+        GPlatformFilterRows filter = new GPlatformFilterRows(null, null, null);
+        GFilter component = new GFilter();
+        component.nativeSID = "f1";
+        filter.addFilter(component, GUserFiltersController.NONE);
+        assertTrue(filter.drawsRows());
     }
     // a filter group with no filters has no view of either kind, so no controller: the platform is not asked to build
     // its check box or list, and where a view would draw it, nothing of it is there - the server claims no name for it
@@ -6002,15 +6040,18 @@ public class GReactFormDataTest extends GWTTestCase {
         assertNull(field(f.snapshots[2], "items")); // c places the view, and draws nothing of the group
     }
 
-    // a FILTER the platform draws - custom = NULL in a react container: a condition of its filter panel, which makes
-    // its row - is no part of React's: the container that places it has its descriptor alone, which its SHOWIF hides
+    // a FILTER the platform draws - custom = NULL in a react container: the platform's row of it, asked of the platform
+    // where its table's user filters are made - is no part of React's: the container that places it has its descriptor
+    // alone, which its SHOWIF hides
     public void testAFilterThePlatformDrawsHasItsDescriptorOnly() {
         GFilter[] filter = new GFilter[1];
         Fixture f = new Fixture(fixture -> {
             filter[0] = fixture.filterIn(fixture.c, fixture.price);
             filter[0].platformDrawn = true; // custom = NULL
         });
-        assertNull(f.projection.createFilterPart(filter[0], GUserFiltersController.NONE));
+        PlatformFiltersDouble platform = new PlatformFiltersDouble(); // what the platform is asked to draw a row of
+        f.projection.createFiltersControllers(f.group.grid, new RecordingTableController(), new GFilterControlsToggle(() -> { }, GFilterControlsController.NONE, null), platform);
+        assertEquals(Collections.singletonList(filter[0]), platform.filtersAsked);
         assertNull(field(f.snapshots[2], "items"));
         assertFalse(own(field(f.snapshots[2], "FILTER(price)"), "hidden"));
         GFormChanges hide = new GFormChanges(); put(hide, filter[0].showIfReader, GGroupObjectValue.EMPTY, true); f.apply(hide);

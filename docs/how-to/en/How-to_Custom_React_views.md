@@ -1697,19 +1697,32 @@ one, the add and typing start a new row of the panel's. A filter of a property o
 group's node, as a filter group of a tree's group is. Its [entry](#display-options), `data['FILTER(name(i))']`, says
 whether the form shows the filter — its `SHOWIF`, or a container's above it.
 
-A property filter with `custom = NULL` is the platform's: a row of its filter panel, as a classic form shows it, which
-the view places with `<Platform name="FILTER(name(i))"/>` as any child the platform draws ([placing](#placing)). A
-filter with a React component of its own — `FILTER(name(i)) { custom = 'NameSearch'; }` — draws its part in its own
-view ([A component's own view](#component-views)).
+A property filter with `custom = NULL` is the platform's: its row of the group's user filters, as a classic form shows
+it, which the view places with `<Platform name="FILTER(name(i))"/>` as any child the platform draws
+([placing](#placing)). It is that row whoever draws the group's conditions — the platform's filter panel, or a view,
+over whose conditions it is the one row the platform draws —, and so is a property filter that stands outside React:
+
+```lsf
+DESIGN items {
+    FILTERS(i) { custom = 'ItemFilters'; } // the conditions: a view
+    FILTER(name(i)) { custom = NULL; }     // ... and the platform's row of the name filter, which the view places
+}
+```
+
+A value committed in the row is the filter's, sent as any change is; a condition the view states on the property shows
+in it, and F3 on its column puts the cell's value into it — on a property `filterProperties` lists, or on a file one: F3
+over a view's conditions starts no condition on another ([Replacing only the filters](#custom-filter-panel)). Where the
+toolbar turns the platform's filters off (`showFilters = FALSE`), nobody draws such a filter, as in a form with no React
+view. A filter with a React component of its own — `FILTER(name(i)) { custom = 'NameSearch'; }` — draws its part in its
+own view ([A component's own view](#component-views)).
 
 Some combinations are refused when the form is built:
 
-- a filter a view draws of a group in `PANEL` view, which has no user filters;
+- a filter of a group in `PANEL` view, which has no user filters: one a view draws, and one given `custom = NULL` in a
+  view;
 - a filter a view draws on a property its condition cannot name or give a value to: one with no integration name
   (`NOEXTID`), one grouped in columns, an action;
-- a filter the platform has to draw where it builds no filter panel: one given `custom = NULL` in a view where a view
-  draws the group's conditions or the toolbar turns the filters off (`showFilters = FALSE`), and one standing outside
-  React where a view draws the conditions.
+- a filter the platform draws over the conditions a view draws, on an action, which is never filtered by.
 
 ### Replacing only the filters {#custom-filter-panel}
 
@@ -1734,7 +1747,8 @@ group's list — the one the component is shown in `filters`:
 - the toolbar's filter button shows and hides the controls the platform draws in `FILTERCONTROLS(o)`. Their reset clears
   the list, and their add does what F3 does. Where the component's box holds `FILTERCONTROLS(o)` too, the component
   draws them: they are its [filter controls](#filter-controls), whose `resetFilters()` and `addFilter()` do the same,
-  and the toolbar has no filter button;
+  and the toolbar's filter button is there only for the rows of the property filters the platform draws, whose selectors
+  it shows and hides;
 - F3 in the grid gives the value of its [current cell](#filter-controls) to that cell's property, as a value is given a
   [property filter](#property-filters): in the place of the first condition on the property, its comparison, negation
   and `or` kept, or, where there is none, in the place of the property's filter, compared as it compared last, else at
@@ -1823,21 +1837,22 @@ of any view — nothing of it on the node, no members, no names taken.
 | --- | --- | --- | --- |
 | `manual` | `manual.change(on)` | the manual update turned on or off | the manual update |
 | `updatePending` | `update()` | the changes the server holds back while the update is manual, brought | the update |
-| `filterControlsVisible` | `filterControlsVisible.change(shown)` | whether the platform's filter controls are shown — the buttons of its FILTERCONTROLS and the condition editors of its FILTERS panel; shown on a panel with no conditions, with one to fill in | the filter button |
+| `filterControlsVisible` | `filterControlsVisible.change(shown)` | whether the platform's filter controls are shown — the buttons of its FILTERCONTROLS and the condition editors of its FILTERS panel and of the property filters' rows it draws; shown on a panel with no conditions, with one to fill in | the filter button |
 | `listView`, `listViews` | `listView.change(name)` | the rows of the platform's table shown in another view type, one of `listViews`: `grid`, `pivot`, and `custom`, `map` or `calendar` where the group has one | the view type switch |
 | | `getCount()` | the number of the group's rows — of the marked ones only, where the user has marked any, as the platform counts them —, as a `Promise` of the server's answer, a request as `getValues` is | the count |
 | | `getSum(property)` | the sum of a column — over the marked rows only, where the user has marked any, as the platform sums it —, as a `Promise`: a number property of the group, named as a [sorting](#orders) names one, not one grouped in columns | the sum, of the current column — a view has none, so the call names it |
 | | `export()` | the group's rows exported to Excel, the server's report of them | the export — which on a pivot exports the pivot |
 
 What the buttons act on is the platform's: `filterControlsVisible` shows and hides the PLATFORM's filter controls — its
-FILTERCONTROLS buttons and its panel's editors, and where the platform has none for the group — the view draws the
-conditions and `FILTERCONTROLS(o)`, or the toolbar turns the platform's filters off (`showFilters = FALSE`) — it stays
-`false` and its change is refused, saying why. Controls a view draws itself are its own to show, its [filter
-controls](#filter-controls). The view type switch switches the platform's table: where a view draws the rows,
-`listViews` is empty, `listView` is `null`, and a change is refused. A group whose rows a view draws has the default
-`GRID` list view type: one the form gives another (`OBJECTS o = Order PIVOT`, and `MAP`, `CALENDAR`, `CUSTOM`) is
-refused when the form is built, since the server starts such a group as the platform's view of that kind needs it —
-give what draws the rows, the group's grid or its tree, `custom = NULL` for the platform to draw them there.
+FILTERCONTROLS buttons, its panel's editors and the selectors of the property filters' rows it draws —, and where the
+platform has none for the group — the view draws the conditions, `FILTERCONTROLS(o)` and every property filter, or the
+toolbar turns the platform's filters off (`showFilters = FALSE`) — it stays `false` and its change is refused, saying
+why. Controls a view draws itself are its own to show, its [filter controls](#filter-controls). The view type switch
+switches the platform's table: where a view draws the rows, `listViews` is empty, `listView` is `null`, and a change is
+refused. A group whose rows a view draws has the default `GRID` list view type: one the form gives another
+(`OBJECTS o = Order PIVOT`, and `MAP`, `CALENDAR`, `CUSTOM`) is refused when the form is built, since the server starts
+such a group as the platform's view of that kind needs it — give what draws the rows, the group's grid or its tree,
+`custom = NULL` for the platform to draw them there.
 
 Inside a [batch](How-to_Custom_view_controller.md#batch) the members that ask the server are refused. The settings of
 the platform's table are not there — a dialog of the platform's, over the table it draws. A toolbar placed back with

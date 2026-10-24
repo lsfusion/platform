@@ -52,8 +52,8 @@ public class GDataFilterValueView extends SizedFlexPanel {
         }
     }
 
-    // its editor, if open, cancelled - before its row is bound to another entry or taken away (GPlatformFiltersController):
-    // an editor left open would commit into what it no longer shows
+    // its editor, if open, cancelled - before its row is bound to another entry or taken away
+    // (GPlatformFilterRowsController): an editor left open would commit into what it no longer shows
     public void cancelEditing() {
         if (cell != null)
             form.cancelEditing(cell, CancelReason.HIDE);

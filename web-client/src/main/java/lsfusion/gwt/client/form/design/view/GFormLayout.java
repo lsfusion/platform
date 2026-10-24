@@ -37,9 +37,11 @@ public class GFormLayout extends SizedFlexPanel {
 
     private final NativeSIDMap<GContainer, GAbstractContainerView> containerViews = new NativeSIDMap<>();
     private final NativeSIDMap<GContainer, Widget> containerCaptions = new NativeSIDMap<>();
-    // the containers whose SHOWIF hides them now: a container is hidden through what it holds, except a CUSTOM REACT
-    // one, whose content GWT does not see - it is told its own SHOWIF instead (FormView.isReactShowIfContainer)
-    private final java.util.Set<GContainer> showIfHidden = new java.util.HashSet<>();
+    // the components whose SHOWIF hides them now: a container is hidden through what it holds, except a CUSTOM REACT
+    // one, whose content GWT does not see - it is told its own SHOWIF instead (FormView.isReactShowIfContainer); a
+    // base component by its view, one added later too - a FILTER's row, built with the form's first changes, which
+    // carry the SHOWIF before the tables are updated (addBaseComponent)
+    private final java.util.Set<GComponent> showIfHidden = new java.util.HashSet<>();
     private final Map<GComponent, ComponentViewWidget> baseComponentViews = new HashMap<>();
 
     private final ArrayList<GComponent> defaultComponents = new ArrayList<>();
@@ -275,17 +277,18 @@ public class GFormLayout extends SizedFlexPanel {
     public void addBaseComponent(GComponent component, ComponentWidget view, DefaultFocusReceiver focusReceiver) {
         assert !(component instanceof GContainer);
         baseComponentViews.put(component, view.widget);
+        if (showIfHidden.contains(component))
+            view.widget.setShowIfVisible(false);
         add(component, view, focusReceiver);
     }
 
     public void setShowIfVisible(GComponent component, boolean visible) {
-        // hidden through what it holds, or - a react container - by this, on the next update
-        if (component instanceof GContainer) {
-            if (visible)
-                showIfHidden.remove(component);
-            else
-                showIfHidden.add((GContainer) component);
-        }
+        // hidden through what it holds, or - a react container - by this, on the next update; a base component by its
+        // view, now or as it is added
+        if (visible)
+            showIfHidden.remove(component);
+        else
+            showIfHidden.add(component);
         ComponentViewWidget widget = baseComponentViews.get(component);
         if(widget != null) {
             widget.setShowIfVisible(visible);

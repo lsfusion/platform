@@ -1,12 +1,27 @@
 MODULE UiPlatformFilterRow;
 
-REQUIRE System;
+REQUIRE System, SystemEvents;
 
-// the form UiPlatformFilterRowIT works on in the browser - a FILTER of a property the platform draws as a condition
-// row: a fixed row of the platform's filter panel
+// the forms UiPlatformFilterRowIT works on in the browser - FILTERs of properties the platform draws as condition rows:
+// rows of the user filters a React view draws the conditions of, and a fixed row of the platform's filter panel -, and
+// the action it seeds the items with
 
 CLASS UiPfrItem 'Item';
 uiPfrName 'Name' = DATA ISTRING[50] (UiPfrItem);
+uiPfrCity 'City' = DATA ISTRING[50] (UiPfrItem);
+
+// the conditions drawn by a React view (UiPlatformFilterRow.js), the rows by the platform's grid; the name's FILTER
+// stands outside React, where the platform draws it, and the city's in the view, which places it (custom = NULL)
+FORM uiPfrOverView 'Filter rows over a view'
+    OBJECTS i = UiPfrItem
+    PROPERTIES(i) READONLY uiPfrName FILTER, uiPfrCity FILTER
+;
+
+DESIGN uiPfrOverView {
+    FILTERS(i) { custom = 'UiPfrConditions'; }
+    MOVE FILTER(uiPfrName(i)) FIRST;
+    FILTER(uiPfrCity(i)) { custom = NULL; }
+}
 
 // the conditions drawn by the platform's filter panel, the name's FILTER its fixed row
 FORM uiPfrPanel 'Filter row of the panel'
@@ -23,8 +38,22 @@ EXTEND FORM uiPfrPanel
     PROPERTIES() uiPfrNameEquals
 ;
 
+onWebClientInit() + {
+    onWebClientInit('UiPlatformFilterRow.js') <- 1;
+}
+
 NAVIGATOR {
     NEW FOLDER uiPfr 'UI platform filter rows' WINDOW toolbar {
+        NEW uiPfrOverView;
         NEW uiPfrPanel;
     }
+}
+
+// an item, named and in a city
+uiPfrSeed (ISTRING[50] name, ISTRING[50] city) {
+    NEW i = UiPfrItem {
+        uiPfrName(i) <- name;
+        uiPfrCity(i) <- city;
+    }
+    APPLY;
 }

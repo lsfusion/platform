@@ -16,8 +16,8 @@ import java.util.function.Predicate;
 // active ones are what is sent, each group's in that order; the lists sent are the form's (Transport). A FILTER of the
 // table's properties is a SLOT of it: it shows the first active entry on its column, wherever that stands, and, with
 // none, its placeholder - an inactive entry holding its place and what it remembers of its condition. What draws the
-// entries - the platform's panel, a view's parts, the filter controls - is a view of it, told of every change (View);
-// what states them - the panel's rows and input, a view's members, the input over a view's conditions, a pivot's
+// entries - the platform's rows, a view's parts, the filter controls - is a view of it, told of every change (View);
+// what states them - the platform's rows, the inputs, a view's members, a pivot's
 // drill-down, the server - goes through its operations. A write is sent at once, but in the manual apply mode, where it
 // waits for the apply; what the platform's rows prepare - F3's value, another property chosen - waits in either mode
 public final class GUserFiltersController {
@@ -169,6 +169,10 @@ public final class GUserFiltersController {
             if (entry.isActive())
                 return true;
         return false;
+    }
+    // ... whether the table has a FILTER - one the design keeps -: a row of it, whoever draws it, for good
+    public boolean hasFilters() {
+        return !slots.isEmpty();
     }
     // ... the manual apply mode: the client's setting, and the table's apply button shown - whoever draws it
     public boolean isManual() {
@@ -383,7 +387,7 @@ public final class GUserFiltersController {
         changed(NOTHING_SENT);
     }
     // a FILTER's column, where the platform draws it on a property grouped in columns: the one the table is on as the
-    // platform builds its row (GPlatformFiltersController.update)
+    // platform builds its row (GPlatformFilterController.build)
     public void setSlotColumn(GFilter filter, GGroupObjectValue columnKey) {
         Slot slot = getSlot(filter);
         if (slot == null)

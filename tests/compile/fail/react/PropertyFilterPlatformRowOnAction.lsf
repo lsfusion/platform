@@ -1,0 +1,19 @@
+MODULE PropertyFilterPlatformRowOnAction;
+
+REQUIRE System;
+
+// a FILTER the platform draws over the conditions a view draws is a row of the group's user filters, which states a
+// condition, and an action is never filtered by
+CLASS PfRowActionItem;
+pfRowActionName = DATA STRING[20] (PfRowActionItem);
+pfRowActionMark (PfRowActionItem i) { pfRowActionName(i) <- 'marked'; }
+
+FORM propertyFilterPlatformRowOnAction
+    OBJECTS i = PfRowActionItem
+    PROPERTIES(i) pfRowActionName, pfRowActionMark FILTER
+;
+
+DESIGN propertyFilterPlatformRowOnAction {
+    FILTERS(i) { custom = 'PfRowActionFilters'; }
+    MOVE FILTER(pfRowActionMark(i)) FIRST;
+}

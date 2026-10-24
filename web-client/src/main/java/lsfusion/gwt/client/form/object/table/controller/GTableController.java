@@ -17,7 +17,7 @@ import java.util.List;
 // GTreeController) -, whoever draws them, chosen once (GReactFormData.createGridController, createTreeController): the
 // platform's table (GPlatformTableController), or the rows React draws (GReactFormData.TablePart). First what the
 // filter input controller of the table's FILTERS asks of them (GFilterInputController): the cell a new condition starts
-// on - its column, and the row the table is on, -1 for none - and that cell's value; and what the platform's panel asks
+// on - its column, and the row the table is on, -1 for none - and that cell's value; and what the platform's rows ask
 // besides: the columns a condition can be on, the group its bindings are of, and the focus taken back once they are
 // applied. The conditions themselves are the table's user filters' (GUserFiltersController), which send them
 public interface GTableController {
