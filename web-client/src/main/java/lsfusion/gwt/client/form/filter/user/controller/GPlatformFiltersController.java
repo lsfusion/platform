@@ -61,7 +61,7 @@ public final class GPlatformFiltersController extends GPlatformFilterRowsControl
         GPropertyFilter condition = entry.condition;
         GPropertyFilter own = new GPropertyFilter(new GFilter(condition.column.property), condition.groupObject, condition.column.columnKey, null, null);
         filtersContainer.add(own.filter);
-        return addRow(own, entry);
+        return addRow(own, entry, false);
     }
     // ... and one whose entry is gone: its component out of the box, its value cell let go of
     private void removeBoxRow(GFilterConditionView row) {

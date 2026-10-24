@@ -117,7 +117,4 @@ public class GPropertyFilter {
         return value.value == null;
     }
 
-    public boolean isFixed() {
-        return filter.fixed;
-    }
 }

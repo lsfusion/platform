@@ -5,7 +5,6 @@ import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.GUserFilter;
@@ -16,22 +15,18 @@ import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.view.Column;
 
-import java.util.HashMap;
-import java.util.Map;
-
 // the platform's ROWS of a table's user filters, of the kind of what it draws them for - the FILTERS box
 // (GPlatformFiltersController), a FILTER (GPlatformFilterController) -, each made where the projection answers that the
 // platform draws it (GReactFormData.createFiltersControllers): a view of the model (GUserFiltersController), each row
 // an editor of the entry it shows - what is changed in it goes into the model (edit), what the model has comes back
 // into it (show) -, the rows of what a write sent marked loading till the answer. Driven with the table, with the
-// others of the table's (GPlatformFilterRows): built with the table's first changes - the columns are known then
+// others of the table's (GPlatformFilterRows): built with the table's first changes - its columns are known then
 // (update) -, shown and hidden with it, let go of with the form, their selectors and delete buttons shown with the
 // filter controls (GFilterControlsToggle)
 public abstract class GPlatformFilterRowsController implements GFilterConditionView.UIHandler, GUserFiltersController.View {
     protected final GFormController form;
     protected final GTableController rows; // what draws the table's rows: the columns, the column a condition is on, the focus
     protected final GUserFiltersController userFilters;
-    private final Map<Column, String> columns = new HashMap<>();
 
     // the entry each row shows
     private final NativeHashMap<GFilterConditionView, GUserFilter> rowEntries = new NativeHashMap<>();
@@ -48,13 +43,8 @@ public abstract class GPlatformFilterRowsController implements GFilterConditionV
         this.userFilters = userFilters;
     }
 
-    // what draws the rows has changed, once per delta: the columns a condition can be on, read anew, and - the first
-    // time - the rows built (build), the model drawn
+    // what draws the rows has changed, once per delta: the first time, the rows built (build), the model drawn
     void update() {
-        columns.clear();
-        for (Pair<Column, String> column : rows.getFilterColumns())
-            columns.put(column.first, column.second);
-
         if (!built) {
             built = true;
             build();
@@ -82,11 +72,11 @@ public abstract class GPlatformFilterRowsController implements GFilterConditionV
     }
 
     // ===== THE ROWS: one made for an entry - its condition's component in the layout, the FILTER itself or one the box
-    // holds -, as the table and the controls are shown; bound to another entry - a slot's, which shows another one -:
-    // its open editor cancelled first, so it commits into nothing it no longer shows, and its loading mark taken off,
-    // that one's; let go of - its editor and its mark the same way
-    protected GFilterConditionView addRow(GPropertyFilter condition, GUserFilter entry) {
-        GFilterConditionView row = new GFilterConditionView(condition, form, rows, this, () -> columns, controlsVisible);
+    // holds, told whether it is a FILTER's (fixed) -, as the table and the controls are shown; bound to another entry -
+    // a slot's, which shows another one -: its open editor cancelled first, so it commits into nothing it no longer
+    // shows, and its loading mark taken off, that one's; let go of - its editor and its mark the same way
+    protected GFilterConditionView addRow(GPropertyFilter condition, GUserFilter entry, boolean fixed) {
+        GFilterConditionView row = new GFilterConditionView(condition, form, rows, this, fixed, controlsVisible);
         form.getFormLayout().addBaseComponent(condition.filter, row.initView(), null);
         if (!tableVisible)
             GwtClientUtils.setGridVisible(row, false);

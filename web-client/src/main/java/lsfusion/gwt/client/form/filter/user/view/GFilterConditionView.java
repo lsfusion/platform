@@ -28,7 +28,6 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class GFilterConditionView extends FlexPanel implements HasNativeSID {
@@ -63,12 +62,14 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     private FlexPanel leftPanel;
     private FlexPanel rightPanel; 
 
-    private ColumnsProvider columnsProvider;
 
     public boolean allowNull;
 
     private boolean isLast = false;
     private final UIHandler uiHandler;
+    private final GTableController rows; // what draws the table's rows: the columns a condition can be on
+    // a FILTER's row - its property the design's, never removed -, not one of the box's
+    private final boolean fixed;
     private boolean controlsVisible;
 
     // may not be applied without "Allow NULL", but we want to keep condition visible
@@ -86,24 +87,25 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         valueView.destroy();
     }
 
-    public GFilterConditionView(GPropertyFilter iCondition, GFormController form, GTableController rows, UIHandler uiHandler, ColumnsProvider columnsProvider, boolean controlsVisible) {
+    public GFilterConditionView(GPropertyFilter iCondition, GFormController form, GTableController rows, UIHandler uiHandler, boolean fixed, boolean controlsVisible) {
         this.condition = iCondition;
         this.uiHandler = uiHandler;
-        this.columnsProvider = columnsProvider;
+        this.rows = rows;
+        this.fixed = fixed;
         this.controlsVisible = controlsVisible;
 
         this.sID = "" + (idCounter++);
         
        GwtClientUtils.addClassName(this, "filter");
 
-        allowNull = !condition.isFixed();
+        allowNull = !fixed;
         
         leftPanel = new FlexPanel();
         rightPanel = new FlexPanel();
         GwtClientUtils.addClassName(rightPanel, "btn-toolbar");
 
         Column currentColumn = getCaptionColumn();
-        String currentCaption = columnsProvider.getColumns().get(currentColumn);
+        String currentCaption = getCaption(currentColumn);
         
         propertyLabel = new Label(currentCaption);
         propertyLabel.setTitle(currentCaption);
@@ -117,7 +119,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
                 // the group of its property, as the server takes it
                 condition.groupObject = column.property.groupObject;
 
-                String columnCaption = columnsProvider.getColumns().get(column);
+                String columnCaption = getCaption(column);
                 propertyLabel.setText(columnCaption);
                 propertyLabel.setTitle(columnCaption);
 
@@ -270,7 +272,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     }
     
     public boolean isFixed() {
-        return condition.isFixed();
+        return fixed;
     }
     // the condition it shows and edits, its own (show)
     public GPropertyFilter getCondition() {
@@ -343,7 +345,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         if (!entry.column.equals(condition.column)) {
             condition.column = entry.column;
             condition.groupObject = entry.groupObject;
-            String caption = columnsProvider.getColumns().get(getCaptionColumn());
+            String caption = getCaption(getCaptionColumn());
             propertyLabel.setText(caption);
             propertyLabel.setTitle(caption);
             propertyView.setSelectedValue(getCaptionColumn(), caption);
@@ -414,6 +416,14 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     private Column getCaptionColumn() {
         return condition.column.columnKey != null ? condition.column : new Column(condition.column.property, GGroupObjectValue.EMPTY);
     }
+    // ... and a column's caption, as the table has it now - of the columns a condition can be on
+    // (GTableController.getFilterColumns)
+    private String getCaption(Column column) {
+        for (Pair<Column, String> filterColumn : rows.getFilterColumns())
+            if (filterColumn.first.equals(column))
+                return filterColumn.second;
+        return null;
+    }
 
     // shown or hidden - by its SHOWIF, with its table - with its caption, a widget apart where its container aligns
     // captions (initView)
@@ -423,13 +433,9 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         leftPanel.setVisible(nVisible);
 
         if (nVisible) {
-            String columnCaption = columnsProvider.getColumns().get(getCaptionColumn());
+            String columnCaption = getCaption(getCaptionColumn());
             propertyLabel.setText(columnCaption);
             propertyLabel.setTitle(columnCaption);
         }
-    }
-
-    public interface ColumnsProvider {
-        Map<Column, String> getColumns();
     }
 }

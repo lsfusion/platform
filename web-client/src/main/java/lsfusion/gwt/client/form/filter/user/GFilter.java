@@ -6,7 +6,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public class GFilter extends GComponent {
     public GPropertyDraw property;
-    public boolean fixed;
 
     public GFilter() {
     }

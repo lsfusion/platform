@@ -98,8 +98,8 @@ public final class GFilterControlsToggle implements GUserFiltersController.Apply
     }
 
     // ===== WITH THE TABLE, as its input is told (GFilterInputController): what draws the rows has changed, once per
-    // delta - the rows read the columns anew, built the first time -; the table shown or hidden - the rows and the
-    // controls with it -; the form closing - the rows let go of
+    // delta - the rows built the first time -; the table shown or hidden - the rows and the controls with it -; the
+    // form closing - the rows let go of
     public void update() {
         rows.update();
         hadRows = hasRows();

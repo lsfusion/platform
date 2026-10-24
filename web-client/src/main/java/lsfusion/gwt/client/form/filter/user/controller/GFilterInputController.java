@@ -44,8 +44,8 @@ public abstract class GFilterInputController implements GFiltersHandler {
         toggle.setVisible(visible);
     }
     // what draws the rows has changed, once per delta - told by a table of the platform's before it shows or hides
-    // what of the filters the platform draws, by the projection where React draws the rows: the platform's rows read
-    // anew the columns a condition can be on, and are built the first time
+    // what of the filters the platform draws, by the projection where React draws the rows: the platform's rows are
+    // built the first time, the table's columns known then
     public void update() {
         toggle.update();
     }

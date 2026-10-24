@@ -900,7 +900,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         // its FILTER CONTROLS - the platform's where its toolbar shows the filters (showFilters, a flag of the
         // platform's alone), else none, as the platform builds no filter input controller then to give their commands -
         // and what shows them and the toolbar's button (GFilterControlsToggle)
-        GFilterControlsController filterControls = reactData.createFilterControlsController(table, () -> table.toolbar.showFilters ? new GPlatformFilterControlsController(this, table.filterControls) : GFilterControlsController.NONE);
+        GFilterControlsController filterControls = reactData.createFilterControlsController(table, () -> table.toolbar.showFilters ? new GPlatformFilterControlsController(formLayout, table.filterControls) : GFilterControlsController.NONE);
         GFilterControlsToggle toggle = new GFilterControlsToggle(() -> formLayout.update(-1), filterControls, made.second);
         // ... its USER FILTERS - their model, what draws each FILTER and the FILTERS box, and the input of whoever
         // draws what the box holds, given to what draws the rows (GTableController.bindFilter) -

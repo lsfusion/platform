@@ -25,10 +25,9 @@ public final class GPlatformFilterController extends GPlatformFilterRowsControll
     }
 
     protected void build() {
-        filter.fixed = true;
         Column column = getActualColumn(rows, filter.property, rows.getSelectedColumnKey());
         userFilters.setSlotColumn(filter, column.columnKey);
-        row = addRow(new GPropertyFilter(filter, column.property.groupObject, column.columnKey, null, null), userFilters.getSlotEntry(filter));
+        row = addRow(new GPropertyFilter(filter, column.property.groupObject, column.columnKey, null, null), userFilters.getSlotEntry(filter), true);
     }
 
     // ... its row, none before the table's first changes (GPlatformFilterRows.getFilterRow)
