@@ -52,7 +52,6 @@ import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GComponentController;
 import lsfusion.gwt.client.form.object.table.controller.GGroupController;
-import lsfusion.gwt.client.form.object.table.controller.GUserFiltersController;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.controller.GUserOrdersController;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
@@ -60,11 +59,10 @@ import lsfusion.gwt.client.form.object.table.controller.GPlatformPropertyControl
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
-import lsfusion.gwt.client.form.filter.user.GFilterConditions;
-import lsfusion.gwt.client.form.filter.user.GFilterController;
 import lsfusion.gwt.client.form.filter.user.view.GFiltersHandler;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
-import lsfusion.gwt.client.form.filter.user.view.GFilterEditors;
+import lsfusion.gwt.client.form.filter.user.GUserFilter;
+import lsfusion.gwt.client.form.filter.user.GUserFiltersController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GComponentLabelReader;
 import lsfusion.gwt.client.form.property.GComponentReader;
@@ -132,9 +130,9 @@ public class GReactFormData {
     // later. The members are made here, beside the entries they mirror, and each holds the state it stands for (a
     // ReactPropertyEntry, a Part): a call through one reads what it names - the row, the value - from that state, and
     // hands the form the edit, which the form shows at once and sends at once or, inside a batch, when the batch ends
-    // (batch). The form keeps the condition of a property's FILTER where no panel of the platform's shows the
-    // conditions (GFilterConditions): in its list
-    public interface Verbs extends GFilterConditions {
+    // (batch). The user filters of each table are its model's (GUserFiltersController), which sends them through here
+    // (GUserFiltersController.Transport)
+    public interface Verbs extends GUserFiltersController.Transport {
         // ===== the current object of a group whose rows a view draws: one of those rows
         void changeCurrentObject(GGroupObject group, GGroupObjectValue key);
         // ===== a property: its cell - its key (EMPTY: the current objects), its value (PValue.UNDEFINED: its change
@@ -162,31 +160,13 @@ public class GReactFormData {
         // (OrdersPart.changeOne), as the platform's header merges a click into them: the form's own map, read, never
         // changed
         LinkedHashMap<Column, Boolean> getOrders(GGroupObject group);
-        // ===== the user filters of a FILTERS box's groups - a group's, or a tree's, top down -, as its filters part
-        // states them: the whole list they are to be filtered by, each condition on the property it resolved, of that
-        // property's group - each group's its own list, sent in one request, as the platform's panel sends them, the
-        // request's index returned, which the panel's loading marks need and a view does not
+        // ===== the user filters of a table's groups - a group's, or a tree's, top down -, as the table's model sends
+        // them (GUserFiltersController): the whole list they are to be filtered by, each condition on the property it
+        // resolved, of that property's group - each group's its own list, sent in one request, the request's index
+        // returned, which the platform's loading marks need and a view does not; and a group's as it was sent last or
+        // the server reported it, as it is sent
         long changeFilters(List<GGroupObject> groups, ArrayList<GPropertyFilter> conditions);
-        // ... and a group's as the form has them - what a view's part shows, and what one condition stated is merged
-        // into: a list of the caller's own
-        ArrayList<GPropertyFilter> getFilters(GGroupObject group);
-        // ... and a property's FILTER's condition in them (createFiltersControllers): the FIRST on its column, as the
-        // platform's row takes the first on its column, the list made of it sent at once, as a view's conditions are
-        // (FiltersPart)
-        @Override
-        default GPropertyFilter getFilterCondition(GFilter filter) {
-            return GPropertyFilter.getFirst(getFilters(filter.property.groupObject), getConditionColumn(filter.property));
-        }
-        @Override
-        default void changeFilter(GFilter filter, GPropertyFilter condition) {
-            GGroupObject group = filter.property.groupObject;
-            changeFilters(Collections.singletonList(group), GPropertyFilter.withCondition(getFilters(group), condition));
-        }
-        @Override
-        default void clearFilter(GFilter filter) {
-            GGroupObject group = filter.property.groupObject;
-            changeFilters(Collections.singletonList(group), GPropertyFilter.withoutFirst(getFilters(group), getConditionColumn(filter.property)));
-        }
+        ArrayList<GPropertyFilterDTO> getFilterDTOs(GGroupObject group);
         // ===== a filter group of a group: the filter selected in it - null: none -, as its member read it
         void changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter);
         // ===== the widget of the React view that draws what scope holds: the keys of what the view draws are taken
@@ -321,11 +301,13 @@ public class GReactFormData {
     }
     // ... and of a property's FILTER, FILTER(<property>) - the user filter declared on a property of a group -, as of a
     // filter group: its part, a part of the group of its property, on its node where the filter is drawn
-    // (filterScope), its condition where its table's user filters keep it (`conditions`, createFiltersControllers);
-    // none where the platform draws it - its filter panel makes it, a condition of the panel, wherever the design puts
-    // it (GPlatformFiltersController)
-    public GFilterController createFilterController(GFilter filter, GFilterConditions conditions) {
-        return reactOrPlatform(filterScope(filter), state -> new FilterPart(state.getOrCreateGroupNode(filter.property.groupObject), filter, conditions), () -> GFilterController.NONE);
+    // (filterScope), a view of its table's user filters, which it is a slot of (userFilters); none where the platform
+    // draws it - its filter panel draws it, wherever the design puts it (GPlatformFiltersController)
+    public GUserFiltersController.View createFilterPart(GFilter filter, GUserFiltersController userFilters) {
+        FilterPart part = reactOrPlatform(filterScope(filter), state -> new FilterPart(state.getOrCreateGroupNode(filter.property.groupObject), filter, userFilters), () -> null);
+        if (part != null)
+            userFilters.addView(part);
+        return part;
     }
     // ===== WHAT GOES OVER THE ROWS of a list's group not in a tree, or of a tree, one for all its groups, each of the
     // kind of whoever draws it, made where the form sets the table up (GFormController.initializeGrid,
@@ -346,33 +328,31 @@ public class GReactFormData {
     public GFilterControlsController createFilterControlsController(GGridProperty table, Supplier<GFilterControlsController> platform) {
         return reactOrPlatform(filterControlsScope(table), state -> new FilterControlsPart(state.getOrCreateTableNode(table)), platform);
     }
-    // ... and the controllers of what the FILTERS box of a table holds - the USER FILTERS of its groups, the grid's
-    // group or the tree's, one box for all of them -, both of the one owner of the box's content (filtersScope): where
-    // a view draws it, the commands over the conditions it draws, which take the platform's input - the keys of the
-    // rows, the controls, a pivot's drill-down - (ReactFilterInputController), and their part, which shows the
-    // conditions, on the table's node there (FiltersPart); else the platform's filter panel, both in one, where it
-    // builds one (platform), made only then - else neither: no input, and nothing shows them
-    // (GUserFiltersController.NONE). The input works on what draws the rows (rows), and the toggle shows the controls
-    // and the toolbar's button (GFormController.initializeTable); a group in PANEL view has neither, as the platform
-    // shows it none. And where the condition of a FILTER of the table's properties is: the panel, its row of the
-    // FILTER, where there is one, else the form's list (Verbs)
-    public FiltersControllers createFiltersControllers(GGridProperty table, GTableController rows, GFilterControlsToggle toggle, Supplier<GPlatformFiltersController> platform) {
-        return reactOrPlatform(filtersScope(table.filtersContainer), state -> new FiltersControllers(new ReactFilterInputController(table.getGroups(), rows, toggle),
-                new FiltersPart(state.getOrCreateTableNode(table)), verbs), () -> {
-            GPlatformFiltersController panel = platform.get();
-            return panel != null ? new FiltersControllers(panel, panel, panel) : new FiltersControllers(null, GUserFiltersController.NONE, verbs);
-        });
+    // ... and the USER FILTERS of a table - its groups', the grid's group or the tree's, one FILTERS box for all of
+    // them -: their model (GUserFiltersController), there with no box too, sending through the form (Verbs), its manual
+    // apply mode by the apply button the toggle shows; and the input of whoever draws what the box holds
+    // (filtersScope): where a view draws it, the commands over the conditions it draws, which take the platform's
+    // input - the keys of the rows, the controls - (ReactFilterInputController), the box's part showing them on the
+    // table's node there (FiltersPart); else the platform's filter panel, which draws them and takes the input, where
+    // it builds one (platform), made only then - else no input. The input works on what draws the rows (rows), and the
+    // toggle shows the controls and the toolbar's button (GFormController.initializeTable); a group in PANEL view has
+    // none (GUserFiltersController.NONE)
+    public FiltersControllers createFiltersControllers(GGridProperty table, GTableController rows, GFilterControlsToggle toggle, Function<GUserFiltersController, GPlatformFiltersController> platform) {
+        GUserFiltersController userFilters = new GUserFiltersController(table.getGroups(), table.filters, verbs, toggle);
+        GFilterInputController input = reactOrPlatform(filtersScope(table.filtersContainer), state -> {
+            userFilters.addView(new FiltersPart(state.getOrCreateTableNode(table), userFilters));
+            return new ReactFilterInputController(userFilters, rows, toggle);
+        }, () -> platform.apply(userFilters));
+        return new FiltersControllers(input, userFilters);
     }
     // ... which the form takes apart
     public static final class FiltersControllers {
         public final GFilterInputController input;
         public final GUserFiltersController userFilters;
-        public final GFilterConditions conditions;
 
-        FiltersControllers(GFilterInputController input, GUserFiltersController userFilters, GFilterConditions conditions) {
+        FiltersControllers(GFilterInputController input, GUserFiltersController userFilters) {
             this.input = input;
             this.userFilters = userFilters;
-            this.conditions = conditions;
         }
     }
     // WHAT DRAWS THE ROWS of a TABLE, the form's one question for them, asked with its toolbar
@@ -1159,17 +1139,18 @@ public class GReactFormData {
     // the USER FILTERS where React draws them - what a FILTERS box holds: a part of their own, of the group the box is
     // of or of the tree, one box for all its groups, on the table's node where the box's content is - the node a
     // group's rows are drawn on when the two are in one container -, the conditions of the table's groups, each on a
-    // property named as the node names it (OwnerNode.getPropertyName, readPropertyName). `filters` is what the
-    // server is filtering by: the form tells the part whenever a group's list changes - it sends one, or the server
-    // reports one -, and the array is rebuilt only then, from the lists the form has (Verbs.getFilters) - so it keeps
-    // its identity across renders in which nothing states them anew. The part keeps only what it publishes.
-    // It is what shows the user filters of the box (GUserFiltersController), the view's kind of it, the platform's
-    // panel being the other, there whether the platform wires a filter input controller up or not: the commands over
-    // them, where it does, are an object of their own (ReactFilterInputController), and a list they state reaches the
-    // part as any list the form sends does
-    private final class FiltersPart extends ListPart implements GUserFiltersController {
-        FiltersPart(OwnerNode node) {
+    // property named as the node names it (OwnerNode.getPropertyName, readPropertyName). `filters` is the working list
+    // of the table's user filters (GUserFiltersController), its active conditions - what the server is filtering by,
+    // and in the manual apply mode what waits for the apply too -: the model tells the part whenever it changes, and
+    // the array is rebuilt only then - so it keeps its identity across renders in which nothing states them anew. The
+    // part keeps only what it publishes. It is the view's view of them, the platform's panel being the other: the
+    // commands over them, where the platform wires them up, are an object of their own (ReactFilterInputController)
+    private final class FiltersPart extends ListPart implements GUserFiltersController.View {
+        final GUserFiltersController userFilters;
+
+        FiltersPart(OwnerNode node, GUserFiltersController userFilters) {
             super(node, "filters", "a condition", FILTER_CONDITION_FIELDS, "filtered");
+            this.userFilters = userFilters;
         }
         // ... and what a condition can be on, design data written once (filterProperties)
         @Override
@@ -1177,14 +1158,9 @@ public class GReactFormData {
             super.initialize();
             setField(node.edit(), "filterProperties", getFilterProperties(node));
         }
-        // a group's list changed, whoever changed it - the server, or the form sending it: the form has it now, and a
-        // view shows it either way, the other groups' as the form has them too
-        @Override
-        public void updateFilters(GGroupObject group, ArrayList<GPropertyFilterDTO> filters) {
-            writeFilters();
-        }
-        @Override
-        public void changeFilters(GGroupObject group, ArrayList<GPropertyFilterDTO> filters) {
+        // the table's user filters changed, whoever changed them - the server, a writer, the platform's input -: a view
+        // shows their working list, a change waiting for the apply in the manual apply mode too
+        public void changed(GUserFiltersController.Change change) {
             writeFilters();
         }
 
@@ -1194,7 +1170,7 @@ public class GReactFormData {
         // the form (they differ under an EXTID) - one a condition can be on (canList)
         void writeFilters() {
             JavaScriptObject array = emptyArray();
-            for (GPropertyFilter condition : getConditions(node.groups)) {
+            for (GPropertyFilter condition : userFilters.getConditions()) {
                 GPropertyDraw property = condition.column.property;
                 if (!isListed(property))
                     continue;
@@ -1224,9 +1200,10 @@ public class GReactFormData {
             return "it is grouped in columns, and a condition names no column";
         }
         // a call through its member, read here, on the part that holds the conditions (readFilterCondition), and handed
-        // to the form as what it names: an array is the list of conditions, as FILTER reads one in .lsf - each a new
+        // to the model as what it names: an array is the list of conditions, as FILTER reads one in .lsf - each a new
         // condition, what it does not state the default way, one with no value comparing with NULL ("is empty", negated
-        // "is not empty"), as `filters` lists such a condition, so a list `filters` gives is taken back as it is
+        // "is not empty"), as `filters` lists such a condition, so a list `filters` gives is taken back as it is; it
+        // replaces the conditions a view can name, the rest keeping their places
         @Override
         void changeAll(String surface, JavaScriptObject conditions) {
             String errorPrefix = controllerPrefix(surface);
@@ -1239,38 +1216,38 @@ public class GReactFormData {
                 JavaScriptObject value = getOwnField(condition, "value"); // read once: a condition is what was read
                 result.add(readFilterCondition(itemPrefix, condition, GPropertyFilter.getBase(getConditionColumn(property), null), value));
             }
-            verbs.changeFilters(node.groups, result);
+            userFilters.changeConditions(result, GReactFormData::isProjectableCondition);
         }
-        // ... one condition, merged into the conditions the server is filtering by - those an earlier call of a batch
-        // stated included -, and the list it makes handed over: a value given its property as a property's FILTER gives
-        // one (FilterPart.change), in the place of the FIRST on the property - what it does not state of the
-        // comparison, negation and `or` as that one has them -, or appended, the default way; no value takes that first
-        // one off, alone - a range's other bound stays (GPropertyFilter.withCondition, withoutFirst)
+        // ... one condition, in the working list - those an earlier call of a batch stated included -: a value given
+        // its property as a property's FILTER gives one (FilterPart.change), in the place of the FIRST active one on
+        // the property - what it does not state of the comparison, negation and `or` as that one has them, no slot's
+        // memory -, or appended, the default way; no value takes that first one off, alone - a range's other bound
+        // stays (GUserFiltersController.putCondition, removeCondition)
         @Override
         void changeOne(String surface, JavaScriptObject condition) {
             String errorPrefix = controllerPrefix(surface);
             GPropertyDraw property = readProperty(errorPrefix, condition);
             JavaScriptObject value = getOwnField(condition, "value"); // read once, as in changeAll
-            ArrayList<GPropertyFilter> result = getConditions(node.groups);
             Column column = getConditionColumn(property);
-            GPropertyFilter stated = readFilterCondition(errorPrefix, condition, GPropertyFilter.getBase(column, GPropertyFilter.getFirst(result, column)), value);
-            verbs.changeFilters(node.groups, stated.nullValue() ? GPropertyFilter.withoutFirst(result, column) : GPropertyFilter.withCondition(result, stated));
+            GPropertyFilter stated = readFilterCondition(errorPrefix, condition, GPropertyFilter.getBase(column, userFilters.getValueBase(column, false)), value);
+            if (stated.nullValue())
+                userFilters.removeCondition(column);
+            else
+                userFilters.putCondition(stated);
         }
     }
     // the PLATFORM'S INPUT over the conditions a view draws - GFilterInputController's kind where a view draws what the
-    // box holds (createFiltersControllers): the keys of the table, a pivot's drill-down, the controls' add and
-    // reset. Each states the box's list anew from the form's (Verbs.getFilters) through what draws the rows
-    // (GTableController.changeFilter), the box's part showing it (FiltersPart). A new condition is made at once - there
-    // is no editor here, the view edits its value -, so nothing waits to be applied, and the controls and the toolbar's
-    // button get no editors
+    // box holds (createFiltersControllers): the keys of the table, the controls' add, apply and reset. Each writes into
+    // the table's user filters (GUserFiltersController), the box's part showing them (FiltersPart). A condition is
+    // written at once - there is no editor here, the view edits its value -, so the controls and the toolbar's button
+    // get no editors; what waits in the manual apply mode waits for the controls' apply
     private final class ReactFilterInputController extends GFilterInputController {
-        // the groups whose conditions they are, in their order: the group, or the tree's, top down
-        final List<GGroupObject> groups;
+        final GUserFiltersController userFilters;
 
-        ReactFilterInputController(List<GGroupObject> groups, GTableController rows, GFilterControlsToggle toggle) {
+        ReactFilterInputController(GUserFiltersController userFilters, GTableController rows, GFilterControlsToggle toggle) {
             super(rows, toggle);
-            this.groups = groups;
-            toggle.bind(this, null); // as the panel binds them: its controls give its commands - with no editors
+            this.userFilters = userFilters;
+            toggle.bind(this, null, userFilters); // as the panel binds them: its controls give its commands - with no editors
         }
 
         // F3, and the controls' add - the condition of the cell the table is on, in the list; Alt+F3 (replace): alone
@@ -1280,27 +1257,32 @@ public class GReactFormData {
         public void addCondition() {
             addCellCondition(false);
         }
+        // ... in the place of the first active one on its column, compared, negated and joined as that one is - or as
+        // the slot on it remembers -; Alt+F3 states it the only one, the default way
         private void addCellCondition(boolean replace) {
-            ArrayList<GPropertyFilter> conditions = replace ? new ArrayList<>() : getConditions(groups);
-            GPropertyFilter condition = getCellCondition(rows, conditions);
-            if (condition != null)
-                rows.changeFilter(GPropertyFilter.withCondition(conditions, condition));
+            GPropertyFilter condition = getCellCondition(rows, column -> replace ? null : userFilters.getValueBase(column, true));
+            if (condition == null)
+                return;
+            if (replace)
+                userFilters.changeConditions(Collections.singletonList(condition), null);
+            else
+                userFilters.putCondition(condition);
         }
         // typing in a column, which the table gives to whichever filter input controller it has, as it gives it its
         // keys: the panel's editor takes the key typed, and here nothing starts - there is no editor to type in, the
         // view edits a condition's value its own way (decided: a key typed states no condition)
         public void quickEditFilter(Event keyEvent, GPropertyDraw property, GGroupObjectValue columnKey) {
         }
-        // a pivot's drill-down: the conditions it states, the box's list
-        public void replaceConditions(ArrayList<GPropertyFilter> conditions) {
-            rows.changeFilter(conditions);
+        // the controls' apply - what waits sent, in the manual apply mode -, and their reset, Shift+F3 and Escape
+        public void applyConditions() {
+            userFilters.apply();
         }
-        // the controls' reset, Shift+F3 and Escape
         public void resetConditions() {
-            rows.changeFilter(new ArrayList<>());
+            userFilters.reset();
         }
+        // ... whether there is anything to reset: a condition in the working list, or one the server still filters by
         public boolean hasConditionsToReset() {
-            return !getConditions(groups).isEmpty();
+            return userFilters.hasActive() || userFilters.isPending();
         }
         // the controls' add, which the design has the FILTERS box for: a view draws what it holds
         public boolean hasFiltersContainer() {
@@ -1516,25 +1498,22 @@ public class GReactFormData {
     // a part of their own, of the group or of the tree, on its node there, and the controls of its filter input
     // controller (GFilterControlsController). The same whoever draws the conditions: its buttons are members on the
     // table's - the add, the apply, the reset, each what the platform's button does over those conditions -, and what
-    // the apply button shows is on the table's node: whether the platform would show it at all, the manual apply mode
-    // asking for it (filtersManual), and whether it is lit, conditions typed in waiting for it (filtersPending). Over
-    // conditions a view draws nothing ever waits, so both are false. Its commands are the filter input controller's,
-    // where the platform wires one up (GFormController.initializeTable), and its apply the platform's
-    // editors' of its conditions, the panel's: with none, its members refuse, saying why
-    private final class FilterControlsPart extends StatePart<OwnerNode> implements GFilterControlsController {
+    // the apply button shows is on the table's node: the manual apply mode (filtersManual) - the client's setting, the
+    // view's apply button always being there where it gives the apply -, and whether anything waits to be sent
+    // (filtersPending). Its commands are the filter input controller's, where the platform wires one up
+    // (GFormController.initializeTable): with none, its members refuse, saying why, and nothing waits for its apply
+    private final class FilterControlsPart extends StatePart<OwnerNode> implements GFilterControlsController, GUserFiltersController.View {
         GFiltersHandler handler; // the table's filter input controller, once bound - none where the platform makes none
-        GFilterEditors editors; // ... and the platform's editors of its conditions - none where a view draws them
-        boolean applyEnabled;
+        GUserFiltersController userFilters; // ... and the table's user filters
 
         FilterControlsPart(OwnerNode node) {
             super(node);
         }
-        // what the apply button shows
+        // what the apply button shows: the manual apply mode, and whether anything waits to be sent
         void writeState() {
-            boolean manual = editors != null && editors.isManualApplyMode();
             JavaScriptObject data = node.edit();
-            setField(data, "filtersManual", manual);
-            setField(data, "filtersPending", manual && applyEnabled);
+            setField(data, "filtersManual", userFilters != null && userFilters.isManual());
+            setField(data, "filtersPending", userFilters != null && userFilters.isPending());
         }
         // its members, on the table's own
         @Override
@@ -1543,29 +1522,33 @@ public class GReactFormData {
         }
 
         // ===== the filter input controller's controls: its commands, the view's to show - not the toolbar's -, the
-        // manual apply mode shown with them, and lit while conditions typed in wait; and the table shown or hidden,
-        // with nothing of the platform's to hide here (GFilterControlsController.setTableVisible)
-        public void bind(GFiltersHandler handler, GFilterEditors editors) {
+        // apply button always there, as the view draws it (the manual apply mode the client's setting then), a view of
+        // the table's user filters; and the table shown or hidden, with nothing of the platform's to hide here
+        // (GFilterControlsController.setTableVisible)
+        public void bind(GFiltersHandler handler, GUserFiltersController userFilters) {
             this.handler = handler;
-            this.editors = editors;
+            this.userFilters = userFilters;
+            userFilters.addView(this);
+            stateChanged();
         }
         public boolean isShownByToolbar() {
             return false;
         }
+        public boolean isApplyShown(boolean shownByToolbar) {
+            return handler != null;
+        }
         public void setVisible(boolean visible) {
             stateChanged();
         }
-        public void setApplyEnabled(boolean enabled) {
-            applyEnabled = enabled;
+        public void changed(GUserFiltersController.Change change) {
             stateChanged();
         }
         public void setTableVisible(boolean visible) {
         }
 
         // ===== a call through its member: what the platform's button does - the add where the design has the FILTERS
-        // box, as the button is there only then, the apply while it is lit, as it is clickable only then - refused
-        // where there is nothing to do it with: no filter input controller, no FILTERS box, no editors of the
-        // platform's
+        // box, as the button is there only then, the apply of what waits - nothing with nothing waiting -, the
+        // reset - refused where there is nothing to do it with: no filter input controller, no FILTERS box
         void addFilter(String surface) {
             GFiltersHandler handler = getHandler(surface);
             if (!handler.hasFiltersContainer())
@@ -1573,12 +1556,7 @@ public class GReactFormData {
             handler.addCondition();
         }
         void applyFilters(String surface) {
-            getHandler(surface);
-            if (editors == null)
-                throw refusal(controllerPrefix(surface) + "has nothing to apply: a view draws the conditions, "
-                        + "each change of which is sent at once");
-            if (editors.isManualApplyMode() && applyEnabled)
-                editors.applyFilters();
+            getHandler(surface).applyConditions();
         }
         void resetFilters(String surface) {
             getHandler(surface).resetConditions();
@@ -1687,39 +1665,41 @@ public class GReactFormData {
     // of the group of its property, on its node there, under `filter` by its property's integration name - as a filter
     // group is on the node under its own name -, shaped as a property's entry: the property's caption and the type of
     // a condition's value (the FILTER type, by which `value` is read and written, as `filters` has it), and the
-    // filter's condition, where it is (`conditions`: over the platform's panel the panel's row of it, else the first on
-    // its property in the form's list): whether there is one (`active`), its compare, negation and junction - `or`, as
-    // `filters` says it - (the property's default compare, none and AND while there is none) and its value (null then;
+    // filter's condition - it is a slot of its table's user filters (GUserFiltersController): the first active
+    // condition on its property in the working list, wherever that stands -: whether there is one (`active`), its
+    // compare, negation and junction - `or`, as `filters` says it - (with none, what the FILTER remembers of the
+    // condition it showed last: the property's default compare, none and AND at first) and its value (null with none;
     // one comparing with NULL has null too - false on a LOGICAL -, `active` telling them apart). Its member's
-    // change(value, options) does what the platform's row does, and `filters.change` with one condition
-    // (FiltersPart.changeOne): puts the value into that condition, or appends one, with what the options state -
-    // {compare, negation, or}, as the row's selectors do where the filter controls are shown -, the condition's own
-    // where they state none, and the default way for a new one; no value takes that condition
-    // off, alone - a range's other bound stays. It is told whenever the group's user filters change, after what shows
-    // the FILTERS box is (a GFilterController, beside the GUserFiltersController): the part keeps no condition of its
-    // own
-    private final class FilterPart extends StatePart<GroupNode> implements GFilterController {
+    // change(value, options) does what the platform's row does: puts the value into that condition, or into the
+    // FILTER's own, with what the options state - {compare, negation, or}, as the row's selectors do where the filter
+    // controls are shown -, the condition's own, or what the FILTER remembers, where they state none; no value takes
+    // that condition off, alone - a range's other bound stays, the FILTER showing it then. It is a view of the user
+    // filters, told whenever they change, whoever changes them: the part keeps no condition of its own
+    private final class FilterPart extends StatePart<GroupNode> implements GUserFiltersController.View {
         final GFilter filter;
-        final GFilterConditions conditions;
+        final GUserFiltersController userFilters;
 
-        FilterPart(GroupNode node, GFilter filter, GFilterConditions conditions) {
+        FilterPart(GroupNode node, GFilter filter, GUserFiltersController userFilters) {
             super(node);
             this.filter = filter;
-            this.conditions = conditions;
+            this.userFilters = userFilters;
         }
 
-        // its entry
+        // its entry: what its slot shows - an active entry, or its placeholder, which keeps what it remembers of its
+        // condition
         void writeState() {
             GPropertyDraw property = filter.property;
-            GPropertyFilter condition = conditions.getFilterCondition(filter);
+            GUserFilter slot = userFilters.getSlotEntry(filter);
+            GPropertyFilter condition = slot.condition;
+            boolean active = slot.isActive();
             JavaScriptObject entry = newObject();
             setFieldOrNull(entry, "caption", property.caption);
             setField(entry, "type", GSimpleStateTableView.getJSTypeName(property.getFilterBaseType()));
-            setField(entry, "active", condition != null);
-            setField(entry, "compare", (condition != null ? condition.compare : property.getDefaultCompare()).toString());
-            setField(entry, "negation", condition != null && condition.negation);
-            setField(entry, "or", condition != null && !condition.junction); // GPropertyFilter.junction is the conjunction flag
-            setField(entry, "value", condition != null ? GSimpleStateTableView.convertToJSValue(property.getFilterBaseType(), null, true, condition.value.value) : null);
+            setField(entry, "active", active);
+            setField(entry, "compare", condition.compare.toString());
+            setField(entry, "negation", condition.negation);
+            setField(entry, "or", !condition.junction); // GPropertyFilter.junction is the conjunction flag
+            setField(entry, "value", active ? GSimpleStateTableView.convertToJSValue(property.getFilterBaseType(), null, true, condition.value.value) : null);
             setField(node.editFilter(), property.integrationSID, entry);
         }
         // its member, under the group's `filter`
@@ -1729,9 +1709,8 @@ public class GReactFormData {
             setField(node.getFilterMember(groupMember), name, makeFilterMember(this, node.name + "." + FILTER + "." + name));
         }
 
-        // ===== the group's user filters changed, whoever changed them - the server, or the form sending them -, and the
-        // filter shows its condition in them
-        public void updateCondition() {
+        // ===== the table's user filters changed, whoever changed them, and the filter shows its condition in them
+        public void changed(GUserFiltersController.Change change) {
             stateChanged();
         }
 
@@ -1740,19 +1719,18 @@ public class GReactFormData {
         // as a condition's fields (readFilterCondition), in a batch too. The options are read whatever the value - one
         // misspelt is refused even where there is none, which takes the condition off all the same. A file's value is a
         // link to the file, not the file a condition compares with, so its filter's condition can be taken off, not
-        // stated. Shown at once: the panel holds it in its manual apply mode, telling the form nothing
+        // stated. Shown at once - sent but in the manual apply mode, where it waits for the apply
         void change(String surface, JavaScriptObject value, JavaScriptObject options) {
             String errorPrefix = controllerPrefix(surface);
             if (GwtClientUtils.isUndefinedOrNull(options)) // none: as stating none of them
                 options = newBareObject();
             checkAuthorObject(errorPrefix, options, "the options argument", FILTER_OPTIONS);
             GPropertyFilter stated = readFilterCondition(errorPrefix, options,
-                    GPropertyFilter.getBase(getConditionColumn(filter.property), conditions.getFilterCondition(filter)), value);
+                    GPropertyFilter.getBase(getConditionColumn(filter.property), userFilters.getSlotEntry(filter).condition), value);
             if (stated.nullValue())
-                conditions.clearFilter(filter);
+                userFilters.clearFilter(filter);
             else
-                conditions.changeFilter(filter, stated);
-            stateChanged();
+                userFilters.changeFilter(filter, stated);
         }
     }
     // a view's name, as the group's node and its member say it: grid, pivot, custom, map, calendar
@@ -2218,10 +2196,10 @@ public class GReactFormData {
     // container -: a part on the table's node there - the group's, or the tree's -, what its toolbar and filter input
     // controller ask of its rows (GTableController), over the rows' parts of its groups, each kept as it is made
     // (rowsParts): the condition a key or the controls start, on the CURRENT group's rows (currentPart) - a grid's one
-    // group, a tree's current node's -, the values and the columns of each group, and the list a filter input
-    // controller states, each group's its own (Verbs.changeFilters). Nothing a table's filter input controller asks has
-    // keys or a column of its own, and the focus is the view's to keep. A grid's table writes nothing of its own - its
-    // group's rows' part writes the rows -; a tree's writes what its rows state about one another (TreeTablePart)
+    // group, a tree's current node's -, and the values and the columns of each group. Nothing a table's filter input
+    // controller asks has keys or a column of its own, and the focus is the view's to keep. A grid's table writes
+    // nothing of its own - its group's rows' part writes the rows -; a tree's writes what its rows state about one
+    // another (TreeTablePart)
     private abstract class TablePart<N extends OwnerNode, R extends RowsPart> extends Part<N> implements GTableController {
         final NativeSIDMap<GGroupObject, R> rowsParts = new NativeSIDMap<>(); // each group's, as it is made
         // ... and the part of the table's user orders, beside it on the table's node, the sortings being the order the
@@ -2269,9 +2247,6 @@ public class GReactFormData {
             for (GGroupObject group : node.groups)
                 columns.addAll(rowsParts.get(group).getFilterColumns());
             return columns;
-        }
-        public long changeFilter(ArrayList<GPropertyFilter> conditions) {
-            return verbs.changeFilters(node.groups, conditions);
         }
         public boolean focusFirstWidget(FocusUtils.Reason reason) {
             return false;
@@ -3378,28 +3353,21 @@ public class GReactFormData {
         return properties;
     }
 
-    // the user filters of these groups as the form has them (Verbs.getFilters), in their order - a list of the
-    // caller's own, which a call stating ONE condition is merged into, so the form is handed the whole list it makes
-    private ArrayList<GPropertyFilter> getConditions(List<GGroupObject> groups) {
-        ArrayList<GPropertyFilter> conditions = new ArrayList<>();
-        for (GGroupObject group : groups)
-            conditions.addAll(verbs.getFilters(group));
-        return conditions;
-    }
-    // the condition a cell starts where a view draws the conditions (ReactFilterInputController.addCondition), among
-    // these: the cell's value - an empty cell's NULL too - given its property as a value is given a property's FILTER
-    // (GPropertyFilter.getBase), its separator escaped by the comparison it gets, as the panel's row escapes it. None
-    // where the table is on no row - an empty grid, or a pivot, a map, a calendar or a custom view, which have no cell,
-    // though they name a column the panel would start an editor on -, on a cell a view cannot name in a condition, or
-    // on one whose value is not the one it filters by (differentValue)
-    static GPropertyFilter getCellCondition(GTableController rows, ArrayList<GPropertyFilter> conditions) {
+    // the condition a cell starts where a view draws the conditions (ReactFilterInputController.addCondition): the
+    // cell's value - an empty cell's NULL too - given its property as a value is given a property's FILTER, from what
+    // a value on its column starts from (first: GUserFiltersController.getValueBase, GPropertyFilter.getBase), its
+    // separator escaped by the comparison it gets, as the panel's row escapes it. None where the table is on no row -
+    // an empty grid, or a pivot, a map, a calendar or a custom view, which have no cell, though they name a column the
+    // panel would start an editor on -, on a cell a view cannot name in a condition, or on one whose value is not the
+    // one it filters by (differentValue)
+    static GPropertyFilter getCellCondition(GTableController rows, Function<Column, GPropertyFilter> first) {
         GPropertyDraw property = rows.getSelectedFilterProperty();
         if (property == null || rows.getSelectedRow() < 0)
             return null;
         if (!isProjectableCondition(property) || property.differentValue)
             return null;
         Column column = getConditionColumn(property); // the one the table is on: a cell a view names is no column's
-        GPropertyFilter base = GPropertyFilter.getBase(column, GPropertyFilter.getFirst(conditions, column));
+        GPropertyFilter base = GPropertyFilter.getBase(column, first.apply(column));
         return base.restated(PValue.escapeSeparator(rows.getSelectedValue(property, column.columnKey), base.compare),
                 base.negation, base.compare, base.junction);
     }

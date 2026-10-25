@@ -43,8 +43,9 @@ public class UiPropertyFilterIT extends UiTest {
     }
 
     // a view drawing the whole group draws its properties' filters beside the group's conditions and rows: each states
-    // its condition - the name's after the city's, the city's taken off alone -, '' takes one off, and the filter's
-    // options state its negation and its comparison (#1904)
+    // its condition in its filter's place - the name's before the city's, as the form declares them, whichever is
+    // given first; the city's taken off alone -, '' takes one off, and the filter's options state its negation and
+    // its comparison (#1904)
     @Test
     public void theFiltersOfAViewOfTheWholeGroup() throws Exception {
         List<String> items = seed();
@@ -57,7 +58,7 @@ public class UiPropertyFilterIT extends UiTest {
         assertThat(conditions).hasText(Pattern.compile("^uiPfCity \\S+ Minsk$"));
         form.locator("input.ui-pf-name").fill("a"); // Apple, Banana and Date, Minsk's Apple alone
         assertThat(rows).hasText(items.get(0));
-        assertThat(conditions).hasText(Pattern.compile("^uiPfCity \\S+ Minsk; uiPfName \\S+ a$"));
+        assertThat(conditions).hasText(Pattern.compile("^uiPfName \\S+ a; uiPfCity \\S+ Minsk$"));
         form.locator("input.ui-pf-city").fill("");
         assertThat(rows).hasText(items.get(0) + ", " + items.get(1) + ", " + items.get(3));
         assertThat(conditions).hasText(Pattern.compile("^uiPfName \\S+ a$"));

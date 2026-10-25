@@ -37,9 +37,9 @@ public abstract class GPlatformTableController<P extends GGridProperty, V extend
     protected final B toolbar;
     // the controller of the FILTERS box of the table's groups - the grid's group, or the tree's, one box for all of
     // them - the platform wires up, made over the table once it is made and bound to it then, once (bindFilter): what
-    // the keys of the table, a pivot's drill-down and the table shown or hidden reach, and what the table tells that it
-    // has changed, once per delta: the platform's panel, or the commands over the conditions a view draws - none where
-    // the platform wires none up (GFormController.initializeTable)
+    // the keys of the table and the table shown or hidden reach, and what the table tells that it has changed, once per
+    // delta: the platform's panel, or the commands over the conditions a view draws - none where the platform wires
+    // none up (GFormController.initializeTable)
     private GFilterInputController filter;
 
     protected TableContainer gridView;
@@ -105,41 +105,33 @@ public abstract class GPlatformTableController<P extends GGridProperty, V extend
         }
     }
 
+    // Alt+F3 and F3: the controls shown first, so the manual apply mode they bring holds what the key writes
     public void replaceFilter(Event event) {
         if (filter != null && filter.hasFiltersContainer()) {
-            filter.addCondition(event, true, false);
-
             filter.setControlsVisible(true);
+
+            filter.addCondition(event, true, false);
         }
     }
 
     public void addFilter(Event event) {
         if (filter != null && filter.hasFiltersContainer()) {
-            filter.addCondition(event, false, true);
-            
             filter.setControlsVisible(true);
+
+            filter.addCondition(event, false, true);
         }
     }
 
-    // the group's conditions replaced by these - a pivot's drill-down: handed to its filter input controller - the
-    // panel sends them as its rows, the commands over a view's conditions as they are -, or, with none, sent as they
-    // are, which what shows the group's filters is told of (changeFilter)
+    // the table's conditions replaced by these - a pivot's drill-down -, sent at once, whoever draws them
+    // (GUserFiltersController.replaceConditions)
     public void replaceFilterConditions(ArrayList<GPropertyFilter> conditions) {
-        if (filter != null)
-            filter.replaceConditions(conditions);
-        else
-            changeFilter(conditions);
+        formController.getUserFiltersController(table.getGroups().get(0)).replaceConditions(conditions);
     }
 
     public void resetFilters() {
         if (filter != null) {
             filter.resetConditions();
         }
-    }
-
-    // the conditions sent for the table's groups - the grid's group, or the tree's, one list for all of them
-    public long changeFilter(ArrayList<GPropertyFilter> conditions) {
-        return formController.changeFilters(table.getGroups(), conditions);
     }
 
     // eventually is called either on form opening / form tab selection / filter dialog close

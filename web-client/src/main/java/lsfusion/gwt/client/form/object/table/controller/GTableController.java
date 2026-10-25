@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.object.table.controller;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterInputController;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -12,16 +11,15 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.view.Column;
 
-import java.util.ArrayList;
 import java.util.List;
 
 // what draws a TABLE's rows - of a list's group's grid, or of a tree, one for all its groups (GGridController,
 // GTreeController) -, whoever draws them, chosen once (GReactFormData.createGridController, createTreeController): the
 // platform's table (GPlatformTableController), or the rows React draws (GReactFormData.TablePart). First what the
 // filter input controller of the table's FILTERS asks of them (GFilterInputController): the cell a new condition starts
-// on - its column, and the row the table is on, -1 for none - and that cell's value, and its conditions stated as the
-// list the box's groups are filtered by; and what the platform's panel asks besides: the columns a condition can be on,
-// the group its bindings are of, and the focus taken back once they are applied
+// on - its column, and the row the table is on, -1 for none - and that cell's value; and what the platform's panel asks
+// besides: the columns a condition can be on, the group its bindings are of, and the focus taken back once they are
+// applied. The conditions themselves are the table's user filters' (GUserFiltersController), which send them
 public interface GTableController {
     GGroupObject getSelectedGroupObject();
     GPropertyDraw getSelectedFilterProperty();
@@ -30,7 +28,6 @@ public interface GTableController {
     PValue getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey);
     List<Pair<Column, String>> getFilterColumns();
 
-    long changeFilter(ArrayList<GPropertyFilter> conditions);
     boolean focusFirstWidget(FocusUtils.Reason reason);
 
     // ... and the filter input controller itself, given to the rows once it is made over them

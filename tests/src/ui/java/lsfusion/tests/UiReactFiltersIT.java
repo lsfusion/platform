@@ -230,8 +230,9 @@ public class UiReactFiltersIT extends UiTest {
         close(form);
     }
 
-    // with the platform's filter panel applying changes by hand (userFiltersManualApplyMode), a view's change is sent
-    // at once all the same, and its filter controls have no apply
+    // in the manual apply mode (userFiltersManualApplyMode), the platform's filter controls shown - their apply button
+    // with them -, a view's change waits for the apply as every writer's does: `filters` shows it, the rows are
+    // filtered once the apply sends it
     @Test
     public void aViewsChangeInTheManualApplyMode() throws Exception {
         String[] items = seed();
@@ -241,11 +242,12 @@ public class UiReactFiltersIT extends UiTest {
             Locator form = open(FOLDER, "UiReactFilters.uiRflConditions");
             button(form, "Show filter controls").click();
             assertThat(button(form, "Add filter")).isVisible();
-            assertThat(button(form, "Apply filters")).isHidden();
+            assertThat(button(form, "Apply filters")).isVisible();
             call("controller.i.filters.change({property: 'name', compare: '_', value: 'pp'})");
-            assertThat(names(form)).hasText(new String[] {items[0]});
             waitFor("conditions() === 'name _ pp'");
-            assertThat(button(form, "Apply filters")).isHidden();
+            assertThat(names(form)).hasText(items);
+            button(form, "Apply filters").click();
+            assertThat(names(form)).hasText(new String[] {items[0]});
             close(form);
         } finally {
             exec("UiReactFilters.uiRflManualApply", "false");

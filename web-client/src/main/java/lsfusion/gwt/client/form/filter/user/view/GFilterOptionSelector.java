@@ -16,11 +16,12 @@ public abstract class GFilterOptionSelector<T> extends FocusWidget {
     protected PopupMenuPanel popup = new PopupMenuPanel( true);
     protected T currentValue;
 
-    public GFilterOptionSelector(GFilterConditionView.UIHandler uiHandler) {
-        this(uiHandler, Collections.emptyList(), Collections.emptyList());
+    // Escape with no popup shown: the conditions reset (GFilterConditionView.UIHandler.resetConditions)
+    public GFilterOptionSelector(Runnable resetConditions) {
+        this(resetConditions, Collections.emptyList(), Collections.emptyList());
     }
 
-    public GFilterOptionSelector(GFilterConditionView.UIHandler uiHandler, List<T> values, List<String> popupCaptions) {
+    public GFilterOptionSelector(Runnable resetConditions, List<T> values, List<String> popupCaptions) {
         setElement(Document.get().createDivElement());
 
        GwtClientUtils.addClassNames(this, "form-control", "filter-selector");
@@ -35,7 +36,7 @@ public abstract class GFilterOptionSelector<T> extends FocusWidget {
                 if (popup.isShowing()) {
                     hidePopup();
                 } else {
-                    uiHandler.resetConditions();
+                    resetConditions.run();
                 }
                 GwtClientUtils.stopPropagation(event);
             } else {

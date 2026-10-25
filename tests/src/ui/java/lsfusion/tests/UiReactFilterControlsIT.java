@@ -35,8 +35,7 @@ public class UiReactFilterControlsIT extends UiTest {
         call("controller.i.addFilter()");
         waitFor("conditions() === 'name = " + items[1] + "'");
         assertThat(names(form)).hasText(new String[] {items[1]});
-        assertEquals("controller.i.applyFilters(): has nothing to apply: a view draws the conditions, each change of which is sent at once",
-                refusal("controller.i.applyFilters()"));
+        call("controller.i.applyFilters()"); // nothing waits: nothing sent, nothing refused
         assertThat(names(form)).hasText(new String[] {items[1]});
         waitFor("conditions() === 'name = " + items[1] + "' && data.i.filtersManual === false && data.i.filtersPending === false");
         call("controller.i.resetFilters()");
@@ -76,9 +75,9 @@ public class UiReactFilterControlsIT extends UiTest {
         close(form);
     }
 
-    // in the manual apply mode (userFiltersManualApplyMode) the view's controls say what the platform's apply button
-    // shows: none while the controls are hidden; shown, they start a condition on the empty panel, which lights the
-    // apply - a condition committed waits for it -, and the apply applies it; the reset takes it off at once
+    // in the manual apply mode (userFiltersManualApplyMode) the view's controls - their apply always there - say so
+    // from the start; the platform's editors shown, they start a condition on the empty panel, which waits - a
+    // condition committed waits for the apply -, and the apply applies it; the reset takes it off at once
     @Test
     public void controlsAViewDrawsInTheManualApplyMode() throws Exception {
         String[] items = seed();
@@ -87,7 +86,7 @@ public class UiReactFilterControlsIT extends UiTest {
             reload(); // a client is told the mode as it starts
             Locator form = open(FOLDER, "UiReactFilterControls.uiRfcPanel");
             Locator conditions = host(form, "FILTERS(i)").locator(".filter:visible");
-            waitFor("data.i.filtersManual === false && data.i.filtersPending === false");
+            waitFor("data.i.filtersManual === true && data.i.filtersPending === false");
             cell(form, "name", items[1]).click();
             button(form, "Show filter controls").click();
             waitFor("data.i.filtersManual === true && data.i.filtersPending === true");

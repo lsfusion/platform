@@ -10,14 +10,10 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButt
 
 public class GFilterControlsView extends FlexPanel {
     private static final ClientMessages messages = ClientMessages.Instance.get();
-    // the platform's editors of the conditions, whose apply button this is - none where a view draws the conditions:
-    // the button is never shown then, the mode never being manual
-    private final GFilterEditors editors;
 
     private GToolbarButton applyButton;
 
-    public GFilterControlsView(GFiltersHandler handler, GFilterEditors editors) {
-        this.editors = editors;
+    public GFilterControlsView(GFiltersHandler handler) {
        GwtClientUtils.addClassNames(this, "filter-controls", "btn-group", "btn-toolbar");
         
         if (handler.hasFiltersContainer()) {
@@ -34,7 +30,7 @@ public class GFilterControlsView extends FlexPanel {
         applyButton = new GToolbarButton(StaticImage.OK, messages.formFilterApply()) {
             @Override
             public ClickHandler getClickHandler() {
-                return event -> editors.applyFilters();
+                return event -> handler.applyConditions();
             }
         };
         GwtClientUtils.addClassName(applyButton, "filter-button");
@@ -52,20 +48,13 @@ public class GFilterControlsView extends FlexPanel {
         add(resetConditionsButton, GFlexAlignment.CENTER);
     }
 
-    public void setApplyEnabled(boolean enabled) {
-        applyButton.setEnabled(enabled);
-        if(enabled)
+    // the apply button shown in the manual apply mode, lit while something waits for it
+    public void showApply(boolean shown, boolean lit) {
+        applyButton.setVisible(shown);
+        applyButton.setEnabled(lit);
+        if(lit)
             GwtClientUtils.addClassName(applyButton, "active");
         else
             GwtClientUtils.removeClassName(applyButton, "active");
-    }
-
-    @Override
-    public void setVisible(boolean nVisible) {
-        super.setVisible(nVisible);
-        
-        if (nVisible) {
-            applyButton.setVisible(editors != null && editors.isManualApplyMode());
-        }
     }
 }

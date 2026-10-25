@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.filter.user.controller;
 
+import lsfusion.gwt.client.form.filter.user.GUserFiltersController;
 import lsfusion.gwt.client.form.filter.user.view.GFilterEditors;
 import lsfusion.gwt.client.form.object.table.controller.GToolbarController;
 
@@ -14,7 +15,7 @@ import lsfusion.gwt.client.form.object.table.controller.GToolbarController;
 // - a view's conditions and controls: nothing - there is no button.
 // The button is the table's toolbar's, of whichever kind (GToolbarController.addFilterToggle) - a member where a view
 // draws the toolbar. The controls give the controller's commands whoever draws them
-public final class GFilterControlsToggle {
+public final class GFilterControlsToggle implements GUserFiltersController.ApplyControls {
     // what lays the form out anew once the controls are shown or hidden (GFormLayout.update) - handed in, so a test
     // needs no form
     private final Runnable relayout;
@@ -28,6 +29,8 @@ public final class GFilterControlsToggle {
     // always shown
     private GToolbarController<?> shownBy;
     private boolean visible = false;
+    // the table's user filters, whose manual apply mode follows the apply button shown (isApplyShown)
+    private GUserFiltersController userFilters;
 
     // made by the platform where it wires a filter input controller up
     // (GFormController.initializeTable), and handed to the kind of it, which binds it
@@ -39,16 +42,21 @@ public final class GFilterControlsToggle {
 
     // ... once the kind is made, as the controls ask it what they offer (GFiltersHandler): the panel with its editors,
     // the commands over a view's conditions with none
-    public void bind(GFilterInputController filter, GFilterEditors editors) {
+    public void bind(GFilterInputController filter, GFilterEditors editors, GUserFiltersController userFilters) {
         this.editors = editors;
+        this.userFilters = userFilters;
         shownBy = editors != null || controls.isShownByToolbar() ? toolbar : null;
         if (shownBy != null)
             shownBy.addFilterToggle(filter);
         else
             visible = true;
 
-        controls.bind(filter, editors);
+        controls.bind(filter, userFilters);
         controls.setVisible(visible);
+    }
+    // whether the table's apply button is shown: the manual apply mode asks it (GUserFiltersController.isManual)
+    public boolean isApplyShown() {
+        return controls.isApplyShown(visible);
     }
 
     public boolean isVisible() {
@@ -67,10 +75,8 @@ public final class GFilterControlsToggle {
         relayout.run();
 
         shownBy.showFilterControls(visible);
-    }
-
-    public void setApplyEnabled(boolean enabled) {
-        controls.setApplyEnabled(enabled);
+        if (userFilters != null)
+            userFilters.modeChanged();
     }
 
     // the table shown or hidden: the controls with it

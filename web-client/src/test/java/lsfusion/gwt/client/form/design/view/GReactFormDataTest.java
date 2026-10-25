@@ -45,10 +45,9 @@ import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
-import lsfusion.gwt.client.form.filter.user.GFilterConditions;
-import lsfusion.gwt.client.form.filter.user.GFilterController;
 import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.filter.user.GUserFiltersController;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterInputController;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterControlsController;
@@ -68,7 +67,6 @@ import lsfusion.gwt.client.form.object.table.controller.GListViewController;
 import lsfusion.gwt.client.form.object.table.controller.GPlatformGridToolbarController;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.controller.GToolbarController;
-import lsfusion.gwt.client.form.object.table.controller.GUserFiltersController;
 import lsfusion.gwt.client.form.object.table.controller.GUserOrdersController;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
@@ -124,6 +122,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /** Runs in compiled JavaScript: reference identity and JS object keys are part of the contract. */
 public class GReactFormDataTest extends GWTTestCase {
@@ -131,37 +130,34 @@ public class GReactFormDataTest extends GWTTestCase {
 
     @Override protected void gwtSetUp() { JsniTestSupport.installMapDelete(); }
 
-    // the user filters of each group as the form has them - what a member handed it last, or what the server reported
-    // -, and what shows them told, as the form tells it (GFormController.changeFilters, applyFilterChanges)
+    // the user filters of each group as the form has them - what a table's model sent last, or what the server reported
+    // -: the transport of the tables' models, as the form is (GFormController.changeFilters, getFilterDTOs)
     private static final class FormFilters {
         final GForm form;
         final LinkedHashMap<GGroupObject, ArrayList<GPropertyFilterDTO>> lists = new LinkedHashMap<>();
-        Controllers controllers; // what shows each group's user filters, once made
+        Controllers controllers; // the model of each group's user filters, once made
 
         FormFilters(GForm form) {
             this.form = form;
         }
-        // a FILTERS box's list, split into its groups' lists, each the form's now - all of them written before any is
-        // told
+        // a table's list, split into its groups' lists, each the form's now
         void change(List<GGroupObject> groups, ArrayList<GPropertyFilter> conditions) {
             NativeSIDMap<GGroupObject, ArrayList<GPropertyFilter>> split = GPropertyFilter.getGroupConditions(groups, conditions);
             for (GGroupObject group : groups)
                 lists.put(group, dtos(split.get(group)));
-            for (GGroupObject group : groups) {
-                controllers.userFilters.get(group).changeFilters(group, lists.get(group));
-                controllers.updateFilterConditions(group);
-            }
+        }
+        ArrayList<GPropertyFilterDTO> getDTOs(GGroupObject group) {
+            return lists.containsKey(group) ? lists.get(group) : new ArrayList<>();
         }
         ArrayList<GPropertyFilter> get(GGroupObject group) {
-            return GPropertyFilter.getConditions(form, group, lists.containsKey(group) ? lists.get(group) : new ArrayList<>());
+            return GPropertyFilter.getConditions(form, group, getDTOs(group));
         }
-        // ... and the server reporting a group's: other ones than the form has are the form's now, and what shows them
-        // is told
+        // ... and the server reporting a group's: other ones than the form has are the form's now, and the model of its
+        // table takes them (GFormController.applyFilterChanges)
         void report(GGroupObject group, ArrayList<GPropertyFilterDTO> filters) {
             if (!filters.equals(lists.get(group))) {
                 lists.put(group, filters);
-                controllers.userFilters.get(group).updateFilters(group, filters);
-                controllers.updateFilterConditions(group);
+                controllers.userFilters.get(group).updateFilters(group, GPropertyFilter.getConditions(form, group, filters));
             }
         }
     }
@@ -357,8 +353,8 @@ public class GReactFormDataTest extends GWTTestCase {
                     formFilters.change(groups, conditions);
                     return 0;
                 }
-                public ArrayList<GPropertyFilter> getFilters(GGroupObject group) {
-                    return formFilters.get(group);
+                public ArrayList<GPropertyFilterDTO> getFilterDTOs(GGroupObject group) {
+                    return formFilters.getDTOs(group);
                 }
                 public void changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
                     edits.add("regularFilter " + filterGroup.sID + " " + (filter != null ? filter.caption : "none"));
@@ -540,8 +536,8 @@ public class GReactFormDataTest extends GWTTestCase {
         GUserOrdersController userOrdersController() {
             return controllers.userOrders.get(group);
         }
-        // ... and what shows the group's user filters
-        GUserFiltersController userFiltersController() {
+        // ... and the model of the group's user filters
+        GUserFiltersController userFilters() {
             return controllers.userFilters.get(group);
         }
         // the server reporting the group's sortings, or its user filters, as the form takes them
@@ -635,8 +631,8 @@ public class GReactFormDataTest extends GWTTestCase {
             filters.change(groups, conditions);
             return 0;
         }
-        public ArrayList<GPropertyFilter> getFilters(GGroupObject group) {
-            return filters.get(group);
+        public ArrayList<GPropertyFilterDTO> getFilterDTOs(GGroupObject group) {
+            return filters.getDTOs(group);
         }
         long ask(String request) {
             asked.add(request);
@@ -839,7 +835,7 @@ public class GReactFormDataTest extends GWTTestCase {
         int updates;
         final ArrayList<String> calls = new ArrayList<>();
         final ArrayList<Boolean> editorsShown = new ArrayList<>();
-        boolean filtersContainer = true, manual;
+        boolean filtersContainer = true;
 
         public boolean isControlsVisible() { return shown; }
         public void toggleControlsVisible() { shown = !shown; toolbar.showFilterControls(shown); }
@@ -848,27 +844,25 @@ public class GReactFormDataTest extends GWTTestCase {
         public void update() { updates++; }
         public void addCondition(Event keyEvent, boolean replace, boolean checkExistingFilter) { }
         public void quickEditFilter(Event keyEvent, GPropertyDraw property, GGroupObjectValue columnKey) { }
-        public void replaceConditions(ArrayList<GPropertyFilter> conditions) { }
         public boolean hasConditionsToReset() { return false; }
         public boolean hasFiltersContainer() { return filtersContainer; }
         public void addCondition() { calls.add("add"); }
+        public void applyConditions() { calls.add("apply"); }
         public void resetConditions() { calls.add("reset"); }
         public void setConditionsControlsVisible(boolean visible) { editorsShown.add(visible); }
-        public boolean isManualApplyMode() { return manual; }
-        public void applyFilters() { calls.add("apply"); }
     }
 
     // the filter controls, of either kind - a view's, or the platform's where a test says so (shownByToolbar) -, as far
     // as the filter input controller binds them: whose commands they give, and what they were told to show, in order
     private static final class FilterControlsDouble implements GFilterControlsController {
         GFiltersHandler handler;
-        GFilterEditors editors;
+        GUserFiltersController userFilters;
         boolean shownByToolbar;
         final ArrayList<Boolean> shown = new ArrayList<>();
-        public void bind(GFiltersHandler handler, GFilterEditors editors) { this.handler = handler; this.editors = editors; }
+        public void bind(GFiltersHandler handler, GUserFiltersController userFilters) { this.handler = handler; this.userFilters = userFilters; }
         public boolean isShownByToolbar() { return shownByToolbar; }
+        public boolean isApplyShown(boolean shownByToolbar) { return !this.shownByToolbar || shownByToolbar; }
         public void setVisible(boolean visible) { shown.add(visible); }
-        public void setApplyEnabled(boolean enabled) { }
         public void setTableVisible(boolean visible) { }
     }
     // the platform's table's views, as far as its toolbar's view switch asks them: a grid and a pivot, the one shown,
@@ -987,9 +981,6 @@ public class GReactFormDataTest extends GWTTestCase {
         public void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values) { }
         public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, PValue> values) { }
         public void removeProperty(GPropertyDraw property) { }
-        // the lists its filter input controller states through it, in order
-        final ArrayList<String> filtered = new ArrayList<>();
-        public long changeFilter(ArrayList<GPropertyFilter> conditions) { filtered.add(describe(conditions)); return -1; }
         public boolean focusFirstWidget(FocusUtils.Reason reason) { return false; }
         public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> values) { }
         public void updateRowSelectValues(NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) { }
@@ -1028,7 +1019,6 @@ public class GReactFormDataTest extends GWTTestCase {
         public int getSelectedRow() { return -1; }
         public PValue getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) { return null; }
         public List<Pair<Column, String>> getFilterColumns() { return null; }
-        public long changeFilter(ArrayList<GPropertyFilter> conditions) { return -1; }
         public boolean focusFirstWidget(FocusUtils.Reason reason) { return false; }
         public void bindFilter(GFilterInputController filter) { }
         public void update(long requestIndex, GFormChanges fc) { }
@@ -1063,8 +1053,6 @@ public class GReactFormDataTest extends GWTTestCase {
         final LinkedHashMap<GGroupObject, GGroupController> groups = new LinkedHashMap<>();
         final LinkedHashMap<GGroupObject, GUserOrdersController> userOrders = new LinkedHashMap<>();
         final LinkedHashMap<GGroupObject, GUserFiltersController> userFilters = new LinkedHashMap<>();
-        // ... and the controller of each FILTER of a property, every group's (GFormController.filterControllers)
-        final LinkedHashMap<GFilter, GFilterController> filterControllers = new LinkedHashMap<>();
         // what draws each group's grid's rows and each tree's, as the projection answers it (createGridController,
         // createTreeController)
         final LinkedHashMap<GGroupObject, GGridController> gridRows = new LinkedHashMap<>();
@@ -1099,7 +1087,7 @@ public class GReactFormDataTest extends GWTTestCase {
                 } else if (group.viewType.isList())
                     initializeTable(group.grid);
                 else
-                    initializeGroupControllers(group, new GPlatformPanelGroupController(), GUserOrdersController.NONE, GUserFiltersController.NONE, GFilterConditions.NONE);
+                    initializeGroupControllers(group, new GPlatformPanelGroupController(), GUserOrdersController.NONE, GUserFiltersController.NONE);
             // then the properties', the components', the filter groups'; then the projection sets out what it has
             for (GPropertyDraw property : form.propertyDraws)
                 properties.put(property, projection.createPropertyController(property, platform));
@@ -1116,22 +1104,18 @@ public class GReactFormDataTest extends GWTTestCase {
             Pair<GTableController, GToolbarController<?>> made = table.match(this::initializeGrid, this::initializeTree);
             GTableController rows = made.first;
             GToolbarController<?> toolbar = made.second;
-            if (table.filterControls != null)
-                filterControls.put(table, projection.createFilterControlsController(table, () -> null));
+            GFilterControlsController controls = table.filterControls != null ? projection.createFilterControlsController(table, () -> null) : null;
+            if (controls != null)
+                filterControls.put(table, controls);
             if (filter != null) {
                 filter.toolbar = toolbar;
                 toolbar.addFilterToggle(filter);
             }
-            GReactFormData.FiltersControllers tableFilters = projection.createFiltersControllers(table, rows, new GFilterControlsToggle(() -> { }, GFilterControlsController.NONE, toolbar), () -> null);
+            GFilterControlsToggle toggle = new GFilterControlsToggle(() -> { }, controls != null ? controls : GFilterControlsController.NONE, toolbar);
+            GReactFormData.FiltersControllers tableFilters = projection.createFiltersControllers(table, rows, toggle, userFilters -> null);
             GUserOrdersController tableOrders = rows.getUserOrdersController();
             for (GGroupObject group : table.getGroups())
-                initializeGroupControllers(group, rows.getGroupController(group), tableOrders, tableFilters.userFilters, tableFilters.conditions);
-        }
-        // ... the FILTERs of a group's properties told of its list beside what shows its FILTERS box, as the form tells
-        // them (GFormController.updateFilterConditions)
-        void updateFilterConditions(GGroupObject group) {
-            for (GFilter filterComponent : form.getFilterComponents(group))
-                filterControllers.get(filterComponent).updateCondition();
+                initializeGroupControllers(group, rows.getGroupController(group), tableOrders, tableFilters.userFilters);
         }
         // A TABLE of its kind, as the form makes it (GFormController.initializeGrid, initializeTree): a GRID's toolbar,
         // then what draws its rows - the recording table, giving itself to the toolbar, and the view it shows, as the
@@ -1163,15 +1147,15 @@ public class GReactFormDataTest extends GWTTestCase {
             treeRows.put(tree, rows);
             return new Pair<>(rows, toolbar);
         }
-        // a group's own controllers: the form's controller of it - what draws its rows gives it -, and what shows its
-        // user orders and its user filters, settled by its table
-        void initializeGroupControllers(GGroupObject group, GGroupController controller, GUserOrdersController groupOrders, GUserFiltersController groupFilters, GFilterConditions conditions) {
+        // a group's own controllers: the form's controller of it - what draws its rows gives it -, what shows its user
+        // orders and the model of its user filters, settled by its table, and the parts of its FILTERs React draws
+        void initializeGroupControllers(GGroupObject group, GGroupController controller, GUserOrdersController groupOrders, GUserFiltersController groupFilters) {
             groups.put(group, controller);
             userOrders.put(group, groupOrders);
             userFilters.put(group, groupFilters);
             if (group.getDrawComponent() != null) // a hand-built group in PANEL view may have no grid
                 for (GFilter filterComponent : form.getFilterComponents(group))
-                    filterControllers.put(filterComponent, projection.createFilterController(filterComponent, conditions));
+                    projection.createFilterPart(filterComponent, groupFilters);
         }
         void initializeComponentControllers(GComponent component) {
             components.put(component, projection.createComponentController(component, platformComponents));
@@ -1255,7 +1239,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // a condition on price whose value is 5 the first time it is read and nothing after
     private static native JavaScriptObject valueReadOnce() /*-{
         var condition = {property: 'price'}, reads = 0;
-        Object.defineProperty(condition, 'value', {enumerable: true, get: function() { return reads++ === 0 ? 5 : null; }});
+        Object.defineProperty(condition, 'value', {enumerable: true, get: function() { return reads++ === 0 ? 4 : null; }});
         return condition;
     }-*/;
     private static native void callFilters(JavaScriptObject member) /*-{
@@ -1336,7 +1320,7 @@ public class GReactFormDataTest extends GWTTestCase {
             fixture.group.viewType = GClassViewType.PANEL;
             fixture.filtersApart();
         });
-        assertSame(GUserFiltersController.NONE, filtered.userFiltersController());
+        assertSame(GUserFiltersController.NONE, filtered.userFilters());
         assertNull(field(filtered.snapshots[2], "items")); // c, where its FILTERS box is, has no node of it
         for (GClassViewType viewType : Arrays.asList(GClassViewType.PANEL, GClassViewType.TOOLBAR)) {
             Fixture f = new Fixture(fixture -> fixture.group.viewType = viewType);
@@ -1347,7 +1331,7 @@ public class GReactFormDataTest extends GWTTestCase {
             assertSame(GGroupObjectValue.EMPTY, controller.getSelectedKey());
             assertEquals(-1, controller.getSelectedRow());
             assertSame(GUserOrdersController.NONE, f.userOrdersController());
-            assertSame(GUserFiltersController.NONE, f.userFiltersController()); // nothing shows its user filters
+            assertSame(GUserFiltersController.NONE, f.userFilters()); // it has no user filters
             assertNull(field(f.data(), "items")); // a, where its grid is, carries none of its panel properties: no node
             JavaScriptObject items = field(f.snapshots[1], "items"); // b carries one of them
             assertNotNull(field(items, "panel"));
@@ -3812,7 +3796,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("changeFilters items price< quantity= panel=", f.filtersCalls.get(2));
         callChange(member, valueReadOnce()); // a value read a second time would be none: it is read once
         assertEquals("changeFilters items price< quantity= panel=", f.filtersCalls.get(3));
-        assertFalse(f.stated.get(0).nullValue());
+        assertEquals(PValue.getPValue(4), f.stated.get(0).value.value);
     }
 
     // the form tells what shows a group's filters of every list it sends, before the answer (GFormController
@@ -3869,14 +3853,37 @@ public class GReactFormDataTest extends GWTTestCase {
         conditions.add(new GPropertyFilter(new GFilter(f.quantity), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(2), GCompare.GREATER));
         f.reportFilters(dtos(conditions));
         f.projection.flush();
-        callChange(member, field(f.node(), "filters")); // the list `filters` gives, handed back
-        assertEquals("changeFilters items price= active= quantity>", f.filtersCalls.get(1));
-        assertTrue(f.stated.get(0).nullValue());
-        assertTrue(f.stated.get(1).nullValue());
-        assertFalse(f.stated.get(2).nullValue());
+        // the list `filters` gives, handed back: the conditions the form has - nothing to send
+        callChange(member, field(f.node(), "filters"));
+        assertEquals(1, f.filtersCalls.size());
+        ArrayList<GPropertyFilter> working = f.userFilters().getConditions();
+        assertEquals(" price= active= quantity>", describe(working));
+        assertTrue(working.get(0).nullValue());
+        assertTrue(working.get(1).nullValue());
+        assertFalse(working.get(2).nullValue());
 
         assertRefusal("'photo' is a file", refusedChange(member, parse("[{\"property\": \"photo\", \"value\": \"logo.png\"}]")));
-        assertEquals(2, f.filtersCalls.size());
+        assertEquals(1, f.filtersCalls.size());
+    }
+
+    // a list `filters.change` states replaces the conditions a view can name - the ones `filters` lists -: one on a
+    // property no view names - one grouped in columns, one with no integration SID - stays in its place, the list's
+    // extra conditions after the last one it replaces; so a list `filters` gives, handed back, changes nothing, and an
+    // empty one takes off what a view names alone
+    public void testAListReplacesOnlyTheConditionsAViewCanName() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.filtersBesideRows();
+            fixture.property(76, "perColumn", fixture.group, true, fixture.a).columnGroupObjects = new ArrayList<>(Arrays.asList(new GGroupObject()));
+        });
+        f.reportFilters(dtos(Arrays.asList(condition(f.price, 1), condition(byName(f.form, "perColumn"), 1))));
+        JavaScriptObject member = field(field(f.sa.controller, "items"), "filters");
+        callChange(member, parse("[{\"property\": \"quantity\", \"value\": 2}, {\"property\": \"price\", \"compare\": \"<\", \"value\": 9}]"));
+        assertEquals("changeFilters items quantity= price< perColumn=", f.filtersCalls.get(0));
+        f.projection.flush();
+        callChange(member, field(f.node(), "filters"));
+        assertEquals(1, f.filtersCalls.size());
+        callChange(member, parse("[]"));
+        assertEquals("changeFilters items perColumn=", f.filtersCalls.get(1));
     }
 
     // ... while one value given a property - the one condition `filters.change` states - with none takes the first
@@ -4105,7 +4112,8 @@ public class GReactFormDataTest extends GWTTestCase {
     }
 
     // ... and a change of one condition merges into the lists the form has, which the tree's list it sends last is -
-    // the condition of the other group it stated included -, so two changes in a row both stand, in a batch too
+    // the condition of the other group it stated included -, so two changes in a row both stand, in a batch too; each
+    // group's conditions sent in order, the groups top down
     public void testATreesChangeMergesIntoTheListsTheFormLastSent() {
         TreeFixture f = new TreeFixture(fixture -> {
             fixture.filtersIn(fixture.a);
@@ -4120,7 +4128,7 @@ public class GReactFormDataTest extends GWTTestCase {
             callChange(member, parse("{\"property\": \"item.price\", \"compare\": \"<\", \"value\": 9}"));
             callChange(member, parse("{\"property\": \"cat.rank\"}"));
         });
-        assertEquals(Arrays.asList("cat item price>", "cat item price> rank=", "cat item rank= price<", "cat item price<"),
+        assertEquals(Arrays.asList("cat item price>", "cat item rank= price>", "cat item rank= price<", "cat item price<"),
                 f.verbs.filtered);
     }
 
@@ -4199,7 +4207,7 @@ public class GReactFormDataTest extends GWTTestCase {
 
         ArrayList<GPropertyFilter> conditions = new ArrayList<>();
         conditions.add(new GPropertyFilter(new GFilter(columns[2]), f.item, GGroupObjectValue.EMPTY, PValue.getPValue(100), GCompare.GREATER));
-        tree.changeFilter(conditions);
+        f.controllers.userFilters.get(f.item).changeConditions(conditions, null); // the tree's model: one list for its groups
         assertEquals(Arrays.asList("cat item price>"), f.verbs.filtered);
         assertFalse(tree.focusFirstWidget(FocusUtils.Reason.APPLYFILTER)); // the focus is the view's
     }
@@ -4513,17 +4521,17 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(isFalse(node, "filtersManual"));
         assertTrue(isFalse(node, "filtersPending"));
         PanelDouble handler = new PanelDouble(); // the tree's filter input controller, binding them
-        controls.bind(handler, handler);
+        controls.bind(handler, f.controllers.userFilters.get(f.cat));
         callAll(tree, "resetFilters");
         assertEquals(Arrays.asList("reset"), handler.calls);
     }
 
     // where a view draws what the group's FILTERS box holds, the controller of the box, which the platform wires up
     // where it would build its panel (createFiltersControllers), is the commands over the conditions the view draws
-    // - an object of their own, not the part that shows them -, with no condition rows: each key states the group's
-    // list anew from the one the form has, through the table, as a pivot's drill-down does (replaceFilterConditions) -
-    // F3 and Alt+F3 on no cell, and typing, nothing; F3 on a cell its condition in the list, Alt+F3 its condition
-    // alone, made at once; Shift+F3, Escape and the controls' reset an empty list
+    // - an object of their own, not the part that shows them -, with no condition rows: each key writes into the
+    // table's user filters, sent at once, as a pivot's drill-down does, whoever draws the box (the table's
+    // replaceFilterConditions) - F3 and Alt+F3 on no cell, and typing, nothing; F3 on a cell its condition in the
+    // list, Alt+F3 its condition alone; Shift+F3, Escape and the controls' reset an empty list
     public void testThePlatformsFilterCommandsWorkOnTheConditionsAViewDraws() {
         Fixture f = new Fixture(Fixture::filtersApart);
         FilterControlsDouble controls = new FilterControlsDouble(); // FILTERCONTROLS a view draws: no platform ones
@@ -4532,7 +4540,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertNotSame(f.controllers.userFilters.get(f.group), table.getFilter()); // the commands, not the part
         assertSame(table.getFilter(), controls.handler); // ... which the view's controls give
         table.addFilter(null); table.replaceFilter(null); table.quickEditFilter(null, null, null); // on no cell, typing
-        assertEquals(0, table.filtered.size()); // ... change nothing
+        assertEquals(0, f.filtersCalls.size()); // ... change nothing
         f.reportFilters(dtos(Arrays.asList(new GPropertyFilter(new GFilter(f.quantity), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(2), GCompare.EQUALS))));
         table.selectedProperty = f.price; table.selectedValue = PValue.getPValue(5); table.selectedRow = 0;
         table.addFilter(null); // F3 on a cell: its condition, in the list the form has
@@ -4540,10 +4548,9 @@ public class GReactFormDataTest extends GWTTestCase {
         table.resetFilters(); // Shift+F3, Escape, the controls' reset
         ArrayList<GPropertyFilter> drillDown = new ArrayList<>();
         drillDown.add(new GPropertyFilter(new GFilter(f.quantity), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(3), GCompare.EQUALS));
-        table.replaceFilterConditions(drillDown); // a pivot cell's drill-down
-        // the group's lists, stated through the table, not through a member of the part
-        assertEquals(Arrays.asList(" quantity= price=", " price=", "", " quantity="), table.filtered);
-        assertEquals(0, f.filtersCalls.size());
+        f.userFilters().replaceConditions(drillDown); // a pivot cell's drill-down
+        assertEquals(Arrays.asList("changeFilters items quantity= price=", "changeFilters items price=", "changeFilters items",
+                "changeFilters items quantity="), f.filtersCalls);
     }
 
     // a key typed in a column of the platform's table goes to whichever filter input controller the table has, as its
@@ -4553,15 +4560,14 @@ public class GReactFormDataTest extends GWTTestCase {
         RecordingTableController table = onCell(f.price, 0, PValue.getPValue(5));
         table.bindFilter(viewCommands(f, table, new FilterControlsDouble()));
         table.quickEditFilter(null, f.price, GGroupObjectValue.EMPTY);
-        assertEquals(0, table.filtered.size());
         assertEquals(0, f.filtersCalls.size());
     }
 
-    // over conditions a view draws nothing typed waits to be applied: there are no editors of the platform's, so the
-    // commands bind the controls with none - the add they give all the same, the FILTERS box being there -, and the
-    // controls of either kind, which show the apply button by the editors' mode and give their apply, have none to
-    // give: a view's controls bound so show the mode as not manual, and their apply member refuses, saying why
-    public void testAViewsConditionsHaveNoEditorsSoNothingWaitsToBeApplied() {
+    // over conditions a view draws, the commands bind the controls with no editors of the platform's - the add they
+    // give all the same, the FILTERS box being there -; the manual apply mode is the client's setting, a view's apply
+    // button being always there - off here: not manual -, and the apply sends nothing with nothing waiting, refusing
+    // nothing
+    public void testAViewsConditionsHaveNoEditorsAndTheApplySendsWhatWaits() {
         Fixture f = new Fixture(fixture -> { fixture.filtersApart(); fixture.filterControlsIn(fixture.c); });
         GFilterControlsController controls = f.controllers.filterControls.get(f.group.grid);
         RecordingTableController table = onCell(f.price, 0, PValue.getPValue(5));
@@ -4571,26 +4577,27 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject node = field(f.snapshots[2], "items");
         assertTrue(isFalse(node, "filtersManual"));
         assertTrue(isFalse(node, "filtersPending"));
-        assertRefusal("controller.items.applyFilters(): has nothing to apply: a view draws the conditions",
-                refusedWith(field(f.sc.controller, "items"), "applyFilters", null));
-        assertEquals(0, table.filtered.size());
+        callAll(field(f.sc.controller, "items"), "applyFilters"); // nothing waits
+        assertEquals(0, f.filtersCalls.size());
         FilterControlsDouble platform = new FilterControlsDouble(); // the platform's buttons, as the commands bind them
         GFilterInputController commands = viewCommands(f, table, platform);
         assertSame(commands, platform.handler);
-        assertNull(platform.editors);
     }
     // the commands over the conditions a view draws, over what draws the rows, with the controls given, as the form
-    // wires them - no toolbar, no panel
+    // wires them - no toolbar, no panel -, the model they write into the group's now, the server's lists reaching it
     private static GFilterInputController viewCommands(Fixture f, GTableController rows, GFilterControlsController controls) {
-        return f.projection.createFiltersControllers(f.group.grid, rows, new GFilterControlsToggle(null, controls, null), () -> null).input;
+        GReactFormData.FiltersControllers made = f.projection.createFiltersControllers(f.group.grid, rows, new GFilterControlsToggle(null, controls, null), userFilters -> null);
+        for (GGroupObject group : f.group.grid.getGroups())
+            f.controllers.userFilters.put(group, made.userFilters);
+        return made.input;
     }
 
     // ... a command that makes a condition makes it at once, as F3 and Enter make one on the platform's panel: the one
     // the table's cell starts (GReactFormData.getCellCondition), put where a condition on its property already is
-    // (withCondition)
+    // (GUserFiltersController.putCondition)
     public void testACellStartsTheConditionOfItsColumnComparedTheDefaultWayWithItsValue() {
         Fixture f = new Fixture();
-        GPropertyFilter condition = GReactFormData.getCellCondition(onCell(f.price, 0, PValue.getPValue(5)), new ArrayList<>());
+        GPropertyFilter condition = GReactFormData.getCellCondition(onCell(f.price, 0, PValue.getPValue(5)), column -> null);
         assertSame(f.price, condition.column.property);
         assertSame(f.group, condition.groupObject);
         assertEquals(GGroupObjectValue.EMPTY, condition.column.columnKey);
@@ -4603,15 +4610,25 @@ public class GReactFormDataTest extends GWTTestCase {
         table.selectedProperty = property; table.selectedRow = row; table.selectedValue = value;
         return table;
     }
+    // ... and what a value on a column starts from in a list, as the working list gives it (GUserFiltersController
+    // .getValueBase): the first condition on the column
+    private static Function<Column, GPropertyFilter> firstOn(List<GPropertyFilter> conditions) {
+        return column -> {
+            for (GPropertyFilter condition : conditions)
+                if (condition.column.equals(column))
+                    return condition;
+            return null;
+        };
+    }
 
     // a table on no row names a column all the same - an empty grid its first, a pivot, a map, a calendar or a custom
     // view, which have no cell, their first property -, and has no value there: a condition made at once would filter
     // by NULL and empty the rows, so none is started. An empty cell of a row is a NULL value all the same
     public void testATableOnNoRowStartsNoCondition() {
         Fixture f = new Fixture();
-        assertNull(GReactFormData.getCellCondition(onCell(f.price, -1, null), new ArrayList<>()));
+        assertNull(GReactFormData.getCellCondition(onCell(f.price, -1, null), column -> null));
 
-        GPropertyFilter condition = GReactFormData.getCellCondition(onCell(f.price, 0, null), new ArrayList<>());
+        GPropertyFilter condition = GReactFormData.getCellCondition(onCell(f.price, 0, null), column -> null);
         assertSame(f.price, condition.column.property);
         assertNull(condition.value.value);
     }
@@ -4622,62 +4639,64 @@ public class GReactFormDataTest extends GWTTestCase {
         Fixture f = new Fixture();
         GPropertyDraw unnamed = f.property(75, "hidden", f.group, true, f.a);
         unnamed.integrationSID = null;
-        assertNull(GReactFormData.getCellCondition(onCell(unnamed, 0, PValue.getPValue(5)), new ArrayList<>()));
+        assertNull(GReactFormData.getCellCondition(onCell(unnamed, 0, PValue.getPValue(5)), column -> null));
 
         GPropertyDraw action = f.property(73, "approve", f.group, true, f.a);
         action.valueType = GActionType.instance;
-        assertNull(GReactFormData.getCellCondition(onCell(action, 0, null), new ArrayList<>()));
+        assertNull(GReactFormData.getCellCondition(onCell(action, 0, null), column -> null));
 
         GPropertyDraw inColumns = f.property(74, "perColumn", f.group, true, f.a);
         inColumns.columnGroupObjects = new ArrayList<>(Arrays.asList(new GGroupObject()));
-        assertNull(GReactFormData.getCellCondition(onCell(inColumns, 0, PValue.getPValue(5)), new ArrayList<>()));
+        assertNull(GReactFormData.getCellCondition(onCell(inColumns, 0, PValue.getPValue(5)), column -> null));
 
         GPropertyDraw different = f.property(76, "shown", f.group, true, f.a);
         different.differentValue = true;
-        assertNull(GReactFormData.getCellCondition(onCell(different, 0, PValue.getPValue(5)), new ArrayList<>()));
+        assertNull(GReactFormData.getCellCondition(onCell(different, 0, PValue.getPValue(5)), column -> null));
     }
 
-    // F3 on a property already filtered by takes the place of the first condition on it, so a range's other bound stays
+    // F3 on a property already filtered by takes the place of the first condition on it, so a range's other bound
+    // stays; on a property not filtered by, it is appended
     public void testAConditionTakesThePlaceOfTheFirstOnItsProperty() {
-        Fixture f = new Fixture();
-        GPropertyFilter low = condition(f.price, 1), some = condition(f.quantity, 2), high = condition(f.price, 3);
-        GPropertyFilter changed = condition(f.price, 5);
-
-        ArrayList<GPropertyFilter> result = GPropertyFilter.withCondition(new ArrayList<>(Arrays.asList(low, some, high)), changed);
-        assertEquals(Arrays.asList(changed, some, high), result);
+        Fixture f = new Fixture(Fixture::filtersBesideRows);
+        f.reportFilters(dtos(Arrays.asList(condition(f.price, 1), condition(f.quantity, 2), condition(f.price, 3))));
+        f.userFilters().putCondition(condition(f.price, 5));
+        assertEquals(Arrays.asList(PValue.getPValue(5), PValue.getPValue(2), PValue.getPValue(3)), values(f.stated));
+        f.reportFilters(dtos(Arrays.asList(condition(f.quantity, 2))));
+        f.userFilters().putCondition(condition(f.price, 5));
+        assertEquals("changeFilters items quantity= price=", f.filtersCalls.get(1));
     }
-
-    public void testAConditionOnAPropertyNotFilteredByIsAppended() {
-        Fixture f = new Fixture();
-        GPropertyFilter some = condition(f.quantity, 2), added = condition(f.price, 5);
-
-        ArrayList<GPropertyFilter> conditions = new ArrayList<>(Arrays.asList(some));
-        assertEquals(Arrays.asList(some, added), GPropertyFilter.withCondition(conditions, added));
-        assertEquals("the list it was handed stays as it was", Arrays.asList(some), conditions);
+    private static List<PValue> values(List<GPropertyFilter> conditions) {
+        List<PValue> values = new ArrayList<>();
+        for (GPropertyFilter condition : conditions)
+            values.add(condition.value.value);
+        return values;
     }
     private static GPropertyFilter condition(GPropertyDraw property, int value) {
         return new GPropertyFilter(new GFilter(property), property.groupObject, GGroupObjectValue.EMPTY, PValue.getPValue(value), null);
     }
 
-    // a value given a column goes by one rule for the platform's panel and the form's list (GPropertyFilter): the
-    // first condition on the COLUMN - a property grouped in columns has one per column key, the platform's panel
-    // stating a condition on one of them; a property not grouped in columns is its one column, the one a view names
+    // a value given a column goes by one rule for the platform's panel and a view (GUserFiltersController): the first
+    // condition on the COLUMN - a property grouped in columns has one per column key, the platform's panel stating a
+    // condition on one of them; a property not grouped in columns is its one column, the one a view names
     public void testAConditionIsTheFirstOnItsColumn() {
-        Fixture f = new Fixture();
+        Fixture f = new Fixture(Fixture::filtersBesideRows);
         GPropertyDraw perColumn = f.property(74, "perColumn", f.group, true, f.a);
         perColumn.columnGroupObjects = new ArrayList<>(Arrays.asList(new GGroupObject()));
         GGroupObjectValue one = new GGroupObjectValue(30, 1), two = new GGroupObjectValue(30, 2);
         GPropertyFilter first = new GPropertyFilter(new GFilter(perColumn), f.group, one, PValue.getPValue(1), null);
         GPropertyFilter second = new GPropertyFilter(new GFilter(perColumn), f.group, two, PValue.getPValue(2), null);
         GPropertyFilter price = condition(f.price, 3);
-        ArrayList<GPropertyFilter> conditions = new ArrayList<>(Arrays.asList(first, second, price));
+        f.reportFilters(dtos(Arrays.asList(first, second, price)));
+        GUserFiltersController userFilters = f.userFilters();
 
-        assertSame(second, GPropertyFilter.getFirst(conditions, new Column(perColumn, two)));
-        assertSame(price, GPropertyFilter.getFirst(conditions, GReactFormData.getConditionColumn(f.price)));
-        assertNull(GPropertyFilter.getFirst(conditions, GReactFormData.getConditionColumn(f.quantity)));
-        GPropertyFilter changed = second.restated(PValue.getPValue(5), false, GCompare.GREATER, true);
-        assertEquals(Arrays.asList(first, changed, price), GPropertyFilter.withCondition(conditions, changed));
-        assertEquals(Arrays.asList(second, price), GPropertyFilter.withoutFirst(conditions, new Column(perColumn, one)));
+        assertEquals(PValue.getPValue(2), userFilters.getValueBase(new Column(perColumn, two), false).value.value);
+        assertEquals(PValue.getPValue(3), userFilters.getValueBase(GReactFormData.getConditionColumn(f.price), false).value.value);
+        assertNull(userFilters.getValueBase(GReactFormData.getConditionColumn(f.quantity), false));
+        userFilters.putCondition(second.restated(PValue.getPValue(5), false, GCompare.GREATER, true));
+        assertEquals(Arrays.asList(PValue.getPValue(1), PValue.getPValue(5), PValue.getPValue(3)), values(f.stated));
+        assertEquals(two, f.stated.get(1).column.columnKey);
+        userFilters.removeCondition(new Column(perColumn, one));
+        assertEquals(Arrays.asList(PValue.getPValue(5), PValue.getPValue(3)), values(f.stated));
         // a new one on a column: of its property's group and its key, compared the property's default way, AND
         GPropertyFilter created = GPropertyFilter.getBase(new Column(perColumn, two), null);
         assertEquals(two, created.column.columnKey);
@@ -4701,25 +4720,24 @@ public class GReactFormDataTest extends GWTTestCase {
         GPropertyFilter part = new GPropertyFilter(new GFilter(name), f.group, GGroupObjectValue.EMPTY, PValue.getPValue("ab"), GCompare.CONTAINS);
         ArrayList<GPropertyFilter> conditions = new ArrayList<>(Arrays.asList(over, part));
 
-        GPropertyFilter condition = GReactFormData.getCellCondition(onCell(f.price, 0, PValue.getPValue(250)), conditions);
+        GPropertyFilter condition = GReactFormData.getCellCondition(onCell(f.price, 0, PValue.getPValue(250)), firstOn(conditions));
         assertEquals(GCompare.GREATER, condition.compare);
         assertTrue(condition.negation);
         assertFalse(condition.junction);
         assertEquals(PValue.getPValue(250), condition.value.value);
-        assertEquals(Arrays.asList(condition, part), GPropertyFilter.withCondition(conditions, condition));
 
         // '_' is a pattern's wildcard where a string is compared by containing it, and a plain character by '>'
         String separator = MainFrame.matchSearchSeparator;
         MainFrame.matchSearchSeparator = ","; // the client's setting, as the server gives it
         try {
-            assertEquals(PValue.getPValue("a\\_b"), GReactFormData.getCellCondition(onCell(name, 0, PValue.getPValue("a_b")), conditions).value.value);
+            assertEquals(PValue.getPValue("a\\_b"), GReactFormData.getCellCondition(onCell(name, 0, PValue.getPValue("a_b")), firstOn(conditions)).value.value);
             GPropertyFilter after = new GPropertyFilter(new GFilter(name), f.group, GGroupObjectValue.EMPTY, PValue.getPValue("a"), GCompare.GREATER);
-            assertEquals(PValue.getPValue("a_b"), GReactFormData.getCellCondition(onCell(name, 0, PValue.getPValue("a_b")), new ArrayList<>(Arrays.asList(after))).value.value);
+            assertEquals(PValue.getPValue("a_b"), GReactFormData.getCellCondition(onCell(name, 0, PValue.getPValue("a_b")), firstOn(Arrays.asList(after))).value.value);
         } finally {
             MainFrame.matchSearchSeparator = separator;
         }
 
-        condition = GReactFormData.getCellCondition(onCell(f.quantity, 0, PValue.getPValue(3)), conditions);
+        condition = GReactFormData.getCellCondition(onCell(f.quantity, 0, PValue.getPValue(3)), firstOn(conditions));
         assertEquals(f.quantity.getDefaultCompare(), condition.compare);
         assertFalse(condition.negation);
         assertTrue(condition.junction);
@@ -4736,7 +4754,7 @@ public class GReactFormDataTest extends GWTTestCase {
                 new GPropertyFilter(new GFilter(f.quantity), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(2), GCompare.EQUALS))));
         table.addFilter(null);
         table.replaceFilter(null);
-        assertEquals(Arrays.asList(" price> not or quantity=", " price="), table.filtered);
+        assertEquals(Arrays.asList("changeFilters items price> not or quantity=", "changeFilters items price="), f.filtersCalls);
     }
 
     // a FILTERS box's list stated - a group's, or a tree's - is split into its groups' lists, each condition under its
@@ -4825,9 +4843,10 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("#ff0000", text(at(filters, 0), "value"));
         assertEquals("1000.2000", text(at(filters, 1), "value"));
         JavaScriptObject member = field(field(f.sa.controller, "items"), "filters");
-        callChange(member, filters); // handed back as it is
-        assertEquals(red, f.stated.get(0).value.value);
-        assertEquals(year, f.stated.get(1).value.value);
+        callChange(member, filters); // handed back as it is: the conditions the form has - nothing to send
+        assertTrue(f.filtersCalls.isEmpty());
+        assertEquals(red, f.userFilters().getConditions().get(0).value.value);
+        assertEquals(year, f.userFilters().getConditions().get(1).value.value);
         String refused = refusedChange(member, parse("{\"property\": \"tint\", \"value\": \"red\"}"));
         assertTrue(refused, refused != null && refused.contains("is not a color"));
         refused = refusedChange(member, parse("{\"property\": \"period\", \"value\": \"1000-2000\"}"));
@@ -4855,7 +4874,10 @@ public class GReactFormDataTest extends GWTTestCase {
                 + " {\"property\": \"scan\", \"value\": \"files/scan.csv\"}]"));
         assertTrue(refused, refused != null && refused.contains("condition 1: ") && refused.contains("'scan' is a file"));
         assertEquals(calls, f.filtersCalls.size());
-        callChange(member, parse("{\"property\": \"scan\"}")); // ... and taken off, as any other property's is
+        // ... and taken off, as any other property's is: one comparing with NULL, the only one on a file
+        conditions.add(new GPropertyFilter(new GFilter(f.form.getPropertyDraw(f.group, "scan")), f.group, GGroupObjectValue.EMPTY, null, GCompare.EQUALS));
+        f.reportFilters(dtos(conditions));
+        callChange(member, parse("{\"property\": \"scan\"}"));
         assertEquals("changeFilters items tint= period=", f.filtersCalls.get(calls));
     }
 
@@ -4920,7 +4942,7 @@ public class GReactFormDataTest extends GWTTestCase {
 
         ArrayList<GPropertyFilter> conditions = new ArrayList<>();
         conditions.add(new GPropertyFilter(new GFilter(f.quantity), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(2), GCompare.EQUALS));
-        rows.changeFilter(conditions);
+        f.userFilters().changeConditions(conditions, null); // the table's model sends it
         assertEquals("changeFilters items quantity=", f.filtersCalls.get(0));
         assertFalse(rows.focusFirstWidget(FocusUtils.Reason.APPLYFILTER)); // the focus is the view's
     }
@@ -5178,43 +5200,115 @@ public class GReactFormDataTest extends GWTTestCase {
                     refusedWith(member, verb, null));
     }
 
+    // where the table's apply button is there - a view draws the controls, always shown -, the client's manual apply
+    // mode holds what every writer states: a condition of the list, a FILTER's value wait in the working list - what
+    // `filters` and the FILTER show, `filtersPending` saying so -, the controls' apply sends them; the reset is sent at
+    // once
+    public void testTheManualApplyModeHoldsWhatAViewStates() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            Fixture f = new Fixture(fixture -> {
+                fixture.filtersBesideRows();
+                fixture.filterControlsIn(fixture.c);
+                fixture.filterIn(fixture.c, fixture.quantity);
+            });
+            callChange(field(field(f.sa.controller, "items"), "filters"), parse("{\"property\": \"price\", \"value\": 5}"));
+            callChange(field(member(f.sc, "items", "filter"), "quantity"), 2.0);
+            assertTrue(f.filtersCalls.isEmpty());
+            f.projection.flush();
+            assertEquals(2, length(field(f.node(), "filters")));
+            assertEquals(2.0, number(field(field(field(f.snapshots[2], "items"), "filter"), "quantity"), "value"), 0);
+            assertTrue(flag(field(f.snapshots[2], "items"), "filtersManual"));
+            assertTrue(flag(field(f.snapshots[2], "items"), "filtersPending"));
+
+            callAll(field(f.sc.controller, "items"), "applyFilters");
+            assertEquals(Arrays.asList("changeFilters items quantity= price="), f.filtersCalls);
+            f.projection.flush();
+            assertTrue(isFalse(field(f.snapshots[2], "items"), "filtersPending"));
+            callAll(field(f.sc.controller, "items"), "resetFilters");
+            assertEquals("changeFilters items", f.filtersCalls.get(1));
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
+    // ... and the working list emptied in the manual apply mode, what the server filters by is still there to reset:
+    // Escape in the grid, which asks whether there is anything, sends the empty list at once
+    public void testWhatTheServerFiltersByIsThereToResetInTheManualApplyMode() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            Fixture f = new Fixture(fixture -> { fixture.filtersApart(); fixture.filterControlsIn(fixture.c); });
+            RecordingTableController table = onCell(f.price, 0, PValue.getPValue(5));
+            GFilterInputController commands = viewCommands(f, table, f.controllers.filterControls.get(f.group.grid));
+            f.reportFilters(dtos(Arrays.asList(condition(f.price, 5))));
+            f.userFilters().changeConditions(new ArrayList<>(), null);
+            assertTrue(f.filtersCalls.isEmpty());
+            assertTrue(commands.hasConditionsToReset());
+            commands.resetConditions();
+            assertEquals(Arrays.asList("changeFilters items"), f.filtersCalls);
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
+    // ... while a view's controls with no filter input controller to give the commands of - no FILTERS box a view
+    // draws, no panel of the platform's - have no apply, so nothing waits for one: a FILTER's value is sent at once
+    public void testFilterControlsWithNoCommandsHoldNothingBack() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            Fixture f = new Fixture(fixture -> { fixture.filterControlsIn(fixture.c); fixture.filterIn(fixture.c, fixture.price); });
+            callChange(field(member(f.sc, "items", "filter"), "price"), 3.0);
+            assertEquals(1, f.filtersCalls.size());
+            f.projection.flush();
+            assertTrue(isFalse(field(f.snapshots[2], "items"), "filtersManual"));
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
     // ... and their members give the filter input controller's commands, as the platform's buttons do: the add where
-    // the design has the FILTERS box, the apply only while it is lit - the manual apply mode asking for it, and
-    // conditions typed in waiting -, the reset; what the node shows follows the controller, published once the event is
-    // over
+    // the design has the FILTERS box, the apply - nothing sent with nothing waiting -, the reset; what the node
+    // shows follows the table's user filters - the manual apply mode, the client's setting, the apply button a view
+    // draws being always there; and whether anything waits -, published once the event is over
     public void testFilterControlsGiveTheFilterInputControllersCommands() {
         Fixture f = new Fixture(fixture -> fixture.filterControlsIn(fixture.c));
         PanelDouble handler = new PanelDouble();
         GFilterControlsController controls = f.controllers.filterControls.get(f.group.grid);
         assertFalse(controls.isShownByToolbar()); // the view shows them
-        controls.bind(handler, handler); // its commands, and its editors, as the panel is both
+        GUserFiltersController userFilters = f.userFilters();
+        controls.bind(handler, userFilters); // its commands, and the user filters it shows
         JavaScriptObject member = field(f.sc.controller, "items");
         callAll(member, "addFilter");
         callAll(member, "resetFilters");
         callAll(member, "applyFilters"); // nothing waits
-        assertEquals(Arrays.asList("add", "reset"), handler.calls);
+        assertEquals(Arrays.asList("add", "reset", "apply"), handler.calls);
         handler.filtersContainer = false; // no FILTERS box in the design: no add, as the platform has no such button
         assertRefusal("controller.items.addFilter(): has no FILTERS box to add a condition to", refusedWith(member, "addFilter", null));
-        assertEquals(2, handler.calls.size());
-
-        handler.manual = true;
-        controls.setVisible(true); // the toolbar shows them, and the manual apply mode asks for the apply button
-        f.projection.flush();
-        assertTrue(flag(field(f.snapshots[2], "items"), "filtersManual"));
-        assertTrue(isFalse(field(f.snapshots[2], "items"), "filtersPending"));
-        controls.setApplyEnabled(true); // a condition typed in waits
-        f.projection.flush();
-        assertTrue(flag(field(f.snapshots[2], "items"), "filtersPending"));
-        callAll(member, "applyFilters");
-        assertEquals("apply", handler.calls.get(2));
-
-        handler.manual = false; // the setting off, or the controls hidden: the platform shows no apply button
-        controls.setApplyEnabled(true);
-        f.projection.flush();
-        assertTrue(isFalse(field(f.snapshots[2], "items"), "filtersManual"));
-        assertTrue(isFalse(field(f.snapshots[2], "items"), "filtersPending"));
-        callAll(member, "applyFilters");
         assertEquals(3, handler.calls.size());
+
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            userFilters.modeChanged();
+            f.projection.flush();
+            assertTrue(flag(field(f.snapshots[2], "items"), "filtersManual"));
+            assertTrue(isFalse(field(f.snapshots[2], "items"), "filtersPending"));
+            userFilters.putCondition(condition(f.price, 5)); // a condition stated: it waits
+            f.projection.flush();
+            assertTrue(flag(field(f.snapshots[2], "items"), "filtersPending"));
+            assertTrue(f.filtersCalls.isEmpty());
+
+            MainFrame.userFiltersManualApplyMode = false; // the setting off: no apply waited for - what waits stays
+            userFilters.modeChanged();                    // unsent till the next write
+            f.projection.flush();
+            assertTrue(isFalse(field(f.snapshots[2], "items"), "filtersManual"));
+            assertTrue(flag(field(f.snapshots[2], "items"), "filtersPending"));
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
     }
     // showFilters FALSE turns off the platform's filter UI alone, a group's and a tree's alike: the form gives no panel
     // and no controls of the platform's (GFormController.initializeTable) -
@@ -5224,9 +5318,9 @@ public class GReactFormDataTest extends GWTTestCase {
     public void testShowFiltersTurnsOffThePlatformsFilterUIOnly() {
         Fixture platform = new Fixture(); // the platform draws the conditions: with no panel, nothing
         GReactFormData.FiltersControllers none = platform.projection.createFiltersControllers(platform.group.grid,
-                new RecordingTableController(), new GFilterControlsToggle(() -> { }, GFilterControlsController.NONE, new GridToolbarDouble()), () -> null);
+                new RecordingTableController(), new GFilterControlsToggle(() -> { }, GFilterControlsController.NONE, new GridToolbarDouble()), userFilters -> null);
         assertNull(none.input);
-        assertSame(GUserFiltersController.NONE, none.userFilters); // ... nothing shows the filters either
+        assertTrue(none.userFilters.getConditions().isEmpty()); // ... their model there all the same, nothing drawing it
         for (boolean showFilters : new boolean[]{true, false}) {
             Fixture f = new Fixture(Fixture::filtersApart); // a view draws the conditions, the platform the controls
             FilterControlsDouble platformControls = new FilterControlsDouble();
@@ -5236,12 +5330,12 @@ public class GReactFormDataTest extends GWTTestCase {
             GridToolbarDouble toolbar = new GridToolbarDouble();
             RecordingTableController table = onCell(f.price, 0, PValue.getPValue(5));
             GFilterInputController input = f.projection.createFiltersControllers(f.group.grid, table,
-                    new GFilterControlsToggle(() -> { }, controls, toolbar), () -> {
+                    new GFilterControlsToggle(() -> { }, controls, toolbar), userFilters -> {
                         throw new AssertionError("no panel where a view draws the conditions");
                     }).input;
             table.bindFilter(input);
             table.addFilter(null); // F3 on a cell
-            assertEquals(Arrays.asList(" price="), table.filtered);
+            assertEquals(Arrays.asList("changeFilters items price="), f.filtersCalls);
             assertEquals(showFilters ? 1 : 0, toolbar.filterToggles);
             assertSame(showFilters ? input : null, platformControls.handler);
 
@@ -5251,7 +5345,7 @@ public class GReactFormDataTest extends GWTTestCase {
             TreeToolbarDouble treeToolbar = new TreeToolbarDouble();
             GFilterInputController treeInput = tree.projection.createFiltersControllers(tree.tree,
                     new RecordingTableController(), new GFilterControlsToggle(() -> { },
-                            showFilters ? treePlatformControls : GFilterControlsController.NONE, treeToolbar), () -> {
+                            showFilters ? treePlatformControls : GFilterControlsController.NONE, treeToolbar), userFilters -> {
                         throw new AssertionError("no panel where a view draws the conditions");
                     }).input;
             assertNotNull(treeInput);
@@ -5276,7 +5370,7 @@ public class GReactFormDataTest extends GWTTestCase {
             GFilterControlsToggle toggle = new GFilterControlsToggle(() -> relayouts[0]++, controls, toolbar);
             PanelDouble filter = new PanelDouble();
             PanelDouble panel = new PanelDouble(); // the panel's editors, where there are editors
-            toggle.bind(filter, c[0] ? panel : null);
+            toggle.bind(filter, c[0] ? panel : null, GUserFiltersController.NONE);
             assertEquals(which, c[2] ? 1 : 0, toolbar.filterToggles);
             assertEquals(which, !c[2], toggle.isVisible()); // with no button, always shown
             assertSame(which, filter, controls.handler);
@@ -5708,8 +5802,8 @@ public class GReactFormDataTest extends GWTTestCase {
     }
 
     // the filter's condition is the FIRST on its property in the group's list - as the platform's row of the filter
-    // takes the first on its column -, shown whenever the list changes, whoever changes it; with none there, none is
-    // shown
+    // takes the first on its column -, shown whenever the list changes, whoever changes it; with none there, no value
+    // is shown, and what it showed last of the condition - its comparison, its negation - stays
     public void testAFilterShowsTheFirstConditionOnItsProperty() {
         Fixture f = new Fixture(fixture -> fixture.filterIn(fixture.c, fixture.price));
         GPropertyFilter low = new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(1), true, GCompare.GREATER, true);
@@ -5725,8 +5819,24 @@ public class GReactFormDataTest extends GWTTestCase {
         f.projection.flush();
         price = field(field(field(f.snapshots[2], "items"), "filter"), "price");
         assertTrue(isNullField(price, "value"));
-        assertEquals(f.price.getDefaultCompare().toString(), text(price, "compare"));
-        assertTrue(isFalse(price, "negation"));
+        assertTrue(isFalse(price, "active"));
+        assertEquals(">", text(price, "compare"));
+        assertTrue(flag(price, "negation"));
+    }
+
+    // ... and a value given it then is compared, negated and joined as it remembers of that condition, as the
+    // platform's row of a FILTER keeps them - while one condition `filters.change` states is compared the default way
+    public void testAFiltersValueTakesWhatItRemembersOfItsLastCondition() {
+        Fixture f = new Fixture(fixture -> { fixture.filtersBesideRows(); fixture.filterIn(fixture.c, fixture.price); });
+        GPropertyFilter low = new GPropertyFilter(new GFilter(f.price), f.group, GGroupObjectValue.EMPTY, PValue.getPValue(1), true, GCompare.GREATER, false);
+        f.reportFilters(dtos(Arrays.asList(low)));
+        f.reportFilters(dtos(new ArrayList<>()));
+        JavaScriptObject member = field(member(f.sc, "items", "filter"), "price");
+        callChange(member, 3.0);
+        assertEquals("changeFilters items price> not or", f.filtersCalls.get(0));
+        callChange(member, null);
+        callChange(field(field(f.sa.controller, "items"), "filters"), parse("{\"property\": \"price\", \"value\": 3}"));
+        assertEquals("changeFilters items price" + f.price.getDefaultCompare(), f.filtersCalls.get(2));
     }
 
     // its member states its value as the platform's row of the filter does: in the first condition on its property, its
@@ -5836,13 +5946,15 @@ public class GReactFormDataTest extends GWTTestCase {
     }
 
     // a file's filter: a condition on a file has a link to the file for its value, not the file it compares with, so
-    // the filter's condition is taken off and not stated
+    // the filter's condition - one comparing with NULL, the only one on a file - is taken off and not stated
     public void testAFileFiltersConditionIsOnlyTakenOff() {
         Fixture f = new Fixture(fixture -> {
             GPropertyDraw photo = fixture.property(77, "photo", fixture.group, true, fixture.a);
             photo.valueType = new GCustomStaticFormatFileType();
             fixture.filterIn(fixture.c, photo);
         });
+        GPropertyDraw photo = f.form.getPropertyDraw(f.group, "photo");
+        f.reportFilters(dtos(Arrays.asList(new GPropertyFilter(new GFilter(photo), f.group, GGroupObjectValue.EMPTY, null, GCompare.EQUALS))));
         JavaScriptObject member = field(member(f.sc, "items", "filter"), "photo");
         assertRefusal("controller.items.filter.photo.change(): 'photo' is a file", refusedChange(member, "logo.png"));
         assertTrue(f.filtersCalls.isEmpty());
@@ -5863,14 +5975,15 @@ public class GReactFormDataTest extends GWTTestCase {
     }
 
     // the FILTER of a tree group's property is on that group's node, as a filter group of a tree's group is - not on
-    // the tree's, which carries what the platform has one of for all its groups -, named by its property's own name
+    // the tree's, which carries what the platform has one of for all its groups -, named by its property's own name;
+    // its value sent as the tree's user filters are, all its groups' lists in one request
     public void testATreeGroupsFilterIsOnItsGroupsNode() {
         TreeFixture tree = new TreeFixture(t -> t.filterIn(t.a, t.column(70, "name", t.item)));
         tree.apply(tree.page());
         assertNotNull(field(field(field(tree.data, "item"), "filter"), "name"));
         assertFalse(has(field(tree.data, "t"), "filter"));
         callChange(field(member(tree.sa, "item", "filter"), "name"), 5.0);
-        assertEquals(Arrays.asList("item name="), tree.verbs.filtered);
+        assertEquals(Arrays.asList("cat item name="), tree.verbs.filtered);
     }
 
     // a FILTER with a view of its own is the filter's part on its group's node in its view; the react container it
@@ -5897,7 +6010,7 @@ public class GReactFormDataTest extends GWTTestCase {
             filter[0] = fixture.filterIn(fixture.c, fixture.price);
             filter[0].platformDrawn = true; // custom = NULL
         });
-        assertSame(GFilterController.NONE, f.projection.createFilterController(filter[0], GFilterConditions.NONE));
+        assertNull(f.projection.createFilterPart(filter[0], GUserFiltersController.NONE));
         assertNull(field(f.snapshots[2], "items"));
         assertFalse(own(field(f.snapshots[2], "FILTER(price)"), "hidden"));
         GFormChanges hide = new GFormChanges(); put(hide, filter[0].showIfReader, GGroupObjectValue.EMPTY, true); f.apply(hide);

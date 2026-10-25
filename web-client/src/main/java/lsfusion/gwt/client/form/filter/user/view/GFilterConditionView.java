@@ -16,7 +16,6 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.ComponentWidget;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
-import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
@@ -30,15 +29,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     private static final ClientMessages messages = ClientMessages.Instance.get();
+    // what a row reports to what draws it (GPlatformFiltersController), which decides what it does - the model's
+    // manual apply mode: its condition changed - its value committed, its comparison, NOT, NULL allowed, junction -,
+    // whether its value takes the focus then; another property chosen; its delete button, or Escape in an editor no
+    // value was committed in; Enter in its value cell; and Escape in its selectors, with no popup shown
     public interface UIHandler {
-        void removeCondition(GPropertyFilter condition);
-        void applyFilters(boolean focusFirstComponent, GFilterConditionView changedView);
-        void enableApplyButton();
+        void conditionChanged(GFilterConditionView view, boolean focusValue);
+        void propertyChanged(GFilterConditionView view);
+        void removeCondition(GFilterConditionView view);
+        void enterPressed(GFilterConditionView view);
         void resetConditions();
-        boolean isManualApplyMode();
     }
 
     private GPropertyFilter condition;
@@ -69,8 +73,6 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
 
     // may not be applied without "Allow NULL", but we want to keep condition visible
     public boolean confirmed;
-    
-    protected boolean applied;
 
     private static int idCounter = 0;
     private final String sID;
@@ -80,13 +82,11 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         return sID;
     }
 
-    public boolean isRemoved;
-
     public void destroy() {
         valueView.destroy();
     }
 
-    public GFilterConditionView(GPropertyFilter iCondition, GFormController form, GTableController rows, UIHandler uiHandler, ColumnsProvider columnsProvider, boolean controlsVisible, boolean readSelectedValue) {
+    public GFilterConditionView(GPropertyFilter iCondition, GFormController form, GTableController rows, UIHandler uiHandler, ColumnsProvider columnsProvider, boolean controlsVisible) {
         this.condition = iCondition;
         this.uiHandler = uiHandler;
         this.columnsProvider = columnsProvider;
@@ -110,7 +110,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         GwtClientUtils.addClassName(propertyLabel, "filter-label");
         leftPanel.addCentered(propertyLabel);
 
-        propertyView = new GFilterOptionSelector<Column>(uiHandler) {
+        propertyView = new GFilterOptionSelector<Column>(uiHandler::resetConditions) {
             @Override
             public void valueChanged(Column column) {
                 condition.column = column;
@@ -143,7 +143,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         for (GCompare filterCompare : filterCompares) {
             conditionsFullStrings.add(filterCompare.getFullString());
         }
-        compareView = new GFilterCompareSelector(condition, uiHandler, Arrays.asList(filterCompares), conditionsFullStrings, allowNull) {
+        compareView = new GFilterCompareSelector(condition, uiHandler::resetConditions, Arrays.asList(filterCompares), conditionsFullStrings, allowNull) {
             @Override
             public void negationChanged(boolean value) {
                 condition.negation = value;
@@ -177,16 +177,15 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
             @Override
             public void valueChanged(PValue value) {
                 super.valueChanged(value);
+                confirmed = true;
 
                 conditionChanged(false);
-                
-                confirmed = true;
             }
 
-            // Enter in its value cell applies the conditions, as the panel's apply does
+            // Enter in its value cell
             @Override
             public void enterPressed() {
-                uiHandler.applyFilters(true, null);
+                uiHandler.enterPressed(GFilterConditionView.this);
             }
 
             @Override
@@ -197,7 +196,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
                 }
             }
         };
-        valueView.changeProperty(condition, readSelectedValue);
+        valueView.changeProperty(condition, false);
 
         rightPanel.addCentered(valueView);
 
@@ -208,7 +207,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
             }
         };
         GwtClientUtils.addClassName(deleteButton, "filter-button");
-        deleteButton.setVisible(!isFixed() || controlsVisible);
+        deleteButton.setVisible(!isFixed()); // a FILTER's row is never removed: the FILTER is the design's
         rightPanel.add(deleteButton, GFlexAlignment.CENTER);
 
         junctionSeparator = new SimplePanel();
@@ -223,13 +222,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
             public ClickHandler getClickHandler() {
                 return event -> {
                     condition.junction = !condition.junction;
-                    String caption = condition.junction ? messages.formFilterConditionViewAnd() : messages.formFilterConditionViewOr();
-                    if(MainFrame.useTextAsFilterSeparator) {
-                        setText(caption);
-                    } else {
-                        showBackground(!condition.junction);
-                    }
-                    setTitle(caption);
+                    updateJunctionView();
 
                     conditionChanged(true);
                 };
@@ -237,19 +230,22 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         };
         GwtClientUtils.addClassName(junctionView, "filter-button");
         GwtClientUtils.addClassName(junctionView, MainFrame.useTextAsFilterSeparator ? "filter-separator-button-text" : "filter-separator-button");
-        junctionView.showBackground(!condition.junction);
+        updateJunctionView();
         rightPanel.addCentered(junctionView);
     }
 
     private void conditionChanged(boolean focusValueView) {
-        if (uiHandler.isManualApplyMode()) {
-            enableApplyButton();
-            if (focusValueView) {
-                focusValueView();
-            }
-        } else {
-            uiHandler.applyFilters(true, this);
-        }
+        uiHandler.conditionChanged(this, focusValueView);
+    }
+
+    // its junction shown: AND or OR, as text or as the button's background
+    private void updateJunctionView() {
+        String caption = condition.junction ? messages.formFilterConditionViewAnd() : messages.formFilterConditionViewOr();
+        if (MainFrame.useTextAsFilterSeparator)
+            junctionView.setText(caption);
+        else
+            junctionView.showBackground(!condition.junction);
+        junctionView.setTitle(caption);
     }
 
     public void focusValueView() {
@@ -276,16 +272,16 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     public boolean isFixed() {
         return condition.isFixed();
     }
+    // the condition it shows and edits, its own (show)
+    public GPropertyFilter getCondition() {
+        return condition;
+    }
 
     private void updateCompareLabelText() {
         compareLabel.setText((condition.negation ? "!" : "") + condition.compare);
         compareLabel.setTitle((condition.negation ? messages.formFilterCompareNot() + " " : "") + condition.compare.getTooltipText());
     }
     
-    private void enableApplyButton() {
-        uiHandler.enableApplyButton();
-    }
-
     @Override
     protected void onAttach() {
         super.onAttach();
@@ -335,37 +331,46 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
             updateCompareLabelText();
         }
         
-        enableApplyButton();
+        uiHandler.propertyChanged(this);
     }
 
-    public void applyCondition(GPropertyFilter condition) {
-        setCompare(condition.compare != null ? condition.compare : condition.column.property.getDefaultCompare());
-        setNegation(condition.negation);
-        setValue(condition.value);
-    }
-
-    // a fixed row TAKES a condition - a list the server reports states it, or a view through the row's FILTER -: its own
-    // made that one, and shown, a NULL allowed where it has one (a two-state LOGICAL's false), its comparison and
-    // negation in the label too, its value edited by that comparison, as when they are chosen in the row (compareView)
-    public void takeCondition(GPropertyFilter filter) {
-        condition.override(filter);
-        applyCondition(filter);
-        updateCompareLabelText();
-        valueView.changeCompare(condition.compare);
-        setAllowNull(filter.nullValue());
-    }
-    // ... and none: its value cleared and a NULL no longer allowed, applied no more; whether it had a value
-    public boolean clearCondition() {
-        setAllowNull(false);
-        return clearValueView();
-    }
-
-    public void setCompare(GCompare value) {
-        compareView.setSelectedValue(value != null ? value : condition.column.property.getDefaultCompare());
-    }
-
-    public void setNegation(boolean negation) {
-        compareView.setNegation(negation);
+    // what it shows of its entry in the table's user filters (GUserFiltersController), as the model has it now - each
+    // part set where it differs, so a row's own change told back to it leaves its editor alone: the column - its
+    // caption, its choice, a value cell built anew for another -, the comparison - the selector, the label, the value's
+    // input list -, NOT, the value, the junction, the NULL allowed, and whether a value was committed (Escape takes
+    // away a row with none)
+    public void show(GPropertyFilter entry, boolean allowNull, boolean confirmed) {
+        if (!entry.column.equals(condition.column)) {
+            condition.column = entry.column;
+            condition.groupObject = entry.groupObject;
+            String caption = columnsProvider.getColumns().get(getCaptionColumn());
+            propertyLabel.setText(caption);
+            propertyLabel.setTitle(caption);
+            propertyView.setSelectedValue(getCaptionColumn(), caption);
+            compareView.set(condition.column.property.getFilterCompares());
+            valueView.changeProperty(condition, false);
+        }
+        if (entry.compare != condition.compare) {
+            condition.compare = entry.compare;
+            compareView.setSelectedValue(entry.compare);
+            updateCompareLabelText();
+            valueView.changeCompare(entry.compare);
+        }
+        if (entry.negation != condition.negation) {
+            condition.negation = entry.negation;
+            compareView.setNegation(entry.negation);
+            updateCompareLabelText();
+        }
+        if (!Objects.equals(entry.value.value, condition.value.value))
+            valueView.setValue(entry.value.value);
+        if (entry.junction != condition.junction) {
+            condition.junction = entry.junction;
+            updateJunctionView();
+            updateJunctionVisibility();
+        }
+        if (allowNull != this.allowNull)
+            setAllowNull(allowNull);
+        this.confirmed = confirmed;
     }
 
     public void setAllowNull(boolean allowNull) {
@@ -373,23 +378,10 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         compareView.setAllowNull(allowNull);
     }
 
-    public void setValue(GDataFilterValue value) {
-        valueView.setValue(value.value);
-    }
-
     public void onAdd(boolean focusValueView) {
         valueView.onAdd(focusValueView);
     }
 
-    // whether the cell's value was put: not where the cell shows another value than the one it filters by (differentValue)
-    public boolean putSelectedValue() {
-        if (!condition.column.property.differentValue) {
-            valueView.putSelectedValue(condition);
-            return true;
-        }
-        return false;
-    }
-    
     public void startEditing(Event keyEvent) {
         // scheduleDeferred to fix focus issues with quick filter (adding condition by char key)
         // UPD (quick filter): with scheduleDeferred() keyUp event often doesn't reach suggest box and initial suggestions don't appear
@@ -399,16 +391,9 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
 //        });
     }
 
-    public boolean clearValueView() {
-        if (valueView.cell.getValue() == null) {
-            setApplied(false);
-            return false;
-        }
-
-        valueView.setValue(null); // the condition's value as well, not only what the cell shows
-        setApplied(allowNull);
-
-        return true;
+    // ... and its value's editor, if open, cancelled (GDataFilterValueView.cancelEditing)
+    public void cancelEditing() {
+        valueView.cancelEditing();
     }
 
     public void updateLoading(boolean loading) {
@@ -418,15 +403,10 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     private void remove() {
         propertyView.hidePopup();
         compareView.hidePopup();
-        uiHandler.removeCondition(condition);
+        uiHandler.removeCondition(this);
     }
     
-    public boolean isApplied() {
-        return applied;
-    }
-
     public void setApplied(boolean applied) {
-        this.applied = applied;
         valueView.setApplied(applied);
     }
 

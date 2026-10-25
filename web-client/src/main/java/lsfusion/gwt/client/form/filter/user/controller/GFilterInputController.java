@@ -1,26 +1,22 @@
 package lsfusion.gwt.client.form.filter.user.controller;
 
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.view.GFiltersHandler;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-import java.util.ArrayList;
-
 // the INPUT of a group's user filters - or of a tree's, one for all its groups -, where the platform wires one up: what
-// the platform's filter UI around the rows gives - the keys of the table, the controls' commands (GFiltersHandler), a
-// pivot's drill-down, the toolbar's filter button -, made a new list of conditions with what the rows tell it
-// (GTableController): the cell a condition starts on, the columns. Not what shows the list, which is told it ready, as
-// the server reports it or the form sends it (GUserFiltersController). Of the kind of whoever draws what the FILTERS
-// box holds, chosen once (GReactFormData.createFiltersControllers): the platform's (GPlatformFiltersController),
-// which draws the conditions and shows the list too - the input goes through its editors -, or the input over the
-// conditions a view draws, which states the list anew at once - the view's part shows it
-// (GReactFormData.ReactFilterInputController). What both show and hide of the platform's - the controls, and the
-// toolbar's button that shows them - is one rule for both (GFilterControlsToggle), held here with what draws the rows
+// the platform's filter UI around the rows gives - the keys of the table, the controls' commands (GFiltersHandler), the
+// toolbar's filter button -, written into the table's user filters (GUserFiltersController) with what the rows tell it
+// (GTableController): the cell a condition starts on, the columns. Of the kind of whoever draws what the FILTERS box
+// holds, chosen once (GReactFormData.createFiltersControllers): the platform's (GPlatformFiltersController), which
+// draws the conditions too - F3 prepares a value in a row, its editor started -, or the input over the conditions a
+// view draws, which writes a condition at once - the view's part shows it (GReactFormData.ReactFilterInputController).
+// What both show and hide of the platform's - the controls, and the toolbar's button that shows them - is one rule for
+// both (GFilterControlsToggle), held here with what draws the rows
 public abstract class GFilterInputController implements GFiltersHandler {
-    // what draws the rows: the cell a condition starts on, the columns, and what a list is stated through
+    // what draws the rows: the cell a condition starts on, the columns
     protected final GTableController rows;
     // the controls and the toolbar's button, the platform's, which each kind binds once it is made - its commands, and
     // its editors where it has them (GFilterControlsToggle.bind)
@@ -53,12 +49,11 @@ public abstract class GFilterInputController implements GFiltersHandler {
 
     // ===== the commands, as the keys of the table give them to whichever kind it has - F3 adds a condition, Alt+F3
     // (replace) makes it the only one, typing in a column starts one on the panel, whose editor takes the key, and
-    // nothing where a view draws the conditions -, as a pivot's drill-down does - the conditions it states, in place of
-    // the ones there are -, and as Escape asks: whether there is anything to reset. The controls' add and reset are
-    // GFiltersHandler's; their apply is the panel's editors' (GFilterEditors)
+    // nothing where a view draws the conditions -, and as Escape asks: whether there is anything to reset. The
+    // controls' add, apply and reset are GFiltersHandler's; a pivot's drill-down states its list in the model
+    // (GUserFiltersController.replaceConditions), whoever draws it
     public abstract void addCondition(Event keyEvent, boolean replace, boolean checkExistingFilter);
     public abstract void quickEditFilter(Event keyEvent, GPropertyDraw property, GGroupObjectValue columnKey);
-    public abstract void replaceConditions(ArrayList<GPropertyFilter> conditions);
     public abstract boolean hasConditionsToReset();
 
     // the form is closing: what it registered for the life of the page let go of - the platform's panel, whose

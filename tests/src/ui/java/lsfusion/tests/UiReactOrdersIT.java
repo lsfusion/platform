@@ -443,11 +443,11 @@ public class UiReactOrdersIT extends UiTest {
     }
 
     // a user event is for what the user changes (#1871): Enter in the value of a condition a FILTER of an action put
-    // into the filter panel applies the same conditions again - a request that changes nothing, which fires no
-    // user event -, and the condition taken off fires FILTERS, and no FILTERS PROPERTY, there being no condition
-    // on the property any more
+    // into the filter panel has nothing to apply - the conditions are the ones the server has, so no request is sent,
+    // and no user event fires -, and the condition taken off fires FILTERS, and no FILTERS PROPERTY, there being no
+    // condition on the property any more
     @Test
-    public void aFilterRequestThatChangesNothingFiresNoUserEvent() throws Exception {
+    public void anApplyThatChangesNothingFiresNoUserEvent() throws Exception {
         String s = seed();
         Requests sent = requests();
         Locator form = open("UiReactOrders.uiRor", "UiReactOrders.uiRorState");
@@ -466,7 +466,7 @@ public class UiReactOrdersIT extends UiTest {
         assertThat(names).hasText(new String[] {"Apple " + s, "Banana " + s, "Cherry " + s});
         assertThat(value(form, "uiRorFiltersEvents")).hasText("1");
         assertThat(value(form, "uiRorFiltersPropertyEvents")).hasText("");
-        assertEquals("the conditions sent", 2, sent.count("SetUserFilters"));
+        assertEquals("the conditions sent", 1, sent.count("SetUserFilters"));
         close(form);
     }
 

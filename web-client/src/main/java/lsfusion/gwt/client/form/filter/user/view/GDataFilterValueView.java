@@ -52,6 +52,13 @@ public class GDataFilterValueView extends SizedFlexPanel {
         }
     }
 
+    // its editor, if open, cancelled - before its row is bound to another entry or taken away (GPlatformFiltersController):
+    // an editor left open would commit into what it no longer shows
+    public void cancelEditing() {
+        if (cell != null)
+            form.cancelEditing(cell, CancelReason.HIDE);
+    }
+
     public void changeProperty(GPropertyFilter condition, boolean readSelectedValue) {
         if(sizedView != null) {
             removeSized(sizedView.widget);
@@ -116,11 +123,6 @@ public class GDataFilterValueView extends SizedFlexPanel {
     private PValue readSelectedValue(GPropertyFilter condition) {
         return PValue.escapeSeparator(rows.getSelectedValue(condition.column.property, condition.column.columnKey), condition.compare);
     } 
-    
-    public void putSelectedValue(GPropertyFilter condition) {
-        filterValue.value = readSelectedValue(condition);
-        cell.updateValue(filterValue.value);
-    }
     
     public void setValue(PValue value) {
         filterValue.value = value;

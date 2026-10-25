@@ -51,6 +51,14 @@ public class GPropertyFilter {
 
         return filterDTO;
     }
+    // ... and a list's, as a client sends them: an action is no filter
+    public static ArrayList<GPropertyFilterDTO> getFilterDTOs(List<GPropertyFilter> filters) {
+        ArrayList<GPropertyFilterDTO> filterDTOs = new ArrayList<>();
+        for (GPropertyFilter filter : filters)
+            if (filter.column.property.canBeFiltered())
+                filterDTOs.add(filter.getFilterDTO());
+        return filterDTOs;
+    }
     // ... and back, for a group's whole list: the conditions its filters are, as a client sent them or the server
     // reported them - what the group's panel shows, and what a view drawing the group's FILTERS box is shown
     public static ArrayList<GPropertyFilter> getConditions(GForm form, GGroupObject group,
@@ -85,25 +93,17 @@ public class GPropertyFilter {
         }
         return result;
     }
-    private static String getNames(List<GGroupObject> groups) {
+    static String getNames(List<GGroupObject> groups) {
         StringBuilder names = new StringBuilder();
         for (GGroupObject group : groups)
             names.append(names.length() > 0 ? ", " : "").append("'").append(group.getSID()).append("'");
         return names.toString();
     }
 
-    // ===== A VALUE GIVEN A COLUMN - a property in one of its columns, the empty key for one not grouped in columns -,
-    // one rule for the platform's panel, which edits its rows in place, and the form's list a view states anew
-    // - the first condition on a column, null for none: the one a value given the column takes the place of - a range's
-    //   other bound stays -, and the one a FILTER shows
-    public static GPropertyFilter getFirst(Iterable<GPropertyFilter> conditions, Column column) {
-        for (GPropertyFilter condition : conditions)
-            if (condition.column.equals(column))
-                return condition;
-        return null;
-    }
-    // - what the value starts from: the first on the column - its comparison, negation and junction kept where whoever
-    //   gives the value states none of them -, or a new one, compared the property's default way
+    // ===== A VALUE GIVEN A COLUMN - a property in one of its columns, the empty key for one not grouped in columns -:
+    // what it starts from, the condition on the column it goes into (GUserFiltersController.getValueBase) - its
+    // comparison, negation and junction kept where whoever gives the value states none of them -, or a new one,
+    // compared the property's default way
     public static GPropertyFilter getBase(Column column, GPropertyFilter first) {
         return first != null ? first : new GPropertyFilter(new GFilter(column.property), column.property.groupObject, column.columnKey, null, null);
     }
@@ -112,22 +112,6 @@ public class GPropertyFilter {
     public GPropertyFilter restated(PValue value, boolean negation, GCompare compare, boolean junction) {
         return new GPropertyFilter(new GFilter(column.property), groupObject, column.columnKey, value, negation, compare, junction);
     }
-    // - a list with a condition in the place of the first on its column - the others keep their places -, or appended;
-    //   or with the first on a column taken out, alone. A list of the caller's own, the one handed left as it is
-    public static ArrayList<GPropertyFilter> withCondition(List<GPropertyFilter> conditions, GPropertyFilter condition) {
-        ArrayList<GPropertyFilter> result = new ArrayList<>(conditions);
-        int index = result.indexOf(getFirst(result, condition.column));
-        if (index >= 0)
-            result.set(index, condition);
-        else
-            result.add(condition);
-        return result;
-    }
-    public static ArrayList<GPropertyFilter> withoutFirst(List<GPropertyFilter> conditions, Column column) {
-        ArrayList<GPropertyFilter> result = new ArrayList<>(conditions);
-        result.remove(getFirst(result, column));
-        return result;
-    }
 
     public boolean nullValue() {
         return value.value == null;
@@ -135,12 +119,5 @@ public class GPropertyFilter {
 
     public boolean isFixed() {
         return filter.fixed;
-    }
-
-    public void override(GPropertyFilter filter) {
-        compare = filter.compare;
-        junction = filter.junction;
-        negation = filter.negation;
-        value.setValue(filter.value.value);
     }
 }

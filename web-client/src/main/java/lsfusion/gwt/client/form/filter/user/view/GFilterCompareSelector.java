@@ -22,8 +22,8 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
     private boolean allowNull;
     private CheckBox allowNullCB;
 
-    public GFilterCompareSelector(GPropertyFilter condition, GFilterConditionView.UIHandler uiHandler, List<GCompare> values, List<String> popupCaptions, boolean allowNull) {
-        super(uiHandler, values, popupCaptions);
+    public GFilterCompareSelector(GPropertyFilter condition, Runnable resetConditions, List<GCompare> values, List<String> popupCaptions, boolean allowNull) {
+        super(resetConditions, values, popupCaptions);
         negation = condition.negation;
         this.allowNull = allowNull;
 
