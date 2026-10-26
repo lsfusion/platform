@@ -20,6 +20,7 @@ import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridContro
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.JSValueConverter;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.view.Column;
@@ -803,11 +804,11 @@ public abstract class GStateTableView extends FlexPanel implements GListView {
             WrapperObject object = JavaScriptObject.createObject().cast();
             JsArray<JavaScriptObject> values = array.get(i);
             for(int j=0;j<columns.length();j++) {
-                object.putValue(toString(columns.get(j)), values.get(j));
+                object.putValue(JSValueConverter.toString(columns.get(j)), values.get(j));
             }
             // the marshaled handle travels POSITIONALLY as one extra trailing element (getValues pushes it last,
             // past the captions) and never reaches the public row
-            GGroupObjectValue rowKey = values.length() > columns.length() ? GStateTableView.<GGroupObjectValue>toObject(values.get(columns.length())) : null;
+            GGroupObjectValue rowKey = values.length() > columns.length() ? JSValueConverter.<GGroupObjectValue>toObject(values.get(columns.length())) : null;
             if (rowKey != null)
                 GGroupObjectValue.registerRow(object, rowKey); // the public row.key + the same enumerable `objects` handle as react rows
             convert.push(object);
@@ -844,38 +845,10 @@ public abstract class GStateTableView extends FlexPanel implements GListView {
         }-*/;
     }
 
-    public static native JavaScriptObject fromString(String string) /*-{
-        return string;
-    }-*/;
-    public static native String toString(JavaScriptObject string) /*-{
-        return string;
-    }-*/;
-    protected static native JavaScriptObject fromDouble(double d) /*-{
-        return d;
-    }-*/;
-    public static native int toInt(JavaScriptObject d) /*-{
-        return d;
-    }-*/;
-    protected static native double toDouble(JavaScriptObject d) /*-{
-        return d;
-    }-*/;
-    public static native JavaScriptObject fromBoolean(boolean b) /*-{
-        return b;
-    }-*/;
-    protected static native boolean toBoolean(JavaScriptObject b) /*-{
-        return b;
-    }-*/;
-    public static native <T> JavaScriptObject fromObject(T object) /*-{
-        return object;
-    }-*/;
-    public static native <T> T toObject(JavaScriptObject object) /*-{
-        return object;
-    }-*/;
-
     private JavaScriptObject customOptions;
     @Override
     public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> values) {
-        customOptions = GSimpleStateTableView.convertToJSValue(GJSONType.instance, null, true, values.firstValue()); // for now we're assuming that custom options is json
+        customOptions = JSValueConverter.convertToJSValue(GJSONType.instance, null, true, values.firstValue()); // for now we're assuming that custom options is json
         dataUpdated = true;
     }
 

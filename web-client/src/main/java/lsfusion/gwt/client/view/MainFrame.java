@@ -31,7 +31,7 @@ import lsfusion.gwt.client.controller.remote.action.navigator.*;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
-import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.property.JSValueConverter;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor;
 import lsfusion.gwt.client.form.view.FormContainer;
@@ -631,15 +631,15 @@ public class MainFrame implements EntryPoint {
         });
 
         GwtClientUtils.registerServiceWorker(message -> {
-            String type = GSimpleStateTableView.toString(GwtClientUtils.getField(message, "type"));
+            String type = JSValueConverter.toString(GwtClientUtils.getField(message, "type"));
             if(type.equals("pushNotification")) {
-                int notificationId = GSimpleStateTableView.toInt(GwtClientUtils.getField(message, "id"));
-                String notificationResult = GSimpleStateTableView.toString(GwtClientUtils.getField(message, "result"));
+                int notificationId = JSValueConverter.toInt(GwtClientUtils.getField(message, "id"));
+                String notificationResult = JSValueConverter.toString(GwtClientUtils.getField(message, "result"));
                 formsController.executeNotificationAction(notificationId, notificationResult, null);
             } else if(type.equals("clientId")) {
-                updateServiceClientInfo(formsController, null, GSimpleStateTableView.toString(GwtClientUtils.getField(message, "clientId")));
+                updateServiceClientInfo(formsController, null, JSValueConverter.toString(GwtClientUtils.getField(message, "clientId")));
             }
-        }, GwtClientUtils.toJsObject("type", GSimpleStateTableView.fromString("pullNotification")));
+        }, GwtClientUtils.toJsObject("type", JSValueConverter.fromString("pullNotification")));
 
         GwtClientUtils.requestPushNotificationPermissions();
 

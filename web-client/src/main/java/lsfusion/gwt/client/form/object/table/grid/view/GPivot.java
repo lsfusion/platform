@@ -53,6 +53,8 @@ import static java.lang.Integer.decode;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEmpty;
 import static lsfusion.gwt.client.base.view.ColorUtils.*;
 import static lsfusion.gwt.client.view.StyleDefaults.*;
+import static lsfusion.gwt.client.form.property.JSValueConverter.fromObject;
+import static lsfusion.gwt.client.form.property.JSValueConverter.fromString;
 
 public class GPivot extends GStateTableView implements ColorThemeChangeListener, RenderContext {
 
@@ -1214,7 +1216,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private PValue getPValue(GPropertyDraw property, JavaScriptObject value) {
-        return PValue.getPivotPValue(property.getRenderType(RendererType.PIVOT), GStateTableView.<Object>toObject(value));
+        return PValue.getPivotPValue(property.getRenderType(RendererType.PIVOT), JSValueConverter.<Object>toObject(value));
     }
 
     private void renderColumn(Element th, JavaScriptObject value, String columnName) {
@@ -1339,7 +1341,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         } else {
             SortCol sortCol = findSortCol(config.getArrayMixed("sortCols"), attrName);
             Boolean sortDir = sortCol != null ? sortCol.getDirection() : null;
-            assert attrName.equals(GStateTableView.fromObject(value).toString());
+            assert attrName.equals(JSValueConverter.fromObject(value).toString());
             // value is a column name, render with rowHeight to make cal attr header to be responsible for the height
             renderTD(jsElement, rerender, false, sortDir, value);
         }

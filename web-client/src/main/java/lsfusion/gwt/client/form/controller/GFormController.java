@@ -76,8 +76,6 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPr
 import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.object.panel.controller.GPlatformRowsPanelController;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
-import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
-import lsfusion.gwt.client.form.object.table.grid.view.GStateTableView;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
@@ -712,7 +710,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     public void classicChangeProperty(String surface, String name, JavaScriptObject objectOrKey, JavaScriptObject value) {
         GPropertyDraw property = resolveClassicProperty(surface, name); // throws on an unknown or ambiguous name
         GGroupObjectValue objectKey = resolveClassicObject(surface, name, objectOrKey);
-        PValue change = GSimpleStateTableView.convertFromJSUndefValue(property, value);
+        PValue change = JSValueConverter.convertFromJSUndefValue(property, value);
         changeProperty(property, getControllerColumnKey(objectKey), change, property.getExternalChangeRenderValue(change, RendererType.SIMPLE));
     }
     // the typed core: a resolved property, key and value -> the same classic edit dispatch as a normal user edit - a
@@ -3241,20 +3239,20 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         for (int i = 0; i < result.asyncs.size(); i++) {
             JavaScriptObject object = GwtClientUtils.newObject();
             GAsync suggestion = result.asyncs.get(i);
-            GwtClientUtils.setField(object, "displayString", GStateTableView.fromString(PValue.getStringValue(suggestion.getDisplayValue())));
-            GwtClientUtils.setField(object, "rawString", GStateTableView.fromString(PValue.getStringValue(suggestion.getRawValue())));
+            GwtClientUtils.setField(object, "displayString", JSValueConverter.fromString(PValue.getStringValue(suggestion.getDisplayValue())));
+            GwtClientUtils.setField(object, "rawString", JSValueConverter.fromString(PValue.getStringValue(suggestion.getRawValue())));
             GwtClientUtils.setField(object, "objects", convertToJSKey(suggestion.key));
             results[i] = object;
         }
         JavaScriptObject data = GwtClientUtils.newObject();
-        GwtClientUtils.setField(data, "data", GStateTableView.fromObject(results));
-        GwtClientUtils.setField(data, "more", GStateTableView.fromBoolean(result.moreRequests));
+        GwtClientUtils.setField(data, "data", JSValueConverter.fromObject(results));
+        GwtClientUtils.setField(data, "more", JSValueConverter.fromBoolean(result.moreRequests));
         return data;
     }
 
     private static JavaScriptObject convertToJSKey(Serializable key) {
         if (key instanceof GGroupObjectValue)
-            return GStateTableView.fromObject(key);
+            return JSValueConverter.fromObject(key);
 
         return GwtClientUtils.jsonParse((String) key);
     }

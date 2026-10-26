@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.property.JSValueConverter;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
@@ -92,7 +93,7 @@ public class CustomCellRenderer extends CellRenderer {
         // open is not a local failure
         FocusUtils.startFocusTransaction(element);
         try {
-            JavaScriptObject renderValue = GSimpleStateTableView.convertToJSValue(property, value, updateContext.getRendererType(), true);
+            JavaScriptObject renderValue = JSValueConverter.convertToJSValue(property, value, updateContext.getRendererType(), true);
             update(customRenderer, element, getController(property, updateContext, element), renderValue, extraValue != null ? ((ExtraValue) extraValue).getJsObject() : null);
         } finally {
             FocusUtils.endFocusTransaction();
@@ -135,10 +136,10 @@ public class CustomCellRenderer extends CellRenderer {
         if(!canUseChangeValueForRendering) // to break a recursion when there are several changes in update
             rerenderState(element, false);
 
-        updateContext.changeProperty(GSimpleStateTableView.convertFromJSUndefValue(property, value),
+        updateContext.changeProperty(JSValueConverter.convertFromJSUndefValue(property, value),
                 renderValueSupplier != null ? (oldValue, changeValue) -> {
                     GType renderType = property.getRenderType(rendererType);
-                    return GSimpleStateTableView.convertFromJSValue(renderType, GwtClientUtils.call(renderValueSupplier, GSimpleStateTableView.convertToJSValue(renderType, property, true, oldValue)));
+                    return JSValueConverter.convertFromJSValue(renderType, GwtClientUtils.call(renderValueSupplier, JSValueConverter.convertToJSValue(renderType, property, true, oldValue)));
                 } : null);
 
         // if we don't use change value for rendering, and the renderer is interactive (it's state can be changed without notifying the element)

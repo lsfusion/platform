@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.property.JSValueConverter;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GSelect;
 import lsfusion.gwt.client.form.property.PValue;
@@ -66,11 +66,11 @@ final class ReactSelect {
             setFlag(shownOption, "selected", checked[index]);
             push(shownList, shownOption);
         }
-        return GSimpleStateTableView.convertFromJSValue(property.getRenderType(RendererType.SIMPLE), shownList);
+        return JSValueConverter.convertFromJSValue(property.getRenderType(RendererType.SIMPLE), shownList);
     }
     // the cell's options as the server sends them, none where it holds nothing
     private static JavaScriptObject getList(GPropertyDraw property, PValue value) {
-        JavaScriptObject list = GSimpleStateTableView.convertToJSValue(property, value, RendererType.SIMPLE, true);
+        JavaScriptObject list = JSValueConverter.convertToJSValue(property, value, RendererType.SIMPLE, true);
         return isUndefinedOrNull(list) ? emptyArray() : list;
     }
     // the options checked from now on, by index: of one value the option named, none for null; of several those of the
@@ -130,7 +130,7 @@ final class ReactSelect {
     // one option picked or no longer, as select.js sends it: the change of the cell by its objects - or, where an
     // explicit change takes the option's view, that view, none for no longer (select.js _changeSingleProperty)
     private static PValue getPick(GPropertyDraw property, JavaScriptObject objects, JavaScriptObject name, boolean picked) {
-        return GSimpleStateTableView.convertFromJSUndefValue(property, property.select.changeValue
+        return JSValueConverter.convertFromJSUndefValue(property, property.select.changeValue
                 ? (picked ? getOptionName(name) : null) : getSelectedChange(objects, picked));
     }
 

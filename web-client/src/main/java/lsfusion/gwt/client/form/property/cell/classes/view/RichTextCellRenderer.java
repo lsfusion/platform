@@ -4,7 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.data.GJSONType;
-import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.property.JSValueConverter;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -35,7 +35,7 @@ public class RichTextCellRenderer extends CellRenderer {
         String innerText = value != null ? format(value, updateContext.getRendererType(), updateContext.getPattern()) : "";
 
         element.setTitle(innerText);
-        update(element, innerText, GSimpleStateTableView.convertToJSValue(GJSONType.instance, null, false, updateContext.getPropertyCustomOptions()));
+        update(element, innerText, JSValueConverter.convertToJSValue(GJSONType.instance, null, false, updateContext.getPropertyCustomOptions()));
         return true;
     }
 

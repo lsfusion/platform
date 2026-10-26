@@ -12,7 +12,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
-import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.property.JSValueConverter;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -475,7 +475,7 @@ public abstract class CellRenderer {
         Object readonlyFnc = getReadonlyFnc(element);
         if(readonlyFnc != null) {
             if(readonlyFnc != CellRenderer.NULL)
-                GwtClientUtils.call((JavaScriptObject) readonlyFnc, GSimpleStateTableView.fromObject(readonly));
+                GwtClientUtils.call((JavaScriptObject) readonlyFnc, JSValueConverter.fromObject(readonly));
         } else
             setDefaultReadonlyFnc(element, readonly);
     }

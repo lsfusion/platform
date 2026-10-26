@@ -72,7 +72,7 @@ import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
-import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.property.JSValueConverter;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeController;
@@ -4916,7 +4916,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals(GwtClientUtils.getAppDownloadURL("files/scan.pdf"), text(field(f.row("1"), "scan"), "value"));
         for (GRenderedType type : new GRenderedType[] {new GPDFType(), new GImageType("png")})
             assertEquals(GwtClientUtils.getAppDownloadURL("files/result"),
-                    GSimpleStateTableView.toString(GSimpleStateTableView.convertToJSValue(type, null, false, PValue.getPValue("files/result"))));
+                    JSValueConverter.toString(JSValueConverter.convertToJSValue(type, null, false, PValue.getPValue("files/result"))));
     }
 
     // where the platform draws a group's filters over the rows React draws, its filter input controller asks those rows

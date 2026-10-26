@@ -15,7 +15,7 @@ import lsfusion.gwt.client.controller.remote.action.navigator.ThrowInNavigatorAc
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GController;
 import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
-import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.property.JSValueConverter;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
@@ -156,7 +156,7 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(GControllerResultAction action) {
-        gController.controllerCallbackResult(getDispatchingIndex(), GSimpleStateTableView.convertToJSValue(action.type, null, false, PValue.convertFileValue(action.value)));
+        gController.controllerCallbackResult(getDispatchingIndex(), JSValueConverter.convertToJSValue(action.type, null, false, PValue.convertFileValue(action.value)));
     }
 
     @Override

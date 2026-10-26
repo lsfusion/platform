@@ -4,7 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher.ServerResponseCallback;
 import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
-import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.property.JSValueConverter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -60,22 +60,22 @@ public abstract class GController {
         String refusal = getRefusal("exec()");
         if (refusal != null) // reject BEFORE dispatch: a dispatched action on a closed context enqueues but never executes, leaking the queue entry / busy state
             return rejectedControllerPromise(refusal);
-        ArrayList<Serializable> encoded = GSimpleStateTableView.encodeUnknownJSValues(params);
+        ArrayList<Serializable> encoded = JSValueConverter.encodeUnknownJSValues(params);
         return createControllerPromise(dispatchExec(action, encoded, new ControllerServerResponseCallback()));
     }
     public JavaScriptObject controllerEval(String script, boolean evalAction, JavaScriptObject params) {
         String refusal = getRefusal(evalAction ? "evalAction()" : "eval()");
         if (refusal != null)
             return rejectedControllerPromise(refusal);
-        ArrayList<Serializable> encoded = GSimpleStateTableView.encodeUnknownJSValues(params);
+        ArrayList<Serializable> encoded = JSValueConverter.encodeUnknownJSValues(params);
         return createControllerPromise(dispatchEval(script, evalAction, encoded, new ControllerServerResponseCallback()));
     }
     public JavaScriptObject controllerChange(String property, JavaScriptObject keyParams, JavaScriptObject value) {
         String refusal = getRefusal("change()");
         if (refusal != null)
             return rejectedControllerPromise(refusal);
-        ArrayList<Serializable> encodedKeys = GSimpleStateTableView.encodeUnknownJSValues(keyParams);
-        Serializable encodedValue = GSimpleStateTableView.encodeUnknownJSValue(value);
+        ArrayList<Serializable> encodedKeys = JSValueConverter.encodeUnknownJSValues(keyParams);
+        Serializable encodedValue = JSValueConverter.encodeUnknownJSValue(value);
         return createControllerPromise(dispatchChange(property, encodedKeys, encodedValue, new ControllerServerResponseCallback()));
     }
     // why the context refuses a call now, or null: a closed one refuses every call

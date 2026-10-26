@@ -32,7 +32,7 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
-import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.property.JSValueConverter;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.view.FormContainer;
@@ -893,7 +893,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             return GwtActionDispatcher.this.getController();
         }
         private void onJSFunctionExecuted(GClientWebAction action, JavaScriptObject result) {
-            onActionExecuted(action, PValue.convertFileValueBack(GSimpleStateTableView.convertFromJSValue(action.returnType, result)), null);
+            onActionExecuted(action, PValue.convertFileValueBack(JSValueConverter.convertFromJSValue(action.returnType, result)), null);
         }
         private void onJSFunctionException(GClientWebAction action, String message) {
             onActionExecuted(action, null, new RuntimeException(message));
@@ -910,7 +910,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
                 ArrayList<Object> types = action.types;
                 for (int i = 0; i < types.size(); i++) {
-                    arguments.push(GSimpleStateTableView.convertToJSValue((GType) types.get(i), null, true, PValue.convertFileValue(action.values.get(i))));
+                    arguments.push(JSValueConverter.convertToJSValue((GType) types.get(i), null, true, PValue.convertFileValue(action.values.get(i))));
                 }
                 arguments.push(getController());
 

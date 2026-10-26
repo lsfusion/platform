@@ -4,7 +4,6 @@ import com.google.gwt.core.client.JavaScriptObject;
 import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 // how a presentation reader's value is converted for data.meta / data.components — declared by the reader
@@ -19,8 +18,8 @@ public enum GMetaConverter {
     BOOLEAN { public Object convert(PValue v, GPropertyDraw d) { return PValue.get3SBooleanValue(v); } }, // 3-state, like GGridTable.setReadOnly; may be null
     FLAG    { public Object convert(PValue v, GPropertyDraw d) { return PValue.getBooleanValue(v); } }, // 2-state present->true (like row select): NOT get3SBooleanValue (a client-optimistic false is still present -> true)
     FONT    { public Object convert(PValue v, GPropertyDraw d) { GFont f = PValue.getFontValue(v); return f != null ? buildFont(f.family, f.size, f.bold, f.italic) : null; } }, // plain { family, size, bold, italic }
-    FOOTER  { public Object convert(PValue v, GPropertyDraw d) { return GSimpleStateTableView.convertToJSValue(d, v, RendererType.SIMPLE, true); } }, // value-typed, like the cell value
-    JSON    { public Object convert(PValue v, GPropertyDraw d) { return GSimpleStateTableView.convertToJSValue(GJSONType.instance, null, false, v); } }; // JSON, like the GWT views
+    FOOTER  { public Object convert(PValue v, GPropertyDraw d) { return JSValueConverter.convertToJSValue(d, v, RendererType.SIMPLE, true); } }, // value-typed, like the cell value
+    JSON    { public Object convert(PValue v, GPropertyDraw d) { return JSValueConverter.convertToJSValue(GJSONType.instance, null, false, v); } }; // JSON, like the GWT views
 
     public abstract Object convert(PValue value, GPropertyDraw draw);
 

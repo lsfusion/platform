@@ -71,7 +71,7 @@ import lsfusion.gwt.client.form.property.GGroupAttributeScope;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 import lsfusion.gwt.client.form.view.Column;
-import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.property.JSValueConverter;
 
 // The projection of a form's React views - each of a component whose custom is a React component: a react container,
 // or a grid, a tree, a toolbar, filter controls, a filter group of its own. Each view owns its state (ViewState): its
@@ -1220,7 +1220,7 @@ public class GReactFormData {
                 // the FILTER type, the one the platform's own filter editor uses for this cell
                 // - and the one a condition is read back with (readFilterCondition)
                 // - and no property: one named `image` draws its own value as an image, while a condition's is plain
-                setField(entry, "value", GSimpleStateTableView.convertToJSValue(property.getFilterBaseType(), null, true, condition.value.value));
+                setField(entry, "value", JSValueConverter.convertToJSValue(property.getFilterBaseType(), null, true, condition.value.value));
                 setField(entry, "negation", condition.negation);
                 // GPropertyFilter.junction is the conjunction flag; .lsf says `or`
                 setField(entry, "or", !condition.junction);
@@ -1718,12 +1718,12 @@ public class GReactFormData {
             boolean active = slot.isActive();
             JavaScriptObject entry = newObject();
             setFieldOrNull(entry, "caption", property.caption);
-            setField(entry, "type", GSimpleStateTableView.getJSTypeName(property.getFilterBaseType()));
+            setField(entry, "type", JSValueConverter.getJSTypeName(property.getFilterBaseType()));
             setField(entry, "active", active);
             setField(entry, "compare", condition.compare.toString());
             setField(entry, "negation", condition.negation);
             setField(entry, "or", !condition.junction); // GPropertyFilter.junction is the conjunction flag
-            setField(entry, "value", active ? GSimpleStateTableView.convertToJSValue(property.getFilterBaseType(), null, true, condition.value.value) : null);
+            setField(entry, "value", active ? JSValueConverter.convertToJSValue(property.getFilterBaseType(), null, true, condition.value.value) : null);
             setField(node.editFilter(), property.integrationSID, entry);
         }
         // its member, under the group's `filter`
@@ -2600,7 +2600,7 @@ public class GReactFormData {
             if (property.select != null)
                 ReactSelect.emit(target, property, value);
             else
-                setField(target, "value", GSimpleStateTableView.convertToJSValue(property, value, RendererType.SIMPLE, true));
+                setField(target, "value", JSValueConverter.convertToJSValue(property, value, RendererType.SIMPLE, true));
         }
         // ... the cell a call names changed to the value it gives - of a selection, by the options it picks
         // (ReactSelect.change); with none given (UNDEFINED, exec()), its change event run as it is -, the cell showing
@@ -2613,7 +2613,7 @@ public class GReactFormData {
             if (property.select != null && !isUndefined(value))
                 shown = ReactSelect.change(errorPrefix, property, getCellValue(errorPrefix, key), value, changes);
             else {
-                PValue change = GSimpleStateTableView.convertFromJSUndefValue(property, value);
+                PValue change = JSValueConverter.convertFromJSUndefValue(property, value);
                 changes.add(change);
                 shown = property.getExternalChangeRenderValue(change, RendererType.SIMPLE);
             }
@@ -3339,7 +3339,7 @@ public class GReactFormData {
     private void emitPropertyFacts(JavaScriptObject entry, GPropertyDraw property) {
         // the kind of its value - of a selection a text: the views of its options, which the platform's element shows as
         // text too (ReactSelect)
-        setField(entry, "type", property.select != null ? "string" : GSimpleStateTableView.getJSTypeName(property.getRenderType(RendererType.SIMPLE)));
+        setField(entry, "type", property.select != null ? "string" : JSValueConverter.getJSTypeName(property.getRenderType(RendererType.SIMPLE)));
         // whether a change of it - for an action, running it - asks the user first (CONFIRM, the design's askConfirm),
         // and with what: the platform's own editor and button ask, a view's call does not, so a view asks itself
         setField(entry, "askConfirm", property.askConfirm);
@@ -3366,7 +3366,7 @@ public class GReactFormData {
                     JavaScriptObject entry = newObject();
                     setField(entry, "property", node.getPropertyName(property));
                     setFieldOrNull(entry, "caption", property.caption);
-                    setField(entry, "type", GSimpleStateTableView.getJSTypeName(property.getFilterBaseType()));
+                    setField(entry, "type", JSValueConverter.getJSTypeName(property.getFilterBaseType()));
                     JavaScriptObject compares = emptyArray();
                     for (GCompare compare : property.getFilterCompares()) // the editor's list as it is: the default is
                         push(compares, compare.toString());               // not added to it
@@ -3483,7 +3483,7 @@ public class GReactFormData {
         if (!isNoValue(value)) {
             GPropertyDraw property = base.column.property;
             checkFilterValue(errorPrefix, property);
-            stated = GSimpleStateTableView.convertFromJSValue(property.getFilterBaseType(), value);
+            stated = JSValueConverter.convertFromJSValue(property.getFilterBaseType(), value);
         }
         return base.restated(stated, negation, compare, !or);
     }

@@ -6,7 +6,7 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
-import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.property.JSValueConverter;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
@@ -106,7 +106,7 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
     }
 
     private static void commitJSValue(CustomCellEditor cellEditor, JavaScriptObject value) {
-        cellEditor.commitValue(GSimpleStateTableView.convertFromJSValue(cellEditor.getType(), value));
+        cellEditor.commitValue(JSValueConverter.convertFromJSValue(cellEditor.getType(), value));
     }
 
     private static void setDeferredCommit(CustomCellEditor cellEditor, boolean deferredCommitOnBlur) {

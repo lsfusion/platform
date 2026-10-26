@@ -5,7 +5,7 @@ import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
-import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.property.JSValueConverter;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -22,7 +22,7 @@ public interface CustomCellEditor extends RequestValueCellEditor { // ,RequestVa
     EditManager getEditManager(); // to reach the form controller (exposed as the editor controller's `form` field)
 
     default void render(Element cellParent, RenderContext renderContext, PValue oldValue, Integer renderedWidth, Integer renderedHeight) {
-        CustomReplaceCellEditor.render(getRenderFunction(), getCustomEditor(), getCustomElement(cellParent), CustomReplaceCellEditor.getController(this, cellParent, getEditManager().getFormController()), GSimpleStateTableView.convertToJSValue(getType(), null, true, oldValue));
+        CustomReplaceCellEditor.render(getRenderFunction(), getCustomEditor(), getCustomElement(cellParent), CustomReplaceCellEditor.getController(this, cellParent, getEditManager().getFormController()), JSValueConverter.convertToJSValue(getType(), null, true, oldValue));
     }
 
     default void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {
@@ -35,7 +35,7 @@ public interface CustomCellEditor extends RequestValueCellEditor { // ,RequestVa
         if(GwtClientUtils.isString(value, "canceled"))
             throw new InvalidEditException();
 
-        return GSimpleStateTableView.convertFromJSValue(getType(), value);
+        return JSValueConverter.convertFromJSValue(getType(), value);
     }
 
     default void onBrowserEvent(Element parent, EventHandler handler) {
