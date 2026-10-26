@@ -1,0 +1,205 @@
+MODULE TreeFilter;
+
+REQUIRE TestUtils;
+
+// a filter on a recursive tree shows the rows it matches together with the path to them from the top, the rows of the
+// path it does not match open, rather than only the rows that match and whose parents match too (#1127). Before the fix
+// a match below a row the filter does not match was not shown at all, as it hung under a row that was not shown
+
+CLASS TfCategory 'Category';
+tfName 'Name' = DATA STRING[50] (TfCategory);
+tfParent = DATA TfCategory (TfCategory);
+
+FORM tfTree 'Categories'
+    TREE t k = TfCategory PARENT tfParent(k)
+    PROPERTIES(k) READONLY tfName
+    FILTERGROUP tfNameGroup
+        FILTER 'Apples' tfName(k) == 'Apples'
+;
+
+// a subcategory is sent under its parent open, shown or not, as a level's rows are (three levels here)
+tfShownRoot (TfCategory k) = shownInForm(k) AND NOT tfParent(k);
+tfShownSub (TfCategory k) = shownInForm(k) AND (tfShownRoot(k) OR tfShownRoot(tfParent(k)));
+tfShown (TfCategory k) = shownInForm(k) AND (tfShownSub(k) OR tfShownSub(tfParent(k)));
+
+// a root with a subcategory, which has the match below it, and another root with no match under it
+tfRoot1 = DATA LOCAL TfCategory ();
+tfSub1 = DATA LOCAL TfCategory ();
+tfMatch = DATA LOCAL TfCategory ();
+tfRoot2 = DATA LOCAL TfCategory ();
+tfCategories () {
+    NEW k = TfCategory { tfName(k) <- 'Fruit'; tfRoot1() <- k; }
+    NEW k = TfCategory { tfName(k) <- 'Trees'; tfParent(k) <- tfRoot1(); tfSub1() <- k; }
+    NEW k = TfCategory { tfName(k) <- 'Apples'; tfParent(k) <- tfSub1(); tfMatch() <- k; }
+    NEW k = TfCategory { tfName(k) <- 'Vegetables'; tfRoot2() <- k; }
+}
+
+testFilterShowsTheMatchWithItsPath 'A filter shows a match deep in the tree with the rows above it, open, and hides the rows with no match' () {
+    tfCategories();
+    SHOW tfTree NOWAIT {
+        FILTERGROUP tfTree.tfNameGroup FROM 1;
+        readShown();
+        assertTrue(tfShown(tfMatch()), 'the filter does not show the row it matches below rows it does not match');
+        assertTrue(tfShown(tfSub1()), 'the filter does not show the path to its match');
+        assertTrue(expandableInForm(tfRoot1()), 'the row of the path to a match is not one the client can open');
+        assertFalse(tfShown(tfRoot2()), 'the filter shows a root with no match under it');
+    };
+}
+
+testCollapseOfAFilteredRowSticks 'A row of the path to a match closed after the filter is applied stays closed, also when the data the filter reads change' () {
+    tfCategories();
+    SHOW tfTree NOWAIT {
+        FILTERGROUP tfTree.tfNameGroup FROM 1;
+        readShown();
+        assertTrue(tfShown(tfMatch()), 'the filter does not show the row it matches below rows it does not match');
+        COLLAPSE DOWN tfTree.k OBJECTS k = tfSub1();
+        readShown();
+        assertTrue(tfShown(tfSub1()), 'the row closed is not shown');
+        assertFalse(tfShown(tfMatch()), 'the row closed after the filter was applied opened again');
+
+        tfName(tfRoot2()) <- 'Grain';
+        readShown();
+        assertTrue(tfShown(tfSub1()), 'the row closed is not shown once the data change');
+        assertFalse(tfShown(tfMatch()), 'the row closed after the filter was applied opened again on a change of the data');
+    };
+}
+
+testExpandUnderTheFilterFollowsThePath 'EXPAND ALL and EXPAND UP under a filter open the path to its match' () {
+    tfCategories();
+    SHOW tfTree NOWAIT {
+        FILTERGROUP tfTree.tfNameGroup FROM 1;
+        COLLAPSE ALL tfTree.k OBJECTS k = tfRoot1();
+        EXPAND ALL tfTree.k OBJECTS k = tfRoot1();
+        readShown();
+        assertTrue(tfShown(tfMatch()), 'EXPAND ALL did not open the rows of the path the filter does not match');
+
+        COLLAPSE ALL tfTree.k OBJECTS k = tfRoot1();
+        EXPAND UP tfTree.k OBJECTS k = tfMatch();
+        readShown();
+        assertTrue(tfShown(tfMatch()), 'EXPAND UP did not open the rows of the path the filter does not match');
+    };
+}
+
+testNoFilterKeepsTheTreeClosed 'Without a filter the tree shows its roots closed, as it always did' () {
+    tfCategories();
+    SHOW tfTree NOWAIT {
+        readShown();
+        assertTrue(tfShown(tfRoot1()), 'the tree does not show its root');
+        assertTrue(tfShown(tfRoot2()), 'the tree does not show its other root');
+        assertFalse(tfShown(tfMatch()), 'the tree opened its rows with no filter applied');
+    };
+}
+
+testFilterRemovedShowsEveryRoot 'Once the filter is removed, the rows with no match are shown again' () {
+    tfCategories();
+    SHOW tfTree NOWAIT {
+        FILTERGROUP tfTree.tfNameGroup FROM 1;
+        readShown();
+        FILTERGROUP tfTree.tfNameGroup FROM 0;
+        readShown();
+        assertTrue(tfShown(tfRoot2()), 'the root with no match is not shown once the filter is removed');
+    };
+}
+
+// a filter the form opens with that the rows of the top match too, as one that leaves only the active rows: the rows it
+// matches stay closed, so the tree opens as it did
+FORM tfNamedTree 'Categories'
+    TREE t k = TfCategory PARENT tfParent(k)
+    PROPERTIES(k) READONLY tfName
+    FILTERGROUP tfNamedGroup
+        FILTER 'Named' tfName(k) DEFAULT
+;
+
+testDefaultFilterKeepsTheTreeClosed 'A filter the form opens with leaves the rows it matches closed' () {
+    tfCategories();
+    SHOW tfNamedTree NOWAIT {
+        readShown();
+        assertTrue(tfShown(tfRoot1()), 'the tree does not show its root');
+        assertFalse(tfShown(tfSub1()), 'the filter the form opens with opened a row it matches');
+    };
+}
+
+// the categories of a region, under the regions of the level above: the filter shows the matches under every open
+// region, not only under the current one, and the rows of the path are the ones of the region (FILTERS)
+CLASS TfRegion 'Region';
+tfRegion = DATA TfRegion (TfCategory);
+
+FORM tfRegionTree 'Regions'
+    TREE t r = TfRegion, k = TfCategory PARENT tfParent(k)
+    PROPERTIES(k) READONLY tfName
+    FILTERS tfRegion(k) == r
+    FILTERGROUP tfRegionNameGroup
+        FILTER 'Apples' tfName(k) == 'Apples'
+;
+
+// three regions, the path to a match in each, and in the first region a match whose parent is in the second region
+tfRegionMatch = DATA LOCAL TfCategory (INTEGER);
+tfStrayParent = DATA LOCAL TfCategory ();
+tfRegionPath (INTEGER i) {
+    NEW r = TfRegion {
+        NEW root = TfCategory {
+            tfName(root) <- 'Fruit'; tfRegion(root) <- r;
+            NEW sub = TfCategory {
+                tfName(sub) <- 'Trees'; tfParent(sub) <- root; tfRegion(sub) <- r;
+                NEW k = TfCategory { tfName(k) <- 'Apples'; tfParent(k) <- sub; tfRegion(k) <- r; tfRegionMatch(i) <- k; }
+            }
+        }
+    }
+}
+tfRegionCategories () {
+    tfRegionPath(1);
+    tfRegionPath(2);
+    tfRegionPath(3);
+    NEW k = TfCategory { tfName(k) <- 'Orchard'; tfRegion(k) <- tfRegion(tfRegionMatch(2)); tfStrayParent() <- k; }
+    NEW k = TfCategory { tfName(k) <- 'Apples'; tfParent(k) <- tfStrayParent(); tfRegion(k) <- tfRegion(tfRegionMatch(1)); }
+}
+
+testFilterShowsTheMatchesOfEveryOpenRegion 'A filter on the categories under regions shows the matches with their path under every open region' () {
+    tfRegionCategories();
+    SHOW tfRegionTree NOWAIT {
+        readShown(); // a current row (see TreeExpandCollapse)
+        EXPAND DOWN tfRegionTree.r OBJECTS r = tfRegion(tfRegionMatch(1));
+        EXPAND DOWN tfRegionTree.r OBJECTS r = tfRegion(tfRegionMatch(2));
+        FILTERGROUP tfRegionTree.tfRegionNameGroup FROM 1;
+        readShown();
+        assertTrue(tfShown(tfRegionMatch(1)), 'the filter does not show the match under the first region');
+        assertTrue(tfShown(tfRegionMatch(2)), 'the filter does not show the match under the second region');
+        assertFalse(tfShown(tfRegionMatch(3)), 'the filter shows the match under a region that is closed');
+        assertFalse(shownInForm(tfStrayParent()), 'the filter shows a row of another region above a match');
+    };
+}
+
+testRegionWithADeepMatchCanBeOpened 'A region with only a match deep in it is one the client can open' () {
+    tfRegionCategories();
+    SHOW tfRegionTree NOWAIT {
+        FILTERGROUP tfRegionTree.tfRegionNameGroup FROM 1;
+        readShown();
+        assertTrue(expandableInForm(tfRegion(tfRegionMatch(3))), 'the region with only a match deep in it is not one the client can open');
+    };
+}
+
+// a level below the categories: the form reads its rows under the rows of the path the filter opens
+CLASS TfItem 'Item';
+tfCategory = DATA TfCategory (TfItem);
+
+FORM tfItemTree 'Items'
+    TREE t k = TfCategory PARENT tfParent(k), i = TfItem
+    PROPERTIES(k) READONLY tfName
+    FILTERS tfCategory(i) == k
+    FILTERGROUP tfItemNameGroup
+        FILTER 'Apples' tfName(k) == 'Apples'
+;
+
+testFilterShowsTheItemsOfThePath 'The rows of the level below the categories are read under the rows of the path the filter opens' () {
+    tfCategories();
+    NEW i = TfItem {
+        tfCategory(i) <- tfSub1();
+        SHOW tfItemTree NOWAIT {
+            readShown(); // the rows before the filter, so that the level below has nothing to read but for the filter
+            FILTERGROUP tfItemTree.tfItemNameGroup FROM 1;
+            readShown();
+            assertTrue(tfShown(tfSub1()), 'the filter does not show the path to its match');
+            assertTrue(shownInForm(i), 'the item of a row of the path the filter opened is not read');
+        };
+    }
+}

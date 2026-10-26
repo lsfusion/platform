@@ -260,6 +260,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 merge(dynamicFilters.filterViewFilters(SetFact.fromJavaSet(viewFilters)));
     }
 
+    private boolean hasDynamicFilters() {
+        return !regularFilters.isEmpty() || !userFilters.isEmpty() || !viewFilters.isEmpty();
+    }
+
     public interface DynamicFilters {
 
         ImList<FilterInstance> filterUserFilters(ImList<FilterInstance> userFilters);
@@ -315,8 +319,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return result;
     }
 
+    private boolean dynamicFiltersSet;
+
     private void dynamicFiltersUpdated() {
         filters = null;
+        dynamicFiltersSet = true;
         updated |= UPDATED_FILTER;
     }
 
@@ -806,12 +813,38 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         ImMap<ObjectInstance, DataObject> upObjects = objects.removeIncl(mapKeys.keys());
         ImMap<ObjectInstance, Expr> upExprs = ObjectValue.getMapExprs(upObjects);
-        Where stepWhere = getWhere(upExprs.addExcl(mapKeys), modifier, reallyChanged).and(
+        Where stepWhere = getTreeWhere(upExprs.addExcl(mapKeys), modifier, reallyChanged).and(
                           down ? getRecursiveStepWhere(mapPrevKeys, upExprs.addExcl(mapKeys), modifier, reallyChanged)
                                : getRecursiveStepWhere(mapKeys, upExprs.addExcl(mapPrevKeys), modifier, reallyChanged));
         Where recursiveWhere = RecursiveExpr.create(mapKeysPrevKeys, ValueExpr.get(initialWhere), ValueExpr.get(stepWhere), mapKeys.crossJoin(mapExprs)).getWhere();
 
         return recursiveWhere.and(CompareWhere.compareInclValues(mapExprs, upObjects));
+    }
+
+    private Where getTreeWhere(ImMap<ObjectInstance, ? extends Expr> mapExprs, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        if (parent == null || !hasDynamicFilters())
+            return getWhere(mapExprs, modifier, reallyChanged);
+
+        final ImRevMap<ObjectInstance, KeyExpr> mapAllKeys = KeyExpr.getMapKeys(mapExprs.keys());
+        final ImRevMap<ObjectInstance, KeyExpr> mapKeys = mapAllKeys.filterInclRev(objects);
+        ImRevMap<KeyExpr, KeyExpr> mapKeysPrevKeys = KeyExpr.getMapKeys(mapKeys.valuesSet());
+
+        ImMap<ObjectInstance, Expr> parentExprs = parent.mapValuesEx((ThrowingFunction<PropertyObjectInstance, Expr, SQLException, SQLHandledException>) value -> value.getExpr(mapAllKeys, modifier, reallyChanged));
+        Where initialWhere = getWhere(mapAllKeys, modifier, reallyChanged).and(
+                             getWhere(MapFact.override(mapAllKeys, parentExprs), modifier, reallyChanged).not());
+        Where stepWhere = getFixedWhere(mapAllKeys, modifier, reallyChanged).and(
+                          getRecursiveStepWhere(mapKeys, MapFact.override(mapAllKeys, mapKeys.join(mapKeysPrevKeys)), modifier, reallyChanged));
+        return getWhere(mapExprs, modifier, reallyChanged).or(
+               RecursiveExpr.create(mapKeysPrevKeys, ValueExpr.get(initialWhere), ValueExpr.get(stepWhere), mapAllKeys.crossJoin(mapExprs)).getWhere());
+    }
+
+    private Where getFixedWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        return getWhere(mapKeys, modifier, reallyChanged, new FilterProcessor(this) {
+            @Override
+            public ImSet<FilterInstance> getFilters() {
+                return getFixedFilters(true, false);
+            }
+        });
     }
 
     private Query<ObjectInstance, String> getRecursiveExpandQuery(boolean down, ImMap<ObjectInstance, DataObject> objects, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
@@ -826,10 +859,19 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     private Query<ObjectInstance, String> getAllExpandQuery(NoPropertyTableUsage<ObjectInstance> upRows, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         final ImRevMap<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
 
-        Where expandWhere = getWhere(mapKeys, modifier, reallyChanged).and(
+        Where expandWhere = getTreeWhere(mapKeys, modifier, reallyChanged).and(
                             upRows != null ? upRows.join(mapKeys).getWhere() : Where.TRUE());
 
         return new Query<>(mapKeys, MapFact.EMPTY(), expandWhere);
+    }
+
+    private void expandFilterTree(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        if (expandTable == null)
+            expandTable = createKeyTable("expgo");
+        final ImRevMap<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
+        Where pathWhere = getTreeWhere(mapKeys, modifier, reallyChanged).and(getWhere(mapKeys, modifier, reallyChanged).not());
+        expandTable.modifyRows(session, new Query<>(mapKeys, MapFact.EMPTY(), pathWhere), baseClass, Modify.LEFT, env, SessionTable.nonead);
+        updated |= UPDATED_EXPANDS;
     }
 
     public void collapse(DataSession session, ImMap<ObjectInstance, DataObject> value) throws SQLException, SQLHandledException {
@@ -874,7 +916,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         final ImRevMap<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
 
-        Where filterWhere = getWhere(mapKeys, modifier, reallyChanged);
+        Where filterWhere = getTreeWhere(mapKeys, modifier, reallyChanged);
 
         MExclMap<Object, Expr> mPropertyExprs = MapFact.mExclMap();
 
@@ -924,7 +966,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     private Expr getSubElementsExpr(final ImRevMap<ObjectInstance, KeyExpr> outerMapKeys, final Modifier modifier, final ReallyChanged reallyChanged, boolean countTreeSubElements) throws SQLException, SQLHandledException {
         final ImRevMap<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
 
-        Where filterWhere = getWhere(mapKeys, modifier, reallyChanged);
+        Where filterWhere = getTreeWhere(mapKeys, modifier, reallyChanged);
 
         Where subGroupWhere = Where.TRUE();
 
@@ -1367,8 +1409,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             }
         }
 
-        if (updateKeys)
+        if (updateKeys) {
+            if (parent != null && dynamicFiltersSet) {
+                dynamicFiltersSet = false;
+                if (hasDynamicFilters())
+                    expandFilterTree(sql, env, modifier, baseClass, reallyChanged);
+            }
             return readKeys(result, updateFilters, updatePageSize, currentObject, seeks, direction, sql, env, modifier, execEnv, baseClass, reallyChanged);
+        }
 
         return null; // ничего не изменилось
     }

@@ -35,9 +35,13 @@ assertEquals (a, b, STRING message) {
 // rows the form sends its client, read the way the form reads them before it answers it - which a form with no client
 // never does. A level of a tree gets its rows under every open row of the level above, whether that one is shown or not
 shownInForm = DATA LOCAL BOOLEAN (Object);
+// whether the client can open a row of a tree, as the form told it at the last readShown() - which tells it only of the
+// rows it reads again then
+expandableInForm = DATA LOCAL BOOLEAN (Object);
 readShownRows INTERNAL 'lsfusion.tests.ReadShownAction' ();
 readShown () {
     shownInForm(Object o) <- NULL;
+    expandableInForm(Object o) <- NULL;
     readShownRows();
 }
 
