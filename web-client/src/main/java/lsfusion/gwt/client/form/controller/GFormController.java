@@ -178,9 +178,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     private final NativeSIDMap<GGroupObject, GGridToolbarController> gridToolbarControllers = new NativeSIDMap<>();
     // ... and the TABLES' rows, each by the table, of whichever kind - a table of the platform's, a grid's or a tree's,
     // or the rows React draws (initializeTable) -: told of each delta (update), asked the user preferences of their
-    // views (getUserPreferences) and the platform's controller of a list property (getPlatformPropertyController), let
-    // go of when the form closes (destroyForm)
+    // views (getUserPreferences), and let go of when the form closes (destroyForm)
     private final NativeSIDMap<GGridProperty, GTableController> tableControllers = new NativeSIDMap<>();
+    // ... the platform's among them, kept as they are made (platformTable): the platform's controller of a list
+    // property, which draws its column (getPlatformPropertyController) - none where React draws the rows
+    private final NativeSIDMap<GGridProperty, GPlatformPropertyController> platformTableControllers = new NativeSIDMap<>();
 
     // THE PLATFORM'S OWN, which React's parts need nothing like: its panels, which the form redraws once per delta
     // (update) and lets go of when it closes (destroyForm) - the per-row panels of each group whose rows React draws
@@ -928,14 +930,19 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         manualUpdates.put(group, group.enableManualUpdate);
         GGridToolbarController toolbar = reactData.createGridToolbarController(grid, () -> new GPlatformGridToolbarController(this, grid));
         gridToolbarControllers.put(group, toolbar);
-        GGridController rows = reactData.createGridController(grid, toolbar, () -> new GPlatformGridController(this, group, form.userPreferences != null ? extractUserPreferences(form.userPreferences, group) : null, toolbar));
+        GGridController rows = reactData.createGridController(grid, toolbar, () -> platformTable(grid, new GPlatformGridController(this, group, form.userPreferences != null ? extractUserPreferences(form.userPreferences, group) : null, toolbar)));
         return new Pair<>(rows, toolbar);
     }
     // ... a TREE, one for all its groups, the same way
     private Pair<GTableController, GToolbarController<?>> initializeTree(GTreeGroup tree) {
         GToolbarController<GTreeController> toolbar = reactData.createTreeToolbarController(tree, () -> new GPlatformTreeToolbarController(this, tree));
-        GTreeController rows = reactData.createTreeController(tree, toolbar, () -> new GPlatformTreeController(tree, this, form, toolbar));
+        GTreeController rows = reactData.createTreeController(tree, toolbar, () -> platformTable(tree, new GPlatformTreeController(tree, this, form, toolbar)));
         return new Pair<>(rows, toolbar);
+    }
+    // ... the platform's table of either, as the projection answers that the platform draws the rows
+    private <R extends GPlatformPropertyController> R platformTable(GGridProperty table, R rows) {
+        platformTableControllers.put(table, rows);
+        return rows;
     }
 
     // ... and a group's OWN controllers, once what draws its rows is made: the form's controller of it, what draws its
@@ -1480,7 +1487,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }
 
         if(property.isList) // its table's, where the platform draws the rows - none where React does
-            return tableControllers.get(property.groupObject.getDrawComponent()).getPlatformPropertyController();
+            return platformTableControllers.get(property.groupObject.getDrawComponent());
         else
             return platformFormPanelController;
     }

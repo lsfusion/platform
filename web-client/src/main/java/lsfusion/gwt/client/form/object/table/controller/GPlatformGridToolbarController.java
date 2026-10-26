@@ -16,7 +16,7 @@ import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 // rows and its manual update, which need no table, and those of whoever draws them, which give them as they are made
 // (addRows) - a table's, in their order, its view switch among them, or what the rows React draws have, which needs no
 // table -, the filter button after the view switch; and the state of the group's update, which the form tells it of
-public final class GPlatformGridToolbarController extends GPlatformToolbarController<GGridController, GGrid> implements GGridToolbarController {
+public final class GPlatformGridToolbarController extends GPlatformToolbarController<GGridController, GGrid> implements GGridToolbarController, GGridController.Toolbar {
 
     public GPlatformGridToolbarController(GFormController form, GGrid grid) {
         super(form, grid);

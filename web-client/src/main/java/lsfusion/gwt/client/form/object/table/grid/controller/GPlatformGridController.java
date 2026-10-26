@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.table.grid.controller;
 
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
@@ -17,7 +18,6 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
 import lsfusion.gwt.client.form.object.table.controller.GGridToolbarController;
 import lsfusion.gwt.client.form.object.table.controller.GListViewController;
-import lsfusion.gwt.client.form.object.table.controller.GPlatformGridToolbarController;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
@@ -41,7 +41,7 @@ public final class GPlatformGridController extends GPlatformTableController<GGri
 
     // the export, which a pivot disables while it fills its table - on the platform's toolbar only, where the design
     // shows it (addToolbarButtons)
-    public GToolbarButton exportToExcelButton;
+    public FocusWidget exportToExcelButton;
 
     public GPivotOptions getPivotOptions() {
         return groupObject.pivotOptions;
@@ -165,7 +165,7 @@ public final class GPlatformGridController extends GPlatformTableController<GGri
 
     // the table's buttons on the platform's toolbar, in their order (GGridController), its view switch first - the
     // filter controller's button goes after it (GPlatformGridToolbarController.getFilterToggleIndex)
-    public void addToolbarButtons(GPlatformGridToolbarController platformToolbar) {
+    public void addToolbarButtons(GGridController.Toolbar platformToolbar) {
         if (table.toolbar.showViews)
             platformToolbar.addViewSwitch(this);
 

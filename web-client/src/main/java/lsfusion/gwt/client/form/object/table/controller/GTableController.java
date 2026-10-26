@@ -46,14 +46,10 @@ public interface GTableController {
     // ===== what the form asks of every table's rows alike, whoever draws them (GFormController.tableControllers): the
     // delta applied, its index and its changes given - a table of the platform's draws it; the rows React draws only
     // tell the filter input controller given to them, the projection publishing what React draws -; the form closing -
-    // what either keeps for the life of the page let go of: a table's views, the filter input controller -; the user
-    // preferences of the table's views, a platform grid's only; and the platform's controller of the table's list
-    // properties, where it draws their columns itself - none where React draws the rows
+    // what either keeps for the life of the page let go of: a table's views, the filter input controller -; and the
+    // user preferences of the table's views, a platform grid's only
     void update(long requestIndex, GFormChanges fc);
     void destroy();
     default void addUserPreferences(List<GGroupObjectUserPreferences> user, List<GGroupObjectUserPreferences> general) {
-    }
-    default GPlatformPropertyController getPlatformPropertyController() {
-        return null;
     }
 }

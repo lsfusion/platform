@@ -4,12 +4,13 @@ import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
+import lsfusion.gwt.client.form.design.view.GReactFormData;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.*;
 
 import java.util.ArrayList;
 
-public abstract class GPlatformPropertyController implements GPropertyController {
+public abstract class GPlatformPropertyController implements GReactFormData.PlatformProperty {
 
     protected final GFormController formController;
 

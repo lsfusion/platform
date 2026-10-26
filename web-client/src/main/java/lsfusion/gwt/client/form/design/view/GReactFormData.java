@@ -34,7 +34,6 @@ import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterControlsController;
 import lsfusion.gwt.client.form.object.table.controller.GGridToolbarController;
 import lsfusion.gwt.client.form.object.table.controller.GListViewController;
-import lsfusion.gwt.client.form.object.table.controller.GPlatformGridToolbarController;
 import lsfusion.gwt.client.form.object.table.controller.GToolbarController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
@@ -54,7 +53,6 @@ import lsfusion.gwt.client.form.object.table.controller.GGroupController;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.controller.GUserOrdersController;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
-import lsfusion.gwt.client.form.object.table.controller.GPlatformPropertyController;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
@@ -234,7 +232,7 @@ public class GReactFormData {
     // keyed the same way, where the platform draws it and React places it - a panel property React places, the column
     // of the rows React draws -, which keeps what labels the property and hands the rest on, an action's labels too,
     // its button's face; else the platform's
-    public GPropertyController createPropertyController(GPropertyDraw property, GPlatformPropertyController platform) {
+    public GPropertyController createPropertyController(GPropertyDraw property, PlatformProperty platform) {
         if (reactKeepsNothing(property))
             return GPropertyController.NONE;
         GComponent scope = nameScope(property);
@@ -252,6 +250,13 @@ public class GReactFormData {
         if (!property.isPlatformDrawn())
             return new ReactPanelPropertyEntry(node, property);
         return property.isAction() ? new PlatformPanelActionEntry(node, property, platform) : new PlatformPanelPropertyEntry(node, property, platform);
+    }
+    // ... the platform's controller of a property where the platform draws it, as the projection asks it
+    // (GPlatformPropertyController): the form's controller of it - an entry over it hands it what the entry does not
+    // keep -, and the value it has for a cell, what React's rows answer of a platform-drawn column's cell
+    // (PlatformPropertyEntry)
+    public interface PlatformProperty extends GPropertyController {
+        PValue getValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey);
     }
     // whether a property a view names has an entry there: one it carries by a name - a platform-drawn ACTION too, whose
     // entry says whether the form shows it -, not the one React draws by none, the group's own COUNT. Any other has a
@@ -2300,7 +2305,7 @@ public class GReactFormData {
         GridTablePart(GroupNode node) {
             super(node);
         }
-        public void addToolbarButtons(GPlatformGridToolbarController toolbar) {
+        public void addToolbarButtons(GGridController.Toolbar toolbar) {
             toolbar.addButtonsWithoutTable();
         }
         public GListViewController getListViewController() {
@@ -2873,9 +2878,9 @@ public class GReactFormData {
     // platform draws, the platform changes. There from the start, and `hidden` whenever the platform does not show the
     // property - it shows it from its first whole delivery until its drop, both of which come through here
     private abstract class PlatformPropertyEntry extends PropertyEntry {
-        final GPlatformPropertyController platform; // the view it is drawn in
+        final PlatformProperty platform; // the view it is drawn in
 
-        PlatformPropertyEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
+        PlatformPropertyEntry(Node node, GPropertyDraw property, PlatformProperty platform) {
             super(node, property);
             this.platform = platform;
         }
@@ -2922,7 +2927,7 @@ public class GReactFormData {
     // draws is, and carried by name with them. A <Platform> places it by the same name (getName), and hides its host by
     // this entry (ViewState.entryOf): it says whether the form shows it - all that an action's says
     private abstract class PlatformPanelEntry extends PlatformPropertyEntry {
-        PlatformPanelEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
+        PlatformPanelEntry(Node node, GPropertyDraw property, PlatformProperty platform) {
             super(node, property, platform);
         }
         void emit(JavaScriptObject entry) {
@@ -2932,7 +2937,7 @@ public class GReactFormData {
     private final class PlatformPanelPropertyEntry extends PlatformPanelEntry {
         final GPropertyReader[] labelReaders; // its caption, image and comment
 
-        PlatformPanelPropertyEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
+        PlatformPanelPropertyEntry(Node node, GPropertyDraw property, PlatformProperty platform) {
             super(node, property, platform);
             labelReaders = present(property.captionReader, property.getImageReader(), property.commentReader);
             updateEntry(); // there from the start, hidden until the platform shows the property
@@ -2948,7 +2953,7 @@ public class GReactFormData {
     // ... an ACTION's: its caption and image are its button's face, which the platform draws, so what labels it is
     // handed on. The platform's button runs it
     private final class PlatformPanelActionEntry extends PlatformPanelEntry {
-        PlatformPanelActionEntry(Node node, GPropertyDraw property, GPlatformPropertyController platform) {
+        PlatformPanelActionEntry(Node node, GPropertyDraw property, PlatformProperty platform) {
             super(node, property, platform);
             updateEntry(); // there from the start, hidden until the platform shows the action
         }
@@ -2962,7 +2967,7 @@ public class GReactFormData {
     // platform-drawn column is filtered and sorted like any other, and the platform drawing its VALUE says nothing
     // about what the value is
     private abstract class PlatformColumnEntry extends PlatformPropertyEntry {
-        PlatformColumnEntry(RowsPart rowsPart, GPropertyDraw property, GPlatformPropertyController platform) {
+        PlatformColumnEntry(RowsPart rowsPart, GPropertyDraw property, PlatformProperty platform) {
             super(rowsPart.node, property, platform);
         }
         void emit(JavaScriptObject entry) {
@@ -2973,7 +2978,7 @@ public class GReactFormData {
     private final class PlatformColumnPropertyEntry extends PlatformColumnEntry {
         final GPropertyReader[] labelReaders; // its caption, image, footer and comment
 
-        PlatformColumnPropertyEntry(RowsPart rowsPart, GPropertyDraw property, GPlatformPropertyController platform) {
+        PlatformColumnPropertyEntry(RowsPart rowsPart, GPropertyDraw property, PlatformProperty platform) {
             super(rowsPart, property, platform);
             labelReaders = present(property.captionReader, property.getImageReader(), property.footerReader, property.commentReader);
             updateEntry(); // there from the start, hidden until the platform shows the property
@@ -2989,7 +2994,7 @@ public class GReactFormData {
     }
     // ... an ACTION's: what labels it is its buttons' face, handed on - an action's image is a button's, row by row
     private final class PlatformColumnActionEntry extends PlatformColumnEntry {
-        PlatformColumnActionEntry(RowsPart rowsPart, GPropertyDraw property, GPlatformPropertyController platform) {
+        PlatformColumnActionEntry(RowsPart rowsPart, GPropertyDraw property, PlatformProperty platform) {
             super(rowsPart, property, platform);
             updateEntry(); // there from the start, hidden until the platform shows the action
         }

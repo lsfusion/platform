@@ -196,9 +196,6 @@ public abstract class GPlatformTableController<P extends GGridProperty, V extend
         if (filter != null) // ... and the filter input controller given to it, let go of with it
             filter.destroy();
     }
-    public GPlatformPropertyController getPlatformPropertyController() {
-        return this;
-    }
 
     // ===== the platform's side of the form's controller of the table's properties (GPlatformPropertyController): each
     // into the view, a reader's values with its property

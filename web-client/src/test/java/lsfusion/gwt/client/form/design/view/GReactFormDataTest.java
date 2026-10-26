@@ -64,7 +64,6 @@ import lsfusion.gwt.client.form.object.panel.controller.GPlatformPanelGroupContr
 import lsfusion.gwt.client.form.object.table.controller.GGroupController;
 import lsfusion.gwt.client.form.object.table.controller.GGridToolbarController;
 import lsfusion.gwt.client.form.object.table.controller.GListViewController;
-import lsfusion.gwt.client.form.object.table.controller.GPlatformGridToolbarController;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.controller.GToolbarController;
 import lsfusion.gwt.client.form.object.table.controller.GUserOrdersController;
@@ -1022,7 +1021,7 @@ public class GReactFormDataTest extends GWTTestCase {
         // their buttons, which only the platform's toolbar asks for
         GListViewController views;
         int buttonsAsked;
-        public void addToolbarButtons(GPlatformGridToolbarController toolbar) { buttonsAsked++; }
+        public void addToolbarButtons(GGridController.Toolbar toolbar) { buttonsAsked++; }
         public GListViewController getListViewController() { return views; }
     }
     // the platform's tree, as far as its toolbar asks it here: what it was asked to open, in order - the fixture asks
