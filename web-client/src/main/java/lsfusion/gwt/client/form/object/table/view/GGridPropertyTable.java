@@ -106,17 +106,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
 
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellImages = new NativeSIDMap<>();
 
-    public static String getDynamicCaption(PValue captionObject) {
-        String caption = PValue.getCaptionStringValue(captionObject);
-        return caption != null ? caption.trim() : null;
-    }
-
-    public static String getPropertyCaption(NativeHashMap<GGroupObjectValue, PValue> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
-        if (propCaptions != null)
-            return getDynamicCaption(propCaptions.get(columnKey));
-
-        return property.caption;
-    }
     public static String getCaptionElementClass(NativeHashMap<GGroupObjectValue, PValue> propCaptionElementClasses, GPropertyDraw property, GGroupObjectValue columnKey) {
         if (propCaptionElementClasses != null)
             return PValue.getClassStringValue(propCaptionElementClasses.get(columnKey));
@@ -754,11 +743,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
     }
 
 
-    public static Pair<lsfusion.gwt.client.form.view.Column, String> getFilterColumn(GPropertyDraw property, GGroupObjectValue columnKey, String propertyCaption) {
-        return new Pair<>(new lsfusion.gwt.client.form.view.Column(property, columnKey), property.getNotEmptyCaption(propertyCaption));
-    }
     public Pair<lsfusion.gwt.client.form.view.Column, String> getFilterColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
-        return getFilterColumn(property, columnKey, getPropertyCaption(property, columnKey));
+        return property.getFilterColumn(columnKey, getPropertyCaption(property, columnKey));
     }
 
     protected String getPropertyCaption(GPropertyDraw property, GGroupObjectValue columnKey) {
@@ -766,7 +752,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
         if (userCaption != null)
             return userCaption;
 
-        return getPropertyCaption(propertyCaptions.get(property), property, columnKey);
+        return property.getCaption(propertyCaptions.get(property), columnKey);
     }
 
     protected String getCaptionElementClass(GPropertyDraw property, GGroupObjectValue columnKey) {

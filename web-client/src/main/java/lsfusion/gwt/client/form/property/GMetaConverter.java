@@ -11,7 +11,7 @@ import lsfusion.gwt.client.form.property.cell.view.RendererType;
 public enum GMetaConverter {
     CLASS   { public Object convert(PValue v, GPropertyDraw d) { return PValue.getClassStringValue(v); } },
     COLOR   { public Object convert(PValue v, GPropertyDraw d) { return PValue.getColorStringValue(v); } },
-    CAPTION { public Object convert(PValue v, GPropertyDraw d) { return trim(PValue.getCaptionStringValue(v)); } }, // like GGridPropertyTable.getDynamicCaption
+    CAPTION { public Object convert(PValue v, GPropertyDraw d) { return GPropertyDraw.getDynamicCaption(v); } },
     STRING  { public Object convert(PValue v, GPropertyDraw d) { return PValue.getStringValue(v); } },
     TEXT    { public Object convert(PValue v, GPropertyDraw d) { return trim(PValue.getStringValue(v)); } }, // trimmed string, like getDynamicComment / getDynamicTooltip
     IMAGE   { public Object convert(PValue v, GPropertyDraw d) { BaseImage i = PValue.getImageValue(v); return i != null ? i.createImageHTML() : null; } },

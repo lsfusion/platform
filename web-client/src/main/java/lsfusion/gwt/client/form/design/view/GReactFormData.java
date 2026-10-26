@@ -52,7 +52,6 @@ import lsfusion.gwt.client.form.object.table.controller.GComponentController;
 import lsfusion.gwt.client.form.object.table.controller.GGroupController;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.controller.GUserOrdersController;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
@@ -1880,7 +1879,7 @@ public class GReactFormData {
                 if (isFilterColumn(propertyEntry)) { // by the caption it is shown with, as a grid's column is
                     GPropertyDraw property = propertyEntry.property;
                     NativeHashMap<GGroupObjectValue, PValue> captions = property.captionReader != null ? propertyEntry.values.get(property.captionReader) : null;
-                    columns.add(GGridPropertyTable.getFilterColumn(property, GGroupObjectValue.EMPTY, GGridPropertyTable.getPropertyCaption(captions, property, GGroupObjectValue.EMPTY)));
+                    columns.add(property.getFilterColumn(GGroupObjectValue.EMPTY, property.getCaption(captions, GGroupObjectValue.EMPTY)));
                 }
             return columns;
         }

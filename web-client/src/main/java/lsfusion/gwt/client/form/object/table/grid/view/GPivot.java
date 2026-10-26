@@ -33,7 +33,6 @@ import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridContro
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeColumnValue;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeColumnValueType;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -190,7 +189,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 if(checkShowIf(baseOrder, columnKey))
                     continue;
 
-                String caption = property.getNotEmptyCaption(GGridPropertyTable.getPropertyCaption(propCaptions, property, columnKey));
+                String caption = property.getNotEmptyCaption(property.getCaption(propCaptions, columnKey));
 
                 columnMap.put(caption, new Column(property, columnKey));
 
@@ -242,7 +241,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
             for (int i = 0, size = get.size(); i < size; i++) {
                 GGroupObjectValue columnKey = get.get(i);
-                jsPut(result, getColumnSID(property, i, columnKey), GGridPropertyTable.getPropertyCaption(propCaptions, property, columnKey));
+                jsPut(result, getColumnSID(property, i, columnKey), property.getCaption(propCaptions, columnKey));
             }
         }
         return result;

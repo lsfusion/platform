@@ -216,7 +216,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         // these are SET only when the property actually has the reader: unlike the arguments above they have no static
         // fallback here, so setting them from a missing attribute would clear what the design put there
         if (attribute(property.captionReader) != null)
-            renderer.setCaption(GGridPropertyTable.getDynamicCaption(readAttribute(property.captionReader, rendererKey)));
+            renderer.setCaption(GPropertyDraw.getDynamicCaption(readAttribute(property.captionReader, rendererKey)));
 
         if (attribute(property.changeKeyReader) != null)
             renderer.setChangeKey(PValue.getBindingValue(readAttribute(property.changeKeyReader, rendererKey)));

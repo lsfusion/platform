@@ -298,7 +298,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
         GPropertyDraw columnProperty = column.property;
         int propertyIndex = properties.indexOf(columnProperty);
-        return GGridTable.getPropertyCaption(captions.get(propertyIndex), columnProperty, column.columnKey);
+        return columnProperty.getCaption(captions.get(propertyIndex), column.columnKey);
     }
 
     protected String getCaptionElementClass(String property) {

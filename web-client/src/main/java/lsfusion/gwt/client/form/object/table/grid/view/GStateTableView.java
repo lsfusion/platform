@@ -18,7 +18,6 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.JSValueConverter;
 import lsfusion.gwt.client.form.property.PValue;
@@ -555,7 +554,7 @@ public abstract class GStateTableView extends FlexPanel implements GListView {
             NativeHashMap<GGroupObjectValue, PValue> propertyCaptions = captions.get(i);
             List<GGroupObjectValue> columns = columnKeys.get(i);
             for (GGroupObjectValue column : columns)
-                result.add(GGridPropertyTable.getFilterColumn(property, column, GGridPropertyTable.getPropertyCaption(propertyCaptions, property, column)));
+                result.add(property.getFilterColumn(column, property.getCaption(propertyCaptions, column)));
         }
         return result;
     }

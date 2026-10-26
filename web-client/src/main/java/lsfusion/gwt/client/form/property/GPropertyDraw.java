@@ -27,6 +27,7 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.InputBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.*;
+import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.MainFrame;
@@ -740,6 +741,23 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     }
     public String getNotEmptyCaption() {
         return getNotEmptyCaption(caption);
+    }
+
+    // its caption for a column: the dynamic one, where the server sends it - captions, the caption reader's values by
+    // the column key -, trimmed (getDynamicCaption), else the design's
+    public String getCaption(NativeHashMap<GGroupObjectValue, PValue> captions, GGroupObjectValue columnKey) {
+        if (captions != null)
+            return getDynamicCaption(captions.get(columnKey));
+
+        return caption;
+    }
+    public static String getDynamicCaption(PValue captionObject) {
+        String caption = PValue.getCaptionStringValue(captionObject);
+        return caption != null ? caption.trim() : null;
+    }
+    // ... and a column of it as the filters take it: the column, with the caption it is shown with there, never empty
+    public Pair<Column, String> getFilterColumn(GGroupObjectValue columnKey, String caption) {
+        return new Pair<>(new Column(this, columnKey), getNotEmptyCaption(caption));
     }
 
     private static ClientMessages getMessages() {
