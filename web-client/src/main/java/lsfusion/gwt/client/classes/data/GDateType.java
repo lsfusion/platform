@@ -59,6 +59,9 @@ public class GDateType extends GADateType {
 
     public static Date parseDate(String value, DateTimeFormat... formats) throws ParseException {
         for (DateTimeFormat format : formats) {
+            Double time = parseMoment(value, format.getPattern());
+            if (time != null)
+                return new Date(time.longValue());
             try {
                 return format.parseStrict(value);
             } catch (IllegalArgumentException ignore) {
@@ -66,5 +69,10 @@ public class GDateType extends GADateType {
         }
         throw new ParseException("string " + value + "can not be converted to date", 0);
     }
+
+    private static native Double parseMoment(String value, String pattern)/*-{
+        var date = $wnd.moment(value, $wnd.moment().toMomentFormatString(pattern), true);
+        return date.isValid() ? date.valueOf() : null;
+    }-*/;
 
 }

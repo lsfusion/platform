@@ -15,9 +15,7 @@ import java.text.Format;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Date;
 
 import static lsfusion.base.DateConverter.*;
@@ -46,8 +44,8 @@ public class ClientZDateTimeClass extends ClientDateTimeClass {
     public Instant parseString(String s) throws ParseException {
         try {
             try {
-                return ZonedDateTime.parse(s, MainFrame.tFormats.zDateTimeParser).toInstant();
-            } catch (DateTimeParseException ignored) {
+                return ClientDateClass.parseStrict(MainFrame.tFormats.zDateTime, s).toInstant();
+            } catch (ParseException ignored) {
             }
             return DateConverter.smartParseInstant(s);
         } catch (Exception e) {

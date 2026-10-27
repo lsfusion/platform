@@ -2,6 +2,9 @@ package lsfusion.interop.connection;
 
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 public class TFormats {
@@ -37,26 +40,15 @@ public class TFormats {
         this.dateTimePattern = dateTimePattern;
         this.zDateTimePattern = dateTimePattern;
 
-//        Date twoDigitYearStartDate = null;
-//        if (twoDigitYearStart != null) {
-//            GregorianCalendar c = new GregorianCalendar(twoDigitYearStart, Calendar.JANUARY, 1);
-//            twoDigitYearStartDate = c.getTime();
-//        }
+        Date twoDigitYearStartDate = new GregorianCalendar(twoDigitYearStart != null ? twoDigitYearStart : Calendar.getInstance().get(Calendar.YEAR) - 80, Calendar.JANUARY, 1).getTime();
 
-        //dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
         date = new SimpleDateFormat(datePattern);
-//        if (twoDigitYearStartDate != null) {
-//            date.set2DigitYearStart(twoDigitYearStartDate);
-//        }
+        date.set2DigitYearStart(twoDigitYearStartDate);
 
-        //timeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM);
         time = new SimpleDateFormat(timePattern);
 
-        //dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
         dateTime = new SimpleDateFormat(dateTimePattern);
-//        if (twoDigitYearStartDate != null) {
-//            dateTime.set2DigitYearStart(twoDigitYearStartDate);
-//        }
+        dateTime.set2DigitYearStart(twoDigitYearStartDate);
         zDateTime = dateTime;
 
         dateParser = DateTimeFormatter.ofPattern(datePattern);
