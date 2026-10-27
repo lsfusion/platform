@@ -2,6 +2,7 @@ package lsfusion.gwt.client.view;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JsDate;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.logical.shared.ResizeEvent;
@@ -753,7 +754,7 @@ public class MainFrame implements EntryPoint {
                 useClusterizeInPivot = gClientSettings.useClusterizeInPivot;
 
                 initializeFrame(result.navigatorInfo, popupOwner, prefetching);
-                DateRangePickerBasedCellEditor.setPickerTwoDigitYearStart(gClientSettings.twoDigitYearStart);
+                DateRangePickerBasedCellEditor.setPickerTwoDigitYearStart(gClientSettings.twoDigitYearStart != null ? gClientSettings.twoDigitYearStart : JsDate.create().getFullYear() - 80);
             }
         });
     }

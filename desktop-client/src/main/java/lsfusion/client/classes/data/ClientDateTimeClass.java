@@ -20,7 +20,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.time.format.FormatStyle;
 import java.util.Date;
 
@@ -72,8 +71,8 @@ public class ClientDateTimeClass extends ClientFormatClass<SimpleDateFormat> imp
                 format = pattern != null ? new SimpleDateFormat(pattern) : DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
             }
             result = createDateEditFormat((SimpleDateFormat) format);
-            result.set2DigitYearStart(((SimpleDateFormat) format).get2DigitYearStart());
         }
+        result.set2DigitYearStart(MainFrame.tFormats.dateTime.get2DigitYearStart());
 
         return result;
     }
@@ -86,8 +85,8 @@ public class ClientDateTimeClass extends ClientFormatClass<SimpleDateFormat> imp
     public Object parseString(String s) throws ParseException {
         try {
             try {
-                return LocalDateTime.parse(s, MainFrame.tFormats.dateTimeParser);
-            } catch (DateTimeParseException ignored) {
+                return sqlTimestampToLocalDateTime(dateToStamp(ClientDateClass.parseStrict(MainFrame.tFormats.dateTime, s)));
+            } catch (ParseException ignored) {
             }
             return DateConverter.smartParse(s);
         } catch (Exception e) {

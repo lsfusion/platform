@@ -215,11 +215,10 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedCellEditor
         return pickerDate != null && pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
     }-*/;
 
-    public static native void setPickerTwoDigitYearStart(Integer twoDigitYearStart)/*-{
-        if (twoDigitYearStart != null) {
-            $wnd.moment.parseTwoDigitYear = function (yearString) {
-                return parseInt(yearString) + (parseInt(yearString) > twoDigitYearStart ? 1900 : 2000);
-            }
+    public static native void setPickerTwoDigitYearStart(int twoDigitYearStart)/*-{
+        $wnd.moment.parseTwoDigitYear = function (yearString) {
+            var year = Math.floor(twoDigitYearStart / 100) * 100 + parseInt(yearString, 10);
+            return year < twoDigitYearStart ? year + 100 : year;
         }
     }-*/;
 }

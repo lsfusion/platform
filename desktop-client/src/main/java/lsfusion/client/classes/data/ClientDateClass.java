@@ -17,9 +17,11 @@ import java.awt.*;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.client.form.property.cell.EditBindingMap.EditEventFilter;
@@ -70,8 +72,8 @@ public class ClientDateClass extends ClientFormatClass<SimpleDateFormat> impleme
                 format = pattern != null ? new SimpleDateFormat(pattern) : DateFormat.getDateInstance(DateFormat.SHORT);
             }
             result = createDateEditFormat((SimpleDateFormat) format);
-            result.set2DigitYearStart(((SimpleDateFormat) format).get2DigitYearStart());
         }
+        result.set2DigitYearStart(MainFrame.tFormats.date.get2DigitYearStart());
 
         return result;
     }
@@ -84,14 +86,24 @@ public class ClientDateClass extends ClientFormatClass<SimpleDateFormat> impleme
     public LocalDate parseString(String s) throws ParseException {
         try {
             try {
-                return LocalDate.parse(s, MainFrame.tFormats.dateParser);
-            } catch (Exception ignored) {
+                return sqlDateToLocalDate(safeDateToSql(parseStrict(MainFrame.tFormats.date, s)));
+            } catch (ParseException ignored) {
             }
             LocalDateTime result = DateConverter.smartParse(s);
             return result != null ? result.toLocalDate() : null;
         } catch (Exception e) {
             throw new ParseException(s +  ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.date"), 0);
         }
+    }
+
+    static Date parseStrict(SimpleDateFormat format, String s) throws ParseException {
+        SimpleDateFormat strictFormat = (SimpleDateFormat) format.clone();
+        strictFormat.setLenient(false);
+        ParsePosition position = new ParsePosition(0);
+        Date date = strictFormat.parse(s, position);
+        if (date == null || position.getIndex() != s.length())
+            throw new ParseException(s, Math.max(position.getErrorIndex(), position.getIndex()));
+        return date;
     }
 
     @Override
