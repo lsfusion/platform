@@ -72,6 +72,11 @@ public final class GFilterControlsToggle implements GUserFiltersController.Apply
         controls.setVisible(visible);
         userFilters.addView(this);
     }
+    // whether the table's toolbar has the button that shows and hides the controls: where it has none, they are
+    // always shown (shownBy)
+    public boolean hasControlsButton() {
+        return shownBy != null;
+    }
     // whether the table's apply button is shown: the manual apply mode asks it (GUserFiltersController.isManual)
     public boolean isApplyShown() {
         return controls.isApplyShown(visible);

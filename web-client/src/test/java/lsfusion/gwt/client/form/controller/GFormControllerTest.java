@@ -1453,6 +1453,47 @@ public class GFormControllerTest extends GWTTestCase {
         assertTrue(controller.isManualUpdate(group));
     }
 
+    // ... and over a table's user filters the platform draws - its panel and its input, a view drawing a FILTER over
+    // them -: the controls shown as the toolbar's button shows them, the apply with them - the manual apply mode -; the
+    // conditions stated by the table's name and a FILTER's by its property's, each waiting for the apply, which sends
+    // them; the reset an empty list, sent at once; the add a new row of the panel's own with the value of the cell the
+    // rows are on, prepared, not sent; the controls hidden again
+    public void testTheFormsControllerWorksTheUserFiltersThePlatformDraws() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            FiltersForm filters = new FiltersForm(true);
+            filters.plainFirst();
+            filters.deliver(true);
+            GFormController controller = filters.controller();
+            JavaScriptObject form = controller.controller;
+            GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
+            call(form, "changeFilterControlsVisible", "items", true);
+            assertTrue(panel.isControlsVisible());
+
+            call(form, "changeFilters", "items", parse("{\"property\": \"price\", \"compare\": \">\", \"value\": 6}"));
+            call(form, "changeFilter", "items.quantity", 4.0);
+            assertValue(4, filters.slot(controller, filters.placed).value.value);
+            assertFalse(filters.filters(controller, filters.price)); // waiting for the apply
+            call(form, "applyFilters", "items");
+            assertEquals(GCompare.GREATER, filters.first(controller, filters.price).compare);
+            assertValue(4, filters.first(controller, filters.quantity).value.value);
+
+            call(form, "resetFilters", "items");
+            assertTrue(filters.sent(controller).isEmpty());
+            call(form, "addFilter", "items");
+            List<GFilterConditionView> rows = freeRows(panel);
+            assertEquals(1, rows.size());
+            assertSame(filters.amount, rowCondition(rows.get(0)).column.property);
+            assertValue(50, rowCondition(rows.get(0)).value.value);
+            assertTrue(filters.sent(controller).isEmpty());
+            call(form, "changeFilterControlsVisible", "items", false);
+            assertFalse(panel.isControlsVisible());
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
     // the FILTER of a property of a group in PANEL view - which has no table and shows no user filters -: the group's
     // user filters are none (GUserFiltersController.NONE), a list the server reports for the group taken all the same,
     // as one the form sends

@@ -1112,7 +1112,7 @@ public class GReactFormData {
     // ===== A TABLE'S LIST - its sortings (OrdersTableList), its user filters' conditions (FiltersTableList) -: what an
     // item of it is and what its property can be (canList), and what a call states - all of it, by an array, or one
     // item, merged into the rest -, whoever makes the call: a view's member, where it draws the list (ListPart), or the
-    // form's controller, by the table's name (CONTROLLER.FORM: changeOrders). An item names its property
+    // form's controller, by the table's name (CONTROLLER.FORM: changeOrders, changeFilters). An item names its property
     // as the table's lists name it (getListName); the sortings are handed to the form as each group's own (Verbs), the
     // conditions to the table's user filters (GUserFiltersController)
     private abstract class TableList {
@@ -1366,17 +1366,9 @@ public class GReactFormData {
         public void setVisible(boolean visible) {
         }
 
-        // ===== a call through its member: the filter controls shown or hidden, as the platform's button does - on an
-        // empty list of the platform's panel, with a condition to fill in; refused where the platform has none of its
-        // own to show
+        // ===== a call through its member (toggleFilterControls)
         void changeFilterControlsVisible(String surface, Object shown) {
-            String errorPrefix = controllerPrefix(surface);
-            boolean value = readBoolean(errorPrefix, shown);
-            if (filter == null)
-                throw refusal(errorPrefix + "has no filter controls of the platform's to show: the platform "
-                        + "draws neither the conditions nor FILTERCONTROLS here, or its toolbar turns its filters off (showFilters)");
-            if (value != filter.isControlsVisible())
-                filter.toggleControlsVisible();
+            toggleFilterControls(surface, filter, shown);
         }
     }
     // ... of a LIST's group - TOOLBARSYSTEM(g): a part of the group of its own. Its buttons are all a group's toolbar
@@ -1511,28 +1503,15 @@ public class GReactFormData {
         public void setTableVisible(boolean visible) {
         }
 
-        // ===== a call through its member: what the platform's button does - the add where the design has the FILTERS
-        // box, as the button is there only then, the apply of what waits - nothing with nothing waiting -, the
-        // reset - refused where there is nothing to do it with: no filter input controller, no FILTERS box
+        // ===== a call through its member (addCondition, applyConditions, resetConditions)
         void addFilter(String surface) {
-            GFiltersHandler handler = getHandler(surface);
-            if (!handler.hasFiltersContainer())
-                throw refusal(controllerPrefix(surface) + "has no FILTERS box to add a condition to: the design has none");
-            handler.addCondition();
+            addCondition(surface, handler);
         }
         void applyFilters(String surface) {
-            getHandler(surface).applyConditions();
+            applyConditions(surface, handler, userFilters);
         }
         void resetFilters(String surface) {
-            getHandler(surface).resetConditions();
-        }
-        // the commands whose controls these are - refused where the platform builds no filter input controller: it
-        // draws the conditions, and its toolbar turns its filters off (showFilters)
-        private GFiltersHandler getHandler(String surface) {
-            if (handler == null)
-                throw refusal(controllerPrefix(surface) + "has nothing to give its commands to: the platform draws "
-                        + "the conditions, and its toolbar turns its filters off (showFilters)");
-            return handler;
+            resetConditions(surface, handler, userFilters);
         }
     }
     // a group's FILTER GROUP where React draws it - FILTERGROUP(fg) in a React view: a part of the group, on its
@@ -1651,23 +1630,9 @@ public class GReactFormData {
             stateChanged();
         }
 
-        // ===== a call through its member: a value, read by the property's FILTER type as `value` gives it, or none -
-        // absent, null, '', or one the type reads as NULL, a two-state LOGICAL's false -, and the options, if any, read
-        // as a condition's fields (readFilterCondition), in a batch too. The options are read whatever the value - one
-        // misspelt is refused even where there is none, which takes the condition off all the same. A file's value is a
-        // link to the file, not the file a condition compares with, so its filter's condition can be taken off, not
-        // stated. Shown at once - sent but in the manual apply mode, where it waits for the apply
+        // ===== a call through its member (changeFilterCondition)
         void change(String surface, JavaScriptObject value, JavaScriptObject options) {
-            String errorPrefix = controllerPrefix(surface);
-            if (GwtClientUtils.isUndefinedOrNull(options)) // none: as stating none of them
-                options = newBareObject();
-            checkAuthorObject(errorPrefix, options, "the options argument", FILTER_OPTIONS);
-            GPropertyFilter stated = readFilterCondition(errorPrefix, options,
-                    GPropertyFilter.getBase(getConditionColumn(filter.property), userFilters.getSlotEntry(filter).condition), value);
-            if (stated.nullValue())
-                userFilters.clearFilter(filter);
-            else
-                userFilters.changeFilter(filter, stated);
+            changeFilterCondition(surface, filter, userFilters, value, options);
         }
     }
     // a view's name, as the group's node and its member say it: grid, pivot, custom, map, calendar
@@ -3068,6 +3033,61 @@ public class GReactFormData {
         return filterGroup.filters.size() == 1 || !filterGroup.noNull;
     }
 
+    // a property's FILTER's condition, in its slot of the table's user filters (GUserFiltersController): a value, read
+    // by the property's FILTER type as `value` gives it, or none - absent, null, '', or one the type reads as NULL, a
+    // two-state LOGICAL's false -, and the options, if any, read as a condition's fields (readFilterCondition), in a
+    // batch too. The options are read whatever the value - one misspelt is refused even where there is none, which
+    // takes the condition off all the same. A file's value is a link to the file, not the file a condition compares
+    // with, so its filter's condition can be taken off, not stated. Shown at once - sent but in the manual apply mode,
+    // where it waits for the apply
+    private void changeFilterCondition(String surface, GFilter filter, GUserFiltersController userFilters, JavaScriptObject value, JavaScriptObject options) {
+        String errorPrefix = controllerPrefix(surface);
+        if (GwtClientUtils.isUndefinedOrNull(options)) // none: as stating none of them
+            options = newBareObject();
+        checkAuthorObject(errorPrefix, options, "the options argument", FILTER_OPTIONS);
+        GPropertyFilter stated = readFilterCondition(errorPrefix, options,
+                GPropertyFilter.getBase(getConditionColumn(filter.property), userFilters.getSlotEntry(filter).condition), value);
+        if (stated.nullValue())
+            userFilters.clearFilter(filter);
+        else
+            userFilters.changeFilter(filter, stated);
+    }
+    // the FILTER CONTROLS' commands, what the platform's buttons do over a table's conditions, whoever draws them: the
+    // add, given to the table's filter input controller (handler), where the design has the FILTERS box, as the button
+    // is there only then; the apply of what waits - nothing with nothing waiting - and the reset, the table's user
+    // filters' (GUserFiltersController.apply, reset), given to that controller where there is one - the platform's
+    // panel sends the rows it prepares too -, else to the user filters themselves (userFilters). Refused with nothing
+    // to do it with: no FILTERS box, no filter input controller - for the apply and the reset no user filters either
+    private static void addCondition(String surface, GFiltersHandler handler) {
+        if (handler == null)
+            throw noFilterInput(surface);
+        if (!handler.hasFiltersContainer())
+            throw refusal(controllerPrefix(surface) + "has no FILTERS box to add a condition to: the design has none");
+        handler.addCondition();
+    }
+    private static void applyConditions(String surface, GFiltersHandler handler, GUserFiltersController userFilters) {
+        if (handler != null)
+            handler.applyConditions();
+        else if (userFilters != null)
+            userFilters.apply();
+        else
+            throw noFilterInput(surface);
+    }
+    private static void resetConditions(String surface, GFiltersHandler handler, GUserFiltersController userFilters) {
+        if (handler != null)
+            handler.resetConditions();
+        else if (userFilters != null)
+            userFilters.reset();
+        else
+            throw noFilterInput(surface);
+    }
+    // ... there being no filter input controller: the platform builds none where it draws the conditions and its
+    // toolbar turns its filters off (showFilters)
+    private static RuntimeException noFilterInput(String surface) {
+        return refusal(controllerPrefix(surface) + "has nothing to give its commands to: the platform draws "
+                + "the conditions, and its toolbar turns its filters off (showFilters)");
+    }
+
     // what a TOOLBAR does - each a request, refused while the form refuses one (refused) -: the count of a list group's
     // rows and the sum of a column of them, each the Promise of the server's answer ...
     private JavaScriptObject countRecords(String surface, GGroupObject group) {
@@ -3131,6 +3151,19 @@ public class GReactFormData {
             throw refusal(controllerPrefix(surface) + "takes the name of a view of the table: " + names);
         if (view != views.getListView())
             views.changeListView(view);
+    }
+    // ... and the platform's filter controls shown or hidden, as the toolbar's filter button does - on an empty list of
+    // the platform's panel, with a condition to fill in -, the table's filter input controller's (filter) where its
+    // toolbar has the button (hasControlsButton); refused where there is no input, or it has no button: there is
+    // nothing of the platform's to show (GFilterControlsToggle)
+    private static void toggleFilterControls(String surface, GFilterInputController filter, Object shown) {
+        String errorPrefix = controllerPrefix(surface);
+        boolean value = readBoolean(errorPrefix, shown);
+        if (filter == null || !filter.hasControlsButton())
+            throw refusal(errorPrefix + "has no filter controls of the platform's to show: the platform "
+                    + "draws neither the conditions nor FILTERCONTROLS here, or its toolbar turns its filters off (showFilters)");
+        if (value != filter.isControlsVisible())
+            filter.toggleControlsVisible();
     }
 
     // ===== CONTROLLER.FORM - the form's controller: what a React view's controller names `form`, a classic view's
@@ -3202,9 +3235,37 @@ public class GReactFormData {
     private void exportTable(String surface, String name) {
         runTableReport(surface, readTable(controllerPrefix(surface), name));
     }
+    // ... a table's user filters: its conditions, a property's FILTER's, and what its filter controls do - given to its
+    // filter input controller, whoever draws them (getFilterInput) -, and their showing, where its toolbar's button
+    // shows and hides them
+    private void changeFilters(String surface, String name, JavaScriptObject conditions) {
+        filtersList.change(surface, readTable(controllerPrefix(surface), name), conditions);
+    }
+    private void changeFilter(String surface, String name, JavaScriptObject value, JavaScriptObject options) {
+        GFilter filter = readFilter(controllerPrefix(surface), name);
+        changeFilterCondition(surface, filter, getUserFilters(filter.property.groupObject.getDrawComponent()), value, options);
+    }
+    private void addFilter(String surface, String name) {
+        addCondition(surface, getFilterInput(readTable(controllerPrefix(surface), name)));
+    }
+    private void applyFilters(String surface, String name) {
+        GGridProperty table = readTable(controllerPrefix(surface), name);
+        applyConditions(surface, getFilterInput(table), getUserFilters(table));
+    }
+    private void resetFilters(String surface, String name) {
+        GGridProperty table = readTable(controllerPrefix(surface), name);
+        resetConditions(surface, getFilterInput(table), getUserFilters(table));
+    }
+    private void changeFilterControlsVisible(String surface, String name, Object shown) {
+        toggleFilterControls(surface, getFilterInput(readTable(controllerPrefix(surface), name)), shown);
+    }
     // the user filters of a table, its groups' one model
     private GUserFiltersController getUserFilters(GGridProperty table) {
         return tableFilters.get(table).userFilters;
+    }
+    // ... and its filter input controller, made with the model - none where the platform makes none
+    private GFilterInputController getFilterInput(GGridProperty table) {
+        return tableFilters.get(table).input;
     }
 
     // ... and the names, each read as the call needs it - a name is a string, and one that names nothing, or names
@@ -3271,6 +3332,24 @@ public class GReactFormData {
         if (filterGroup.filters.isEmpty())
             throw refusal(errorPrefix + "filter group '" + name + "' has no filters");
         return filterGroup;
+    }
+    // ... a property's FILTER, by the property's name as a <Platform> names it, its group's and its own: the group's one
+    // property of that name (readGroupProperty), whose FILTER its table's user filters keep - none where the property
+    // has none, a condition on it being the table's (changeFilters), or where its group has no table
+    private GFilter readFilter(String errorPrefix, String name) {
+        if (name == null)
+            throw refusal(errorPrefix + "takes the name of a property, its group's and its own, as a string");
+        GPropertyDraw property = readGroupProperty(errorPrefix, form.groupObjects, name, "");
+        GGroupObject group = property.groupObject;
+        if (!group.viewType.isList())
+            throw refusal(errorPrefix + "'" + name + "' has no FILTER to change: its group is not in LIST view, so it has"
+                    + " no user filters");
+        GGridProperty table = group.getDrawComponent();
+        GUserFiltersController userFilters = getUserFilters(table);
+        for (GFilter filter : table.filters)
+            if (filter.property == property && userFilters.getSlotEntry(filter) != null) // one the design removes is none
+                return filter;
+        throw refusal(errorPrefix + "'" + name + "' has no FILTER: a condition on it is stated as the table's, through changeFilters");
     }
     // ... and a ROW of a group: the row, or its `objects` handle - what a view has of rows it does not draw, a lookup's
     // objects among them (getValues) -, not a key: a key names a row only in the view that draws the rows, in its index
@@ -3484,6 +3563,24 @@ public class GReactFormData {
         };
         controller.changeFilterGroup = function (filterGroup, index) {
             projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeFilterGroup(*)(surface('changeFilterGroup', filterGroup), name(filterGroup), index === undefined ? null : index);
+        };
+        controller.changeFilters = function (table, conditions) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeFilters(*)(surface('changeFilters', table), name(table), conditions);
+        };
+        controller.changeFilter = function (property, value, options) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeFilter(*)(surface('changeFilter', property), name(property), value, options);
+        };
+        controller.addFilter = function (table) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::addFilter(*)(surface('addFilter', table), name(table));
+        };
+        controller.applyFilters = function (table) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::applyFilters(*)(surface('applyFilters', table), name(table));
+        };
+        controller.resetFilters = function (table) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::resetFilters(*)(surface('resetFilters', table), name(table));
+        };
+        controller.changeFilterControlsVisible = function (table, shown) {
+            projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeFilterControlsVisible(*)(surface('changeFilterControlsVisible', table), name(table), shown);
         };
         controller.getCount = function (group) {
             return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::getCount(*)(surface('getCount', group), name(group));

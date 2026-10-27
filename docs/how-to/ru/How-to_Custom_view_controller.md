@@ -184,17 +184,22 @@ controller.batch(() => {
 | `expand(group, row)` / `collapse(group, row)` / `expandAll(group)` / `collapseAll(group)` | `<group>.expand(row)` / `.collapse(row)` / `.expandAll()` / `.collapseAll()` | SID группы дерева |
 | `expandCurrent(tree)` / `expandTree(tree)` | `<tree>.expandCurrent()` / `expandTree()` его тулбара | имя дерева |
 | `changeOrders(table, order)` / `changeOrders(table, orders)` | `<table>.orders.change(…)` | SID списочной группы или имя дерева |
+| `changeFilters(table, condition)` / `changeFilters(table, conditions)` | `<table>.filters.change(…)` ([пользовательские фильтры](How-to_Custom_React_views.md#filters)) | SID списочной группы или имя дерева |
+| `changeFilter(property, value[, options])` | `<group>.filter.<property>.change(value[, options])` — условие [фильтра свойства](How-to_Custom_React_views.md#property-filters) | `'<group>.<property>'` |
+| `addFilter(table)` / `applyFilters(table)` / `resetFilters(table)` | `addFilter()` / `applyFilters()` / `resetFilters()` [управляющих элементов фильтров](How-to_Custom_React_views.md#filter-controls) | SID списочной группы или имя дерева |
+| `changeFilterControlsVisible(table, shown)` | `filterControlsVisible.change(shown)` [тулбара](How-to_Custom_React_views.md#toolbar) | SID списочной группы или имя дерева |
 | `changeFilterGroup(filterGroup, index)` | `<group>.<filterGroup>.change(index)` | имя группы фильтров |
 | `getCount(group)` / `getSum(group, property)` | `<group>.getCount()` / `.getSum(property)` — `Promise` | SID списочной группы |
 | `changeManual(group, on)` / `update(group)` / `changeListView(group, name)` | `<group>.manual.change(on)` / `.update()` / `.listView.change(name)` | SID списочной группы |
 | `export(table)` | `<table>.export()` | SID списочной группы или имя дерева |
 | `changeProperty(property[, row][, value])` | [классический `changeProperty`](How-to_Custom_components_objects.md#controller-methods), аргументы читаются так же: значение задаётся или запускается событие изменения — на текущем объекте или на переданной строке | `'<group>.<property>'`, свойство пустой группы — по его имени |
 
-Строка называется тем, что есть у представления: строкой данных или её дескриптором `objects` — строки своих данных или результата запроса (`getValues` в режиме `objects`). Ключ называет строку только в представлении, которое рисует строки, через его член, поэтому контроллер формы ключей не принимает. У группы дерева нет своих сортировок и тулбара: они у дерева, называются именем дерева, а каждое свойство в его сортировках — как `<group>.<property>`. Текущий объект, выбранный там, где строки рисует платформа, сразу становится текущим для формы — то, что у формы спрашивают дальше, спрашивается про эту строку, — а таблица платформы переходит на неё с ответом сервера.
+Строка называется тем, что есть у представления: строкой данных или её дескриптором `objects` — строки своих данных или результата запроса (`getValues` в режиме `objects`). Ключ называет строку только в представлении, которое рисует строки, через его член, поэтому контроллер формы ключей не принимает. У группы дерева нет своих сортировок, пользовательских фильтров и тулбара: они у дерева, называются именем дерева, а каждое свойство в его сортировках и условиях — как `<group>.<property>`. Команды управляющих элементов фильтров уходят во ввод фильтров таблицы, кто бы ни рисовал условия и где бы ни были сами элементы, если они вообще есть; там, где платформа ввода не делает (условия рисует она, а её тулбар выключает фильтры), применение и сброс уходят прямо в пользовательские фильтры таблицы, а добавление отклоняется: строку добавить некуда. `changeFilterControlsVisible` работает там, где элементы управления платформы показывает и скрывает кнопка тулбара. Текущий объект, выбранный там, где строки рисует платформа, сразу становится текущим для формы — то, что у формы спрашивают дальше, спрашивается про эту строку, — а таблица платформы переходит на неё с ответом сервера.
 
 ```js
-// боковая панель сортирует и выбирает в строках, которые рисует другой контейнер
+// боковая панель сортирует, фильтрует и выбирает в строках, которые рисует другой контейнер
 controller.form.changeOrders('i', {property: 'price', desc: true});
+controller.form.changeFilter('i.price', 100, {compare: '>='});
 controller.form.changeFilterGroup('stock', 0);
 controller.form.changeObject('i', found.objects);   // строка, найденная запросом
 ```

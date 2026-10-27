@@ -850,6 +850,7 @@ public class GReactFormDataTest extends GWTTestCase {
 
         public boolean isControlsVisible() { return shown; }
         public void toggleControlsVisible() { shown = !shown; toolbar.showFilterControls(shown); }
+        public boolean hasControlsButton() { return toolbar != null; } // the toolbar it was given has it
         public void setControlsVisible(boolean visible) { }
         public void setVisible(boolean visible) { }
         public void update() { updates++; }
@@ -6210,6 +6211,69 @@ public class GReactFormDataTest extends GWTTestCase {
         assertRefusal("controller.form.changeOrders('t'): 'i.u.unit.price' starts with the names of groups 'i' and 'i.u' of"
                 + " tree 't', so it does not say which", refusedWith(field(fixture.apply("i").sa.controller, "form"), "changeOrders",
                 "t", parse("{\"property\": \"i.u.unit.price\", \"desc\": true}")));
+    }
+
+    // ... and a table's user filters, whoever draws them, as their members state them: changeFilters by the table's
+    // name - an array the list, one condition in the place of the first on its property -, changeFilter by its
+    // property's name, its group's and its own, as a <Platform> names it: the FILTER's condition, in its slot, which
+    // the view drawing the FILTER shows - each written into the table's model, sent as a member's write is; and the
+    // apply and the reset, with no filter input controller here, the model's own: nothing waits, the list emptied
+    public void testTheFormsControllerChangesTheUserFilters() {
+        Fixture f = new Fixture(fixture -> fixture.filterIn(fixture.c, fixture.price));
+        JavaScriptObject form = field(f.sb.controller, "form");
+        call(form, "changeFilters", "items", parse("[{\"property\": \"quantity\", \"compare\": \"=\", \"value\": 2}]"));
+        assertEquals("changeFilters items quantity=", lastOf(f.filtersCalls));
+        call(form, "changeFilters", "items", parse("{\"property\": \"price\", \"value\": 3}"));
+        assertEquals("changeFilters items quantity= price" + f.price.getDefaultCompare(), lastOf(f.filtersCalls));
+        call(form, "changeFilter", "items.price", 4.0, parse("{\"compare\": \">\"}"));
+        assertEquals("changeFilters items quantity= price>", lastOf(f.filtersCalls));
+        f.projection.flush();
+        assertEquals(4.0, number(field(field(field(f.snapshots[2], "items"), "filter"), "price"), "value"), 0);
+        call(form, "changeFilter", "items.price", null);
+        assertEquals("changeFilters items quantity=", lastOf(f.filtersCalls));
+        int calls = f.filtersCalls.size();
+        call(form, "applyFilters", "items");
+        assertEquals(calls, f.filtersCalls.size());
+        call(form, "resetFilters", "items");
+        assertEquals("changeFilters items", lastOf(f.filtersCalls));
+    }
+
+    // ... a tree's by the tree's name, each property named as the tree's lists name it, and a FILTER of a property of a
+    // group of a tree by its group's name and its own, the tree's model one for all its groups
+    public void testTheFormsControllerFiltersATreeByItsNames() {
+        TreeFixture f = new TreeFixture(tree -> tree.filterIn(tree.a, tree.column(63, "price", tree.item)));
+        JavaScriptObject form = field(f.sa.controller, "form");
+        call(form, "changeFilters", "t", parse("{\"property\": \"item.price\", \"compare\": \">\", \"value\": 9}"));
+        assertEquals("cat item price>", lastOf(f.verbs.filtered));
+        call(form, "changeFilter", "item.price", 7.0, parse("{\"compare\": \"<\"}"));
+        assertEquals("cat item price<", lastOf(f.verbs.filtered));
+        assertRefusal("controller.form.changeFilters('item'): 'item' is a group of tree 't'", refusedWith(form, "changeFilters", "item", parse("[]")));
+    }
+
+    // ... and names that reach no user filters are refused, saying why, nothing written: a FILTER's property - unknown,
+    // with no FILTER the table's user filters keep (the design removes quantity's), named with no group's name -, a
+    // table as changeOrders names one; and the add and the controls' showing where the platform makes no filter input
+    // controller to give them to
+    public void testTheFormsControllerRefusesWhatItsFilterNamesDoNotReach() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.filterIn(fixture.c, fixture.price);
+            GFilter removed = fixture.filterIn(fixture.c, fixture.quantity);
+            fixture.c.children.remove(removed); removed.container = null;
+        });
+        JavaScriptObject form = field(f.sb.controller, "form");
+        assertRefusal("controller.form.changeFilter('items.nope'): unknown property 'nope' of object group 'items'", refusedWith(form, "changeFilter", "items.nope", 1.0));
+        assertRefusal("controller.form.changeFilter('items.quantity'): 'items.quantity' has no FILTER: a condition on it is stated as the"
+                + " table's, through changeFilters", refusedWith(form, "changeFilter", "items.quantity", 1.0));
+        assertRefusal("controller.form.changeFilter('price'): 'price' names no property of a group", refusedWith(form, "changeFilter", "price", 1.0));
+        assertRefusal("controller.form.changeFilter(): takes the name of a property", refusedWith(form, "changeFilter", 1.0, 1.0));
+        assertRefusal("controller.form.changeFilter('items.price'): unknown field 'nope'", refusedWith(form, "changeFilter", "items.price", 1.0, parse("{\"nope\": 1}")));
+        assertRefusal("controller.form.changeFilters('nope'): unknown object group or tree 'nope'", refusedWith(form, "changeFilters", "nope", parse("[]")));
+        assertRefusal("controller.form.changeFilters('items'): condition 0: unknown property 'nope' of object group 'items'",
+                refusedWith(form, "changeFilters", "items", parse("[{\"property\": \"nope\", \"value\": 1}]")));
+        assertRefusal("controller.form.addFilter('items'): has nothing to give its commands to", refusedWith(form, "addFilter", "items"));
+        assertRefusal("controller.form.changeFilterControlsVisible('items'): has no filter controls of the platform's to show",
+                refusedWith(form, "changeFilterControlsVisible", "items", true));
+        assertTrue(f.filtersCalls.isEmpty());
     }
 
     // the last of a log

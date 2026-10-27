@@ -184,17 +184,22 @@ What another container draws, or the platform, a view changes through the form's
 | `expand(group, row)` / `collapse(group, row)` / `expandAll(group)` / `collapseAll(group)` | `<group>.expand(row)` / `.collapse(row)` / `.expandAll()` / `.collapseAll()` | the SID of a group of a tree |
 | `expandCurrent(tree)` / `expandTree(tree)` | `<tree>.expandCurrent()` / its toolbar's `expandTree()` | a tree's name |
 | `changeOrders(table, order)` / `changeOrders(table, orders)` | `<table>.orders.change(…)` | a list group's SID, or a tree's name |
+| `changeFilters(table, condition)` / `changeFilters(table, conditions)` | `<table>.filters.change(…)` ([user filters](How-to_Custom_React_views.md#filters)) | a list group's SID, or a tree's name |
+| `changeFilter(property, value[, options])` | `<group>.filter.<property>.change(value[, options])` — the condition of the property's [filter](How-to_Custom_React_views.md#property-filters) | `'<group>.<property>'` |
+| `addFilter(table)` / `applyFilters(table)` / `resetFilters(table)` | the [filter controls](How-to_Custom_React_views.md#filter-controls)' `addFilter()` / `applyFilters()` / `resetFilters()` | a list group's SID, or a tree's name |
+| `changeFilterControlsVisible(table, shown)` | the [toolbar](How-to_Custom_React_views.md#toolbar)'s `filterControlsVisible.change(shown)` | a list group's SID, or a tree's name |
 | `changeFilterGroup(filterGroup, index)` | `<group>.<filterGroup>.change(index)` | the filter group's name |
 | `getCount(group)` / `getSum(group, property)` | `<group>.getCount()` / `.getSum(property)` — a `Promise` | a list group's SID |
 | `changeManual(group, on)` / `update(group)` / `changeListView(group, name)` | `<group>.manual.change(on)` / `.update()` / `.listView.change(name)` | a list group's SID |
 | `export(table)` | `<table>.export()` | a list group's SID, or a tree's name |
 | `changeProperty(property[, row][, value])` | the [classic `changeProperty`](How-to_Custom_components_objects.md#controller-methods), its arguments read the same way: the value set, or the change event run, on the current object or on the row given | `'<group>.<property>'`, a property of the empty group by its name |
 
-A row is named by what a view has of it: a data row, or its `objects` handle — of a row of its own data, or of a lookup's result (`getValues` in the `objects` mode). A key names a row only in the view that draws the rows, through its member, so the form's controller takes none. A group of a tree has no sortings or toolbar of its own: they are the tree's, named by the tree's name, each property in its sortings as `<group>.<property>`. A current object chosen where the platform draws the rows is the form's current one at once — what the form is asked next is asked of that row —, and the platform's table moves to it with the server's answer.
+A row is named by what a view has of it: a data row, or its `objects` handle — of a row of its own data, or of a lookup's result (`getValues` in the `objects` mode). A key names a row only in the view that draws the rows, through its member, so the form's controller takes none. A group of a tree has no sortings, user filters or toolbar of its own: they are the tree's, named by the tree's name, each property in its sortings and conditions as `<group>.<property>`. The filter controls' commands go to the table's filter input, whoever draws the conditions and wherever the controls are, if anywhere; where the platform makes none — it draws the conditions, and its toolbar turns its filters off —, the apply and the reset go to the table's user filters themselves, and the add, with no row to add to, is refused. `changeFilterControlsVisible` works where the toolbar's button shows and hides the platform's controls. A current object chosen where the platform draws the rows is the form's current one at once — what the form is asked next is asked of that row —, and the platform's table moves to it with the server's answer.
 
 ```js
-// a side panel sorting and choosing in the rows another container draws
+// a side panel sorting, filtering and choosing in the rows another container draws
 controller.form.changeOrders('i', {property: 'price', desc: true});
+controller.form.changeFilter('i.price', 100, {compare: '>='});
 controller.form.changeFilterGroup('stock', 0);
 controller.form.changeObject('i', found.objects);   // a row found by a lookup
 ```

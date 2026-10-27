@@ -43,6 +43,11 @@ public abstract class GFilterInputController implements GFiltersHandler {
     public void setControlsVisible(boolean visible) {
         toggle.setVisible(visible);
     }
+    // ... and whether the toolbar has that button: where it has none, they are always shown
+    // (GFilterControlsToggle.hasControlsButton)
+    public boolean hasControlsButton() {
+        return toggle.hasControlsButton();
+    }
     // what draws the rows has changed, once per delta - told by a table of the platform's before it shows or hides
     // what of the filters the platform draws, by the projection where React draws the rows: the platform's rows are
     // built the first time, the table's columns known then
