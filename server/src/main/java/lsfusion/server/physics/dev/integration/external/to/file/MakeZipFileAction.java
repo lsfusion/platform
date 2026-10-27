@@ -1,13 +1,12 @@
 package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.file.FileData;
-import lsfusion.base.file.RawFileData;
+import lsfusion.base.lambda.EConsumer;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -22,6 +21,10 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,17 +49,18 @@ public class MakeZipFileAction extends InternalAction {
 
             ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> result = query.executeClasses(context);
             if (!result.isEmpty()) {
-                Map<String, RawFileData> files = new HashMap<>();
+                Map<String, EConsumer<OutputStream, IOException>> files = new HashMap<>();
                 for (int i = 0; i < result.size(); i++) {
                     String fileName = (String) result.getKey(i).get("i").getValue();
                     FileData fileBytes = (FileData) result.getValue(i).get("zipping").getValue();
-                    if (fileBytes == null) {
-                        String filePath = (String) result.getValue(i).get("zippingPath").getValue();
-                        fileBytes = new FileData(new RawFileData(filePath), BaseUtils.getFileExtension(filePath));
+                    if (fileBytes != null)
+                        files.put(fileName, fileBytes.getRawFile()::write);
+                    else {
+                        Path filePath = Paths.get((String) result.getValue(i).get("zippingPath").getValue());
+                        files.put(fileName, out -> Files.copy(filePath, out));
                     }
-                    files.put(fileName, fileBytes.getRawFile());
                 }
-                FileData zipFile = ZipUtils.makeZipFile(files, zeroTime);
+                FileData zipFile = ZipUtils.writeZipFile(files, zeroTime);
                 findProperty("zipped[]").change(zipFile, context);
             }
 

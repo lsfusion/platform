@@ -11,6 +11,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.FileUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.base.lambda.EConsumer;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -18,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -26,24 +28,25 @@ import java.util.zip.ZipOutputStream;
 public class ZipUtils {
 
     public static FileData makeZipFile(Map<String, RawFileData> files, boolean zeroTime) throws IOException {
+        Map<String, EConsumer<OutputStream, IOException>> writers = new LinkedHashMap<>();
+        for (Map.Entry<String, RawFileData> file : files.entrySet())
+            writers.put(file.getKey(), file.getValue()::write);
+        return writeZipFile(writers, zeroTime);
+    }
+
+    public static FileData writeZipFile(Map<String, EConsumer<OutputStream, IOException>> files, boolean zeroTime) throws IOException {
         File zipFile = File.createTempFile("zip", ".zip");
         try {
-            try (FileOutputStream fos = new FileOutputStream(zipFile); ZipOutputStream zos = new ZipOutputStream(fos)) {
-                for (Map.Entry<String, RawFileData> logFile : files.entrySet()) {
-                    InputStream bis = logFile.getValue().getInputStream();
-                    ZipEntry ze = new ZipEntry(logFile.getKey());
+            try (FileOutputStream fos = new FileOutputStream(zipFile); ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(fos))) {
+                for (Map.Entry<String, EConsumer<OutputStream, IOException>> file : files.entrySet()) {
+                    ZipEntry ze = new ZipEntry(file.getKey());
                     if(zeroTime)
                         ze.setTime(0); //to make zip file deterministic
                     zos.putNextEntry(ze);
-                    byte[] buf = new byte[1024];
-                    int len;
-                    while ((len = bis.read(buf)) > 0) {
-                        zos.write(buf, 0, len);
-                    }
-                    bis.close();
+                    file.getValue().accept(zos);
                 }
             }
-            return new FileData(new RawFileData(zipFile), "zip");
+            return new FileData(new RawFileData(Files.readAllBytes(zipFile.toPath())), "zip");
         } finally {
             BaseUtils.safeDelete(zipFile);
         }
