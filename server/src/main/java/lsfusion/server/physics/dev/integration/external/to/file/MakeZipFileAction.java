@@ -21,10 +21,12 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -53,31 +55,23 @@ public class MakeZipFileAction extends InternalAction {
                 File zipFile = null;
                 try {
                     zipFile = File.createTempFile("zip", ".zip");
-                    FileOutputStream fos = new FileOutputStream(zipFile);
-                    try (ZipOutputStream zos = new ZipOutputStream(fos)) {
+                    try (FileOutputStream fos = new FileOutputStream(zipFile); ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(fos))) {
 
                         for (int i = 0; i < result.size(); i++) {
                             String fileName = (String) result.getKey(i).get("i").getValue();
-                            FileData fileBytes = (FileData) result.getValue(i).get("zipping").getValue();
-                            if(fileBytes == null) {
-                                String filePath = (String) result.getValue(i).get("zippingPath").getValue();
-                                fileBytes = new FileData(new RawFileData(filePath), BaseUtils.getFileExtension(filePath));
-                            }
-
-                            InputStream bis = fileBytes.getRawFile().getInputStream();
                             ZipEntry ze = new ZipEntry(fileName);
                             if(zeroTime)
                                 ze.setTime(0); //to make zip file deterministic
                             zos.putNextEntry(ze);
-                            byte[] buf = new byte[1024];
-                            int len;
-                            while ((len = bis.read(buf)) > 0) {
-                                zos.write(buf, 0, len);
-                            }
-                            bis.close();
+
+                            FileData fileBytes = (FileData) result.getValue(i).get("zipping").getValue();
+                            if(fileBytes != null)
+                                fileBytes.getRawFile().write(zos);
+                            else
+                                Files.copy(Paths.get((String) result.getValue(i).get("zippingPath").getValue()), zos);
                         }
                     }
-                    findProperty("zipped[]").change(new FileData(new RawFileData(zipFile), "zip"), context);
+                    findProperty("zipped[]").change(new FileData(new RawFileData(Files.readAllBytes(zipFile.toPath())), "zip"), context);
                 } finally {
                     BaseUtils.safeDelete(zipFile);
                 }
