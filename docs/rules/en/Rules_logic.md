@@ -541,13 +541,12 @@ title: 'Rules: domain logic'
    anywhere else, and an `i IS Interaction` condition does
    not set the parameter's class.
 
-5. A string that can exceed the length of the target
-   property's class MUST be cut by an explicit cast to that
-   class — `name(x) <- STRING[100](a(x) + b(x))` — or the
-   property's class widened: a set-based assignment does not
-   guarantee implicit cutting, and a longer value can fail with
-   a database error at the assignment or, for a stored
-   property, at `APPLY` — see
+5. When a string has to be kept whole but can exceed the
+   length of the target property's class, the assistant
+   SHOULD widen the property's class: a longer string is cut
+   to that length without an error, both in an assignment for
+   one set of argument values and in a change over a set of
+   objects — see
    [type conversion](../paradigm/Type_conversion.md).
 
 ### Loop rules (`FOR`, `WHILE`)

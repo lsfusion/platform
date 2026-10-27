@@ -2,6 +2,26 @@
 
 ## 7.0
 
+### A string longer than the class of its property is cut in a change over a set of objects as well
+
+A string longer than the class of a `DATA` or local property (`STRING[n]`, `ISTRING[n]`, `BPSTRING[n]`)
+is now cut to `n` characters however it is written
+([#1882](https://github.com/lsfusion/platform/issues/1882)). In 6.x a single value was cut - one
+written to a property without parameters or for one set of its arguments - but a change over a set
+of objects (an assignment with parameters, a `FOR` merged into one change):
+
+- failed with the database error `value too long for type character varying(n)` when the value was
+  computed for each object;
+- kept the value whole in the session when it was one for all the objects - a literal, an argument
+  of the action. A local property held more than `n` characters until a later change of it, or a
+  change that read it, failed with that error, and a stored one failed with it at `APPLY`.
+
+What an upgrading application can notice: a change that failed with this error now writes the cut
+value, so a value that is too long no longer stops an import or an action - it is cut without an
+error, as a single value always was. A local property given one value for a set of objects now holds
+the first `n` characters of it instead of the whole value. Where the whole value matters, the fix is
+a wider class of the property. There is no setting to go back.
+
 ### A `TO` list of the bulk `NEW` that cannot be written is now reported at startup
 
 The bulk form `NEW className WHERE whereExpr TO propertyId(prm1, ..., prmN)` creates an object for

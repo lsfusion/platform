@@ -34,6 +34,8 @@ import lsfusion.server.base.controller.thread.ThreadUtils;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.formula.CastFormulaImpl;
+import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.query.Query;
@@ -51,6 +53,7 @@ import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.parse.StringParseInterface;
 import lsfusion.server.data.type.parse.ValueParseInterface;
 import lsfusion.server.data.value.DataObject;
@@ -80,6 +83,7 @@ import lsfusion.server.logics.action.session.controller.init.SessionCreator;
 import lsfusion.server.logics.action.session.table.*;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.AStringClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.BaseClass;
@@ -703,7 +707,25 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         } 
     }
 
+    // a string longer than the class of the property is cut to it, as a single value is when the session reads it: a change over
+    // a set of objects is written by a query, so a column of that length rejects a longer string, and a value written to several
+    // objects is kept as it is (#1882). A value is cut right away, since in a cast it would take a query to read
+    private PropertyChange<ClassPropertyInterface> cutLongString(DataProperty property, PropertyChange<ClassPropertyInterface> change) {
+        Type type = property.getType();
+        Type changeType;
+        if(type instanceof AStringClass && (changeType = change.expr.getType(change.where)) instanceof AStringClass && ((AStringClass) type).length.less(((AStringClass) changeType).length)) {
+            AStringClass stringClass = (AStringClass) type;
+            ObjectValue value = change.expr.getObjectValue(getQueryEnv());
+            return new PropertyChange<>(change, value instanceof DataObject ?
+                    new DataObject(stringClass.readCast(((DataObject) value).object, changeType), stringClass).getExpr() :
+                    FormulaExpr.create(new CastFormulaImpl(stringClass), ListFact.singleton(change.expr)));
+        }
+        return change;
+    }
+
     public void changePropertyImpl(DataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
+        change = cutLongString(property, change);
+
         PropertyChangeTableUsage<ClassPropertyInterface> changeTable = null;
 
         ImSet<DataProperty> updateChanges;

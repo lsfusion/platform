@@ -1,0 +1,92 @@
+MODULE CutLongString;
+
+REQUIRE TestUtils, Utils;
+
+// a string longer than the class of a DATA or LOCAL property is cut to it, written to one object or to a set of them
+// (#1882): written to a set, a value used to stay whole in the session and fail at APPLY, and a value computed for each
+// object to fail in the database at once
+
+CLASS CutStrItem;
+cutStrName = DATA STRING[5] (CutStrItem);
+cutStrNew = DATA LOCAL BOOLEAN (CutStrItem);
+
+cutStr = DATA LOCAL STRING[5] (INTEGER);
+cutStrLonger = DATA LOCAL STRING[6] (INTEGER);
+cutStrPadded = DATA LOCAL BPSTRING[5] (INTEGER);
+cutStrSingle = DATA LOCAL STRING[5] ();
+
+cutStrAll () = GROUP CONCAT cutStr(INTEGER i), ' ' ORDER i;
+cutStrNames () = GROUP CONCAT cutStrName(CutStrItem i), ' ' IF cutStrNew(i) ORDER i;
+
+cutStrSetAll (TEXT text) {
+    cutStr(INTEGER i) <- text WHERE iterate(i, 1, 3);
+}
+
+cutStrNewItems () {
+    NEW a = CutStrItem { cutStrNew(a) <- TRUE; }
+    NEW b = CutStrItem { cutStrNew(b) <- TRUE; }
+}
+
+testCutStrValueOverSet 'A value written to a set of objects is cut' () {
+    cutStr(INTEGER i) <- 'abcdefgh' WHERE iterate(i, 1, 3);
+    assertEquals(cutStrAll(), 'abcde abcde abcde', 'the value written: ' + cutStrAll());
+}
+
+testCutStrParameterOverSet 'A parameter written to a set of objects is cut' () {
+    cutStrSetAll('a long text');
+    assertEquals(cutStrAll(), 'a lon a lon a lon', 'the parameter written: ' + cutStrAll());
+}
+
+testCutStrComputedOverSet 'A value computed for each object of a set is cut' () {
+    cutStr(INTEGER i) <- 'abcdefgh' + STRING(i) WHERE iterate(i, 1, 3);
+    assertEquals(cutStrAll(), 'abcde abcde abcde', 'the values written: ' + cutStrAll());
+}
+
+testCutStrMergedFor 'A value computed in a FOR merged into one change is cut' () {
+    FOR iterate(INTEGER i, 1, 3) DO
+        cutStr(i) <- 'abcdefgh' + STRING(i);
+    assertEquals(cutStrAll(), 'abcde abcde abcde', 'the values written: ' + cutStrAll());
+}
+
+testCutStrFits 'A value that fits is written whole' () {
+    cutStr(INTEGER i) <- 'abc' + STRING(i) WHERE iterate(i, 1, 3);
+    assertEquals(cutStrAll(), 'abc1 abc2 abc3', 'the values written: ' + cutStrAll());
+}
+
+testCutStrSecondWrite 'Another write to a set of objects next to a cut value' () {
+    cutStr(INTEGER i) <- 'abcdefgh' WHERE iterate(i, 1, 3);
+    cutStr(INTEGER i) <- 'xy' WHERE iterate(i, 3, 4);
+    assertEquals(cutStrAll(), 'abcde abcde xy xy', 'the values written: ' + cutStrAll());
+}
+
+testCutStrReadInAnotherWrite 'A cut value read by another write' () {
+    cutStr(INTEGER i) <- 'abcdefgh' WHERE iterate(i, 1, 3);
+    cutStrLonger(INTEGER i) <- cutStr(i) + STRING(i) WHERE cutStr(i);
+    assertEquals(cutStrLonger(2), 'abcde2', 'the value written: ' + cutStrLonger(2));
+}
+
+testCutStrBlankPadded 'A value written to a set of objects is cut to a BPSTRING' () {
+    cutStrPadded(INTEGER i) <- 'abcdefgh' WHERE iterate(i, 1, 3);
+    assertEquals(cutStrPadded(2), 'abcde', 'the value written: ' + cutStrPadded(2));
+}
+
+testCutStrSingleValue 'A single value is cut' () {
+    cutStrSingle() <- 'abcdefgh';
+    assertEquals(cutStrSingle(), 'abcde', 'the value written: ' + cutStrSingle());
+}
+
+testCutStrStoredValue 'A value written to a set of objects of a stored property is cut and applied' () {
+    cutStrNewItems();
+    cutStrName(CutStrItem i) <- 'abcdefgh' WHERE cutStrNew(i);
+    assertEquals(cutStrNames(), 'abcde abcde', 'the value in the session: ' + cutStrNames());
+    APPLY;
+    assertNull(applyMessage(), 'not applied: ' + applyMessage());
+}
+
+testCutStrStoredComputed 'A value computed for each object of a stored property is cut and applied' () {
+    cutStrNewItems();
+    cutStrName(CutStrItem i) <- 'xyzuvw' + STRING(i) WHERE cutStrNew(i);
+    APPLY;
+    assertNull(applyMessage(), 'not applied: ' + applyMessage());
+    assertEquals((GROUP SUM 1 IF cutStrName(CutStrItem i) = 'xyzuv'), 2, 'objects applied with the cut value');
+}
