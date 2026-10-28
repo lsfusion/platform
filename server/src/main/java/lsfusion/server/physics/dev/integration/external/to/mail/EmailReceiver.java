@@ -277,12 +277,18 @@ public class EmailReceiver {
 
         for (Folder emailFolder : folders) {
 
-            emailFolder.open(Folder.READ_WRITE);
             String idFolder = emailFolder.getName();
             String parentFolder = nullEmpty(emailFolder.getParent().getName());
 
             dataFolderElements.add(Collections.singletonList(idFolder));
             dataFolderParents.add(Arrays.asList(idFolder, parentFolder));
+
+            // a folder that only holds other folders (as [Gmail] in Gmail) cannot be opened
+            if ((emailFolder.getType() & Folder.HOLDS_MESSAGES) == 0) {
+                ServerLoggers.mailLogger.info(String.format("Account %s, folder %s: holds no emails", user, emailFolder.getFullName()));
+                continue;
+            }
+            emailFolder.open(Folder.READ_WRITE);
 
             LocalDateTime dateTimeReceivedEmail = LocalDateTime.now();
 
