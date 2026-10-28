@@ -1,6 +1,7 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Route;
 import com.microsoft.playwright.options.KeyboardModifier;
 import com.microsoft.playwright.options.SelectOption;
@@ -197,7 +198,13 @@ public class UiReactOrdersIT extends UiTest {
         header(form, "cName").dblclick();
         assertThat(names).hasText(new String[] {"Cherry " + s, "Banana " + s, "Apple " + s});
         assertArrows(form, "cName desc");
-        names.first().click();
+        // the name selected, in the first row: the grid sends the row the click makes current a moment later, and the
+        // pivot is shown once the answer to that has come. An answer the pivot gets before its own draws it with no
+        // columns yet, and the late refresh of that drawing - pivotUI refreshes 10 ms after it draws - can report its
+        // layout with no rows after the pivot's own answer has put the name in them (GPivot.onRefresh), and leave the
+        // pivot with no rows
+        page.waitForRequestFinished(new Page.WaitForRequestFinishedOptions().setPredicate(request -> request.postData() != null
+                && request.postData().contains(".ChangeGroupObject/")), () -> names.first().click());
 
         form.locator("[title='Pivot']").click();
         assertThat(form.locator(".pvtTable.bodytable .pvtRowLabel")).hasText(new String[] {"Cherry " + s, "Banana " + s,
