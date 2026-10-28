@@ -52,6 +52,10 @@ mkdirClient '{utils.mkdir.client}' (ISTRING[500] path)  { mkdir(path, TRUE); }
 delete '{utils.delete}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.DeleteAction' (ISTRING[500], BOOLEAN);
 delete '{utils.delete}' (ISTRING[500] path)  { delete(path, NULL); }
 deleteClient '{utils.delete.client}' (ISTRING[500] path)  { delete(path, TRUE); }
+tempDirectory = DATA LOCAL STRING ();
+//prefix
+makeTempDirectory '{utils.make.temp.directory}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.MakeTempDirectoryAction' (STRING);
+makeTempDirectory '{utils.make.temp.directory}' ()  { makeTempDirectory(NULL); }
 //sourcePath, destinationPath, isClient
 copy '{utils.move}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.CopyAction' (ISTRING[500], ISTRING[500], BOOLEAN);
 copy '{utils.move}' (ISTRING[500] source, ISTRING[500] destination)  { copy(source, destination, NULL); }
