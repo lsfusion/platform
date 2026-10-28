@@ -10,6 +10,7 @@ import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.JDBField;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -113,6 +114,17 @@ public class DoubleClass extends IntegralClass<Double> {
     @Override
     public Double getInfiniteValue(boolean min) {
         return min ? -Double.MAX_VALUE : Double.MAX_VALUE;
+    }
+
+    @Override
+    public BigDecimal getSafeCastBound(boolean min) {
+        BigDecimal bound = new BigDecimal(Double.MAX_VALUE).add(new BigDecimal(Math.ulp(Double.MAX_VALUE) / 2));
+        return min ? bound.negate() : bound;
+    }
+
+    @Override
+    public boolean isSafeCastBounded() {
+        return false;
     }
 
     public ExtInt getCharLength() {

@@ -28,6 +28,7 @@ import lsfusion.server.data.type.exec.TypePool;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.data.ArrayClass;
+import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -562,6 +563,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     protected String recursionString;
     protected String safeCastString;
     protected String safeCastIntString;
+    protected String safeCastRoundString;
     protected String safeCastStrString;
 
     private interface ProceedEnsure<T> {
@@ -608,17 +610,20 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     private void proceedEnsureSafeCast(Pair<Type, Integer> castType, Slave slave) {
         // assert type.hasSafeCast;
+        IntegralClass<?> type = (IntegralClass<?>) castType.first;
         Properties properties = new Properties();
-        properties.put("function.name", DefaultSQLSyntax.genSafeCastName(castType.first, castType.second));
-        properties.put("param.type", castType.first.getDB(syntax, recTypes));
-        properties.put("param.minvalue", castType.first.getInfiniteValue(true).toString());
-        properties.put("param.maxvalue", castType.first.getInfiniteValue(false).toString());
+        properties.put("function.name", DefaultSQLSyntax.genSafeCastName(type, castType.second));
+        properties.put("param.type", type.getDB(syntax, recTypes));
+        properties.put("param.minvalue", type.getInfiniteValue(true).toString());
+        properties.put("param.maxvalue", type.getInfiniteValue(false).toString());
+        properties.put("param.minbound", type.getSafeCastBound(true).toPlainString());
+        properties.put("param.maxbound", type.getSafeCastBound(false).toPlainString());
 
         boolean isInt = castType.second == 0 && Settings.get().getSafeCastIntType() == 1;
         boolean isStr = castType.second == 1 && Settings.get().getSafeCastIntType() == 1;
 
         executeEnsure(stringResolver.replacePlaceholders(
-                isInt ? safeCastIntString : isStr ? safeCastStrString : safeCastString, properties), slave);
+                isInt ? (type.isSafeCastBounded() ? safeCastRoundString : safeCastIntString) : isStr ? safeCastStrString : safeCastString, properties), slave);
     }
 
     @Override

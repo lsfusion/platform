@@ -205,9 +205,18 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         return isUnlimited() ? userSID : (userSID.replaceFirst("_", "[").replaceFirst("_", ",") + "]");
     }
 
+    private String getInfiniteString(boolean min) {
+        return (min ? "-" : "") + BaseUtils.replicate('9', getWhole()) + "." + BaseUtils.replicate('9', getScale());
+    }
+
     @Override
     public BigDecimal getInfiniteValue(boolean min) {
-        return new BigDecimal((min ? "-" : "") + BaseUtils.replicate('9', getWhole()) + "." + BaseUtils.replicate('9', getScale()));
+        return new BigDecimal(getInfiniteString(min));
+    }
+
+    @Override
+    public BigDecimal getSafeCastBound(boolean min) {
+        return new BigDecimal(getInfiniteString(min) + "5");
     }
 
     @Override

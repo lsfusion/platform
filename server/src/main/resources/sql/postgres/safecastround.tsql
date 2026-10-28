@@ -1,0 +1,9 @@
+CREATE OR REPLACE FUNCTION ${function.name}(anyelement) RETURNS ${param.type} AS
+$$
+    -- the bounds are exclusive, half of the last unit beyond the extreme values, as CAST rounds to them; CAST of a double to NUMERIC goes through
+    -- the numeric of its 15 significant digits, so that is checked as well (for INTEGER / LONG it only gives NULL within 15 digits of a bound, as the
+    -- inclusive check did), once the value is finite (a double infinity converts to numeric only since PostgreSQL 14)
+    SELECT CASE WHEN CASE WHEN $1 > ${param.minbound} AND $1 < ${param.maxbound}
+                          THEN CAST($1 AS numeric) > ${param.minbound} AND CAST($1 AS numeric) < ${param.maxbound} END
+                THEN CAST($1 AS ${param.type}) ELSE NULL END;
+$$ LANGUAGE 'sql' IMMUTABLE;

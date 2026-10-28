@@ -1,0 +1,82 @@
+MODULE SafeCast;
+
+REQUIRE TestUtils;
+
+// an explicit cast to a numeric type gives NULL only for a value the cast cannot round into the type, not for one
+// just above its maximum that it rounds to the maximum (#1900)
+
+scNumeric = DATA LOCAL NUMERIC (INTEGER);
+// stored, so that the query gets a DOUBLE column
+scStoredDouble = DATA DOUBLE (INTEGER);
+scString = DATA LOCAL STRING (INTEGER);
+
+testScNumericRoundsToMax 'NUMERIC[5,4] of a value that rounds to the maximum' () {
+    scNumeric(1) <- 9.99994;
+    scNumeric(2) <- -9.99994;
+    scNumeric(3) <- 9.99990001;
+    assertEquals(NUMERIC[5,4](scNumeric(1)), 9.9999, 'just above the maximum');
+    assertEquals(NUMERIC[5,4](scNumeric(2)), -9.9999, 'just below the minimum');
+    assertEquals(NUMERIC[5,4](scNumeric(3)), 9.9999, 'a long scale above the maximum');
+}
+
+testScNumericOverflow 'NUMERIC[5,4] of a value that rounds beyond the maximum is NULL' () {
+    scNumeric(1) <- 9.99995;
+    scNumeric(2) <- -9.99995;
+    scNumeric(3) <- 10;
+    assertNull(NUMERIC[5,4](scNumeric(1)), 'rounds to 10.0000');
+    assertNull(NUMERIC[5,4](scNumeric(2)), 'rounds to -10.0000');
+    assertNull(NUMERIC[5,4](scNumeric(3)), 'above the maximum');
+}
+
+testScNumericInRange 'NUMERIC[5,4] of a value in the range rounds as before' () {
+    scNumeric(1) <- 1.23455;
+    scNumeric(2) <- 9.9999;
+    assertEquals(NUMERIC[5,4](scNumeric(1)), 1.2346, 'rounded half up');
+    assertEquals(NUMERIC[5,4](scNumeric(2)), 9.9999, 'the maximum itself');
+}
+
+testScDoubleRoundsToMax 'NUMERIC[5,4] of a DOUBLE that rounds to the maximum' () {
+    scStoredDouble(11) <- 9.99994;
+    scStoredDouble(12) <- 9.99996;
+    // below the bound, but its 15 significant digits the cast goes through round up to it
+    scStoredDouble(13) <- 9.999949999999999d;
+    APPLY;
+    assertEquals(NUMERIC[5,4](scStoredDouble(11)), 9.9999, 'just above the maximum');
+    assertNull(NUMERIC[5,4](scStoredDouble(12)), 'rounds beyond the maximum');
+    assertNull(NUMERIC[5,4](scStoredDouble(13)), 'its 15 digits round beyond the maximum');
+}
+
+testScStringRoundsToMax 'NUMERIC[5,4] and INTEGER of a string that rounds to the maximum' () {
+    scString(1) <- '9.99994';
+    scString(2) <- '9.99995';
+    scString(3) <- '2147483647.4';
+    assertEquals(NUMERIC[5,4](scString(1)), 9.9999, 'just above the maximum');
+    assertNull(NUMERIC[5,4](scString(2)), 'rounds beyond the maximum');
+    assertEquals(INTEGER(scString(3)), 2147483647, 'INTEGER just above the maximum');
+}
+
+testScIntegerRoundsToMax 'INTEGER and LONG of a value that rounds to the maximum' () {
+    scNumeric(1) <- 2147483647.4;
+    scNumeric(2) <- 2147483647.5;
+    scNumeric(3) <- -2147483648.4;
+    scNumeric(4) <- 9223372036854775807.4;
+    assertEquals(INTEGER(scNumeric(1)), 2147483647, 'INTEGER just above the maximum');
+    assertNull(INTEGER(scNumeric(2)), 'INTEGER rounds beyond the maximum');
+    assertEquals(INTEGER(scNumeric(3)), -2147483648l, 'INTEGER just below the minimum');
+    assertEquals(LONG(scNumeric(4)), 9223372036854775807l, 'LONG just above the maximum');
+}
+
+testScIntegerOfDouble 'INTEGER and LONG of a DOUBLE around the maximum' () {
+    scStoredDouble(1) <- 2147483647.4d;
+    scStoredDouble(2) <- 9223372036854775808.0d;
+    APPLY;
+    assertEquals(INTEGER(scStoredDouble(1)), 2147483647, 'INTEGER just above the maximum');
+    assertNull(LONG(scStoredDouble(2)), 'LONG of 2^63, which failed with bigint out of range');
+}
+
+testScDoubleTarget 'DOUBLE of a NUMERIC and of a string' () {
+    scNumeric(1) <- 1.5;
+    scString(1) <- '1.5';
+    assertEquals(DOUBLE(scNumeric(1)), 1.5d, 'a NUMERIC in the range');
+    assertEquals(DOUBLE(scString(1)), 1.5d, 'a string in the range, checked against the bound beyond the DOUBLE maximum');
+}

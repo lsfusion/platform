@@ -58,6 +58,7 @@ public class PostgreDataAdapter extends DataAdapter {
         recursionString = readResource("/sql/postgres/recursion.tsql");
         safeCastString = readResource("/sql/postgres/safecast.tsql");
         safeCastIntString = readResource("/sql/postgres/safecastint.tsql");
+        safeCastRoundString = readResource("/sql/postgres/safecastround.tsql");
         safeCastStrString = readResource("/sql/postgres/safecaststr.tsql");
     }
 

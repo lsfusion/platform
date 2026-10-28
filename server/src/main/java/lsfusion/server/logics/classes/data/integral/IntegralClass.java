@@ -21,6 +21,7 @@ import org.apache.poi.ss.usermodel.CellValue;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
@@ -79,6 +80,15 @@ public abstract class IntegralClass<T extends Number> extends FormatClass<T> imp
     @Override
     public T getInfiniteValue(boolean min) {
         throw new RuntimeException("not supported");
+    }
+
+    // the exclusive bound of the numeric values CAST to this type takes without an overflow: the extreme value plus half of its last unit, as CAST rounds to it
+    public abstract BigDecimal getSafeCastBound(boolean min);
+
+    // whether a number, not only a string, is checked against getSafeCastBound and not against the extreme values: a DOUBLE argument compares
+    // the bound as a DOUBLE, and a DOUBLE target, which can get one, has no DOUBLE beyond its extreme values
+    public boolean isSafeCastBounded() {
+        return true;
     }
     
     public Number getSafeInfiniteValue() { // бесконечное число которое можно сколько угодно суммировать и не выйти за тип
