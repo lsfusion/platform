@@ -5,6 +5,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
+import lsfusion.server.physics.dev.integration.external.to.file.MakeTempDirectoryAction;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.File;
@@ -54,6 +55,7 @@ public class ClearFusionTempFilesAction extends InternalAction {
     private boolean needDeleteDir(File dir) {
         String name = dir.getName();
         return name.startsWith("lsfusiondebug")
+                || name.startsWith(MakeTempDirectoryAction.PREFIX)
                 || ((name.startsWith("gwtc") || name.startsWith("gwt-codeserver")) && name.endsWith(".tmp")); //GWT temp dirs
     }
 
