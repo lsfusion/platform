@@ -102,6 +102,7 @@ import lsfusion.server.logics.property.CurrentEnvironmentProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.infer.AlgType;
+import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.AbstractDataProperty;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
@@ -1831,7 +1832,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     ImSet<Property> addedObjects =idChanges.apply(session, LM, isFirstStart);
                     apply(session);// when object A.b is added no incremental logics works, so we need to reclaculate materialiations manually
                     for(DBStoredProperty property : newDBStructure.storedProperties)
-                        if(Property.depends(property.property, addedObjects) && !createProperties.contains(property))
+                        if(Property.depends(property.property, addedObjects) && !createProperties.contains(property) && (!isFirstStart || canHaveValuesOnFirstStart(property.property)))
                             createProperties.add(property);
 
                     startLog("Migrating reflection properties and actions");
@@ -1919,6 +1920,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
             runWithStartLog(() -> sql.modifyColumns(entry.getKey(), entry.getValue()),
                     "Changing type of property columns (" + entry.getValue().size() + ") in table " + entry.getKey().getName());
         }
+    }
+
+    // on the first start the only objects are the static ones, so a property with a parameter of a class that has none of them stays empty
+    // (and is not recalculated: its query can use a database function the application creates only at the start)
+    private static boolean canHaveValuesOnFirstStart(Property<?> property) {
+        for (ValueClass interfaceClass : property.getInterfaceClasses(ClassType.materializeChangePolicy).valueIt())
+            if (interfaceClass instanceof CustomClass && !((CustomClass) interfaceClass).hasConcreteStaticObjects())
+                return false;
+        return true;
     }
 
     private static void buildPropertiesDiff(OldDBStructure oldDBStructure, NewDBStructure newDBStructure, List<DBStoredProperty> createProperties, Map<ImplementTable, Map<Field, Type>> changePropertyTypes, List<MoveDBProperty> moveProperties, List<DBStoredProperty> dropProperties) {

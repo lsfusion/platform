@@ -1,0 +1,30 @@
+MODULE FirstStartRecalculation;
+
+REQUIRE TestUtils, SystemEvents;
+
+// the first start, on an empty database, recalculated every materialized property depending on a static object, one
+// with a parameter of a class without static objects too, which has no values there. That ran before onStarted, so
+// where such a property used a database function the application creates in onStarted, the start failed with
+// "function ... does not exist" (fixed for #1935). The tests start on a database of their own, so with that back the
+// test server does not start
+
+CLASS FsrKind { a, b }
+CLASS FsrOrder;
+fsrDate = DATA DATE (FsrOrder);
+fsrKind = DATA FsrKind (FsrOrder);
+
+fsrNextDay = FORMULA NULL DATE PG 'fsr_next_day($1)';
+fsrDue (FsrOrder o) = fsrNextDay(fsrDate(o)) IF fsrKind(o) == FsrKind.a MATERIALIZED;
+
+onStarted() + {
+    INTERNAL DB r!'CREATE OR REPLACE FUNCTION fsr_next_day(d date) RETURNS date AS 'SELECT d + 1' LANGUAGE sql IMMUTABLE'!;
+}
+
+testFsrDue 'A materialized property using a function created in onStarted' () {
+    NEW o = FsrOrder {
+        fsrDate(o) <- 2026_10_29;
+        fsrKind(o) <- FsrKind.a;
+        APPLY;
+        assertEquals(fsrDue(o), 2026_10_30, 'the next day');
+    }
+}
