@@ -16,6 +16,7 @@ The `(ISTRING path, ...)` actions run on the server by default. The `isClient = 
 | `fileExists[ISTRING]` / `fileExistsClient[ISTRING]`       | existence check; result in `fileExists[]`                                    |
 | `mkdir[ISTRING]` / `mkdirClient[ISTRING]`                 | create a directory                                                           |
 | `delete[ISTRING]` / `deleteClient[ISTRING]`               | delete a file or directory                                                   |
+| `makeTempDirectory[]`                                     | create a new empty directory with a unique name in the server temporary folder and write its absolute path, with `/` as the separator and a trailing `/`, into `tempDirectory[]`. The directory is not deleted automatically, the caller deletes it with `delete` |
 | `copy[ISTRING, ISTRING]` / `copyClient[…]`                | copy                                                                         |
 | `move[ISTRING, ISTRING]` / `moveClient[…]`                | move                                                                         |
 | `getFileSize[FILE]`                                       | file size in bytes, written into `fileSize[]`                                |

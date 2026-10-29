@@ -16,6 +16,7 @@ title: 'Utils'
 | `fileExists[ISTRING]` / `fileExistsClient[ISTRING]`       | проверка существования; результат в `fileExists[]`                         |
 | `mkdir[ISTRING]` / `mkdirClient[ISTRING]`                 | создать директорию                                                         |
 | `delete[ISTRING]` / `deleteClient[ISTRING]`               | удалить файл или директорию                                                |
+| `makeTempDirectory[]`                                     | создать новую пустую директорию с уникальным именем во временной папке сервера и записать её абсолютный путь, с `/` в качестве разделителя и `/` в конце, в `tempDirectory[]`. Директория не удаляется автоматически, её удаляет вызывающий код через `delete` |
 | `copy[ISTRING, ISTRING]` / `copyClient[…]`                | скопировать                                                                |
 | `move[ISTRING, ISTRING]` / `moveClient[…]`                | переместить                                                                |
 | `getFileSize[FILE]`                                       | размер файла в байтах в `fileSize[]`                                       |
