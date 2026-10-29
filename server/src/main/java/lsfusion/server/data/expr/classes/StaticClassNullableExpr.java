@@ -36,10 +36,14 @@ public abstract class StaticClassNullableExpr extends NullableExpr implements St
     public abstract ConcreteClass getStaticClass(KeyType keyType);
 
     public Type getType(KeyType keyType) {
-        return getStaticClass(keyType).getType();
+        ConcreteClass staticClass = getStaticClass(keyType);
+        return staticClass != null ? staticClass.getType() : null;
     }
     public Stat getTypeStat(KeyStat keyStat, boolean forJoin) {
-        return getStaticClass().getTypeStat(forJoin);
+        ConcreteClass staticClass = getStaticClass();
+        if(staticClass == null)
+            return Stat.ALOT;
+        return staticClass.getTypeStat(forJoin);
     }
 
     @Override

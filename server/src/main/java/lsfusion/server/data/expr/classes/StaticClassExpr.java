@@ -20,7 +20,10 @@ import lsfusion.server.logics.classes.user.set.AndClassSet;
 public abstract class StaticClassExpr extends BaseExpr implements StaticClassExprInterface {
 
     public static ClassExprWhere getClassWhere(StaticClassExprInterface expr, AndClassSet classes) {
-        return expr.getStaticClass().inSet(classes)?ClassExprWhere.TRUE:ClassExprWhere.FALSE;
+        ConcreteClass staticClass = expr.getStaticClass();
+        if(staticClass == null)
+            return ClassExprWhere.TRUE;
+        return staticClass.inSet(classes)?ClassExprWhere.TRUE:ClassExprWhere.FALSE;
     }
     public ClassExprWhere getClassWhere(AndClassSet classes) {
         return getClassWhere(this, classes);
@@ -60,7 +63,8 @@ public abstract class StaticClassExpr extends BaseExpr implements StaticClassExp
     }
 
     public static boolean addAndClassSet(StaticClassExprInterface expr, AndClassSet add) {
-        return expr.getStaticClass().inSet(add);
+        ConcreteClass staticClass = expr.getStaticClass();
+        return staticClass == null || staticClass.inSet(add);
     }
     public boolean addAndClassSet(MMap<VariableSingleClassExpr, AndClassSet> and, AndClassSet add) {
         return addAndClassSet(this, add);
