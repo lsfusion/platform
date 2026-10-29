@@ -1832,7 +1832,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     ImSet<Property> addedObjects =idChanges.apply(session, LM, isFirstStart);
                     apply(session);// when object A.b is added no incremental logics works, so we need to reclaculate materialiations manually
                     for(DBStoredProperty property : newDBStructure.storedProperties)
-                        if(Property.depends(property.property, addedObjects) && !createProperties.contains(property) && (!isFirstStart || canHaveValuesOnFirstStart(property.property)))
+                        if(Property.depends(property.property, addedObjects) && !createProperties.contains(property))
                             createProperties.add(property);
 
                     startLog("Migrating reflection properties and actions");
@@ -1841,9 +1841,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
 
                         startLog("Recalculating materializations");
+                        Set<Long> oldClassIDs = new HashSet<>();
+                        for (DBConcreteClass oldClass : oldDBStructure.concreteClasses)
+                            oldClassIDs.add(oldClass.ID);
                         List<AggregateProperty> recalculateProperties = new ArrayList<>();
                         for (DBStoredProperty property : createProperties) {
-                            if (property.property instanceof AggregateProperty) {
+                            if (property.property instanceof AggregateProperty && canHaveValues(property.property, oldClassIDs)) {
                                 recalculateProperties.add((AggregateProperty) property.property);
                             }
                         }
@@ -1922,13 +1925,21 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    // on the first start the only objects are the static ones, so a property with a parameter of a class that has none of them stays empty
-    // (and is not recalculated: its query can use a database function the application creates only at the start)
-    private static boolean canHaveValuesOnFirstStart(Property<?> property) {
+    // when the materializations are recalculated, the only objects of a class are its static ones and, if it was in the database before this start,
+    // the ones it had, so a property with a parameter of a class that has none of them stays empty (and is not recalculated: its query can use a
+    // database function the application creates only at the start)
+    private static boolean canHaveValues(Property<?> property, Set<Long> oldClassIDs) {
         for (ValueClass interfaceClass : property.getInterfaceClasses(ClassType.materializeChangePolicy).valueIt())
-            if (interfaceClass instanceof CustomClass && !((CustomClass) interfaceClass).hasConcreteStaticObjects())
+            if (interfaceClass instanceof CustomClass && !canHaveObjects((CustomClass) interfaceClass, oldClassIDs))
                 return false;
         return true;
+    }
+
+    private static boolean canHaveObjects(CustomClass customClass, Set<Long> oldClassIDs) {
+        for (CustomClass child : customClass.getAllChildren())
+            if (child instanceof ConcreteCustomClass && (oldClassIDs.contains(child.ID) || child.hasConcreteStaticObjects()))
+                return true;
+        return false;
     }
 
     private static void buildPropertiesDiff(OldDBStructure oldDBStructure, NewDBStructure newDBStructure, List<DBStoredProperty> createProperties, Map<ImplementTable, Map<Field, Type>> changePropertyTypes, List<MoveDBProperty> moveProperties, List<DBStoredProperty> dropProperties) {

@@ -6,7 +6,8 @@ REQUIRE TestUtils, SystemEvents;
 // with a parameter of a class without static objects too, which has no values there. That ran before onStarted, so
 // where such a property used a database function the application creates in onStarted, the start failed with
 // "function ... does not exist" (fixed for #1935). The tests start on a database of their own, so with that back the
-// test server does not start
+// test server does not start. A start on an existing database recalculated such a property too, when its column was
+// new, and failed the same way where the class was new as well (fixed for #1944)
 
 CLASS FsrKind { a, b }
 CLASS FsrOrder;
