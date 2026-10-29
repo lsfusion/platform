@@ -17,6 +17,8 @@ V<version number> {
 
 The *version number* is a set of one or more numbers separated by a dot. When comparing the numbers of two versions, the first numbers of the versions are compared first, then if equal the second are compared, and so on. If one version contains fewer numbers than another, during comparison zeros are added to the a version with fewer numbers. For example, version number `1.3` is equivalent to number `1.3.0.0`, and version `1.2` is higher than version `1.1.3`. In the migration file, the version number is indicated with a capital letter `V`: `V1.0`, `V2.0.11`.
 
+The server reads only one migration file — the first resource named `migration.script` found in the CLASSPATH. Files from different jar files and folders are not merged, and the file's location cannot be set by a separate parameter. The server writes the path of the file it has read to the `start` [log](Journals_and_logs.md#logs). If an outdated copy of the file comes earlier in the CLASSPATH than the intended one, it is the copy that is read: only its blocks are applied, and once the version stored in the database is higher than the maximum version of these blocks, the start fails with the error `version of migration script (X) is less than version of database (Y)`, whose text also gives the path of the file read.
+
 The migration file allows you to handle changes to [canonical names](Naming.md#canonicalname) of system elements, which occur when renaming and/or transferring to another namespace. Changes are of the following types: 
 
 ```

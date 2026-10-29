@@ -5,6 +5,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 
+import java.net.URL;
 import java.util.*;
 
 public class MigrationManager {
@@ -19,7 +20,10 @@ public class MigrationManager {
     private final TreeMap<MigrationVersion, List<SIDChange>> objectSIDChanges = new TreeMap<>(migrationVersionComparator);
     private final TreeMap<MigrationVersion, List<SIDChange>> navigatorCNChanges = new TreeMap<>(migrationVersionComparator);
     
-    public MigrationManager() {
+    private final URL scriptURL;
+
+    public MigrationManager(URL scriptURL) {
+        this.scriptURL = scriptURL;
     }
     
     public Map<String, String> getPropertyCNChangesAfter(MigrationVersion versionAfter) {
@@ -110,9 +114,10 @@ public class MigrationManager {
 
     public void checkMigrationVersion(MigrationVersion oldMigrationVersion) {
         if (maxMigrationVersion != null && maxMigrationVersion.compare(oldMigrationVersion) < 0) {
-            throw new RuntimeException(String.format("version of migration script (%s) is less than version of database (%s).",
+            throw new RuntimeException(String.format("version of migration script (%s) is less than version of database (%s). The script was read from %s: only the first migration.script on the classpath is read.",
                     maxMigrationVersion.toString(),
-                    oldMigrationVersion.toString())
+                    oldMigrationVersion.toString(),
+                    scriptURL)
             );
         }
     }

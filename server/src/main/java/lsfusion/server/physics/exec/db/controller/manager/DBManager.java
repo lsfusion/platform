@@ -136,6 +136,7 @@ import org.springframework.util.Assert;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
@@ -2517,10 +2518,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         if (!migrationScriptWasRead) {
             try {
-                migrationManager = new MigrationManager();
-                InputStream scriptStream = getClass().getResourceAsStream("/migration.script");
-                if (scriptStream != null) {
-                    ANTLRInputStream stream = new ANTLRInputStream(scriptStream);
+                URL scriptURL = getClass().getResource("/migration.script");
+                migrationManager = new MigrationManager(scriptURL);
+                if (scriptURL != null) {
+                    startLog("Reading migration script " + scriptURL);
+                    ANTLRInputStream stream = new ANTLRInputStream(scriptURL.openStream());
                     MigrationScriptLexer lexer = new MigrationScriptLexer(stream);
                     MigrationScriptParser parser = new MigrationScriptParser(new CommonTokenStream(lexer));
 

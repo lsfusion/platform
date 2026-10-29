@@ -33,7 +33,7 @@ public class MigrationScriptTest {
     }
 
     private static class Script {
-        private final MigrationManager manager = new MigrationManager();
+        private final MigrationManager manager = new MigrationManager(null);
         private final MigrationScriptLexer lexer;
         private final MigrationScriptParser parser;
 
