@@ -58,6 +58,14 @@ public class GwtClientUtils {
         }, { once: true });
     }-*/;
 
+    // browsers stop firing unload (Chrome disables it by default), while pagehide is fired whenever the page is closed, reloaded or left
+    // persisted is true when the page goes to the back/forward cache and can be shown again
+    public static native void addPageHideListener(Consumer<Boolean> listener)/*-{
+        $wnd.addEventListener('pagehide', function (event) {
+            listener.@java.util.function.Consumer::accept(*)(event.persisted);
+        });
+    }-*/;
+
     public static String getPageUrlPreservingParameters(String pageUrl) {
         return getWebAppBaseURL() + pageUrl + Window.Location.getQueryString();
     }
