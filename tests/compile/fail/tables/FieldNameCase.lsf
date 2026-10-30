@@ -1,0 +1,12 @@
+MODULE FieldNameCase;
+
+REQUIRE System;
+
+// field names go into SQL unquoted, and the database may not tell their letter case apart, so these two fields of one
+// table can be one column there: the logic has to be rejected, rather than the start failing on the database or, with
+// startServerAnyWay, the two properties sharing that column
+CLASS Item;
+TABLE item (Item);
+
+fooBar = DATA INTEGER (Item);
+foobar = DATA INTEGER (Item);

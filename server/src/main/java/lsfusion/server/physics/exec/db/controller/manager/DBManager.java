@@ -1496,17 +1496,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return newTableIndexesNames;
     }
 
-    private void checkUniquePropertyDBName(NewDBStructure struct) {
-        Map<Pair<String, String>, DBStoredProperty> sids = new HashMap<>();
-        for (DBStoredProperty property : struct.storedProperties) {
-            Pair<String, String> key = new Pair<>(property.getDBName(), property.getTable().getName());
-            if (sids.containsKey(key)) {
-                startLogError(String.format("Equal sid '%s' in table '%s': %s and %s", key.first, key.second, sids.get(key).getCanonicalName(), property.getCanonicalName()));
-            }
-            sids.put(key, property);
-         }
-    }
-
     public static <P extends PropertyInterface> Where getIncorrectWhere(ImplementTable table, BaseClass baseClass, final ImRevMap<KeyField, KeyExpr> mapKeys) {
         final Where inTable = baseClass.getInconsistentTable(table).join(mapKeys).getWhere();
         Where correctClasses = table.getClasses().getWhere(mapKeys, true, IsClassType.INCONSISTENT);
@@ -1732,8 +1721,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             MigrationVersion newMigrationVersion = migrationManager.getCurrentMigrationVersion(oldDBStructure.migrationVersion);
             NewDBStructure newDBStructure = new NewDBStructure(newMigrationVersion, sql);
-
-            checkUniquePropertyDBName(newDBStructure);
 
             // DROP / RENAME indices
             Set<IndexData<Field>> existingIndexes = new HashSet<>();

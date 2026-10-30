@@ -2,6 +2,35 @@
 
 ## 7.0
 
+### Field names of one table that differ only in letter case are now reported at startup
+
+Two stored properties of one table whose field names differ only in letter case - `fooBar` and
+`foobar`, or an explicit field name (`MATERIALIZED 'name'`) that differs from another one only in
+case - are one column in PostgreSQL. Such logic used to load, and the start failed on the database
+with `column ... already exists`. With `startServerAnyWay` it started instead, and from then on the
+two properties shared that column: every later start passed, with or without the setting, one
+property read back the values written to the other, and writing both in one transaction failed with
+`multiple assignments to same column`. Such logic is now rejected when it loads
+([#1946](https://github.com/lsfusion/platform/issues/1946)): `Field '...' was already added to
+'...' table as '...': the database may not distinguish field names that differ only in letter
+case`.
+
+Explicit field names in letters other than Latin are compared ignoring case as well, although
+PostgreSQL keeps them apart: two such names in one table, which used to work, are now rejected too,
+and one of them has to be changed.
+
+What an upgrading application can notice: a database where two properties already share a column
+no longer starts, with or without `startServerAnyWay`. The values in that column are those of
+whichever property was written last, and nothing can tell them apart. Removing one of the two
+properties is not enough, even with `startServerAnyWay`: its column, which is the shared one, is
+renamed away as the column of a removed property, the start fails on the column of the property that
+is left, and the synchronization is rolled back. What works is one start that removes one property,
+renames the other in `migration.script` (`STORED PROPERTY Test.fooBar[Test.Item] -> Test.fooBar2`)
+and runs with `startServerAnyWay`: the rename takes the column and its values to the renamed
+property, and the setting lets the start skip dropping the column of the removed property, which
+the rename has already taken away. Later starts need no setting. There is no setting to switch the
+check off.
+
 ### A `TO` list of the bulk `NEW` that cannot be written is now reported at startup
 
 The bulk form `NEW className WHERE whereExpr TO propertyId(prm1, ..., prmN)` creates an object for

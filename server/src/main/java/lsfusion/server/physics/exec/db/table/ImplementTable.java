@@ -210,6 +210,11 @@ public class ImplementTable extends DBTable { // последний интерф
                         "to the same field name due to length truncation. In this case you can either change " +
                         "the property name(s) or change the naming policy (see documentation for details)", addedField.getName(), this));
             }
+            if (addedField.getName().equalsIgnoreCase(field.getName())) { // field names go into SQL unquoted, so the database may not tell their letter case apart
+                throw new DuplicateFieldNameException(String.format("Field '%s' was already added to '%s' table as '%s': the database may not distinguish " +
+                        "field names that differ only in letter case. In this case you can either change the property name(s) or set the field name " +
+                        "explicitly", addedField.getName(), this, field.getName()));
+            }
         }
     }
 
