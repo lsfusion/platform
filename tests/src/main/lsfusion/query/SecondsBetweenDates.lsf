@@ -1,0 +1,15 @@
+MODULE SecondsBetweenDates;
+
+REQUIRE TestUtils, Time;
+
+// secondsBetweenDates is the first value minus the second for TIME, DATETIME and ZDATETIME alike (#1924: it was DATETIME only,
+// and the two-value subtractSeconds it replaces is the second minus the first)
+
+testSecondsBetweenDates 'secondsBetweenDates of TIME, DATETIME and ZDATETIME' () {
+    assertEquals(secondsBetweenDates(10:00:30, 09:00), 3630, 'TIME');
+    assertEquals(secondsBetweenDates(09:00, 10:00:30), -3630, 'TIME, the earlier value first');
+    assertEquals(secondsBetweenDates(2026_10_30_10:00:30, 2026_10_29_10:00), 86430, 'DATETIME');
+    assertEquals(secondsBetweenDates(2026_10_29_10:00, 2026_10_30_10:00:30), -86430, 'DATETIME, the earlier value first');
+    assertEquals(secondsBetweenDates(ZDATETIME(2026_10_30_10:00:30), ZDATETIME(2026_10_30_10:00)), 30, 'ZDATETIME');
+    assertEquals(secondsBetweenDates(ZDATETIME(2026_10_30_10:00), ZDATETIME(2026_10_30_10:00:30)), -30, 'ZDATETIME, the earlier value first');
+}

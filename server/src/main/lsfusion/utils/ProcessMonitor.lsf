@@ -113,8 +113,8 @@ blockedProcess '{process.monitor.blocked.process}' (STRING[10] i) = statusJavaPr
 
 intToColor = FORMULA '(256*256*($1)+256*($2)+($3))::integer';
 
-deltaDateTimeProcess(STRING[10] i) = subtractSeconds(dateTimeSQLProcess(i), currentDateTime());
-deltaTransactionProcess(STRING[10] i) = subtractSeconds(startTransactionSQLProcess(i), currentDateTime());
+deltaDateTimeProcess(STRING[10] i) = secondsBetweenDates(currentDateTime(), dateTimeSQLProcess(i));
+deltaTransactionProcess(STRING[10] i) = secondsBetweenDates(currentDateTime(), startTransactionSQLProcess(i));
 
 red(STRING[10] i) = 255 IF i IS STRING[10];
 green(STRING[10] i) = CASE

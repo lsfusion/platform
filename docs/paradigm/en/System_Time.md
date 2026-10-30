@@ -72,10 +72,9 @@ A `ZDATETIME` is converted to `DATE`, `DATETIME` and `TIME` by [type conversion]
 | `sumMinutes[…]`                                           | adds the given number of minutes; overloaded for `TIME`, `DATETIME`, `ZDATETIME`, returns the same class; PG `$1 + $2 * interval '1 minute'`. On `TIME` the result runs over a 24-hour clock and wraps past midnight (e.g. `23:30` + 60 → `00:30`, a negative count moves back past `00:00`); on `DATETIME` / `ZDATETIME` it rolls into the neighbouring day, moving the date part |
 | `sumSeconds[…]`                                           | adds the given number of seconds; same overloads, and the same 24-hour wrap on `TIME` as `sumMinutes[…]`; PG `$1 + $2 * interval '1 second'`                 |
 | `subtractSeconds[DATETIME, LONG]` / `subtractSeconds[ZDATETIME, LONG]` | subtract the given number of seconds from a `DATETIME` / `ZDATETIME`, return the same class; PG `$1 - $2 * interval '1 second'`                  |
-| `subtractSeconds[TIME, TIME]` / `subtractSeconds[DATETIME, DATETIME]` / `subtractSeconds[ZDATETIME, ZDATETIME]` | difference of two same-class values in whole seconds as `LONG` (the fraction is truncated), computed as the **second** argument minus the **first** (`subtractSeconds(a, b) = b - a`, non-negative when `b` is the later value). The direction is the opposite of the same-named `subtractSeconds[DATETIME, LONG]`, which subtracts its second argument from the first, and of `secondsBetweenDates[DATETIME, DATETIME]` below. Seconds elapsed since a moment are in the recipes below; PG `trunc(extract(epoch from (b - a)))` |
-| `daysBetweenDates[DATE, DATE]`                            | difference of two dates in days as `INTEGER`, computed as the **first** argument minus the **second** (`daysBetweenDates(a, b) = a - b`, positive when `a` is the later date); PG `$1 - $2`. Note the operand order is the opposite of `subtractSeconds` |
+| `daysBetweenDates[DATE, DATE]`                            | difference of two dates in days as `INTEGER`, computed as the **first** argument minus the **second** (`daysBetweenDates(a, b) = a - b`, positive when `a` is the later date); PG `$1 - $2` |
 | `daysBetweenDatesIncl[DATE, DATE]`                        | inclusive day count between two dates, counting both ends: the **first** argument minus the **second**, plus 1 (`daysBetweenDatesIncl(a, b) = a - b + 1`) — the same operand order as `daysBetweenDates[DATE, DATE]` |
-| `secondsBetweenDates[DATETIME, DATETIME]`                 | difference of two moments in whole seconds as `LONG` (the fraction is truncated), computed as the **first** argument minus the **second** (`secondsBetweenDates(a, b) = a - b`, non-negative when `a` is the later moment); PG `trunc(extract(epoch from $1) - extract(epoch from $2))` |
+| `secondsBetweenDates[TIME, TIME]` / `secondsBetweenDates[DATETIME, DATETIME]` / `secondsBetweenDates[ZDATETIME, ZDATETIME]` | difference of two same-class values in whole seconds as `LONG` (the fraction is truncated), computed as the **first** argument minus the **second** (`secondsBetweenDates(a, b) = a - b`, non-negative when `a` is the later value); PG `trunc(extract(epoch from $1) - extract(epoch from $2))` |
 | `dateTimeToDateTime[DATE, TIME]`                          | combines a `DATE` and a `TIME` into a `DATETIME` through a text round-trip; PG `to_timestamp(<date> \|\| <time>, 'YYYY-MM-DDHH24:MI:SS.MS')::timestamp`        |
 | `dateFromYearWeekDay[INTEGER, INTEGER, INTEGER]`          | builds a `DATE` from year, ISO-8601 week number, and ISO day of week (1 = Monday … 7 = Sunday); PG `to_date($1 \|\| ' ' \|\| $2 \|\| ' ' \|\| $3, 'IYYY IW ID')`     |
 | `distanceDOWDOW[DOW, DOW]`                                | forward distance in days from the first day of week to the second, wrapping over the 0–6 week: `number[DOW]` of the second minus that of the first, plus 7 when that would be negative |
@@ -130,9 +129,8 @@ firstDayOfMonth(d)
 lastDayOfMonth(d)
 
 // seconds elapsed since the moment t, non-negative while t is in the past:
-// the later moment is the first argument of secondsBetweenDates and the second argument of subtractSeconds
+// the later moment is the first argument
 secondsBetweenDates(currentDateTime(), t)
-subtractSeconds(t, currentDateTime())
 ```
 
 ### See also

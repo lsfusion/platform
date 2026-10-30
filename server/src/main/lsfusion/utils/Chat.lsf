@@ -292,7 +292,7 @@ editingMessage '{chat.editing.message}' = DATA LOCAL Message ();
 activateMessage ABSTRACT LIST ();
 editMessage '{chat.edit.message}' (Chat c, Message m) { 
     IF own(m) THEN {
-        IF subtractSeconds(dateTime(m), currentDateTime()) < 3600 THEN {
+        IF secondsBetweenDates(currentDateTime(), dateTime(m)) < 3600 THEN {
             editingMessage() <- m;
             message() <- text(m);
             attachmentName() <- attachmentName(m);
@@ -323,7 +323,7 @@ stopEditing () {
 
 deleteMessage '{chat.delete.message}' (Message m)  { 
     IF own(m) THEN {
-        IF subtractSeconds(dateTime(m), currentDateTime()) < 3600 THEN {
+        IF secondsBetweenDates(currentDateTime(), dateTime(m)) < 3600 THEN {
             DELETE m;
             APPLY;
         } ELSE MESSAGE '{chat.delete.message.message1}';
@@ -331,8 +331,8 @@ deleteMessage '{chat.delete.message}' (Message m)  {
 }
 
 // ------ Full chat form
-online (CustomUser user) = subtractSeconds(lastActivity(user), currentDateTime()) < 300;
-away (CustomUser user) = subtractSeconds(lastActivity(user), currentDateTime()) < 3600;
+online (CustomUser user) = secondsBetweenDates(currentDateTime(), lastActivity(user)) < 300;
+away (CustomUser user) = secondsBetweenDates(currentDateTime(), lastActivity(user)) < 3600;
 backgroundUser (CustomUser user) = IF online(user) THEN RGB(0, 255, 0) ELSE IF away(user) THEN RGB(255, 255, 0);
 
 backgroundMessage (Message m) = IF NOT own(m) THEN NULL ELSE IF seenCount(m) < 2 THEN RGB(247, 247, 247) ELSE RGB(240, 244, 248);

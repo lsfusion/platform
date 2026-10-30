@@ -983,25 +983,25 @@ DESIGN changes {
 }
 
 limitPing '{system.events.limit.ping}' = DATA INTEGER ();
-limitPingSum '{system.events.limit.ping.sum}' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo
+limitPingSum '{system.events.limit.ping.sum}' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP SUM secondsBetweenDates(DATETIME dTo, DATETIME dFrom) BY DATETIME dlimitDTo
     IF pingFromTo(computer, dFrom, dTo) > limitPing() AND limitDFrom < dFrom AND dlimitDTo > dTo;
 averagePingDateFrom '{system.events.average.ping.date.from}' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
-    [GROUP SUM pingFromTo(computer, DATETIME dFrom, DATETIME dTo) * subtractSeconds(dFrom, dTo) BY DATETIME dlimitDTo IF limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo) / 
-    [GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo IF pingFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo);
+    [GROUP SUM pingFromTo(computer, DATETIME dFrom, DATETIME dTo) * secondsBetweenDates(dTo, dFrom) BY DATETIME dlimitDTo IF limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo) / 
+    [GROUP SUM secondsBetweenDates(DATETIME dTo, DATETIME dFrom) BY DATETIME dlimitDTo IF pingFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo);
     
 limitMaxTotalMemory '{system.events.limit.max.total.memory}' = DATA INTEGER();
-limitMaxTotalMemorySum '{system.events.limit.max.total.memory.sum}' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo
+limitMaxTotalMemorySum '{system.events.limit.max.total.memory.sum}' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP SUM secondsBetweenDates(DATETIME dTo, DATETIME dFrom) BY DATETIME dlimitDTo
     IF maxTotalMemoryFromTo(computer, dFrom, dTo) > limitMaxTotalMemory() AND limitDFrom < dFrom AND dlimitDTo > dTo;
 averageMaxTotalMemoryDateFrom '{system.events.average.max.total.memory.date.from}' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
-    [GROUP SUM maxTotalMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) * subtractSeconds(dFrom, dTo) BY DATETIME dlimitDTo IF limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo) / 
-    [GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo IF maxTotalMemoryFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo);        
+    [GROUP SUM maxTotalMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) * secondsBetweenDates(dTo, dFrom) BY DATETIME dlimitDTo IF limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo) / 
+    [GROUP SUM secondsBetweenDates(DATETIME dTo, DATETIME dFrom) BY DATETIME dlimitDTo IF maxTotalMemoryFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo);        
 
 limitMaxUsedMemory '{system.events.limit.max.used.memory}' = DATA INTEGER();   
-limitMaxUsedMemorySum '{system.events.limit.max.used.memory.sum}' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo
+limitMaxUsedMemorySum '{system.events.limit.max.used.memory.sum}' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP SUM secondsBetweenDates(DATETIME dTo, DATETIME dFrom) BY DATETIME dlimitDTo
     IF maxUsedMemoryFromTo(computer, dFrom, dTo) > limitMaxUsedMemory() AND limitDFrom < dFrom AND dlimitDTo > dTo;
 averageMaxUsedMemoryDateFrom '{system.events.average.max.used.memory.date.from}' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
-    [GROUP SUM maxUsedMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) * subtractSeconds(dFrom, dTo) BY DATETIME dlimitDTo IF limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo) / 
-    [GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo IF maxUsedMemoryFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo);        
+    [GROUP SUM maxUsedMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) * secondsBetweenDates(dTo, dFrom) BY DATETIME dlimitDTo IF limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo) / 
+    [GROUP SUM secondsBetweenDates(DATETIME dTo, DATETIME dFrom) BY DATETIME dlimitDTo IF maxUsedMemoryFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo);        
 
 FORM pings '{system.events.form.pings}'
     OBJECTS limits = (limitDFrom = DATETIME, limitDTo = DATETIME) PANEL, c = Computer, dates = (dFrom = DATETIME, dTo = DATETIME)
@@ -1009,7 +1009,7 @@ FORM pings '{system.events.form.pings}'
                            physicalMemory, totalMemory, maximumMemory, freeMemory,
                            javaVersion, is64Java                                       
     PROPERTIES dFromObj = VALUE(dFrom), dToObj = VALUE(dTo), limitDFromObj = VALUE(limitDFrom), limitDToObj = VALUE(limitDTo),
-               limitPing() DRAW limits, limitMaxTotalMemory() DRAW limits, limitMaxUsedMemory() DRAW limits, subtractSeconds(dFrom, dTo)
+               limitPing() DRAW limits, limitMaxTotalMemory() DRAW limits, limitMaxUsedMemory() DRAW limits, secondsBetweenDates(dTo, dFrom)
     PROPERTIES(c, limitDFrom, limitDTo) DRAW c averagePingDateFrom, averageMaxTotalMemoryDateFrom, averageMaxUsedMemoryDateFrom, 
                                                  limitPingSum, limitMaxTotalMemorySum, limitMaxUsedMemorySum
     PROPERTIES(c,dFrom,dTo) READONLY pingFromTo, 
@@ -1041,7 +1041,7 @@ DESIGN pings {
                 MOVE BOX(dates);
                 PROPERTY(dFromObj) { caption = '{system.events.form.pings.caption.time.from}'; }
                 PROPERTY(dToObj) { caption = '{system.events.form.pings.caption.time.to}'; }
-                PROPERTY(subtractSeconds(dFrom, dTo)) { caption = '{system.events.form.pings.caption.subtract.seconds}'; }
+                PROPERTY(secondsBetweenDates(dTo, dFrom)) { caption = '{system.events.form.pings.caption.subtract.seconds}'; }
             }
             NEW connections {
                 caption = '{system.events.form.pings.caption.connections}';

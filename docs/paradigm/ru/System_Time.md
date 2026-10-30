@@ -72,10 +72,9 @@ title: 'Time'
 | `sumMinutes[…]`                                           | прибавляет указанное число минут; перегружено для `TIME`, `DATETIME`, `ZDATETIME`, возвращает тот же класс; PG `$1 + $2 * interval '1 minute'`. Для `TIME` результат ведётся по 24-часовому циферблату и заворачивается через полночь (например, `23:30` + 60 → `00:30`, а отрицательный счёт уводит назад за `00:00`); для `DATETIME` / `ZDATETIME` переходит в соседние сутки, сдвигая дату |
 | `sumSeconds[…]`                                           | прибавляет указанное число секунд; те же перегрузки и тот же заворот по 24 часам для `TIME`, что и у `sumMinutes[…]`; PG `$1 + $2 * interval '1 second'`      |
 | `subtractSeconds[DATETIME, LONG]` / `subtractSeconds[ZDATETIME, LONG]` | вычитают указанное число секунд из `DATETIME` / `ZDATETIME`, возвращают тот же класс; PG `$1 - $2 * interval '1 second'`                         |
-| `subtractSeconds[TIME, TIME]` / `subtractSeconds[DATETIME, DATETIME]` / `subtractSeconds[ZDATETIME, ZDATETIME]` | разность двух значений одного класса в целых секундах как `LONG` (дробная часть отбрасывается), считается как **второй** аргумент минус **первый** (`subtractSeconds(a, b) = b - a`, неотрицательно, когда `b` — более поздняя величина). Направление обратно одноимённому `subtractSeconds[DATETIME, LONG]`, который вычитает второй аргумент из первого, и `secondsBetweenDates[DATETIME, DATETIME]` ниже. Число секунд, прошедших с момента, — в рецептах ниже; PG `trunc(extract(epoch from (b - a)))` |
-| `daysBetweenDates[DATE, DATE]`                            | разность двух дат в днях как `INTEGER`, считается как **первый** аргумент минус **второй** (`daysBetweenDates(a, b) = a - b`, положительно, когда `a` — более поздняя дата); PG `$1 - $2`. Порядок операндов обратен `subtractSeconds` |
+| `daysBetweenDates[DATE, DATE]`                            | разность двух дат в днях как `INTEGER`, считается как **первый** аргумент минус **второй** (`daysBetweenDates(a, b) = a - b`, положительно, когда `a` — более поздняя дата); PG `$1 - $2` |
 | `daysBetweenDatesIncl[DATE, DATE]`                        | число дней между двумя датами с учётом обоих концов: **первый** аргумент минус **второй**, плюс 1 (`daysBetweenDatesIncl(a, b) = a - b + 1`) — тот же порядок операндов, что у `daysBetweenDates[DATE, DATE]` |
-| `secondsBetweenDates[DATETIME, DATETIME]`                 | разность двух моментов в целых секундах как `LONG` (дробная часть отбрасывается), считается как **первый** аргумент минус **второй** (`secondsBetweenDates(a, b) = a - b`, неотрицательно, когда `a` — более поздний момент); PG `trunc(extract(epoch from $1) - extract(epoch from $2))` |
+| `secondsBetweenDates[TIME, TIME]` / `secondsBetweenDates[DATETIME, DATETIME]` / `secondsBetweenDates[ZDATETIME, ZDATETIME]` | разность двух значений одного класса в целых секундах как `LONG` (дробная часть отбрасывается), считается как **первый** аргумент минус **второй** (`secondsBetweenDates(a, b) = a - b`, неотрицательно, когда `a` — более поздняя величина); PG `trunc(extract(epoch from $1) - extract(epoch from $2))` |
 | `dateTimeToDateTime[DATE, TIME]`                          | собирает `DATETIME` из `DATE` и `TIME` через приведение текста; PG `to_timestamp(<дата> \|\| <время>, 'YYYY-MM-DDHH24:MI:SS.MS')::timestamp`                    |
 | `dateFromYearWeekDay[INTEGER, INTEGER, INTEGER]`          | собирает `DATE` по году, номеру недели ISO 8601 и дню недели ISO (1 = понедельник … 7 = воскресенье); PG `to_date($1 \|\| ' ' \|\| $2 \|\| ' ' \|\| $3, 'IYYY IW ID')` |
 | `distanceDOWDOW[DOW, DOW]`                                | расстояние вперёд в днях от первого дня недели до второго, с заворотом по неделе 0–6: `number[DOW]` второго минус `number[DOW]` первого, плюс 7, когда результат был бы отрицательным |
@@ -130,9 +129,8 @@ firstDayOfMonth(d)
 lastDayOfMonth(d)
 
 // число секунд, прошедших с момента t, неотрицательно, пока t в прошлом:
-// более поздний момент — первый аргумент secondsBetweenDates и второй аргумент subtractSeconds
+// более поздний момент — первый аргумент
 secondsBetweenDates(currentDateTime(), t)
-subtractSeconds(t, currentDateTime())
 ```
 
 ### Связано
