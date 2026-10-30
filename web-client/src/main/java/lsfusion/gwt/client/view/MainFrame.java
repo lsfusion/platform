@@ -361,17 +361,14 @@ public class MainFrame implements EntryPoint {
 
         formsControllerLinker.link = formsController;
 
-        //we use CloseHandler instead of Window.ClosingHandler because mobile browsers send closing event without closing window
-//        if(mobile) {
-            Window.addCloseHandler(event -> {
+        //we use pagehide instead of Window.ClosingHandler because mobile browsers send closing event without closing window
+        //and instead of Window.CloseHandler (unload), because browsers stop firing unload (Chrome disables it by default), so the windows sizes were not saved
+        GwtClientUtils.addPageHideListener(persisted -> {
+            if(persisted) // the page can be shown again from the back/forward cache, so it is not cleaned
+                save(windowsController);
+            else
                 saveAndClean(windowsController);
-            });
-//        } else { // somewhy in browser close handler doesn't work
-        // !!! but closing handler can be called too early
-//            Window.addWindowClosingHandler(event -> {
-//                saveAndClean(windowsController);
-//            });
-//        }
+        });
         if(prefetching)
             GwtClientUtils.addPrefetchCompleteListener(() -> {
                 if(navigatorDispatchAsync != null)
@@ -452,12 +449,16 @@ public class MainFrame implements EntryPoint {
         }
     }
 
+    private void save(WindowsController windowsController) {
+        if (!mobile) {
+            windowsController.storeWindowsSizes();
+        }
+        windowsController.storeEditMode();
+    }
+
     private void saveAndClean(WindowsController windowsController) {
         try {
-            if (!mobile) {
-                windowsController.storeWindowsSizes();
-            }
-            windowsController.storeEditMode();
+            save(windowsController);
         } finally {
             clean();
         }
