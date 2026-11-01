@@ -70,6 +70,7 @@ import lsfusion.gwt.client.form.property.GLoadingReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import lsfusion.gwt.client.form.property.GRowSelectReader;
+import lsfusion.gwt.client.form.property.GShowIfReader;
 import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.async.GAsyncAddRemove;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -320,6 +321,87 @@ public class GFormControllerTest extends GWTTestCase {
         try { run.@java.lang.Runnable::run()(); } finally { console.error = error; }
         return said.join('\n');
     }-*/;
+
+    // the selected column of a grid the platform draws gone - hidden by its SHOWIF - leaves the selection on the nearest
+    // column that takes the focus, those on its left first: a, b being FOCUSABLE FALSE. It was moved only to the column
+    // just on the left, and stayed where it was where that one takes no focus - past the grid's end, the gone column the
+    // last one: what asked for the current property next - a filter, the sum, a pivot, a key in the grid - read the
+    // selected cell out of bounds (IndexOutOfBoundsException)
+    public void testASelectedColumnGoneLeavesTheSelectionOnTheNearestColumnThatTakesTheFocus() {
+        ColumnsForm columns = new ColumnsForm("a", "-b", "c");
+        columns.choose("c");
+        columns.hide("c");
+        assertEquals("a", columns.selected());
+    }
+    // ... and so do two columns gone in one answer, the selected one the last - whichever of them goes first
+    public void testTwoColumnsGoneAtOnceLeaveTheSelectionOnTheNearestColumnThatTakesTheFocus() {
+        ColumnsForm columns = new ColumnsForm("a", "-b", "c", "d");
+        columns.choose("d");
+        columns.hide("c", "d");
+        assertEquals("a", columns.selected());
+    }
+    // ... and with no column left that takes the focus, the selection stays in the grid: on the last column
+    public void testASelectedColumnGoneLeavesTheSelectionInTheGridWhereNoColumnTakesTheFocus() {
+        ColumnsForm columns = new ColumnsForm("-a", "-b", "c");
+        columns.choose("c");
+        columns.hide("c");
+        assertEquals("b", columns.selected());
+    }
+    // a form of one grid the platform draws, of two rows, the first current, with a column of each property named -
+    // FOCUSABLE FALSE where the name starts with "-" -, each one with a SHOWIF of its own; the grid not on the page, the
+    // form's requests sent through a dispatch of its own
+    private static final class ColumnsForm {
+        final GForm form = form("columnsGone");
+        final GGroupObject group = platformGrid(form, 90, "r");
+        final GFormController controller;
+
+        ColumnsForm(String... names) {
+            int id = 95;
+            for (String name : names) {
+                GPropertyDraw property = column(form, id++, name.replace("-", ""), group);
+                property.cellType = property.valueType; // as the server gives both: its cells are drawn
+                if (name.startsWith("-"))
+                    property.focusable = false;
+                property.showIfReader = new GShowIfReader(property.ID, group.ID);
+            }
+            form.initialFormChanges = GFormChangesTest.noChanges();
+            controller = controllerApart(form);
+            GFormChanges shown = new GFormChanges();
+            GGroupObjectValue first = new GGroupObjectValue(group.ID, 1);
+            shown.gridObjects.put(group, new ArrayList<>(Arrays.asList(first, new GGroupObjectValue(group.ID, 2))));
+            shown.objects.put(group, first);
+            for (GPropertyDraw property : form.propertyDraws)
+                shown.properties.put(property, new NativeHashMap<>());
+            controller.applyRemoteChanges(shown, 1);
+        }
+        GPropertyDraw property(String name) {
+            for (GPropertyDraw property : form.propertyDraws)
+                if (property.sID.equals(name))
+                    return property;
+            throw new IllegalArgumentException(name);
+        }
+        GGridTable grid() {
+            return platformGridView(controller, group);
+        }
+        // a column chosen, as a click on its cell chooses it
+        void choose(String name) {
+            chooseColumn(grid(), grid().getGridColumnIndex(property(name), GGroupObjectValue.EMPTY), FocusUtils.Reason.MOUSENAVIGATE);
+        }
+        // columns hidden by their SHOWIFs, in one answer of the server's
+        void hide(String... names) {
+            GFormChanges hidden = new GFormChanges();
+            for (String name : names) {
+                NativeHashMap<GGroupObjectValue, PValue> showIf = new NativeHashMap<>();
+                showIf.put(GGroupObjectValue.EMPTY, null);
+                hidden.properties.put(property(name).showIfReader, showIf);
+            }
+            controller.applyRemoteChanges(hidden, 2);
+        }
+        // the property of the selected column - what a filter, the sum, a key in the grid read it by
+        String selected() {
+            return grid().getSelectedProperty().sID;
+        }
+    }
 
     // the key of a grid property the platform draws once per row of a grid its own React view draws (<Platform
     // name="items.qty" row/>) is the property's, not each row's: pressed, it goes to the editor of the CURRENT row - as

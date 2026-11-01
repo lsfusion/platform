@@ -737,8 +737,18 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         int selectedColumn = getSelectedColumn();
         if(index == selectedColumn && !columns.isEmpty()) {
-            int column = selectedColumn == 0 ? 0 : selectedColumn - 1;
-            changeSelectedColumn(column, FocusUtils.Reason.COLUMNCHANGE, null);
+            // the nearest column that takes the focus, the left ones first (index - 1 down to 0, then index on: the right
+            // neighbour has the removed column's index now); with none, the selection is still kept in the grid
+            int column = -1;
+            for (int i = 0; i < columns.size() && column < 0; i++) {
+                int nearest = i < index ? index - 1 - i : i;
+                if (isFocusable(nearest))
+                    column = nearest;
+            }
+            if (column >= 0)
+                changeSelectedColumn(column, FocusUtils.Reason.COLUMNCHANGE, null);
+            else
+                setSelectedColumn(Math.min(index, columns.size() - 1));
         } else if (index <= selectedColumn)
             setSelectedColumn(selectedColumn - 1);
     }
