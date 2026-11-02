@@ -38,7 +38,6 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
@@ -1013,14 +1012,18 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord, GTreeGroup, 
         return record == null ? null : record.getValue(property);
     }
 
-    public List<Pair<lsfusion.gwt.client.form.view.Column, String>> getFilterColumns(GGroupObject selectedGroupObject) {
-        ArrayList<GPropertyDraw> properties = tree.getProperties(selectedGroupObject);
-        if (properties != null) {
-            return properties.stream().map(property ->
-                    getFilterColumn(property, GGroupObjectValue.EMPTY)
-            ).collect(Collectors.toList());
+    // the columns a filter condition can be on: those of every group of the tree, the top group's first, whatever node
+    // it is on - a condition is of the group of its property, so a row of another group's property, a FILTER's, finds
+    // its caption here too -, as over a tree React draws
+    public List<Pair<lsfusion.gwt.client.form.view.Column, String>> getFilterColumns() {
+        List<Pair<lsfusion.gwt.client.form.view.Column, String>> result = new ArrayList<>();
+        for (GGroupObject group : grid.groups) {
+            ArrayList<GPropertyDraw> properties = tree.getProperties(group);
+            if (properties != null)
+                for (GPropertyDraw property : properties)
+                    result.add(getFilterColumn(property, GGroupObjectValue.EMPTY));
         }
-        return new ArrayList<>();
+        return result;
     }
 
     @Override

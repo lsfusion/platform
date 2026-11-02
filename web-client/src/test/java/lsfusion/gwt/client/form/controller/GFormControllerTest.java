@@ -97,6 +97,7 @@ import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.object.table.controller.GGroupController;
+import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
@@ -121,6 +122,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static lsfusion.gwt.client.GFormChanges.GPropertyReadType.DRAW;
 import static lsfusion.gwt.client.base.GwtClientUtils.jsonStringify;
@@ -1432,10 +1434,49 @@ public class GFormControllerTest extends GWTTestCase {
         assertSame(itemName, rows.getSelectedFilterProperty());
         assertValue(7, rows.getSelectedValue(itemName, GGroupObjectValue.EMPTY));
     }
+    // ... and the platform's rows of the FILTERs of a tree, FILTER(catName) and FILTER(itemName), show their properties'
+    // captions whatever node the tree is on - a row reads its caption again with every change of the tree: on the first
+    // category as the form opens, then on the item, once the server has answered the move. The columns a tree gives its
+    // filters are of every group of it (GTableController.getFilterColumns), a condition being of the group of its
+    // property
+    public void testATreesFiltersShowTheirCaptionsWhateverNodeItIsOn() {
+        GFilter[] filters = new GFilter[2];
+        GFormController controller = catalogTree(form -> {
+            GPropertyDraw catName = form.propertyDraws.get(0), itemName = form.propertyDraws.get(1);
+            catName.caption = "Category"; itemName.caption = "Item";
+            GTreeGroup tree = catName.groupObject.parent;
+            tree.toolbar.showFilters = true; // the platform's filters: its rows of the FILTERs
+            filters[0] = filterIn(34, catName, form.mainContainer, tree);
+            filters[1] = filterIn(35, itemName, form.mainContainer, tree);
+        });
+        GGroupObject item = controller.getForm().groupObjects.get(1);
+        GTableController rows = tableController(controller, item.parent);
+        GFilterInputController input = ((GPlatformTableController<?, ?, ?>) rows).getFilter();
+        assertSame(controller.getForm().propertyDraws.get(0), rows.getSelectedFilterProperty()); // on a category
+        List<String> captions = captions(input, filters);
+
+        GGroupObjectValue i1 = GGroupObjectValue.getFullKey(new GGroupObjectValue(10, 2), new GGroupObjectValue(40, 1));
+        controller.applyRemoteChanges(new GFormChanges(), (int) controller.changeGroupObject(item, i1));
+        assertSame(controller.getForm().propertyDraws.get(1), rows.getSelectedFilterProperty()); // on the item
+        captions.addAll(captions(input, filters));
+        assertEquals(Arrays.asList("Category", "Item", "Category", "Item"), captions);
+    }
+    // ... the captions the platform's rows of FILTERs show, in the order the FILTERs are given
+    private static List<String> captions(GFilterInputController input, GFilter... filters) {
+        List<String> captions = new ArrayList<>();
+        for (GFilter filter : filters)
+            captions.add(propertyLabel(panelRow(input, filter)).getText());
+        return captions;
+    }
     // a form of a tree the platform draws, TREE t (c = Category, i = Item): two categories, the first current, and an item
     // under the second - its rows c1, c2, i1 -, the name of each group a column; not on the page, its requests sent
     // through a dispatch of its own
     private static GFormController catalogTree() {
+        return catalogTree(form -> { });
+    }
+    // ... its design given what a test adds to it first - the form's properties are the categories' name, then the
+    // items'
+    private static GFormController catalogTree(Consumer<GForm> design) {
         GForm form = form("catalog");
         GTreeGroup tree = platformTree(form);
         GGroupObject cat = new GGroupObject(), item = new GGroupObject();
@@ -1449,6 +1490,7 @@ public class GFormControllerTest extends GWTTestCase {
         GPropertyDraw catName = column(form, 20, "catName", cat), itemName = column(form, 45, "itemName", item);
         catName.cellType = catName.valueType; itemName.cellType = itemName.valueType; // its cells are drawn
         form.initialFormChanges = GFormChangesTest.noChanges();
+        design.accept(form);
         GFormController controller = controllerApart(form);
         GGroupObjectValue c1 = new GGroupObjectValue(10, 1), c2 = new GGroupObjectValue(10, 2);
         GGroupObjectValue i1 = GGroupObjectValue.getFullKey(c2, new GGroupObjectValue(40, 1)); // its path
@@ -3051,8 +3093,8 @@ public class GFormControllerTest extends GWTTestCase {
     }-*/;
     // the platform's rows of a FILTER of a table - what reports its row's events -, none where React draws it, read
     // where the platform keeps its rows of the table's user filters, which its input's toggle drives; and its row: its
-    // caption, its comparison label, its value cell and the comparison its value is edited by, read where the client
-    // keeps them
+    // caption - the widget, the label of its property in it -, its comparison label, its value cell and the comparison
+    // its value is edited by, read where the client keeps them
     private static GPlatformFilterController filterRows(GFilterInputController input, GFilter filter) {
         return filterRowsOf(input).get(filter);
     }
@@ -3074,6 +3116,9 @@ public class GFormControllerTest extends GWTTestCase {
     }-*/;
     private static native Widget rowCaption(GFilterConditionView row) /*-{
         return row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::leftPanel;
+    }-*/;
+    private static native Label propertyLabel(GFilterConditionView row) /*-{
+        return row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::propertyLabel;
     }-*/;
     private static native Label compareLabel(GFilterConditionView row) /*-{
         return row.@lsfusion.gwt.client.form.filter.user.view.GFilterConditionView::compareLabel;
@@ -3179,13 +3224,13 @@ public class GFormControllerTest extends GWTTestCase {
             parent.children.add(container);
         return container;
     }
-    // ... and a property's FILTER of a table, FILTER(<property>), in it
-    private static GFilter filterIn(int id, GPropertyDraw property, GContainer parent, GGrid grid) {
+    // ... and a property's FILTER of a table - a grid, a tree -, FILTER(<property>), in it
+    private static GFilter filterIn(int id, GPropertyDraw property, GContainer parent, GGridProperty table) {
         GFilter filter = new GFilter(property);
         filter.ID = id; filter.nativeSID = "c" + id; filter.sID = "FILTER(" + property.sID + ")";
         layout(filter);
         filter.container = parent; parent.children.add(filter);
-        grid.filters.add(filter);
+        table.filters.add(filter);
         return filter;
     }
 

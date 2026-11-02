@@ -68,7 +68,7 @@ public final class GPlatformTreeController extends GPlatformTableController<GTre
 
     @Override
     public List<Pair<Column, String>> getFilterColumns() {
-        return view.getFilterColumns(getSelectedGroupObject());
+        return view.getFilterColumns();
     }
 
     // ===== what its toolbar asks of the tree (GTreeController): the selected node opened, and every node under it -
