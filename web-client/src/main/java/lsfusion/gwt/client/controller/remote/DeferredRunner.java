@@ -69,8 +69,10 @@ public class DeferredRunner {
         }
     }
 
+    // a group's own: a group object is one open form's - each form takes its design anew -, and the ID of a group is
+    // only its form's, so another open form has groups of the same IDs
     private static String groupObjectChangeCommandID(GGroupObject groupObject) {
-        return "groupObjectChange" + groupObject.ID;
+        return "groupObjectChange" + groupObject.ID + "@" + System.identityHashCode(groupObject);
     }
 
     public void scheduleChangePageSize(GGroupObject groupObject, Command cmd) {

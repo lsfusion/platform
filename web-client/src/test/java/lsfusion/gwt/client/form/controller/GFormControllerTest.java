@@ -963,6 +963,28 @@ public class GFormControllerTest extends GWTTestCase {
         assertEquals(new GGroupObjectValue(90, 1), platformGridView(controller, group).getSelectedKey());
     }
 
+    // a move waiting in a form while another open form - its groups of the same IDs - makes one: each form's move waits
+    // and is sent as its own (DeferredRunner.groupObjectChangeCommandID)
+    public void testAMoveWaitingInAFormIsNotAnotherFormsOneOfTheSameGroupID() {
+        GFormController one = platformGrids(3, 90), other = platformGrids(3, 90);
+        GGroupObject group = one.getForm().groupObjects.get(0), otherGroup = other.getForm().groupObjects.get(0);
+        try {
+            moveTo(platformGridView(one, group), 1, FocusUtils.Reason.KEYMOVENAVIGATE, null); // down in the one
+            moveTo(platformGridView(other, otherGroup), 2, FocusUtils.Reason.KEYMOVENAVIGATE, null); // ... in the other
+            DeferredRunner.get().commitDelayedGroupObjectChange(group); // the one's sent
+            assertTrue(sentAt(one, group) < Long.MAX_VALUE);
+            assertEquals(Long.MAX_VALUE, (long) sentAt(other, otherGroup)); // ... the other's still waiting
+        } finally {
+            DeferredRunner.get().commitDelayedGroupObjectChange(group);
+            DeferredRunner.get().commitDelayedGroupObjectChange(otherGroup);
+        }
+    }
+    // the index of the request that sent a group's current object - Long.MAX_VALUE while its move waits -, read where the
+    // form keeps it (pendingChangeCurrentObjectsRequests)
+    private static native Long sentAt(GFormController controller, GGroupObject group) /*-{
+        return controller.@lsfusion.gwt.client.form.controller.GFormController::pendingChangeCurrentObjectsRequests.@lsfusion.gwt.client.base.jsni.NativeSIDMap::get(*)(group);
+    }-*/;
+
     // a form of one list group whose rows the React view of its grid draws, GRID(items) { custom = 'LeafGrid'; }, with
     // two columns, as the server gives it - with nothing of its toolbar and filters to build
     private static GForm leafGridForm() {
