@@ -65,7 +65,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
 
     public void setCurrentKey(GGroupObjectValue currentKey) {
         // we're counting on the checkUpdateCurrentRow to handle that case (otherwise there will be problems with the expandingIndex)
-        if(!(GwtClientUtils.nullHashEquals(getSelectedKey(), currentKey) && this.currentKey == null))
+        // - unless a key, none too, is set and not shown yet
+        if(!(GwtClientUtils.nullHashEquals(getSelectedKey(), currentKey) && !currentRowUpdated))
             setCurrentKey(currentKey, null);
     }
     public void setCurrentKey(GGroupObjectValue currentKey, Integer currentExpandingIndex) {

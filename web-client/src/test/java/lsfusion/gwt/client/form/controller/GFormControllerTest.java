@@ -78,6 +78,7 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
+import lsfusion.gwt.client.form.object.table.controller.GGroupController;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
@@ -949,6 +950,18 @@ public class GFormControllerTest extends GWTTestCase {
     private static native ArrayList<GGroupObjectValue> rowKeys(GGridTable grid) /*-{
         return grid.@lsfusion.gwt.client.form.object.table.grid.view.GGridTable::rowKeys;
     }-*/;
+
+    // a current object set and not shown yet - none, as the server may say - and then the row the grid is on set again,
+    // before the grid shows either: the grid stays on that row (GGridPropertyTable.setCurrentKey)
+    public void testTheRowTheGridIsOnSetAgainAfterNoneStays() {
+        GFormController controller = platformGrids(3, 90);
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        GGroupController rows = controller.getGroupController(group);
+        rows.updateCurrentKey(null);
+        rows.updateCurrentKey(new GGroupObjectValue(90, 1));
+        controller.applyRemoteChanges(new GFormChanges(), 2);
+        assertEquals(new GGroupObjectValue(90, 1), platformGridView(controller, group).getSelectedKey());
+    }
 
     // a form of one list group whose rows the React view of its grid draws, GRID(items) { custom = 'LeafGrid'; }, with
     // two columns, as the server gives it - with nothing of its toolbar and filters to build
