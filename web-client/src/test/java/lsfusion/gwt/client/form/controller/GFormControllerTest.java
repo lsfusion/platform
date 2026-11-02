@@ -2879,10 +2879,114 @@ public class GFormControllerTest extends GWTTestCase {
         assertFalse(panel.isControlsVisible());
     }
 
+    // the toolbar's filter button is there for what of the platform's it shows and hides that is in the form
+    // (GFilterControlsToggle): its FILTERCONTROLS - none where the design REMOVEs them, or a container that holds them -,
+    // or the rows of its FILTERS box laid out, whose selectors it shows with no FILTERCONTROLS too
+    public void testTheFilterButtonIsThereForWhatOfTheFiltersIsInTheForm() {
+        GForm controls = platformGridFilters(); // FILTERCONTROLS(items) in the form
+        GGroupObject group = controls.groupObjects.get(0);
+        into(controls.mainContainer, group.grid.filterControls);
+        GFormController shown = controllerApart(controls);
+        GToolbarButton button = filterButton(shown, group);
+        assertNotNull(button);
+        assertTrue(toolbarView(shown, group).getElement().isOrHasChild(button.getElement()));
+
+        GForm removed = platformGridFilters(); // REMOVE FILTERCONTROLS(items)
+        assertNull(filterButton(controllerApart(removed), removed.groupObjects.get(0)));
+
+        GForm boxRemoved = platformGridFilters(); // REMOVE FILTERBOX(items), which holds them
+        GGrid grid = boxRemoved.groupObjects.get(0).grid;
+        GContainer filterBox = container(96, "FILTERBOX(items)", null);
+        into(filterBox, grid.filtersContainer);
+        into(filterBox, grid.filterControls);
+        assertNull(filterButton(controllerApart(boxRemoved), grid.groupObject));
+
+        GForm rows = platformGridFilters(); // REMOVE FILTERCONTROLS(items), FILTERS(items) in the form
+        into(rows.mainContainer, rows.groupObjects.get(0).grid.filtersContainer);
+        assertNotNull(filterButton(controllerApart(rows), rows.groupObjects.get(0)));
+    }
+    // a form of one grid the platform draws, GRID(items), its toolbar shown with the platform's filters, no FILTER, its
+    // FILTERCONTROLS and FILTERS(items) REMOVEd till a test puts them into a container (into)
+    private static GForm platformGridFilters() {
+        GForm form = form("platformGridFilters");
+        GGroupObject group = platformGrid(form, 90, "items");
+        column(form, 95, "name", group);
+        GGrid grid = group.grid;
+        grid.toolbar.visible = true; grid.toolbar.showFilters = true;
+        grid.filterControls.nativeSID = "c" + grid.filterControls.ID;
+        layout(grid.filterControls);
+        form.initialFormChanges = GFormChangesTest.noChanges();
+        return form;
+    }
+    // ... a component put into a container
+    private static void into(GContainer container, GComponent component) {
+        component.container = container; container.children.add(component);
+    }
+    // ... and the platform's toolbar of the form's grid: its view, and the filter button on it - none where the toolbar
+    // was given none (GPlatformToolbarController.addFilterToggle)
+    private static native Widget toolbarView(GFormController controller, GGroupObject group) /*-{
+        var toolbar = controller.@lsfusion.gwt.client.form.controller.GFormController::gridToolbarControllers.@lsfusion.gwt.client.base.jsni.NativeSIDMap::get(*)(group);
+        return toolbar.@lsfusion.gwt.client.form.object.table.controller.GPlatformToolbarController::view;
+    }-*/;
+    private static native GToolbarButton filterButton(GFormController controller, GGroupObject group) /*-{
+        var toolbar = controller.@lsfusion.gwt.client.form.controller.GFormController::gridToolbarControllers.@lsfusion.gwt.client.base.jsni.NativeSIDMap::get(*)(group);
+        return toolbar.@lsfusion.gwt.client.form.object.table.controller.GPlatformToolbarController::filterButton;
+    }-*/;
+
+    // with FILTERCONTROLS REMOVEd the toolbar's button still shows the rows' selectors, and the manual apply mode comes
+    // with them, Enter in a row's value cell its apply: a value committed in a row waits for it
+    public void testARowsValueWaitsForEnterWithNoFilterControlsInManualMode() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            FiltersForm filters = new FiltersForm(true);
+            filters.noControls();
+            GFormController controller = filters.controller();
+            GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
+            panel.setControlsVisible(true);
+            GFilterConditionView row = panelRow(panel, filters.placed);
+            changeRowValue(row, PValue.getPValue(3));
+            assertTrue(filters.sent(controller).isEmpty());
+
+            RootPanel.get().add(row); // on the page: a binding holds while its widget is shown
+            try {
+                assertTrue(enter(controller, valueCell(row).getElement()));
+            } finally {
+                RootPanel.get().remove(row);
+            }
+            assertValue(3, filters.first(controller, filters.quantity).value.value);
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
+    // ... while with no row of the platform's either there is nothing for a button to show, nor a manual apply mode,
+    // in which nothing would apply: what a view states for a FILTER it draws is sent at once, the controls asked to
+    // show - as the button did - or not
+    public void testNoFilterControlsAndNoRowOfThePlatformsBringNoManualMode() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            FiltersForm filters = new FiltersForm(false); // FILTERS(items) REMOVEd
+            filters.noControls();
+            filters.board.children.remove(filters.placed); // no FILTER the platform draws: FILTER(price), React's, alone
+            filters.group.grid.filters.remove(filters.placed);
+            GFormController controller = filters.controller();
+            GFilterInputController input = (GFilterInputController) userFiltersController(controller, filters.group);
+            input.toggleControlsVisible();
+            assertFalse(filters.model(controller).isManual());
+
+            filters.change(controller, "price", 5.0);
+            assertTrue(filters.filters(controller, filters.price));
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
     // a form of a group whose rows React draws, its filters the platform's, with the FILTERs of two of its properties
     // moved into a react container - one React draws, MOVE FILTER(price), and one the platform's panel does,
-    // MOVE FILTER(quantity) { custom = NULL; } -, FILTERS(items) in the form or REMOVEd - and one of a string property
-    // standing outside React (filterAligned)
+    // MOVE FILTER(quantity) { custom = NULL; } -, FILTERS(items) in the form or REMOVEd, FILTERCONTROLS(items) in the
+    // form (or REMOVEd: noControls) - and one of a string property standing outside React (filterAligned)
     private static final class FiltersForm {
         final GForm form = new GForm();
         final GGroupObject group = new GGroupObject();
@@ -2915,7 +3019,9 @@ public class GFormControllerTest extends GWTTestCase {
             grid.toolbar.ID = 12; grid.toolbar.sID = "TOOLBARSYSTEM(items)"; grid.toolbar.visible = false;
             grid.toolbar.showFilters = true;
             grid.filterControls = new GFilterControls();
-            grid.filterControls.ID = 13; grid.filterControls.sID = "FILTERCONTROLS(items)";
+            grid.filterControls.ID = 13; grid.filterControls.nativeSID = "c13"; grid.filterControls.sID = "FILTERCONTROLS(items)";
+            layout(grid.filterControls);
+            grid.filterControls.container = form.mainContainer; form.mainContainer.children.add(grid.filterControls);
             grid.filtersContainer = container(14, "FILTERS(items)", filtersBox ? form.mainContainer : null);
             group.grid = grid;
             price = column(form, 20, "price", group);
@@ -3004,6 +3110,12 @@ public class GFormControllerTest extends GWTTestCase {
         void noFilters() {
             group.grid.filters.clear();
             board.children.clear();
+        }
+        // ... or no FILTERCONTROLS: REMOVE FILTERCONTROLS(items)
+        void noControls() {
+            GFilterControls controls = group.grid.filterControls;
+            form.mainContainer.children.remove(controls);
+            controls.container = null;
         }
         // the form's list, as it sent it last - or the server reported it -, and the first condition on a property in
         // it

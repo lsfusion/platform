@@ -12,9 +12,10 @@ import lsfusion.gwt.client.form.object.table.controller.GToolbarController;
 // to show and hide, and nowhere else:
 // - rows of the platform's - the box laid out, or a FILTER's -, and the platform's controls: the rows' selectors and
 //   the controls, as ever;
-// - the same and controls a view draws: the rows' selectors;
+// - the same and controls a view draws, or the platform's the design removes: the rows' selectors;
 // - no row of the platform's, and the platform's controls: the controls;
-// - no row of the platform's, and controls a view draws: nothing - there is no button.
+// - no row of the platform's, and controls a view draws, or the platform's the design removes: nothing - there is no
+//   button.
 // The button is the table's toolbar's, of whichever kind (GToolbarController.addFilterToggle) - a member where a view
 // draws the toolbar. What the platform draws of the filters is driven with the table through here too
 public final class GFilterControlsToggle implements GUserFiltersController.ApplyControls, GUserFiltersController.View {
@@ -77,9 +78,11 @@ public final class GFilterControlsToggle implements GUserFiltersController.Apply
     public boolean hasControlsButton() {
         return shownBy != null;
     }
-    // whether the table's apply button is shown: the manual apply mode asks it (GUserFiltersController.isManual)
+    // whether the table's apply button is shown: the manual apply mode asks it (GUserFiltersController.isManual). The
+    // toolbar shows the controls only where it has the button: with none they are always shown, and no apply button of
+    // the platform's with them - nothing would apply in the manual apply mode
     public boolean isApplyShown() {
-        return controls.isApplyShown(visible);
+        return controls.isApplyShown(shownBy != null && visible);
     }
 
     public boolean isVisible() {

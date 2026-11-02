@@ -1845,9 +1845,10 @@ of any view — nothing of it on the node, no members, no names taken.
 
 What the buttons act on is the platform's: `filterControlsVisible` shows and hides the PLATFORM's filter controls — its
 FILTERCONTROLS buttons, its panel's editors and the selectors of the property filters' rows it draws —, and where the
-platform has none for the group — the view draws the conditions, `FILTERCONTROLS(o)` and every property filter, or the
-toolbar turns the platform's filters off (`showFilters = FALSE`) — it stays `false` and its change is refused, saying
-why. Controls a view draws itself are its own to show, its [filter controls](#filter-controls). The view type switch
+platform has none for the group — it draws neither the `FILTERS(o)` panel nor `FILTERCONTROLS(o)` nor a property
+filter's row, the view drawing them or the design removing them, or the toolbar turns the platform's filters off
+(`showFilters = FALSE`) — it stays `false` and its change is refused, saying why. Controls a view draws itself are its
+own to show, its [filter controls](#filter-controls). The view type switch
 switches the platform's table: where a view draws the rows, `listViews` is empty, `listView` is `null`, and a change is
 refused. A group whose rows a view draws has the default `GRID` list view type: one the form gives another
 (`OBJECTS o = Order PIVOT`, and `MAP`, `CALENDAR`, `CUSTOM`) is refused when the form is built, since the server starts

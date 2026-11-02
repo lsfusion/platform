@@ -29,9 +29,14 @@ public final class GPlatformFilterControlsController implements GFilterControlsC
         userFilters.addView(this);
         changed(null);
     }
+    // shown and hidden by the toolbar's button where the design has them: ones it removes - REMOVE FILTERCONTROLS, or of
+    // a container holding it - are on no form for the button to show (GComponent.isInForm)
     public boolean isShownByToolbar() {
-        return true;
+        return design.isInForm();
     }
+    // ... and the apply button with them - of ones the design removes too, on no form: the manual apply mode then comes
+    // with the platform's rows' selectors the button shows, Enter in a row's value cell applying
+    // (GFilterControlsToggle.isApplyShown)
     public boolean isApplyShown(boolean shownByToolbar) {
         return shownByToolbar;
     }
