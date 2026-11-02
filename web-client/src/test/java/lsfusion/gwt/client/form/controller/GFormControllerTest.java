@@ -347,6 +347,43 @@ public class GFormControllerTest extends GWTTestCase {
         columns.hide("c");
         assertEquals("b", columns.selected());
     }
+    // a column gone on the left of the selected one leaves the selection on it. The grid moves the columns that stay to
+    // their new places before it removes the gone ones, and a move shifted the selection as if the moved column were
+    // removed only: here it ended on d, which typing then edited
+    public void testAColumnGoneOnTheLeftLeavesTheSelectionOnItsColumn() {
+        ColumnsForm columns = new ColumnsForm("a", "b", "c", "d", "e");
+        columns.choose("e");
+        columns.hide("b");
+        assertEquals("e", columns.selected());
+    }
+    // the selected column gone with columns on its right leaves the selection on its neighbour as the columns stood -
+    // not on the column that took its place (c, here FOCUSABLE FALSE, where the selection ended), nor on the last
+    // column that stays (where the removal would give it: the moves leave the gone columns at the grid's end) -, and
+    // the form is told
+    public void testASelectedColumnGoneLeavesTheSelectionOnItsNeighbourAsTheColumnsStood() {
+        ColumnsForm columns = new ColumnsForm("a", "b", "-c", "d");
+        columns.choose("b");
+        columns.hide("b");
+        assertEquals("a", columns.selected());
+        assertEquals("a", columns.active());
+    }
+    // ... on its right where none on its left takes the focus
+    public void testASelectedColumnGoneLeavesTheSelectionOnItsRightNeighbourWhereNoneOnItsLeftTakesTheFocus() {
+        ColumnsForm columns = new ColumnsForm("-a", "b", "c", "d");
+        columns.choose("b");
+        columns.hide("b");
+        assertEquals("c", columns.selected());
+        assertEquals("c", columns.active());
+    }
+    // a column gone on the left of a selected range of columns leaves the range on its columns - what a copy and a
+    // paste take. A move shifted an end on the moved column as if that column were removed: here b..d ended as d..d
+    public void testAColumnGoneOnTheLeftLeavesASelectedRangeOnItsColumns() {
+        ColumnsForm columns = new ColumnsForm("a", "b", "c", "d");
+        columns.choose("b");
+        columns.chooseUpTo("d");
+        columns.hide("a");
+        assertEquals("b..d", columns.range());
+    }
     // a form of one grid the platform draws, of two rows, the first current, with a column of each property named -
     // FOCUSABLE FALSE where the name starts with "-" -, each one with a SHOWIF of its own; the grid not on the page, the
     // form's requests sent through a dispatch of its own
@@ -385,7 +422,12 @@ public class GFormControllerTest extends GWTTestCase {
         }
         // a column chosen, as a click on its cell chooses it
         void choose(String name) {
-            chooseColumn(grid(), grid().getGridColumnIndex(property(name), GGroupObjectValue.EMPTY), FocusUtils.Reason.MOUSENAVIGATE);
+            chooseColumn(grid(), grid().getGridColumnIndex(property(name), GGroupObjectValue.EMPTY), FocusUtils.Reason.MOUSENAVIGATE, null);
+        }
+        // ... with the shift key held: the columns from the one chosen before to it, a range, selected
+        void chooseUpTo(String name) {
+            chooseColumn(grid(), grid().getGridColumnIndex(property(name), GGroupObjectValue.EMPTY), FocusUtils.Reason.MOUSENAVIGATE,
+                    Document.get().createClickEvent(0, 0, 0, 0, 0, false, false, true, false));
         }
         // columns hidden by their SHOWIFs, in one answer of the server's
         void hide(String... names) {
@@ -401,7 +443,22 @@ public class GFormControllerTest extends GWTTestCase {
         String selected() {
             return grid().getSelectedProperty().sID;
         }
+        // ... and the one the form was told last, by the grid's column handler, as the server's active property
+        String active() {
+            return activeProperty(controller).sID;
+        }
+        // the selected range of columns, from the column it was started at to the one it ends at
+        String range() {
+            GGridTable grid = grid();
+            return grid.getProperty(rangeEnd(grid, true)).sID + ".." + grid.getProperty(rangeEnd(grid, false)).sID;
+        }
     }
+    private static native GPropertyDraw activeProperty(GFormController controller) /*-{
+        return controller.@lsfusion.gwt.client.form.controller.GFormController::prevPropertyActive;
+    }-*/;
+    private static native int rangeEnd(GGridTable grid, boolean start) /*-{
+        return start ? grid.@lsfusion.gwt.client.base.view.grid.DataGrid::startSelectColumn : grid.@lsfusion.gwt.client.base.view.grid.DataGrid::endSelectColumn;
+    }-*/;
 
     // the key of a grid property the platform draws once per row of a grid its own React view draws (<Platform
     // name="items.qty" row/>) is the property's, not each row's: pressed, it goes to the editor of the CURRENT row - as
@@ -830,7 +887,7 @@ public class GFormControllerTest extends GWTTestCase {
         GGridTable items = platformGridView(controller, i); // the column (d1, s2) chosen
         int column = items.getGridColumnIndex(qty, GGroupObjectValue.getFullKey(d1, s2));
         assertTrue(column >= 0);
-        chooseColumn(items, column, FocusUtils.Reason.ACTIVATE);
+        chooseColumn(items, column, FocusUtils.Reason.ACTIVATE, null);
         DeferredRunner.get().commitDelayedGroupObjectChange(d); // ... sent
         DeferredRunner.get().commitDelayedGroupObjectChange(s);
         controller.applyRemoteChanges(new GFormChanges(), 2); // ... answered, nothing of d: d stays on d1, s goes to s2
@@ -839,8 +896,8 @@ public class GFormControllerTest extends GWTTestCase {
     }
     // ... a column of a grid chosen, as a click on its cell, a key or activating its property ends: the grid's column
     // changed, its handler told (DataGrid.changeSelectedColumn) - the grid not on the page, nothing focused
-    private static native void chooseColumn(GGridTable grid, int column, FocusUtils.Reason reason) /*-{
-        grid.@lsfusion.gwt.client.base.view.grid.DataGrid::changeSelectedColumn(*)(column, reason, null);
+    private static native void chooseColumn(GGridTable grid, int column, FocusUtils.Reason reason, NativeEvent event) /*-{
+        grid.@lsfusion.gwt.client.base.view.grid.DataGrid::changeSelectedColumn(*)(column, reason, event);
     }-*/;
 
     // a move in a platform grid in another selection mode within the 50 ms its previous move waits to be sent - a

@@ -668,15 +668,13 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         headers.add(newIndex, header);
         footers.add(newIndex, footer);
 
-        // Update selection boundaries as if it's a remove followed by insert
+        // Update selection boundaries and the selected column, each following its column
         startSelectColumn = shiftIndexOnMove(startSelectColumn, oldIndex, newIndex);
         endSelectColumn = shiftIndexOnMove(endSelectColumn, oldIndex, newIndex);
 
         int selectedColumn = getSelectedColumn();
-        if (oldIndex == selectedColumn)
-            setSelectedColumn(newIndex);
-        else if (oldIndex < selectedColumn && selectedColumn > 0)
-            setSelectedColumn(selectedColumn - 1);
+        if (selectedColumn >= 0)
+            setSelectedColumn(shiftIndexOnMove(selectedColumn, oldIndex, newIndex));
     }
 
     // Adjusts an index as if a column at removeIndex was removed
@@ -699,11 +697,12 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return index;
     }
 
-    // Shortcut: adjusts an index as if a column was moved from oldIndex to newIndex (remove + insert)
+    // Adjusts an index as if a column was moved from oldIndex to newIndex, the index it ends at: the moved column's own
+    // index follows it, any other shifts as on the column's remove followed by its insert
     private int shiftIndexOnMove(int index, int oldIndex, int newIndex) {
-        int afterRemove = shiftIndexOnRemove(index, oldIndex);
-        int insertIndex = oldIndex < newIndex ? newIndex - 1 : newIndex;
-        return shiftIndexOnInsert(afterRemove, insertIndex);
+        if (index == oldIndex)
+            return newIndex;
+        return shiftIndexOnInsert(shiftIndexOnRemove(index, oldIndex), newIndex);
     }
 
     /**

@@ -409,6 +409,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
                 }
             }
 
+            // the columns as they stand: the selected one, if it goes, leaves the selection on its neighbour among them
+            int prevSelectedColumn = getSelectedColumn();
+            ArrayList<GridColumn> prevColumns = new ArrayList<>();
+            for (int i = 0; i < getColumnCount(); i++)
+                prevColumns.add(getGridColumn(i));
+
             int currentIndex = 0;
             NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, GridColumn>> newColumnsMap = new NativeSIDMap<>();
             for (int i = 0; i < columnGroups.size(); i++) {
@@ -440,6 +446,20 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
                         currentIndex++;
                     }
                 }
+            }
+            // the selected column gone: the moves left it at the end, with the other gone columns, where the removal
+            // would give the selection to a column before it there, not to its neighbour - it goes to the nearest
+            // column that stays and takes the focus, as the columns stood, those on its left first, the handler told;
+            // with none, the removal keeps the selection in the grid
+            if (prevSelectedColumn >= 0 && getSelectedColumn() >= currentIndex) {
+                int column = -1;
+                for (int i = 0; i < prevColumns.size() - 1 && column < 0; i++) {
+                    int nearest = getColumnIndex(prevColumns.get(i < prevSelectedColumn ? prevSelectedColumn - 1 - i : i + 1));
+                    if (nearest < currentIndex && isFocusable(nearest))
+                        column = nearest;
+                }
+                if (column >= 0)
+                    changeSelectedColumn(column, FocusUtils.Reason.COLUMNCHANGE, null);
             }
             // removing old columns
             columnsMap.foreachValue(columnsCollection -> columnsCollection.foreachValue(column -> {
