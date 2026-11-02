@@ -118,7 +118,7 @@ public class GFormControllerTest extends GWTTestCase {
     }
     // what the client's page gives it and a test's page does not (webapp/static/js/utils.js): its text and element
     // helpers the layout calls as it builds the views - here doing nothing, or answering as for plain text: nothing
-    // here reads a caption
+    // here reads a caption -, and jQuery UI, which a modal window is made draggable and resizable with (ModalWindow)
     private static native void installPageHelpers() /*-{
         var noop = function () { };
         var helpers = {
@@ -132,7 +132,8 @@ public class GFormControllerTest extends GWTTestCase {
             hasLongStringWithoutSpacesAndHTMLTags: function () { return false; },
             createPlainObject: function () { return {}; },
             createFocusElement: function (tag) { return $doc.createElement(tag); },
-            createFocusElementType: function (tag) { return $doc.createElement(tag); }
+            createFocusElementType: function (tag) { return $doc.createElement(tag); },
+            $: function () { return {draggable: noop, resizable: noop}; }
         };
         for (var name in helpers)
             if (!$wnd[name])
@@ -1030,6 +1031,37 @@ public class GFormControllerTest extends GWTTestCase {
         } finally {
             DeferredRunner.get().commitDelayedGroupObjectChange(cat);
             DeferredRunner.get().commitDelayedGroupObjectChange(item);
+        }
+    }
+
+    // an action of a property of one grid while a move in another grid still waits: the move goes first - the action's
+    // key takes that grid's current object, and so does what the server does on it (GFormController.getFullCurrentKey)
+    public void testAnActionSendsTheMovesOfOtherGroupsFirst() {
+        GFormController controller = platformGrids(2, 60, 70);
+        GGroupObject a = controller.getForm().groupObjects.get(0);
+        GPropertyDraw nameB = controller.getForm().propertyDraws.get(1);
+        try {
+            moveTo(platformGridView(controller, a), 1, FocusUtils.Reason.KEYMOVENAVIGATE, null); // down in a
+            long action = controller.asyncExecutePropertyEventAction(GEditBindingMap.CHANGE, null, null, nameB, GEventSource.CUSTOM, GGroupObjectValue.EMPTY, null); // ... b's action
+            assertTrue(sentAt(controller, a) < action);
+        } finally {
+            DeferredRunner.get().commitDelayedGroupObjectChange(a);
+        }
+    }
+
+    // a scroll to the last row (Ctrl+End) while a move still waits: the move goes first, so the scroll goes from its row
+    // (GFormController.scrollToEnd)
+    public void testAScrollToTheEndSendsTheMoveWaitingFirst() {
+        GFormController controller = platformGrids(3, 90);
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        try {
+            moveTo(platformGridView(controller, group), 1, FocusUtils.Reason.KEYMOVENAVIGATE, null); // down
+            long next = nextRequestIndex(controller);
+            controller.scrollToEnd(group, true, null); // ... Ctrl+End
+            assertEquals(next, (long) sentAt(controller, group));
+        } finally {
+            dispatcher(controller).getBusyDialogDisplayer().stop(true); // the scroll's blocking panel, no answer coming
+            DeferredRunner.get().commitDelayedGroupObjectChange(group);
         }
     }
 

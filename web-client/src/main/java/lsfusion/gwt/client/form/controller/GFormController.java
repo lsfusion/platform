@@ -1720,7 +1720,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         asyncResponseDispatch(new ChangePageSize(groupObject.ID, pageSize));
     }
 
+    // a group scrolled to its first or last row (Ctrl+Home / Ctrl+End), its move still waiting sent first: the scroll
+    // goes from the row that move is to
     public void scrollToEnd(GGroupObject group, boolean toEnd, GChangeSelection changeSelection) {
+        DeferredRunner.get().commitDelayedGroupObjectChange(group);
         syncResponseDispatch(new ScrollToEnd(group.ID, toEnd, changeSelection));
     }
 
@@ -2035,8 +2038,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         return dispatcher.syncExecute(action, callback, continueInvocation);
     }
 
+    // the current objects of every group, the property's key over them; every group's move still waiting sent first -
+    // the key takes their current objects, and so does what the server does on the request
     public GGroupObjectValue getFullCurrentKey(GPropertyDraw property, GGroupObjectValue fullKey) {
-        DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
+        commitDelayedGroupObjectChanges();
 
         GGroupObjectValueBuilder fullCurrentKey = new GGroupObjectValueBuilder();
 
