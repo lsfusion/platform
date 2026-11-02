@@ -705,6 +705,17 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return shiftIndexOnInsert(shiftIndexOnRemove(index, oldIndex), newIndex);
     }
 
+    // Finds the column nearest to one removed at removeIndex that takes the focus - the left ones first (removeIndex - 1
+    // down to 0), then the right ones (from removeIndex: the right neighbour has the removed index now); -1 if none does
+    private int nearestFocusableIndexOnRemove(int removeIndex) {
+        for (int i = 0; i < columns.size(); i++) {
+            int nearest = i < removeIndex ? removeIndex - 1 - i : i;
+            if (isFocusable(nearest))
+                return nearest;
+        }
+        return -1;
+    }
+
     /**
      * Remove a column.
      *
@@ -736,17 +747,10 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         int selectedColumn = getSelectedColumn();
         if(index == selectedColumn && !columns.isEmpty()) {
-            // the nearest column that takes the focus, the left ones first (index - 1 down to 0, then index on: the right
-            // neighbour has the removed column's index now); with none, the selection is still kept in the grid
-            int column = -1;
-            for (int i = 0; i < columns.size() && column < 0; i++) {
-                int nearest = i < index ? index - 1 - i : i;
-                if (isFocusable(nearest))
-                    column = nearest;
-            }
+            int column = nearestFocusableIndexOnRemove(index);
             if (column >= 0)
                 changeSelectedColumn(column, FocusUtils.Reason.COLUMNCHANGE, null);
-            else
+            else // none takes the focus: the selection is still kept in the grid
                 setSelectedColumn(Math.min(index, columns.size() - 1));
         } else if (index <= selectedColumn)
             setSelectedColumn(selectedColumn - 1);
