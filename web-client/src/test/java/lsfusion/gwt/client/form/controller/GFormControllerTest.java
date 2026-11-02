@@ -985,6 +985,54 @@ public class GFormControllerTest extends GWTTestCase {
         return controller.@lsfusion.gwt.client.form.controller.GFormController::pendingChangeCurrentObjectsRequests.@lsfusion.gwt.client.base.jsni.NativeSIDMap::get(*)(group);
     }-*/;
 
+    // a current object chosen and sent at once for a group whose move still waits - in the same selection mode - takes
+    // that move's place: the move is not sent after it, to take the choice's place on the server
+    // (GFormController.changeGroupObject)
+    public void testAChoiceSentAtOnceTakesTheWaitingMovesPlace() {
+        GFormController controller = platformGrids(3, 90);
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        try {
+            moveTo(platformGridView(controller, group), 1, FocusUtils.Reason.SCROLLNAVIGATE, null); // to the second row, by a scroll: no selection mode, as the choice's
+            long sent = controller.changeGroupObject(group, new GGroupObjectValue(90, 3)); // the third, at once
+            DeferredRunner.get().commitDelayedGroupObjectChange(group); // ... and what still waits sent
+            assertEquals(sent, (long) sentAt(controller, group));
+        } finally {
+            DeferredRunner.get().commitDelayedGroupObjectChange(group);
+        }
+    }
+    // ... and a move still waiting in another group goes before the choice, the last one made
+    // (GFormController.changeGroupObject)
+    public void testAChoiceSentAtOnceSendsTheMovesWaitingFirst() {
+        GFormController controller = platformGrids(2, 60, 70);
+        GGroupObject a = controller.getForm().groupObjects.get(0), b = controller.getForm().groupObjects.get(1);
+        try {
+            moveTo(platformGridView(controller, a), 1, FocusUtils.Reason.KEYMOVENAVIGATE, null); // down in a
+            long sent = controller.changeGroupObject(b, new GGroupObjectValue(70, 2)); // b's second, at once
+            assertTrue(sentAt(controller, a) < sent);
+        } finally {
+            DeferredRunner.get().commitDelayedGroupObjectChange(a);
+        }
+    }
+
+    // a tree's moves within the wait - to the second category, to the item under it, back to the category: one waits
+    // per group - sent first in the order they were made, the tree's last one last, where the form sends all that waits
+    // (GFormController.batch): the item's, then the category's
+    public void testATreesMovesWaitingAreSentInTheOrderMade() {
+        GFormController controller = catalogTree();
+        GGroupObject cat = controller.getForm().groupObjects.get(0), item = controller.getForm().groupObjects.get(1);
+        DataGrid<?> rows = platformView(controller, cat.parent);
+        try {
+            moveTo(rows, 1, FocusUtils.Reason.KEYMOVENAVIGATE, null); // to the second category
+            moveTo(rows, 2, FocusUtils.Reason.KEYMOVENAVIGATE, null); // ... to the item under it
+            moveTo(rows, 1, FocusUtils.Reason.KEYMOVENAVIGATE, null); // ... back to the category
+            controller.batch(() -> { });
+            assertTrue(sentAt(controller, item) < sentAt(controller, cat));
+        } finally {
+            DeferredRunner.get().commitDelayedGroupObjectChange(cat);
+            DeferredRunner.get().commitDelayedGroupObjectChange(item);
+        }
+    }
+
     // a form of one list group whose rows the React view of its grid draws, GRID(items) { custom = 'LeafGrid'; }, with
     // two columns, as the server gives it - with nothing of its toolbar and filters to build
     private static GForm leafGridForm() {

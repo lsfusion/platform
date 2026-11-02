@@ -2,6 +2,7 @@ package lsfusion.gwt.client;
 
 import com.google.gwt.junit.tools.GWTTestSuite;
 import junit.framework.Test;
+import lsfusion.gwt.client.base.jsni.NativeLinkedSIDMapTest;
 import lsfusion.gwt.client.base.view.ReactRootTest;
 import lsfusion.gwt.client.form.controller.GFormControllerTest;
 import lsfusion.gwt.client.form.design.view.GReactFormDataTest;
@@ -23,6 +24,7 @@ public class GClientTestSuite {
         suite.addTestSuite(ReactRootTest.class);
         suite.addTestSuite(GNavigatorActionDispatcherTest.class);
         suite.addTestSuite(GFormControllerTest.class);
+        suite.addTestSuite(NativeLinkedSIDMapTest.class);
         return suite;
     }
 }

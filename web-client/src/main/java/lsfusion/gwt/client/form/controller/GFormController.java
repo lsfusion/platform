@@ -13,6 +13,7 @@ import lsfusion.gwt.client.action.GActionDispatcherLookAhead;
 import lsfusion.gwt.client.action.GMessageAction;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeLinkedSIDMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.NumberResult;
@@ -506,8 +507,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }
         // a selection the platform's grid still holds back goes first, in a request of its own, as every edit sends it
         // first - a part of the batch that fails does not take it along
-        for (GGroupObject group : form.groupObjects)
-            DeferredRunner.get().commitDelayedGroupObjectChange(group);
+        commitDelayedGroupObjectChanges();
         dispatcher.startBatch();
         try {
             run.run();
@@ -553,7 +553,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // member's change(row), once it has read the row (GReactFormData.RowsPart.change): the group's current object
     @Override
     public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) {
-        changeGroupObject(group, key, null, null);
+        changeGroupObject(group, key);
     }
     // ... and a tree group member's expand / collapse / toggle, once it has read the node and decided
     // (TreeRowsPart): the platform's own request, which takes the state asked for - and the group's controller
@@ -1542,12 +1542,13 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         applyRemoteChanges(new GFormChanges(), (int) exceptionResult.requestIndex);
     }
 
-    public long changeGroupObject(final GGroupObject group, GGroupObjectValue key, GChangeSelection changeSelection, NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows) {
-        long requestIndex = asyncResponseDispatch(new ChangeGroupObject(group.ID, key, changeSelection));
-        pendingChangeGroupObject(group, changeSelectionRows, requestIndex);
-        // optimistic: the new current where React draws the rows (reconciled later by fc.objects)
-        getGroupController(group).changeCurrentKey(key);
-        return requestIndex;
+    // a current object chosen and sent at once - by a view of the platform's that waits for the answer (a popup of its
+    // record), by a view's call (changeCurrentObject) -: as one sent later (changeGroupObjectLater), sent now with every
+    // move still waiting, as the last one made; the index of its request
+    public long changeGroupObject(final GGroupObject group, GGroupObjectValue key) {
+        changeGroupObjectLater(group, key, null, null);
+        commitDelayedGroupObjectChanges();
+        return pendingChangeCurrentObjectsRequests.get(group);
     }
 
     private void pendingChangeGroupObject(GGroupObject group, NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows, long requestIndex) {
@@ -1557,7 +1558,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     }
 
     private final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, PValue>> delayedChangeSelectionRows = new NativeSIDMap<>();
-    private final NativeSIDMap<GGroupObject, GChangeSelection> delayedChangeSelections = new NativeSIDMap<>();
+    private final NativeLinkedSIDMap<GGroupObject, GChangeSelection> delayedChangeSelections = new NativeLinkedSIDMap<>();
 
     // a current object chosen - a move in the platform's grid or tree, a column of a property in columns -, sent 50 ms
     // later, the last of a group's moves made by then (a move in another selection mode sends the one before it at once)
@@ -1571,7 +1572,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         pendingChangeGroupObject(group, changeSelectionRows, Long.MAX_VALUE);
         if(changeSelectionRows != null)
             delayedChangeSelectionRows.computeIfAbsent(group, g -> new NativeHashMap<>()).putAll(changeSelectionRows);
-        delayedChangeSelections.put(group, changeSelection);
+        delayedChangeSelections.put(group, changeSelection); // put last: the last one made, of the moves waiting
         // ... and told at once to whoever draws the rows, as it is chosen (reconciled later by fc.objects): told when
         // sent, it would take the place of a choice made since
         getGroupController(group).changeCurrentKey(key);
@@ -1584,6 +1585,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
                 pendingChangeGroupObject(group, delayedChangeSelectionRows.remove(group), requestIndex);
             }
         });
+    }
+    // the moves of the form's groups still waiting, sent now, in the order they were made, as they would go - a tree's
+    // wait one per group, and the last one made is where the tree is -, before what has to come after them
+    private void commitDelayedGroupObjectChanges() {
+        delayedChangeSelections.foreachKey(DeferredRunner.get()::commitDelayedGroupObjectChange);
     }
 
     public void pasteExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, List<List<String>> table, List<List<String>> patterns) {

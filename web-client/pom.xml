@@ -68,6 +68,7 @@
                         <exclude>lsfusion/gwt/client/base/view/ReactRootTest.java</exclude>
                         <exclude>lsfusion/gwt/client/navigator/controller/dispatch/GNavigatorActionDispatcherTest.java</exclude>
                         <exclude>lsfusion/gwt/client/form/controller/GFormControllerTest.java</exclude>
+                        <exclude>lsfusion/gwt/client/base/jsni/NativeLinkedSIDMapTest.java</exclude>
                     </excludes>
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.build.testSourceDirectory}</additionalClasspathElement>
