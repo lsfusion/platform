@@ -5181,6 +5181,47 @@ public class GReactFormDataTest extends GWTTestCase {
         return [{row: row}, {row: row.objects}, {row: row.key}, {row: String(row.key)}];
     }-*/;
 
+    // the form's controller asks for the same by the property's name - as the classic changeProperty names one: a
+    // property of an object group with its group's name, one of the form level bare -, the row as its methods take one:
+    // a data row or its objects handle, of the named group, none for the current objects, and none for a property of
+    // the form level; the name is read first, a mistake in it thrown, the rest as a member's lookup - in a batch
+    // rejected
+    public void testTheFormsControllerAsksAPropertysSuggestionsByName() {
+        Fixture f = new Fixture();
+        JavaScriptObject form = field(f.sa.controller, "form"), options = rowOptions(f.row("2"));
+        assertSame(f.lookupPromise, (JavaScriptObject) call(form, "getValues", "single", "ab", null));
+        call(form, "getValues", "items.price", "ab", at(options, 0));
+        call(form, "getValues", "items.price", "ab", at(options, 1));
+        call(form, "getValues", "items.price", "", parse("{\"mode\":\"values\",\"count\":30}"));
+        assertEquals(Arrays.asList("lookup form.getValues('single') single@ ab objects 0", "lookup form.getValues('items.price') price@2 ab objects 0",
+                "lookup form.getValues('items.price') price@2 ab objects 0", "lookup form.getValues('items.price') price@  values 30"), f.lookups);
+        assertRefusal("controller.form.getValues('items.price'): expects a row of 'items' or its objects handle; a key names a row only in the"
+                + " view that draws the rows", refusedWith(form, "getValues", "items.price", "ab", at(options, 2)));
+        assertRefusal("controller.form.getValues('single'): 'single' names a property of the form level, which has no rows",
+                refusedWith(form, "getValues", "single", "ab", at(options, 0)));
+        assertRefusal("controller.form.getValues('price'): 'price' names no property of the form level; a property of an object group is"
+                + " named with its group, 'items.price'", refusedWith(form, "getValues", "price", "ab", null));
+        assertRefusal("controller.form.getValues('nope.price'): unknown object group 'nope'", refusedWith(form, "getValues", "nope.price", "ab", null));
+        assertRefusal("controller.form.getValues('items.nope'): property 'nope' is not drawn on group 'items'", refusedWith(form, "getValues", "items.nope", "ab", null));
+        assertRefusal("controller.form.getValues(): takes the name of a property, as a string", refusedWith(form, "getValues", 3.0, "ab", null));
+        assertRefusal("controller.form.getValues('single'): takes the query, as a string", refusedWith(form, "getValues", "single", null, null));
+        assertRefusal("unknown field 'typo'", refusedWith(form, "getValues", "single", "ab", parse("{\"typo\":true}")));
+        Fixture columns = Fixture.withPlatformProperties();
+        assertRefusal("controller.form.getValues('items.columns'): 'columns' is grouped in columns", refusedWith(field(columns.sa.controller, "form"), "getValues", "items.columns", "ab", null));
+        assertEquals(4, f.lookups.size());
+        JavaScriptObject[] promise = new JavaScriptObject[1];
+        batch(f.sa.controller, () -> {
+            promise[0] = (JavaScriptObject) call(form, "getValues", "single", "ab", null);
+            assertRefusal("controller.form.getValues('nope.price'): unknown object group 'nope'", refusedWith(form, "getValues", "nope.price", "ab", null));
+        });
+        assertEquals(4, f.lookups.size());
+        delayTestFinish(5000);
+        then(promise[0], value -> fail("answered: " + value), error -> {
+            assertRefusal("controller.form.getValues('single'): a batch is running", String.valueOf(error));
+            finishTest();
+        });
+    }
+
     // the count and a column's sum are asked of the server when called, each the Promise of its answer: a column named
     // as a state names one - a number, not grouped in columns
     public void testTheToolbarsCountAndSumArePromisesOfTheAnswer() {

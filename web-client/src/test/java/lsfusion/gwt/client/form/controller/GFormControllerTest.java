@@ -224,6 +224,10 @@ public class GFormControllerTest extends GWTTestCase {
         JavaScriptObject getValues(String query) {
             return controller.getPropertyValues("items.price.getValues()", form.price, GGroupObjectValue.EMPTY, query, "objects", 0);
         }
+        // ... and as the form's controller asks for them, by the property's name
+        JavaScriptObject getValuesByName(String query) {
+            return (JavaScriptObject) call(controller.controller, "getValues", "items.price", query);
+        }
         // the server's answer to the request asked index-th: its suggestions, and what it marks them with (RECHECK,
         // CANCELED, NEEDMORE)
         void answer(int index, GAsync... values) {
@@ -297,6 +301,20 @@ public class GFormControllerTest extends GWTTestCase {
     public void testALookupIsThePromiseOfItsAnswer() {
         LookupServer lookups = lookups();
         JavaScriptObject promise = lookups.getValues("ab");
+        GetPriorityAsyncValues request = (GetPriorityAsyncValues) lookups.actions.get(0);
+        assertEquals("ab objects 0", request.value + " " + request.actionSID + " " + request.increaseValuesNeededCount);
+        delayTestFinish(5000);
+        then(promise, (JavaScriptObject answer) -> {
+            assertEquals(answer("ab", false), jsonStringify(answer));
+            finishTest();
+        }, error -> fail(error));
+        lookups.answer(0, suggestion("ab"));
+    }
+
+    // ... the form's controller's lookup by the property's name is the same request, and the same Promise of its answer
+    public void testTheFormsControllersLookupByNameIsThePromiseOfItsAnswer() {
+        LookupServer lookups = lookups();
+        JavaScriptObject promise = lookups.getValuesByName("ab");
         GetPriorityAsyncValues request = (GetPriorityAsyncValues) lookups.actions.get(0);
         assertEquals("ab objects 0", request.value + " " + request.actionSID + " " + request.increaseValuesNeededCount);
         delayTestFinish(5000);

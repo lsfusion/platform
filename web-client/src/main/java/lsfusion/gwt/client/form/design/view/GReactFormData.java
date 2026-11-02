@@ -2598,30 +2598,14 @@ public class GReactFormData {
         private boolean asksValue() {
             return property.getChangeType() != null;
         }
-        // ... getValues(value[, {row, mode, count}]): the Promise of the suggestion list of the cell the call names,
-        // from the lookup its mode picks, `count` more than the server's own number - refused while the form refuses a
-        // request, as a toolbar's count is
+        // ... getValues(value[, {row, mode, count}]): the Promise of the suggestion list of the cell the call names
+        // (lookupValues), its row read as a member names one, by a member the form shows
         JavaScriptObject getValues(String surface, String value, JavaScriptObject options) {
-            String refusal = verbs.getRefusal(surface);
-            if (refusal != null)
-                return GController.rejectedControllerPromise(refusal);
-            String errorPrefix = controllerPrefix(surface);
-            if (value == null)
-                throw refusal(errorPrefix + "takes the query, as a string");
-            if (GwtClientUtils.isUndefinedOrNull(options))
-                options = newBareObject();
-            checkAuthorObject(errorPrefix, options, "the options argument", "row,mode,count");
-            String mode = hasOwnField(options, "mode") ? getOwnString(options, "mode") : ServerResponse.OBJECTS;
-            if (mode == null)
-                throw refusal(errorPrefix + "'mode' must be the lookup's name, as a string");
-            String actionSID = GFormController.getAsyncActionSID(mode);
-            if (actionSID == null)
-                throw refusal(errorPrefix + GFormController.getUnknownModeReason(mode));
-            int count = hasOwnField(options, "count") ? readWholeNumber(JSValueConverter.toObject(getOwnField(options, "count")), Double.POSITIVE_INFINITY) : 0;
-            if (count < 0)
-                throw refusal(errorPrefix + "'count' must be a whole number, 0 or more");
-            checkShown(errorPrefix);
-            return verbs.getPropertyValues(surface, property, getMemberKey(errorPrefix, getOwnField(options, "row")), value, actionSID, count);
+            return lookupValues(surface, property, value, options, row -> {
+                String errorPrefix = controllerPrefix(surface);
+                checkShown(errorPrefix);
+                return getMemberKey(errorPrefix, row);
+            });
         }
         // a member answers while the form shows its property: it stays on the controller when a SHOWIF hides it - the
         // names are design data, like the entries - and a call through it is refused until its entry is no longer
@@ -3110,6 +3094,38 @@ public class GReactFormData {
                 + "the conditions, and its toolbar turns its filters off (showFilters)");
     }
 
+    // a PROPERTY'S SUGGESTION LIST - getValues(value[, {row, mode, count}]) of its member, getValues(name, value[,
+    // ...]) of the form's controller -: the Promise of the list the server offers for the cell the call names, from the
+    // lookup `mode` picks (objects, values, change), `count` more than the server's own number - refused while the form
+    // refuses a request, as a toolbar's count is -; the cell's key read from `row` by the caller, as it names rows
+    // (key: the current objects for none). The row is whatever the author gave - a data row, its handle, a key: a
+    // number, a string, a Java object -, so its reader is typed as JSNI hands the value over, not through a generic,
+    // whose bridge would check it as a JS object
+    private JavaScriptObject lookupValues(String surface, GPropertyDraw property, String value, JavaScriptObject options, RowKey key) {
+        String refusal = verbs.getRefusal(surface);
+        if (refusal != null)
+            return GController.rejectedControllerPromise(refusal);
+        String errorPrefix = controllerPrefix(surface);
+        if (value == null)
+            throw refusal(errorPrefix + "takes the query, as a string");
+        if (GwtClientUtils.isUndefinedOrNull(options))
+            options = newBareObject();
+        checkAuthorObject(errorPrefix, options, "the options argument", "row,mode,count");
+        String mode = hasOwnField(options, "mode") ? getOwnString(options, "mode") : ServerResponse.OBJECTS;
+        if (mode == null)
+            throw refusal(errorPrefix + "'mode' must be the lookup's name, as a string");
+        String actionSID = GFormController.getAsyncActionSID(mode);
+        if (actionSID == null)
+            throw refusal(errorPrefix + GFormController.getUnknownModeReason(mode));
+        int count = hasOwnField(options, "count") ? readWholeNumber(JSValueConverter.toObject(getOwnField(options, "count")), Double.POSITIVE_INFINITY) : 0;
+        if (count < 0)
+            throw refusal(errorPrefix + "'count' must be a whole number, 0 or more");
+        return verbs.getPropertyValues(surface, property, key.read(getOwnField(options, "row")), value, actionSID, count);
+    }
+    private interface RowKey {
+        GGroupObjectValue read(JavaScriptObject row);
+    }
+
     // what a TOOLBAR does - each a request, refused while the form refuses one (refused) -: the count of a list group's
     // rows and the sum of a column of them, each the Promise of the server's answer ...
     private JavaScriptObject countRecords(String surface, GGroupObject group) {
@@ -3257,6 +3273,22 @@ public class GReactFormData {
     private void exportTable(String surface, String name) {
         runTableReport(surface, readTable(controllerPrefix(surface), name));
     }
+    // ... a property's suggestion list, the property named as the classic changeProperty names one
+    // (readClassicProperty) - one the form hides too, as changeProperty changes it: no view of the form's controller's
+    // shows it -, the row - a data row, its `objects` handle - of the property's group, narrowed to the group's row,
+    // the cell's key (readFormRow), none for the current objects, and none at all for a property of the form level,
+    // which has no rows
+    private JavaScriptObject getValues(String surface, String name, String value, JavaScriptObject options) {
+        String errorPrefix = controllerPrefix(surface);
+        GPropertyDraw property = readClassicProperty(form, errorPrefix, name);
+        return lookupValues(surface, property, value, options, row -> {
+            if (GwtClientUtils.isUndefinedOrNull(row))
+                return GGroupObjectValue.EMPTY;
+            if (property.groupObject == null)
+                throw noRowsOfFormLevel(errorPrefix, name);
+            return readFormRow(errorPrefix, property.groupObject, row);
+        });
+    }
     // ... a table's user filters: its conditions, a property's FILTER's, and what its filter controls do - given to its
     // filter input controller, whoever draws them (getFilterInput) -, and their showing, where its toolbar's button
     // shows and hides them
@@ -3291,9 +3323,9 @@ public class GReactFormData {
     }
 
     // ... and the names, each read as the call needs it - a name is a string, and one that names nothing, or names
-    // what the call has nothing to do with, is refused. A GROUP, by its SID - as the classic changeProperty reads the
-    // group half of a name too (GFormController.resolveClassicProperty)
-    public static GGroupObject readGroup(GForm form, String errorPrefix, String name) {
+    // what the call has nothing to do with, is refused. A GROUP, by its SID - the group half of a classic name too
+    // (readClassicProperty)
+    private static GGroupObject readGroup(GForm form, String errorPrefix, String name) {
         if (name == null)
             throw refusal(errorPrefix + "takes the name of an object group, as a string");
         GGroupObject group = form.getGroupObject(name);
@@ -3622,6 +3654,9 @@ public class GReactFormData {
         controller['export'] = function (table) {
             projection.@lsfusion.gwt.client.form.design.view.GReactFormData::exportTable(*)(surface('export', table), name(table));
         };
+        controller.getValues = function (property, value, options) {
+            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::getValues(*)(surface('getValues', property), name(property), typeof value === 'string' ? value : null, options);
+        };
     }-*/;
     // a call that asks the server and makes no change a batch carries, refused by the form now (Verbs.getRefusal): the
     // reason said on the console - not thrown, as a lookup's refusal is not -, and the call made of nothing; one that
@@ -3820,15 +3855,50 @@ public class GReactFormData {
         return property;
     }
     // the ONE property of a name a group draws - the empty group's for null -, null for none: a name it draws twice
-    // says not which of them is meant, and is refused - a state's name (readStateProperty), the classic
-    // changeProperty's (GFormController.resolveClassicProperty)
-    public static GPropertyDraw readOneProperty(GForm form, String errorPrefix, GGroupObject group, String integrationSID) {
+    // says not which of them is meant, and is refused - a state's name (readStateProperty), a classic name's
+    // (readClassicProperty)
+    private static GPropertyDraw readOneProperty(GForm form, String errorPrefix, GGroupObject group, String integrationSID) {
         GPropertyDraw property = form.getPropertyDraw(group, integrationSID);
         if (property != null && form.countPropertyDraws(group, integrationSID) != 1)
             throw refusal(errorPrefix + "'" + integrationSID + "' is drawn more than once on "
                     + (group != null ? "group '" + group.getSID() + "'" : "the form level")
                     + ", so this name does not say which of them is meant; give them explicit EXTIDs");
         return property;
+    }
+    // a property named as the CLASSIC changeProperty names one - the grid view's, which names the whole form (#1655),
+    // the form's controller's -: "groupSID.integrationSID" for a property of an object group, a bare integration SID
+    // for one of the empty group, as a view has it everywhere (getName) - so the name alone says the group, and neither
+    // the row passed nor the rest of the form is asked. A qualified name splits at its LAST dot: a property's
+    // integration SID never carries one, so everything before the last dot is the group - a group of several objects
+    // is named by its SID, all of them joined with dots (`OBJECTS d = X, t = Y` is `d.t`). Every author mistake is
+    // refused: an unknown group, a name drawn twice on its group (readOneProperty), a missing property - a bare name
+    // an object group draws is told to take its group -, and a property grouped in COLUMNS: one cell per (row, column),
+    // where a name here names a row, so a call would land on whatever column is current, a real cell nobody named
+    // (nor is such a property projected)
+    public static GPropertyDraw readClassicProperty(GForm form, String errorPrefix, String name) {
+        if (name == null)
+            throw refusal(errorPrefix + "takes the name of a property, as a string");
+        int dot = name.lastIndexOf('.');
+        GGroupObject group = dot > 0 ? readGroup(form, errorPrefix, name.substring(0, dot)) : null;
+        String integrationSID = dot > 0 ? name.substring(dot + 1) : name;
+        GPropertyDraw property = readOneProperty(form, errorPrefix, group, integrationSID);
+        if (property == null) {
+            if (group != null)
+                throw refusal(errorPrefix + "property '" + integrationSID + "' is not drawn on group '" + group.getSID() + "'");
+            GGroupObject drawnOn = form.getSingleDrawnGroup(name); // a bare name a group draws: say how to name it
+            String groupSID = drawnOn != null ? drawnOn.getSID() : "<group>";
+            throw refusal(errorPrefix + "'" + name + "' names no property of the form level; a property of an"
+                    + " object group is named with its group, '" + groupSID + "." + name + "'");
+        }
+        if (property.hasColumnGroupObjects())
+            throw refusal(errorPrefix + "'" + property.integrationSID + "' is grouped in columns - it is one cell"
+                    + " per row AND column, and this names a row, so it is not addressed here (nor projected)");
+        return property;
+    }
+    // ... and a row given with a name of the form level, which has no rows: a mistake, said with the way to name a row
+    public static RuntimeException noRowsOfFormLevel(String errorPrefix, String name) {
+        return refusal(errorPrefix + "'" + name + "' names a property of the form level, which has no rows: a property"
+                + " of an object group is named with its group, '<group>." + name + "'");
     }
 
     // a condition a view states - an element of `filters.change`'s list, its one condition, a property FILTER's value

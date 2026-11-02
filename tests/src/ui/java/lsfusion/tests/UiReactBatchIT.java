@@ -204,7 +204,8 @@ public class UiReactBatchIT extends UiTest {
     }
 
     // a member's getValues: the first lookup after a change the form holds gives the database's answer, with the Promise
-    // of the session's in its `more`; the next lookup gives the session's at once, with no `more`
+    // of the session's in its `more`; the next lookup gives the session's at once, with no `more` - and the form's
+    // controller's lookup by the property's name is the same
     @Test
     public void aLookupGivesTheDatabasesAnswerThenTheSessions() throws Exception {
         String[] items = seed();
@@ -220,6 +221,7 @@ public class UiReactBatchIT extends UiTest {
                 + " return names(answer.data) + '|' + (answer.more ? names((await answer.more).data) : 'final'); })";
         assertEquals("Apple" + stamp + "|Apricot" + stamp, eval("board", lookup));
         assertEquals("Apricot" + stamp + "|final", eval("board", lookup));
+        assertEquals("Apricot" + stamp + "|final", eval("board", lookup.replace("controller.i.note.getValues('Ap')", "controller.form.getValues('i.note', 'Ap')")));
         saveAndCheckNotes(form, items, "Apricot" + stamp, "-", "-");
         close(form);
     }
