@@ -242,25 +242,27 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         }
     }
 
-    protected void changeJSProperty(String column, JavaScriptObject object, JavaScriptObject newValue) { // can be UNDEFINED
+    protected JavaScriptObject changeJSProperty(String column, JavaScriptObject object, JavaScriptObject newValue) { // can be UNDEFINED
         Column gridColumn = getColumn(column);
         if(gridColumn != null) // unknown property key passed from the (external) JS API
-            changeProperty(column, object, JSValueConverter.convertFromJSUndefValue(gridColumn.property, newValue));
+            return changeProperty(column, object, JSValueConverter.convertFromJSUndefValue(gridColumn.property, newValue));
+        return null;
     }
 
     // several cells, changed in one batch - the controller's deprecated changeProperties
-    protected void changeJSProperties(String[] columns, JavaScriptObject[] objects, JavaScriptObject[] newValues) {
-        batch(() -> {
+    protected JavaScriptObject changeJSProperties(String[] columns, JavaScriptObject[] objects, JavaScriptObject[] newValues) {
+        return batch(() -> {
             for (int i = 0; i < columns.length; i++)
                 changeJSProperty(columns[i], objects[i], newValues[i]);
         });
     }
 
-    // a change of one cell: the column's property on the object - the current one, when none is given
-    protected void changeProperty(String column, JavaScriptObject object, PValue newValue) {
+    // a change of one cell: the column's property on the object - the current one, when none is given -, the Promise of
+    // its request returned (GFormController.executePropertyEventAction); none where the call is made of nothing
+    protected JavaScriptObject changeProperty(String column, JavaScriptObject object, PValue newValue) {
         Column gridColumn = getColumn(column);
         if(gridColumn == null) // unknown property key passed from the (external) JS API
-            return;
+            return null;
         GGroupObjectValue objectsKey;
         if(GwtClientUtils.isUndefinedOrNull(object))
             objectsKey = getCurrentKey(); // null / omitted object -> the current object
@@ -270,12 +272,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             // getFullKey -> NPE
             if(objectsKey == null) {
                 GwtClientUtils.consoleError("changeProperty('" + column + "'): the object argument is not a data row or an objects handle; pass one of those");
-                return;
+                return null;
             }
         }
         GPropertyDraw property = gridColumn.property;
         GGroupObjectValue fullKey = GGroupObjectValue.getFullKey(objectsKey, gridColumn.columnKey);
-        form.executePropertyEventAction(property, fullKey, newValue, changeRequestIndex -> {
+        return form.executePropertyEventAction(property, fullKey, newValue, changeRequestIndex -> {
             PValue shownValue = property.getExternalChangeRenderValue(newValue, RendererType.SIMPLE);
             if(shownValue != PValue.UNDEFINED) // or use the old value instead of the new value in that case
                 form.pendingChangeProperty(property, fullKey, shownValue, getValue(property, fullKey), changeRequestIndex);
@@ -283,12 +285,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
     // the view's batch: the changes made in run shown at once and sent together, in one request, when it ends
-    // (GFormController.batch)
-    protected void batch(Runnable run) {
-        form.batch(run);
+    // (GFormController.batch) - the Promise of the request returned
+    protected JavaScriptObject batch(Runnable run) {
+        return form.batch(run);
     }
-    protected void batchJS(JavaScriptObject run) {
-        GReactFormData.batch(form, "batch()", run);
+    protected JavaScriptObject batchJS(JavaScriptObject run) {
+        return GReactFormData.batch(form, "batch()", run);
     }
 
     protected String getCaption(String property) {
@@ -732,7 +734,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
                 @GSimpleStateTableView::changeJSDiff(*)(element, null, object, this, property, newValue, type, index);
 
-                thisObj.@GSimpleStateTableView::changeJSProperty(*)(property, object, newValue);
+                return thisObj.@GSimpleStateTableView::changeJSProperty(*)(property, object, newValue);
             },
             //todo deprecated. use changeProperty instead
             changeDateProperty: function (property, object, year, month, day) {

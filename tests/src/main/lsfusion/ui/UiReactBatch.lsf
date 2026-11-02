@@ -35,6 +35,11 @@ uiRbOrdersFail = DATA LOCAL BOOLEAN ();
 uiRbToggleFail 'Toggle fail' () { uiRbOrdersFail() <- NOT uiRbOrdersFail(); }
 uiRbFail 'Fail' INTERNAL <{ if (true) throw new Error("uiRbFail: a sorting failed"); }>;
 
+// an action that asks the client to go on with it - its message closed -, and one the server fails, run through their
+// members
+uiRbTell 'Tell' (UiRbItem i) { MESSAGE 'told ' + uiRbName(i); }
+uiRbCrash 'Crash' INTERNAL <{ if (true) throw new Error("uiRbCrash: the action failed"); }>;
+
 // React draws the rows of the items (UiRbBoard), and the platform draws in them the quantity's editor and the bump's
 // button in every row, beside the approve and the comment the view places; the weight, a panel property, stands by the
 // box; the side view (UiRbSide) places the note of the current item, and nothing else of the group
@@ -43,13 +48,13 @@ FORM uiRbShape 'Batch of a view'
     PROPERTIES(i) READONLY name = uiRbName, sum = uiRbSum
     PROPERTIES(i) note = uiRbNote
     PROPERTIES(i) READONLY approvals = uiRbApprovals, bumps = uiRbBumps, qtyEcho = uiRbQty
-    PROPERTIES(i) incQty = uiRbIncQty GRID
+    PROPERTIES(i) incQty = uiRbIncQty GRID, tell = uiRbTell GRID
     PROPERTIES(i) qty = uiRbQty NOCUSTOM
     PROPERTIES(i) bump = uiRbBump GRID NOCUSTOM
     PROPERTIES(i) PANEL weight = uiRbWeight
     PROPERTIES(i) PANEL approve = uiRbApprove SHOWIF NOT uiRbApproveHidden()
     PROPERTIES(i) PANEL sideNote = uiRbNote
-    PROPERTIES() comment = uiRbComment, toggleApprove = uiRbToggleApprove, toggleFail = uiRbToggleFail
+    PROPERTIES() comment = uiRbComment, toggleApprove = uiRbToggleApprove, toggleFail = uiRbToggleFail, crash = uiRbCrash
     FILTERS uiRbShown(i)
     EVENTS ON ORDER i { IF uiRbOrdersFail() THEN uiRbFail(); }
     CUSTOMS uiRbPing
@@ -63,6 +68,7 @@ DESIGN uiRbShape {
         MOVE PROPERTY(comment) { custom = NULL; }
         MOVE PROPERTY(toggleApprove);
         MOVE PROPERTY(toggleFail);
+        MOVE PROPERTY(crash);
     }
     NEW side {
         custom = 'UiRbSide';

@@ -25,9 +25,9 @@ public final class JsniTestSupport {
 
     public static native JavaScriptObject field(JavaScriptObject object, String name) /*-{ return object[name]; }-*/;
     public static native boolean own(JavaScriptObject object, String name) /*-{ return Object.prototype.hasOwnProperty.call(object, name); }-*/;
-    // a batch begun through a controller, run being what its function does
-    public static native void batch(JavaScriptObject controller, Runnable run) /*-{
-        controller.batch(function () { run.@java.lang.Runnable::run()(); });
+    // a batch begun through a controller, run being what its function does - the Promise it returns
+    public static native JavaScriptObject batch(JavaScriptObject controller, Runnable run) /*-{
+        return controller.batch(function () { run.@java.lang.Runnable::run()(); });
     }-*/;
     // what a Promise is resolved with, or the message it is rejected with - ' (cancelled)' appended where its Error says so
     public static native <T> void then(JavaScriptObject promise, java.util.function.Consumer<T> resolved, java.util.function.Consumer<String> rejected) /*-{

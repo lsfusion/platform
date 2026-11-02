@@ -80,6 +80,10 @@ public abstract class GController {
     }
     // why the context refuses a call now, or null: a closed one refuses every call
     protected String getRefusal(String surface) {
+        return getClosedRefusal();
+    }
+    // ... and why it refuses any request at all - a change too, which a batch carries -: it is closed
+    protected String getClosedRefusal() {
         return isClosed() ? "Form is closed" : null;
     }
     public static native JavaScriptObject rejectedControllerPromise(String message) /*-{

@@ -258,6 +258,8 @@ public class GReactFormDataTest extends GWTTestCase {
         java.util.function.Consumer<Number> answered; // ... the last answer it waits for
         final ArrayList<String> lookups = new ArrayList<>(); // ... and what a property member looked up, in order
         final JavaScriptObject lookupPromise = JavaScriptObject.createObject(); // ... and what it answers them with
+        // ... and what it answers a change with, and a batch: the Promise of the request
+        final JavaScriptObject changePromise = JavaScriptObject.createObject(), batchPromise = JavaScriptObject.createObject();
         GReactFormData.Verbs verbs; // ... all of it, the form as far as the projection asks it
         // ... and the widget of each React view it was asked for, what the keys of what the view draws are taken with -
         // one per view, made as it is first asked for (viewWidget)
@@ -312,12 +314,13 @@ public class GReactFormDataTest extends GWTTestCase {
                 return component.getReactPlace();
             }, verbs = new GReactFormData.Verbs() { // the form, as far as a member asks it: what it is handed is kept
                 public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) { chosen = key; edits.add("current " + key.toKeyString()); }
-                public void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue) {
+                public JavaScriptObject changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue) {
                     changed = key;
                     changedTo = value;
                     edits.add("cell " + property.integrationSID + "@" + key.toKeyString());
                     sent.add(value);
                     shownAs.add(shownValue);
+                    return batching ? batchPromise : changePromise; // a change made in a batch: the batch's
                 }
                 public JavaScriptObject getPropertyValues(String surface, GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, int increaseValuesNeededCount) {
                     lookups.add("lookup " + surface + " " + property.integrationSID + "@" + key.toKeyString() + " " + value + " " + actionSID + " " + increaseValuesNeededCount);
@@ -390,10 +393,10 @@ public class GReactFormDataTest extends GWTTestCase {
                 // ... and a batch: what it is handed while the batch runs comes between the batch and its sending - a
                 // batch begun inside it a part of it, as the form's is
                 boolean batching;
-                public void batch(Runnable run) {
+                public JavaScriptObject batch(Runnable run) {
                     if (batching) {
                         run.run();
-                        return;
+                        return batchPromise;
                     }
                     edits.add("batch");
                     batching = true;
@@ -403,6 +406,7 @@ public class GReactFormDataTest extends GWTTestCase {
                         batching = false;
                         edits.add("sent");
                     }
+                    return batchPromise;
                 }
             });
             sa = projection.addView(a, data -> publish(0, data));
@@ -601,7 +605,7 @@ public class GReactFormDataTest extends GWTTestCase {
             ask("current " + group.getSID() + " " + key.toKeyString());
             controllers.groups.get(group).changeCurrentKey(key);
         }
-        public void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue) { }
+        public JavaScriptObject changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue) { return null; }
         public JavaScriptObject getPropertyValues(String surface, GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, int increaseValuesNeededCount) { return null; }
         public void countRecords(GGroupObject group, java.util.function.Consumer<Number> answer, java.util.function.Consumer<Throwable> failed) { }
         public void calculateSum(GGroupObject group, GPropertyDraw property, GGroupObjectValue columnKey, java.util.function.Consumer<Number> answer, java.util.function.Consumer<Throwable> failed) { }
@@ -658,10 +662,10 @@ public class GReactFormDataTest extends GWTTestCase {
         // ... and a batch, as the form runs one: what is asked in it under the index of its one request - none when
         // nothing is asked -, a batch begun inside it a part of it. Published by the member's call that runs it
         boolean batching;
-        public void batch(Runnable run) {
+        public JavaScriptObject batch(Runnable run) {
             if (batching) {
                 run.run();
-                return;
+                return null;
             }
             asked.add("batch");
             int begun = asked.size();
@@ -674,6 +678,7 @@ public class GReactFormDataTest extends GWTTestCase {
                     requestIndex++;
                 asked.add("sent");
             }
+            return null;
         }
         public void published() { }
         public void setAsyncView(java.util.function.Consumer<Boolean> asyncView) { }
@@ -1304,7 +1309,7 @@ public class GReactFormDataTest extends GWTTestCase {
     }
     // ... a call through one, as a view makes it - its argument an object, a string, a number or a boolean - and
     // whether it is refused
-    private static native void callChange(JavaScriptObject member, Object argument) /*-{ member.change(argument); }-*/;
+    private static native JavaScriptObject callChange(JavaScriptObject member, Object argument) /*-{ return member.change(argument); }-*/;
     // a property filter's member's change(value, options), as a view calls it, and the reason it is refused, if it is
     private static native void changeWith(JavaScriptObject member, Object value, JavaScriptObject options) /*-{ member.change(value, options); }-*/;
     private static native String refusedChangeWith(JavaScriptObject member, Object value, JavaScriptObject options) /*-{
@@ -1320,7 +1325,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // the names of an object's members, sorted: which there are, not the order they were made in
     private static native String keysOf(JavaScriptObject object) /*-{ return Object.keys(object).sort().join(","); }-*/;
     private static native JavaScriptObject pair(JavaScriptObject first, JavaScriptObject second) /*-{ return [first, second]; }-*/;
-    private static native void changeAt(JavaScriptObject member, int value, JavaScriptObject row) /*-{ member.change(value, row == null ? undefined : row); }-*/;
+    private static native JavaScriptObject changeAt(JavaScriptObject member, int value, JavaScriptObject row) /*-{ return member.change(value, row == null ? undefined : row); }-*/;
     private static boolean refuses(JavaScriptObject member, int value) {
         return refusesAt(member, value, null);
     }
@@ -1832,6 +1837,25 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(flag(f.sc.entryOf(f.snapshots[2], go), "hidden"));
     }
 
+    // a property's change and exec return the Promise of the request the form makes of them, and a batch the Promise of
+    // its one request - so does a change of a selection that picks several options, made in a batch
+    // (GFormController.executePropertyEventAction, batch)
+    public void testAChangeAndABatchReturnTheFormsPromiseOfTheirRequest() {
+        Fixture f = new Fixture(r -> {
+            r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, ", "));
+            r.price.asyncExecMap = new HashMap<>(); // its change asks for nothing in advance: exec() runs it
+        });
+        f.apply(cell(f.tags, GGroupObjectValue.EMPTY, TAG_OPTIONS));
+        JavaScriptObject price = member(f.sa, "items", "price");
+        f.edits.clear();
+        assertSame(f.changePromise, changeAt(price, 5, null));
+        assertSame(f.changePromise, (JavaScriptObject) call(price, "exec"));
+        assertSame(f.batchPromise, batch(f.sa.controller, () -> changeAt(price, 6, null)));
+        assertSame(f.batchPromise, callChange(member(f.sa, "items", "tags"), parse("[\"blue\", \"green\"]")));
+        assertEquals(Arrays.asList("cell price@", "cell price@", "batch", "cell price@", "sent", "batch", "cell tags@", "cell tags@",
+                "cell tags@", "sent"), f.edits);
+    }
+
     // a call made in a batch reaches the form at once, as outside one - read, checked and handed over in the order it
     // was made, an edit of its own -, the form showing it at once and sending it when the batch ends
     // (GFormController.batch)
@@ -1887,23 +1911,28 @@ public class GReactFormDataTest extends GWTTestCase {
     }
 
     // a batch is sent when its function returns, so a function returning a Promise - an async one, whose calls after
-    // an await would come when the batch is over - is refused, what it made before sent; and no function at all is
-    // refused before a batch is begun
+    // an await would come when the batch is over - is refused, what it made before sent; but not the batch's own
+    // Promise, which a call made in it returns - a function written as that call -; and no function at all is refused
+    // before a batch is begun
     public void testABatchRefusesWhatItCannotMakeAtOnce() {
         Fixture f = new Fixture();
         f.edits.clear();
         String refused = refusedThenable(f.sa.controller, member(f.sa, "items", "price"));
         assertTrue(refused, refused.contains("controller.batch(): ") && refused.contains("Promise"));
         assertEquals(Arrays.asList("batch", "cell price@", "sent"), f.edits);
+        assertSame(f.batchPromise, batchOfOneCall(f.sa.controller, member(f.sa, "items", "price")));
         refused = refusedBatchOf(f.sa.controller, parse("{\"property\": \"price\"}"));
         assertTrue(refused, refused.contains("takes a function"));
-        assertEquals(3, f.edits.size());
+        assertEquals(Arrays.asList("batch", "cell price@", "sent", "batch", "cell price@", "sent"), f.edits);
     }
     private static native String refusedThenable(JavaScriptObject controller, JavaScriptObject member) /*-{
         try {
             controller.batch(function () { member.change(1); return {then: function () {}}; });
             return null;
         } catch (e) { return e.message; }
+    }-*/;
+    private static native JavaScriptObject batchOfOneCall(JavaScriptObject controller, JavaScriptObject member) /*-{
+        return controller.batch(function () { return member.change(2); });
     }-*/;
     private static native String refusedBatchOf(JavaScriptObject controller, JavaScriptObject run) /*-{
         try { controller.batch(run); return null; } catch (e) { return e.message; }

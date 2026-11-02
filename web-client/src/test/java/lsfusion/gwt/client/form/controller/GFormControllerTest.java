@@ -39,8 +39,19 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.data.GIntegerType;
 import lsfusion.gwt.client.classes.data.GStringType;
+import lsfusion.gwt.client.action.GAction;
+import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
+import lsfusion.gwt.client.controller.remote.action.form.ContinueInvocation;
+import lsfusion.gwt.client.controller.remote.action.form.ExecuteBatch;
+import lsfusion.gwt.client.controller.remote.action.form.ExecuteEventAction;
+import lsfusion.gwt.client.controller.remote.action.form.FormAction;
+import lsfusion.gwt.client.controller.remote.action.form.FormRequestAction;
 import lsfusion.gwt.client.controller.remote.action.form.GetAsyncValues;
 import lsfusion.gwt.client.controller.remote.action.form.GetPriorityAsyncValues;
+import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
+import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestAction;
+import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
 import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
 import lsfusion.gwt.client.form.GUpdateMode;
@@ -96,8 +107,11 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButt
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
+import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
+import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchServiceAsync;
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
@@ -126,7 +140,8 @@ import static lsfusion.gwt.client.base.jsni.JsniTestSupport.then;
 // rest of the delta applied. An input the server asks for with no cell to enter it in is cancelled. A key is
 // pressed in the page, and handed to the form's bindings as the form's listener hands it (press). The form's
 // dispatcher is told of requests sent and answered, with nothing sent, and its timer runs as it does (inTurn). A
-// property's lookup is the Promise of its own answers, given as the server gives them (LookupServer)
+// property's lookup is the Promise of its own answers, given as the server gives them (LookupServer), and a view's change
+// and batch the Promise of their request (ChangeServer)
 public class GFormControllerTest extends GWTTestCase {
     @Override public String getModuleName() { return "lsfusion.gwt.main"; }
 
@@ -214,6 +229,54 @@ public class GFormControllerTest extends GWTTestCase {
         void answer(int index, GAsync... values) {
             callbacks.get(index).onSuccess(new ListResult(new ArrayList<>(Arrays.asList(values))));
         }
+    }
+    // ... and the requests of the changes a view's calls make - a property's change, a batch, a continuation of either
+    // -, of a form that sends nothing as it opens, so an answer is taken in as it comes, nothing before it in the
+    // form's queue, and named apart, the other tests' forms asking the same requests
+    private ChangeServer changes() {
+        GForm form = form("changes");
+        form.sessionID = "changes" + (++changesForms);
+        GContainer board = container(2, "board", form.mainContainer); // NEW board { custom = 'Board'; MOVE PROPERTY(note()); }
+        board.custom = "Board"; board.react = true;
+        GPropertyDraw note = column(form, 20, "note", null);
+        note.isList = false;
+        note.container = board; board.children.add(note);
+        form.initialFormChanges = GFormChangesTest.noChanges();
+        ChangeServer changes = new ChangeServer(new GFormController(formsController(), null, formContainer(), form, false, "changes", 0, null), note);
+        server = changes;
+        return changes;
+    }
+    private static int changesForms;
+    private static final class ChangeServer extends Server {
+        final GPropertyDraw note;
+
+        ChangeServer(GFormController controller, GPropertyDraw note) {
+            super(controller);
+            this.note = note;
+        }
+        @Override
+        boolean takes(Action<?> action) {
+            return (action instanceof ExecuteEventAction || action instanceof ExecuteBatch || action instanceof ContinueInvocation)
+                    && controller.getForm().sessionID.equals(((FormAction<?>) action).formSessionID);
+        }
+        // a change of the note, as its member makes it: the Promise of its request
+        JavaScriptObject change(int value) {
+            return controller.changeProperty(note, GGroupObjectValue.EMPTY, PValue.getPValue(value), PValue.getPValue(value));
+        }
+        // the server's answer to the request asked index-th: the request over, or the client to go on with it
+        void answer(int index, boolean resumeInvocation) {
+            callbacks.get(index).onSuccess(new ServerResponseResult(new GAction[0], ((FormRequestAction<?>) actions.get(index)).requestIndex, resumeInvocation));
+        }
+    }
+    // the forms' controller, as far as a form's answers ask it: told of each, which opens and hides no form here
+    private static FormsController formsController() {
+        return new FormsController(new WindowsController() {
+            public Widget getWindowView(GAbstractWindow window) { return null; }
+        }) {
+            public <T extends Result> long syncDispatch(NavigatorRequestAction<T> action, RequestCountingAsyncCallback<T> callback) { return -1; }
+            public long asyncDispatch(ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) { return -1; }
+            public GNavigatorActionDispatcher getDispatcher() { return null; }
+        };
     }
     private static native StandardDispatchServiceAsync getPageService() /*-{
         return @lsfusion.gwt.client.controller.dispatch.GWTDispatch::getRealServiceInstance()();
@@ -362,6 +425,103 @@ public class GFormControllerTest extends GWTTestCase {
         lookups.answer(1, suggestion("ab"));
         lookups.answer(0, suggestion("a"));
         assertTrue(String.valueOf(answered), answered.isEmpty());
+    }
+
+    // a view's change of a property is the Promise of its request: resolved when the request is over - the server's
+    // answer taken in, and the answer to the continuation it asked the client for -, not before
+    public void testAChangeIsThePromiseOfItsRequest() {
+        ChangeServer changes = changes();
+        ArrayList<String> settled = new ArrayList<>();
+        then(changes.change(5), answer -> settled.add("resolved"), error -> settled.add("rejected: " + error));
+        assertTrue(changes.actions.get(0) instanceof ExecuteEventAction);
+        delayTestFinish(5000);
+        changes.answer(0, true); // the server asks the client to go on with the request
+        assertTrue(changes.actions.get(1) instanceof ContinueInvocation);
+        Scheduler.get().scheduleDeferred(() -> {
+            assertEquals(Collections.emptyList(), settled); // ... so it is not over
+            changes.answer(1, false);
+            Scheduler.get().scheduleDeferred(() -> {
+                assertEquals(Collections.singletonList("resolved"), settled);
+                finishTest();
+            });
+        });
+    }
+
+    // a request that fails rejects its Promise with the reason, which the platform shows the user, as it does a failed
+    // edit's
+    public void testAFailedChangeIsRejectedWithTheReason() {
+        ChangeServer changes = changes();
+        JavaScriptObject promise = changes.change(5);
+        delayTestFinish(5000);
+        then(promise, (JavaScriptObject answer) -> fail("resolved"), error -> {
+            assertEquals("the server failed", error);
+            assertTrue(closeDialog("the server failed"));
+            finishTest();
+        });
+        changes.callbacks.get(0).onFailure(new RuntimeException("the server failed"));
+    }
+    // a dialog the client shows, saying the text, closed as a user closes it - whether there was one
+    private static native boolean closeDialog(String text) /*-{
+        var dialogs = $doc.querySelectorAll('.modal-content');
+        for (var i = 0; i < dialogs.length; i++)
+            if (dialogs[i].textContent.indexOf(text) >= 0) {
+                var buttons = dialogs[i].querySelectorAll('button');
+                for (var j = 0; j < buttons.length; j++)
+                    if (buttons[j].textContent === 'Close') {
+                        buttons[j].click();
+                        return true;
+                    }
+            }
+        return false;
+    }-*/;
+
+    // the calls of a batch make one request, so each returns the batch's Promise - a batch begun inside it too -,
+    // resolved when that request is over
+    public void testTheCallsOfABatchReturnItsPromise() {
+        ChangeServer changes = changes();
+        JavaScriptObject[] made = new JavaScriptObject[3];
+        JavaScriptObject promise = changes.controller.batch(() -> {
+            made[0] = changes.change(5);
+            made[1] = changes.controller.batch(() -> made[2] = changes.change(6));
+        });
+        assertSame(promise, made[0]);
+        assertSame(promise, made[1]);
+        assertSame(promise, made[2]);
+        assertEquals(1, changes.actions.size());
+        assertTrue(changes.actions.get(0) instanceof ExecuteBatch);
+        delayTestFinish(5000);
+        then(promise, (JavaScriptObject answer) -> finishTest(), error -> fail(error));
+        changes.answer(0, false);
+    }
+
+    // a batch that makes no request has nothing to wait for: resolved at once, and nothing sent
+    public void testABatchThatSendsNothingIsResolved() {
+        ChangeServer changes = changes();
+        JavaScriptObject promise = changes.controller.batch(() -> { });
+        delayTestFinish(5000);
+        then(promise, (JavaScriptObject answer) -> {
+            assertTrue(changes.actions.isEmpty());
+            finishTest();
+        }, error -> fail(error));
+    }
+
+    // a closed form sends no request, so a change and a batch are refused - their Promise rejected, as a server call on
+    // the form's controller is -, and the batch's function is not run
+    public void testAChangeAndABatchOfAClosedFormAreRejected() {
+        ChangeServer changes = changes();
+        ((FormDispatchAsync) dispatcher(changes.controller)).close();
+        boolean[] ran = {false};
+        JavaScriptObject batch = changes.controller.batch(() -> ran[0] = true);
+        delayTestFinish(5000);
+        then(changes.change(5), answer -> fail("resolved"), error -> {
+            assertEquals("Form is closed", error);
+            then(batch, answer -> fail("resolved"), batchError -> {
+                assertEquals("Form is closed", batchError);
+                assertFalse(ran[0]);
+                assertTrue(changes.actions.isEmpty());
+                finishTest();
+            });
+        });
     }
 
     public void testAGridOfItsOwnIsSizedByItsColumns() {

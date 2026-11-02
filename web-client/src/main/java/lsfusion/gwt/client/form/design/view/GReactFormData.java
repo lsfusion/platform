@@ -133,9 +133,10 @@ public class GReactFormData {
         // ===== the current object of a group whose rows a view draws: one of those rows
         void changeCurrentObject(GGroupObject group, GGroupObjectValue key);
         // ===== a property: its cell - its key (EMPTY: the current objects), its value (PValue.UNDEFINED: its change
-        // event, or the action) and what the cell shows until the answer (PValue.UNDEFINED: the value it has) -, and the
-        // Promise of the cell's suggestion list, from the server's lookup `actionSID`
-        void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue);
+        // event, or the action) and what the cell shows until the answer (PValue.UNDEFINED: the value it has) -, the
+        // Promise of the change's request returned, and the Promise of the cell's suggestion list, from the server's
+        // lookup `actionSID`
+        JavaScriptObject changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue);
         JavaScriptObject getPropertyValues(String surface, GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, int increaseValuesNeededCount);
         // ===== the nodes of a tree whose rows a view draws: one of a group's rows opened ...
         void expandNode(GGroupObject group, GGroupObjectValue key);
@@ -191,9 +192,10 @@ public class GReactFormData {
         // column follow the rows
         void published();
         // ... and a view's batch: run, the edits made in it shown at once and sent together, in one request, when it
-        // ends - when it throws too -, a call being made when it is made. A batch begun inside it is a part of it; a
-        // server call on a controller, or a lookup, is refused while it runs
-        void batch(Runnable run);
+        // ends - when it throws too -, a call being made when it is made, the Promise of that request returned - the
+        // one each change made in it returns. A batch begun inside it is a part of it; a server call on a controller,
+        // or a lookup, is refused while it runs
+        JavaScriptObject batch(Runnable run);
         // ... and what shows the form's asynchronous requests (GFormController.showAsync): the entry of the property
         // that shows them, drawAsync - the Refresh button -, where React draws it (ReactPanelPropertyEntry), as the
         // platform's button of it gives itself (ActionPanelRenderer)
@@ -202,20 +204,22 @@ public class GReactFormData {
 
     // A BATCH begun from JS - a React view's controller.batch, the form's controller.form.batch, a custom grid view's
     // controller.batch (GSimpleStateTableView): fn, a function, run in the form's batch (Verbs.batch), which sends what
-    // it makes when it returns - what was made before a throw too, as it would have gone outside a batch. The batch is
-    // the form's, whoever begins it: a member call of any view made in fn goes with it (the form's server calls are
-    // refused while it runs)
-    public static void batch(Verbs verbs, String surface, JavaScriptObject fn) {
+    // it makes when it returns - what was made before a throw too, as it would have gone outside a batch -, the Promise
+    // of its request returned. The batch is the form's, whoever begins it: a member call of any view made in fn goes
+    // with it (the form's server calls are refused while it runs)
+    public static JavaScriptObject batch(Verbs verbs, String surface, JavaScriptObject fn) {
         String errorPrefix = controllerPrefix(surface);
         if (!isFunction(fn))
             throw refusal(errorPrefix + "takes a function, the member calls it makes being sent together");
         // fn, run at once: what follows an await in it would be made after the batch has ended, so a Promise it
-        // returns is refused - what it made before is sent
-        verbs.batch(() -> {
-            if (isThenable(GwtClientUtils.call(fn)))
-                throw refusal(errorPrefix + "the function returned a Promise: a batch is sent when it returns, so"
-                        + " what follows an await in it would be made outside it. Await before the batch");
-        });
+        // returns is refused - what it made before is sent -, but the batch's own, which a call made in it returns,
+        // and so a function written as that call (() => member.change(v))
+        JavaScriptObject[] returned = new JavaScriptObject[1];
+        JavaScriptObject promise = verbs.batch(() -> returned[0] = GwtClientUtils.call(fn));
+        if (isThenable(returned[0]) && returned[0] != promise)
+            throw refusal(errorPrefix + "the function returned a Promise: a batch is sent when it returns, so"
+                    + " what follows an await in it would be made outside it. Await before the batch");
+        return promise;
     }
 
     // a React view's state, made with the view, and its controller with it
@@ -2474,8 +2478,9 @@ public class GReactFormData {
         }
         // ... the cell a call names changed to the value it gives - of a selection, by the options it picks
         // (ReactSelect.change); with none given (UNDEFINED, exec()), its change event run as it is -, the cell showing
-        // until the answer what the change makes of it: one change sent as it is, several in one batch
-        private void changeValue(String errorPrefix, JavaScriptObject objectOrKey, JavaScriptObject value) {
+        // until the answer what the change makes of it: one change sent as it is, several in one batch - the Promise of
+        // the request returned
+        private JavaScriptObject changeValue(String errorPrefix, JavaScriptObject objectOrKey, JavaScriptObject value) {
             checkShown(errorPrefix);
             GGroupObjectValue key = getMemberKey(errorPrefix, objectOrKey);
             ArrayList<PValue> changes = new ArrayList<>();
@@ -2487,14 +2492,12 @@ public class GReactFormData {
                 changes.add(change);
                 shown = property.getExternalChangeRenderValue(change, RendererType.SIMPLE);
             }
-            Runnable send = () -> {
+            if (changes.size() == 1)
+                return verbs.changeProperty(property, key, changes.get(0), shown);
+            return verbs.batch(() -> {
                 for (PValue change : changes)
                     verbs.changeProperty(property, key, change, shown);
-            };
-            if (changes.size() > 1)
-                verbs.batch(send);
-            else
-                send.run();
+            });
         }
         // ... the value of the cell a call names - of a column with no row named, the current row's; refused where there
         // is none -, a change not answered yet included: what a pick is made against
@@ -2569,25 +2572,25 @@ public class GReactFormData {
         }
         // change(value[, row]): the value is given - null clears it - since running the property's change event without
         // one is exec(), and an action has no value to set
-        void change(String surface, JavaScriptObject value, JavaScriptObject objectOrKey, boolean noValue) {
+        JavaScriptObject change(String surface, JavaScriptObject value, JavaScriptObject objectOrKey, boolean noValue) {
             String errorPrefix = controllerPrefix(surface);
             if (property.isAction())
                 throw refusal(errorPrefix + "'" + property.integrationSID + "' is an action, which has no value to set: call exec()");
             if (noValue)
                 throw refusal(errorPrefix + "the value is missing - pass null to clear it, or call exec() to run the property's change event");
-            changeValue(errorPrefix, objectOrKey, value);
+            return changeValue(errorPrefix, objectOrKey, value);
         }
         // ... exec([row]): the property's change event, or the action, with no value given - but a value the platform
         // asks for before it runs the event - its change type; the group change it makes of the change asks it first
         // too - is asked in the cell the change is made in, and a call has none: the view gives a property's value
         // itself, and an action's no call can give. One the event asks for only as it runs finds no cell either, and is
         // cancelled (GFormActionDispatcher)
-        void exec(String surface, JavaScriptObject objectOrKey) {
+        JavaScriptObject exec(String surface, JavaScriptObject objectOrKey) {
             String errorPrefix = controllerPrefix(surface);
             if (asksValue())
                 throw refusal(errorPrefix + "'" + property.integrationSID + "' asks for a value" + (property.isAction()
                         ? ", which no call can give an action" : ", which a view gives itself: call change(value)"));
-            changeValue(errorPrefix, objectOrKey, UNDEFINED);
+            return changeValue(errorPrefix, objectOrKey, UNDEFINED);
         }
         // whether its change asks a value before it runs - its change type -, in the cell the change is made in, which
         // neither a call nor a binding of a view has: exec() is refused, and no binding is taken (getBindingWidget) -
@@ -3416,7 +3419,7 @@ public class GReactFormData {
     private static native JavaScriptObject makeController(Verbs verbs) /*-{
         return {
             batch: function (fn) {
-                @lsfusion.gwt.client.form.design.view.GReactFormData::batch(*)(verbs, "batch()", fn);
+                return @lsfusion.gwt.client.form.design.view.GReactFormData::batch(*)(verbs, "batch()", fn);
             }
         };
     }-*/;

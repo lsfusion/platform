@@ -55,18 +55,22 @@ public class FormDispatchAsync extends RemoteDispatchAsync {
         return batch != null;
     }
 
-    public void startBatch() {
+    // ... begun: the index its request is sent with returned, as a request's is when it is made
+    public long startBatch() {
         batch = new ArrayList<>();
+        return nextRequestIndex;
     }
 
     // ... and when it ends, the requests it holds sent as one (ExecuteBatch), if any. fn calls members only, whose
     // requests a batch carries; another goes with them all the same, failing the batch on the server
     // (BatchRequest.Unsupported): sent apart, it would take the batch's index
-    public void sendBatch(RequestCountingAsyncCallback<ServerResponseResult> callback) {
+    public boolean sendBatch(RequestCountingAsyncCallback<ServerResponseResult> callback) {
         ArrayList<FormRequestCountingAction<?>> requests = batch;
         batch = null;
-        if (!requests.isEmpty())
-            asyncExecute(new ExecuteBatch(requests), callback);
+        if (requests.isEmpty())
+            return false;
+        asyncExecute(new ExecuteBatch(requests), callback);
+        return true;
     }
 
     @Override

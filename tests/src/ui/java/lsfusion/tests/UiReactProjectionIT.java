@@ -129,7 +129,7 @@ public class UiReactProjectionIT extends UiTest {
         Locator nativeRun = button(form, "uiRpjNativeRun");
         assertThat(loading(nativeRun)).hasCount(0);
         hold();
-        page.evaluate("() => window.uiRpjClassicController.changeProperty('uiRpjNativeRun')");
+        page.evaluate("() => { window.uiRpjClassicController.changeProperty('uiRpjNativeRun'); }"); // its Promise waits for the held answer
         assertThat(loading(nativeRun)).hasCount(1);
         release();
         assertThat(loading(nativeRun)).hasCount(0);
@@ -139,7 +139,7 @@ public class UiReactProjectionIT extends UiTest {
         Locator nativeNote = form.locator("[lsfusion-container='PROPERTY(uiRpjNativeNote())'] .panel-renderer-value");
         assertThat(nativeNote).hasText("initial");
         hold();
-        page.evaluate("() => window.uiRpjClassicController.changeProperty('uiRpjNativeNote', null, 'given')");
+        page.evaluate("() => { window.uiRpjClassicController.changeProperty('uiRpjNativeNote', null, 'given'); }");
         assertThat(loading(nativeNote)).hasCount(1);
         assertThat(nativeNote).hasText("initial");
         release();

@@ -14,12 +14,13 @@ import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 // a React view's controller.batch (UiReactBatch.lsf, its views UiReactBatch.js): the member changes made in it shown at
 // once and sent together in one request, which the server makes in their order - one that throws sending what it made
 // before, one carrying changes only, one the server fails taking the values back -, a classic custom view's batch; what
-// the platform draws in a React view, with an entry and no member (#1875); and the Promise a member's lookup returns,
-// of its answers
+// the platform draws in a React view, with an entry and no member (#1875); and the Promise a member's call returns - of
+// its change's request, of a batch's, of its lookup's answers
 public class UiReactBatchIT extends UiTest {
 
     private static final String FOLDER = "UiReactBatch.uiRb";
@@ -157,6 +158,51 @@ public class UiReactBatchIT extends UiTest {
         close(form);
     }
 
+    // a property's change and exec, and a batch, return the Promise of their request: resolved when it is over - an
+    // action's once the message it shows is closed -, a change made in a batch returning the batch's own Promise; an
+    // action the server fails rejects it with the reason, which the platform shows too, so a Promise no one waits for
+    // reports nothing more
+    @Test
+    public void aCallIsThePromiseOfItsRequest() throws Exception {
+        String[] items = seed();
+        List<String> errors = errors();
+        Locator form = open(FOLDER, "UiReactBatch.uiRbShape");
+        waitFor("board", "names() === '" + String.join(",", items) + "'");
+        assertEquals("resolved", eval("board", "controller.i.note.change('p1', row(" + js(items[0]) + ")).then(() => 'resolved')"));
+        assertEquals("resolved", eval("board", "controller.i.incQty.exec(row(" + js(items[0]) + ")).then(() => 'resolved')"));
+        assertEquals("resolved", eval("board", "(() => { let made; const batch = controller.batch(() => { made = controller.i.note.change('p2', row("
+                + js(items[1]) + ")); }); return made === batch ? batch.then(() => 'resolved') : 'another Promise'; })()"));
+
+        call("board", "window.uiRbTold = 'pending'; controller.i.tell.exec(row(" + js(items[2]) + ")).then(() => window.uiRbTold = 'over')");
+        assertThat(dialog("told " + items[2])).isVisible();
+        assertEquals("pending", eval("board", "window.uiRbTold"));
+        closeDialog("told " + items[2]);
+        waitFor("board", "window.uiRbTold === 'over'");
+
+        String failed = eval("board", "controller.crash.exec().then(() => 'resolved', e => e.message)");
+        assertTrue(failed, failed.contains("uiRbCrash: the action failed"));
+        closeDialog("uiRbCrash: the action failed");
+        call("board", "controller.crash.exec()"); // no one waits for its Promise
+        closeDialog("uiRbCrash: the action failed");
+        assertEquals(Collections.emptyList(), errors);
+        saveAndCheckNotes(form, items, "p1", "p2", "-");
+        close(form);
+    }
+
+    // a classic view's changeProperty and batch return the Promise of their request too
+    @Test
+    public void aClassicViewsCallIsThePromiseOfItsRequest() throws Exception {
+        String[] items = seed();
+        Locator form = open(FOLDER, "UiReactBatch.uiRbClassic");
+        classic("list.length === 3");
+        assertEquals("resolved", classicEval("controller.changeProperty('note', row(" + js(items[0]) + "), 'c1').then(() => 'resolved')"));
+        assertEquals("resolved", classicEval("controller.batch(() => controller.changeProperty('note', row(" + js(items[1]) + "), 'c2'))"
+                + ".then(() => 'resolved')"));
+        classic("row(" + js(items[0]) + ").note === 'c1' && row(" + js(items[1]) + ").note === 'c2'");
+        saveAndCheckNotes(form, items, "c1", "c2", "-");
+        close(form);
+    }
+
     // a member's getValues: the first lookup after a change the form holds gives the database's answer, with the Promise
     // of the session's in its `more`; the next lookup gives the session's at once, with no `more`
     @Test
@@ -223,10 +269,9 @@ public class UiReactBatchIT extends UiTest {
         page.waitForCondition(() -> !held.isEmpty());
         held.get(0).resume();
         page.unroute("**/main/dispatch");
-        Locator error = page.locator(".modal-content").filter(new Locator.FilterOptions().setHasText("uiRbFail: a sorting failed"));
-        assertThat(error).isVisible();
+        assertThat(dialog("uiRbFail: a sorting failed")).isVisible();
         waitFor("board", "row(" + js(items[2]) + ").note.value === " + js(before) + " && !row(" + js(items[2]) + ").note.loading");
-        error.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Close").setExact(true)).click();
+        closeDialog("uiRbFail: a sorting failed");
         call("board", "controller.toggleFail.exec()"); // the next request, which the sorting fails no more
         waitFor("board", "row(" + js(items[2]) + ").note.value === 'f2' && !row(" + js(items[2]) + ").note.loading");
         saveAndCheckNotes(form, items, "-", "-", "f2");
@@ -305,12 +350,11 @@ public class UiReactBatchIT extends UiTest {
         List<String> requests = requests();
         classicCall("controller.batch(() => { controller.changeProperty('note', row(" + js(items[2]) + "), 'u" + stamp + "');"
                 + " controller.setBooleanViewFilter('name', 1000); })");
-        Locator error = page.locator(".modal-content").filter(new Locator.FilterOptions().setHasText("SetViewFilters is no request a batch carries"));
-        assertThat(error).isVisible();
+        assertThat(dialog("SetViewFilters is no request a batch carries")).isVisible();
         assertEquals(1, requests.stream().filter(request -> request.contains(signature("ExecuteBatch")) && request.contains(signature("SetViewFilters"))).count());
         assertEquals(0, requests.stream().filter(request -> !request.contains(signature("ExecuteBatch")) && (request.contains(signature("SetViewFilters"))
                 || request.contains(signature("ExecuteEventAction")))).count());
-        error.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Close").setExact(true)).click();
+        closeDialog("SetViewFilters is no request a batch carries");
         classicCall("controller.changeProperty('note', row(" + js(items[0]) + "), 'v" + stamp + "')");
         classic("row(" + js(items[0]) + ").note === 'v" + stamp + "' && row(" + js(items[2]) + ").note === 'u" + stamp + "' && list.length === 3");
         saveAndCheckNotes(form, items, "v" + stamp, "-", "u" + stamp);
@@ -366,6 +410,14 @@ public class UiReactBatchIT extends UiTest {
                 errors.add(error);
         });
         return errors;
+    }
+    // a dialog the platform shows, saying the text - a message, an error -, and it closed by its Close button
+    private Locator dialog(String text) {
+        return page.locator(".modal-content").filter(new Locator.FilterOptions().setHasText(text));
+    }
+    private void closeDialog(String text) {
+        dialog(text).getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Close").setExact(true)).click();
+        assertThat(dialog(text)).hasCount(0);
     }
 
     // a row the board draws, by its name
@@ -430,5 +482,9 @@ public class UiReactBatchIT extends UiTest {
     // a call of the classic view's controller, made as the view's own code makes it
     private void classicCall(String call) {
         page.evaluate("() => { const controller = window.uiRbClassic.controller, row = " + ROW + "; " + call + "; }");
+    }
+    // ... and what it comes to - the answer of a Promise -, as a string
+    private String classicEval(String expression) {
+        return (String) page.evaluate("async () => { const controller = window.uiRbClassic.controller, row = " + ROW + "; return String(await (" + expression + ")); }");
     }
 }
