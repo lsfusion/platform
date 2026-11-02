@@ -1420,8 +1420,8 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     }
 
     // whether a React view draws the property from its data - a column of its rows or a panel property in it -, so it,
-    // not the platform's view, draws the value: no automatic selection for it, as for a classic custom group's rows
-    // (FormView.isReactDrawn)
+    // not the platform's view, draws the value: no automatic selection for it, and a file sent as itself, which the
+    // view is given a link to (needFile), as for a classic custom group's rows (FormView.isReactDrawn)
     public boolean isReactDrawn(FormInstanceContext context) {
         return context.view != null && context.view.isReactDrawn(this);
     }
@@ -1432,7 +1432,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     }
 
     public boolean needFile(FormInstanceContext context) {
-        return getCustomRenderFunction(context) != null || isGroupCustom(context);
+        return getCustomRenderFunction(context) != null || isGroupCustom(context) || isReactDrawn(context);
     }
 
     public boolean needImage(FormInstanceContext context) {

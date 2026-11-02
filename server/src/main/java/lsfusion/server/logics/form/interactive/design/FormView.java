@@ -281,8 +281,9 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
 
     // a property a React view draws from its data - a column of the rows it draws, or a panel property standing in it,
     // with no view of its own -, not the platform's view of it, so the server applies nothing to it that only that view
-    // means (the automatic selection, which would turn its value into a JSON list of candidates). One the platform draws
-    // and React places is the platform's (mirrors GReactFormData.isReactDrawn)
+    // means (the automatic selection, which would turn its value into a JSON list of candidates; a file sent as TRUE,
+    // all that view draws a file by). One the platform draws and React places is the platform's (mirrors
+    // GReactFormData.isReactDrawn)
     public boolean isReactDrawn(PropertyDrawEntity property) {
         PropertyDrawView view = get(property);
         return nameScope(view) != null && !isPlatformDrawn(view);

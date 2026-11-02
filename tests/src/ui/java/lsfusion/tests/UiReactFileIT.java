@@ -6,8 +6,8 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 // a file a React view is given is a link to it (UiReactFile.lsf, its view in UiReactFile.js), whatever the server sends
-// it as: the value of a PDF and of a video as an image made of the file, as an image's, and what a call to the server
-// returns as the file itself, an image's too
+// it as: the value of a PDF and of a video as an image made of the file, as an image's, the value of a file of another
+// class (a text) and what a call to the server returns as the file itself, an image's too
 public class UiReactFileIT extends UiTest {
 
     @Test
@@ -17,6 +17,7 @@ public class UiReactFileIT extends UiTest {
         assertEquals("a PDF", fetch("uiRfData.uiRfPdf.value"));
         assertEquals("a video", fetch("uiRfData.uiRfVideo.value"));
         assertEquals("an image", fetch("uiRfData.uiRfImage.value"));
+        assertEquals("a text", fetch("uiRfData.uiRfText.value"));
         assertEquals("a PDF", fetch("uiRfController.form.exec('uiRfPdfResult')"));
         assertEquals("an image", fetch("uiRfController.form.exec('uiRfImageResult')"));
         close(form);
