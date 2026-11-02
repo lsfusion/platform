@@ -547,7 +547,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             return;
         }
         String actionSID = GFormController.getAsyncActionSID(mode); // default OBJECTS; values/strictValues/change select the server lookup
-        if(actionSID == null) { // unknown mode (already logged)
+        if(actionSID == null) {
+            GwtClientUtils.consoleError("controller.<property>.getValues(): " + GFormController.getUnknownModeReason(mode));
             if(failureCallBack != null)
                 GwtClientUtils.call(failureCallBack);
             return;

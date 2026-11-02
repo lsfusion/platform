@@ -22,6 +22,7 @@ import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.form.controller.GController;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.interop.action.ServerResponse;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -133,9 +134,9 @@ public class GReactFormData {
         void changeCurrentObject(GGroupObject group, GGroupObjectValue key);
         // ===== a property: its cell - its key (EMPTY: the current objects), its value (PValue.UNDEFINED: its change
         // event, or the action) and what the cell shows until the answer (PValue.UNDEFINED: the value it has) -, and the
-        // suggestion list of the cell, from the server's lookup `actionSID`
+        // Promise of the cell's suggestion list, from the server's lookup `actionSID`
         void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue);
-        void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount);
+        JavaScriptObject getPropertyValues(String surface, GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, int increaseValuesNeededCount);
         // ===== the nodes of a tree whose rows a view draws: one of a group's rows opened ...
         void expandNode(GGroupObject group, GGroupObjectValue key);
         // ... or closed
@@ -1644,6 +1645,12 @@ public class GReactFormData {
             throw refusal(errorPrefix + "takes true or false");
         return (Boolean) value;
     }
+    // an author's whole number, 0 up to `bound` - a filter's index, a count -, or -1: not a number, a fraction,
+    // negative, out of its bound (a count's is infinity, which is not below itself); checked before it is narrowed
+    private static int readWholeNumber(Object value, double bound) {
+        double number = value instanceof Double ? (Double) value : -1;
+        return number == Math.floor(number) && number >= 0 && number < bound ? (int) number : -1;
+    }
 
     // a group's ROWS where React draws them: a part of the group, on its node where the component drawing them is -
     // the list, where each row sits in it, which of them is current; its member's change(row), a current object being
@@ -2588,18 +2595,30 @@ public class GReactFormData {
         private boolean asksValue() {
             return property.getChangeType() != null;
         }
-        // ... getValues([row,] value[, mode], ok, fail[, count]): the suggestion list of the cell the call names, from
-        // the lookup its mode picks - an unknown one is said on the console, and the call fails
-        void getValues(String surface, JavaScriptObject objectOrKey, String value, String mode, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) {
+        // ... getValues(value[, {row, mode, count}]): the Promise of the suggestion list of the cell the call names,
+        // from the lookup its mode picks, `count` more than the server's own number - refused while the form refuses a
+        // request, as a toolbar's count is
+        JavaScriptObject getValues(String surface, String value, JavaScriptObject options) {
+            String refusal = verbs.getRefusal(surface);
+            if (refusal != null)
+                return GController.rejectedControllerPromise(refusal);
             String errorPrefix = controllerPrefix(surface);
-            String actionSID = GFormController.getAsyncActionSID(errorPrefix, mode);
-            if (actionSID == null) { // unknown mode (already logged)
-                if (failureCallback != null)
-                    GwtClientUtils.call(failureCallback);
-                return;
-            }
+            if (value == null)
+                throw refusal(errorPrefix + "takes the query, as a string");
+            if (GwtClientUtils.isUndefinedOrNull(options))
+                options = newBareObject();
+            checkAuthorObject(errorPrefix, options, "the options argument", "row,mode,count");
+            String mode = hasOwnField(options, "mode") ? getOwnString(options, "mode") : ServerResponse.OBJECTS;
+            if (mode == null)
+                throw refusal(errorPrefix + "'mode' must be the lookup's name, as a string");
+            String actionSID = GFormController.getAsyncActionSID(mode);
+            if (actionSID == null)
+                throw refusal(errorPrefix + GFormController.getUnknownModeReason(mode));
+            int count = hasOwnField(options, "count") ? readWholeNumber(JSValueConverter.toObject(getOwnField(options, "count")), Double.POSITIVE_INFINITY) : 0;
+            if (count < 0)
+                throw refusal(errorPrefix + "'count' must be a whole number, 0 or more");
             checkShown(errorPrefix);
-            verbs.getPropertyValues(property, getMemberKey(errorPrefix, objectOrKey), value, actionSID, successCallback, failureCallback, increaseValuesNeededCount);
+            return verbs.getPropertyValues(surface, property, getMemberKey(errorPrefix, getOwnField(options, "row")), value, actionSID, count);
         }
         // a member answers while the form shows its property: it stays on the controller when a SHOWIF hides it - the
         // names are design data, like the entries - and a call through it is refused until its entry is no longer
@@ -3018,11 +3037,11 @@ public class GReactFormData {
                 throw refusal(errorPrefix + "takes the index of one of its filters, 0 to " + (size - 1)
                         + ": one has to be selected");
         } else {
-            double value = index instanceof Double ? (Double) index : -1;
-            if (value != Math.floor(value) || value < 0 || value >= size)
+            int value = readWholeNumber(index, size);
+            if (value < 0)
                 throw refusal(errorPrefix + "takes the index of one of its filters, 0 to " + (size - 1)
                         + (offersNone(filterGroup) ? ", or null for none" : ""));
-            filter = filterGroup.filters.get((int) value);
+            filter = filterGroup.filters.get(value);
         }
         verbs.changeRegularFilter(filterGroup, filter);
     }
@@ -3623,28 +3642,10 @@ public class GReactFormData {
             exec: function (object) {
                 return propertyEntry.@lsfusion.gwt.client.form.design.view.GReactFormData.ReactPropertyEntry::exec(*)(qualified + ".exec()", object === undefined ? null : object);
             },
-            // .getValues([row,] value[, mode], ok, fail[, count]) — the suggestion list for the current row, or for
-            // the row given. ok gets {data:[{displayString,rawString,objects}], more}; mode picks the server lookup
-            // (default 'objects'): 'objects' (each item's `objects` is a raw handle — the object picker) | 'values'
-            // (DISTINCT property values) | 'change' (the edit-time autocomplete of the property's own change action).
-            // Positional guess (no options object — that's a future uniform cross-method migration): ok is the first
-            // function argument, and what precedes it is read by count and type. A row here is a row, a handle or a
-            // key - a key only with a mode after the value: with two arguments before ok a string first is the query.
-            getValues: function () {
-                var okIndex = -1;
-                for (var i = 0; i < arguments.length; i++)
-                    if (typeof arguments[i] === 'function') { okIndex = i; break; }
-                var object = null, value, mode = null;
-                if (okIndex === 1) { // {value}
-                    value = arguments[0];
-                } else if (okIndex === 2) { // {value, mode} | {row, value}
-                    if (typeof arguments[0] === 'string') { value = arguments[0]; mode = arguments[1]; }
-                    else { object = arguments[0]; value = arguments[1]; }
-                } else { // {row, value, mode}
-                    object = arguments[0]; value = arguments[1]; mode = arguments[2];
-                }
-                var ok = arguments[okIndex], fail = arguments[okIndex + 1], count = arguments[okIndex + 2];
-                propertyEntry.@lsfusion.gwt.client.form.design.view.GReactFormData.ReactPropertyEntry::getValues(*)(qualified + ".getValues()", object === undefined ? null : object, value, mode == null ? null : mode, ok, fail, count == null ? 0 : count);
+            //   .getValues(value)       the Promise of its suggestions for the current object
+            //   .getValues(value, {row, mode, count})   ... for that row, from that lookup, that many more
+            getValues: function (value, options) {
+                return propertyEntry.@lsfusion.gwt.client.form.design.view.GReactFormData.ReactPropertyEntry::getValues(*)(qualified + ".getValues()", typeof value === 'string' ? value : null, options);
             }
         };
         return member;

@@ -2192,6 +2192,37 @@ public class GwtClientUtils {
     private static native void rejectError(JavaScriptObject reject, String message)/*-{
         reject(new $wnd.Error(message));
     }-*/;
+    private static native void rejectError(JavaScriptObject reject, String message, boolean cancelled)/*-{
+        var error = new $wnd.Error(message);
+        error.cancelled = cancelled;
+        reject(error);
+    }-*/;
+    // a Promise and what settles it, for an answer that comes later - a request's, a lookup's: resolved, or rejected
+    // with an Error saying why - a lookup's saying whether a later lookup cancelled it, as a server call on a
+    // controller does (GController)
+    public static final class PendingPromise {
+        public final JavaScriptObject promise;
+        private JavaScriptObject resolve, reject;
+
+        public PendingPromise() {
+            promise = newPromise((resolve, reject) -> {
+                this.resolve = resolve;
+                this.reject = reject;
+            });
+        }
+        public void resolve() {
+            call(resolve);
+        }
+        public void resolve(JavaScriptObject value) {
+            call(resolve, value);
+        }
+        public void reject(String message) {
+            rejectError(reject, message);
+        }
+        public void reject(String message, boolean cancelled) {
+            rejectError(reject, message, cancelled);
+        }
+    }
     public static native JavaScriptObject newObject()/*-{
         return {};
     }-*/;

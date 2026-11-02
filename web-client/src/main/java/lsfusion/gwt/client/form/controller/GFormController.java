@@ -531,8 +531,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     private static String getBatchRefusal(String surface) {
         return controllerPrefix(surface) + "a batch is running, which carries changes only: make this call before the batch or after it";
     }
-    // ... and a call of a view's toolbar that asks the server (GReactFormData.Verbs.getRefusal), as a server call on
-    // the form's controller is - named as the view's member is
+    // ... and a member's lookup or a call of a view's toolbar that asks the server (GReactFormData.Verbs.getRefusal),
+    // as a server call on the form's controller is - named as the view's member is
     @Override
     public String getRefusal(String surface) {
         return dispatcher.isBatching() ? getBatchRefusal(surface) : gController.getRefusal(surface);
@@ -715,17 +715,15 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // exposed: it's only `values` + exact-match UX post-processing the platform derives from the filter operator, not an author
     // choice (add an `exactMatch` flag later if ever needed). Returns null for an unknown mode (caller rejects loudly).
     public static String getAsyncActionSID(String mode) {
-        // the classic grid view, which has no member path to quote
-        return getAsyncActionSID("controller.<property>.getValues(): ", mode);
-    }
-    // ... and a member's getValues, named by it
-    public static String getAsyncActionSID(String errorPrefix, String mode) {
         if (mode == null || mode.equals(ServerResponse.OBJECTS))
             return ServerResponse.OBJECTS;
         if (mode.equals(ServerResponse.VALUES) || mode.equals(ServerResponse.CHANGE))
             return mode;
-        GwtClientUtils.consoleError(errorPrefix + "unknown mode '" + mode + "'; expected 'objects' | 'values' | 'change'");
         return null;
+    }
+    // ... and why the call is rejected then: said on the console by the classic grid view, thrown by a member
+    public static String getUnknownModeReason(String mode) {
+        return "unknown mode '" + mode + "'; expected 'objects' | 'values' | 'change'";
     }
     // async value lookup (autocomplete / suggestion list) for a form-level / CUSTOM REACT property — the form-level twin
     // of the grid custom view's getAsyncValues (GSimpleStateTableView). The property is the member's own, and the
@@ -734,10 +732,47 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // (EMPTY => the property group's current object). The mode picks the server lookup (OBJECTS suggestions vs distinct
     // VALUES vs the edit-time CHANGE autocomplete; CHANGE here targets THIS property's own change action — no
     // property:value concat, that's the JSON-property cell-renderer's special case). Issues through the shared
-    // getAsyncValues.
+    // getAsyncValues, answering with a Promise settled by the lookup's own answers - not through checkLast, which drops
+    // an earlier lookup's answer once a later one's has come and would leave the Promise pending: the first answer, and,
+    // where the server answered it before it was sure of the form's changes (RECHECK), the Promise of the queued one in
+    // its `more`
     @Override
-    public void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) {
-        getAsyncValues(value, property, key, actionSID, getJSCallback(successCallback, failureCallback), increaseValuesNeededCount);
+    public JavaScriptObject getPropertyValues(String surface, GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, int increaseValuesNeededCount) {
+        int editIndex = editAsyncIndex++;
+        PendingPromise values = new PendingPromise();
+        getAsyncValues(value, property, key, actionSID, editIndex, new AsyncCallback<GAsyncResult>() {
+            PendingPromise pending = values; // what the next answer settles: the lookup's Promise, then a `more`
+            @Override
+            public void onFailure(Throwable caught) {
+                receiveLookup(editIndex);
+                pending.reject(caught.getMessage(), false);
+            }
+            @Override
+            public void onSuccess(GAsyncResult result) {
+                receiveLookup(editIndex);
+                if (result.asyncs != null && !result.needMoreSymbols) {
+                    JavaScriptObject answer = convertToJSObject(result);
+                    PendingPromise more = result.moreRequests ? new PendingPromise() : null;
+                    if (more != null)
+                        GwtClientUtils.setField(answer, "more", more.promise);
+                    pending.resolve(answer);
+                    pending = more;
+                    return;
+                }
+                // no suggestions: rejected with why, as exec / eval are with the server's message - the query too short
+                // for the server to search, said as the platform's editor says it, the lookup cancelled for a later one,
+                // or no list in its mode
+                boolean cancelled = result.asyncs == null && hasLaterLookup(editIndex);
+                String message;
+                if (result.needMoreSymbols)
+                    message = messages.needMoreSymbols();
+                else
+                    message = controllerPrefix(surface) + (cancelled ? "a later lookup of the form replaced it: the form looks values up one at a time"
+                            : "'" + property.integrationSID + "' has no values to offer in mode '" + actionSID + "'");
+                pending.reject(message, cancelled);
+            }
+        }, increaseValuesNeededCount);
+        return values.promise;
     }
 
     // terminal GControllerResult/ExceptionAction (delivered through GFormActionDispatcher) -> resolve/reject the promise
@@ -3130,22 +3165,31 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         return new AsyncCallback<GAsyncResult>() {
             @Override
             public void onFailure(Throwable caught) {
-                if(index >= editLastReceivedAsyncIndex) {
-                    editLastReceivedAsyncIndex = index;
+                if(receiveLookup(index))
                     callback.onFailure(caught);
-                }
             }
 
             @Override
             public void onSuccess(GAsyncResult result) {
-                if(index >= editLastReceivedAsyncIndex) {
-                    editLastReceivedAsyncIndex = index;
-                    if(!result.moreRequests && index < editAsyncIndex - 1)
+                if(receiveLookup(index)) {
+                    if(!result.moreRequests && hasLaterLookup(index))
                         result = new GAsyncResult(result.asyncs, result.needMoreSymbols, true);
                     callback.onSuccess(result);
                 }
             }
         };
+    }
+    // an answer of a lookup received: whether it is the latest one so far, the last received then - checkLast drops one
+    // that is not; a member's lookup takes every answer of its own, and orders the others' all the same
+    private boolean receiveLookup(int index) {
+        if(index < editLastReceivedAsyncIndex)
+            return false;
+        editLastReceivedAsyncIndex = index;
+        return true;
+    }
+    // ... and whether a later lookup of the form has been asked since
+    private boolean hasLaterLookup(int index) {
+        return index < editAsyncIndex - 1;
     }
 
     // synchronous call (with request indices, etc.)
@@ -3187,8 +3231,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         if (refusesLookup(property, callback))
             return;
         int editIndex = editAsyncIndex++;
-        AsyncCallback<GAsyncResult> fCallback = checkLast(editIndex, callback);
+        getAsyncValues(value, property, columnKey, actionSID, editIndex, checkLast(editIndex, callback), increaseValuesNeededCount);
+    }
 
+    private void getAsyncValues(String value, GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, int editIndex, AsyncCallback<GAsyncResult> fCallback, int increaseValuesNeededCount) {
         GGroupObjectValue currentKey = getFullCurrentKey(property, columnKey);
 
         Runnable runPessimistic = () -> getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
@@ -3217,8 +3263,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     }
 
     // single source of truth for the async-value callback: converts a GAsyncResult to the JS shape custom views consume
-    // ({data:[{displayString,rawString,objects}], more}). Shared by the form/REACT controller, the grid custom view
-    // (GSimpleStateTableView), and the custom cell renderer (CustomCellRenderer) — all route their getValues through here.
+    // ({data:[{displayString,rawString,objects}], more}). Shared by the grid custom view (GSimpleStateTableView) and
+    // the custom cell renderer (CustomCellRenderer); a React member returns a Promise of an answer of its own
     public static AsyncCallback<GAsyncResult> getJSCallback(JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
         return new AsyncCallback<GAsyncResult>() {
             @Override
@@ -3237,11 +3283,15 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
                     return;
                 }
 
-                GwtClientUtils.call(successCallBack, convertToJSObject(result));
+                JavaScriptObject answer = convertToJSObject(result);
+                GwtClientUtils.setField(answer, "more", JSValueConverter.fromBoolean(result.moreRequests));
+                GwtClientUtils.call(successCallBack, answer);
             }
         };
     }
 
+    // ... whose `more` is the caller's: a boolean for the classic callbacks, a member's the Promise of the final answer
+    // where one follows (getPropertyValues)
     private static JavaScriptObject convertToJSObject(GAsyncResult result) {
         JavaScriptObject[] results = new JavaScriptObject[result.asyncs.size()];
         for (int i = 0; i < result.asyncs.size(); i++) {
@@ -3254,7 +3304,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }
         JavaScriptObject data = GwtClientUtils.newObject();
         GwtClientUtils.setField(data, "data", JSValueConverter.fromObject(results));
-        GwtClientUtils.setField(data, "more", JSValueConverter.fromBoolean(result.moreRequests));
         return data;
     }
 

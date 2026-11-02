@@ -127,6 +127,7 @@ import static lsfusion.gwt.client.base.jsni.JsniTestSupport.field;
 import static lsfusion.gwt.client.base.jsni.JsniTestSupport.objects;
 import static lsfusion.gwt.client.base.jsni.JsniTestSupport.own;
 import static lsfusion.gwt.client.base.jsni.JsniTestSupport.parse;
+import static lsfusion.gwt.client.base.jsni.JsniTestSupport.then;
 
 /** Runs in compiled JavaScript: reference identity and JS object keys are part of the contract. */
 public class GReactFormDataTest extends GWTTestCase {
@@ -255,6 +256,8 @@ public class GReactFormDataTest extends GWTTestCase {
         final ArrayList<String> toolbarCalls = new ArrayList<>(); // ... and what a toolbar member asked, in order
         final HashMap<GGroupObject, Boolean> manualUpdates = new HashMap<>(); // ... and each group's update mode it set
         java.util.function.Consumer<Number> answered; // ... the last answer it waits for
+        final ArrayList<String> lookups = new ArrayList<>(); // ... and what a property member looked up, in order
+        final JavaScriptObject lookupPromise = JavaScriptObject.createObject(); // ... and what it answers them with
         GReactFormData.Verbs verbs; // ... all of it, the form as far as the projection asks it
         // ... and the widget of each React view it was asked for, what the keys of what the view draws are taken with -
         // one per view, made as it is first asked for (viewWidget)
@@ -316,7 +319,10 @@ public class GReactFormDataTest extends GWTTestCase {
                     sent.add(value);
                     shownAs.add(shownValue);
                 }
-                public void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) { }
+                public JavaScriptObject getPropertyValues(String surface, GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, int increaseValuesNeededCount) {
+                    lookups.add("lookup " + surface + " " + property.integrationSID + "@" + key.toKeyString() + " " + value + " " + actionSID + " " + increaseValuesNeededCount);
+                    return lookupPromise;
+                }
                 public void countRecords(GGroupObject group, java.util.function.Consumer<Number> answer, java.util.function.Consumer<Throwable> failed) {
                     toolbarCalls.add("count " + group.sID); answered = answer;
                 }
@@ -596,7 +602,7 @@ public class GReactFormDataTest extends GWTTestCase {
             controllers.groups.get(group).changeCurrentKey(key);
         }
         public void changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue) { }
-        public void getPropertyValues(GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, JavaScriptObject successCallback, JavaScriptObject failureCallback, int increaseValuesNeededCount) { }
+        public JavaScriptObject getPropertyValues(String surface, GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, int increaseValuesNeededCount) { return null; }
         public void countRecords(GGroupObject group, java.util.function.Consumer<Number> answer, java.util.function.Consumer<Throwable> failed) { }
         public void calculateSum(GGroupObject group, GPropertyDraw property, GGroupObjectValue columnKey, java.util.function.Consumer<Number> answer, java.util.function.Consumer<Throwable> failed) { }
         public void runTableReport(GGridProperty table) {
@@ -1313,11 +1319,6 @@ public class GReactFormDataTest extends GWTTestCase {
     }
     // the names of an object's members, sorted: which there are, not the order they were made in
     private static native String keysOf(JavaScriptObject object) /*-{ return Object.keys(object).sort().join(","); }-*/;
-    // what a Promise is resolved with, or rejected with
-    private static native void then(JavaScriptObject promise, java.util.function.Consumer<Object> resolved, java.util.function.Consumer<Object> rejected) /*-{
-        promise.then(function (value) { resolved.@java.util.function.Consumer::accept(Ljava/lang/Object;)(value); },
-                     function (error) { rejected.@java.util.function.Consumer::accept(Ljava/lang/Object;)(error.message); });
-    }-*/;
     private static native JavaScriptObject pair(JavaScriptObject first, JavaScriptObject second) /*-{ return [first, second]; }-*/;
     private static native void changeAt(JavaScriptObject member, int value, JavaScriptObject row) /*-{ member.change(value, row == null ? undefined : row); }-*/;
     private static boolean refuses(JavaScriptObject member, int value) {
@@ -5081,6 +5082,75 @@ public class GReactFormDataTest extends GWTTestCase {
         hidden.projection.flush();
         assertTrue(flag(field(hidden.snapshots[2], "items"), "manual"));
     }
+
+    // a member's lookup names the query first and the rest in its options - the mode, how many more suggestions -, and
+    // is the form's Promise; a member the form does not show refuses it, as it refuses a change
+    public void testAMembersLookupReadsTheQueryAndItsOptions() {
+        Fixture f = new Fixture();
+        JavaScriptObject member = member(f.sa, null, "single");
+        assertSame(f.lookupPromise, (JavaScriptObject) call(member, "getValues", "ab", null));
+        call(member, "getValues", "", parse("{\"mode\":\"values\",\"count\":30}"));
+        call(member, "getValues", "ab", parse("{\"mode\":\"change\"}"));
+        assertEquals(Arrays.asList("lookup single.getValues() single@ ab objects 0", "lookup single.getValues() single@  values 30",
+                "lookup single.getValues() single@ ab change 0"), f.lookups);
+        f.apply(drop(f.single));
+        assertRefusal("controller.single.getValues(): 'single' is not shown by the form now", refusedWith(member, "getValues", "ab", null));
+        assertEquals(3, f.lookups.size());
+    }
+
+    // ... its row as a member's change takes one - the row, its handle, its key, a string key too, which a query named
+    // first is not mistaken for -, only on a list property's member
+    public void testAMembersLookupTakesItsRowAsAChangeDoes() {
+        Fixture f = new Fixture();
+        JavaScriptObject member = member(f.sa, "items", "price"), options = rowOptions(f.row("2"));
+        for (int i = 0; i < length(options); i++)
+            call(member, "getValues", "ab", at(options, i));
+        assertEquals(Collections.nCopies(4, "lookup items.price.getValues() price@2 ab objects 0"), f.lookups);
+        assertRefusal("belongs to no object group", refusedWith(member(f.sa, null, "single"), "getValues", "ab", at(options, 0)));
+        assertRefusal("is a panel property", refusedWith(member(f.sb, "items", "panel"), "getValues", "ab", at(options, 0)));
+    }
+
+    // ... and a mistake in them is thrown at the call, the form not asked - falsy values and explicit nulls too
+    public void testAMistakeInAMembersLookupIsThrown() {
+        Fixture f = new Fixture();
+        JavaScriptObject member = member(f.sa, null, "single");
+        for (Object query : Arrays.asList(null, 3.0, false))
+            assertRefusal("controller.single.getValues(): takes the query, as a string", refusedWith(member, "getValues", query, null));
+        for (String options : Arrays.asList("false", "0", "\"\"", "[]"))
+            assertRefusal("the options argument must be an object", refusedWith(member, "getValues", "ab", parse(options)));
+        assertRefusal("unknown field 'typo'", refusedWith(member, "getValues", "ab", parse("{\"typo\":true}")));
+        assertRefusal("unknown mode 'typo'", refusedWith(member, "getValues", "ab", parse("{\"mode\":\"typo\"}")));
+        for (String options : Arrays.asList("{\"mode\":3}", "{\"mode\":null}", "{\"mode\":false}"))
+            assertRefusal("'mode' must be the lookup's name, as a string", refusedWith(member, "getValues", "ab", parse(options)));
+        for (String options : Arrays.asList("{\"count\":-1}", "{\"count\":1.5}", "{\"count\":\"3\"}", "{\"count\":null}", "{\"count\":false}"))
+            assertRefusal("'count' must be a whole number, 0 or more", refusedWith(member, "getValues", "ab", parse(options)));
+        assertTrue(f.lookups.isEmpty());
+    }
+
+    // inside a batch it is refused as a toolbar's count is - its Promise rejected -, before its arguments are read
+    public void testAMembersLookupIsRejectedInABatch() {
+        Fixture f = new Fixture();
+        JavaScriptObject member = member(f.sa, null, "single");
+        JavaScriptObject[] promises = new JavaScriptObject[2];
+        batch(f.sa.controller, () -> {
+            promises[0] = (JavaScriptObject) call(member, "getValues", "ab", null);
+            promises[1] = (JavaScriptObject) call(member, "getValues", null, parse("{\"typo\":true}"));
+        });
+        assertTrue(f.lookups.isEmpty());
+        delayTestFinish(5000);
+        then(promises[0], value -> fail("answered: " + value), error -> {
+            assertRefusal("controller.single.getValues(): a batch is running", String.valueOf(error));
+            then(promises[1], value -> fail("answered: " + value), refused -> {
+                assertRefusal("controller.single.getValues(): a batch is running", String.valueOf(refused));
+                finishTest();
+            });
+        });
+    }
+
+    // the options naming a row each way a member's row is named
+    private static native JavaScriptObject rowOptions(JavaScriptObject row) /*-{
+        return [{row: row}, {row: row.objects}, {row: row.key}, {row: String(row.key)}];
+    }-*/;
 
     // the count and a column's sum are asked of the server when called, each the Promise of its answer: a column named
     // as a state names one - a number, not grouped in columns

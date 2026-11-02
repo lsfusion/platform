@@ -17,8 +17,9 @@ import static org.junit.Assert.assertEquals;
 
 // a React view's controller.batch (UiReactBatch.lsf, its views UiReactBatch.js): the member changes made in it shown at
 // once and sent together in one request, which the server makes in their order - one that throws sending what it made
-// before, one carrying changes only, one the server fails taking the values back -, a classic custom view's batch; and
-// what the platform draws in a React view, with an entry and no member (#1875)
+// before, one carrying changes only, one the server fails taking the values back -, a classic custom view's batch; what
+// the platform draws in a React view, with an entry and no member (#1875); and the Promise a member's lookup returns,
+// of its answers
 public class UiReactBatchIT extends UiTest {
 
     private static final String FOLDER = "UiReactBatch.uiRb";
@@ -128,9 +129,8 @@ public class UiReactBatchIT extends UiTest {
     }
 
     // a batch carries changes only: a server call in it is refused - its Promise rejected with the
-    // reason -, so is a lookup - its fail called, the reason on the console -, neither sent, the batch going on with
-    // the change made before them, in one request; another view's batch begun in it is a part of it; outside a batch
-    // the server call is made (#1875)
+    // reason -, so is a lookup, neither sent, the batch going on with the change made before them, in one request;
+    // another view's batch begun in it is a part of it; outside a batch the server call is made (#1875)
     @Test
     public void aBatchCarriesChangesOnly() throws Exception {
         String[] items = seed();
@@ -140,14 +140,13 @@ public class UiReactBatchIT extends UiTest {
         call("board", "controller.i.change(row(" + js(items[1]) + "))");
         waitFor("board", "current() === " + js(items[1]));
         List<String> requests = requests();
-        call("board", "window.uiRbRefused = 'pending'; controller.batch(() => { controller.i.note.change('outer');"
+        call("board", "window.uiRbRefused = window.uiRbLookup = 'pending'; controller.batch(() => { controller.i.note.change('outer');"
                 + " window.uiRbViews.side.controller.batch(() => controller.i.note.change(" + js(note) + "));"
-                + " controller.form.exec('uiRbPing').then(() => window.uiRbRefused = 'made', e => window.uiRbRefused = e.message); })");
-        page.waitForConsoleMessage(new Page.WaitForConsoleMessageOptions().setPredicate(message -> message.text().equals("controller.i.note.getValues(): " + REFUSAL)),
-                () -> call("board", "window.uiRbLookup = 'pending'; controller.batch(() => controller.i.note.getValues('', () => window.uiRbLookup = 'made',"
-                        + " () => window.uiRbLookup = 'failed'))"));
+                + " controller.form.exec('uiRbPing').then(() => window.uiRbRefused = 'made', e => window.uiRbRefused = e.message);"
+                + " controller.i.note.getValues('').then(() => window.uiRbLookup = 'made', e => window.uiRbLookup = e.message); })");
+        waitFor("board", "window.uiRbRefused !== 'pending' && window.uiRbLookup !== 'pending'");
         assertEquals("controller.form.exec(): " + REFUSAL, eval("board", "window.uiRbRefused"));
-        assertEquals("failed", eval("board", "window.uiRbLookup"));
+        assertEquals("controller.i.note.getValues(): " + REFUSAL, eval("board", "window.uiRbLookup"));
         waitFor("board", "row(" + js(items[1]) + ").note.value === " + js(note) + " && !row(" + js(items[1]) + ").note.loading");
         assertEquals(0, requests.stream().filter(request -> request.contains(signature("ControllerExecAction")) || request.contains(signature("GetAsyncValues"))
                 || request.contains(signature("GetPriorityAsyncValues"))).count());
@@ -155,6 +154,27 @@ public class UiReactBatchIT extends UiTest {
 
         assertEquals("ok", eval("board", "controller.form.exec('uiRbPing').then(() => 'ok')"));
         saveAndCheckNotes(form, items, "-", note, "-");
+        close(form);
+    }
+
+    // a member's getValues: the first lookup after a change the form holds gives the database's answer, with the Promise
+    // of the session's in its `more`; the next lookup gives the session's at once, with no `more`
+    @Test
+    public void aLookupGivesTheDatabasesAnswerThenTheSessions() throws Exception {
+        String[] items = seed();
+        String stamp = String.valueOf(System.nanoTime());
+        Locator form = open(FOLDER, "UiReactBatch.uiRbShape");
+        waitFor("board", "names() === '" + String.join(",", items) + "'");
+        call("board", "controller.i.note.change('Apple" + stamp + "', row(" + js(items[0]) + "))");
+        waitFor("board", "row(" + js(items[0]) + ").note.value === 'Apple" + stamp + "' && !row(" + js(items[0]) + ").note.loading");
+        saveAndCheckNotes(form, items, "Apple" + stamp, "-", "-");
+        call("board", "controller.i.note.change('Apricot" + stamp + "', row(" + js(items[0]) + "))");
+        waitFor("board", "row(" + js(items[0]) + ").note.value === 'Apricot" + stamp + "' && !row(" + js(items[0]) + ").note.loading");
+        String lookup = "controller.i.note.getValues('Ap').then(async answer => { const names = data => data.map(value => value.rawString).join();"
+                + " return names(answer.data) + '|' + (answer.more ? names((await answer.more).data) : 'final'); })";
+        assertEquals("Apple" + stamp + "|Apricot" + stamp, eval("board", lookup));
+        assertEquals("Apricot" + stamp + "|final", eval("board", lookup));
+        saveAndCheckNotes(form, items, "Apricot" + stamp, "-", "-");
         close(form);
     }
 

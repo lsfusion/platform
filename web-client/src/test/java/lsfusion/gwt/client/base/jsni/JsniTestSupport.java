@@ -29,6 +29,11 @@ public final class JsniTestSupport {
     public static native void batch(JavaScriptObject controller, Runnable run) /*-{
         controller.batch(function () { run.@java.lang.Runnable::run()(); });
     }-*/;
+    // what a Promise is resolved with, or the message it is rejected with - ' (cancelled)' appended where its Error says so
+    public static native <T> void then(JavaScriptObject promise, java.util.function.Consumer<T> resolved, java.util.function.Consumer<String> rejected) /*-{
+        promise.then(function (value) { resolved.@java.util.function.Consumer::accept(*)(value); },
+                     function (error) { rejected.@java.util.function.Consumer::accept(*)(error.message + (error.cancelled ? ' (cancelled)' : '')); });
+    }-*/;
     public static native JavaScriptObject parse(String json) /*-{ return JSON.parse(json); }-*/;
     // a call of a controller's method - a member's, the form's -, given what the test gives
     public static native Object call(JavaScriptObject object, String method, Object... args) /*-{

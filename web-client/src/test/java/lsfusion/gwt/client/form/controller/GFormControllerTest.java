@@ -12,12 +12,14 @@ import com.google.gwt.core.client.UnsafeNativeLong;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.GFormChangesDTO;
@@ -25,6 +27,8 @@ import lsfusion.gwt.client.GFormChangesTest;
 import lsfusion.gwt.client.RemoteDispatchAsync;
 import lsfusion.gwt.client.action.GRequestUserInputAction;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
+import lsfusion.gwt.client.base.GAsync;
+import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.FocusUtils;
@@ -35,6 +39,8 @@ import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.data.GIntegerType;
 import lsfusion.gwt.client.classes.data.GStringType;
+import lsfusion.gwt.client.controller.remote.action.form.GetAsyncValues;
+import lsfusion.gwt.client.controller.remote.action.form.GetPriorityAsyncValues;
 import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
 import lsfusion.gwt.client.form.GUpdateMode;
@@ -92,6 +98,9 @@ import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
+import net.customware.gwt.dispatch.client.standard.StandardDispatchServiceAsync;
+import net.customware.gwt.dispatch.shared.Action;
+import net.customware.gwt.dispatch.shared.Result;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -100,12 +109,14 @@ import java.util.Collections;
 import java.util.List;
 
 import static lsfusion.gwt.client.GFormChanges.GPropertyReadType.DRAW;
+import static lsfusion.gwt.client.base.GwtClientUtils.jsonStringify;
 import static lsfusion.gwt.client.base.jsni.JsniTestSupport.batch;
 import static lsfusion.gwt.client.base.jsni.JsniTestSupport.call;
 import static lsfusion.gwt.client.base.jsni.JsniTestSupport.field;
 import static lsfusion.gwt.client.base.jsni.JsniTestSupport.objects;
 import static lsfusion.gwt.client.base.jsni.JsniTestSupport.own;
 import static lsfusion.gwt.client.base.jsni.JsniTestSupport.parse;
+import static lsfusion.gwt.client.base.jsni.JsniTestSupport.then;
 
 // A form's controller as it is made, over a form given whole with nothing behind it - no server, no window: what its
 // constructor builds is what a test reads, and what it is given then is what the server would send. The React view of
@@ -114,7 +125,8 @@ import static lsfusion.gwt.client.base.jsni.JsniTestSupport.parse;
 // of, and what React keeps nothing of has one that keeps nothing: what the delta carries of it is dropped, and the
 // rest of the delta applied. An input the server asks for with no cell to enter it in is cancelled. A key is
 // pressed in the page, and handed to the form's bindings as the form's listener hands it (press). The form's
-// dispatcher is told of requests sent and answered, with nothing sent, and its timer runs as it does (inTurn)
+// dispatcher is told of requests sent and answered, with nothing sent, and its timer runs as it does (inTurn). A
+// property's lookup is the Promise of its own answers, given as the server gives them (LookupServer)
 public class GFormControllerTest extends GWTTestCase {
     @Override public String getModuleName() { return "lsfusion.gwt.main"; }
 
@@ -122,6 +134,10 @@ public class GFormControllerTest extends GWTTestCase {
         JsniTestSupport.installMapDelete();
         JsniTestSupport.installPageSetup();
         installPageHelpers();
+    }
+    @Override protected void gwtTearDown() {
+        if (server != null)
+            replaceService(server.pageService);
     }
     // what the client's page gives it and a test's page does not (webapp/static/js/utils.js): its text and element
     // helpers the layout calls as it builds the views - here doing nothing, or answering as for plain text: nothing
@@ -146,6 +162,207 @@ public class GFormControllerTest extends GWTTestCase {
             if (!$wnd[name])
                 $wnd[name] = helpers[name];
     }-*/;
+
+    // a real form's requests asked of the server, answered by the test as the server answers them: the page's RPC
+    // service replaced for the requests a kind takes and the rest passed on to it - the other tests' requests among
+    // them, which a page with no server behind it retries -, and the form's requests sent apart (dispatchApart)
+    private Server server;
+    private static abstract class Server implements StandardDispatchServiceAsync {
+        final StandardDispatchServiceAsync pageService = getPageService();
+        final ArrayList<Action<?>> actions = new ArrayList<>();
+        final ArrayList<AsyncCallback<Result>> callbacks = new ArrayList<>();
+        final GFormController controller;
+
+        Server(GFormController controller) {
+            this.controller = controller;
+            replaceService(this);
+            dispatchApart(controller);
+        }
+        @Override
+        public void execute(Action<?> action, AsyncCallback<Result> callback) {
+            if (takes(action)) {
+                actions.add(action);
+                callbacks.add(callback);
+            } else
+                pageService.execute(action, callback);
+        }
+        abstract boolean takes(Action<?> action);
+    }
+    // ... a property's lookups
+    private LookupServer lookups() {
+        LookupServer lookups = new LookupServer(new FiltersForm(false));
+        server = lookups;
+        return lookups;
+    }
+    private static final class LookupServer extends Server {
+        final FiltersForm form;
+
+        LookupServer(FiltersForm form) {
+            super(form.controller());
+            this.form = form;
+        }
+        @Override
+        boolean takes(Action<?> action) {
+            return action instanceof GetPriorityAsyncValues || action instanceof GetAsyncValues;
+        }
+        // the price's suggestions for the query, as its member asks for them
+        JavaScriptObject getValues(String query) {
+            return controller.getPropertyValues("items.price.getValues()", form.price, GGroupObjectValue.EMPTY, query, "objects", 0);
+        }
+        // the server's answer to the request asked index-th: its suggestions, and what it marks them with (RECHECK,
+        // CANCELED, NEEDMORE)
+        void answer(int index, GAsync... values) {
+            callbacks.get(index).onSuccess(new ListResult(new ArrayList<>(Arrays.asList(values))));
+        }
+    }
+    private static native StandardDispatchServiceAsync getPageService() /*-{
+        return @lsfusion.gwt.client.controller.dispatch.GWTDispatch::getRealServiceInstance()();
+    }-*/;
+    private static native void replaceService(StandardDispatchServiceAsync service) /*-{
+        @lsfusion.gwt.client.controller.dispatch.GWTDispatch::realService = service;
+    }-*/;
+    private static GAsync suggestion(String raw) {
+        return new GAsync(raw.toUpperCase(), raw, "{\"id\":17}");
+    }
+    // ... and an answer of it, as JSON: the Promise of the final answer, `more`, an object there
+    private static String answer(String raw, boolean preliminary) {
+        return "{\"data\":[{\"displayString\":\"" + raw.toUpperCase() + "\",\"rawString\":\"" + raw + "\",\"objects\":{\"id\":17}}]"
+                + (preliminary ? ",\"more\":{}" : "") + "}";
+    }
+
+    // a member's lookup is the Promise of the server's answer: the suggestions
+    public void testALookupIsThePromiseOfItsAnswer() {
+        LookupServer lookups = lookups();
+        JavaScriptObject promise = lookups.getValues("ab");
+        GetPriorityAsyncValues request = (GetPriorityAsyncValues) lookups.actions.get(0);
+        assertEquals("ab objects 0", request.value + " " + request.actionSID + " " + request.increaseValuesNeededCount);
+        delayTestFinish(5000);
+        then(promise, (JavaScriptObject answer) -> {
+            assertEquals(answer("ab", false), jsonStringify(answer));
+            finishTest();
+        }, error -> fail(error));
+        lookups.answer(0, suggestion("ab"));
+    }
+
+    // a query too short for the server to search by is rejected with what the platform's editor says then, as exec and
+    // eval are with the server's message
+    public void testAQueryTooShortToSearchByIsRejectedWithThePlatformsMessage() {
+        LookupServer lookups = lookups();
+        JavaScriptObject promise = lookups.getValues("a");
+        delayTestFinish(5000);
+        then(promise, (JavaScriptObject answer) -> fail("answered " + jsonStringify(answer)), error -> {
+            assertEquals(ClientMessages.Instance.get().needMoreSymbols(), error);
+            finishTest();
+        });
+        lookups.answer(0, GAsync.NEEDMORE);
+    }
+
+    // an answer the server gave before it was sure of the form's changes (RECHECK) is asked again through the form's
+    // queue: it carries the Promise of that answer, so a view can show both
+    public void testAPreliminaryAnswerCarriesThePromiseOfTheFinalOne() {
+        LookupServer lookups = lookups();
+        JavaScriptObject promise = lookups.getValues("ab");
+        delayTestFinish(5000);
+        then(promise, (JavaScriptObject answer) -> {
+            assertEquals(answer("fast", true), jsonStringify(answer));
+            assertTrue(lookups.actions.get(1) instanceof GetAsyncValues);
+            then(field(answer, "more"), (JavaScriptObject last) -> {
+                assertEquals(answer("checked", false), jsonStringify(last));
+                finishTest();
+            }, error -> fail(error));
+            lookups.answer(1, suggestion("checked"));
+        }, error -> fail(error));
+        lookups.answer(0, suggestion("fast"), GAsync.RECHECK);
+    }
+
+    // a lookup with no list in its mode - a change of a property that cannot be changed - is rejected, not cancelled
+    public void testALookupWithNoListIsRejected() {
+        LookupServer lookups = lookups();
+        JavaScriptObject promise = lookups.getValues("ab");
+        delayTestFinish(5000);
+        then(promise, (JavaScriptObject answer) -> fail("answered " + jsonStringify(answer)), error -> {
+            assertEquals("controller.items.price.getValues(): 'price' has no values to offer in mode 'objects'", error);
+            finishTest();
+        });
+        lookups.answer(0, GAsync.CANCELED);
+    }
+
+    public void testAFailedLookupIsRejected() {
+        LookupServer lookups = lookups();
+        JavaScriptObject promise = lookups.getValues("ab");
+        delayTestFinish(5000);
+        then(promise, (JavaScriptObject answer) -> fail("answered " + jsonStringify(answer)), error -> {
+            assertEquals("the server failed", error);
+            finishTest();
+        });
+        lookups.callbacks.get(0).onFailure(new RuntimeException("the server failed"));
+    }
+
+    // the server looks values up one lookup of a form at a time, a later one cancelling an earlier one: its Promise is
+    // rejected `cancelled` whenever the answer comes - after the later lookup's too, which checkLast would drop
+    public void testALookupALaterOneCancelledIsRejectedCancelled() {
+        LookupServer lookups = lookups();
+        JavaScriptObject first = lookups.getValues("a");
+        lookups.getValues("ab");
+        delayTestFinish(5000);
+        then(first, (JavaScriptObject answer) -> fail("answered " + jsonStringify(answer)), error -> {
+            assertEquals("controller.items.price.getValues(): a later lookup of the form replaced it: the form looks values up one at a time (cancelled)", error);
+            finishTest();
+        });
+        lookups.answer(1, suggestion("ab"));
+        lookups.answer(0, GAsync.CANCELED);
+    }
+
+    // ... and so is the final answer a preliminary one carries, asked through the queue as a lookup of the same index -
+    // after the later lookup's answer too
+    public void testAFinalAnswerALaterLookupCancelledIsRejectedCancelled() {
+        LookupServer lookups = lookups();
+        JavaScriptObject promise = lookups.getValues("a");
+        delayTestFinish(5000);
+        then(promise, (JavaScriptObject answer) -> {
+            lookups.getValues("ab");
+            then(field(answer, "more"), (JavaScriptObject last) -> fail("answered " + jsonStringify(last)), error -> {
+                assertTrue(error, error.endsWith("(cancelled)"));
+                finishTest();
+            });
+            lookups.answer(2, suggestion("ab"));
+            lookups.answer(1, GAsync.CANCELED);
+        }, error -> fail(error));
+        lookups.answer(0, suggestion("a"), GAsync.RECHECK);
+    }
+
+    // ... but a lookup the server answered before the later one came keeps its answer, whichever comes first
+    public void testAnEarlierLookupKeepsItsOwnAnswer() {
+        LookupServer lookups = lookups();
+        JavaScriptObject first = lookups.getValues("a");
+        lookups.getValues("ab");
+        delayTestFinish(5000);
+        then(first, (JavaScriptObject answer) -> {
+            assertEquals(answer("a", false), jsonStringify(answer));
+            finishTest();
+        }, error -> fail(error));
+        lookups.answer(1, suggestion("ab"));
+        lookups.answer(0, suggestion("a"));
+    }
+
+    // the editor's lookups and the classic views', which drop an earlier lookup's answer once a later one's has come
+    // (checkLast), drop it after a member's answer too - else it would come marked as one more answers follow
+    public void testAMembersAnswerDropsAnEarlierLookupOfTheEditor() {
+        LookupServer lookups = lookups();
+        ArrayList<String> answered = new ArrayList<>();
+        lookups.controller.getAsyncValues("a", lookups.form.price, GGroupObjectValue.EMPTY, "objects", new AsyncCallback<GFormController.GAsyncResult>() {
+            public void onFailure(Throwable caught) {
+                answered.add("failed");
+            }
+            public void onSuccess(GFormController.GAsyncResult result) {
+                answered.add("answered, more: " + result.moreRequests);
+            }
+        }, 0);
+        lookups.getValues("ab");
+        lookups.answer(1, suggestion("ab"));
+        lookups.answer(0, suggestion("a"));
+        assertTrue(String.valueOf(answered), answered.isEmpty());
+    }
 
     public void testAGridOfItsOwnIsSizedByItsColumns() {
         GForm form = leafGridForm();
