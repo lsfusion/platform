@@ -15,6 +15,8 @@ A launch event occurs when one of the platform's components starts. For each lau
 
 The handlers are abstract actions of the sequential form declared in the system module [`SystemEvents`](System_SystemEvents.md). Application initialization logic is attached to them through [action extension](Action_extension.md). After a handler runs, the platform applies its changes to the database itself.
 
+A form that a client's handler (`onDesktopClientStarted[]`, `onWebClientStarted[]`) opens in the [interactive view](In_an_interactive_view_SHOW_DIALOG.md) without choosing the mode is opened in the [synchronous mode](In_an_interactive_view_SHOW_DIALOG.md#flow), and a synchronous tab blocks the navigator until it is closed. A client's handler therefore opens a tab in the asynchronous mode (`NOWAIT`).
+
 The [`Reflection`](System_Reflection.md) objects of forms, navigator elements, properties and actions are synchronized with the source code between `onStarted[]` and `onFinallyStarted[]`: in `onStarted[]` a lookup by canonical name finds only the objects that already existed at an earlier start, so initialization that needs them — seeding the permissions of the [security policy](Security_policy.md), for example — belongs in `onFinallyStarted[]`. Under a [light start](Launch_parameters.md) the synchronization is skipped, and elements added since the last full start are not found at all.
 
 While `onStopping[]` runs, the server still accepts client connections and requests. The handler does not run when the process terminates abnormally (`kill -9`, a JVM crash, a power loss).

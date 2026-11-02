@@ -243,6 +243,14 @@ title: 'Rules: view logic'
    mode there is synchronous (rule 1). To open a tab from it,
    the assistant MUST specify `NOWAIT`.
 
+3. The action of a navigator element and a client's launch
+   event handler (`onDesktopClientStarted[]`,
+   `onWebClientStarted[]`) run with the session taken to be
+   used afterwards, so a `SHOW` there with neither option is
+   synchronous (rule 1), and such a tab blocks the navigator
+   until it is closed. To open a tab there, the assistant
+   MUST specify `NOWAIT`.
+
 ## Form design
 
 1. These design rules do NOT cover the `DESIGN` layout
