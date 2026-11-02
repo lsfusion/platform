@@ -854,6 +854,77 @@ public class GFormControllerTest extends GWTTestCase {
         return rows.@lsfusion.gwt.client.form.object.table.controller.GPlatformTableController::view;
     }-*/;
 
+    // a row the form chose is the one a new filter condition starts on, before the grid shows it - its row and its cell's
+    // value, as the table gives them to its filters (GTableController.getSelectedRow, getSelectedValue)
+    public void testAFilterConditionStartsOnTheRowTheFormChose() {
+        GFormController controller = platformGrids(3, 90);
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        GPropertyDraw name = controller.getForm().propertyDraws.get(0);
+        GFormChanges values = new GFormChanges(); // 10, 20, 30
+        NativeHashMap<GGroupObjectValue, PValue> names = new NativeHashMap<>();
+        for (int i = 1; i <= 3; i++)
+            names.put(new GGroupObjectValue(90, i), PValue.getPValue(i * 10));
+        values.properties.put(name, names);
+        controller.applyRemoteChanges(values, 2);
+
+        controller.changeCurrentObject(group, new GGroupObjectValue(90, 2));
+        GTableController rows = tableController(controller, group.grid);
+        assertEquals(1, rows.getSelectedRow());
+        assertValue(20, rows.getSelectedValue(name, GGroupObjectValue.EMPTY));
+    }
+    // ... and over a tree the platform draws, TREE t (c = Category, i = Item): a node of another group - an item under
+    // the second category, the tree on the first - is the one whose group, property and value a condition starts on
+    public void testATreesFilterConditionStartsOnTheNodeTheFormChose() {
+        GFormController controller = catalogTree();
+        GGroupObject item = controller.getForm().groupObjects.get(1);
+        GPropertyDraw itemName = controller.getForm().propertyDraws.get(1);
+        GGroupObjectValue i1 = GGroupObjectValue.getFullKey(new GGroupObjectValue(10, 2), new GGroupObjectValue(40, 1));
+        GTreeGroup tree = item.parent;
+        controller.changeCurrentObject(item, i1);
+        GTableController rows = tableController(controller, tree);
+        assertSame(item, rows.getSelectedGroupObject());
+        assertSame(itemName, rows.getSelectedFilterProperty());
+        assertValue(7, rows.getSelectedValue(itemName, GGroupObjectValue.EMPTY));
+    }
+    // a form of a tree the platform draws, TREE t (c = Category, i = Item): two categories, the first current, and an item
+    // under the second - its rows c1, c2, i1 -, the name of each group a column; not on the page, its requests sent
+    // through a dispatch of its own
+    private static GFormController catalogTree() {
+        GForm form = form("catalog");
+        GTreeGroup tree = platformTree(form);
+        GGroupObject cat = new GGroupObject(), item = new GGroupObject();
+        cat.ID = 10; cat.nativeSID = "g10"; cat.sID = "c"; cat.viewType = GClassViewType.LIST;
+        cat.objects.add(new GObject(cat, "c", 10, "c", GIntegerType.instance));
+        item.ID = 40; item.nativeSID = "g40"; item.sID = "i"; item.viewType = GClassViewType.LIST;
+        item.objects.add(new GObject(item, "i", 40, "i", GIntegerType.instance));
+        cat.parent = tree; item.parent = tree; tree.groups.add(cat); tree.groups.add(item);
+        item.upTreeGroups.add(cat); // as the server gives the groups above
+        form.groupObjects.add(cat); form.groupObjects.add(item);
+        GPropertyDraw catName = column(form, 20, "catName", cat), itemName = column(form, 45, "itemName", item);
+        catName.cellType = catName.valueType; itemName.cellType = itemName.valueType; // its cells are drawn
+        form.initialFormChanges = GFormChangesTest.noChanges();
+        GFormController controller = controllerApart(form);
+        GGroupObjectValue c1 = new GGroupObjectValue(10, 1), c2 = new GGroupObjectValue(10, 2);
+        GGroupObjectValue i1 = GGroupObjectValue.getFullKey(c2, new GGroupObjectValue(40, 1)); // its path
+        GFormChanges shown = new GFormChanges(); // two categories, the item under the second, the first current
+        shown.gridObjects.put(cat, new ArrayList<>(Arrays.asList(c1, c2)));
+        shown.parentObjects.put(cat, new ArrayList<>(Arrays.asList(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY)));
+        NativeHashMap<GGroupObjectValue, Integer> expandables = new NativeHashMap<>();
+        expandables.put(c1, 0); expandables.put(c2, 1);
+        shown.expandables.put(cat, expandables);
+        shown.gridObjects.put(item, new ArrayList<>(Arrays.asList(i1)));
+        shown.parentObjects.put(item, new ArrayList<>(Arrays.asList(GGroupObjectValue.EMPTY)));
+        NativeHashMap<GGroupObjectValue, Integer> itemExpandables = new NativeHashMap<>();
+        itemExpandables.put(i1, 0);
+        shown.expandables.put(item, itemExpandables);
+        shown.objects.put(cat, c1);
+        NativeHashMap<GGroupObjectValue, PValue> catNames = new NativeHashMap<>(), itemNames = new NativeHashMap<>();
+        catNames.put(c1, PValue.getPValue(1)); catNames.put(c2, PValue.getPValue(2)); itemNames.put(i1, PValue.getPValue(7));
+        shown.properties.put(catName, catNames); shown.properties.put(itemName, itemNames);
+        controller.applyRemoteChanges(shown, 1);
+        return controller;
+    }
+
     // a form of one list group whose rows the React view of its grid draws, GRID(items) { custom = 'LeafGrid'; }, with
     // two columns, as the server gives it - with nothing of its toolbar and filters to build
     private static GForm leafGridForm() {

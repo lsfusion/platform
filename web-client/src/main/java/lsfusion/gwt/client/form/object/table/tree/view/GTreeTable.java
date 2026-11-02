@@ -995,16 +995,21 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord, GTreeGroup, 
         return false;
     }
 
+    // what a new filter condition starts on - the property of the selected column, else of the first one past the
+    // tree's own, and its value -, of the current row (getCurrentRow): a column's property is that of the row's group
     public GPropertyDraw getSelectedFilterProperty() {
-        GPropertyDraw property = getSelectedProperty();
-        if (property == null && getColumnCount() > 1 && getSelectedRow() >= 0) {
-            property = getProperty(getSelectedCell(1));
-        }
+        GTreeGridRecord record = getCurrentRowValue();
+        if (record == null)
+            return null;
+        int column = getSelectedColumn();
+        GPropertyDraw property = column >= 0 ? getProperty(record, column) : null;
+        if (property == null && getColumnCount() > 1)
+            property = getProperty(record, 1);
         return property;
     }
 
     public PValue getSelectedValue(GPropertyDraw property) {
-        GTreeGridRecord record = getSelectedRowValue();
+        GTreeGridRecord record = getCurrentRowValue();
         return record == null ? null : record.getValue(property);
     }
 

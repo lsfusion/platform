@@ -398,8 +398,9 @@ public abstract class GPlatformTableController<P extends GGridProperty, V extend
         GGroupObjectValue result = view.getCurrentKey();
         return result == null ? GGroupObjectValue.EMPTY : result;
     }
+    // ... the row the table is on as its filters read it: the current one's, shown yet or not (GTableView.getCurrentRow)
     public int getSelectedRow() {
-        return view.getSelectedRow();
+        return view.getCurrentRow();
     }
     public void updateAttribute(GGroupObjectPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
         reader.updatePlatform(this, values, partial);

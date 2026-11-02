@@ -696,8 +696,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
         return property;
     }
 
+    // the value of a cell of the current row (getCurrentRow), as a new filter condition takes it
     public PValue getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
-        GridDataRecord selectedRecord = getSelectedRowValue();
+        GridDataRecord selectedRecord = getCurrentRowValue();
         if (selectedRecord != null) {
             GridColumn column = getGridColumn(property, columnKey);
             if(column != null)

@@ -45,7 +45,7 @@ public final class GPlatformTreeController extends GPlatformTableController<GTre
     // used in filters and user preferences
     @Override
     public GGroupObject getSelectedGroupObject() {
-        GTreeGridRecord record = view.getSelectedRowValue();
+        GTreeGridRecord record = view.getCurrentRowValue();
         return record != null
                 ? record.getGroup()
                 : table.groups.get(0);

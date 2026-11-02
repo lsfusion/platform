@@ -315,6 +315,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
     private boolean currentRowUpdated = false;
     // the row of the current key (getCurrentKey): while a key set is not shown yet, the row it is going to be on - -1
     // where the rows have none -, else the selected one
+    @Override
     public int getCurrentRow() {
         if (currentRowUpdated) {
             int row = currentKey != null ? getRowByKey(currentKey, currentExpandingIndex) : -1;

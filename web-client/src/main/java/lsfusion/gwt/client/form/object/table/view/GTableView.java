@@ -22,7 +22,10 @@ public interface GTableView extends TableComponent {
     // ... and the current one as it is set - the row the view is going to be on, set and not shown yet -, null for
     // none, which the form's requests name (GPlatformTableController.getSelectedKey)
     GGroupObjectValue getCurrentKey();
-    int getSelectedRow();
+    // ... and its row, -1 for none - none where the view numbers no rows -: the row a new filter condition starts on
+    default int getCurrentRow() {
+        return -1;
+    }
     default void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
     }
 

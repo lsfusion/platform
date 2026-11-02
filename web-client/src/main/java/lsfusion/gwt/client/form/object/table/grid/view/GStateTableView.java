@@ -533,11 +533,6 @@ public abstract class GStateTableView extends FlexPanel implements GListView {
     }
 
     @Override
-    public int getSelectedRow() {
-        return -1;
-    }
-
-    @Override
     public void runGroupReport() {
     }
 
