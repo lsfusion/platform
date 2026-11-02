@@ -19,7 +19,9 @@ public interface GTableView extends TableComponent {
 
     // keys
     void setCurrentKey(GGroupObjectValue currentKey);
-    GGroupObjectValue getSelectedKey(); // null for none
+    // ... and the current one as it is set - the row the view is going to be on, set and not shown yet -, null for
+    // none, which the form's requests name (GPlatformTableController.getSelectedKey)
+    GGroupObjectValue getCurrentKey();
     int getSelectedRow();
     default void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
     }

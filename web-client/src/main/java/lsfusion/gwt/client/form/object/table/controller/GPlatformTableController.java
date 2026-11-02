@@ -381,17 +381,21 @@ public abstract class GPlatformTableController<P extends GGridProperty, V extend
     // ===== the platform's side of the form's controller of a group whose rows it draws (GGroupController, of the grid
     // and the tree): its keys, which each kind lays out its own way, its current one and the rows added and removed into
     // the view, the selected one asked of it - none, a view's null, the empty key, as the form reads them alike -; and
-    // a reader of the group by that reader's own update of this controller. A current object the view chose and a node
-    // the tree opened it has shown itself (GGroupController's defaults)
+    // a reader of the group by that reader's own update of this controller. A node the tree opened it has shown itself
+    // (GGroupController's default)
     public abstract void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex);
+    // ... the current one, the server's or the form's (GGroupController.changeCurrentKey): the one the view chose
+    // itself it is on already; another it names as its current one at once (getSelectedKey), and shows it with its
+    // next update (GTableView.setCurrentKey)
     public void updateCurrentKey(GGroupObjectValue currentKey) {
         view.setCurrentKey(currentKey);
     }
     public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
         view.modifyGroupObject(key, add, position);
     }
+    // ... the current one as it is set, shown yet or not (GTableView.getCurrentKey)
     public GGroupObjectValue getSelectedKey() {
-        GGroupObjectValue result = view.getSelectedKey();
+        GGroupObjectValue result = view.getCurrentKey();
         return result == null ? GGroupObjectValue.EMPTY : result;
     }
     public int getSelectedRow() {

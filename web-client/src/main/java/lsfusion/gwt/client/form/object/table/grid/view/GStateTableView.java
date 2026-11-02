@@ -510,12 +510,12 @@ public abstract class GStateTableView extends FlexPanel implements GListView {
     }
 
     @Override
-    public GGroupObjectValue getSelectedKey() {
+    public GGroupObjectValue getCurrentKey() {
         return currentKey; // for executing actions used for wysiwyg
     }
 
     protected boolean isCurrentKey(GGroupObjectValue object){
-        return Objects.equals(object, getSelectedKey());
+        return Objects.equals(object, getCurrentKey());
     }
 
     @Override

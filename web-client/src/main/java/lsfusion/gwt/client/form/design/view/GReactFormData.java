@@ -1817,15 +1817,12 @@ public class GReactFormData {
         }
 
         // ===== the group's controller (GFormController.groupControllers): its rows and its current object as the
-        // server sends them, and a view's own add or remove - into the drafts only, published once the change that
-        // wrote them is over (change)
+        // server sends them - the current object as the form changes it too (GGroupController.changeCurrentKey) -, and
+        // a view's own add or remove - into the drafts only, published once the change that wrote them is over (change)
         public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex) {
             setRows(keys);
         }
         public void updateCurrentKey(GGroupObjectValue currentKey) {
-            setCurrentObject(currentKey);
-        }
-        public void changeCurrentKey(GGroupObjectValue currentKey) {
             setCurrentObject(currentKey);
         }
         public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
@@ -2063,15 +2060,11 @@ public class GReactFormData {
                 setExpandables(expandables);
             table.answered(this, requestIndex);
         }
-        // ... and its current object, the server's or the view's: the tree's current node then, set to a row - even
+        // ... and its current object, the server's or the form's: the tree's current node then, set to a row - even
         // the row it already was, as the platform's tree selects it: the server reports a group's current object anew
         // whenever it reads the group's rows again - of a tree, one group in an answer, the deepest it read
         public void updateCurrentKey(GGroupObjectValue currentKey) {
             super.updateCurrentKey(currentKey);
-            table.currentSet(this, currentKey);
-        }
-        public void changeCurrentKey(GGroupObjectValue currentKey) {
-            super.changeCurrentKey(currentKey);
             table.currentSet(this, currentKey);
         }
         // ... however it moves - the server's, the view's, a view's own add or remove, the path a row below makes -:

@@ -7,6 +7,7 @@ import lsfusion.gwt.client.form.filter.user.controller.GPlatformFilterController
 import lsfusion.gwt.client.form.filter.user.controller.GPlatformFilterInputController;
 import lsfusion.gwt.client.view.MainFrame;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.UnsafeNativeLong;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
@@ -26,13 +27,16 @@ import lsfusion.gwt.client.action.GRequestUserInputAction;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.data.GIntegerType;
 import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
+import lsfusion.gwt.client.controller.remote.DeferredRunner;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -65,11 +69,17 @@ import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.GLoadingReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
+import lsfusion.gwt.client.form.property.GRowSelectReader;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
+import lsfusion.gwt.client.form.object.table.controller.GTableController;
+import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
+import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
+import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
+import lsfusion.gwt.client.form.object.table.tree.controller.GTreeController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.Column;
@@ -645,6 +655,204 @@ public class GFormControllerTest extends GWTTestCase {
         dispatchApart(controller);
         return controller;
     }
+
+    // a current object the form chooses where the platform draws the rows is the form's at once - the grid names it,
+    // so what the form asks next is of its row, before the server answers and the grid shows it (GTableView
+    // .getCurrentKey)
+    public void testACurrentObjectTheFormChoosesIsThePlatformGridsAtOnce() {
+        GFormController controller = platformGrids(3, 90);
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        GPropertyDraw name = controller.getForm().propertyDraws.get(0);
+        GGroupObjectValue two = new GGroupObjectValue(90, 2);
+        controller.changeCurrentObject(group, two);
+        assertEquals(two, group.getRowKey(controller.getFullCurrentKey(name, GGroupObjectValue.EMPTY)));
+    }
+    // ... and over a tree the platform draws: a node the form chose is the node the tree's toolbar opens next, before
+    // the server answers and the tree shows it - only a node with children opens, so the one the tree was on, with
+    // none, would open nothing
+    public void testATreeOpensTheNodeTheFormChoseBeforeItShowsIt() {
+        GForm form = form("platformTree");
+        GTreeGroup tree = platformTree(form); // TREE t (cat)
+        GGroupObject cat = new GGroupObject(); // a recursive group: its nodes may have children of its own
+        cat.ID = 10; cat.nativeSID = "g10"; cat.sID = "cat"; cat.viewType = GClassViewType.LIST; cat.isRecursive = true;
+        cat.objects.add(new GObject(cat, "cat", 10, "cat", GIntegerType.instance));
+        cat.parent = tree; tree.groups.add(cat); form.groupObjects.add(cat);
+        column(form, 20, "name", cat);
+        GGroupObjectValue c1 = new GGroupObjectValue(10, 1), c2 = new GGroupObjectValue(10, 2);
+        GFormChangesDTO changes = GFormChangesTest.noChanges(); // two roots, the first current - only the second has children
+        changes.objectsGroupIds = new int[] {cat.ID}; changes.objects = new GGroupObjectValue[] {c1};
+        changes.gridObjectsGroupIds = new int[] {cat.ID}; changes.gridObjects = new ArrayList[] {new ArrayList<>(Arrays.asList(c1, c2))};
+        changes.parentObjectsGroupIds = new int[] {cat.ID}; changes.parentObjects = new ArrayList[] {new ArrayList<>(Arrays.asList(GGroupObjectValue.EMPTY, GGroupObjectValue.EMPTY))};
+        changes.expandablesGroupIds = new int[] {cat.ID}; changes.expandableKeys = new GGroupObjectValue[][] {{c1, c2}}; changes.expandableValues = new Integer[][] {{0, 3}};
+        form.initialFormChanges = changes;
+        GFormController controller = controllerApart(form);
+        Widget page = controller.getFormLayout(); // on the page, the tree draws its rows - what opening a node redraws
+        RootPanel.get().add(page);
+
+        delayTestFinish(5000);
+        Scheduler.get().scheduleDeferred(() -> { // ... once it has drawn them
+            try {
+                controller.changeCurrentObject(cat, c2);
+                ((GTreeController) tableController(controller, tree)).expandCurrent(); // the tree's toolbar's button
+                assertEquals(Boolean.TRUE, pendingExpanding(platformView(controller, tree), cat, c2));
+                finishTest();
+            } finally {
+                RootPanel.get().remove(page);
+            }
+        });
+    }
+    // whether the platform's tree shows a node as being opened - or closed - till the answer, null for neither: read
+    // where its table keeps its nodes
+    private static native Boolean pendingExpanding(DataGrid<?> view, GGroupObject group, GGroupObjectValue key) /*-{
+        var nodes = view.@lsfusion.gwt.client.form.object.table.tree.view.GTreeTable::tree.@lsfusion.gwt.client.form.object.table.tree.view.GTreeTableTree::getGroupNodes(*)(group);
+        var node = nodes.@lsfusion.gwt.client.base.jsni.NativeHashMap::get(*)(key);
+        return node.@lsfusion.gwt.client.form.object.table.tree.view.GTreeContainerTableNode::pendingExpanding;
+    }-*/;
+
+    // a column chosen of a property in COLUMNS of two groups, PROPERTIES(i, d, s) qty COLUMNS (d, s), all three groups
+    // in grids the platform draws: each column group's current object is its object of the column - the column's key
+    // carries both groups' objects -, so the grid of a group whose object the column does not change stays on its row
+    // once the server answers with nothing of it
+    public void testAColumnChosenKeepsTheGridOfAColumnGroupOnItsRow() {
+        GForm form = form("columns");
+        GGroupObject d = platformGrid(form, 60, "d"), s = platformGrid(form, 70, "s"), i = platformGrid(form, 80, "i");
+        column(form, 65, "nameD", d);
+        column(form, 75, "nameS", s);
+        GPropertyDraw qty = column(form, 85, "qty", i);
+        qty.columnGroupObjects = new ArrayList<>(Arrays.asList(d, s));
+        qty.cellType = qty.valueType; // as the server gives both: its cells are drawn, the grid not on the page too
+        form.initialFormChanges = GFormChangesTest.noChanges();
+        GFormController controller = controllerApart(form);
+        GGroupObjectValue d1 = new GGroupObjectValue(60, 1), d2 = new GGroupObjectValue(60, 2);
+        GGroupObjectValue s1 = new GGroupObjectValue(70, 1), s2 = new GGroupObjectValue(70, 2);
+        GGroupObjectValue i1 = new GGroupObjectValue(80, 1);
+        GFormChanges shown = new GFormChanges(); // d1, s1 and i1 current, qty in a column of each d and s
+        shown.gridObjects.put(d, new ArrayList<>(Arrays.asList(d1, d2))); shown.objects.put(d, d1);
+        shown.gridObjects.put(s, new ArrayList<>(Arrays.asList(s1, s2))); shown.objects.put(s, s1);
+        shown.gridObjects.put(i, new ArrayList<>(Arrays.asList(i1))); shown.objects.put(i, i1);
+        shown.properties.put(qty, new NativeHashMap<>());
+        controller.applyRemoteChanges(shown, 1);
+
+        GGridTable items = platformGridView(controller, i); // the column (d1, s2) chosen
+        int column = items.getGridColumnIndex(qty, GGroupObjectValue.getFullKey(d1, s2));
+        assertTrue(column >= 0);
+        chooseColumn(items, column, FocusUtils.Reason.ACTIVATE);
+        DeferredRunner.get().commitDelayedGroupObjectChange(d); // ... sent
+        DeferredRunner.get().commitDelayedGroupObjectChange(s);
+        controller.applyRemoteChanges(new GFormChanges(), 2); // ... answered, nothing of d: d stays on d1, s goes to s2
+        assertEquals(d1, controller.getGroupController(d).getSelectedKey());
+        assertEquals(s2, controller.getGroupController(s).getSelectedKey());
+    }
+    // ... a column of a grid chosen, as a click on its cell, a key or activating its property ends: the grid's column
+    // changed, its handler told (DataGrid.changeSelectedColumn) - the grid not on the page, nothing focused
+    private static native void chooseColumn(GGridTable grid, int column, FocusUtils.Reason reason) /*-{
+        grid.@lsfusion.gwt.client.base.view.grid.DataGrid::changeSelectedColumn(*)(column, reason, null);
+    }-*/;
+
+    // a move in a platform grid in another selection mode within the 50 ms its previous move waits to be sent - a
+    // shift held, a drag from where the mouse was pressed - sends that one first; the grid stays on the row it moved to
+    // once the answer to it comes, before the move's own request is sent
+    public void testAMoveSentEarlierLeavesTheGridOnTheRowItMovedTo() {
+        GFormController controller = platformGrids(3, 90);
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        GGridTable rows = platformGridView(controller, group);
+        try {
+            moveTo(rows, 1, FocusUtils.Reason.KEYMOVENAVIGATE, null); // down
+            moveTo(rows, 2, FocusUtils.Reason.KEYMOVENAVIGATE, Document.get().createKeyDownEvent(false, false, true, false, 40)); // shift+down
+            controller.applyRemoteChanges(new GFormChanges(), 2); // the answer to the first move
+            assertEquals(new GGroupObjectValue(90, 3), rows.getSelectedKey());
+        } finally { // the move still waiting sent now, not in a test after
+            DeferredRunner.get().commitDelayedGroupObjectChange(group);
+        }
+    }
+    // ... and a row the user chooses in it after one the form chose, before the answer to the form's: the user's
+    public void testARowTheUserChoosesAfterTheFormsChoiceStays() {
+        GFormController controller = platformGrids(3, 90);
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        GGridTable rows = platformGridView(controller, group);
+        try {
+            controller.changeCurrentObject(group, new GGroupObjectValue(90, 3));
+            moveTo(rows, 1, FocusUtils.Reason.MOUSENAVIGATE, null); // a click on the second row
+            controller.applyRemoteChanges(new GFormChanges(), 2); // the answer to the form's
+            assertEquals(new GGroupObjectValue(90, 2), rows.getSelectedKey());
+        } finally {
+            DeferredRunner.get().commitDelayedGroupObjectChange(group);
+        }
+    }
+    // a form of platform grids, one of each group ID given with its one column of that ID + 5, of as many rows each as
+    // given, on the first, the first grid's column selected - not on the page, its requests sent through a dispatch of
+    // its own
+    private static GFormController platformGrids(int rows, int... ids) {
+        GForm form = form("platformGrids");
+        for (int id : ids) {
+            GPropertyDraw name = column(form, id + 5, "name" + id, platformGrid(form, id, "g" + id));
+            name.cellType = name.valueType; // its cells are drawn
+        }
+        form.initialFormChanges = GFormChangesTest.noChanges();
+        GFormController controller = controllerApart(form);
+        GFormChanges shown = new GFormChanges(); // the rows of each, the first current
+        for (int i = 0; i < ids.length; i++) {
+            GGroupObject group = form.groupObjects.get(i);
+            ArrayList<GGroupObjectValue> keys = new ArrayList<>();
+            for (int row = 1; row <= rows; row++)
+                keys.add(new GGroupObjectValue(ids[i], row));
+            shown.gridObjects.put(group, keys);
+            shown.objects.put(group, keys.get(0));
+            shown.properties.put(form.propertyDraws.get(i), new NativeHashMap<>());
+        }
+        controller.applyRemoteChanges(shown, 1);
+        platformGridView(controller, form.groupObjects.get(0)).setSelectedColumn(0);
+        return controller;
+    }
+    // ... the grid moved to a row as the user moves it - a click, a key -, its handler told (DataGrid.changeSelectedRow)
+    private static native void moveTo(DataGrid<?> grid, int row, FocusUtils.Reason reason, NativeEvent event) /*-{
+        grid.@lsfusion.gwt.client.base.view.grid.DataGrid::changeSelectedRow(*)(row, reason, event);
+    }-*/;
+    // a list group whose rows the platform draws in a grid, GRID(<sID>), with nothing of its toolbar and filters to build
+    private static GGroupObject platformGrid(GForm form, int id, String sID) {
+        GGroupObject group = new GGroupObject();
+        group.ID = id; group.nativeSID = "g" + id; group.sID = sID; group.viewType = GClassViewType.LIST;
+        group.listViewType = GListViewType.GRID;
+        group.objects.add(new GObject(group, sID, id, sID, GIntegerType.instance));
+        group.rowSelectReader = new GRowSelectReader(id); // what a move's selection of rows is sent by
+        form.groupObjects.add(group);
+        GGrid grid = new GGrid();
+        grid.ID = id + 1; grid.nativeSID = "c" + (id + 1); grid.sID = "GRID(" + sID + ")"; grid.groupObject = group;
+        grid.width = -2; grid.height = -2; grid.lineWidth = -1; grid.lineHeight = -1;
+        grid.container = form.mainContainer; form.mainContainer.children.add(grid);
+        layout(grid);
+        grid.toolbar = new GToolbar(); grid.toolbar.ID = id + 2; grid.toolbar.sID = "TOOLBARSYSTEM(" + sID + ")"; grid.toolbar.visible = false;
+        grid.filterControls = new GFilterControls(); grid.filterControls.ID = id + 3; grid.filterControls.sID = "FILTERCONTROLS(" + sID + ")";
+        grid.filtersContainer = container(id + 4, "FILTERS(" + sID + ")", null);
+        group.grid = grid;
+        return group;
+    }
+    // ... and that grid, where its table's rows are drawn
+    private static GGridTable platformGridView(GFormController controller, GGroupObject group) {
+        return (GGridTable) platformView(controller, group.grid);
+    }
+    // a tree the platform draws, TREE t, with nothing of its toolbar and filters to build - its groups for the caller
+    // to add
+    private static GTreeGroup platformTree(GForm form) {
+        GTreeGroup tree = new GTreeGroup();
+        tree.ID = 30; tree.nativeSID = "c30"; tree.sID = "TREE t"; tree.name = "t";
+        tree.width = -2; tree.height = -2; tree.lineWidth = -1; tree.lineHeight = -1;
+        layout(tree);
+        tree.container = form.mainContainer; form.mainContainer.children.add(tree);
+        tree.toolbar = new GToolbar(); tree.toolbar.ID = 31; tree.toolbar.sID = "TOOLBARSYSTEM(TREE t)"; tree.toolbar.visible = false;
+        tree.filterControls = new GFilterControls(); tree.filterControls.ID = 32; tree.filterControls.sID = "FILTERCONTROLS(TREE t)";
+        tree.filtersContainer = container(33, "FILTERS(TREE t)", null);
+        return tree;
+    }
+    // what draws a table's rows, as the form keeps them - the platform's table here
+    private static native GTableController tableController(GFormController controller, GGridProperty table) /*-{
+        return controller.@lsfusion.gwt.client.form.controller.GFormController::tableControllers.@lsfusion.gwt.client.base.jsni.NativeSIDMap::get(*)(table);
+    }-*/;
+    // ... and the view the platform draws a table's rows in - a grid, a tree
+    private static native DataGrid<?> platformView(GFormController controller, GGridProperty table) /*-{
+        var rows = @lsfusion.gwt.client.form.controller.GFormControllerTest::tableController(*)(controller, table);
+        return rows.@lsfusion.gwt.client.form.object.table.controller.GPlatformTableController::view;
+    }-*/;
 
     // a form of one list group whose rows the React view of its grid draws, GRID(items) { custom = 'LeafGrid'; }, with
     // two columns, as the server gives it - with nothing of its toolbar and filters to build

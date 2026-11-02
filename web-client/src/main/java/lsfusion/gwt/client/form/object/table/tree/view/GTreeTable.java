@@ -983,8 +983,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord, GTreeGroup, 
         return treeObjectRecord;
     }
 
+    // the node of the current row (getCurrentRow) - an object row's, an expanding row is none: a node the form chose
+    // (GFormController.changeCurrentObject) is what the toolbar's buttons and the expanding keys open before the server
+    // answers
     private GTreeObjectTableNode getExpandSelectedNode() {
-        return tree.getExpandNodeByRecord(getSelectedRowValue());
+        return tree.getExpandNodeByRecord(getCurrentRowValue());
     }
 
     @Override

@@ -19,9 +19,10 @@ public interface GGroupController {
     void modifyGroupObject(GGroupObjectValue key, boolean add, int position);
     void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex);
     void updateCurrentKey(GGroupObjectValue currentKey);
-    // the current object as the form changes it, before the server answers - nothing to show where the platform
-    // draws the group: its own view has chosen it itself, and a PANEL group has no row to move to
+    // the current object as the form changes it, before the server answers - a view's own choice, or a call that
+    // chooses a row where another container or the platform draws it -: as the server's, whoever draws the group
     default void changeCurrentKey(GGroupObjectValue currentKey) {
+        updateCurrentKey(currentKey);
     }
     // ... and a node of a tree asked to open or close, with the index of its request: shown as asked until the keys of
     // the answer come with that index - nothing to show where the platform draws the tree, which has done it itself

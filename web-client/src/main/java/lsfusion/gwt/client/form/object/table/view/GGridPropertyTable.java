@@ -291,6 +291,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
         GridDataRecord selectedRowValue = getSelectedRowValue();
         return selectedRowValue != null ? selectedRowValue.getKey() : null;
     }
+    // ... and the current one: while a key set is not shown yet (setCurrentKey, till updateCurrentRow), that one - the
+    // row it is going to be on, which the form's requests name meanwhile (GTableView.getCurrentKey)
+    @Override
+    public GGroupObjectValue getCurrentKey() {
+        return currentRowUpdated ? currentKey : getSelectedKey();
+    }
 
     protected Integer getSelectedExpandingIndex() {
         GridDataRecord selectedRowValue = getSelectedRowValue();
@@ -307,7 +313,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
     }
 
     private boolean currentRowUpdated = false;
-    public void updateCurrentRow() {
+    // the row of the current key (getCurrentKey): while a key set is not shown yet, the row it is going to be on - -1
+    // where the rows have none -, else the selected one
+    public int getCurrentRow() {
         if (currentRowUpdated) {
             int row = currentKey != null ? getRowByKey(currentKey, currentExpandingIndex) : -1;
 
@@ -320,7 +328,17 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
                     row = Math.min(objectRow + currentExpandingIndex + 1, getRowCount() - 1);
             }
 
-            setSelectedRow(row);
+            return row;
+        }
+        return getSelectedRow();
+    }
+    public T getCurrentRowValue() {
+        int row = getCurrentRow();
+        return row >= 0 ? getRowValue(row) : null;
+    }
+    public void updateCurrentRow() {
+        if (currentRowUpdated) {
+            setSelectedRow(getCurrentRow());
 
             currentKey = null;
             currentExpandingIndex = null;

@@ -1559,7 +1559,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     private final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, PValue>> delayedChangeSelectionRows = new NativeSIDMap<>();
     private final NativeSIDMap<GGroupObject, GChangeSelection> delayedChangeSelections = new NativeSIDMap<>();
 
-    // has to be called setCurrentKey before
+    // a current object chosen - a move in the platform's grid or tree, a column of a property in columns -, sent 50 ms
+    // later, the last of a group's moves made by then (a move in another selection mode sends the one before it at once)
     public void changeGroupObjectLater(final GGroupObject group, final GGroupObjectValue key, GChangeSelection changeSelection, NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows) {
         GChangeSelection delayedChangeSelection = delayedChangeSelections.get(group);
         if (delayedChangeSelections.containsKey(group) && delayedChangeSelection != changeSelection) {
@@ -1571,12 +1572,16 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         if(changeSelectionRows != null)
             delayedChangeSelectionRows.computeIfAbsent(group, g -> new NativeHashMap<>()).putAll(changeSelectionRows);
         delayedChangeSelections.put(group, changeSelection);
+        // ... and told at once to whoever draws the rows, as it is chosen (reconciled later by fc.objects): told when
+        // sent, it would take the place of a choice made since
+        getGroupController(group).changeCurrentKey(key);
 
         DeferredRunner.get().scheduleGroupObjectChange(group, new DeferredRunner.AbstractCommand() {
             @Override
             public void execute() {
                 delayedChangeSelections.remove(group);
-                changeGroupObject(group, key, changeSelection, delayedChangeSelectionRows.remove(group));
+                long requestIndex = asyncResponseDispatch(new ChangeGroupObject(group.ID, key, changeSelection));
+                pendingChangeGroupObject(group, delayedChangeSelectionRows.remove(group), requestIndex);
             }
         });
     }

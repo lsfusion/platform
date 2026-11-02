@@ -160,9 +160,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
             GGroupObjectValue columnKey = col >= 0 ? getColumnKey(col) : null;
             form.updatePropertyActive(property, columnKey, true, changeSelectionColumns);
 
+            // each column group's own objects of the column made current (GGroupObject.getRowKey) - the column's key
+            // carries all of theirs
             ArrayList<GGroupObject> columnGroupObjects;
             if (col != prevCol && property != null && (columnGroupObjects = property.columnGroupObjects) != null)
-                columnGroupObjects.forEach(groupObject -> form.changeGroupObjectLater(groupObject, columnKey, null, null));
+                columnGroupObjects.forEach(groupObject -> form.changeGroupObjectLater(groupObject, groupObject.getRowKey(columnKey), null, null));
         }
     }
 
@@ -949,7 +951,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
             currentKey = rowKey;
             currentKeyChanged = true;
         } else {
-            if (GwtClientUtils.nullEquals(getSelectedKey(), rowKey) && rowKeys.size() > 0) {
+            if (GwtClientUtils.nullEquals(getCurrentKey(), rowKey) && rowKeys.size() > 0) {
                 if (rowKeys.size() > 1) {
                     int index = rowKeys.indexOf(rowKey);
                     index = index == rowKeys.size() - 1 ? index - 1 : index + 1;

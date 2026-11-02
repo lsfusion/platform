@@ -263,7 +263,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             return;
         GGroupObjectValue objectsKey;
         if(GwtClientUtils.isUndefinedOrNull(object))
-            objectsKey = getSelectedKey(); // null / omitted object -> the current object
+            objectsKey = getCurrentKey(); // null / omitted object -> the current object
         else {
             objectsKey = getObjects(object); // a data row or a raw objects handle
             // an EXPLICIT object that is neither a row nor a handle: reject loudly instead of feeding null into
@@ -506,7 +506,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     // key can be obtained from getAsyncValues for example, and not passed at all
     protected GGroupObjectValue getJsObjects(JavaScriptObject object) {
         if(GwtClientUtils.isUndefinedOrNull(object)) // raw JS arg: a numeric 0 key would read as null under Java == null (GWT falsy-primitive collapse)
-            return getSelectedKey();
+            return getCurrentKey();
         return getObjects(object); // a row of this form or a raw GGV handle; null for anything else (no bare-key/clone resolution)
     }
     protected JavaScriptObject createWithObjects(JavaScriptObject object, JavaScriptObject objects) {
