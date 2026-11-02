@@ -1505,7 +1505,7 @@ public class GFormControllerTest extends GWTTestCase {
     }
 
     // a move waiting in a form while another open form - its groups of the same IDs - makes one: each form's move waits
-    // and is sent as its own (DeferredRunner.groupObjectChangeCommandID)
+    // and is sent as its own (DeferredRunner.groupCommandID)
     public void testAMoveWaitingInAFormIsNotAnotherFormsOneOfTheSameGroupID() {
         GFormController one = platformGrids(3, 90), other = platformGrids(3, 90);
         GGroupObject group = one.getForm().groupObjects.get(0), otherGroup = other.getForm().groupObjects.get(0);
@@ -1519,6 +1519,27 @@ public class GFormControllerTest extends GWTTestCase {
             DeferredRunner.get().commitDelayedGroupObjectChange(group);
             DeferredRunner.get().commitDelayedGroupObjectChange(otherGroup);
         }
+    }
+    // ... and a page size asked in a form while another open form - its groups of the same IDs - asks one: each form's is
+    // sent (DeferredRunner.groupCommandID)
+    public void testAPageSizeAskedInAFormIsNotAnotherFormsOneOfTheSameGroupID() {
+        GFormController one = platformGrids(3, 90), other = platformGrids(3, 90);
+        long oneNext = nextRequestIndex(one), otherNext = nextRequestIndex(other);
+        one.changePageSizeAfterUnlock(one.getForm().groupObjects.get(0), 10); // sent once nothing blocks the form, then
+        other.changePageSizeAfterUnlock(other.getForm().groupObjects.get(0), 20); // 100 ms later
+        delayTestFinish(15000);
+        new Timer() {
+            int checks;
+            @Override
+            public void run() {
+                if (!(nextRequestIndex(one) > oneNext && nextRequestIndex(other) > otherNext) && ++checks < 50)
+                    return; // ... both, or as long as they may take
+                cancel();
+                assertTrue(nextRequestIndex(one) > oneNext); // the one's sent
+                assertTrue(nextRequestIndex(other) > otherNext); // ... and the other's
+                finishTest();
+            }
+        }.scheduleRepeating(200);
     }
     // the index of the request that sent a group's current object - Long.MAX_VALUE while its move waits -, read where the
     // form keeps it (pendingChangeCurrentObjectsRequests)

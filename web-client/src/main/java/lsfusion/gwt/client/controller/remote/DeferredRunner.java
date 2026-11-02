@@ -60,31 +60,27 @@ public class DeferredRunner {
     }
 
     public void scheduleGroupObjectChange(GGroupObject groupObject, Command cmd) {
-        reschedule(groupObjectChangeCommandID(groupObject), cmd, 50);
+        reschedule(groupCommandID("groupObjectChange", groupObject), cmd, 50);
     }
 
     public void commitDelayedGroupObjectChange(GGroupObject groupObject) {
         if (groupObject != null) {
-            executeNow(groupObjectChangeCommandID(groupObject));
+            executeNow(groupCommandID("groupObjectChange", groupObject));
         }
     }
 
     // a group's own: a group object is one open form's - each form takes its design anew -, and the ID of a group is
     // only its form's, so another open form has groups of the same IDs
-    private static String groupObjectChangeCommandID(GGroupObject groupObject) {
-        return "groupObjectChange" + groupObject.ID + "@" + System.identityHashCode(groupObject);
+    private static String groupCommandID(String command, GGroupObject groupObject) {
+        return command + groupObject.ID + "@" + System.identityHashCode(groupObject);
     }
 
     public void scheduleChangePageSize(GGroupObject groupObject, Command cmd) {
-        reschedule(changePageSizeCommandID(groupObject), cmd, 100);
+        reschedule(groupCommandID("changePageSize", groupObject), cmd, 100);
     }
 
     public void scheduleUpdateView(Command cmd) {
         reschedule("updateView", cmd, 0);
-    }
-
-    private String changePageSizeCommandID(GGroupObject groupObject) {
-        return "changePageSize" + groupObject.ID;
     }
 
     public interface Command {
