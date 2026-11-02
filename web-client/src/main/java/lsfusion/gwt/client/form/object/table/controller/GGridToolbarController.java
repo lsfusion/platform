@@ -12,4 +12,8 @@ public interface GGridToolbarController extends GToolbarController<GGridControll
     // whether the server holds changes of the group back - null: it says nothing new -, as the form tells it with
     // each delta (GFormController.update)
     void updateState(Boolean updateState);
+
+    // ... and the group's update mode, manual or not, as the form changes it (GFormController.changeUpdateMode): nothing
+    // held back yet
+    void showUpdateMode(boolean manual);
 }

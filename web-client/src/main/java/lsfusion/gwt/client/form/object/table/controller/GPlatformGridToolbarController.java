@@ -115,7 +115,6 @@ public final class GPlatformGridToolbarController extends GPlatformToolbarContro
                 return event -> {
                     boolean manual = !form.isManualUpdate(table.groupObject);
                     form.changeUpdateMode(table.groupObject, manual ? GUpdateMode.MANUAL : GUpdateMode.AUTO);
-                    setUpdateMode(manual);
                 };
             }
         };
@@ -131,10 +130,13 @@ public final class GPlatformGridToolbarController extends GPlatformToolbarContro
 
         add(updateButtonGroup);
 
-        setUpdateMode(form.isManualUpdate(table.groupObject));
+        showUpdateMode(form.isManualUpdate(table.groupObject));
     }
 
-    private void setUpdateMode(boolean manual) {
+    // ... none where the design shows no manual update
+    public void showUpdateMode(boolean manual) {
+        if (manualUpdateTableButton == null)
+            return;
         if (manual) {
             forceUpdateTableButton.setVisible(true);
             forceUpdateTableButton.setEnabled(false);

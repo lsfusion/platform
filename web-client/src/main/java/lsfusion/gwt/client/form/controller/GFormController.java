@@ -2442,12 +2442,18 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     public boolean isManualUpdate(GGroupObject group) {
         return manualUpdates.get(group);
     }
-    // the update mode of a group, as its toolbar's manual update sets it: manual, automatic - which the form keeps -,
-    // or the changes the server holds back brought now
+    // the update mode of a group, as its toolbar's manual update sets it: manual, automatic - which the form keeps, and
+    // tells what shows the group's toolbar, nothing held back yet; the mode the group has changes nothing -, or the
+    // changes the server holds back brought now
     @Override
     public void changeUpdateMode(GGroupObject groupObject, GUpdateMode updateMode) {
-        if (updateMode != GUpdateMode.FORCE)
-            manualUpdates.put(groupObject, updateMode == GUpdateMode.MANUAL);
+        if (updateMode != GUpdateMode.FORCE) {
+            boolean manual = updateMode == GUpdateMode.MANUAL;
+            if (isManualUpdate(groupObject) == manual)
+                return;
+            manualUpdates.put(groupObject, manual);
+            gridToolbarControllers.get(groupObject).showUpdateMode(manual);
+        }
         changeMode(groupObject, false, null, null, 0, null, null, false, updateMode, null);
     }
 

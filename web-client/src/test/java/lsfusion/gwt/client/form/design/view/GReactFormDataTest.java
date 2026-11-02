@@ -321,10 +321,17 @@ public class GReactFormDataTest extends GWTTestCase {
                 public void runTableReport(GGridProperty table) {
                     toolbarCalls.add(table.match(grid -> "export " + grid.groupObject.ID, tree -> "export tree " + tree.groups.get(0).ID));
                 }
+                // ... the update mode kept, and what shows the group's toolbar told, as the form does - a mode the group
+                // has changes nothing
                 public void changeUpdateMode(GGroupObject group, GUpdateMode updateMode) {
+                    if (updateMode != GUpdateMode.FORCE) {
+                        boolean manual = updateMode == GUpdateMode.MANUAL;
+                        if (isManualUpdate(group) == manual)
+                            return;
+                        manualUpdates.put(group, manual);
+                        controllers.toolbars.get(group).showUpdateMode(manual);
+                    }
                     toolbarCalls.add("updateMode " + group.sID + " " + updateMode);
-                    if (updateMode != GUpdateMode.FORCE)
-                        manualUpdates.put(group, updateMode == GUpdateMode.MANUAL);
                 }
                 // as the form keeps it: as the server starts the group, until a toolbar changes it
                 public boolean isManualUpdate(GGroupObject group) {
@@ -809,9 +816,11 @@ public class GReactFormDataTest extends GWTTestCase {
     // ... a group's: the rows given to it
     private static final class GridToolbarDouble extends ToolbarDouble<GGridController> implements GGridToolbarController {
         final ArrayList<GGridController> gridRows = new ArrayList<>();
+        final ArrayList<Boolean> manualShown = new ArrayList<>(); // the update modes it was shown, in order
         public void addRows(GGridController rows) { gridRows.add(rows); }
         public void showView(GListViewType view) { }
         public void updateState(Boolean updateState) { }
+        public void showUpdateMode(boolean manual) { manualShown.add(manual); }
     }
     // ... and a tree's: the tree's rows given to it
     private static final class TreeToolbarDouble extends ToolbarDouble<GTreeController> {

@@ -1420,7 +1420,8 @@ public class GReactFormData {
             addGridToolbarMembers(this, groupMember, node.name);
         }
 
-        // ===== the group's toolbar controller: the view the table shows now, and the changes the server holds back
+        // ===== the group's toolbar controller: the view the table shows now, the changes the server holds back, and
+        // the update mode as the form changes it - nothing held back yet
         public void showView(GListViewType view) {
             stateChanged();
         }
@@ -1429,6 +1430,10 @@ public class GReactFormData {
                 updatePending = updateState;
                 writeState(); // in the server's delta, published with it
             }
+        }
+        public void showUpdateMode(boolean manual) {
+            updatePending = false;
+            stateChanged();
         }
         // ===== a call through its member, checked here, and handed to the form - each one but the filter button's a
         // request (refused)
@@ -1454,16 +1459,13 @@ public class GReactFormData {
                 throw refusal(errorPrefix + "'" + propertySID + "' is not a number");
             return answerPromise((answer, failed) -> verbs.calculateSum(node.group, property, GGroupObjectValue.EMPTY, answer, failed));
         }
-        // the manual update turned on or off, as the platform's toggle does - on, nothing held back yet
+        // the manual update turned on or off, as the platform's toggle does - the form telling the toolbar the mode
+        // (showUpdateMode)
         void changeManual(String surface, Object manual) {
             boolean value = readBoolean(controllerPrefix(surface), manual);
             if (refused(surface)) // before the mode changes
                 return;
-            if (verbs.isManualUpdate(node.group) == value)
-                return;
-            updatePending = false;
             verbs.changeUpdateMode(node.group, value ? GUpdateMode.MANUAL : GUpdateMode.AUTO);
-            stateChanged();
         }
         // ... and the changes it holds back brought now, as the platform's button does
         void forceUpdate(String surface) {

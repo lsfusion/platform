@@ -7,6 +7,7 @@ import lsfusion.gwt.client.form.filter.user.controller.GPlatformFilterController
 import lsfusion.gwt.client.form.filter.user.controller.GPlatformFilterInputController;
 import lsfusion.gwt.client.view.MainFrame;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.UnsafeNativeLong;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.junit.client.GWTTestCase;
@@ -32,6 +33,7 @@ import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.data.GIntegerType;
 import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
+import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.event.GBindingEnv;
@@ -67,6 +69,8 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
+import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
@@ -579,6 +583,67 @@ public class GFormControllerTest extends GWTTestCase {
                 pressed.run();
             }
         };
+    }
+
+    // a group's update mode, whoever changes it, is shown by what shows the group's toolbar, as the form tells it - the
+    // platform's toggle too, a mode it did not set itself (GFormController.changeUpdateMode)
+    public void testTheFormTellsTheToolbarItsUpdateMode() {
+        GFormController controller = manualUpdateGrid();
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        assertFalse(forceUpdateButton(controller, group).isVisible());
+        controller.changeUpdateMode(group, GUpdateMode.MANUAL);
+        assertTrue(forceUpdateButton(controller, group).isVisible());
+        controller.changeUpdateMode(group, GUpdateMode.AUTO);
+        assertFalse(forceUpdateButton(controller, group).isVisible());
+    }
+    // a form of one grid the platform draws, GRID(items), its toolbar with the manual update toggle - its requests sent
+    // through a dispatch of its own
+    private static GFormController manualUpdateGrid() {
+        GForm form = leafGridForm();
+        GGroupObject group = form.groupObjects.get(0);
+        group.grid.custom = null; group.grid.react = false; // GRID(items) the platform's, a grid
+        group.listViewType = GListViewType.GRID;
+        group.grid.toolbar.showManualUpdate = true;
+        return controllerApart(form);
+    }
+    // ... the button of the platform's toolbar of a group that brings its rows up to date: shown while the update is
+    // manual, enabled while the server holds changes back
+    private static native GToolbarButton forceUpdateButton(GFormController controller, GGroupObject group) /*-{
+        var toolbar = controller.@lsfusion.gwt.client.form.controller.GFormController::gridToolbarControllers.@lsfusion.gwt.client.base.jsni.NativeSIDMap::get(*)(group);
+        return toolbar.@lsfusion.gwt.client.form.object.table.controller.GPlatformGridToolbarController::forceUpdateTableButton;
+    }-*/;
+
+    // the update mode a group has, set again - a toggle's, a view's call - changes nothing: the button that brings its rows
+    // up to date stays enabled while the server holds changes back (GFormController.changeUpdateMode)
+    public void testTheModeAGroupHasSetAgainKeepsWhatTheServerHoldsBack() {
+        GFormController controller = manualUpdateGrid();
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        controller.changeUpdateMode(group, GUpdateMode.MANUAL);
+        GFormChanges heldBack = new GFormChanges(); // ... the server holding changes back
+        heldBack.updateStateObjects.put(group, true);
+        controller.applyRemoteChanges(heldBack, 1);
+        assertTrue(forceUpdateButton(controller, group).isEnabled());
+        long next = nextRequestIndex(controller);
+        controller.changeUpdateMode(group, GUpdateMode.MANUAL); // ... the mode it has, again: no request
+        assertTrue(forceUpdateButton(controller, group).isEnabled());
+        assertEquals(next, nextRequestIndex(controller));
+    }
+    // the index the form's next request takes, read where its dispatcher keeps it
+    @UnsafeNativeLong
+    private static native long nextRequestIndex(GFormController controller) /*-{
+        return controller.@lsfusion.gwt.client.form.controller.GFormController::dispatcher.@lsfusion.gwt.client.RemoteDispatchAsync::nextRequestIndex;
+    }-*/;
+    // a form's requests sent through a dispatch of its own: in the suite they go to no server and are retried
+    // for minutes, which holds the page's dispatch busy for the tests after
+    private static native void dispatchApart(GFormController controller) /*-{
+        var dispatcher = controller.@lsfusion.gwt.client.form.controller.GFormController::dispatcher;
+        dispatcher.@lsfusion.gwt.client.RemoteDispatchAsync::gwtDispatch = @lsfusion.gwt.client.controller.dispatch.GWTDispatch::new()();
+    }-*/;
+    // ... and the controller of a form as it opens, its requests sent so
+    private static GFormController controllerApart(GForm form) {
+        GFormController controller = new GFormController(null, null, formContainer(), form, false, form.sID, 0, null);
+        dispatchApart(controller);
+        return controller;
     }
 
     // a form of one list group whose rows the React view of its grid draws, GRID(items) { custom = 'LeafGrid'; }, with
