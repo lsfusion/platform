@@ -70,6 +70,10 @@ import lsfusion.gwt.client.form.property.GLoadingReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import lsfusion.gwt.client.form.property.GRowSelectReader;
+import lsfusion.gwt.client.form.property.GEventSource;
+import lsfusion.gwt.client.form.property.async.GAsyncAddRemove;
+import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
@@ -924,6 +928,27 @@ public class GFormControllerTest extends GWTTestCase {
         controller.applyRemoteChanges(shown, 1);
         return controller;
     }
+
+    // a row deleted that is not the one the grid is on - a view's delete runs on any row - and kept by the server, the
+    // delete's answer bringing nothing of the rows: it goes back where it was, not where the current row is
+    // (GGroupController.getRow)
+    public void testARowTheServerKeepsGoesBackWhereItWas() {
+        GFormController controller = platformGrids(3, 90);
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        GPropertyDraw name = controller.getForm().propertyDraws.get(0);
+        GGroupObjectValue one = new GGroupObjectValue(90, 1), two = new GGroupObjectValue(90, 2), three = new GGroupObjectValue(90, 3);
+        controller.asyncAddRemove(null, new ExecContext() { // the second row's delete, the grid on the first
+            public GPropertyDraw getProperty() { return name; }
+            public GGroupObjectValue getFullKey() { return two; }
+        }, null, GEditBindingMap.CHANGE, new GAsyncAddRemove(90, false), null, GEventSource.CUSTOM, requestIndex -> { });
+        assertEquals(Arrays.asList(one, three), rowKeys(platformGridView(controller, group)));
+        controller.applyRemoteChanges(new GFormChanges(), 100); // ... answered with nothing of the rows: kept
+        assertEquals(Arrays.asList(one, two, three), rowKeys(platformGridView(controller, group)));
+    }
+    // ... the keys of a platform grid's rows, in their order
+    private static native ArrayList<GGroupObjectValue> rowKeys(GGridTable grid) /*-{
+        return grid.@lsfusion.gwt.client.form.object.table.grid.view.GGridTable::rowKeys;
+    }-*/;
 
     // a form of one list group whose rows the React view of its grid draws, GRID(items) { custom = 'LeafGrid'; }, with
     // two columns, as the server gives it - with nothing of its toolbar and filters to build

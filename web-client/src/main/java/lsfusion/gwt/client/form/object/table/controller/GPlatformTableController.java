@@ -402,6 +402,10 @@ public abstract class GPlatformTableController<P extends GGridProperty, V extend
     public int getSelectedRow() {
         return view.getCurrentRow();
     }
+    // ... and the row a key is at (GTableView.getRow)
+    public int getRow(GGroupObjectValue key) {
+        return view.getRow(key);
+    }
     public void updateAttribute(GGroupObjectPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
         reader.updatePlatform(this, values, partial);
     }

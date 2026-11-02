@@ -15,7 +15,9 @@ import java.util.ArrayList;
 // (GUserOrdersController, GUserFiltersController)
 public interface GGroupController {
     GGroupObjectValue getSelectedKey();
-    int getSelectedRow();
+    // the row a key is at, -1 for none: where a row removed before the server answers goes back if the server keeps it
+    // (GFormController.asyncAddRemove)
+    int getRow(GGroupObjectValue key);
     void modifyGroupObject(GGroupObjectValue key, boolean add, int position);
     void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex);
     void updateCurrentKey(GGroupObjectValue currentKey);

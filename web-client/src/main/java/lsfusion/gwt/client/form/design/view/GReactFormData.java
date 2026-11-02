@@ -1845,7 +1845,10 @@ public class GReactFormData {
             return currentKey;
         }
         public int getSelectedRow() {
-            Integer position = currentKey != null ? positions.get(currentKey) : null;
+            return getRow(currentKey);
+        }
+        public int getRow(GGroupObjectValue key) {
+            Integer position = key != null ? positions.get(key) : null;
             return position != null ? position : -1;
         }
         // the rows as the view has them, its own add or remove included - the part's own list, which is replaced and

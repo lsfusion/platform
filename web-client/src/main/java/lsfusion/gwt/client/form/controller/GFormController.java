@@ -2140,13 +2140,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
         GGroupController controller = getGroupController(object.groupObject);
 
-        final int position = controller.getSelectedRow();
-
         if (add) {
             MainFrame.logicsDispatchAsync.executePriority(new GenerateID(), new PriorityErrorHandlingCallback<GenerateIDResult>(editContext != null ? editContext.getPopupOwner() : getPopupOwner()) { // no cell on the controller path - form popup owner
                 @Override
                 public void onSuccess(GenerateIDResult result) {
-                    asyncAddRemove(editContext, execContext, handler, actionSID, object, add, new GPushAsyncAdd(result.ID), new GGroupObjectValue(object.ID, new GCustomObjectValue(result.ID, null)), position, eventSource, onExec);
+                    asyncAddRemove(editContext, execContext, handler, actionSID, object, add, new GPushAsyncAdd(result.ID), new GGroupObjectValue(object.ID, new GCustomObjectValue(result.ID, null)), -1, eventSource, onExec);
                 }
             });
         } else {
@@ -2161,7 +2159,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
                 value = controller.getSelectedKey();
             if(value == null || value.isEmpty())
                 return;
-            asyncAddRemove(editContext, execContext, handler, actionSID, object, add, pushAsyncResult, value, position, eventSource, onExec);
+            // ... and where it goes back if the server keeps it: its own position, not the selected row's
+            asyncAddRemove(editContext, execContext, handler, actionSID, object, add, pushAsyncResult, value, controller.getRow(value), eventSource, onExec);
         }
     }
 

@@ -1358,7 +1358,7 @@ public class GReactFormDataTest extends GWTTestCase {
             controller.updateKeys(f.group, rows(f.one, f.two), new GFormChanges(), 1);
             controller.updateCurrentKey(f.two);
             assertSame(GGroupObjectValue.EMPTY, controller.getSelectedKey());
-            assertEquals(-1, controller.getSelectedRow());
+            assertEquals(-1, controller.getRow(f.two));
             assertSame(GUserOrdersController.NONE, f.userOrdersController());
             assertSame(GUserFiltersController.NONE, f.userFilters()); // it has no user filters
             assertNull(field(f.data(), "items")); // a, where its grid is, carries none of its panel properties: no node
@@ -1731,7 +1731,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("2,1", join(field(f.node(), "keys")));
         assertTrue(flag(f.row("2"), "isCurrent"));
         assertSame(f.two, grid.getSelectedKey());
-        assertEquals(0, grid.getSelectedRow());
+        assertEquals(0, grid.getRow(f.two));
         GFormChanges delta = new GFormChanges(); put(delta, f.outerPanel, GGroupObjectValue.EMPTY, 5); f.apply(delta);
         int published = f.publications[1];
         Pair<GGroupObjectValue, PValue> panel = f.controller(f.panel).setLoadingValueAt(f.panel, GGroupObjectValue.EMPTY, PValue.getPValue(31));

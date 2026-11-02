@@ -970,6 +970,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
 
         updateModify(true);
     }
+    @Override
+    public int getRow(GGroupObjectValue key) {
+        return rowKeys.indexOf(key);
+    }
 
     @Override
     public GGroupObjectValue getColumnKey(Cell cell) {

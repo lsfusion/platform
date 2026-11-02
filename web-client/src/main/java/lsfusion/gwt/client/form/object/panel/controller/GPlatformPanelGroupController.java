@@ -19,7 +19,7 @@ public final class GPlatformPanelGroupController implements GGroupController {
     public GGroupObjectValue getSelectedKey() {
         return GGroupObjectValue.EMPTY;
     }
-    public int getSelectedRow() {
+    public int getRow(GGroupObjectValue key) {
         return -1;
     }
     public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {

@@ -28,6 +28,10 @@ public interface GTableView extends TableComponent {
     }
     default void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {
     }
+    // ... and the position a key is at there, -1 for none - none where the view takes no rows added or removed
+    default int getRow(GGroupObjectValue key) {
+        return -1;
+    }
 
     // columns
     void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, PValue> values); // add or update
