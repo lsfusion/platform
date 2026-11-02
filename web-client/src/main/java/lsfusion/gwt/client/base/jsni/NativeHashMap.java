@@ -95,10 +95,6 @@ public class NativeHashMap<K, V> {
         return hashCodeMap != null && jsContainsKey(key, key.hashCode());
     }
 
-    public boolean containsValue(final Object value) {
-        return hashCodeMap != null && jsContainsValue(value);
-    }
-
     public boolean isEmpty() {
         return hashCodeMap == null;
     }
@@ -215,17 +211,6 @@ public class NativeHashMap<K, V> {
                     return true;
             }
         }
-        return false;
-    }-*/;
-
-    private native boolean jsContainsValue(Object value) /*-{
-        var thisObj = this;
-        thisObj.@NativeHashMap::hashCodeMap.forEach(function (array) {
-            for (var i = 0, c = array.length; i < c; ++i) {
-                if (thisObj.@NativeHashMap::equalsBridge(*)(value, array[i][1]))
-                    return true;
-            }
-        });
         return false;
     }-*/;
 

@@ -28,10 +28,6 @@ public class NativeStringMap<V> {
         return jsContainsKey(key);
     }
 
-    public boolean containsValue(final Object value) {
-        return jsContainsValue(value);
-    }
-
     public V get(String key) {
         return jsGet(key);
     }
@@ -85,10 +81,6 @@ public class NativeStringMap<V> {
      * Bridge methods from JSNI that keeps us from having to make polymorphic calls in JSNI.
      * By putting the polymorphism in Java code, the compiler can do a better job of optimizing in most cases.
      */
-    private boolean equalsBridge(Object obj1, Object obj2) {
-        return obj1 == obj2 || (obj1 != null && obj1.equals(obj2));
-    }
-
     private void bridgeApply(Function f, Object obj) {
         f.apply(obj);
     }
@@ -121,15 +113,6 @@ public class NativeStringMap<V> {
 
     private native boolean jsContainsKey(String key) /*-{
         return this.@NativeStringMap::nativeStringMap.has(key);
-    }-*/;
-
-    private native boolean jsContainsValue(Object value) /*-{
-        var thisObj = this;
-        thisObj.@NativeStringMap::nativeStringMap.forEach(function (mapValue) {
-            if (thisObj.@NativeStringMap::equalsBridge(*)(mapValue, value))
-                return true;
-        });
-        return false;
     }-*/;
 
     private native void jsForeachKey(Function f) /*-{

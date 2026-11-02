@@ -28,10 +28,6 @@ public class NativeSIDMap<K extends HasNativeSID, V> {
         return jsContainsKey(key.getNativeSID());
     }
 
-    public boolean containsValue(final Object val) {
-        return jsContainsValue(val);
-    }
-
     public V get(K key) {
         return jsGet(key.getNativeSID());
     }
@@ -102,10 +98,6 @@ public class NativeSIDMap<K extends HasNativeSID, V> {
      * Bridge methods from JSNI that keeps us from having to make polymorphic calls in JSNI.
      * By putting the polymorphism in Java code, the compiler can do a better job of optimizing in most cases.
      */
-    private boolean equalsBridge(Object obj1, Object obj2) {
-        return obj1 == obj2 || (obj1 != null && obj1.equals(obj2));
-    }
-
     private void bridgeApply(Function f, Object obj) {
         f.apply(obj);
     }
@@ -151,15 +143,6 @@ public class NativeSIDMap<K extends HasNativeSID, V> {
 
     private native boolean jsContainsKey(String sKey) /*-{
         return this.@NativeSIDMap::nativeSIDMap.has(sKey);
-    }-*/;
-
-    private native boolean jsContainsValue(Object value) /*-{
-        var thisObj = this;
-        thisObj.@NativeSIDMap::nativeSIDMap.forEach(function (array) {
-            if (thisObj.@NativeSIDMap::equalsBridge(*)(value, array[1]))
-                return true;
-        });
-        return false;
     }-*/;
 
     private native K jsSingleKey() /*-{
