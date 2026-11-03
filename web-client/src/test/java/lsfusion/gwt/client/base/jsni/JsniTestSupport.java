@@ -34,8 +34,17 @@ public final class JsniTestSupport {
     }-*/;
     // what a Promise is resolved with, or the message it is rejected with - ' (cancelled)' appended where its Error says so
     public static native <T> void then(JavaScriptObject promise, java.util.function.Consumer<T> resolved, java.util.function.Consumer<String> rejected) /*-{
-        promise.then(function (value) { resolved.@java.util.function.Consumer::accept(*)(value); },
-                     function (error) { rejected.@java.util.function.Consumer::accept(*)(error.message + (error.cancelled ? ' (cancelled)' : '')); });
+        var failed = function (error) {
+            rejected.@java.util.function.Consumer::accept(*)(error.message + (error.cancelled ? ' (cancelled)' : ''));
+        };
+        var answered = function (value) {
+            // HtmlUnit 2.55's resolve(otherPromise) returns the Promise itself without adopting its result.
+            if (value != null && typeof value.then === 'function')
+                value.then(answered, failed);
+            else
+                resolved.@java.util.function.Consumer::accept(*)(value);
+        };
+        promise.then(answered, failed);
     }-*/;
     public static native JavaScriptObject parse(String json) /*-{ return JSON.parse(json); }-*/;
     // a call of a controller's method - a member's, the form's -, given what the test gives

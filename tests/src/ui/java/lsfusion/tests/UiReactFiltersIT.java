@@ -27,7 +27,7 @@ public class UiReactFiltersIT extends UiTest {
         assertEquals("filters/change", view.drawn().eval("Object.keys(controller.i).join() + '/' + Object.keys(controller.i.filters).join()"));
         assertThat(names(form)).hasText(items);
 
-        view.drawn().call("controller.i.filters.change({property: 'name', compare: '_', value: 'pp'})");
+        assertEquals("undefined", view.drawn().answer("controller.i.filters.change({property: 'name', compare: '_', value: 'pp'})")); // the Promise of its request
         view.waitFor("conditions() === 'name _ pp'");
         assertEquals("false,false", view.drawn().eval("[data.i.filters[0].negation, data.i.filters[0].or].join()"));
         assertThat(names(form)).hasText(new String[] {items[0]});

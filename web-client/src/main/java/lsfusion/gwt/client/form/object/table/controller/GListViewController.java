@@ -13,5 +13,5 @@ public interface GListViewController {
     // ... the one it shows now
     GListViewType getListView();
     // ... and another shown instead
-    void changeListView(GListViewType view);
+    long changeListView(GListViewType view);
 }

@@ -60,6 +60,7 @@ import lsfusion.gwt.client.form.object.panel.controller.GPlatformFormPanelContro
 import lsfusion.gwt.client.form.object.table.controller.GComponentController;
 import lsfusion.gwt.client.form.object.table.controller.GGroupController;
 import lsfusion.gwt.client.form.object.table.controller.GGridToolbarController;
+import lsfusion.gwt.client.form.object.table.controller.GListViewController;
 import lsfusion.gwt.client.form.object.table.controller.GUserOrdersController;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.object.table.controller.GPlatformComponentController;
@@ -121,7 +122,7 @@ import static lsfusion.gwt.client.form.design.view.GReactFormData.readClassicPro
 import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.isChangeEvent;
 
-public class GFormController implements EditManager, GReactFormData.Verbs {
+public class GFormController implements EditManager, GReactFormData.Verbs, GReactFormData.Bindings, GUserFiltersController.Transport {
 
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
@@ -198,6 +199,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
     private final ArrayList<ModifyObject> pendingModifyObjectRequests = new ArrayList<>();
     private final NativeSIDMap<GGroupObject, Long> pendingChangeCurrentObjectsRequests = new NativeSIDMap<>();
+    private final NativeSIDMap<GGroupObject, Long> pendingExpandRequests = new NativeSIDMap<>();
     private final NativeSIDMap<GGroupObject, Long> pendingChangeOrdersRequests = new NativeSIDMap<>();
     private final NativeSIDMap<GGroupObject, Long> pendingChangeFiltersRequests = new NativeSIDMap<>();
     private final NativeSIDMap<GRegularFilterGroup, Long> pendingChangeRegularFilterRequests = new NativeSIDMap<>();
@@ -253,7 +255,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
         // the form's projection: empty on a form with no React view, since a React view makes its state in it
         // (addReactView). A call through a member is the form's own edit: the form is its Verbs
-        reactData = new GReactFormData(form, GComponent::getReactPlace, this);
+        reactData = new GReactFormData(form, GComponent::getReactPlace, this, this);
         formLayout = new GFormLayout(this, form.mainContainer);
         if (form.sID != null)
             formLayout.getElement().setAttribute("lsfusion-form", form.sID);
@@ -415,7 +417,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // A row is named the way a view has it — a data row, its `objects` handle, or the key the projection gave it (the
     // group is known here, so the key can be looked up). Mutations go through the SAME classic interactive path as a
     // normal edit (optimistic reconciliation + async exec); state flows back as the projection, and a property's change
-    // / exec and a batch return the Promise of their request (requestPromises).
+    // / exec, a group's edit and a batch return the Promise of their request (requestPromises).
     // The FORM's controller is built on STRINGS: it projects no data, so it has no member to name anything by, and what
     // it reaches it is given the name of, which the platform checks when it is called. It is what the classic surfaces
     // are handed - a custom object group, a custom cell editor, an INTERNAL CLIENT action - and what a React view's
@@ -490,7 +492,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // ===== THE PROMISE OF A VIEW'S CALL: a property's change or exec - a React member's, the classic changeProperty -
     // and a batch return the Promise of the request they make (executePropertyEventAction, batch), kept by the request's
     // index while it runs: resolved when it is over - the server's answer taken in, every continuation of it made
-    // (getEventActionCallback) -, rejected with the reason it failed with (onServerInvocationFailed). The calls of a
+    // (ServerResponseCallback) -, rejected with the reason it failed with (onServerInvocationFailed). The calls of a
     // batch make one request, so they share one Promise, the batch's. A failure is the platform's to show, as it shows
     // the failure of a user's edit (GwtActionDispatcher.dispatchServerFailed), so the Promise is handled already: a call
     // the view does not wait for is not reported again, as an unhandled rejection
@@ -510,6 +512,60 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         if (promise != null)
             promise.resolve();
     }
+    // ... the Promise kept under a request's index while it runs: the one kept there already - a batch's, a change's -,
+    // else a new one
+    private PendingPromise requestPromise(long requestIndex) {
+        PendingPromise promise = requestPromises.get(requestIndex);
+        if (promise == null)
+            requestPromises.put(requestIndex, promise = newRequestPromise());
+        return promise;
+    }
+    // ... and the Promise of a view's call whose request is made now, request giving its index (-1: none made): in a
+    // batch the batch's, which carries it; none made resolved at once; refused on a closed form before the call runs -
+    // a call made through another one drops the inner Promise, so the refusal is handled
+    private JavaScriptObject requestPromise(LongSupplier request) {
+        String refusal = gController.getClosedRefusal();
+        if (refusal != null)
+            return closedPromise(refusal);
+        long requestIndex = request.getAsLong();
+        if (dispatcher.isBatching())
+            return batchPromise.promise;
+        PendingPromise promise = requestIndex >= 0 ? requestPromise(requestIndex) : newRequestPromise();
+        if (requestIndex < 0)
+            promise.resolve();
+        return promise.promise;
+    }
+    private static JavaScriptObject closedPromise(String refusal) {
+        JavaScriptObject promise = GController.rejectedControllerPromise(refusal);
+        handled(promise);
+        return promise;
+    }
+
+    // ... and of a change the projection makes through what sends its request (change) - the user filters' model, a
+    // tree's controller -: refused on a closed form before it runs, the Promise the one of these groups' request in
+    // flight (requests); requests are answered in order, so the latest one covers every group named
+    private JavaScriptObject getPromise(List<GGroupObject> groups, NativeSIDMap<GGroupObject, Long> requests, Runnable change) {
+        return requestPromise(() -> {
+            change.run();
+            long latest = -1;
+            for (GGroupObject group : groups) {
+                Long requestIndex = requests.get(group);
+                if (requestIndex != null && requestIndex > latest)
+                    latest = requestIndex;
+            }
+            return latest;
+        });
+    }
+
+    @Override
+    public JavaScriptObject changeUserFilters(List<GGroupObject> groups, Runnable change) {
+        return getPromise(groups, pendingChangeFiltersRequests, change);
+    }
+
+    @Override
+    public JavaScriptObject expandNodes(List<GGroupObject> groups, Runnable expand) {
+        return getPromise(groups, pendingExpandRequests, expand);
+    }
 
     // ===== A REACT VIEW'S BATCH (batch): not the form's usual course, but a side branch it takes in a few places while
     // a batch runs (dispatcher.isBatching()). An edit made in a batch is made at once and shown - only its request
@@ -527,7 +583,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     public JavaScriptObject batch(Runnable run) {
         String refusal = gController.getClosedRefusal();
         if (refusal != null)
-            return GController.rejectedControllerPromise(refusal);
+            return closedPromise(refusal);
         if (dispatcher.isBatching()) {
             run.run();
             return batchPromise.promise;
@@ -536,8 +592,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         // first - a part of the batch that fails does not take it along
         commitDelayedGroupObjectChanges();
         long requestIndex = dispatcher.startBatch();
-        PendingPromise promise = batchPromise = newRequestPromise();
-        requestPromises.put(requestIndex, promise);
+        PendingPromise promise = batchPromise = requestPromise(requestIndex);
         try {
             run.run();
         } finally {
@@ -565,10 +620,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     private static String getBatchRefusal(String surface) {
         return controllerPrefix(surface) + "a batch is running, which carries changes only: make this call before the batch or after it";
     }
-    // ... and a member's lookup or a call of a view's toolbar that asks the server (GReactFormData.Verbs.getRefusal),
+    // ... and a member's lookup or a call of a view's toolbar that asks the server,
     // as a server call on the form's controller is - named as the view's member is
-    @Override
-    public String getRefusal(String surface) {
+    private String getRefusal(String surface) {
         return dispatcher.isBatching() ? getBatchRefusal(surface) : gController.getRefusal(surface);
     }
     // ... and whether a batch runs (GPlatformFiltersController.isBatching)
@@ -586,41 +640,56 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // has read the row (GReactFormData.RowsPart.change), the form's controller's changeObject: the group's current
     // object
     @Override
-    public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) {
-        changeGroupObject(group, key);
+    public JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key) {
+        return requestPromise(() -> changeGroupObject(group, key));
     }
     // ... and a tree group member's expand / collapse / toggle, once it has read the node and decided
     // (TreeRowsPart): the platform's own request, which takes the state asked for - and the group's controller
     // told of it, to show it at once until the keys of the answer come with the request's index, as changeGroupObject
     // tells it of a current object
     @Override
-    public void expandNode(GGroupObject group, GGroupObjectValue key) {
-        long requestIndex = expandGroupObject(group, key, true);
-        getGroupController(group).changeExpanded(key, true, requestIndex);
+    public JavaScriptObject expandNode(GGroupObject group, GGroupObjectValue key) {
+        return requestPromise(() -> {
+            long requestIndex = expandGroupObject(group, key, true);
+            getGroupController(group).changeExpanded(key, true, requestIndex);
+            return requestIndex;
+        });
     }
     @Override
-    public void collapseNode(GGroupObject group, GGroupObjectValue key) {
-        long requestIndex = expandGroupObject(group, key, false);
-        getGroupController(group).changeExpanded(key, false, requestIndex);
+    public JavaScriptObject collapseNode(GGroupObject group, GGroupObjectValue key) {
+        return requestPromise(() -> {
+            long requestIndex = expandGroupObject(group, key, false);
+            getGroupController(group).changeExpanded(key, false, requestIndex);
+            return requestIndex;
+        });
     }
     // ... and its expandAll / collapseAll: the server starts at the group it is given - its nodes under the open nodes
     // of the group above, all of them for the top group - and goes down
     @Override
-    public void expandAll(GGroupObject group) {
-        long requestIndex = expandGroupObjectRecursive(group, false, true); // false: the whole group, not the current object
-        getGroupController(group).changeExpandedAll(true, requestIndex);
+    public JavaScriptObject expandAll(GGroupObject group) {
+        return requestPromise(() -> {
+            long requestIndex = expandGroupObjectRecursive(group, false, true); // false: the whole group, not the current object
+            getGroupController(group).changeExpandedAll(true, requestIndex);
+            return requestIndex;
+        });
     }
     @Override
-    public void collapseAll(GGroupObject group) {
-        long requestIndex = expandGroupObjectRecursive(group, false, false);
-        getGroupController(group).changeExpandedAll(false, requestIndex);
+    public JavaScriptObject collapseAll(GGroupObject group) {
+        return requestPromise(() -> {
+            long requestIndex = expandGroupObjectRecursive(group, false, false);
+            getGroupController(group).changeExpandedAll(false, requestIndex);
+            return requestIndex;
+        });
     }
     // ... and the tree's own "expand current", where React draws its rows (GReactFormData.TreeTablePart): the server
     // opens the group's current node - the one the projection names - and every node under it
     @Override
-    public void expandCurrent(GGroupObject group, GGroupObjectValue key) {
-        long requestIndex = expandGroupObjectRecursive(group, true, true);
-        getGroupController(group).changeExpandedUnder(key, requestIndex);
+    public JavaScriptObject expandCurrent(GGroupObject group, GGroupObjectValue key) {
+        return requestPromise(() -> {
+            long requestIndex = expandGroupObjectRecursive(group, true, true);
+            getGroupController(group).changeExpandedUnder(key, requestIndex);
+            return requestIndex;
+        });
     }
 
     // the row a classic call names, once it is known WHOSE row it has to be - null: nobody's (a form-level property, or
@@ -728,6 +797,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // its `more`
     @Override
     public JavaScriptObject getPropertyValues(String surface, GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, int increaseValuesNeededCount) {
+        String refusal = getRefusal(surface);
+        if (refusal != null)
+            return GController.rejectedControllerPromise(refusal);
         int editIndex = editAsyncIndex++;
         PendingPromise values = new PendingPromise();
         getAsyncValues(value, property, key, actionSID, editIndex, new AsyncCallback<GAsyncResult>() {
@@ -920,7 +992,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         // toolbar shows the filters, and no input then where it would draw the box; then what the rows give for its
         // groups - each group's controller and what shows their user orders, one for all of them -, and each group's
         // own
-        GReactFormData.FiltersControllers filters = reactData.createFiltersControllers(table, rows, toggle,
+        GReactFormData.FiltersControllers filters = reactData.createFiltersControllers(table, rows, this, toggle,
                 table.toolbar.showFilters ? new GPlatformFilterRows(this, rows, toggle) : GReactFormData.PlatformFilters.NONE);
         if (filters.input != null)
             rows.bindFilter(filters.input);
@@ -1077,8 +1149,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         executeFormEventAction(eventClose, new ServerResponseCallback() {
             @Override
             protected Runnable getOnRequestFinished() {
+                Runnable requestFinished = super.getOnRequestFinished();
                 return () -> {
                     actionDispatcher.editFormCloseReason = null;
+                    requestFinished.run();
                 };
             }
 
@@ -1387,9 +1461,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
     private void modifyFormChangesWithChangeFiltersAsyncs(final long currentDispatchingRequestIndex, final GFormChanges fc) {
         pendingChangeFiltersRequests.foreachEntry((group, requestIndex) -> {
-            if (requestIndex <= currentDispatchingRequestIndex)
-                pendingChangeFiltersRequests.remove(group);
-            else
+            if (requestIndex > currentDispatchingRequestIndex)
                 fc.userFilters.remove(group);
         });
     }
@@ -1928,24 +2000,21 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         else
             return asyncDispatch(executeEventAction, serverResponseCallback);
     }
-    // the answer to an event action, dispatched in the edit it was made in - and to a React view's batch, in none -: the
-    // request over, its Promise resolved, if a view's call returned one (requestPromises)
+    // the answer to an event action, dispatched in the edit it was made in - and to a React view's batch, in none
     private ServerResponseCallback getEventActionCallback(EditContext editContext, EventHandler handler) {
         return new ServerResponseCallback() {
-            private long requestIndex; // the request's, which its answer names
-
             @Override
             protected Runnable getOnRequestFinished() {
+                Runnable requestFinished = super.getOnRequestFinished();
                 return () -> {
                     actionDispatcher.editContext = null;
                     actionDispatcher.editEventHandler = null;
-                    resolveRequest(requestIndex);
+                    requestFinished.run();
                 };
             }
 
             @Override
             public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
-                requestIndex = response.requestIndex;
                 actionDispatcher.editContext = editContext;
                 actionDispatcher.editEventHandler = handler;
                 super.onSuccess(response, onDispatchFinished);
@@ -1953,7 +2022,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
             @Override
             public void onFailure(ExceptionResult exceptionResult) {
-                requestIndex = exceptionResult.requestIndex;
                 actionDispatcher.editContext = editContext;
                 super.onFailure(exceptionResult);
             }
@@ -2221,12 +2289,16 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
     public long expandGroupObjectRecursive(GGroupObject group, boolean current, boolean open) {
         DeferredRunner.get().commitDelayedGroupObjectChange(group);
-        return asyncResponseDispatch(open ? new ExpandGroupObjectRecursive(group.ID, current) : new CollapseGroupObjectRecursive(group.ID, current));
+        long requestIndex = asyncResponseDispatch(open ? new ExpandGroupObjectRecursive(group.ID, current) : new CollapseGroupObjectRecursive(group.ID, current));
+        pendingExpandRequests.put(group, requestIndex);
+        return requestIndex;
     }
 
     public long expandGroupObject(GGroupObject group, GGroupObjectValue value, boolean open) {
         DeferredRunner.get().commitDelayedGroupObjectChange(group);
-        return asyncResponseDispatch(open ? new ExpandGroupObject(group.ID, value) : new CollapseGroupObject(group.ID, value));
+        long requestIndex = asyncResponseDispatch(open ? new ExpandGroupObject(group.ID, value) : new CollapseGroupObject(group.ID, value));
+        pendingExpandRequests.put(group, requestIndex);
+        return requestIndex;
     }
 
     public void setTabActive(GContainer tabbedPane, GComponent visibleComponent) {
@@ -2283,16 +2355,19 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // ... as a view's filter group member selects one (GReactFormData.FilterGroupPart): sent as a React view's edit is
     // - at once, or in its batch's one request -, and shown at once; the answer reports it, or the one the server holds
     @Override
-    public void changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
-        long requestIndex = asyncResponseDispatch(new SetRegularFilter(filterGroup.ID, filter == null ? -1 : filter.ID));
-        pendingChangeRegularFilterRequests.put(filterGroup, requestIndex);
-        filterGroupControllers.get(filterGroup).showFilter(filter);
+    public JavaScriptObject changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
+        return requestPromise(() -> {
+            long requestIndex = asyncResponseDispatch(new SetRegularFilter(filterGroup.ID, filter == null ? -1 : filter.ID));
+            pendingChangeRegularFilterRequests.put(filterGroup, requestIndex);
+            filterGroupControllers.get(filterGroup).showFilter(filter);
+            return requestIndex;
+        });
     }
 
     // a group's user orders as a client sets them: shown at once, and sent whole; true - ascending. A header only asks
     // for them, as the form keeps them: what shows them is told of other ones (changeOrders) and shows them as it shows
     // reported ones
-    public void changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
+    public long changeOrders(GGroupObject group, LinkedHashMap<Column, Boolean> orders) {
         if (!equalOrders(orders, currentOrders.get(group))) {
             currentOrders.put(group, orders);
             userOrdersControllers.get(group).changeOrders(group, orders);
@@ -2308,6 +2383,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         }
         long requestIndex = asyncResponseDispatch(new SetPropertyOrders(group.ID, propertyList, columnKeyList, orderList));
         pendingChangeOrdersRequests.put(group, requestIndex);
+        return requestIndex;
     }
 
     // ... and the user orders of a TABLE's groups as a client states them - a grid's group's, or a tree's, one list for
@@ -2315,14 +2391,20 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // again too: the server's may be another one than the form has, an action in the same batch sorting the group, or
     // a request of the batch lost (GReactFormData.Verbs)
     @Override
-    public void changeOrders(List<GGroupObject> groups, LinkedHashMap<Column, Boolean> orders) {
-        for (GGroupObject group : groups) {
-            LinkedHashMap<Column, Boolean> groupOrders = new LinkedHashMap<>();
-            for (Map.Entry<Column, Boolean> order : orders.entrySet())
-                if (order.getKey().property.groupObject == group)
-                    groupOrders.put(order.getKey(), order.getValue());
-            changeOrders(group, groupOrders);
-        }
+    public JavaScriptObject changeOrders(List<GGroupObject> groups, LinkedHashMap<Column, Boolean> orders) {
+        // a request per group, as the platform's header sends them: answered in order, so the last one's Promise covers
+        // a tree's other groups - one of them failing the platform shows, as it shows any failed request
+        return requestPromise(() -> {
+            long requestIndex = -1;
+            for (GGroupObject group : groups) {
+                LinkedHashMap<Column, Boolean> groupOrders = new LinkedHashMap<>();
+                for (Map.Entry<Column, Boolean> order : orders.entrySet())
+                    if (order.getKey().property.groupObject == group)
+                        groupOrders.put(order.getKey(), order.getValue());
+                requestIndex = changeOrders(group, groupOrders);
+            }
+            return requestIndex;
+        });
     }
 
     @Override
@@ -2453,12 +2535,26 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // platform's toolbar in a popup, a view's member as the Promise it returned (GReactFormData.GridToolbarPart): the
     // answer given them, or the failure told, which is shown as any other
     @Override
+    public JavaScriptObject countRecords(String surface, GGroupObject groupObject) {
+        String refusal = getRefusal(surface);
+        if (refusal != null)
+            return GController.rejectedControllerPromise(refusal);
+        return answerPromise((answer, failed) -> countRecords(groupObject, answer, failed));
+    }
+
     public void countRecords(final GGroupObject groupObject, Consumer<Number> answer, Consumer<Throwable> failed) {
         DeferredRunner.get().commitDelayedGroupObjectChange(groupObject); // flush the pending selection so the server aggregates the marked rows
         asyncDispatch(new CountRecords(groupObject.ID), new AnswerCallback(answer, failed));
     }
 
     @Override
+    public JavaScriptObject calculateSum(String surface, GGroupObject groupObject, GPropertyDraw property, GGroupObjectValue columnKey) {
+        String refusal = getRefusal(surface);
+        if (refusal != null)
+            return GController.rejectedControllerPromise(refusal);
+        return answerPromise((answer, failed) -> calculateSum(groupObject, property, columnKey, answer, failed));
+    }
+
     public void calculateSum(final GGroupObject groupObject, final GPropertyDraw property, GGroupObjectValue columnKey, Consumer<Number> answer, Consumer<Throwable> failed) {
         DeferredRunner.get().commitDelayedGroupObjectChange(groupObject); // flush the pending selection so the server aggregates the marked rows
         asyncDispatch(new CalculateSum(property.ID, columnKey), new AnswerCallback(answer, failed));
@@ -2496,15 +2592,30 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
     // tells what shows the group's toolbar, nothing held back yet; the mode the group has changes nothing -, or the
     // changes the server holds back brought now
     @Override
-    public void changeUpdateMode(GGroupObject groupObject, GUpdateMode updateMode) {
+    public JavaScriptObject changeUpdateMode(String surface, GGroupObject groupObject, GUpdateMode updateMode) {
+        String refusal = getRefusal(surface);
+        if (refusal != null)
+            return GController.rejectedControllerPromise(refusal);
+        return requestPromise(() -> changeUpdateMode(groupObject, updateMode));
+    }
+
+    @Override
+    public JavaScriptObject changeListView(String surface, GListViewController views, GListViewType view) {
+        String refusal = getRefusal(surface);
+        if (refusal != null)
+            return GController.rejectedControllerPromise(refusal);
+        return requestPromise(() -> view == views.getListView() ? -1 : views.changeListView(view));
+    }
+
+    public long changeUpdateMode(GGroupObject groupObject, GUpdateMode updateMode) {
         if (updateMode != GUpdateMode.FORCE) {
             boolean manual = updateMode == GUpdateMode.MANUAL;
             if (isManualUpdate(groupObject) == manual)
-                return;
+                return -1;
             manualUpdates.put(groupObject, manual);
             gridToolbarControllers.get(groupObject).showUpdateMode(manual);
         }
-        changeMode(groupObject, false, null, null, 0, null, null, false, updateMode, null);
+        return changeMode(groupObject, false, null, null, 0, null, null, false, updateMode, null);
     }
 
     // change group mode with force refresh
@@ -2535,7 +2646,18 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
 
     // the server's report of a table's rows: a grid's group's, or a tree's, of all its groups
     @Override
-    public void runTableReport(GGridProperty table) {
+    public JavaScriptObject runTableReport(String surface, GGridProperty table) {
+        String refusal = getRefusal(surface);
+        if (refusal != null)
+            return GController.rejectedControllerPromise(refusal);
+        return runTableReport(table);
+    }
+
+    public JavaScriptObject runTableReport(GGridProperty table) {
+        String refusal = gController.getClosedRefusal();
+        if (refusal != null)
+            return closedPromise(refusal);
+        PendingPromise promise = newRequestPromise();
         FormRequestCountingAction<GroupReportResult> report = table.match(
                 grid -> new GroupReport(grid.groupObject.ID, getUserPreferences(), MainFrame.jasperReportsIgnorePageMargins),
                 tree -> new TreeGroupReport(tree.groups.get(0).ID, getUserPreferences()));
@@ -2543,8 +2665,16 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
             @Override
             public void onSuccess(GroupReportResult result) {
                 GwtClientUtils.openFile(result.filename, false, null);
+                promise.resolve();
+            }
+
+            @Override
+            public void onFailure(ExceptionResult exceptionResult) {
+                super.onFailure(exceptionResult);
+                promise.reject(exceptionResult.throwable.getMessage());
             }
         });
+        return promise.promise;
     }
 
     public void executeVoidAction() {
@@ -2815,7 +2945,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         return FocusUtils.focusNextElement(formLayout.getElement(), reason, forward);
     }
 
+    // the answer to a request of the form's: the request over, its Promise resolved, if a view's call returned one
+    // (requestPromises)
     private class ServerResponseCallback extends GwtActionDispatcher.ServerResponseCallback {
+        private long requestIndex; // the request's, which its answer names
 
         public ServerResponseCallback() {
             super(false);
@@ -2824,6 +2957,34 @@ public class GFormController implements EditManager, GReactFormData.Verbs {
         @Override
         protected GwtActionDispatcher getDispatcher() {
             return actionDispatcher;
+        }
+
+        @Override
+        protected Runnable getOnRequestFinished() {
+            return () -> {
+                // State reads keep the request's Promise through publication and continuations, with or without a delta.
+                pendingExpandRequests.foreachEntry((group, pendingIndex) -> {
+                    if (pendingIndex <= requestIndex)
+                        pendingExpandRequests.remove(group);
+                });
+                pendingChangeFiltersRequests.foreachEntry((group, pendingIndex) -> {
+                    if (pendingIndex <= requestIndex)
+                        pendingChangeFiltersRequests.remove(group);
+                });
+                resolveRequest(requestIndex);
+            };
+        }
+
+        @Override
+        public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
+            requestIndex = response.requestIndex;
+            super.onSuccess(response, onDispatchFinished);
+        }
+
+        @Override
+        public void onFailure(ExceptionResult exceptionResult) {
+            requestIndex = exceptionResult.requestIndex;
+            super.onFailure(exceptionResult);
         }
     }
 

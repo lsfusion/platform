@@ -74,7 +74,8 @@ public class UiReactFilterControlsIT extends UiTest {
 
     // in the manual apply mode (userFiltersManualApplyMode) the view's controls - their apply always there - say so
     // from the start; the platform's editors shown, they start a condition on the empty panel, which waits - a
-    // condition committed waits for the apply -, and the apply applies it; the reset takes it off at once
+    // condition committed waits for the apply -, and the apply applies it; the reset takes it off at once. The apply
+    // and the reset are the Promise of their request - resolved at once with nothing to send, the batch's in a batch
     @Test
     public void controlsAViewDrawsInTheManualApplyMode() throws Exception {
         String[] items = seed();
@@ -98,10 +99,14 @@ public class UiReactFilterControlsIT extends UiTest {
             button(form, "Number of Entries").click();
             popup("Number of Entries: 2");
             assertThat(names(form)).hasText(items);
-            view.drawn().call("controller.i.applyFilters()");
+            assertEquals("resolved", view.drawn().eval("controller.i.applyFilters().then(() => 'resolved')"));
             assertThat(names(form)).hasText(new String[] {items[1]});
             view.waitFor("data.i.filtersPending === false");
-            view.drawn().call("controller.i.resetFilters()");
+            assertEquals("resolved", view.drawn().eval("controller.form.applyFilters('i').then(() => 'resolved')")); // nothing waits
+            assertEquals("resolved", view.drawn().eval("(() => { let made; const batch = controller.batch(() => { controller.form.changeFilters('i', {property: 'price', value: 1});"
+                    + " made = controller.i.applyFilters(); }); return made === batch ? batch.then(() => 'resolved') : 'another Promise'; })()"));
+            view.waitFor("data.i.filtersPending === false");
+            assertEquals("resolved", view.drawn().eval("controller.i.resetFilters().then(() => 'resolved')"));
             assertThat(names(form)).hasText(items);
             close(form);
         } finally {
@@ -118,7 +123,7 @@ public class UiReactFilterControlsIT extends UiTest {
         view.waitFor("data.i.list.length === 2");
         assertEquals("true,false,false", view.drawn().eval("[['addFilter', 'applyFilters', 'resetFilters'].every(m => m in controller.i), data.i.filtersManual,"
                 + " data.i.filtersPending].join()"));
-        view.drawn().call("controller.i.change(data.i.list[1])");
+        assertEquals("resolved", view.drawn().eval("controller.i.change(data.i.list[1]).then(() => 'resolved')")); // the Promise of its request
         view.waitFor("data.i.list[1].isCurrent");
         view.drawn().call("controller.i.addFilter()");
         view.waitFor("conditions() === 'name = " + items[1] + "'");

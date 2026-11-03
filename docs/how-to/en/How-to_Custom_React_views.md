@@ -1213,7 +1213,7 @@ selects one node. The groups below it are left on no row — the server drops th
 chosen, and reports nothing for them —, so no row of theirs says `isCurrent` until a row is chosen there again.
 
 `controller.<g>.expand(row)` / `.collapse(row)` / `.toggle(row)` open and close one node: a node is a row of a group, so
-they are the group's. Each takes a row (the row, its `objects` handle, or its key) and returns nothing: the row's
+they are the group's. Each takes a row (the row, its `objects` handle, or its key) and returns the `Promise` of its request: the row's
 `expanded` changes at once, and its children arrive as rows. `toggle` asks for the opposite of what the row's `expanded`
 says now, so two toggles before the answer open the node and close it again. `controller.<g>.expandAll()` opens every
 node of the group and of the groups below it: on the tree's top group, the whole tree; on a group below, its nodes under
@@ -1858,7 +1858,8 @@ rows a view draws has the default `GRID` list view type: one the form gives anot
 view of that kind needs it — give what draws the rows, the group's grid or its tree, `custom = NULL` for the platform
 to draw them there.
 
-Inside a [batch](How-to_Custom_view_controller.md#batch) the members that ask the server are refused. The settings of
+The toolbar's `export()`, `update()`, `manual.change()` and `listView.change()` return the `Promise` of their request.
+Inside a [batch](How-to_Custom_view_controller.md#batch) the members that ask the server return a rejected `Promise` with the reason. The settings of
 the platform's table are not there — a dialog of the platform's, over the table it draws. A toolbar placed back with
 `custom = NULL` keeps them.
 

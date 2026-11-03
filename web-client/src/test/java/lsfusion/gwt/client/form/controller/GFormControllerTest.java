@@ -31,6 +31,7 @@ import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.result.ListResult;
+import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.FocusUtils;
@@ -44,8 +45,20 @@ import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ContinueInvocation;
+import lsfusion.gwt.client.controller.remote.action.form.CountRecords;
+import lsfusion.gwt.client.controller.remote.action.form.CalculateSum;
+import lsfusion.gwt.client.controller.remote.action.form.GroupReport;
+import lsfusion.gwt.client.controller.remote.action.form.GroupReportResult;
+import lsfusion.gwt.client.controller.remote.action.form.ChangeMode;
+import lsfusion.gwt.client.controller.remote.action.form.ChangeGroupObject;
+import lsfusion.gwt.client.controller.remote.action.form.ExpandGroupObject;
+import lsfusion.gwt.client.controller.remote.action.form.ExpandGroupObjectRecursive;
+import lsfusion.gwt.client.controller.remote.action.form.CollapseGroupObject;
+import lsfusion.gwt.client.controller.remote.action.form.CollapseGroupObjectRecursive;
 import lsfusion.gwt.client.controller.remote.action.form.ExecuteBatch;
 import lsfusion.gwt.client.controller.remote.action.form.ExecuteEventAction;
+import lsfusion.gwt.client.controller.remote.action.form.SetUserFilters;
+import lsfusion.gwt.client.controller.remote.action.form.SetPropertyOrders;
 import lsfusion.gwt.client.controller.remote.action.form.FormAction;
 import lsfusion.gwt.client.controller.remote.action.form.FormRequestAction;
 import lsfusion.gwt.client.controller.remote.action.form.GetAsyncValues;
@@ -94,16 +107,19 @@ import lsfusion.gwt.client.form.property.GRowSelectReader;
 import lsfusion.gwt.client.form.property.GShowIfReader;
 import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.async.GAsyncAddRemove;
+import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
 import lsfusion.gwt.client.form.property.async.GPushAsyncInput;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyPanelValue;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
+import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.object.table.controller.GGroupController;
+import lsfusion.gwt.client.form.object.table.controller.GListViewController;
 import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
@@ -130,6 +146,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -223,7 +241,7 @@ public class GFormControllerTest extends GWTTestCase {
     // what the client's page gives it and a test's page does not (webapp/static/js/utils.js): its text and element
     // helpers the layout calls as it builds the views - here doing nothing, or answering as for plain text: nothing
     // here reads a caption -, and jQuery UI, which a modal window is made draggable and resizable with (ModalWindow)
-    private static native void installPageHelpers() /*-{
+    public static native void installPageHelpers() /*-{
         var noop = function () { };
         // HtmlUnit lacks Node.isConnected, which a refused host's takeover checks before placing into it.
         if (!("isConnected" in $doc.documentElement))
@@ -273,6 +291,15 @@ public class GFormControllerTest extends GWTTestCase {
                 pageService.execute(action, callback);
         }
         abstract boolean takes(Action<?> action);
+        // the server's answer to the request asked index-th: the request over, or the client to go on with it
+        void answer(int index, boolean resumeInvocation) {
+            callbacks.get(index).onSuccess(new ServerResponseResult(new GAction[0], ((FormRequestAction<?>) actions.get(index)).requestIndex, resumeInvocation));
+        }
+        void answerChanges(int index) {
+            GFormChangesDTO changes = GFormChangesTest.noChanges();
+            changes.requestIndex = (int) ((FormRequestAction<?>) actions.get(index)).requestIndex;
+            callbacks.get(index).onSuccess(new ServerResponseResult(new GAction[] {new GProcessFormChangesAction(changes)}, changes.requestIndex, false));
+        }
     }
     // ... a property's lookups
     private LookupServer lookups() {
@@ -305,6 +332,30 @@ public class GFormControllerTest extends GWTTestCase {
             callbacks.get(index).onSuccess(new ListResult(new ArrayList<>(Arrays.asList(values))));
         }
     }
+    // ... and the toolbar's asks, answered without changing the form's state.
+    private AskServer asks() {
+        FiltersForm form = new FiltersForm(false);
+        form.form.sessionID = "asks" + (++asksForms);
+        AskServer asks = new AskServer(form);
+        server = asks;
+        return asks;
+    }
+    private static int asksForms;
+    private static final class AskServer extends Server {
+        final FiltersForm form;
+
+        AskServer(FiltersForm form) {
+            super(form.controller());
+            this.form = form;
+        }
+        @Override
+        boolean takes(Action<?> action) {
+            return (action instanceof GetPriorityAsyncValues || action instanceof GetAsyncValues
+                    || action instanceof CountRecords || action instanceof CalculateSum || action instanceof GroupReport || action instanceof ChangeMode)
+                    && controller.getForm().sessionID.equals(((FormAction<?>) action).formSessionID);
+        }
+    }
+
     // ... and the requests of the changes a view's calls make - a property's change, a batch, a continuation of either
     // -, of a form that sends nothing as it opens, so an answer is taken in as it comes, nothing before it in the
     // form's queue, and named apart, the other tests' forms asking the same requests
@@ -338,9 +389,60 @@ public class GFormControllerTest extends GWTTestCase {
         JavaScriptObject change(int value) {
             return controller.changeProperty(note, GGroupObjectValue.EMPTY, PValue.getPValue(value), PValue.getPValue(value));
         }
-        // the server's answer to the request asked index-th: the request over, or the client to go on with it
-        void answer(int index, boolean resumeInvocation) {
-            callbacks.get(index).onSuccess(new ServerResponseResult(new GAction[0], ((FormRequestAction<?>) actions.get(index)).requestIndex, resumeInvocation));
+    }
+    // ... and the requests of a table's filter commands - the user filters set, a batch of them -, of a form whose
+    // filter panel the platform draws
+    private FilterServer filters() {
+        FiltersForm form = new FiltersForm(true);
+        form.form.sessionID = "filters" + (++filtersForms);
+        FilterServer filters = new FilterServer(form);
+        server = filters;
+        return filters;
+    }
+    private static int filtersForms;
+    private static final class FilterServer extends Server {
+        final FiltersForm form;
+
+        FilterServer(FiltersForm form) {
+            super(form.controller());
+            this.form = form;
+        }
+        @Override
+        boolean takes(Action<?> action) {
+            return (action instanceof SetUserFilters || action instanceof ExecuteBatch)
+                    && controller.getForm().sessionID.equals(((FormAction<?>) action).formSessionID);
+        }
+    }
+    // ... and the requests of a group's current object and sortings, answered apart from other tests' forms
+    private GroupServer groups() {
+        GForm form = form("groups");
+        form.sessionID = "groups" + (++groupsForms);
+        GTreeGroup tree = platformTree(form);
+        for (int id : new int[] {90, 100}) {
+            GGroupObject group = new GGroupObject();
+            group.ID = id; group.nativeSID = "g" + id; group.sID = "g" + id; group.viewType = GClassViewType.LIST;
+            group.objects.add(new GObject(group, group.sID, id, group.sID, GIntegerType.instance));
+            group.parent = tree; group.upTreeGroups.addAll(tree.groups);
+            tree.groups.add(group); form.groupObjects.add(group);
+            GPropertyDraw property = column(form, id + 5, "name" + id, group);
+            property.cellType = property.valueType;
+        }
+        form.initialFormChanges = GFormChangesTest.noChanges();
+        GroupServer groups = new GroupServer(new GFormController(formsController(), null, formContainer(), form, false, "groups", 0, null));
+        server = groups;
+        return groups;
+    }
+    private static int groupsForms;
+    private static final class GroupServer extends Server {
+        GroupServer(GFormController controller) {
+            super(controller);
+        }
+        @Override
+        boolean takes(Action<?> action) {
+            return (action instanceof SetPropertyOrders || action instanceof ChangeGroupObject || action instanceof ExecuteBatch
+                    || action instanceof SetUserFilters || action instanceof ExpandGroupObject || action instanceof ExpandGroupObjectRecursive
+                    || action instanceof CollapseGroupObject || action instanceof CollapseGroupObjectRecursive)
+                    && controller.getForm().sessionID.equals(((FormAction<?>) action).formSessionID);
         }
     }
     // the forms' controller, as far as a form's answers ask it: told of each, which opens and hides no form here
@@ -516,6 +618,190 @@ public class GFormControllerTest extends GWTTestCase {
         assertTrue(String.valueOf(answered), answered.isEmpty());
     }
 
+    // Count and sum return the Promise of their own answer, without a wrapper in the projection.
+    public void testTheToolbarsCountAndSumWaitForTheirAnswers() {
+        AskServer asks = asks();
+        GFormController controller = asks.controller;
+        JavaScriptObject count = controller.countRecords("items.getCount()", asks.form.group);
+        JavaScriptObject sum = controller.calculateSum("items.getSum()", asks.form.group, asks.form.price, GGroupObjectValue.EMPTY);
+        assertEquals(2, asks.actions.size());
+        assertTrue(asks.actions.get(0) instanceof CountRecords);
+        assertTrue(asks.actions.get(1) instanceof CalculateSum);
+        ArrayList<String> settled = new ArrayList<>();
+        then(count, (Double value) -> {
+            assertEquals(7.0, value, 0);
+            settled.add("count");
+        }, error -> fail(error));
+        then(sum, (Double value) -> {
+            assertEquals(12.5, value, 0);
+            settled.add("sum");
+        }, error -> fail(error));
+        delayTestFinish(5000);
+        Scheduler.get().scheduleDeferred(() -> {
+            assertTrue(settled.isEmpty());
+            asks.callbacks.get(0).onSuccess(new NumberResult(7L));
+            Scheduler.get().scheduleDeferred(() -> {
+                assertEquals(Collections.singletonList("count"), settled);
+                asks.callbacks.get(1).onSuccess(new NumberResult(12.5));
+                Scheduler.get().scheduleDeferred(() -> {
+                    assertEquals(Arrays.asList("count", "sum"), settled);
+                    finishTest();
+                });
+            });
+        });
+    }
+
+    // Export has its own answer callback, rather than a form-changes response.
+    public void testAnExportWaitsForItsAnswerAndRejectsItsFailure() {
+        AskServer asks = asks();
+        JavaScriptObject first = asks.controller.runTableReport("items.export()", asks.form.group.grid);
+        JavaScriptObject second = asks.controller.runTableReport("items.export()", asks.form.group.grid);
+        assertEquals(2, asks.actions.size());
+        ArrayList<String> settled = new ArrayList<>();
+        then(first, answer -> {
+            assertNull(answer);
+            settled.add("first");
+        }, error -> fail(error));
+        then(second, answer -> fail("resolved"), error -> {
+            assertEquals("the export failed", error);
+            assertEquals(Collections.singletonList("first"), settled);
+            assertTrue(closeDialog("the export failed"));
+            finishTest();
+        });
+        delayTestFinish(5000);
+        Scheduler.get().scheduleDeferred(() -> {
+            assertTrue(settled.isEmpty());
+            asks.callbacks.get(0).onSuccess(new GroupReportResult());
+            Scheduler.get().scheduleDeferred(() -> {
+                assertEquals(Collections.singletonList("first"), settled);
+                asks.callbacks.get(1).onFailure(new RuntimeException("the export failed"));
+            });
+        });
+    }
+
+    // The platform's export button calls this overload directly: a closed form must keep neither a queued report
+    // nor its sync count, and must reject the report's own Promise.
+    public void testThePlatformsExportOfAClosedFormIsRejectedWithoutQueuingARequest() {
+        AskServer asks = asks();
+        FormDispatchAsync dispatcher = (FormDispatchAsync) dispatcher(asks.controller);
+        dispatcher.close();
+        int queued = queuedRequests(dispatcher), sync = dispatcher.syncCount, async = dispatcher.asyncCount;
+        long next = nextRequestIndex(asks.controller);
+        JavaScriptObject promise = asks.controller.runTableReport(asks.form.group.grid);
+        assertTrue(asks.actions.isEmpty());
+        assertEquals(queued, queuedRequests(dispatcher));
+        assertEquals(sync, dispatcher.syncCount);
+        assertEquals(async, dispatcher.asyncCount);
+        assertEquals(next, nextRequestIndex(asks.controller));
+        delayTestFinish(5000);
+        then(promise, answer -> fail("resolved"), error -> {
+            assertEquals("Form is closed", error);
+            finishTest();
+        });
+    }
+
+    // Update and view changes wait for their own responses; keeping their state sends nothing and resolves at once.
+    public void testUpdateAndListViewPromisesWaitForTheirOwnAnswers() {
+        AskServer asks = asks();
+        GFormController controller = asks.controller;
+        GGroupObject group = asks.form.group;
+        GListViewController views = new GListViewController() {
+            GListViewType shown = GListViewType.GRID;
+            public List<GListViewType> getListViews() { return Arrays.asList(GListViewType.GRID, GListViewType.PIVOT); }
+            public GListViewType getListView() { return shown; }
+            public long changeListView(GListViewType view) {
+                shown = view;
+                return controller.changeListViewType(group, 20, view, null);
+            }
+        };
+        JavaScriptObject sameMode = controller.changeUpdateMode("items.manual.change()", group, GUpdateMode.AUTO);
+        JavaScriptObject sameView = controller.changeListView("items.listView.change()", views, GListViewType.GRID);
+        assertTrue(asks.actions.isEmpty());
+        JavaScriptObject manual = controller.changeUpdateMode("items.manual.change()", group, GUpdateMode.MANUAL);
+        JavaScriptObject view = controller.changeListView("items.listView.change()", views, GListViewType.PIVOT);
+        JavaScriptObject update = controller.changeUpdateMode("items.update()", group, GUpdateMode.FORCE);
+        assertEquals(3, asks.actions.size());
+        ArrayList<String> settled = new ArrayList<>();
+        then(sameMode, answer -> settled.add("same mode"), error -> fail(error));
+        then(sameView, answer -> settled.add("same view"), error -> fail(error));
+        then(manual, answer -> settled.add("manual"), error -> fail(error));
+        then(view, answer -> settled.add("view"), error -> fail(error));
+        then(update, answer -> settled.add("update"), error -> fail(error));
+        delayTestFinish(5000);
+        inTurn(() -> {
+            assertEquals(Arrays.asList("same mode", "same view"), settled);
+            asks.answer(0, false);
+        }, () -> {
+            assertEquals(Arrays.asList("same mode", "same view", "manual"), settled);
+            asks.answer(1, false);
+        }, () -> {
+            assertEquals(Arrays.asList("same mode", "same view", "manual", "view"), settled);
+            asks.answer(2, false);
+        }, () -> {
+            assertEquals(Arrays.asList("same mode", "same view", "manual", "view", "update"), settled);
+            finishTest();
+        });
+    }
+
+    // Asks refuse inside the form: no request or state change, their Promise rejected with the reason.
+    public void testAsksAreRefusedInABatchAndOnAClosedForm() {
+        AskServer asks = asks();
+        GFormController controller = asks.controller;
+        GGroupObject group = asks.form.group;
+        GListViewController views = new GListViewController() {
+            public List<GListViewType> getListViews() { return Arrays.asList(GListViewType.GRID, GListViewType.PIVOT); }
+            public GListViewType getListView() { return GListViewType.GRID; }
+            public long changeListView(GListViewType view) { fail("view changed"); return -1; }
+        };
+        ArrayList<JavaScriptObject> promises = new ArrayList<>();
+        Runnable ask = () -> {
+            promises.add(controller.countRecords("items.getCount()", group));
+            promises.add(controller.calculateSum("items.getSum()", group, asks.form.price, GGroupObjectValue.EMPTY));
+            promises.add(controller.getPropertyValues("items.price.getValues()", asks.form.price, GGroupObjectValue.EMPTY, "ab", "objects", 0));
+            promises.add((JavaScriptObject) call(controller.controller, "getCount", "items"));
+            promises.add((JavaScriptObject) call(controller.controller, "getSum", "items", "price"));
+            promises.add((JavaScriptObject) call(controller.controller, "getValues", "items.price", "ab", null));
+            promises.add(controller.runTableReport("items.export()", group.grid));
+            promises.add(controller.changeUpdateMode("items.manual.change()", group, GUpdateMode.MANUAL));
+            promises.add(controller.changeUpdateMode("items.update()", group, GUpdateMode.FORCE));
+            promises.add(controller.changeListView("items.listView.change()", views, GListViewType.PIVOT));
+            promises.add((JavaScriptObject) call(controller.controller, "export", "items"));
+            promises.add((JavaScriptObject) call(controller.controller, "changeManual", "items", true));
+            promises.add((JavaScriptObject) call(controller.controller, "update", "items"));
+            assertTrue(refusalOf(() -> call(controller.controller, "getValues", "items.price", null, parse("{\"typo\":true}"))).contains("takes the query"));
+            assertTrue(refusalOf(() -> call(controller.controller, "getValues", "items.price", "ab", parse("{\"typo\":true}"))).contains("unknown field 'typo'"));
+            assertTrue(refusalOf(() -> call(controller.controller, "getSum", "items", "missing")).contains("unknown property 'missing'"));
+            assertTrue(refusalOf(() -> call(controller.controller, "changeListView", "items", "unknown")).contains("has no view to switch to"));
+        };
+        assertEquals("", consoleErrorsOf(() -> controller.batch(ask)));
+        assertTrue(asks.actions.isEmpty());
+        assertFalse(controller.isManualUpdate(group));
+        ((FormDispatchAsync) dispatcher(controller)).close();
+        assertEquals("", consoleErrorsOf(ask));
+        assertTrue(asks.actions.isEmpty());
+        assertFalse(controller.isManualUpdate(group));
+        List<String> reasons = new ArrayList<>();
+        for (String surface : Arrays.asList("items.getCount()", "items.getSum()", "items.price.getValues()", "form.getCount('items')",
+                "form.getSum('items')", "form.getValues('items.price')", "items.export()", "items.manual.change()", "items.update()",
+                "items.listView.change()", "form.export('items')", "form.changeManual('items')", "form.update('items')"))
+            reasons.add("controller." + surface + ": a batch is running, which carries changes only: make this call before the batch or after it");
+        reasons.addAll(Collections.nCopies(reasons.size(), "Form is closed"));
+        int[] rejected = {0};
+        delayTestFinish(5000);
+        for (int i = 0; i < promises.size(); i++) {
+            String reason = reasons.get(i);
+            then(promises.get(i), answer -> fail("resolved"), error -> {
+                assertEquals(reason, error);
+                if (++rejected[0] == reasons.size())
+                    finishTest();
+            });
+        }
+    }
+
+    private static native String refusalOf(Runnable run) /*-{
+        try { run.@java.lang.Runnable::run()(); return null; } catch (e) { return e.message; }
+    }-*/;
+
     // a view's change of a property is the Promise of its request: resolved when the request is over - the server's
     // answer taken in, and the answer to the continuation it asked the client for -, not before
     public void testAChangeIsThePromiseOfItsRequest() {
@@ -531,6 +817,58 @@ public class GFormControllerTest extends GWTTestCase {
             changes.answer(1, false);
             Scheduler.get().scheduleDeferred(() -> {
                 assertEquals(Collections.singletonList("resolved"), settled);
+                finishTest();
+            });
+        });
+    }
+
+    // an exec shares the change's Promise path, including the synchronous event's answer
+    public void testAnExecIsThePromiseOfItsRequest() {
+        ChangeServer changes = changes();
+        changes.note.asyncExecMap = new HashMap<>(); // no asynchronous exec of its own: the event goes as the request it is
+        JavaScriptObject promise = changes.controller.executePropertyEventAction(changes.note, GGroupObjectValue.EMPTY, PValue.UNDEFINED, index -> { });
+        assertEquals(1, changes.actions.size());
+        assertTrue(changes.actions.get(0) instanceof ExecuteEventAction);
+        ArrayList<String> settled = new ArrayList<>();
+        then(promise, answer -> settled.add("resolved"), error -> fail(error));
+        delayTestFinish(5000);
+        Scheduler.get().scheduleDeferred(() -> {
+            assertTrue(settled.isEmpty());
+            changes.answer(0, false);
+            Scheduler.get().scheduleDeferred(() -> {
+                assertEquals(Collections.singletonList("resolved"), settled);
+                finishTest();
+            });
+        });
+    }
+
+    // A deferred change gets its own request index; an earlier independent answer must not settle it.
+    public void testADeferredChangeWaitsForItsLateRequestsAnswer() {
+        ChangeServer changes = changes();
+        JavaScriptObject earlier = changes.change(1);
+        changes.note.asyncExecMap = new HashMap<>();
+        changes.note.asyncExecMap.put(GEditBindingMap.CHANGE, new GAsyncEventExec() {
+            @Override
+            public void exec(GFormController formController, EventHandler handler, EditContext editContext, ExecContext execContext,
+                             String actionSID, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
+                Scheduler.get().scheduleDeferred(() -> formController.syncExecutePropertyEventAction(editContext, handler,
+                        execContext.getProperty(), execContext.getFullKey(), pushAsyncResult, actionSID, eventSource, onExec));
+            }
+        });
+        JavaScriptObject late = changes.controller.changeProperty(changes.note, GGroupObjectValue.EMPTY, PValue.UNDEFINED, PValue.UNDEFINED);
+        assertEquals(1, changes.actions.size()); // the change's request has not been made yet
+        ArrayList<String> settled = new ArrayList<>();
+        then(earlier, answer -> settled.add("earlier"), error -> fail(error));
+        then(late, answer -> settled.add("late"), error -> fail(error));
+        delayTestFinish(5000);
+        changes.answer(0, false);
+        Scheduler.get().scheduleDeferred(() -> {
+            assertEquals(2, changes.actions.size());
+            assertTrue(((FormRequestAction<?>) changes.actions.get(0)).requestIndex < ((FormRequestAction<?>) changes.actions.get(1)).requestIndex);
+            assertEquals(Collections.singletonList("earlier"), settled);
+            changes.answer(1, false);
+            Scheduler.get().scheduleDeferred(() -> {
+                assertEquals(Arrays.asList("earlier", "late"), settled);
                 finishTest();
             });
         });
@@ -594,6 +932,41 @@ public class GFormControllerTest extends GWTTestCase {
         }, error -> fail(error));
     }
 
+    // a throw still sends the preceding changes and clears the batch before the next independent request
+    public void testAThrowInABatchLeavesTheNextRequestsPromiseIndependent() {
+        FilterServer filters = filters();
+        GUserFiltersController model = filters.form.model(filters.controller);
+        JavaScriptObject[] made = new JavaScriptObject[1];
+        RuntimeException failure = new RuntimeException("the view failed");
+        try {
+            filters.controller.batch(() -> {
+                made[0] = filters.controller.batch(() -> model.changeFilter(filters.form.drawn, filters.form.condition(null)));
+                throw failure;
+            });
+            fail("not thrown");
+        } catch (RuntimeException caught) {
+            assertSame(failure, caught);
+        }
+        JavaScriptObject next = filters.controller.batch(model::reset);
+        assertNotSame(made[0], next);
+        assertEquals(2, filters.actions.size());
+        assertTrue(filters.actions.get(0) instanceof ExecuteBatch);
+        assertTrue(filters.actions.get(1) instanceof ExecuteBatch);
+        ArrayList<String> settled = new ArrayList<>();
+        then(made[0], answer -> settled.add("batch"), error -> fail(error));
+        then(next, answer -> settled.add("next"), error -> fail(error));
+        delayTestFinish(5000);
+        filters.answer(0, false);
+        Scheduler.get().scheduleDeferred(() -> {
+            assertEquals(Collections.singletonList("batch"), settled);
+            filters.answer(1, false);
+            Scheduler.get().scheduleDeferred(() -> {
+                assertEquals(Arrays.asList("batch", "next"), settled);
+                finishTest();
+            });
+        });
+    }
+
     // a closed form sends no request, so a change and a batch are refused - their Promise rejected, as a server call on
     // the form's controller is -, and the batch's function is not run
     public void testAChangeAndABatchOfAClosedFormAreRejected() {
@@ -610,6 +983,442 @@ public class GFormControllerTest extends GWTTestCase {
                 assertTrue(changes.actions.isEmpty());
                 finishTest();
             });
+        });
+    }
+
+    // a filter command - the apply of what waits in the manual apply mode, the platform's panel's - is the Promise of
+    // the request it makes, resolved when that request is over
+    public void testAFilterCommandIsThePromiseOfItsRequest() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            FilterServer filters = filters();
+            GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(filters.controller, filters.form.group);
+            panel.setControlsVisible(true); // the panel's apply button shown: its manual apply mode
+            GUserFiltersController model = filters.form.model(filters.controller);
+            model.changeFilter(filters.form.drawn, filters.form.condition(null)); // waits for the apply
+            assertTrue(filters.actions.isEmpty());
+            JavaScriptObject first = (JavaScriptObject) call(filters.controller.controller, "applyFilters", "items");
+            assertSame(first, filters.controller.changeUserFilters(Collections.singletonList(filters.form.group), () -> { }));
+            assertSame(first, call(filters.controller.controller, "applyFilters", "items")); // nothing waiting to send
+            model.changeFilter(filters.form.drawn, filters.form.condition(PValue.getPValue(5))); // waits again
+            JavaScriptObject second = (JavaScriptObject) call(filters.controller.controller, "applyFilters", "items");
+            assertSame(second, filters.controller.changeUserFilters(Collections.singletonList(filters.form.group), () -> { }));
+            assertSame(second, call(filters.controller.controller, "applyFilters", "items"));
+            assertEquals(2, filters.actions.size());
+            assertTrue(filters.actions.get(1) instanceof SetUserFilters);
+            ArrayList<String> settled = new ArrayList<>();
+            then(first, answer -> settled.add("first"), error -> settled.add("rejected: " + error));
+            then(second, answer -> settled.add("second"), error -> settled.add("rejected: " + error));
+            delayTestFinish(5000);
+            Scheduler.get().scheduleDeferred(() -> {
+                assertEquals(Collections.emptyList(), settled); // not before the answer
+                filters.answerChanges(0);
+                Scheduler.get().scheduleDeferred(() -> {
+                    assertEquals(Collections.singletonList("first"), settled); // each by its own request's answer
+                    assertSame(second, filters.controller.changeUserFilters(Collections.singletonList(filters.form.group), () -> { }));
+                    filters.answerChanges(1);
+                    Scheduler.get().scheduleDeferred(() -> {
+                        assertEquals(Arrays.asList("first", "second"), settled);
+                        then((JavaScriptObject) call(filters.controller.controller, "applyFilters", "items"), answer -> finishTest(), error -> fail(error));
+                    });
+                });
+            });
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
+    // With no filters in flight, an apply that sends nothing resolves at once, and one made in a batch is the
+    // batch's Promise, whether the call makes a request of its own or not
+    public void testAFilterCommandMakingNoRequestIsResolvedAndInABatchItIsTheBatchs() {
+        FilterServer filters = filters();
+        GUserFiltersController model = filters.form.model(filters.controller);
+        JavaScriptObject none = (JavaScriptObject) call(filters.controller.controller, "applyFilters", "items");
+        assertTrue(filters.actions.isEmpty());
+        JavaScriptObject[] made = new JavaScriptObject[2];
+        JavaScriptObject batch = filters.controller.batch(() -> {
+            made[0] = (JavaScriptObject) call(filters.controller.controller, "applyFilters", "items"); // nothing waits: no request of its own
+            model.changeFilter(filters.form.drawn, filters.form.condition(null)); // sent at once: a request the batch carries
+            made[1] = (JavaScriptObject) call(filters.controller.controller, "resetFilters", "items");
+        });
+        assertSame(batch, made[0]);
+        assertSame(batch, made[1]);
+        assertEquals(1, filters.actions.size());
+        assertTrue(filters.actions.get(0) instanceof ExecuteBatch);
+        ArrayList<String> settled = new ArrayList<>();
+        then(none, answer -> settled.add("none"), error -> fail(error));
+        then(batch, answer -> settled.add("batch"), error -> fail(error));
+        delayTestFinish(5000);
+        Scheduler.get().scheduleDeferred(() -> {
+            assertEquals(Collections.singletonList("none"), settled); // the batch's waits for its request
+            filters.answer(0, false);
+            Scheduler.get().scheduleDeferred(() -> {
+                assertEquals(Arrays.asList("none", "batch"), settled);
+                finishTest();
+            });
+        });
+    }
+
+    // ... one whose request fails is rejected with the reason, which the platform shows, as a failed change's is
+    public void testAFailedFilterCommandIsRejectedWithTheReason() {
+        FilterServer filters = filters();
+        GUserFiltersController model = filters.form.model(filters.controller);
+        model.changeFilter(filters.form.drawn, filters.form.condition(null)); // sent at once
+        JavaScriptObject promise = (JavaScriptObject) call(filters.controller.controller, "resetFilters", "items");
+        assertEquals(2, filters.actions.size());
+        delayTestFinish(5000);
+        then(promise, answer -> fail("resolved"), error -> {
+            assertEquals("the server failed", error);
+            assertTrue(closeDialog("the server failed"));
+            finishTest();
+        });
+        filters.answer(0, false);
+        filters.callbacks.get(1).onFailure(new RuntimeException("the server failed"));
+    }
+
+    // A successful request may carry no delta; a later read must not wait for that request again.
+    public void testFiltersAnsweredWithoutChangesCanBeReadAgain() {
+        GroupServer groups = groups();
+        GFormController controller = groups.controller;
+        List<GGroupObject> tableGroups = controller.getForm().groupObjects;
+        controller.changeFilters(tableGroups, new ArrayList<>());
+        JavaScriptObject first = controller.changeUserFilters(tableGroups, () -> { });
+        controller.changeFilters(tableGroups, new ArrayList<>());
+        JavaScriptObject second = controller.changeUserFilters(tableGroups, () -> { });
+        assertNotSame(first, second);
+        delayTestFinish(5000);
+        then(first, answer -> {
+            assertSame(second, controller.changeUserFilters(tableGroups, () -> { }));
+            groups.answer(1, false);
+        }, error -> fail(error));
+        then(second, answer -> {
+            JavaScriptObject read = controller.changeUserFilters(tableGroups, () -> { });
+            assertNotSame(second, read);
+            then(read, readAnswer -> then(controller.changeUserFilters(tableGroups, () -> { }), repeated -> {
+                assertEquals(2, groups.actions.size());
+                finishTest();
+            }, error -> fail(error)), error -> fail(error));
+        }, error -> fail(error));
+        groups.answer(0, false);
+    }
+
+    // A publication subscriber must read the original Promise until the request finishes, even after its delta
+    // has been applied: clearing the pending maps there made the subscriber read a new, resolved Promise.
+    public void testStateReadsDuringPublicationKeepTheRequestsPromise() {
+        GroupServer groups = groups();
+        GFormController controller = groups.controller;
+        List<GGroupObject> tableGroups = controller.getForm().groupObjects;
+        JavaScriptObject promise = controller.batch(() -> {
+            controller.changeFilters(tableGroups, new ArrayList<>());
+            controller.expandAll(tableGroups.get(0));
+        });
+        boolean[] published = {false};
+        controller.addReactView(controller.getForm().mainContainer, data -> {
+            published[0] = true;
+            assertSame(promise, controller.changeUserFilters(tableGroups, () -> { }));
+            assertSame(promise, controller.expandNodes(tableGroups, () -> { }));
+        });
+        delayTestFinish(5000);
+        then(promise, answer -> {
+            assertTrue(published[0]);
+            assertNotSame(promise, controller.changeUserFilters(tableGroups, () -> { }));
+            assertNotSame(promise, controller.expandNodes(tableGroups, () -> { }));
+            finishTest();
+        }, error -> fail(error));
+        groups.answerChanges(0);
+    }
+
+    // Failure reconciliation publishes before rejecting the request: a subscriber must receive that same rejection.
+    public void testStateReadsDuringFailurePublicationKeepTheRequestsPromise() {
+        GroupServer groups = groups();
+        GFormController controller = groups.controller;
+        List<GGroupObject> tableGroups = controller.getForm().groupObjects;
+        JavaScriptObject promise = controller.batch(() -> {
+            controller.changeFilters(tableGroups, new ArrayList<>());
+            controller.expandAll(tableGroups.get(0));
+        });
+        boolean[] published = {false};
+        controller.addReactView(controller.getForm().mainContainer, data -> {
+            published[0] = true;
+            assertSame(promise, controller.changeUserFilters(tableGroups, () -> { }));
+            assertSame(promise, controller.expandNodes(tableGroups, () -> { }));
+        });
+        delayTestFinish(5000);
+        then(promise, answer -> fail("resolved"), error -> {
+            assertEquals("the server failed", error);
+            assertTrue(published[0]);
+            assertNotSame(promise, controller.changeUserFilters(tableGroups, () -> { }));
+            assertNotSame(promise, controller.expandNodes(tableGroups, () -> { }));
+            assertTrue(closeDialog("the server failed"));
+            finishTest();
+        });
+        groups.callbacks.get(0).onFailure(new RuntimeException("the server failed"));
+    }
+
+    // A closed form refuses a filter command before it runs: what was to reset is still there, nothing more asked.
+    public void testAFilterCommandOfAClosedFormIsRejected() {
+        FilterServer filters = filters();
+        GUserFiltersController model = filters.form.model(filters.controller);
+        model.changeFilter(filters.form.drawn, filters.form.condition(null)); // sent at once
+        ((FormDispatchAsync) dispatcher(filters.controller)).close();
+        JavaScriptObject promise = (JavaScriptObject) call(filters.controller.controller, "resetFilters", "items");
+        assertTrue(filters.form.filters(filters.controller, filters.form.price));
+        assertEquals(1, filters.actions.size());
+        delayTestFinish(5000);
+        then(promise, answer -> fail("resolved"), error -> {
+            assertEquals("Form is closed", error);
+            finishTest();
+        });
+    }
+
+    // A table waits for the latest filter request among its groups, while even an empty batch owns its Promise.
+    public void testFiltersOfSeveralGroupsWaitForTheLatestRequest() {
+        GroupServer groups = groups();
+        GFormController controller = groups.controller;
+        List<GGroupObject> tableGroups = controller.getForm().groupObjects;
+        List<GGroupObject> top = Collections.singletonList(tableGroups.get(0)), bottom = Collections.singletonList(tableGroups.get(1));
+        controller.changeFilters(top, new ArrayList<>());
+        JavaScriptObject first = controller.changeUserFilters(top, () -> { });
+        controller.changeFilters(bottom, new ArrayList<>());
+        JavaScriptObject second = controller.changeUserFilters(bottom, () -> { });
+        assertNotSame(first, second);
+        assertSame(second, controller.changeUserFilters(tableGroups, () -> { }));
+        assertSame(second, controller.changeUserFilters(Arrays.asList(tableGroups.get(1), tableGroups.get(0)), () -> { }));
+        JavaScriptObject[] made = new JavaScriptObject[1];
+        JavaScriptObject batch = controller.batch(() -> made[0] = controller.changeUserFilters(tableGroups, () -> { }));
+        assertSame(batch, made[0]);
+        assertNotSame(second, batch);
+        assertEquals(2, groups.actions.size());
+        ArrayList<String> settled = new ArrayList<>();
+        then(first, answer -> settled.add("first"), error -> fail(error));
+        then(second, answer -> settled.add("second"), error -> fail(error));
+        then(batch, answer -> settled.add("batch"), error -> fail(error));
+        delayTestFinish(5000);
+        Scheduler.get().scheduleDeferred(() -> {
+            assertEquals(Collections.singletonList("batch"), settled);
+            groups.answerChanges(0);
+            Scheduler.get().scheduleDeferred(() -> {
+                assertEquals(Arrays.asList("batch", "first"), settled);
+                assertSame(second, controller.changeUserFilters(tableGroups, () -> { }));
+                groups.answerChanges(1);
+                Scheduler.get().scheduleDeferred(() -> {
+                    assertEquals(Arrays.asList("batch", "first", "second"), settled);
+                    then(controller.changeUserFilters(tableGroups, () -> { }), answer -> finishTest(), error -> fail(error));
+                });
+            });
+        });
+    }
+
+    // A platform tree's command waits for its expansion request without making a batch for it.
+    public void testATreeOpeningWaitsForItsExpansionRequest() {
+        GroupServer groups = groups();
+        GFormController controller = groups.controller;
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        GTreeGroup tree = group.parent;
+        GGroupObjectValue key = new GGroupObjectValue(group.ID, 1);
+        GFormChanges shown = new GFormChanges();
+        shown.gridObjects.put(group, new ArrayList<>(Collections.singletonList(key)));
+        shown.parentObjects.put(group, new ArrayList<>(Collections.singletonList(GGroupObjectValue.EMPTY)));
+        shown.objects.put(group, key);
+        NativeHashMap<GGroupObjectValue, Integer> expandables = new NativeHashMap<>();
+        expandables.put(key, 1);
+        shown.expandables.put(group, expandables);
+        controller.applyRemoteChanges(shown, -1);
+        Widget page = controller.getFormLayout();
+        RootPanel.get().add(page);
+        delayTestFinish(5000);
+        Scheduler.get().scheduleDeferred(() -> {
+            JavaScriptObject first, second;
+            try {
+                first = controller.expandNode(group, key);
+                assertSame(first, controller.expandNodes(tree.groups, () -> { }));
+                second = (JavaScriptObject) call(controller.controller, "expandTree", "t");
+                assertEquals(2, groups.actions.size());
+                assertTrue(groups.actions.get(0) instanceof ExpandGroupObject);
+                assertTrue(groups.actions.get(1) instanceof ExpandGroupObjectRecursive);
+                assertNotSame(first, second);
+                assertSame(second, controller.expandNodes(tree.groups, () -> { }));
+            } finally {
+                RootPanel.get().remove(page);
+            }
+            ArrayList<String> settled = new ArrayList<>();
+            then(first, answer -> settled.add("first"), error -> fail(error));
+            then(second, answer -> settled.add("second"), error -> fail(error));
+            Scheduler.get().scheduleDeferred(() -> {
+                assertTrue(settled.isEmpty());
+                groups.answerChanges(0);
+                Scheduler.get().scheduleDeferred(() -> {
+                    assertEquals(Collections.singletonList("first"), settled);
+                    assertSame(second, controller.expandNodes(tree.groups, () -> { }));
+                    groups.answerChanges(1);
+                    Scheduler.get().scheduleDeferred(() -> {
+                        assertEquals(Arrays.asList("first", "second"), settled);
+                        then(controller.expandNodes(tree.groups, () -> { }), answer -> finishTest(), error -> fail(error));
+                    });
+                });
+            });
+        });
+    }
+
+    // An opening with no node resolves, shares an enclosing batch's Promise, and rejects on a closed form.
+    public void testATreeOpeningWithNoRequestAndOnAClosedForm() {
+        GroupServer groups = groups();
+        GFormController controller = groups.controller;
+        JavaScriptObject none = (JavaScriptObject) call(controller.controller, "expandCurrent", "t");
+        JavaScriptObject[] made = new JavaScriptObject[1];
+        JavaScriptObject batch = controller.batch(() -> made[0] = (JavaScriptObject) call(controller.controller, "expandTree", "t"));
+        assertSame(batch, made[0]);
+        assertTrue(groups.actions.isEmpty());
+        ((FormDispatchAsync) dispatcher(controller)).close();
+        JavaScriptObject closed = (JavaScriptObject) call(controller.controller, "expandCurrent", "t");
+        delayTestFinish(5000);
+        then(none, answer -> then(batch, batchAnswer -> then(closed, closedAnswer -> fail("resolved"), error -> {
+            assertEquals("Form is closed", error);
+            finishTest();
+        }), error -> fail(error)), error -> fail(error));
+    }
+
+    // An expansion can finish without reporting rows; keep only requests that are still in flight.
+    public void testExpansionsAnsweredWithoutChangesCanBeReadAgain() {
+        GroupServer groups = groups();
+        GFormController controller = groups.controller;
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        List<GGroupObject> tableGroups = group.parent.groups;
+        JavaScriptObject first = controller.expandAll(group);
+        JavaScriptObject second = controller.collapseAll(group);
+        assertNotSame(first, second);
+        assertSame(second, controller.expandNodes(tableGroups, () -> { }));
+        delayTestFinish(5000);
+        then(first, answer -> {
+            assertSame(second, controller.expandNodes(tableGroups, () -> { }));
+            groups.answer(1, false);
+        }, error -> fail(error));
+        then(second, answer -> {
+            JavaScriptObject read = controller.expandNodes(tableGroups, () -> { });
+            assertNotSame(second, read);
+            then(read, readAnswer -> then(controller.expandNodes(tableGroups, () -> { }), repeated -> {
+                assertEquals(2, groups.actions.size());
+                finishTest();
+            }, error -> fail(error)), error -> fail(error));
+        }, error -> fail(error));
+        groups.answer(0, false);
+    }
+
+    // members' ordinary requests are answered without an event action callback, each Promise by its own index
+    public void testAGroupMembersPromiseWaitsForItsOwnAnswer() {
+        GroupServer groups = groups();
+        GFormController controller = groups.controller;
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        LinkedHashMap<Column, Boolean> orders = new LinkedHashMap<>();
+        orders.put(new Column(controller.getForm().propertyDraws.get(0), GGroupObjectValue.EMPTY), true);
+        JavaScriptObject sorted = controller.changeOrders(Collections.singletonList(group), orders);
+        JavaScriptObject chosen = controller.changeCurrentObject(group, new GGroupObjectValue(group.ID, 1));
+        assertEquals(2, groups.actions.size());
+        assertTrue(groups.actions.get(0) instanceof SetPropertyOrders); // its own request, no batch
+        assertTrue(groups.actions.get(1) instanceof ChangeGroupObject);
+        ArrayList<String> settled = new ArrayList<>();
+        then(sorted, answer -> settled.add("sorted"), error -> fail(error));
+        then(chosen, answer -> settled.add("chosen"), error -> fail(error));
+        delayTestFinish(5000);
+        Scheduler.get().scheduleDeferred(() -> {
+            assertTrue(settled.isEmpty());
+            groups.answer(0, false);
+            Scheduler.get().scheduleDeferred(() -> {
+                assertEquals(Collections.singletonList("sorted"), settled);
+                groups.answer(1, false);
+                Scheduler.get().scheduleDeferred(() -> {
+                    assertEquals(Arrays.asList("sorted", "chosen"), settled);
+                    finishTest();
+                });
+            });
+        });
+    }
+
+    // A tree's groups are sorted a request each, the Promise settled by the last one's answer; in a batch the batch's.
+    public void testOrdersOfSeveralGroupsAreSettledByTheLastRequestAndJoinABatch() {
+        GroupServer groups = groups();
+        GFormController controller = groups.controller;
+        GForm form = controller.getForm();
+        LinkedHashMap<Column, Boolean> orders = new LinkedHashMap<>();
+        for (GPropertyDraw property : form.propertyDraws)
+            orders.put(new Column(property, GGroupObjectValue.EMPTY), true);
+        JavaScriptObject sorted = controller.changeOrders(form.groupObjects, orders);
+        JavaScriptObject[] made = new JavaScriptObject[1];
+        JavaScriptObject batch = controller.batch(() -> made[0] = controller.changeOrders(form.groupObjects, orders));
+        assertSame(batch, made[0]);
+        assertNotSame(sorted, batch);
+        assertEquals(3, groups.actions.size());
+        for (int i = 0; i < 2; i++) {
+            SetPropertyOrders order = (SetPropertyOrders) groups.actions.get(i);
+            assertEquals(form.groupObjects.get(i).ID, order.groupObjectID);
+            assertEquals(Collections.singletonList(form.propertyDraws.get(i).ID), order.propertyList);
+        }
+        assertEquals(2, ((ExecuteBatch) groups.actions.get(2)).requests.size());
+        ArrayList<String> settled = new ArrayList<>();
+        then(sorted, answer -> settled.add("sorted"), error -> fail(error));
+        then(batch, answer -> settled.add("batch"), error -> fail(error));
+        delayTestFinish(5000);
+        Scheduler.get().scheduleDeferred(() -> {
+            groups.answer(0, false);
+            Scheduler.get().scheduleDeferred(() -> {
+                assertTrue(settled.isEmpty()); // the first group's answer: the last one still to come
+                groups.answer(1, false);
+                Scheduler.get().scheduleDeferred(() -> {
+                    assertEquals(Collections.singletonList("sorted"), settled);
+                    groups.answer(2, false);
+                    Scheduler.get().scheduleDeferred(() -> {
+                        assertEquals(Arrays.asList("sorted", "batch"), settled);
+                        finishTest();
+                    });
+                });
+            });
+        });
+    }
+
+    // A failed sorting request rejects the operation's Promise with the platform's error.
+    public void testAFailedSortingRequestRejectsItsPromise() {
+        GroupServer groups = groups();
+        GFormController controller = groups.controller;
+        JavaScriptObject sorted = controller.changeOrders(controller.getForm().groupObjects, new LinkedHashMap<>());
+        assertEquals(2, groups.actions.size()); // a request per group: the last one's Promise
+        delayTestFinish(5000);
+        then(sorted, answer -> fail("resolved"), error -> {
+            assertEquals("the sorting failed", error);
+            assertTrue(closeDialog("the sorting failed"));
+            finishTest();
+        });
+        groups.answer(0, false);
+        groups.callbacks.get(1).onFailure(new RuntimeException("the sorting failed"));
+    }
+
+    // An operation that sends nothing resolves at once: a selection still held back is not waited for.
+    public void testAnOperationMakingNoRequestDoesNotWaitForAnEarlierDelayedSelection() {
+        GroupServer groups = groups();
+        GFormController controller = groups.controller;
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        controller.changeGroupObjectLater(group, new GGroupObjectValue(group.ID, 1), null, null);
+        assertTrue(groups.actions.isEmpty());
+        JavaScriptObject none = controller.changeOrders(Collections.emptyList(), new LinkedHashMap<>());
+        assertTrue(groups.actions.isEmpty()); // no request of its own: the selection still held back, not waited for
+        delayTestFinish(5000);
+        then(none, answer -> finishTest(), error -> fail(error));
+    }
+
+    // A closed form refuses an operation before it changes the form's state.
+    public void testAnOperationOfAClosedFormIsRejectedBeforeItRuns() {
+        GroupServer groups = groups();
+        GFormController controller = groups.controller;
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        GGroupObjectValue before = controller.getGroupController(group).getSelectedKey();
+        ((FormDispatchAsync) dispatcher(controller)).close();
+        JavaScriptObject chosen = controller.changeCurrentObject(group, new GGroupObjectValue(group.ID, 1));
+        assertEquals(before, controller.getGroupController(group).getSelectedKey());
+        assertTrue(groups.actions.isEmpty());
+        delayTestFinish(5000);
+        then(chosen, answer -> fail("resolved"), error -> {
+            assertEquals("Form is closed", error);
+            finishTest();
         });
     }
 
@@ -735,8 +1544,11 @@ public class GFormControllerTest extends GWTTestCase {
     }
     // the form's dispatcher, which counts its requests, what a React container's view was last given, and the
     // `loading` of an entry in it, null where there is none - read where the client keeps them
-    private static native RemoteDispatchAsync dispatcher(GFormController controller) /*-{
+    public static native RemoteDispatchAsync dispatcher(GFormController controller) /*-{
         return controller.@lsfusion.gwt.client.form.controller.GFormController::dispatcher;
+    }-*/;
+    private static native int queuedRequests(RemoteDispatchAsync dispatcher) /*-{
+        return dispatcher.@lsfusion.gwt.client.RemoteDispatchAsync::q.@java.util.LinkedList::size()();
     }-*/;
     private static native JavaScriptObject published(Object view) /*-{
         return view.@lsfusion.gwt.client.form.design.view.ReactContainerView::state.@lsfusion.gwt.client.form.design.view.GReactFormData.ViewState::lastPublished;
@@ -1625,7 +2437,7 @@ public class GFormControllerTest extends GWTTestCase {
         dispatcher.@lsfusion.gwt.client.RemoteDispatchAsync::gwtDispatch = @lsfusion.gwt.client.controller.dispatch.GWTDispatch::new()();
     }-*/;
     // ... and the controller of a form as it opens, its requests sent so
-    private static GFormController controllerApart(GForm form) {
+    public static GFormController controllerApart(GForm form) {
         GFormController controller = new GFormController(null, null, formContainer(), form, false, form.sID, 0, null);
         dispatchApart(controller);
         return controller;
@@ -3553,7 +4365,7 @@ public class GFormControllerTest extends GWTTestCase {
             form.initialFormChanges = GFormChangesTest.noChanges();
         }
         GFormController controller() {
-            return new GFormController(null, null, formContainer(), form, false, "propertyFilters", 0, null);
+            return new GFormController(formsController(), null, formContainer(), form, false, "propertyFilters", 0, null);
         }
         // as the view states a FILTER it draws: through its member, React drawing nothing here - with its options, as
         // JSON, too

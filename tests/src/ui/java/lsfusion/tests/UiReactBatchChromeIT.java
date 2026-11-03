@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -22,7 +21,7 @@ public class UiReactBatchChromeIT extends UiTest {
     private static final String REFUSAL = "a batch is running, which carries changes only: make this call before the batch or after it";
 
     // a toolbar's calls that ask the server, in a batch: the count's and a sum's Promises rejected with the reason, the
-    // export, the manual update, the update and the view switch refused, the reason on the console, nothing of them
+    // export, the manual update, the update and the view switch rejected with the reason, nothing of them
     // made; after the batch the count, the sum, the view switch and the manual update are made - the export and the
     // update outside a batch are UiReactToolbarIT's (#1884)
     @Test
@@ -36,9 +35,12 @@ public class UiReactBatchChromeIT extends UiTest {
         assertEquals("2", view.drawn().answer("controller.i.getCount()"));
 
         List<String> console = console();
-        view.drawn().call("controller.batch(() => { controller.i.manual.change(true); controller.i.update(); controller.i['export'](); controller.i.listView.change('pivot'); })");
-        assertEquals(Arrays.asList("manual.change()", "update()", "export()", "listView.change()").stream()
-                .map(call -> "controller.i." + call + ": " + REFUSAL).collect(Collectors.toList()), console);
+        for (String call : Arrays.asList("manual.change(true)", "update()", "export()", "listView.change('pivot')")) {
+            String surface = call.replace("true", "").replace("'pivot'", "");
+            assertEquals("controller.i." + surface + ": " + REFUSAL,
+                    view.drawn().rejection("(() => { let result; controller.batch(() => { result = controller.i." + call + "; }); return result; })()"));
+        }
+        assertEquals(0, console.size());
         assertEquals("2", view.drawn().answer("controller.i.getCount()"));
         assertEquals("false,grid", view.drawn().eval("[data.i.manual, data.i.listView].join()"));
         assertThat(names(form)).hasText(items);
@@ -110,7 +112,7 @@ public class UiReactBatchChromeIT extends UiTest {
 
     // a tree's members in a batch, where a view draws the tree: its expandCurrent opens the node a change earlier in
     // the batch made current, and it alone; its add and its reset of the conditions and the top group's expandAll -
-    // every category with children opened - go with the batch; its export is refused, the reason on the console; its
+    // every category with children opened - go with the batch; its export returns a rejected Promise; its
     // filter button's member is refused, with nothing of the platform's to show (#1884)
     @Test
     public void aTreesMembersInABatch() throws Exception {
@@ -125,14 +127,15 @@ public class UiReactBatchChromeIT extends UiTest {
         view.waitFor("conditions() === 'c.catName = " + names[0] + "' && data.c.list.map(r => r.catName.value).join() === '" + names[0] + "'");
         view.drawn().call("controller.batch(() => controller.cats.resetFilters())");
         view.waitFor("conditions() === '' && data.c.list.length === 3");
-        view.drawn().call("controller.c.collapseAll()");
+        assertEquals("undefined", view.drawn().answer("controller.c.collapseAll()")); // the Promise of its request
         view.waitFor("opened() === '' && rows() === ''");
         view.drawn().call("controller.batch(() => controller.c.expandAll())");
         view.waitFor("opened() === '" + names[0] + "," + names[4] + "' && rows() === '" + names[2] + "," + names[3] + "," + names[5] + "' && loaded()");
 
         List<String> console = console();
-        view.drawn().call("controller.batch(() => controller.cats['export']())");
-        assertEquals(Arrays.asList("controller.cats.export(): " + REFUSAL), console);
+        assertEquals("controller.cats.export(): " + REFUSAL,
+                view.drawn().rejection("(() => { let result; controller.batch(() => { result = controller.cats['export'](); }); return result; })()"));
+        assertEquals(0, console.size());
         assertEquals("controller.cats.filterControlsVisible.change(): has no filter controls of the platform's to show: the platform "
                 + "draws neither the conditions nor FILTERCONTROLS here, or its toolbar turns its filters off (showFilters)",
                 view.drawn().refusal("controller.batch(() => controller.cats.filterControlsVisible.change(true))"));

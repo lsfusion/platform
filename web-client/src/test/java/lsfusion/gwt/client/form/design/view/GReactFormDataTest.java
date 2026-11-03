@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
+import lsfusion.gwt.client.GFormChangesTest;
 import lsfusion.gwt.client.base.AppFileImage;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -15,6 +16,7 @@ import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.data.GCSVType;
 import lsfusion.gwt.client.classes.data.GColorType;
@@ -30,6 +32,9 @@ import lsfusion.gwt.client.classes.data.GRenderedType;
 import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.controller.GFormControllerTest;
+import lsfusion.gwt.client.form.controller.GController;
+import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.event.GInputBindingEvent;
@@ -195,7 +200,6 @@ public class GReactFormDataTest extends GWTTestCase {
             }
         }
     }
-    // a call that asks the server, refused while a batch runs, as the form refuses it (GFormController.getBatchRefusal)
     private static String batchRefusal(String surface) {
         return "controller." + surface + ": a batch is running, which carries changes only: make this call before the batch or after it";
     }
@@ -255,12 +259,15 @@ public class GReactFormDataTest extends GWTTestCase {
         ArrayList<GPropertyFilter> stated; // ... and the last list of conditions it stated
         final ArrayList<String> toolbarCalls = new ArrayList<>(); // ... and what a toolbar member asked, in order
         final HashMap<GGroupObject, Boolean> manualUpdates = new HashMap<>(); // ... and each group's update mode it set
-        java.util.function.Consumer<Number> answered; // ... the last answer it waits for
+        final JavaScriptObject countPromise = JavaScriptObject.createObject(), sumPromise = JavaScriptObject.createObject();
         final ArrayList<String> lookups = new ArrayList<>(); // ... and what a property member looked up, in order
         final JavaScriptObject lookupPromise = JavaScriptObject.createObject(); // ... and what it answers them with
         // ... and what it answers a change with, and a batch: the Promise of the request
         final JavaScriptObject changePromise = JavaScriptObject.createObject(), batchPromise = JavaScriptObject.createObject();
+        final JavaScriptObject requestPromise = JavaScriptObject.createObject();
         GReactFormData.Verbs verbs; // ... all of it, the form as far as the projection asks it
+        GUserFiltersController.Transport transport;
+        GReactFormData.Bindings bindings;
         // ... and the widget of each React view it was asked for, what the keys of what the view draws are taken with -
         // one per view, made as it is first asked for (viewWidget)
         final LinkedHashMap<GComponent, Widget> viewWidgets = new LinkedHashMap<>();
@@ -309,11 +316,21 @@ public class GReactFormDataTest extends GWTTestCase {
             price.captionReader = new GCaptionReader(20, 10);
             price.caption = "Price";
             addition.accept(this);
+            transport = new GUserFiltersController.Transport() {
+                public long changeFilters(List<GGroupObject> groups, ArrayList<GPropertyFilter> conditions) {
+                    filtersCalls.add("changeFilters " + sids(groups) + describe(conditions)); stated = conditions;
+                    formFilters.change(groups, conditions);
+                    return 0;
+                }
+                public ArrayList<GPropertyFilterDTO> getFilterDTOs(GGroupObject group) {
+                    return formFilters.getDTOs(group);
+                }
+            };
             projection = new GReactFormData(form, component -> {
                 placements++;
                 return component.getReactPlace();
             }, verbs = new GReactFormData.Verbs() { // the form, as far as a member asks it: what it is handed is kept
-                public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) { chosen = key; edits.add("current " + key.toKeyString()); }
+                public JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key) { chosen = key; edits.add("current " + key.toKeyString()); return batching ? batchPromise : requestPromise; }
                 public JavaScriptObject changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue) {
                     changed = key;
                     changedTo = value;
@@ -323,72 +340,83 @@ public class GReactFormDataTest extends GWTTestCase {
                     return batching ? batchPromise : changePromise; // a change made in a batch: the batch's
                 }
                 public JavaScriptObject getPropertyValues(String surface, GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, int increaseValuesNeededCount) {
+                    if (batching)
+                        return GController.rejectedControllerPromise(batchRefusal(surface));
                     lookups.add("lookup " + surface + " " + property.integrationSID + "@" + key.toKeyString() + " " + value + " " + actionSID + " " + increaseValuesNeededCount);
                     return lookupPromise;
                 }
-                public void countRecords(GGroupObject group, java.util.function.Consumer<Number> answer, java.util.function.Consumer<Throwable> failed) {
-                    toolbarCalls.add("count " + group.sID); answered = answer;
+                public JavaScriptObject countRecords(String surface, GGroupObject group) {
+                    if (batching)
+                        return GController.rejectedControllerPromise(batchRefusal(surface));
+                    toolbarCalls.add("count " + group.sID); return countPromise;
                 }
-                public void calculateSum(GGroupObject group, GPropertyDraw property, GGroupObjectValue columnKey, java.util.function.Consumer<Number> answer, java.util.function.Consumer<Throwable> failed) {
-                    toolbarCalls.add("sum " + group.sID + " " + property.integrationSID); answered = answer;
+                public JavaScriptObject calculateSum(String surface, GGroupObject group, GPropertyDraw property, GGroupObjectValue columnKey) {
+                    if (batching)
+                        return GController.rejectedControllerPromise(batchRefusal(surface));
+                    toolbarCalls.add("sum " + group.sID + " " + property.integrationSID); return sumPromise;
                 }
-                public void runTableReport(GGridProperty table) {
+                public JavaScriptObject runTableReport(String surface, GGridProperty table) {
+                    if (batching)
+                        return GController.rejectedControllerPromise(batchRefusal(surface));
                     toolbarCalls.add(table.match(grid -> "export " + grid.groupObject.ID, tree -> "export tree " + tree.groups.get(0).ID));
+                    return requestPromise;
                 }
                 // ... the update mode kept, and what shows the group's toolbar told, as the form does - a mode the group
                 // has changes nothing
-                public void changeUpdateMode(GGroupObject group, GUpdateMode updateMode) {
+                public JavaScriptObject changeUpdateMode(String surface, GGroupObject group, GUpdateMode updateMode) {
+                    if (batching)
+                        return GController.rejectedControllerPromise(batchRefusal(surface));
                     if (updateMode != GUpdateMode.FORCE) {
                         boolean manual = updateMode == GUpdateMode.MANUAL;
                         if (isManualUpdate(group) == manual)
-                            return;
+                            return requestPromise;
                         manualUpdates.put(group, manual);
                         controllers.toolbars.get(group).showUpdateMode(manual);
                     }
                     toolbarCalls.add("updateMode " + group.sID + " " + updateMode);
+                    return requestPromise;
+                }
+                public JavaScriptObject changeListView(String surface, GListViewController views, GListViewType view) {
+                    if (batching)
+                        return GController.rejectedControllerPromise(batchRefusal(surface));
+                    if (view != views.getListView())
+                        views.changeListView(view);
+                    return requestPromise;
                 }
                 // as the form keeps it: as the server starts the group, until a toolbar changes it
                 public boolean isManualUpdate(GGroupObject group) {
                     Boolean manual = manualUpdates.get(group);
                     return manual != null ? manual : group.enableManualUpdate;
                 }
-                public void expandCurrent(GGroupObject group, GGroupObjectValue key) { }
-                public void published() { }
-                public void setAsyncView(java.util.function.Consumer<Boolean> view) { asyncView = view; }
-                public void expandNode(GGroupObject group, GGroupObjectValue key) { }
-                public void collapseNode(GGroupObject group, GGroupObjectValue key) { }
-                public void expandAll(GGroupObject group) { }
-                public void collapseAll(GGroupObject group) { }
+                public JavaScriptObject expandCurrent(GGroupObject group, GGroupObjectValue key) { return batching ? batchPromise : requestPromise; }
+                public JavaScriptObject expandNode(GGroupObject group, GGroupObjectValue key) { return batching ? batchPromise : requestPromise; }
+                public JavaScriptObject collapseNode(GGroupObject group, GGroupObjectValue key) { return batching ? batchPromise : requestPromise; }
+                public JavaScriptObject expandAll(GGroupObject group) { return batching ? batchPromise : requestPromise; }
+                public JavaScriptObject collapseAll(GGroupObject group) { return batching ? batchPromise : requestPromise; }
+                public JavaScriptObject expandNodes(List<GGroupObject> groups, Runnable expand) {
+                    assertEquals(Collections.singletonList(group), groups);
+                    expand.run();
+                    return batching ? batchPromise : requestPromise;
+                }
                 // ... and the sortings and the filters it is handed, the form's now, told to what shows them, as the
                 // form does
-                public void changeOrders(List<GGroupObject> groups, LinkedHashMap<Column, Boolean> orders) {
+                public JavaScriptObject changeOrders(List<GGroupObject> groups, LinkedHashMap<Column, Boolean> orders) {
                     sortedGroups = groups; sortedCalls++; sorted = orders;
                     formOrders.change(groups, orders);
+                    return batching ? batchPromise : requestPromise;
                 }
                 public LinkedHashMap<Column, Boolean> getOrders(GGroupObject group) {
                     return formOrders.get(group);
                 }
-                public long changeFilters(List<GGroupObject> groups, ArrayList<GPropertyFilter> conditions) {
-                    filtersCalls.add("changeFilters " + sids(groups) + describe(conditions)); stated = conditions;
-                    formFilters.change(groups, conditions);
-                    return 0;
+                public JavaScriptObject changeUserFilters(List<GGroupObject> groups, Runnable change) {
+                    assertEquals(Collections.singletonList(group), groups);
+                    change.run();
+                    return batching ? batchPromise : requestPromise;
                 }
-                public ArrayList<GPropertyFilterDTO> getFilterDTOs(GGroupObject group) {
-                    return formFilters.getDTOs(group);
-                }
-                public void changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
+                public JavaScriptObject changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
                     edits.add("regularFilter " + filterGroup.sID + " " + (filter != null ? filter.caption : "none"));
                     controllers.filterGroups.get(filterGroup).showFilter(filter);
-                }
-                public Widget getViewWidget(GComponent scope) {
-                    return viewWidget(scope);
-                }
-                public void pressProperty(GPropertyDraw property, Event event) {
-                    edits.add("press " + property.integrationSID);
-                }
-                // ... and a call that asks the server, refused while a batch runs
-                public String getRefusal(String surface) {
-                    return batching ? batchRefusal(surface) : null;
+                    return batching ? batchPromise : requestPromise;
                 }
                 // ... and a batch: what it is handed while the batch runs comes between the batch and its sending - a
                 // batch begun inside it a part of it, as the form's is
@@ -408,13 +436,18 @@ public class GReactFormDataTest extends GWTTestCase {
                     }
                     return batchPromise;
                 }
+            }, bindings = new GReactFormData.Bindings() {
+                public Widget getViewWidget(GComponent scope) { return viewWidget(scope); }
+                public void pressProperty(GPropertyDraw property, Event event) { edits.add("press " + property.integrationSID); }
+                public void setAsyncView(java.util.function.Consumer<Boolean> view) { asyncView = view; }
+                public void published() { }
             });
             sa = projection.addView(a, data -> publish(0, data));
             sb = projection.addView(b, data -> publish(1, data));
             sc = projection.addView(c, data -> publish(2, data));
             for (GComponent component : ownViews)
                 ownStates.put(component, projection.addView(component, data -> ownSnapshots.put(component, data)));
-            controllers = new Controllers(projection, form, platform, platformComponents, filter, views);
+            controllers = new Controllers(projection, form, transport, platform, platformComponents, filter, views);
             formFilters.controllers = controllers;
             formOrders.controllers = controllers;
             GFormChanges initial = new GFormChanges();
@@ -435,7 +468,7 @@ public class GReactFormDataTest extends GWTTestCase {
             toolbar.showPrintGroupXls = true; toolbar.showManualUpdate = true;
             group.grid.toolbar = toolbar;
         }
-        // the widget of the view that draws what scope holds, as the form gives it (Verbs.getViewWidget)
+        // the widget of the view that draws what scope holds, as the form gives it (Bindings.getViewWidget)
         Widget viewWidget(GComponent scope) {
             return viewWidgets.computeIfAbsent(scope, view -> new Label());
         }
@@ -576,7 +609,7 @@ public class GReactFormDataTest extends GWTTestCase {
         // the row a view names through the group's member - the row, its handle, its key - as the member reads it
         GGroupObjectValue choose(JavaScriptObject row) {
             chosen = null;
-            callChange(field(sa.controller, "items"), row);
+            assertSame(requestPromise, callChange(field(sa.controller, "items"), row));
             return chosen;
         }
         // the client's own value for a cell, where the form sets it (GFormController.setLoadingValueAt): the property's
@@ -589,7 +622,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // a tree of two groups drawn in one react container: categories, and the items under them, keyed by the whole path
     // the form, as far as a member of a tree's projection asks it: what it is asked, logged in order, each request
     // numbered as the form numbers them - and what it showed before the answer, published as the form publishes it
-    private static final class TreeVerbs implements GReactFormData.Verbs {
+    private static final class TreeVerbs implements GReactFormData.Verbs, GReactFormData.Bindings, GUserFiltersController.Transport {
         final ArrayList<String> asked = new ArrayList<>();
         GReactFormData projection;
         Controllers controllers; // the form's controllers, a group's told of a request
@@ -601,45 +634,59 @@ public class GReactFormDataTest extends GWTTestCase {
 
         // as the form does: the request numbered and sent, the group's controller told of the current object at once
         // (GFormController.changeGroupObject) - published by the member's call that asked it
-        public void changeCurrentObject(GGroupObject group, GGroupObjectValue key) {
+        public JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key) {
             ask("current " + group.getSID() + " " + key.toKeyString());
             controllers.groups.get(group).changeCurrentKey(key);
+            return batching ? batchPromise : requestPromise;
         }
         public JavaScriptObject changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue) { return null; }
         public JavaScriptObject getPropertyValues(String surface, GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, int increaseValuesNeededCount) { return null; }
-        public void countRecords(GGroupObject group, java.util.function.Consumer<Number> answer, java.util.function.Consumer<Throwable> failed) { }
-        public void calculateSum(GGroupObject group, GPropertyDraw property, GGroupObjectValue columnKey, java.util.function.Consumer<Number> answer, java.util.function.Consumer<Throwable> failed) { }
-        public void runTableReport(GGridProperty table) {
+        public JavaScriptObject countRecords(String surface, GGroupObject group) { return null; }
+        public JavaScriptObject calculateSum(String surface, GGroupObject group, GPropertyDraw property, GGroupObjectValue columnKey) { return null; }
+        public JavaScriptObject runTableReport(String surface, GGridProperty table) {
+            if (batching)
+                return GController.rejectedControllerPromise(batchRefusal(surface));
             table.match(grid -> null, tree -> asked.add("export tree " + tree.groups.get(0).ID));
+            return requestPromise;
         }
-        public void changeUpdateMode(GGroupObject group, GUpdateMode updateMode) { }
+        public JavaScriptObject changeUpdateMode(String surface, GGroupObject group, GUpdateMode updateMode) { return requestPromise; }
+        public JavaScriptObject changeListView(String surface, GListViewController views, GListViewType view) {
+            if (view != views.getListView())
+                views.changeListView(view);
+            return requestPromise;
+        }
         public boolean isManualUpdate(GGroupObject group) { return group.enableManualUpdate; }
-        public String getRefusal(String surface) { return batching ? batchRefusal(surface) : null; }
-        public void changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) { }
+        public JavaScriptObject changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) { return batching ? batchPromise : requestPromise; }
         public Widget getViewWidget(GComponent scope) { return null; }
         public void pressProperty(GPropertyDraw property, Event event) { }
         // as the form does: the request numbered and sent, the group's controller told of it
-        public void expandNode(GGroupObject group, GGroupObjectValue key) {
+        public JavaScriptObject expandNode(GGroupObject group, GGroupObjectValue key) {
             controllers.groups.get(group).changeExpanded(key, true, ask("expand " + group.getSID() + " " + key.toKeyString()));
+            return batching ? batchPromise : requestPromise;
         }
-        public void collapseNode(GGroupObject group, GGroupObjectValue key) {
+        public JavaScriptObject collapseNode(GGroupObject group, GGroupObjectValue key) {
             controllers.groups.get(group).changeExpanded(key, false, ask("collapse " + group.getSID() + " " + key.toKeyString()));
+            return batching ? batchPromise : requestPromise;
         }
-        public void expandAll(GGroupObject group) {
+        public JavaScriptObject expandAll(GGroupObject group) {
             controllers.groups.get(group).changeExpandedAll(true, ask("expand all " + group.getSID()));
+            return batching ? batchPromise : requestPromise;
         }
-        public void collapseAll(GGroupObject group) {
+        public JavaScriptObject collapseAll(GGroupObject group) {
             controllers.groups.get(group).changeExpandedAll(false, ask("collapse all " + group.getSID()));
+            return batching ? batchPromise : requestPromise;
         }
-        public void expandCurrent(GGroupObject group, GGroupObjectValue key) {
+        public JavaScriptObject expandCurrent(GGroupObject group, GGroupObjectValue key) {
             controllers.groups.get(group).changeExpandedUnder(key, ask("expand current " + group.getSID() + " " + key.toKeyString()));
+            return batching ? batchPromise : requestPromise;
         }
         final ArrayList<String> sorted = new ArrayList<>(); // what an orders member handed the form, in order
         // ... each group's the form's now, as the form has them
         final FormOrders orders = new FormOrders();
-        public void changeOrders(List<GGroupObject> groups, LinkedHashMap<Column, Boolean> orders) {
+        public JavaScriptObject changeOrders(List<GGroupObject> groups, LinkedHashMap<Column, Boolean> orders) {
             sorted.add(sids(groups) + describeOrders(orders));
             this.orders.change(groups, orders);
+            return batching ? batchPromise : requestPromise;
         }
         public LinkedHashMap<Column, Boolean> getOrders(GGroupObject group) {
             return orders.get(group);
@@ -655,6 +702,16 @@ public class GReactFormDataTest extends GWTTestCase {
         public ArrayList<GPropertyFilterDTO> getFilterDTOs(GGroupObject group) {
             return filters.getDTOs(group);
         }
+        public JavaScriptObject changeUserFilters(List<GGroupObject> groups, Runnable change) {
+            assertEquals(filters.form.groupObjects, groups);
+            change.run();
+            return batching ? batchPromise : requestPromise;
+        }
+        public JavaScriptObject expandNodes(List<GGroupObject> groups, Runnable expand) {
+            assertEquals(filters.form.groupObjects, groups);
+            expand.run();
+            return batching ? batchPromise : requestPromise;
+        }
         long ask(String request) {
             asked.add(request);
             return batching ? requestIndex + 1 : ++requestIndex;
@@ -662,10 +719,12 @@ public class GReactFormDataTest extends GWTTestCase {
         // ... and a batch, as the form runs one: what is asked in it under the index of its one request - none when
         // nothing is asked -, a batch begun inside it a part of it. Published by the member's call that runs it
         boolean batching;
+        final JavaScriptObject batchPromise = JavaScriptObject.createObject();
+        final JavaScriptObject requestPromise = JavaScriptObject.createObject();
         public JavaScriptObject batch(Runnable run) {
             if (batching) {
                 run.run();
-                return null;
+                return batchPromise;
             }
             asked.add("batch");
             int begun = asked.size();
@@ -678,10 +737,10 @@ public class GReactFormDataTest extends GWTTestCase {
                     requestIndex++;
                 asked.add("sent");
             }
-            return null;
+            return batchPromise;
         }
-        public void published() { }
         public void setAsyncView(java.util.function.Consumer<Boolean> asyncView) { }
+        public void published() { }
     }
     private static final class TreeFixture {
         final GForm form = new GForm();
@@ -723,12 +782,12 @@ public class GReactFormDataTest extends GWTTestCase {
             group(item, 61, "item");
             item.upTreeGroups.add(cat);
             addition.accept(this);
-            projection = new GReactFormData(form, GComponent::getReactPlace, verbs);
+            projection = new GReactFormData(form, GComponent::getReactPlace, verbs, verbs);
             verbs.projection = projection;
             sa = projection.addView(a, d -> { data = d; publications++; });
             if (b != null)
                 sb = projection.addView(b, d -> { });
-            controllers = new Controllers(projection, form, platform, platformComponents, filter, null);
+            controllers = new Controllers(projection, form, verbs, platform, platformComponents, filter, null);
             verbs.controllers = controllers;
             verbs.filters.controllers = controllers;
             verbs.orders.controllers = controllers;
@@ -923,7 +982,7 @@ public class GReactFormDataTest extends GWTTestCase {
 
         public List<GListViewType> getListViews() { return Arrays.asList(GListViewType.GRID, GListViewType.PIVOT); }
         public GListViewType getListView() { return shown; }
-        public void changeListView(GListViewType view) { shown = view; changed.add(view); toolbar.showView(view); }
+        public long changeListView(GListViewType view) { shown = view; changed.add(view); toolbar.showView(view); return 0; }
     }
 
     private static GContainer container(int id) {
@@ -1093,6 +1152,7 @@ public class GReactFormDataTest extends GWTTestCase {
     private static final class Controllers {
         final GForm form;
         final GReactFormData projection;
+        final GUserFiltersController.Transport transport;
         final RecordingTableController platform;
         final RecordingComponentController platformComponents;
         final PanelDouble filter;
@@ -1117,12 +1177,13 @@ public class GReactFormDataTest extends GWTTestCase {
         // calls made as a view's own
         final JavaScriptObject formController = GwtClientUtils.newObject();
 
-        Controllers(GReactFormData projection, GForm form, RecordingTableController platform, RecordingComponentController platformComponents) {
-            this(projection, form, platform, platformComponents, null, null);
+        Controllers(GReactFormData projection, GForm form, GUserFiltersController.Transport transport, RecordingTableController platform, RecordingComponentController platformComponents) {
+            this(projection, form, transport, platform, platformComponents, null, null);
         }
-        Controllers(GReactFormData projection, GForm form, RecordingTableController platform, RecordingComponentController platformComponents, PanelDouble filter, ListViewDouble views) {
+        Controllers(GReactFormData projection, GForm form, GUserFiltersController.Transport transport, RecordingTableController platform, RecordingComponentController platformComponents, PanelDouble filter, ListViewDouble views) {
             this.form = form;
             this.projection = projection;
+            this.transport = transport;
             this.platform = platform;
             this.platformComponents = platformComponents;
             this.filter = filter;
@@ -1162,7 +1223,7 @@ public class GReactFormDataTest extends GWTTestCase {
                 toolbar.addFilterToggle(filter);
             }
             GFilterControlsToggle toggle = new GFilterControlsToggle(() -> { }, controls != null ? controls : GFilterControlsController.NONE, toolbar);
-            GReactFormData.FiltersControllers tableFilters = projection.createFiltersControllers(table, rows, toggle, GReactFormData.PlatformFilters.NONE);
+            GReactFormData.FiltersControllers tableFilters = projection.createFiltersControllers(table, rows, transport, toggle, GReactFormData.PlatformFilters.NONE);
             GUserOrdersController tableOrders = rows.getUserOrdersController();
             for (GGroupObject group : table.getGroups())
                 initializeGroupControllers(group, rows.getGroupController(group), tableOrders, tableFilters.userFilters);
@@ -1943,10 +2004,10 @@ public class GReactFormDataTest extends GWTTestCase {
         Fixture f = new Fixture(Fixture::filtersBesideRows);
         JavaScriptObject items = field(f.sa.controller, "items");
         batch(f.sa.controller, () -> {
-            callChange(field(items, "orders"), parse("{\"property\": \"price\", \"desc\": true}"));
-            callChange(field(items, "orders"), parse("{\"property\": \"quantity\", \"desc\": false}"));
-            callChange(field(items, "filters"), parse("{\"property\": \"price\", \"compare\": \">\", \"value\": 1}"));
-            callChange(field(items, "filters"), parse("{\"property\": \"quantity\", \"value\": 2}"));
+            assertSame(f.batchPromise, callChange(field(items, "orders"), parse("{\"property\": \"price\", \"desc\": true}")));
+            assertSame(f.batchPromise, callChange(field(items, "orders"), parse("{\"property\": \"quantity\", \"desc\": false}")));
+            assertSame(f.batchPromise, callChange(field(items, "filters"), parse("{\"property\": \"price\", \"compare\": \">\", \"value\": 1}")));
+            assertSame(f.batchPromise, callChange(field(items, "filters"), parse("{\"property\": \"quantity\", \"value\": 2}")));
         });
         assertEquals(2, f.sortedCalls);
         assertEquals(columns(f.price, f.quantity), new ArrayList<>(f.sorted.keySet())); // the second on the first
@@ -2011,13 +2072,13 @@ public class GReactFormDataTest extends GWTTestCase {
         box.react = false; box.custom = null; box.caption = "In record";
         box.container = details; details.children.add(box);
         RecordingTableController platform = new RecordingTableController();
-        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs);
+        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs, f.bindings);
         final JavaScriptObject[] published = new JavaScriptObject[1];
         projection.addView(f.a, data -> { });
         projection.addView(f.b, data -> { });
         projection.addView(f.c, data -> { });
         projection.addView(details, data -> published[0] = data); // GFormLayout builds the record's containers too
-        Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
+        Controllers controllers = new Controllers(projection, f.form, f.transport, platform, new RecordingComponentController(platform));
         NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
         values.put(GGroupObjectValue.EMPTY, PValue.getPValue(5));
         assertFalse(reachesPlatform(platform, controllers, note, values));
@@ -2036,12 +2097,12 @@ public class GReactFormDataTest extends GWTTestCase {
         editor.caption = "Editor";
         editor.captionReader = new GCaptionReader(27, 10); // every property has one: the static caption is its fallback
         RecordingTableController platform = new RecordingTableController();
-        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs);
+        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs, f.bindings);
         final JavaScriptObject[] published = new JavaScriptObject[1];
         GReactFormData.ViewState sa = projection.addView(f.a, data -> published[0] = data);
         projection.addView(f.b, data -> { });
         projection.addView(f.c, data -> { });
-        Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
+        Controllers controllers = new Controllers(projection, f.form, f.transport, platform, new RecordingComponentController(platform));
         controllers.groups.get(f.group).updateKeys(f.group, rows(f.one), null, 0);
         projection.flush();
         // hidden until the platform shows it:
@@ -2360,11 +2421,11 @@ public class GReactFormDataTest extends GWTTestCase {
         GReactFormData projection = new GReactFormData(f.form, component -> {
             placements[0]++;
             return component.getReactPlace();
-        }, f.verbs);
+        }, f.verbs, f.bindings);
         projection.addView(f.a, data -> { });
         projection.addView(f.b, data -> { });
         projection.addView(f.c, data -> { });
-        Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
+        Controllers controllers = new Controllers(projection, f.form, f.transport, platform, new RecordingComponentController(platform));
         GReactFormData.Rows rows = projection.getRows(f.group); // bound once, while the form is built
         int placed = placements[0];
         ArrayList<GGroupObjectValue> none = rows.getRows();
@@ -2421,12 +2482,12 @@ public class GReactFormDataTest extends GWTTestCase {
         }
         unnamed.sID = null;
         RecordingTableController platform = new RecordingTableController();
-        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs);
+        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs, f.bindings);
         final JavaScriptObject[] published = new JavaScriptObject[1];
         projection.addView(f.a, data -> { });
         projection.addView(f.b, data -> published[0] = data);
         projection.addView(f.c, data -> { });
-        Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
+        Controllers controllers = new Controllers(projection, f.form, f.transport, platform, new RecordingComponentController(platform));
         NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
         values.put(GGroupObjectValue.EMPTY, PValue.getPValue("Go"));
         // a platform-drawn column's values go through its entry...
@@ -2459,8 +2520,8 @@ public class GReactFormDataTest extends GWTTestCase {
         GReactFormData projection = new GReactFormData(f.form, component -> {
             placements[0]++;
             return component.getReactPlace();
-        }, f.verbs);
-        Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
+        }, f.verbs, f.bindings);
+        Controllers controllers = new Controllers(projection, f.form, f.transport, platform, new RecordingComponentController(platform));
         NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
         values.put(f.one, PValue.getPValue(5));
         assertTrue(reachesPlatform(platform, controllers, f.price, values));
@@ -2509,12 +2570,12 @@ public class GReactFormDataTest extends GWTTestCase {
         Fixture f = new Fixture();
         f.group.sID = "constructor";
         RecordingTableController platform = new RecordingTableController();
-        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs);
+        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs, f.bindings);
         final JavaScriptObject[] published = new JavaScriptObject[1];
         projection.addView(f.a, data -> published[0] = data);
         projection.addView(f.b, data -> { });
         projection.addView(f.c, data -> { });
-        Controllers controllers = new Controllers(projection, f.form, platform, new RecordingComponentController(platform));
+        Controllers controllers = new Controllers(projection, f.form, f.transport, platform, new RecordingComponentController(platform));
         controllers.groups.get(f.group).updateKeys(f.group, rows(f.one, f.two), null, 0);
         projection.flush();
         JavaScriptObject node = field(published[0], "constructor");
@@ -2537,6 +2598,23 @@ public class GReactFormDataTest extends GWTTestCase {
         f.apply(whole);
         assertTrue(f.controller(f.price).isPropertyShown(f.price));
         assertEquals(12.0, value(f.row("1"), "price"), 0.0);
+    }
+
+    // The form's publication hook runs after the views have received their snapshots.
+    public void testThePublishedHookFollowsTheViewsPublications() {
+        Fixture f = new Fixture();
+        ArrayList<String> calls = new ArrayList<>();
+        GReactFormData projection = new GReactFormData(f.form, GComponent::getReactPlace, f.verbs, new GReactFormData.Bindings() {
+            public Widget getViewWidget(GComponent scope) { return null; }
+            public void pressProperty(GPropertyDraw property, Event event) { }
+            public void setAsyncView(java.util.function.Consumer<Boolean> asyncView) { }
+            public void published() { calls.add("published"); }
+        });
+        projection.addView(f.a, data -> calls.add("view"));
+        projection.publish();
+        assertEquals(Arrays.asList("view", "published"), calls);
+        projection.publish();
+        assertEquals(Arrays.asList("view", "published"), calls);
     }
 
     // a subscriber may flush from inside a publication (a member call does): what it changed goes out then, with what
@@ -2693,8 +2771,8 @@ public class GReactFormDataTest extends GWTTestCase {
         TreeFixture f = new TreeFixture();
         f.apply(f.page());
         JavaScriptObject cat = field(f.sa.controller, "cat");
-        call(cat, "expand", f.row(f.cat, f.c1)); // the row
-        call(cat, "collapse", field(f.row(f.cat, f.c2), "objects")); // its objects handle
+        assertSame(f.verbs.requestPromise, call(cat, "expand", f.row(f.cat, f.c1))); // the row - the Promise of its request
+        assertSame(f.verbs.requestPromise, call(cat, "collapse", field(f.row(f.cat, f.c2), "objects"))); // its objects handle
         call(cat, "expand", field(f.row(f.cat, f.c2), "key")); // its key
         call(cat, "expand", f.row(f.item, f.i27)); // a row BELOW names the node it hangs under here
         assertEquals(Arrays.asList("expand cat 1", "collapse cat 2", "expand cat 2", "expand cat 2"), f.verbs.asked);
@@ -2834,7 +2912,7 @@ public class GReactFormDataTest extends GWTTestCase {
         TreeFixture f = new TreeFixture();
         f.apply(closedPage(f));
         JavaScriptObject cat = field(f.sa.controller, "cat"), c2 = f.row(f.cat, f.c2);
-        call(cat, "toggle", c2); // closed: opened
+        assertSame(f.verbs.requestPromise, call(cat, "toggle", c2)); // closed: opened
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
         call(cat, "toggle", c2); // the same row handed in again: closed again - what was asked is read, not the row
         assertTrue(isFalse(f.row(f.cat, f.c2), "expanded"));
@@ -2865,7 +2943,7 @@ public class GReactFormDataTest extends GWTTestCase {
         page.expandables.put(f.item, counts(f.i15, 1, f.i16, 0));
         f.apply(page);
         JavaScriptObject cat = field(f.sa.controller, "cat"), item = field(f.sa.controller, "item");
-        call(cat, "expandAll"); // the top group: the whole tree
+        assertSame(f.verbs.requestPromise, call(cat, "expandAll")); // the top group: the whole tree
         assertTrue(flag(f.row(f.cat, f.c1), "expanded"));
         assertTrue(flag(f.row(f.cat, f.c2), "expanded")); // at once
         assertTrue(flag(f.row(f.item, f.i15), "expanded")); // ... the group below as well
@@ -2873,7 +2951,7 @@ public class GReactFormDataTest extends GWTTestCase {
         call(cat, "collapse", f.row(f.cat, f.c1)); // a node asked after it: the later request wins
         assertTrue(isFalse(f.row(f.cat, f.c1), "expanded"));
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
-        call(item, "collapseAll"); // a group below: its nodes, not those above it
+        assertSame(f.verbs.requestPromise, call(item, "collapseAll")); // a group below: its nodes, not those above it
         assertTrue(isFalse(f.row(f.item, f.i15), "expanded"));
         assertTrue(flag(f.row(f.cat, f.c2), "expanded"));
         assertEquals(Arrays.asList("expand all cat", "collapse cat 1", "collapse all item"), f.verbs.asked);
@@ -3171,7 +3249,7 @@ public class GReactFormDataTest extends GWTTestCase {
     public void testASortingNamesThePropertyOfItsGroupWhereverItIsDrawn() {
         Fixture f = Fixture.withPlatformProperties();
         JavaScriptObject orders = field(field(f.sa.controller, "items"), "orders");
-        callChange(orders, parse("[{\"property\": \"panel\", \"desc\": true}, {\"property\": \"platform\", \"desc\": false}]"));
+        assertSame(f.requestPromise, callChange(orders, parse("[{\"property\": \"panel\", \"desc\": true}, {\"property\": \"platform\", \"desc\": false}]")));
         assertEquals(columns(f.panel, f.platformNamed), new ArrayList<>(f.sorted.keySet()));
         assertEquals(Boolean.FALSE, f.sorted.get(column(f.panel)));
         String refused = refusedChange(orders, parse("{\"property\": \"nosuch\", \"desc\": true}"));
@@ -3679,7 +3757,7 @@ public class GReactFormDataTest extends GWTTestCase {
     public void testSortingReadsItsDirectionOnce() {
         Fixture f = new Fixture();
         JavaScriptObject order = flippingOrder("price"); // desc: true, then false
-        callChange(field(field(f.sa.controller, "items"), "orders"), order);
+        assertSame(f.requestPromise, callChange(field(field(f.sa.controller, "items"), "orders"), order)); // the Promise of its request
         assertEquals(Boolean.FALSE, f.sorted.get(column(f.price))); // descending: the first answer
         assertEquals(1, descReads(order));
     }
@@ -3932,7 +4010,7 @@ public class GReactFormDataTest extends GWTTestCase {
         });
         f.reportFilters(dtos(Arrays.asList(condition(f.price, 1), condition(byName(f.form, "perColumn"), 1))));
         JavaScriptObject member = field(field(f.sa.controller, "items"), "filters");
-        callChange(member, parse("[{\"property\": \"quantity\", \"value\": 2}, {\"property\": \"price\", \"compare\": \"<\", \"value\": 9}]"));
+        assertSame(f.requestPromise, callChange(member, parse("[{\"property\": \"quantity\", \"value\": 2}, {\"property\": \"price\", \"compare\": \"<\", \"value\": 9}]")));
         assertEquals("changeFilters items quantity= price< perColumn=", f.filtersCalls.get(0));
         f.projection.flush();
         callChange(member, field(f.node(), "filters"));
@@ -4351,6 +4429,65 @@ public class GReactFormDataTest extends GWTTestCase {
         tree.expandTree();
         assertEquals("expand all item", f.verbs.asked.get(2));
     }
+
+    // a closed form refuses opening a loaded React tree before the tree is asked: one refusal a call, handled, so a
+    // view that drops it is not reported an unhandled rejection
+    public void testOpeningALoadedReactTreeOnAClosedFormHandlesEveryRefusal() {
+        JsniTestSupport.installPageSetup();
+        GFormControllerTest.installPageHelpers();
+        TreeFixture f = new TreeFixture(t -> {
+            t.toolbarIn(t.a);
+            t.filterControlsIn(t.a);
+        });
+        f.form.mainContainer.custom = null;
+        f.form.mainContainer.lines = 1;
+        f.form.mainContainer.childrenAlignment = GFlexAlignment.START;
+        for (GContainer container : Arrays.asList(f.form.mainContainer, f.a)) {
+            container.span = 1;
+            container.setAlignment(GFlexAlignment.STRETCH);
+        }
+        f.form.initialFormChanges = GFormChangesTest.noChanges();
+        GFormController controller = GFormControllerTest.controllerApart(f.form);
+        GFormChanges shown = closedPage(f);
+        shown.objects.put(f.cat, f.c1);
+        controller.applyRemoteChanges(shown, -1);
+        ((FormDispatchAsync) GFormControllerTest.dispatcher(controller)).close();
+        ArrayList<String> errors = new ArrayList<>();
+        delayTestFinish(5000);
+        JavaScriptObject rejected = rejectedPromises(() -> {
+            for (String method : Arrays.asList("expandCurrent", "expandTree"))
+                then((JavaScriptObject) call(controller.controller, method, "t"), answer -> fail("resolved"), errors::add);
+        });
+        assertEquals(2, length(rejected)); // one refusal a call: the tree is not asked to open
+        for (int i = 0; i < length(rejected); i++)
+            assertTrue("refusal " + i, flag(at(rejected, i), "handled"));
+        Scheduler.get().scheduleDeferred(() -> {
+            assertEquals(Arrays.asList("Form is closed", "Form is closed"), errors);
+            finishTest();
+        });
+    }
+
+    // Include refusals the caller never receives in the handler check.
+    private static native JavaScriptObject rejectedPromises(Runnable run) /*-{
+        var reject = $wnd.Promise.reject, rejected = [];
+        $wnd.Promise.reject = function (reason) {
+            var promise = reject.call(this, reason), caught = promise['catch'];
+            var entry = {handled: false};
+            rejected.push(entry);
+            promise['catch'] = function (handler) {
+                entry.handled = true;
+                return caught.call(this, handler);
+            };
+            return promise;
+        };
+        try {
+            run.@java.lang.Runnable::run()();
+        } finally {
+            $wnd.Promise.reject = reject;
+        }
+        return rejected;
+    }-*/;
+
     // a recursive tree's page: 3 under 1, 4 under 3, 1's item loaded; 2 closed - all of them with children
     private static GFormChanges nestedPage(TreeFixture f, GGroupObjectValue c3, GGroupObjectValue c4) {
         GFormChanges page = new GFormChanges();
@@ -4376,14 +4513,15 @@ public class GReactFormDataTest extends GWTTestCase {
         f.apply(page);
         JavaScriptObject tree = field(f.sa.controller, "t");
         assertEquals("expandCurrent,orders", keysOf(tree)); // the tree's own and its sortings: no toolbar is drawn here
-        call(tree, "expandCurrent"); // no current node: nothing to open
+        assertSame(f.verbs.requestPromise, call(tree, "expandCurrent")); // no current node: nothing to open
         assertTrue(f.verbs.asked.isEmpty());
+        f.verbs.asked.clear();
 
         f.controllers.groups.get(f.cat).updateCurrentKey(f.c1);
         f.projection.flush();
         int publications = f.publications;
-        call(tree, "expandCurrent");
-        assertEquals(Arrays.asList("expand current cat 1"), f.verbs.asked);
+        assertSame(f.verbs.requestPromise, call(tree, "expandCurrent"));
+        assertEquals(Collections.singletonList("expand current cat 1"), f.verbs.asked);
         assertEquals(publications + 1, f.publications); // shown at once
         assertTrue(flag(f.row(f.cat, c3), "expanded")); // ... all the way down
         assertTrue(flag(f.row(f.cat, c4), "expanded"));
@@ -4404,8 +4542,8 @@ public class GReactFormDataTest extends GWTTestCase {
         assertFalse(own(f.row(f.cat, c4), "loading"));
 
         f.controllers.groups.get(f.item).updateCurrentKey(f.i15); // a node with no children: nothing to open
-        call(tree, "expandCurrent");
-        assertEquals(1, f.verbs.asked.size());
+        assertSame(f.verbs.requestPromise, call(tree, "expandCurrent"));
+        assertEquals(Collections.singletonList("expand current cat 1"), f.verbs.asked);
     }
 
     // ... read when it is called, in a batch too: the row a view made current before it in the batch is the node it
@@ -4417,8 +4555,8 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject tree = field(f.sa.controller, "t"), cat = field(f.sa.controller, "cat");
         int publications = f.publications;
         batch(f.sa.controller, () -> {
-            call(cat, "change", f.row(f.cat, f.c2));
-            call(tree, "expandCurrent");
+            assertSame(f.verbs.batchPromise, call(cat, "change", f.row(f.cat, f.c2)));
+            assertSame(f.verbs.batchPromise, call(tree, "expandCurrent"));
         });
         assertEquals(Arrays.asList("batch", "current cat 2", "expand current cat 2", "sent"), f.verbs.asked);
         assertEquals(publications + 1, f.publications); // once, when it ended
@@ -4445,7 +4583,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(has(field(same.sa.controller, "cat"), "expandAll")); // the whole tree: the top group's
         same.controllers.groups.get(same.cat).updateCurrentKey(same.c2);
         call(tree, "expandCurrent");
-        assertEquals(Arrays.asList("expand current cat 2"), same.verbs.asked); // the rows React draws opened
+        assertEquals(Collections.singletonList("expand current cat 2"), same.verbs.asked); // the rows React draws opened
 
         TreeFixture split = new TreeFixture(t -> t.toolbarIn(t.b())); // ... in two: the rows' and the toolbar's
         assertEquals("expandCurrent,orders", keysOf(field(split.sa.controller, "t")));
@@ -4492,7 +4630,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertFalse(has(tree, "expandTree")); // the whole tree is the top group's expandAll()
         assertTrue(isFalse(field(f.data, "t"), "filterControlsVisible"));
         assertFalse(has(field(f.data, "cat"), "filterControlsVisible"));
-        callChange(field(tree, "filterControlsVisible"), true);
+        assertSame(f.verbs.requestPromise, callChange(field(tree, "filterControlsVisible"), true));
         assertTrue(f.filter.shown);
         f.projection.flush();
         assertTrue(flag(field(f.data, "t"), "filterControlsVisible"));
@@ -4638,7 +4776,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // the commands over the conditions a view draws, over what draws the rows, with the controls given, as the form
     // wires them - no toolbar, no panel -, the model they write into the group's now, the server's lists reaching it
     private static GFilterInputController viewCommands(Fixture f, GTableController rows, GFilterControlsController controls) {
-        GReactFormData.FiltersControllers made = f.projection.createFiltersControllers(f.group.grid, rows, new GFilterControlsToggle(null, controls, null), GReactFormData.PlatformFilters.NONE);
+        GReactFormData.FiltersControllers made = f.projection.createFiltersControllers(f.group.grid, rows, f.transport, new GFilterControlsToggle(null, controls, null), GReactFormData.PlatformFilters.NONE);
         for (GGroupObject group : f.group.grid.getGroups())
             f.controllers.userFilters.put(group, made.userFilters);
         return made.input;
@@ -5061,7 +5199,7 @@ public class GReactFormDataTest extends GWTTestCase {
         Fixture f = new Fixture(fixture -> fixture.toolbarIn(fixture.c));
         JavaScriptObject member = field(f.sc.controller, "items");
         GGridToolbarController toolbar = f.controllers.toolbars.get(f.group);
-        callChange(field(member, "manual"), true);
+        assertSame(f.requestPromise, callChange(field(member, "manual"), true));
         assertEquals("updateMode items MANUAL", f.toolbarCalls.get(0));
         assertTrue(f.manualUpdates.get(f.group)); // the form keeps it
         assertTrue(flag(field(f.snapshots[2], "items"), "manual")); // a member's call: published before it returns
@@ -5072,10 +5210,10 @@ public class GReactFormDataTest extends GWTTestCase {
         f.projection.change(() -> toolbar.updateState(null)); // ... one which says nothing new: the state stays
         assertTrue(flag(field(f.snapshots[2], "items"), "updatePending"));
         assertEquals(publications, f.publications[2]); // nothing written, nothing published
-        call(member, "update");
+        assertSame(f.requestPromise, call(member, "update"));
         assertEquals("updateMode items FORCE", f.toolbarCalls.get(1));
 
-        callChange(field(member, "manual"), true); // on already
+        assertSame(f.requestPromise, callChange(field(member, "manual"), true)); // on already
         assertEquals(2, f.toolbarCalls.size());
         assertRefusal("controller.items.manual.change(): takes true or false", refusedChange(field(member, "manual"), "yes"));
     }
@@ -5150,23 +5288,21 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(f.lookups.isEmpty());
     }
 
-    // inside a batch it is refused as a toolbar's count is - its Promise rejected -, before its arguments are read
-    public void testAMembersLookupIsRejectedInABatch() {
+    // Arguments are checked before the form refuses a lookup in a batch.
+    public void testAMembersLookupChecksItsArgumentsBeforeTheFormRefusesIt() {
         Fixture f = new Fixture();
         JavaScriptObject member = member(f.sa, null, "single");
-        JavaScriptObject[] promises = new JavaScriptObject[2];
+        JavaScriptObject[] promises = new JavaScriptObject[1];
         batch(f.sa.controller, () -> {
             promises[0] = (JavaScriptObject) call(member, "getValues", "ab", null);
-            promises[1] = (JavaScriptObject) call(member, "getValues", null, parse("{\"typo\":true}"));
+            assertRefusal("takes the query, as a string", refusedWith(member, "getValues", null, parse("{\"typo\":true}")));
+            assertRefusal("unknown field 'typo'", refusedWith(member, "getValues", "ab", parse("{\"typo\":true}")));
         });
         assertTrue(f.lookups.isEmpty());
         delayTestFinish(5000);
         then(promises[0], value -> fail("answered: " + value), error -> {
-            assertRefusal("controller.single.getValues(): a batch is running", String.valueOf(error));
-            then(promises[1], value -> fail("answered: " + value), refused -> {
-                assertRefusal("controller.single.getValues(): a batch is running", String.valueOf(refused));
-                finishTest();
-            });
+            assertRefusal("controller.single.getValues(): a batch is running", error);
+            finishTest();
         });
     }
 
@@ -5178,8 +5314,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // the form's controller asks for the same by the property's name - as the classic changeProperty names one: a
     // property of an object group with its group's name, one of the form level bare -, the row as its methods take one:
     // a data row or its objects handle, of the named group, none for the current objects, and none for a property of
-    // the form level; the name is read first, a mistake in it thrown, the rest as a member's lookup - in a batch
-    // rejected
+    // the form level; the name is read first, a mistake in it thrown, the rest as a member's lookup
     public void testTheFormsControllerAsksAPropertysSuggestionsByName() {
         Fixture f = new Fixture();
         JavaScriptObject form = field(f.sa.controller, "form"), options = rowOptions(f.row("2"));
@@ -5203,17 +5338,6 @@ public class GReactFormDataTest extends GWTTestCase {
         Fixture columns = Fixture.withPlatformProperties();
         assertRefusal("controller.form.getValues('items.columns'): 'columns' is grouped in columns", refusedWith(field(columns.sa.controller, "form"), "getValues", "items.columns", "ab", null));
         assertEquals(4, f.lookups.size());
-        JavaScriptObject[] promise = new JavaScriptObject[1];
-        batch(f.sa.controller, () -> {
-            promise[0] = (JavaScriptObject) call(form, "getValues", "single", "ab", null);
-            assertRefusal("controller.form.getValues('nope.price'): unknown object group 'nope'", refusedWith(form, "getValues", "nope.price", "ab", null));
-        });
-        assertEquals(4, f.lookups.size());
-        delayTestFinish(5000);
-        then(promise[0], value -> fail("answered: " + value), error -> {
-            assertRefusal("controller.form.getValues('single'): a batch is running", String.valueOf(error));
-            finishTest();
-        });
     }
 
     // the count and a column's sum are asked of the server when called, each the Promise of its answer: a column named
@@ -5224,51 +5348,16 @@ public class GReactFormDataTest extends GWTTestCase {
             fixture.property(27, "act", fixture.group, true, fixture.a).valueType = GActionType.instance;
         });
         JavaScriptObject member = field(f.sc.controller, "items");
-        JavaScriptObject sum = (JavaScriptObject) call(member, "getSum", "price");
+        assertSame(f.sumPromise, call(member, "getSum", "price"));
         assertEquals("sum items price", f.toolbarCalls.get(0));
-        f.answered.accept(12.5);
         assertRefusal("controller.items.getSum(): unknown property 'nope' of object group 'items'", refusedWith(member, "getSum", "nope"));
         assertRefusal("controller.items.getSum(): takes the name of the property to sum, as a string", refusedWith(member, "getSum", 42.0));
         assertRefusal("controller.items.getSum(): 'act' is not a number", refusedWith(member, "getSum", "act"));
         call(member, "export");
         assertEquals("export 10", f.toolbarCalls.get(1));
 
-        JavaScriptObject count = (JavaScriptObject) call(member, "getCount");
+        assertSame(f.countPromise, call(member, "getCount"));
         assertEquals("count items", f.toolbarCalls.get(2));
-        delayTestFinish(5000);
-        then(sum, total -> then(count, value -> {
-            assertEquals(12.5, (Double) total, 0);
-            assertEquals(7.0, (Double) value, 0);
-            finishTest();
-        }, error -> fail("rejected: " + error)), error -> fail("rejected: " + error));
-        f.answered.accept(7L);
-    }
-
-    // ... and those asking the server - the count, the sum, the export, the update mode - are refused inside a batch,
-    // as a server call on the controller is, a batch carrying changes only - not thrown: the count's Promise rejected,
-    // the rest made of nothing, before the toolbar's state changes
-    public void testTheToolbarsRequestsAreRefusedInABatch() {
-        Fixture f = new Fixture(fixture -> {
-            fixture.toolbarIn(fixture.c);
-            fixture.group.grid.toolbar.showViews = true;
-        });
-        JavaScriptObject member = field(f.sc.controller, "items");
-        JavaScriptObject[] count = new JavaScriptObject[1];
-        batch(f.sc.controller, () -> { // nothing thrown
-            count[0] = (JavaScriptObject) call(member, "getCount");
-            call(member, "getSum", "price");
-            call(member, "export");
-            callChange(field(member, "manual"), true);
-            call(member, "update");
-            callChange(field(member, "listView"), "grid");
-        });
-        assertTrue(f.toolbarCalls.isEmpty()); // nothing asked of the form
-        assertTrue(isFalse(field(f.snapshots[2], "items"), "manual")); // nor the state changed
-        delayTestFinish(5000);
-        then(count[0], value -> fail("answered: " + value), error -> {
-            assertTrue(String.valueOf(error), String.valueOf(error).contains("controller.items.getCount(): a batch is running"));
-            finishTest();
-        });
     }
 
     // the filter button, where the toolbar is a view's: a member, and what the node shows - the
@@ -5282,10 +5371,10 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject member = field(f.sc.controller, "items");
         assertTrue(has(member, "filterControlsVisible"));
         assertTrue(isFalse(field(f.snapshots[2], "items"), "filterControlsVisible"));
-        callChange(field(member, "filterControlsVisible"), true);
+        assertSame(f.requestPromise, callChange(field(member, "filterControlsVisible"), true));
         assertTrue(f.filter.shown);
         assertTrue(flag(field(f.snapshots[2], "items"), "filterControlsVisible")); // published before the call returns
-        callChange(field(member, "filterControlsVisible"), true); // shown already
+        batch(f.sc.controller, () -> assertSame(f.batchPromise, callChange(field(member, "filterControlsVisible"), true))); // shown already
         assertTrue(f.filter.shown);
         assertRefusal("controller.items.filterControlsVisible.change(): takes true or false", refusedChange(field(member, "filterControlsVisible"), 1.0));
     }
@@ -5374,20 +5463,20 @@ public class GReactFormDataTest extends GWTTestCase {
                 fixture.filterControlsIn(fixture.c);
                 fixture.filterIn(fixture.c, fixture.quantity);
             });
-            callChange(field(field(f.sa.controller, "items"), "filters"), parse("{\"property\": \"price\", \"value\": 5}"));
-            callChange(field(member(f.sc, "items", "filter"), "quantity"), 2.0);
-            assertTrue(f.filtersCalls.isEmpty());
+            assertSame(f.requestPromise, callChange(field(field(f.sa.controller, "items"), "filters"), parse("{\"property\": \"price\", \"value\": 5}")));
+            assertSame(f.requestPromise, callChange(field(member(f.sc, "items", "filter"), "quantity"), 2.0));
+            assertTrue(f.filtersCalls.isEmpty()); // waiting for the apply: nothing sent
             f.projection.flush();
             assertEquals(2, length(field(f.node(), "filters")));
             assertEquals(2.0, number(field(field(field(f.snapshots[2], "items"), "filter"), "quantity"), "value"), 0);
             assertTrue(flag(field(f.snapshots[2], "items"), "filtersManual"));
             assertTrue(flag(field(f.snapshots[2], "items"), "filtersPending"));
 
-            call(field(f.sc.controller, "items"), "applyFilters");
+            assertSame(f.requestPromise, call(field(f.sc.controller, "items"), "applyFilters"));
             assertEquals(Arrays.asList("changeFilters items quantity= price="), f.filtersCalls);
             f.projection.flush();
             assertTrue(isFalse(field(f.snapshots[2], "items"), "filtersPending"));
-            call(field(f.sc.controller, "items"), "resetFilters");
+            assertSame(f.requestPromise, call(field(f.sc.controller, "items"), "resetFilters"));
             assertEquals("changeFilters items", f.filtersCalls.get(1));
         } finally {
             MainFrame.userFiltersManualApplyMode = manual;
@@ -5442,9 +5531,9 @@ public class GReactFormDataTest extends GWTTestCase {
         GUserFiltersController userFilters = f.userFilters();
         controls.bind(handler, userFilters); // its commands, and the user filters it shows
         JavaScriptObject member = field(f.sc.controller, "items");
-        call(member, "addFilter");
-        call(member, "resetFilters");
-        call(member, "applyFilters"); // nothing waits
+        assertSame(f.requestPromise, call(member, "addFilter"));
+        assertSame(f.requestPromise, call(member, "resetFilters"));
+        assertSame(f.requestPromise, call(member, "applyFilters")); // nothing waits
         assertEquals(Arrays.asList("add", "reset", "apply"), handler.calls);
         handler.filtersContainer = false; // no FILTERS box in the design: no add, as the platform has no such button
         assertRefusal("controller.items.addFilter(): has no FILTERS box to add a condition to", refusedWith(member, "addFilter", null));
@@ -5479,7 +5568,7 @@ public class GReactFormDataTest extends GWTTestCase {
     public void testShowFiltersTurnsOffThePlatformsFilterUIOnly() {
         Fixture platform = new Fixture(); // the platform draws the conditions: with no panel, nothing
         GReactFormData.FiltersControllers none = platform.projection.createFiltersControllers(platform.group.grid,
-                new RecordingTableController(), new GFilterControlsToggle(() -> { }, GFilterControlsController.NONE, new GridToolbarDouble()), GReactFormData.PlatformFilters.NONE);
+                new RecordingTableController(), platform.transport, new GFilterControlsToggle(() -> { }, GFilterControlsController.NONE, new GridToolbarDouble()), GReactFormData.PlatformFilters.NONE);
         assertNull(none.input);
         assertTrue(none.userFilters.getConditions().isEmpty()); // ... their model there all the same, nothing drawing it
         for (boolean showFilters : new boolean[]{true, false}) {
@@ -5491,7 +5580,7 @@ public class GReactFormDataTest extends GWTTestCase {
             GridToolbarDouble toolbar = new GridToolbarDouble();
             RecordingTableController table = onCell(f.price, 0, PValue.getPValue(5));
             PlatformFiltersDouble platformFilters = new PlatformFiltersDouble();
-            GFilterInputController input = f.projection.createFiltersControllers(f.group.grid, table,
+            GFilterInputController input = f.projection.createFiltersControllers(f.group.grid, table, f.transport,
                     new GFilterControlsToggle(() -> { }, controls, toolbar), platformFilters).input;
             // no rows of the platform's where a view draws the conditions, and no FILTER
             assertEquals(0, platformFilters.boxesAsked);
@@ -5501,6 +5590,9 @@ public class GReactFormDataTest extends GWTTestCase {
             assertEquals(Arrays.asList("changeFilters items price="), f.filtersCalls);
             assertEquals(showFilters ? 1 : 0, toolbar.filterToggles);
             assertSame(showFilters ? input : null, platformControls.handler);
+            assertSame(f.requestPromise, call(field(f.sa.controller, "form"), "addFilter", "items"));
+            if (showFilters)
+                assertSame(f.requestPromise, call(field(f.sa.controller, "form"), "changeFilterControlsVisible", "items", false));
 
             TreeFixture tree = new TreeFixture(t -> t.filtersIn(t.a)); // ... and a tree's
             FilterControlsDouble treePlatformControls = new FilterControlsDouble();
@@ -5508,7 +5600,7 @@ public class GReactFormDataTest extends GWTTestCase {
             TreeToolbarDouble treeToolbar = new TreeToolbarDouble();
             PlatformFiltersDouble treePlatformFilters = new PlatformFiltersDouble();
             GFilterInputController treeInput = tree.projection.createFiltersControllers(tree.tree,
-                    new RecordingTableController(), new GFilterControlsToggle(() -> { },
+                    new RecordingTableController(), tree.verbs, new GFilterControlsToggle(() -> { },
                             showFilters ? treePlatformControls : GFilterControlsController.NONE, treeToolbar), treePlatformFilters).input;
             assertEquals(0, treePlatformFilters.boxesAsked);
             assertTrue(treePlatformFilters.filtersAsked.isEmpty());
@@ -5596,7 +5688,7 @@ public class GReactFormDataTest extends GWTTestCase {
     public void testAFilterGroupsMemberSelectsAFilter() {
         Fixture f = new Fixture(fixture -> fixture.filterGroupIn(fixture.c, false));
         JavaScriptObject member = member(f.sc, "items", "stock");
-        callChange(member, 1.0);
+        assertSame(f.requestPromise, callChange(member, 1.0)); // the Promise of its request
         assertEquals("regularFilter FILTERGROUP(stock) Out of stock", lastOf(f.edits));
         f.projection.flush();
         assertEquals(1.0, number(field(field(f.snapshots[2], "items"), "stock"), "value"), 0);
@@ -5606,10 +5698,10 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("regularFilter FILTERGROUP(stock) Out of stock", lastOf(f.edits));
         callChange(member, null);
         assertEquals("regularFilter FILTERGROUP(stock) none", lastOf(f.edits));
-        batch(f.sc.controller, () -> callChange(member, 0.0));
+        batch(f.sc.controller, () -> assertSame(f.batchPromise, callChange(member, 0.0)));
         assertEquals("regularFilter FILTERGROUP(stock) In stock", f.edits.get(f.edits.size() - 2));
         assertEquals("sent", lastOf(f.edits));
-        batch(f.sa.controller, () -> callChange(member, 1.0)); // another view's batch: it goes with it
+        batch(f.sa.controller, () -> assertSame(f.batchPromise, callChange(member, 1.0))); // another view's batch: it goes with it
         assertEquals("regularFilter FILTERGROUP(stock) Out of stock", f.edits.get(f.edits.size() - 2));
         assertRefusal("controller.items.stock.change(): takes the index of one of its filters, 0 to 1, or null for none", refusedChange(member, 2.0));
         assertRefusal("controller.items.stock.change(): takes the index of one of its filters", refusedChange(member, 0.5));
@@ -5753,12 +5845,12 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("grid", text(node, "listView"));
         assertEquals("grid,pivot", join(field(node, "listViews")));
         JavaScriptObject member = field(f.sc.controller, "items");
-        callChange(field(member, "listView"), "pivot");
+        assertSame(f.requestPromise, callChange(field(member, "listView"), "pivot"));
         assertEquals(Arrays.asList(GListViewType.PIVOT), f.views.changed);
         assertEquals("pivot", text(field(f.snapshots[2], "items"), "listView")); // published before the call returns
-        callChange(field(member, "listView"), "pivot"); // shown already
+        assertSame(f.requestPromise, callChange(field(member, "listView"), "pivot")); // shown already
         assertEquals(1, f.views.changed.size());
-        call(member, "export"); // the server's report of the rows, whatever view the platform's table shows
+        assertSame(f.requestPromise, call(member, "export")); // the server's report of the rows, whatever view the platform's table shows
         assertEquals(Arrays.asList("export 10"), f.toolbarCalls);
         assertRefusal("controller.items.listView.change(): takes the name of a view of the table: grid, pivot",
                 refusedChange(field(member, "listView"), "map"));
@@ -6029,7 +6121,7 @@ public class GReactFormDataTest extends GWTTestCase {
         callChange(member, "");
         assertEquals("changeFilters items quantity=", f.filtersCalls.get(3));
         int calls = f.filtersCalls.size();
-        batch(f.sa.controller, () -> callChange(member, 2.0)); // another view's batch: it goes with it
+        batch(f.sa.controller, () -> assertSame(f.batchPromise, callChange(member, 2.0))); // another view's batch: it goes with it
         assertEquals(calls + 1, f.filtersCalls.size());
         assertEquals("sent", lastOf(f.edits));
     }
@@ -6181,7 +6273,7 @@ public class GReactFormDataTest extends GWTTestCase {
             filter[0].platformDrawn = true; // custom = NULL
         });
         PlatformFiltersDouble platform = new PlatformFiltersDouble(); // what the platform is asked to draw a row of
-        f.projection.createFiltersControllers(f.group.grid, new RecordingTableController(), new GFilterControlsToggle(() -> { }, GFilterControlsController.NONE, null), platform);
+        f.projection.createFiltersControllers(f.group.grid, new RecordingTableController(), f.transport, new GFilterControlsToggle(() -> { }, GFilterControlsController.NONE, null), platform);
         assertEquals(Collections.singletonList(filter[0]), platform.filtersAsked);
         assertNull(field(f.snapshots[2], "items"));
         assertFalse(own(field(f.snapshots[2], "FILTER(price)"), "hidden"));
@@ -6217,16 +6309,16 @@ public class GReactFormDataTest extends GWTTestCase {
         for (GReactFormData.ViewState state : Arrays.asList(f.sa, f.sb, f.sc)) // one object, on every view's controller
             assertTrue(field(state.controller, "form") == form);
         int a = f.publications[0];
-        call(form, "changeOrders", "items", parse("{\"property\": \"price\", \"desc\": true}"));
+        assertSame(f.requestPromise, call(form, "changeOrders", "items", parse("{\"property\": \"price\", \"desc\": true}"))); // as the member's
         assertEquals(" price desc", describeOrders(f.sorted));
         assertEquals(a + 1, f.publications[0]);
         assertEquals("price", text(at(field(f.node(), "orders"), 0), "property"));
         int c = f.publications[2];
-        call(form, "changeFilterGroup", "stock", 1.0);
+        assertSame(f.requestPromise, call(form, "changeFilterGroup", "stock", 1.0));
         assertEquals(c + 1, f.publications[2]);
         assertEquals("regularFilter FILTERGROUP(stock) Out of stock", lastOf(f.edits));
         assertEquals(1.0, number(field(field(f.snapshots[2], "items"), "stock"), "value"), 0);
-        call(form, "changeObject", "items", f.row("2"));
+        assertSame(f.requestPromise, call(form, "changeObject", "items", f.row("2")));
         assertEquals(f.two, f.chosen);
     }
 
@@ -6240,18 +6332,18 @@ public class GReactFormDataTest extends GWTTestCase {
             fixture.views = views;
         });
         JavaScriptObject form = field(f.sb.controller, "form");
-        call(form, "changeOrders", "items", parse("[{\"property\": \"quantity\", \"desc\": false}]"));
+        assertSame(f.requestPromise, call(form, "changeOrders", "items", parse("[{\"property\": \"quantity\", \"desc\": false}]")));
         assertEquals(" quantity", describeOrders(f.sorted));
         call(form, "changeObject", "items", objects(f.two));
         assertEquals(f.two, f.chosen);
-        call(form, "changeManual", "items", true);
+        assertSame(f.requestPromise, call(form, "changeManual", "items", true));
         assertEquals("updateMode items MANUAL", f.toolbarCalls.get(0));
         assertEquals(Collections.singletonList(true), ((GridToolbarDouble) f.controllers.toolbars.get(f.group)).manualShown);
-        call(form, "update", "items");
+        assertSame(f.requestPromise, call(form, "update", "items"));
         assertEquals("updateMode items FORCE", f.toolbarCalls.get(1));
-        call(form, "changeListView", "items", "pivot");
+        assertSame(f.requestPromise, call(form, "changeListView", "items", "pivot"));
         assertEquals(Collections.singletonList(GListViewType.PIVOT), views.changed);
-        call(form, "export", "items");
+        assertSame(f.requestPromise, call(form, "export", "items"));
         assertEquals("export 10", f.toolbarCalls.get(2));
         call(form, "getCount", "items");
         assertEquals("count items", f.toolbarCalls.get(3));
@@ -6283,38 +6375,28 @@ public class GReactFormDataTest extends GWTTestCase {
         TreeFixture f = new TreeFixture();
         f.apply(f.page());
         JavaScriptObject form = field(f.sa.controller, "form");
-        call(form, "expand", "cat", f.row(f.cat, f.c1));
-        call(form, "collapse", "cat", field(f.row(f.cat, f.c2), "objects"));
-        call(form, "expandAll", "item");
-        assertEquals(Arrays.asList("expand cat 1", "collapse cat 2", "expand all item"), f.verbs.asked);
+        assertSame(f.verbs.requestPromise, call(form, "expand", "cat", f.row(f.cat, f.c1)));
+        assertSame(f.verbs.requestPromise, call(form, "collapse", "cat", field(f.row(f.cat, f.c2), "objects")));
+        assertSame(f.verbs.requestPromise, call(form, "expandAll", "item"));
+        assertSame(f.verbs.requestPromise, call(form, "collapseAll", "item"));
+        assertEquals(Arrays.asList("expand cat 1", "collapse cat 2", "expand all item", "collapse all item"), f.verbs.asked);
         assertRefusal("controller.form.changeOrders('cat'): 'cat' is a group of tree 't', whose sortings, user filters and toolbar are the tree's: name the tree",
                 refusedWith(form, "changeOrders", "cat", parse("[]")));
         assertRefusal("controller.form.getCount('t'): takes the name of a list group, whose toolbar this is: 't' is a tree", refusedWith(form, "getCount", "t"));
 
         TreeFixture platform = new TreeFixture(TreeFixture::treeByThePlatform);
         JavaScriptObject platformForm = field(platform.sa.controller, "form");
-        call(platformForm, "expandCurrent", "t");
-        call(platformForm, "expandTree", "t");
+        assertSame(platform.verbs.requestPromise, call(platformForm, "expandCurrent", "t"));
+        assertSame(platform.verbs.requestPromise, call(platformForm, "expandTree", "t"));
         assertEquals(Arrays.asList("expand current", "expand tree"), platform.controllers.platformTree);
     }
 
-    // ... and a call of it inside a view's batch goes with the batch, as a member's does; one asking the server is
-    // refused there, as a member's is - the count's Promise rejected
+    // ... and a call of it inside a view's batch goes with the batch, as a member's does
     public void testTheFormsControllersCallsGoWithABatch() {
         Fixture f = new Fixture(fixture -> fixture.filterGroupIn(fixture.c, false));
         JavaScriptObject form = field(f.sb.controller, "form");
-        JavaScriptObject[] count = new JavaScriptObject[1];
-        batch(f.sb.controller, () -> {
-            call(form, "changeFilterGroup", "stock", 0.0);
-            count[0] = (JavaScriptObject) call(form, "getCount", "items");
-        });
+        batch(f.sb.controller, () -> assertSame(f.batchPromise, call(form, "changeFilterGroup", "stock", 0.0)));
         assertEquals(Arrays.asList("batch", "regularFilter FILTERGROUP(stock) In stock", "sent"), f.edits);
-        assertTrue(f.toolbarCalls.isEmpty());
-        delayTestFinish(5000);
-        then(count[0], value -> fail("answered: " + value), error -> {
-            assertTrue(String.valueOf(error), String.valueOf(error).contains("controller.form.getCount('items'): a batch is running"));
-            finishTest();
-        });
     }
 
     // ... and sorts a tree by the tree's name, each property named as the tree's lists name it, '<group>.<property>' -
@@ -6355,20 +6437,20 @@ public class GReactFormDataTest extends GWTTestCase {
     public void testTheFormsControllerChangesTheUserFilters() {
         Fixture f = new Fixture(fixture -> fixture.filterIn(fixture.c, fixture.price));
         JavaScriptObject form = field(f.sb.controller, "form");
-        call(form, "changeFilters", "items", parse("[{\"property\": \"quantity\", \"compare\": \"=\", \"value\": 2}]"));
+        assertSame(f.requestPromise, call(form, "changeFilters", "items", parse("[{\"property\": \"quantity\", \"compare\": \"=\", \"value\": 2}]")));
         assertEquals("changeFilters items quantity=", lastOf(f.filtersCalls));
         call(form, "changeFilters", "items", parse("{\"property\": \"price\", \"value\": 3}"));
         assertEquals("changeFilters items quantity= price" + f.price.getDefaultCompare(), lastOf(f.filtersCalls));
-        call(form, "changeFilter", "items.price", 4.0, parse("{\"compare\": \">\"}"));
+        assertSame(f.requestPromise, call(form, "changeFilter", "items.price", 4.0, parse("{\"compare\": \">\"}")));
         assertEquals("changeFilters items quantity= price>", lastOf(f.filtersCalls));
         f.projection.flush();
         assertEquals(4.0, number(field(field(field(f.snapshots[2], "items"), "filter"), "price"), "value"), 0);
         call(form, "changeFilter", "items.price", null);
         assertEquals("changeFilters items quantity=", lastOf(f.filtersCalls));
         int calls = f.filtersCalls.size();
-        call(form, "applyFilters", "items");
-        assertEquals(calls, f.filtersCalls.size());
-        call(form, "resetFilters", "items");
+        assertSame(f.requestPromise, call(form, "applyFilters", "items"));
+        assertEquals(calls, f.filtersCalls.size()); // nothing waits: no request
+        assertSame(f.requestPromise, call(form, "resetFilters", "items"));
         assertEquals("changeFilters items", lastOf(f.filtersCalls));
     }
 

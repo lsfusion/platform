@@ -116,11 +116,13 @@ public final class GPlatformGridController extends GPlatformTableController<GGri
         return listView;
     }
 
-    public void changeListView(GListViewType type) {
+    public long changeListView(GListViewType type) {
         setListView(type);
         // a pivot makes a call to get the columns, to init its default config
-        view.setSetRequestIndex(formController.changeListViewType(groupObject, view.getPageSize(), type, type == GListViewType.PIVOT ? GUpdateMode.MANUAL : null));
+        long requestIndex = formController.changeListViewType(groupObject, view.getPageSize(), type, type == GListViewType.PIVOT ? GUpdateMode.MANUAL : null);
+        view.setSetRequestIndex(requestIndex);
         updateSettingsButton();
+        return requestIndex;
     }
 
     // ... and the view of each: the rows shown as one of those views, at first or when the switch asks
