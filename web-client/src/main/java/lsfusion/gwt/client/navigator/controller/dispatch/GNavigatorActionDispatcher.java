@@ -3,6 +3,7 @@ package lsfusion.gwt.client.navigator.controller.dispatch;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.action.*;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.PopupOwner;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
@@ -17,6 +18,7 @@ import lsfusion.gwt.client.form.controller.GController;
 import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
 import lsfusion.gwt.client.form.property.JSValueConverter;
 import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
@@ -93,6 +95,15 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     @Override
     public void execute(GProcessNavigatorChangesAction action) {
         MainFrame.applyNavigatorChanges(action.navigatorChanges, navigatorController, windowsController);
+    }
+
+    @Override
+    public Object execute(GRequestUserInputAction action) {
+        // the navigator has no cell to ask for a value in - what asks for it is a navigator action or a call of its
+        // controller: the input is cancelled, as a user cancels one, and the action asking for it goes on as it then would
+        // (an INPUT's ELSE)
+        GwtClientUtils.consoleError("an input is cancelled, as a user cancels one: there is no cell to enter it in, since what asked for it is a navigator action or a call of the navigator's controller");
+        return GUserInputResult.canceled;
     }
 
     @Override

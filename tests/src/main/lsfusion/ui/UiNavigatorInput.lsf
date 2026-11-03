@@ -1,0 +1,39 @@
+MODULE UiNavigatorInput;
+
+REQUIRE TestUtils, SystemEvents;
+
+uiNavigatorInputAttempt = DATA STRING[50] ();
+uiNavigatorInputAnswer = DATA STRING[100] (STRING[50]);
+
+uiNavigatorInputAsk 'Ask in the navigator' () {
+    INPUT s = STRING[100] DO
+        uiNavigatorInputAnswer(uiNavigatorInputAttempt()) <- s;
+    ELSE
+        uiNavigatorInputAnswer(uiNavigatorInputAttempt()) <- 'cancelled';
+    APPLY;
+}
+
+uiNavigatorInputThroughController 'Ask through the navigator controller' () {
+    INTERNAL CLIENT 'uiNavigatorInputThroughController';
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiNavigatorInput.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiNavigatorInput 'UI navigator input' WINDOW toolbar {
+        NEW uiNavigatorInputAsk;
+        NEW uiNavigatorInputThroughController;
+    }
+}
+
+uiNavigatorInputSeed (STRING[50] attempt) {
+    uiNavigatorInputAttempt() <- attempt;
+    APPLY;
+}
+
+uiNavigatorInputCheck (STRING[50] attempt) {
+    assertEquals(uiNavigatorInputAnswer(attempt), 'cancelled',
+                 CONCAT ' ', 'navigator INPUT result:', (OVERRIDE uiNavigatorInputAnswer(attempt), 'none'), '(expected cancelled)');
+}
