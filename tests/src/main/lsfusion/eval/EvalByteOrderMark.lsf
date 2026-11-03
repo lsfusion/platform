@@ -1,0 +1,29 @@
+MODULE EvalByteOrderMark;
+
+REQUIRE TestUtils;
+
+// a script that starts with a byte order mark, as a Windows editor saves it, is run as it is without the mark (#1922: the
+// server failed with an IndexOutOfBoundsException, or with a parse error at an invisible character)
+
+ebomResult = DATA INTEGER ();
+ebomByteOrderMark = FORMULA TEXT 'chr(65279)';
+
+testEvalByteOrderMark 'EVAL runs a script that starts with a byte order mark' () {
+    EVAL ebomByteOrderMark() + 'run() \{ ebomResult() <- 1; \}';
+    assertEquals(ebomResult(), 1, 'the script was not run');
+}
+
+testEvalActionByteOrderMark 'EVAL ACTION runs statements that start with a byte order mark' () {
+    EVAL ACTION ebomByteOrderMark() + 'ebomResult() <- 2;';
+    assertEquals(ebomResult(), 2, 'the statements were not run');
+}
+
+ebomZeroWidthSpace = FORMULA TEXT 'chr(8203)';
+
+testEvalInvalidFirstCharacter 'A character the lexer cannot match at the start of a script is a parse error' () {
+    TRY {
+        EVAL ebomZeroWidthSpace() + 'run() \{ ebomResult() <- 3; \}';
+    } CATCH {
+    }
+    assertTrue(messageCaughtException() LIKE '%no viable alternative at character%', 'the script failed with ' + messageCaughtException());
+}

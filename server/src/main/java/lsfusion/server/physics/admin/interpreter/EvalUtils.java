@@ -26,6 +26,8 @@ public class EvalUtils {
     }
 
     public static Pair<LA, EvalScriptingLogicsModule> evaluateAndFindAction(BusinessLogics BL, Set<EvalScriptingLogicsModule> parentLMs, String script, boolean action) {
+        if(script != null && script.startsWith("\uFEFF"))
+            script = script.substring(1);
         return evaluateAndFindAction(BL, parentLMs, null, null, null, null, false, action ? EvalActionParser.parse(script) : script, "run");
     }
     
@@ -49,6 +51,8 @@ public class EvalUtils {
         String code = wrapResult.code;
         EvalScriptingLogicsModule module = new EvalScriptingLogicsModule(BL.LM, BL, parentLMs, code);
         module.getErrLog().setLineNumberShift(wrapResult.additionalLines);
+        // the module gets its name from its header, so an error before the header is parsed would have no module to point to
+        module.getErrLog().setModuleId(name);
         
         module.order = BL.getLogicModules().size() + 1;
         module.visible = FullFunctionSet.instance();
