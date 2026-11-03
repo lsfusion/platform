@@ -102,6 +102,8 @@ A property's `value` is converted to a JS value depending on the property's clas
 | images | string with the image address or HTML |
 | other classes | string |
 
+A string property whose integration SID is `image` is given as the HTML of the image its value names (an icon class, an application image file, or an HTTP(S) URL), as in other custom views. A `SELECT` property is given its options instead.
+
 Except for `BOOLEAN`, a `NULL` value is converted to `null`.
 
 An interval's bounds are milliseconds since 1970: a bound of an `INTERVAL[ZDATETIME]` is the moment itself, while the other interval classes keep their date and time as those of UTC — `new Date(from).getUTCDate()` is the day an `INTERVAL[DATE]` starts on. A value a view hands back — to a member's `change`, or as a condition's `value` — is read the way this table writes it, so a value taken from `data` goes back as it is — but for a file's: a link is not the file —, and a `COLOR` or an interval written any other way is refused.
