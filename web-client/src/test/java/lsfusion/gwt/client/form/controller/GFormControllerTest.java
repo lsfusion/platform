@@ -26,6 +26,7 @@ import lsfusion.gwt.client.GFormChangesDTO;
 import lsfusion.gwt.client.GFormChangesTest;
 import lsfusion.gwt.client.RemoteDispatchAsync;
 import lsfusion.gwt.client.action.GRequestUserInputAction;
+import lsfusion.gwt.client.action.GProcessFormChangesAction;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -58,6 +59,7 @@ import lsfusion.gwt.client.controller.remote.DeferredRunner;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.view.GReactFormData;
 import lsfusion.gwt.client.form.event.GBindingEnv;
 import lsfusion.gwt.client.form.event.GBindingEvent;
 import lsfusion.gwt.client.form.event.GInputBindingEvent;
@@ -78,6 +80,7 @@ import lsfusion.gwt.client.form.filter.user.view.GFilterOptionSelector;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
+import lsfusion.gwt.client.form.object.panel.controller.GPlatformRowsPanelController;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
@@ -91,6 +94,9 @@ import lsfusion.gwt.client.form.property.GRowSelectReader;
 import lsfusion.gwt.client.form.property.GShowIfReader;
 import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.async.GAsyncAddRemove;
+import lsfusion.gwt.client.form.property.async.GPushAsyncInput;
+import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyPanelValue;
+import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.form.property.PValue;
@@ -219,6 +225,11 @@ public class GFormControllerTest extends GWTTestCase {
     // here reads a caption -, and jQuery UI, which a modal window is made draggable and resizable with (ModalWindow)
     private static native void installPageHelpers() /*-{
         var noop = function () { };
+        // HtmlUnit lacks Node.isConnected, which a refused host's takeover checks before placing into it.
+        if (!("isConnected" in $doc.documentElement))
+            Object.defineProperty($wnd.Node.prototype, "isConnected", {
+                get: function () { return $doc.documentElement.contains(this); }
+            });
         var helpers = {
             initCaptionHtmlOrText: noop, setCaptionHtmlOrText: noop, setCaptionNodeText: noop, initDataHtmlOrText: noop,
             setDataHtmlOrText: noop, clearDataHtmlOrText: noop, initHtmlOrText: noop, clearHtmlOrText: noop,
@@ -1121,6 +1132,337 @@ public class GFormControllerTest extends GWTTestCase {
             }
         }
     }
+    // a host registered before the property arrives waits for its row's renderer, and receives that row's value
+    public void testARowHostPlacedBeforeItsRendererReceivesItsOwnValue() {
+        RowsForm rows = new RowsForm();
+        rows.deliver(); // the rows arrive as the form opens, but the property has not arrived yet
+        GFormController controller = rows.controller();
+        GPlatformRowsPanelController panel = controller.getRowsPanelController(rows.qty);
+        FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel();
+        RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo);
+        try {
+            assertNull(panel.place(rows.one, rows.qty, hostOne.getElement()));
+            assertNull(panel.place(rows.two, rows.qty, hostTwo.getElement()));
+            assertEquals(0, hostOne.getElement().getChildCount());
+            assertEquals(0, hostTwo.getElement().getChildCount());
+            assertNull(rowRenderer(panel, rows.qty, rows.one));
+            assertNull(rowRenderer(panel, rows.qty, rows.two));
+
+            rows.values(controller, rows.one, rows.two);
+            Element one = assertRowRenderer(controller, rows, rows.one, hostOne, 1);
+            Element two = assertRowRenderer(controller, rows, rows.two, hostTwo, 2);
+            assertNotSame(one, two);
+        } finally {
+            RootPanel.get().remove(hostOne); RootPanel.get().remove(hostTwo);
+        }
+    }
+    // a renderer made before React renders its host waits in the form's park, then moves with its value intact
+    public void testARowRendererPlacedIntoALaterHostKeepsItsOwnValue() {
+        RowsForm rows = new RowsForm();
+        GFormController controller = rows.controller();
+        GPlatformRowsPanelController panel = controller.getRowsPanelController(rows.qty);
+        PanelRenderer one = rowRenderer(panel, rows.qty, rows.one), two = rowRenderer(panel, rows.qty, rows.two);
+        Element oneElement = rowValue(one).getElement(), twoElement = rowValue(two).getElement();
+        Element park = controller.getFormLayout().attachContainer.getElement();
+        assertTrue(park.isOrHasChild(oneElement));
+        assertTrue(park.isOrHasChild(twoElement));
+        FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel();
+        RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo);
+        try {
+            assertNull(panel.place(rows.two, rows.qty, hostTwo.getElement()));
+            assertNull(panel.place(rows.one, rows.qty, hostOne.getElement()));
+            assertSame(oneElement, assertRowRenderer(controller, rows, rows.one, hostOne, 1));
+            assertSame(twoElement, assertRowRenderer(controller, rows, rows.two, hostTwo, 2));
+            assertFalse(park.isOrHasChild(oneElement));
+            assertFalse(park.isOrHasChild(twoElement));
+        } finally {
+            RootPanel.get().remove(hostOne); RootPanel.get().remove(hostTwo);
+        }
+    }
+    // changing the second row through its renderer sends that row's key even while the first row is current;
+    // both the optimistic value and the server's answer leave the first row alone
+    public void testAChangeThroughARowRendererChangesOnlyThatRow() {
+        RowsForm rows = new RowsForm();
+        rows.form.sessionID = "rowChanges" + (++changesForms);
+        rows.qty.hasChangeAction = true;
+        rows.qty.asyncExecMap = Collections.emptyMap();
+        rows.qty.externalChangeType = GIntegerType.instance;
+        ChangeServer edits = new ChangeServer(new GFormController(formsController(), null, formContainer(), rows.form, false, "rowChanges", 0, null), rows.qty);
+        server = edits;
+        GFormController controller = edits.controller;
+        GPlatformRowsPanelController panel = controller.getRowsPanelController(rows.qty);
+        FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel();
+        RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo);
+        try {
+            panel.place(rows.one, rows.qty, hostOne.getElement());
+            panel.place(rows.two, rows.qty, hostTwo.getElement());
+            Element one = assertRowRenderer(controller, rows, rows.one, hostOne, 1);
+            Element two = assertRowRenderer(controller, rows, rows.two, hostTwo, 2);
+            rowValue(rowRenderer(panel, rows.qty, rows.two)).changeProperty(PValue.getPValue(7), null);
+
+            assertEquals(1, edits.actions.size());
+            ExecuteEventAction request = (ExecuteEventAction) edits.actions.get(0);
+            assertEquals(GEditBindingMap.CHANGE, request.actionSID);
+            assertEquals(1, request.propertyIds.length);
+            assertEquals(rows.qty.ID, request.propertyIds[0]);
+            assertEquals(rows.two, request.fullKeys[0]);
+            assertValue(7, ((GPushAsyncInput) request.pushAsyncResults[0]).result.getPValue());
+            assertSame(one, assertRowRenderer(controller, rows, rows.one, hostOne, 1));
+            assertSame(two, assertRowRenderer(controller, rows, rows.two, hostTwo, 7));
+
+            GFormChangesDTO answer = GFormChangesTest.noChanges();
+            answer.properties = new GPropertyReaderDTO[] {new GPropertyReaderDTO(rows.qty.ID, DRAW, -1)};
+            answer.requestIndex = (int) request.requestIndex;
+            answer.propertiesValueKeys = new GGroupObjectValue[][] {{rows.one, rows.two}};
+            answer.propertiesValueValues = new Serializable[][] {{1, 9}};
+            edits.callbacks.get(0).onSuccess(new ServerResponseResult(new GAction[] {new GProcessFormChangesAction(answer)}, request.requestIndex, false));
+            assertSame(one, assertRowRenderer(controller, rows, rows.one, hostOne, 1));
+            assertSame(two, assertRowRenderer(controller, rows, rows.two, hostTwo, 9));
+            assertEquals(rows.one, controller.getGroupController(rows.group).getSelectedKey());
+        } finally {
+            RootPanel.get().remove(hostOne); RootPanel.get().remove(hostTwo);
+        }
+    }
+    // server rows gain and lose only their own renderers; a new host can wait before reconciliation or arrive after it,
+    // and the renderers of the rows that stay keep their identity, including when their positions change
+    public void testAServerRowAddedOrDeletedMovesOnlyItsRenderers() {
+        for (boolean hostFirst : new boolean[] {true, false}) {
+            RowsForm rows = new RowsForm();
+            GFormController controller = rows.controller();
+            GPlatformRowsPanelController panel = controller.getRowsPanelController(rows.qty);
+            FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel(), hostThree = new FlowPanel();
+            RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo); RootPanel.get().add(hostThree);
+            try {
+                panel.place(rows.one, rows.qty, hostOne.getElement());
+                panel.place(rows.two, rows.qty, hostTwo.getElement());
+                Element one = assertRowRenderer(controller, rows, rows.one, hostOne, 1);
+                Element two = assertRowRenderer(controller, rows, rows.two, hostTwo, 2);
+                if (hostFirst) {
+                    // keep the projection's publication pending, as while React is placing the newly drawn row
+                    reactData(controller).change(() -> {
+                        rows.keys(controller, rows.one, rows.two, rows.three);
+                        assertNull(rowRenderer(panel, rows.qty, rows.three));
+                        assertNull(panel.place(rows.three, rows.qty, hostThree.getElement()));
+                    });
+                } else {
+                    rows.keys(controller, rows.one, rows.two, rows.three);
+                    assertTrue(controller.getFormLayout().attachContainer.getElement().isOrHasChild(rowValue(rowRenderer(panel, rows.qty, rows.three)).getElement()));
+                    panel.place(rows.three, rows.qty, hostThree.getElement());
+                }
+                rows.values(controller, rows.one, rows.two, rows.three);
+                Element three = assertRowRenderer(controller, rows, rows.three, hostThree, 3);
+                assertSame(one, assertRowRenderer(controller, rows, rows.one, hostOne, 1));
+                assertSame(two, assertRowRenderer(controller, rows, rows.two, hostTwo, 2));
+
+                rows.keys(controller, rows.three, rows.one); // two is deleted; both staying rows move
+                assertEquals(0, hostTwo.getElement().getChildCount());
+                assertNull(two.getParentElement());
+                assertNull(rowRenderer(panel, rows.qty, rows.two));
+                assertSame(one, assertRowRenderer(controller, rows, rows.one, hostOne, 1));
+                assertSame(three, assertRowRenderer(controller, rows, rows.three, hostThree, 3));
+                assertNull(panel.place(rows.two, rows.qty, hostTwo.getElement()));
+                assertTrue(hostTwo.getElement().getInnerText().contains("is not in the group any more"));
+                assertFalse(hostTwo.getElement().isOrHasChild(two));
+            } finally {
+                RootPanel.get().remove(hostOne); RootPanel.get().remove(hostTwo); RootPanel.get().remove(hostThree);
+            }
+        }
+    }
+    // the next page replaces every old row: old hosts empty, new hosts get new renderers and the new rows' values
+    public void testANextPageReplacesTheRowRenderers() {
+        RowsForm rows = new RowsForm();
+        GFormController controller = rows.controller();
+        GPlatformRowsPanelController panel = controller.getRowsPanelController(rows.qty);
+        FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel(), hostThree = new FlowPanel(), hostFour = new FlowPanel();
+        RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo); RootPanel.get().add(hostThree); RootPanel.get().add(hostFour);
+        try {
+            panel.place(rows.one, rows.qty, hostOne.getElement());
+            panel.place(rows.two, rows.qty, hostTwo.getElement());
+            Element one = assertRowRenderer(controller, rows, rows.one, hostOne, 1);
+            Element two = assertRowRenderer(controller, rows, rows.two, hostTwo, 2);
+            rows.keys(controller, rows.three, rows.four);
+            rows.values(controller, rows.three, rows.four);
+            assertEquals(0, hostOne.getElement().getChildCount());
+            assertEquals(0, hostTwo.getElement().getChildCount());
+            assertNull(one.getParentElement());
+            assertNull(two.getParentElement());
+            assertNull(rowRenderer(panel, rows.qty, rows.one));
+            assertNull(rowRenderer(panel, rows.qty, rows.two));
+            panel.place(rows.three, rows.qty, hostThree.getElement());
+            panel.place(rows.four, rows.qty, hostFour.getElement());
+            Element three = assertRowRenderer(controller, rows, rows.three, hostThree, 3);
+            Element four = assertRowRenderer(controller, rows, rows.four, hostFour, 4);
+            assertNotSame(one, three); assertNotSame(two, three);
+            assertNotSame(one, four); assertNotSame(two, four);
+            assertNotSame(three, four);
+        } finally {
+            RootPanel.get().remove(hostOne); RootPanel.get().remove(hostTwo); RootPanel.get().remove(hostThree); RootPanel.get().remove(hostFour);
+        }
+    }
+    // unmounting a host parks its renderer; mounting the row elsewhere moves the same element with its value intact
+    public void testARowUnplacedAndPlacedAgainKeepsItsRenderer() {
+        RowsForm rows = new RowsForm();
+        GFormController controller = rows.controller();
+        GPlatformRowsPanelController panel = controller.getRowsPanelController(rows.qty);
+        FlowPanel first = new FlowPanel(), next = new FlowPanel();
+        RootPanel.get().add(first); RootPanel.get().add(next);
+        try {
+            panel.place(rows.one, rows.qty, first.getElement());
+            Element element = assertRowRenderer(controller, rows, rows.one, first, 1);
+            PanelRenderer renderer = rowRenderer(panel, rows.qty, rows.one);
+            panel.unplace(rows.one, rows.qty, first.getElement());
+            assertEquals(0, first.getElement().getChildCount());
+            assertTrue(controller.getFormLayout().attachContainer.getElement().isOrHasChild(element));
+            assertSame(renderer, rowRenderer(panel, rows.qty, rows.one));
+            panel.place(rows.one, rows.qty, next.getElement());
+            assertSame(element, assertRowRenderer(controller, rows, rows.one, next, 1));
+            assertSame(renderer, rowRenderer(panel, rows.qty, rows.one));
+        } finally {
+            RootPanel.get().remove(first); RootPanel.get().remove(next);
+        }
+    }
+    // a second host for the same row and property is refused, then takes over without another place call
+    public void testASecondRowHostTakesOverWhenTheFirstIsUnplaced() {
+        RowsForm rows = new RowsForm();
+        GFormController controller = rows.controller();
+        GPlatformRowsPanelController panel = controller.getRowsPanelController(rows.qty);
+        FlowPanel first = new FlowPanel(), second = new FlowPanel();
+        RootPanel.get().add(first); RootPanel.get().add(second);
+        try {
+            panel.place(rows.one, rows.qty, first.getElement());
+            Element element = assertRowRenderer(controller, rows, rows.one, first, 1);
+            assertSame(first.getElement(), panel.place(rows.one, rows.qty, second.getElement()));
+            assertSame(element, assertRowRenderer(controller, rows, rows.one, first, 1));
+            assertEquals(0, second.getElement().getChildCount());
+            assertTrue(Document.get().getBody().isOrHasChild(second.getElement()));
+            panel.unplace(rows.one, rows.qty, first.getElement());
+            assertEquals(0, first.getElement().getChildCount());
+            assertSame(element, assertRowRenderer(controller, rows, rows.one, second, 1));
+        } finally {
+            RootPanel.get().remove(first); RootPanel.get().remove(second);
+        }
+    }
+    // SHOWIF removes the property's renderers from every host; showing it restores each row without placing again
+    public void testAShowIfHiddenRowPropertyReturnsToItsHosts() {
+        RowsForm rows = new RowsForm();
+        GFormController controller = rows.controller();
+        GPlatformRowsPanelController panel = controller.getRowsPanelController(rows.qty);
+        FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel();
+        RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo);
+        try {
+            panel.place(rows.one, rows.qty, hostOne.getElement());
+            panel.place(rows.two, rows.qty, hostTwo.getElement());
+            assertRowRenderer(controller, rows, rows.one, hostOne, 1);
+            assertRowRenderer(controller, rows, rows.two, hostTwo, 2);
+            rows.showIf(controller, false);
+            assertEquals(0, hostOne.getElement().getChildCount());
+            assertEquals(0, hostTwo.getElement().getChildCount());
+            assertNull(rowRenderer(panel, rows.qty, rows.one));
+            assertNull(rowRenderer(panel, rows.qty, rows.two));
+            rows.showIf(controller, true);
+            assertRowRenderer(controller, rows, rows.one, hostOne, 1);
+            assertRowRenderer(controller, rows, rows.two, hostTwo, 2);
+        } finally {
+            RootPanel.get().remove(hostOne); RootPanel.get().remove(hostTwo);
+        }
+    }
+    // a property dropped outright also takes out its renderers, but keeps the hosts for its next whole delivery
+    public void testADroppedRowPropertyReturnsToItsHosts() {
+        RowsForm rows = new RowsForm();
+        GFormController controller = rows.controller();
+        GPlatformRowsPanelController panel = controller.getRowsPanelController(rows.qty);
+        FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel();
+        RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo);
+        try {
+            panel.place(rows.one, rows.qty, hostOne.getElement());
+            panel.place(rows.two, rows.qty, hostTwo.getElement());
+            Element one = assertRowRenderer(controller, rows, rows.one, hostOne, 1);
+            Element two = assertRowRenderer(controller, rows, rows.two, hostTwo, 2);
+            GFormChanges dropped = new GFormChanges();
+            dropped.dropProperties.add(rows.qty);
+            controller.applyRemoteChanges(dropped, 1);
+            assertEquals(0, hostOne.getElement().getChildCount());
+            assertEquals(0, hostTwo.getElement().getChildCount());
+            assertNull(one.getParentElement());
+            assertNull(two.getParentElement());
+            assertNull(rowRenderer(panel, rows.qty, rows.one));
+            assertNull(rowRenderer(panel, rows.qty, rows.two));
+            rows.values(controller, rows.one, rows.two);
+            assertRowRenderer(controller, rows, rows.one, hostOne, 1);
+            assertRowRenderer(controller, rows, rows.two, hostTwo, 2);
+        } finally {
+            RootPanel.get().remove(hostOne); RootPanel.get().remove(hostTwo);
+        }
+    }
+    // focus follows the group's current row, whether the server or the React side chooses it, regardless of key order
+    public void testARowPanelFocusFollowsTheCurrentRow() {
+        RowsForm rows = new RowsForm();
+        GFormController controller = rows.controller();
+        GPlatformRowsPanelController panel = controller.getRowsPanelController(rows.qty);
+        ArrayList<GGroupObjectValue> reversed = new ArrayList<>(Arrays.asList(rows.two, rows.one));
+        assertEquals(rows.one, panel.getFocusKey(reversed));
+        GFormChanges current = new GFormChanges();
+        current.objects.put(rows.group, rows.two);
+        controller.applyRemoteChanges(current, 1);
+        assertEquals(rows.two, panel.getFocusKey(new ArrayList<>(Arrays.asList(rows.one, rows.two))));
+        controller.getGroupController(rows.group).changeCurrentKey(rows.one);
+        assertEquals(rows.one, panel.getFocusKey(reversed));
+    }
+    // optimistic rows live in GReactFormData before any server answer; publishing their add and delete also reconciles
+    // the platform's renderers, without replacing those of the rows that stay
+    public void testAReactOptimisticRowAddAndDeleteMovesTheRenderers() {
+        RowsForm rows = new RowsForm();
+        GFormController controller = rows.controller();
+        GPlatformRowsPanelController panel = controller.getRowsPanelController(rows.qty);
+        FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel(), hostThree = new FlowPanel();
+        RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo); RootPanel.get().add(hostThree);
+        try {
+            panel.place(rows.one, rows.qty, hostOne.getElement());
+            panel.place(rows.two, rows.qty, hostTwo.getElement());
+            Element one = assertRowRenderer(controller, rows, rows.one, hostOne, 1);
+            Element two = assertRowRenderer(controller, rows, rows.two, hostTwo, 2);
+            reactData(controller).change(() -> controller.getGroupController(rows.group).modifyGroupObject(rows.three, true, 0));
+            PanelRenderer added = rowRenderer(panel, rows.qty, rows.three);
+            assertNotNull(added);
+            assertTrue(controller.getFormLayout().attachContainer.getElement().isOrHasChild(rowValue(added).getElement()));
+            panel.place(rows.three, rows.qty, hostThree.getElement());
+            assertTrue(hostThree.getElement().isOrHasChild(rowValue(added).getElement()));
+            assertNull(rowValue(added).getValue()); // the server has sent no value for the optimistic row
+            assertEquals(rows.three, panel.getFocusKey(new ArrayList<>(Arrays.asList(rows.one, rows.two, rows.three))));
+            assertSame(one, assertRowRenderer(controller, rows, rows.one, hostOne, 1));
+            assertSame(two, assertRowRenderer(controller, rows, rows.two, hostTwo, 2));
+
+            reactData(controller).change(() -> controller.getGroupController(rows.group).modifyGroupObject(rows.three, false, -1));
+            assertEquals(0, hostThree.getElement().getChildCount());
+            assertNull(rowValue(added).getElement().getParentElement());
+            assertNull(rowRenderer(panel, rows.qty, rows.three));
+            assertSame(one, assertRowRenderer(controller, rows, rows.one, hostOne, 1));
+            assertSame(two, assertRowRenderer(controller, rows, rows.two, hostTwo, 2));
+        } finally {
+            RootPanel.get().remove(hostOne); RootPanel.get().remove(hostTwo); RootPanel.get().remove(hostThree);
+        }
+    }
+    // the renderer filed under this row, read from the property's controller, the only record of it
+    private static native PanelRenderer rowRenderer(GPlatformRowsPanelController panel, GPropertyDraw property, GGroupObjectValue key) /*-{
+        var controller = panel.@lsfusion.gwt.client.form.object.panel.controller.GPlatformPanelController::propertyControllers.@lsfusion.gwt.client.base.jsni.NativeSIDMap::get(*)(property);
+        return controller ? controller.@lsfusion.gwt.client.form.object.panel.controller.GPropertyPanelController::getRenderer(*)(key) : null;
+    }-*/;
+    private static native ActionOrPropertyPanelValue rowValue(PanelRenderer renderer) /*-{
+        return renderer.@lsfusion.gwt.client.form.property.panel.view.PanelRenderer::value;
+    }-*/;
+    private static Element assertRowRenderer(GFormController controller, RowsForm rows, GGroupObjectValue key, FlowPanel host, int expected) {
+        PanelRenderer renderer = rowRenderer(controller.getRowsPanelController(rows.qty), rows.qty, key);
+        assertNotNull("the row has a renderer", renderer);
+        ActionOrPropertyPanelValue value = rowValue(renderer);
+        assertTrue("the row's renderer is in its host", host.getElement().isOrHasChild(value.getElement()));
+        assertEquals(key, value.getFullKey());
+        assertValue(expected, value.getValue());
+        return value.getElement();
+    }
+    private static native GReactFormData reactData(GFormController controller) /*-{
+        return controller.@lsfusion.gwt.client.form.controller.GFormController::reactData;
+    }-*/;
+
     // the modes the server gives a binding with none of its own
     private static final GBindingEnv ANY = new GBindingEnv(null, null, null, null, null, null, null, null, null);
     // a form of a grid its own React view draws, the platform's editor of qty in each of its two rows (<Platform
@@ -1130,7 +1472,12 @@ public class GFormControllerTest extends GWTTestCase {
         final GGroupObject group = form.groupObjects.get(0);
         final GPropertyDraw qty = column(form, 22, "qty", group);
         final GGroupObjectValue one = new GGroupObjectValue(10, 1), two = new GGroupObjectValue(10, 2);
+        final GGroupObjectValue three = new GGroupObjectValue(10, 3), four = new GGroupObjectValue(10, 4);
 
+        RowsForm() {
+            this(new GInputBindingEvent(null, ANY));
+            qty.showIfReader = new GShowIfReader(qty.ID, group.ID);
+        }
         RowsForm(GInputBindingEvent binding) {
             perRow(qty, binding);
             deliver(qty);
@@ -1163,6 +1510,28 @@ public class GFormControllerTest extends GWTTestCase {
         }
         GFormController controller() {
             return new GFormController(null, null, formContainer(), form, false, "leafGrid", 0, null);
+        }
+        // another set of rows, as a server answer carries it, with no property delivery mixed in
+        void keys(GFormController controller, GGroupObjectValue... keys) {
+            GFormChanges changes = new GFormChanges();
+            changes.gridObjects.put(group, new ArrayList<>(Arrays.asList(keys)));
+            controller.applyRemoteChanges(changes, 1);
+        }
+        // the qty of each named row, its id here, as a whole delivery of the property
+        void values(GFormController controller, GGroupObjectValue... keys) {
+            GFormChanges changes = new GFormChanges();
+            NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
+            for (GGroupObjectValue key : keys)
+                values.put(key, PValue.getPValue((Integer) key.getValue(0)));
+            changes.properties.put(qty, values);
+            controller.applyRemoteChanges(changes, 1);
+        }
+        void showIf(GFormController controller, boolean shown) {
+            GFormChanges changes = new GFormChanges();
+            NativeHashMap<GGroupObjectValue, PValue> values = new NativeHashMap<>();
+            values.put(GGroupObjectValue.EMPTY, shown ? PValue.getPValue(true) : null);
+            changes.properties.put(qty.showIfReader, values);
+            controller.applyRemoteChanges(changes, 1);
         }
     }
 
