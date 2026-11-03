@@ -22,6 +22,7 @@ import org.json.JSONObject;
 import java.sql.SQLException;
 import java.util.List;
 
+import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.base.BaseUtils.nvl;
 
 public class FilterAction extends UserEventAction {
@@ -46,11 +47,12 @@ public class FilterAction extends UserEventAction {
                 for (JSONObject jsonObject : objectList) {
                     PropertyDrawInstance<?> propertyDraw = getPropertyDraw(formInstance, groupObjectInstance, jsonObject);
                     if (propertyDraw != null) {
+                        String compareString = jsonObject.optString(COMPARE_KEY);
                         // no comparison is the one the filter panel starts a condition on the property with
-                        Compare compare = nvl(Compare.get(jsonObject.optString(COMPARE_KEY)),
-                                nvl(propertyDraw.entity.view.getDefaultCompare(formInstance.context), Compare.EQUALS));
-                        if (compare == Compare.INARRAY) // a condition of a filter compares with a value
-                            throw new RuntimeException("FILTER: " + compare + " is no comparison of a filter condition");
+                        Compare compare = isRedundantString(compareString)
+                                ? nvl(propertyDraw.entity.view.getDefaultCompare(formInstance.context), Compare.EQUALS) : Compare.get(compareString);
+                        if (compare == null || compare == Compare.INARRAY) // a condition of a filter compares with a value
+                            throw new RuntimeException("FILTER: " + compareString + " is no comparison of a filter condition");
                         // value may be String (when stored via ReadFiltersAction), parsed then as a string - a number
                         // does not parse from a JSON string -, may be any other Object
                         Object jsonValue = jsonObject.opt(VALUE_KEY);

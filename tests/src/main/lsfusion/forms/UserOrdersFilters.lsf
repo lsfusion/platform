@@ -84,6 +84,19 @@ testFilterRejectsUnknownProperty 'FILTER rejects a name that is not a property o
     };
 }
 
+// FILTER rejects an unknown comparison instead of silently using the property's default
+testFilterRejectsUnknownComparison 'FILTER rejects an unknown comparison' () {
+    SHOW uofPropertyNames NOWAIT {
+        TRY {
+            FILTER uofPropertyNames.o FROM JSON(r'[{"property": "uofNumber(o)", "compare": "GREATER", "value": "2"}]');
+        } CATCH {
+        }
+        assertNotNull(messageCaughtException(), 'FILTER silently used the default for an unknown comparison');
+        assertTrue(messageCaughtException() LIKE '%FILTER: GREATER is no comparison of a filter condition%',
+                   'FILTER failed with ' + messageCaughtException());
+    };
+}
+
 testOrderRejectsUnknownProperty 'ORDER rejects a name that is not a property of the form' () {
     SHOW uofPropertyNames NOWAIT {
         TRY {

@@ -39,10 +39,18 @@ The lookup uses the property's name on the form: `PROPERTIES(o) number` names it
 while an explicit alias replaces that name. In 6.x the same lookup silently skipped an unknown
 name, so `number` did not apply the item there either unless it was the alias.
 
+A `FILTER` condition with a given but unrecognized `compare` now fails too:
+`FILTER: GREATER is no comparison of a filter condition` for `"compare": "GREATER"`.
+Previously, an unrecognized comparison used the property's default. The accepted strings are
+`=`, `>`, `<`, `>=`, `<=`, `!=`, `_` and `@`. An absent or empty `compare` still uses the
+property's default comparison.
+
 What an upgrading application can notice: an action that used to complete with an unapplied
-order or filter item now fails. Use `number(o)` or the property's alias in `property`, or remove
-the item if it should not be applied. Properties the user cannot view under the security policy
-and items with no `property` are still skipped. There is no setting to go back.
+order or filter item, or with an unknown filter comparison, now fails. Use `number(o)` or the
+property's alias in `property`, or remove the item if it should not be applied. Replace an unknown
+`compare` with one of the accepted signs, or omit it to use the property's default comparison.
+Properties the user cannot view under the security policy and items with no `property` are still
+skipped. There is no setting to go back.
 
 ### A `TO` list of the bulk `NEW` that cannot be written is now reported at startup
 
