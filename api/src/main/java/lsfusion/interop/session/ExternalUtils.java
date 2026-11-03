@@ -240,7 +240,8 @@ public class ExternalUtils {
             if(m.matches()) {
                 String action = m.group(1);
                 execResult = remoteExec.exec(action, request);
-            }
+            } else // a path the Action API does not define (the application server passes here any path it gets), so the answer names the paths the Action API does define
+                return new ExternalUtils.ResultExternalResponse("Not found: the Action API is served at /exec, /exec/<action>, /eval and /eval/action", StandardCharsets.UTF_8, HttpServletResponse.SC_NOT_FOUND);
         }
 
         return getExternalResponse(execResult, returnMultiType, convertFileValue.apply(request));
