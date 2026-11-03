@@ -1,0 +1,34 @@
+MODULE UiReactImage;
+
+REQUIRE SystemEvents;
+
+// the values UiReactImageIT reads from a React view (UiReactImage.js), each case on its own form
+CLASS uiRiItem;
+uiRiShown = DATA BOOLEAN (uiRiItem);
+uiRiIcon (uiRiItem r) = 'bi bi-plus';
+
+// a string footer of a property named image is text, while its cells name images
+FORM uiRiFooter 'React image footer'
+    OBJECTS r = uiRiItem
+    PROPERTIES(r) image = uiRiIcon FOOTER 'footer text'
+    FILTERS uiRiShown(r)
+;
+DESIGN uiRiFooter {
+    NEW uiRiBoard FIRST { custom = 'UiReactImageBoard'; MOVE BOX(r); }
+}
+
+uiRiSeed () {
+    uiRiShown(uiRiItem r) <- NULL;
+    NEW r = uiRiItem { uiRiShown(r) <- TRUE; }
+    APPLY;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiRiFolder 'UI React image' WINDOW toolbar {
+        NEW uiRiFooter;
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiReactImage.js') <- 1;
+}

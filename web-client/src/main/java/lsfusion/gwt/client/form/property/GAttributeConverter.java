@@ -18,7 +18,7 @@ public enum GAttributeConverter {
     BOOLEAN { public Object convert(PValue v, GPropertyDraw d) { return PValue.get3SBooleanValue(v); } }, // 3-state, like GGridTable.setReadOnly; may be null
     FLAG    { public Object convert(PValue v, GPropertyDraw d) { return PValue.getBooleanValue(v); } }, // 2-state present->true (like row select): NOT get3SBooleanValue (a client-optimistic false is still present -> true)
     FONT    { public Object convert(PValue v, GPropertyDraw d) { GFont f = PValue.getFontValue(v); return f != null ? buildFont(f.family, f.size, f.bold, f.italic) : null; } }, // plain { family, size, bold, italic }
-    FOOTER  { public Object convert(PValue v, GPropertyDraw d) { return JSValueConverter.convertToJSValue(d, v, RendererType.SIMPLE, true); } }, // value-typed, like the cell value
+    FOOTER  { public Object convert(PValue v, GPropertyDraw d) { return JSValueConverter.convertToJSValue(d.getRenderType(RendererType.SIMPLE), null, true, v); } }, // value-typed, like the cell value
     JSON    { public Object convert(PValue v, GPropertyDraw d) { return JSValueConverter.convertToJSValue(GJSONType.instance, null, false, v); } }; // JSON, like the GWT views
 
     public abstract Object convert(PValue value, GPropertyDraw draw);
