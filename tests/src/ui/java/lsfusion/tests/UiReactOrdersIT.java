@@ -1,14 +1,10 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Route;
 import com.microsoft.playwright.options.KeyboardModifier;
 import com.microsoft.playwright.options.SelectOption;
-import com.microsoft.playwright.options.WaitForSelectorState;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -21,6 +17,8 @@ import static org.junit.Assert.assertEquals;
 // and ACTIVATE TAB applied on the server - from an action, from a handler and as a form opens -, which the action reads
 // back at once and the client shows and sends nothing back for, the user events counting only what the user changes
 public class UiReactOrdersIT extends UiTest {
+
+    private final View boardView = view("window.uiRorBoardState", "");
 
     // the sortings of the rows a React view draws (#1859): the form's own, which name a property the view may not
     // sort by, as each property says; one sorting with no direction takes such a one off, a new one is appended, a
@@ -73,7 +71,7 @@ public class UiReactOrdersIT extends UiTest {
     @Test
     public void aSortingAViewCannotStateIsRefused() throws Exception {
         String s = seed();
-        Requests sent = requests();
+        List<String> sent = requests();
         Locator form = open("UiReactOrders.uiRor", "UiReactOrders.uiRorBoard");
         Locator orders = form.locator(".ui-ror-orders"), rows = form.locator(".ui-ror-row");
         assertThat(orders).hasText("price asc, name desc");
@@ -93,7 +91,7 @@ public class UiReactOrdersIT extends UiTest {
         board("controller.o.orders.change({property: 'price'})");
         assertThat(orders).hasText("name desc, qty desc");
         assertThat(rows).hasText(new String[] {"Cherry " + s + "|1", "Banana " + s + "|9", "Apple " + s + "|5"});
-        assertEquals("the sortings sent", 2, sent.count("SetPropertyOrders"));
+        assertEquals("the sortings sent", 2, countActions(sent, "SetPropertyOrders"));
         close(form);
     }
 
@@ -104,7 +102,7 @@ public class UiReactOrdersIT extends UiTest {
     @Test
     public void aSortingRequestThatChangesNothingFiresNoUserEvent() throws Exception {
         String s = seed();
-        Requests sent = requests();
+        List<String> sent = requests();
         Locator form = open("UiReactOrders.uiRor", "UiReactOrders.uiRorBoard");
         Locator orders = form.locator(".ui-ror-orders"), rows = form.locator(".ui-ror-row"),
                 events = form.locator(".ui-ror-events");
@@ -117,7 +115,7 @@ public class UiReactOrdersIT extends UiTest {
         assertThat(orders).hasText("qty desc");
         assertThat(rows).hasText(new String[] {"Banana " + s + "|9", "Apple " + s + "|5", "Cherry " + s + "|1"});
         assertThat(events).hasText("2");
-        assertEquals("the sortings sent", 3, sent.count("SetPropertyOrders"));
+        assertEquals("the sortings sent", 3, countActions(sent, "SetPropertyOrders"));
         close(form);
     }
 
@@ -128,7 +126,7 @@ public class UiReactOrdersIT extends UiTest {
     @Test
     public void theGridDrawsTheFormsSortingsAndAHeaderSortsByADoubleClick() throws Exception {
         String s = seed();
-        Requests sent = requests();
+        List<String> sent = requests();
         Locator form = open("UiReactOrders.uiRor", "UiReactOrders.uiRorClassic");
         Locator names = column(form, "cName");
         assertThat(names).hasText(new String[] {"Banana " + s, "Apple " + s, "Cherry " + s});
@@ -146,7 +144,7 @@ public class UiReactOrdersIT extends UiTest {
         // the order of the requests
         header(form, "cName").dblclick(new Locator.DblclickOptions().setModifiers(Collections.singletonList(KeyboardModifier.CONTROL)));
         assertArrows(form, "cName asc", "cQty desc");
-        button(form, "uiRorPing").click();
+        action(form, "uiRorPing").click();
         assertThat(value(form, "uiRorPings")).hasText("1");
         assertThat(names).hasText(new String[] {"Banana " + s, "Apple " + s, "Cherry " + s});
         // ... and the quantity turned round with ctrl, the name kept after it
@@ -156,7 +154,7 @@ public class UiReactOrdersIT extends UiTest {
         header(form, "cQty").dblclick(new Locator.DblclickOptions().setModifiers(Collections.singletonList(KeyboardModifier.SHIFT)));
         assertThat(names).hasText(new String[] {"Apple " + s, "Banana " + s, "Cherry " + s});
         assertArrows(form, "cName asc");
-        assertEquals("the header's requests", 5, sent.count("SetPropertyOrders"));
+        assertEquals("the header's requests", 5, countActions(sent, "SetPropertyOrders"));
         close(form);
     }
 
@@ -166,7 +164,7 @@ public class UiReactOrdersIT extends UiTest {
     @Test
     public void aHeadersSortingIsShownBeforeTheAnswer() throws Exception {
         String s = seed();
-        Requests sent = requests();
+        List<String> sent = requests();
         Locator form = open("UiReactOrders.uiRor", "UiReactOrders.uiRorClassic");
         Locator names = column(form, "cName");
         header(form, "cName").dblclick();
@@ -181,7 +179,7 @@ public class UiReactOrdersIT extends UiTest {
         release();
         assertThat(names).hasText(new String[] {"Cherry " + s, "Apple " + s, "Banana " + s});
         assertArrows(form, "cPrice desc");
-        assertEquals("the header's requests", 3, sent.count("SetPropertyOrders"));
+        assertEquals("the header's requests", 3, countActions(sent, "SetPropertyOrders"));
         close(form);
     }
 
@@ -203,8 +201,7 @@ public class UiReactOrdersIT extends UiTest {
         // columns yet, and the late refresh of that drawing - pivotUI refreshes 10 ms after it draws - can report its
         // layout with no rows after the pivot's own answer has put the name in them (GPivot.onRefresh), and leave the
         // pivot with no rows
-        page.waitForRequestFinished(new Page.WaitForRequestFinishedOptions().setPredicate(request -> request.postData() != null
-                && request.postData().contains(".ChangeGroupObject/")), () -> names.first().click());
+        select(names.first());
 
         form.locator("[title='Pivot']").click();
         assertThat(form.locator(".pvtTable.bodytable .pvtRowLabel")).hasText(new String[] {"Cherry " + s, "Banana " + s,
@@ -221,13 +218,13 @@ public class UiReactOrdersIT extends UiTest {
     @Test
     public void anOrderFromAnActionIsShownWithNothingSentBack() throws Exception {
         String s = seed();
-        Requests sent = requests();
+        List<String> sent = requests();
         Locator form = open("UiReactOrders.uiRor", "UiReactOrders.uiRorState");
         Locator names = column(form, "sName");
         assertThat(names).hasText(new String[] {"Apple " + s, "Banana " + s, "Cherry " + s});
         assertArrows(form, "sName asc");
 
-        button(form, "uiRorOrderByPrice").click();
+        action(form, "uiRorOrderByPrice").click();
         assertThat(names).hasText(new String[] {"Cherry " + s, "Apple " + s, "Banana " + s});
         assertArrows(form, "sPrice desc");
         assertJson(value(form, "uiRorOrdersRead"), "[{\"desc\":true,\"property\":\"sPrice\"}]");
@@ -236,7 +233,7 @@ public class UiReactOrdersIT extends UiTest {
         assertThat(names).hasText(new String[] {"Banana " + s, "Apple " + s, "Cherry " + s});
         assertArrows(form, "sPrice asc");
         assertThat(value(form, "uiRorOrdersEvents")).hasText("1");
-        assertEquals("the sortings sent", 1, sent.count("SetPropertyOrders"));
+        assertEquals("the sortings sent", 1, countActions(sent, "SetPropertyOrders"));
         close(form);
     }
 
@@ -245,19 +242,19 @@ public class UiReactOrdersIT extends UiTest {
     @Test
     public void anOnOrdersHandlerAnswersTheClickOnce() throws Exception {
         String s = seed();
-        Requests sent = requests();
+        List<String> sent = requests();
         Locator form = open("UiReactOrders.uiRor", "UiReactOrders.uiRorState");
         Locator names = column(form, "sName");
-        button(form, "uiRorEchoOn").click();
+        action(form, "uiRorEchoOn").click();
         header(form, "sName").dblclick();
         assertThat(names).hasText(new String[] {"Banana " + s, "Apple " + s, "Cherry " + s});
         assertArrows(form, "sQty desc");
         // an action after it: what would have been sent back by then is
-        button(form, "uiRorOrderByPrice").click();
+        action(form, "uiRorOrderByPrice").click();
         assertThat(names).hasText(new String[] {"Cherry " + s, "Apple " + s, "Banana " + s});
         assertArrows(form, "sPrice desc");
         assertThat(value(form, "uiRorOrdersEvents")).hasText("1");
-        assertEquals("the sortings sent", 1, sent.count("SetPropertyOrders"));
+        assertEquals("the sortings sent", 1, countActions(sent, "SetPropertyOrders"));
         close(form);
     }
 
@@ -267,7 +264,7 @@ public class UiReactOrdersIT extends UiTest {
     public void anOrderOfAnOnOrderHandlerIsWhatTheRowsAreReadWith() throws Exception {
         String s = seed();
         Locator form = open("UiReactOrders.uiRor", "UiReactOrders.uiRorState");
-        button(form, "uiRorOrderOnOrderOn").click();
+        action(form, "uiRorOrderOnOrderOn").click();
         header(form, "sPrice").dblclick();
         assertThat(column(form, "sName")).hasText(new String[] {"Cherry " + s, "Apple " + s, "Banana " + s});
         assertArrows(form, "sQty asc");
@@ -284,12 +281,12 @@ public class UiReactOrdersIT extends UiTest {
         Locator names = column(form, "sName"), events = value(form, "uiRorFilterEvents");
         assertThat(names).hasText(new String[] {"Apple " + s, "Banana " + s, "Cherry " + s});
         assertThat(events).hasText("1"); // the first reading of the group
-        button(form, "uiRorFilterOnOrderOn").click();
+        action(form, "uiRorFilterOnOrderOn").click();
         header(form, "sName").dblclick();
         assertThat(names).hasText(new String[] {"Banana " + s, "Apple " + s});
         assertArrows(form, "sName desc");
         assertThat(events).hasText("1");
-        button(form, "uiRorFilterNone").click();
+        action(form, "uiRorFilterNone").click();
         assertThat(names).hasText(new String[] {"Cherry " + s, "Banana " + s, "Apple " + s});
         assertThat(events).hasText("2");
         close(form);
@@ -301,21 +298,21 @@ public class UiReactOrdersIT extends UiTest {
     @Test
     public void aFilterFromAnActionIsAppliedWithNothingSentBack() throws Exception {
         String s = seed();
-        Requests sent = requests();
+        List<String> sent = requests();
         Locator form = open("UiReactOrders.uiRor", "UiReactOrders.uiRorState");
         Locator names = column(form, "sName");
         Locator read = value(form, "uiRorFiltersRead");
-        button(form, "uiRorFilterQty").click();
+        action(form, "uiRorFilterQty").click();
         assertThat(names).hasText(new String[] {"Apple " + s, "Banana " + s});
         assertJson(read, "[{\"compare\":\">\",\"negation\":false,\"property\":\"sQty\",\"value\":\"2\"}]");
-        button(form, "uiRorFilterNone").click();
+        action(form, "uiRorFilterNone").click();
         assertThat(names).hasText(new String[] {"Apple " + s, "Banana " + s, "Cherry " + s});
         assertJson(read, "Empty string");
         // a request of the user's after them: what would have been sent back by then is
         header(form, "sName").dblclick();
         assertThat(names).hasText(new String[] {"Cherry " + s, "Banana " + s, "Apple " + s});
         assertArrows(form, "sName desc");
-        assertEquals("the conditions sent", 0, sent.count("SetUserFilters"));
+        assertEquals("the conditions sent", 0, countActions(sent, "SetUserFilters"));
         assertThat(value(form, "uiRorFiltersEvents")).hasText("");
         close(form);
     }
@@ -326,15 +323,15 @@ public class UiReactOrdersIT extends UiTest {
     @Test
     public void aFilterGroupFromAnActionIsShownWithNothingSentBack() throws Exception {
         String s = seed();
-        Requests sent = requests();
+        List<String> sent = requests();
         Locator form = open("UiReactOrders.uiRor", "UiReactOrders.uiRorState");
         Locator names = column(form, "sName"), list = form.locator("select.filter-group-select");
         Locator read = value(form, "uiRorFilterGroupRead");
-        button(form, "uiRorFilterGroupSecond").click();
+        action(form, "uiRorFilterGroupSecond").click();
         assertThat(list.locator("option:checked")).hasText("Qty <= 2");
         assertThat(names).hasText(new String[] {"Cherry " + s});
         assertThat(read).hasText("2");
-        button(form, "uiRorFilterGroupNone").click();
+        action(form, "uiRorFilterGroupNone").click();
         assertThat(list.locator("option:checked")).hasText("(All)");
         assertThat(names).hasText(new String[] {"Apple " + s, "Banana " + s, "Cherry " + s});
         assertThat(read).hasText("0");
@@ -343,7 +340,7 @@ public class UiReactOrdersIT extends UiTest {
         list.selectOption(new SelectOption().setLabel("Qty > 2"));
         assertThat(names).hasText(new String[] {"Apple " + s, "Banana " + s});
         assertThat(value(form, "uiRorFilterGroupsEvents")).hasText("1");
-        assertEquals("the filters selected sent", 1, sent.count("SetRegularFilter"));
+        assertEquals("the filters selected sent", 1, countActions(sent, "SetRegularFilter"));
         close(form);
     }
 
@@ -355,24 +352,24 @@ public class UiReactOrdersIT extends UiTest {
     @Test
     public void aTabActivatedFromAnActionIsShownWithNothingSentBack() throws Exception {
         seed();
-        Requests sent = requests();
+        List<String> sent = requests();
         Locator form = open("UiReactOrders.uiRor", "UiReactOrders.uiRorState");
         Locator first = tab(form, "uiRorFirst"), second = tab(form, "uiRorSecond"), events = value(form, "uiRorTabEvents");
         assertActive(first, second);
-        button(form, "uiRorActivateSecond").click();
+        action(form, "uiRorActivateSecond").click();
         assertActive(second, first);
         first.click();
         assertActive(first, second);
         second.click();
         assertActive(second, first);
         assertThat(events).hasText("1");
-        assertEquals("the tabs sent", 3, sent.count("SetTabActive"));
+        assertEquals("the tabs sent", 3, countActions(sent, "SetTabActive"));
 
         first.click();
         assertActive(first, second);
-        button(form, "uiRorActivateBoth").click();
+        action(form, "uiRorActivateBoth").click();
         assertActive(second, first);
-        button(form, "uiRorTabLoopOn").click();
+        action(form, "uiRorTabLoopOn").click();
         first.click();
         second.click();
         assertActive(second, first);
@@ -381,7 +378,7 @@ public class UiReactOrdersIT extends UiTest {
         second.click();
         assertActive(second, first);
         assertThat(events).hasText("3");
-        assertEquals("the tabs sent", 8, sent.count("SetTabActive"));
+        assertEquals("the tabs sent", 8, countActions(sent, "SetTabActive"));
         close(form);
     }
 
@@ -391,7 +388,7 @@ public class UiReactOrdersIT extends UiTest {
     @Test
     public void whatTheFormAppliesAsItOpensIsShownWithNothingSentBack() throws Exception {
         String s = seed();
-        Requests sent = requests();
+        List<String> sent = requests();
         Locator form = open("UiReactOrders.uiRor", "UiReactOrders.uiRorInit");
         Locator first = tab(form, "uiRorInitFirst"), second = tab(form, "uiRorInitSecond");
         assertActive(second, first);
@@ -404,9 +401,9 @@ public class UiReactOrdersIT extends UiTest {
         assertThat(column(form, "iName")).hasText(new String[] {"Banana " + s, "Apple " + s});
         assertArrows(form, "iPrice asc");
         assertThat(value(form, "uiRorTabEvents")).hasText("1");
-        assertEquals("the tabs sent", 1, sent.count("SetTabActive"));
-        assertEquals("the filters selected sent", 0, sent.count("SetRegularFilter"));
-        assertEquals("the sortings sent", 0, sent.count("SetPropertyOrders"));
+        assertEquals("the tabs sent", 1, countActions(sent, "SetTabActive"));
+        assertEquals("the filters selected sent", 0, countActions(sent, "SetRegularFilter"));
+        assertEquals("the sortings sent", 0, countActions(sent, "SetPropertyOrders"));
         close(form);
     }
 
@@ -416,19 +413,19 @@ public class UiReactOrdersIT extends UiTest {
     @Test
     public void aCheckBoxOfAFilterGroupFollowsTheServer() throws Exception {
         String s = seed();
-        Requests sent = requests();
+        List<String> sent = requests();
         Locator form = open("UiReactOrders.uiRor", "UiReactOrders.uiRorNoNull");
         Locator names = column(form, "nName"), check = form.locator(".filter-group-check input");
         assertThat(check).isChecked();
         assertThat(names).hasText(new String[] {"Apple " + s, "Banana " + s});
-        button(form, "uiRorNoNullNone").click();
+        action(form, "uiRorNoNullNone").click();
         assertThat(check).not().isChecked();
         assertThat(names).hasText(new String[] {"Apple " + s, "Banana " + s, "Cherry " + s});
         assertThat(value(form, "uiRorFilterGroupRead")).hasText("0");
         check.click();
         assertThat(check).isChecked();
         assertThat(names).hasText(new String[] {"Apple " + s, "Banana " + s});
-        assertEquals("the filters selected sent", 1, sent.count("SetRegularFilter"));
+        assertEquals("the filters selected sent", 1, countActions(sent, "SetRegularFilter"));
         close(form);
     }
 
@@ -438,14 +435,14 @@ public class UiReactOrdersIT extends UiTest {
     @Test
     public void theDefaultFiltersAreShownAsTheFormOpens() throws Exception {
         String s = seed();
-        Requests sent = requests();
+        List<String> sent = requests();
         Locator form = open("UiReactOrders.uiRor", "UiReactOrders.uiRorDefaults");
         Locator names = column(form, "dName"), lists = form.locator("select.filter-group-select");
         assertThat(lists.locator("option:checked")).hasText(new String[] {"DF qty > 6", "DF qty < 100"});
         assertThat(names).hasText(new String[] {"Banana " + s});
         lists.first().selectOption(new SelectOption().setLabel("(All)"));
         assertThat(names).hasText(new String[] {"Apple " + s, "Banana " + s, "Cherry " + s});
-        assertEquals("the filters selected sent", 1, sent.count("SetRegularFilter"));
+        assertEquals("the filters selected sent", 1, countActions(sent, "SetRegularFilter"));
         close(form);
     }
 
@@ -456,10 +453,10 @@ public class UiReactOrdersIT extends UiTest {
     @Test
     public void anApplyThatChangesNothingFiresNoUserEvent() throws Exception {
         String s = seed();
-        Requests sent = requests();
+        List<String> sent = requests();
         Locator form = open("UiReactOrders.uiRor", "UiReactOrders.uiRorState");
         Locator names = column(form, "sName");
-        button(form, "uiRorFilterQty").click();
+        action(form, "uiRorFilterQty").click();
         assertThat(names).hasText(new String[] {"Apple " + s, "Banana " + s});
         Locator condition = form.locator("div.filter");
         assertThat(condition).hasCount(1);
@@ -473,7 +470,7 @@ public class UiReactOrdersIT extends UiTest {
         assertThat(names).hasText(new String[] {"Apple " + s, "Banana " + s, "Cherry " + s});
         assertThat(value(form, "uiRorFiltersEvents")).hasText("1");
         assertThat(value(form, "uiRorFiltersPropertyEvents")).hasText("");
-        assertEquals("the conditions sent", 1, sent.count("SetUserFilters"));
+        assertEquals("the conditions sent", 1, countActions(sent, "SetUserFilters"));
         close(form);
     }
 
@@ -487,63 +484,17 @@ public class UiReactOrdersIT extends UiTest {
 
     // calls of the members of the board's view, with its data - failing with what they throw
     private void board(String calls) {
-        Object refusal = call(calls);
+        Object refusal = boardView.syncRefusal(calls);
         if (refusal != null)
             throw new AssertionError(calls + ": " + refusal);
     }
 
     // ... and calls refused: what they throw, failing if they do not
     private String refusal(String calls) {
-        Object refusal = call(calls);
+        Object refusal = boardView.syncRefusal(calls);
         if (refusal == null)
             throw new AssertionError(calls + ": not refused");
         return (String) refusal;
-    }
-
-    private Object call(String calls) {
-        return page.evaluate("() => { const {data, controller} = window.uiRorBoardState;"
-                + " try { " + calls + "; return null; } catch (e) { return e.message; } }");
-    }
-
-    // the requests the page sends from now on, by the class of the action each carries (GWT-RPC names it in the body)
-    private static final class Requests {
-        private final List<String> bodies = Collections.synchronizedList(new ArrayList<>());
-
-        int count(String action) {
-            synchronized (bodies) {
-                return (int) bodies.stream().filter(body -> body.contains("." + action + "/")).count();
-            }
-        }
-    }
-
-    private Requests requests() {
-        Requests requests = new Requests();
-        page.onRequest(request -> {
-            String body = request.postData();
-            if (body != null)
-                requests.bodies.add(body);
-        });
-        return requests;
-    }
-
-    // the form's requests held from now on, until let go: the server sees none of them, so their answers wait
-    private final List<Route> held = new ArrayList<>();
-
-    private void hold() {
-        page.route("**/main/dispatch", held::add);
-    }
-
-    // ... the requests held let go, in the order they were made, and no more held
-    private void release() {
-        page.unroute("**/main/dispatch");
-        for (Route route : held)
-            route.resume();
-        held.clear();
-    }
-
-    // until no request blocks the input, which the client drops while one does
-    private void idle() {
-        page.locator(".lsf-blocking").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
     }
 
     // the cells of a column, in the order the grid shows its rows
@@ -616,10 +567,5 @@ public class UiReactOrdersIT extends UiTest {
     private static Locator value(Locator form, String property) {
         String name = "[lsfusion-container='PROPERTY(" + property + "())']";
         return form.locator(".panel-renderer-value" + name + ", " + name + " .panel-renderer-value");
-    }
-
-    // a button the platform draws, by its action
-    private static Locator button(Locator form, String action) {
-        return form.locator("button[lsfusion-container='PROPERTY(" + action + "())']");
     }
 }

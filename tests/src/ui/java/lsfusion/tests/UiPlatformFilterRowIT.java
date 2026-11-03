@@ -151,10 +151,6 @@ public class UiPlatformFilterRowIT extends UiTest {
     private void type(Locator row, String text) {
         edit(row.locator(".filter-data-property-value"), text);
     }
-    // a button of the platform's toolbar or filter controls, by its title
-    private static Locator button(Locator form, String title) {
-        return form.getByTitle(title, new Locator.GetByTitleOptions().setExact(true));
-    }
     private void reload() {
         page.reload();
         page.locator("[lsfusion-container='System.root']").waitFor();

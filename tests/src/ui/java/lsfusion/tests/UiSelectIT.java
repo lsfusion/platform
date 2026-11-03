@@ -1,8 +1,6 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.PlaywrightException;
 import org.junit.Test;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -25,12 +23,12 @@ public class UiSelectIT extends UiTest {
         for (int i = 0; i < 2; i++)
             for (String status : new String[] {"New", "Done", "Lost"})
                 assertThat(text(rows.nth(i), status)).isVisible();
-        click(rows.nth(1), "Done");
+        text(rows.nth(1), "Done").click();
         assertThat(rows.nth(1).getByLabel("Done", new Locator.GetByLabelOptions().setExact(true))).isChecked();
 
         assertThat(text(form, "fn New")).hasAttribute("aria-pressed", "true");
         assertThat(text(form, "fn Lost")).hasAttribute("aria-pressed", "false");
-        click(form, "fn Lost");
+        text(form, "fn Lost").click();
         assertThat(text(form, "fn Lost")).hasAttribute("aria-pressed", "true");
 
         save(form);
@@ -46,16 +44,16 @@ public class UiSelectIT extends UiTest {
     public void aPickOfOneValue() throws Exception {
         String[] orders = seed();
         Locator form = open("UiSelect.uiSelect", "UiSelect.uiSelectPicked");
-        waitFor("data.o.panelStatus.value === 'New'");
+        view.waitFor("data.o.panelStatus.value === 'New'");
         expect("Object.keys(data.o.panelStatus.select).join()", "list");
-        click(form, "ps Done");
-        waitFor("data.o.panelStatus.value === 'Done' && picked(data.o.panelStatus) === 'Done' && data.o.list[0].uiSelectNameStatus.value === 'Done'");
-        click(form, "ps by value Lost");
-        waitFor("data.o.panelStatus.value === 'Lost' && picked(data.o.panelStatus) === 'Lost'");
-        click(form, "ps clear");
-        waitFor("data.o.panelStatus.value === null && picked(data.o.panelStatus) === '' && data.o.list[0].uiSelectNameStatus.value === null");
-        click(form, "is Done");
-        waitFor("data.o.inputStatus.value === 'Done' && data.o.panelStatus.value === 'Done'");
+        text(form, "ps Done").click();
+        view.waitFor("data.o.panelStatus.value === 'Done' && picked(data.o.panelStatus) === 'Done' && data.o.list[0].uiSelectNameStatus.value === 'Done'");
+        text(form, "ps by value Lost").click();
+        view.waitFor("data.o.panelStatus.value === 'Lost' && picked(data.o.panelStatus) === 'Lost'");
+        text(form, "ps clear").click();
+        view.waitFor("data.o.panelStatus.value === null && picked(data.o.panelStatus) === '' && data.o.list[0].uiSelectNameStatus.value === null");
+        text(form, "is Done").click();
+        view.waitFor("data.o.inputStatus.value === 'Done' && data.o.panelStatus.value === 'Done'");
         save(form);
         check("UiSelect.uiSelectCheckStatus", orders[0], "Done");
         close(form);
@@ -68,12 +66,12 @@ public class UiSelectIT extends UiTest {
     public void aPickOfSeveralValues() throws Exception {
         String[] orders = seed();
         Locator form = open("UiSelect.uiSelect", "UiSelect.uiSelectPicked");
-        waitFor("picked(data.o.panelTags) === 'red' && data.o.panelTags.value === 'red'");
+        view.waitFor("picked(data.o.panelTags) === 'red' && data.o.panelTags.value === 'red'");
         expect("JSON.stringify([data.o.panelTags.select.multi, data.o.panelTags.select.separator, data.o.panelTags.select.list.length])", "[true,\", \",3]");
-        click(form, "pt green");
-        waitFor("picked(data.o.panelTags) === 'green,red' && data.o.panelTags.value === 'green, red' && picked(data.o.list[0].uiSelectTags) === 'green,red'");
-        click(form, "pt value blue, green"); // blue checked and red unchecked, in one batch
-        waitFor("picked(data.o.panelTags) === 'blue,green' && data.o.panelTags.value === 'blue, green'");
+        text(form, "pt green").click();
+        view.waitFor("picked(data.o.panelTags) === 'green,red' && data.o.panelTags.value === 'green, red' && picked(data.o.list[0].uiSelectTags) === 'green,red'");
+        text(form, "pt value blue, green").click(); // blue checked and red unchecked, in one batch
+        view.waitFor("picked(data.o.panelTags) === 'blue,green' && data.o.panelTags.value === 'blue, green'");
         save(form);
         check("UiSelect.uiSelectCheckTags", orders[0], "blue, green");
         close(form);
@@ -84,12 +82,12 @@ public class UiSelectIT extends UiTest {
     public void aPickInARow() throws Exception {
         String[] orders = seed();
         Locator form = open("UiSelect.uiSelect", "UiSelect.uiSelectPicked");
-        waitFor("data.o.list.length === 2");
+        view.waitFor("data.o.list.length === 2");
         expect("[!!data.o.list[1].uiSelectNameStatus.select.multi, data.o.list[1].uiSelectTags.select.multi].join()", "false,true");
-        click(form, "r2 Lost");
-        waitFor("data.o.list[1].uiSelectNameStatus.value === 'Lost' && data.o.list[0].uiSelectNameStatus.value === 'New'");
-        click(form, "r2 tag blue");
-        waitFor("picked(data.o.list[1].uiSelectTags) === 'blue' && picked(data.o.list[0].uiSelectTags) === 'red'");
+        text(form, "r2 Lost").click();
+        view.waitFor("data.o.list[1].uiSelectNameStatus.value === 'Lost' && data.o.list[0].uiSelectNameStatus.value === 'New'");
+        text(form, "r2 tag blue").click();
+        view.waitFor("picked(data.o.list[1].uiSelectTags) === 'blue' && picked(data.o.list[0].uiSelectTags) === 'red'");
         save(form);
         check("UiSelect.uiSelectCheckStatus", orders[1], "Lost");
         check("UiSelect.uiSelectCheckTags", orders[1], "blue");
@@ -108,29 +106,11 @@ public class UiSelectIT extends UiTest {
     // options of its `select` list that are picked, sorted, joined
     private static final String DATA = "const data = window.uiSelectData;"
             + " const picked = entry => entry.select.list.filter(o => o.selected).map(o => o.value).sort().join();";
-
-    // until a condition holds of what the view is given and nothing of it is loading - the server's answer to a pick in -,
-    // failing with what it is given then
-    private void waitFor(String condition) {
-        try {
-            page.waitForFunction("() => { " + DATA + " try { return !!data && !JSON.stringify(data).includes('\"loading\"') && (" + condition + "); } catch (e) { return false; } }",
-                    null, new Page.WaitForFunctionOptions().setTimeout(10_000));
-        } catch (PlaywrightException e) {
-            throw new AssertionError("never " + condition + " - the view is given " + page.evaluate("() => JSON.stringify(window.uiSelectData)"), e);
-        }
-    }
+    private final View view = new View(DATA, "!!data && !JSON.stringify(data).includes('\"loading\"')",
+            "the view is given ", "window.uiSelectData");
 
     private void expect(String expression, String expected) {
-        assertEquals(expression, expected, page.evaluate("() => { " + DATA + " return " + expression + "; }"));
-    }
-
-    // a button, a check box or a label of the view, by its text
-    private static Locator text(Locator scope, String text) {
-        return scope.getByText(text, new Locator.GetByTextOptions().setExact(true));
-    }
-
-    private static void click(Locator scope, String text) {
-        text(scope, text).click();
+        assertEquals(expression, expected, view.value(expression));
     }
 
     private static void save(Locator form) {

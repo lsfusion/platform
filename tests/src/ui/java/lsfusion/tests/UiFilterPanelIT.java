@@ -2,7 +2,6 @@ package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.options.WaitForSelectorState;
 import org.junit.Test;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -212,42 +211,6 @@ public class UiFilterPanelIT extends UiTest {
     // the names in the platform's grid
     private static Locator names(Locator form) {
         return form.locator("td[lsfusion-container='PROPERTY(name)']");
-    }
-
-
-    // what the popup of the count or of the sum shows; the popup let go then - shown, it takes the focus, and hides as
-    // it loses it, as to a click on nothing
-    private void popup(String text) {
-        Locator popup = page.locator("[data-tippy-root]");
-        assertThat(popup).hasText(text);
-        page.waitForFunction("() => !!document.activeElement && !!document.activeElement.closest('[data-tippy-root]')");
-        page.evaluate("() => document.activeElement.blur()");
-        assertThat(popup).hasCount(0);
-    }
-    // a button of the platform's toolbar or filter controls, by its title
-    private static Locator button(Locator scope, String title) {
-        return scope.getByTitle(title, new Locator.GetByTitleOptions().setExact(true));
-    }
-
-    // a key pressed in a cell, or into an editor, once no request is in flight: the client drops the keys typed
-    // meanwhile, and a click on a cell of another row sends one
-    private void key(Locator cell, String key) {
-        if (Boolean.TRUE.equals(cell.evaluate("element => !!element.closest('tr') && !element.closest('tr').classList.contains('table-active')")))
-            page.waitForRequest(request -> request.postData() != null && request.postData().contains("ChangeGroupObject"),
-                    () -> cell.click());
-        else
-            cell.click();
-        idle();
-        page.keyboard().press(key);
-    }
-
-    private void press(Locator editor, String key) {
-        idle();
-        editor.press(key);
-    }
-
-    private void idle() {
-        page.locator(".lsf-blocking").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
     }
 
     private void reload() {

@@ -1,11 +1,8 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.PlaywrightException;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -79,7 +76,7 @@ public class UiReactVisibleIT extends UiTest {
         assertThat(other).isVisible();
         hidden("plain");
         close(other);
-        waitFor("plain.visible && plain.running");
+        views.waitFor("plain.visible && plain.running");
         mountedOnce("plain");
         close(form);
     }
@@ -87,7 +84,7 @@ public class UiReactVisibleIT extends UiTest {
     // the views' form opened: the control visible and its timer running
     private Locator openViews() {
         Locator form = open("UiReactVisible.uiReactVisible", "UiReactVisible.uiReactVisibleViews");
-        waitFor("plain.visible && plain.ticks > 0");
+        views.waitFor("plain.visible && plain.ticks > 0");
         return form;
     }
 
@@ -96,7 +93,7 @@ public class UiReactVisibleIT extends UiTest {
     private void roundTrip(String view, Runnable show, Runnable hide) {
         show.run();
         int ticks = ticks(view);
-        waitFor(view + ".visible && " + view + ".ticks > " + ticks);
+        views.waitFor(view + ".visible && " + view + ".ticks > " + ticks);
         hide.run();
         hidden(view);
         expect(view + ".history.join()", "false,true,false");
@@ -110,7 +107,7 @@ public class UiReactVisibleIT extends UiTest {
 
     // the view not visible and its timer stopped: no tick comes in the time several would
     private void hidden(String view) {
-        waitFor("!" + view + ".visible && !" + view + ".running");
+        views.waitFor("!" + view + ".visible && !" + view + ".running");
         int ticks = ticks(view);
         page.waitForTimeout(800);
         assertEquals("the ticks of " + view + "'s timer while it is hidden", ticks, ticks(view));
@@ -118,36 +115,13 @@ public class UiReactVisibleIT extends UiTest {
 
     // what the views hand on, window.uiReactVisible, each view under its name
     private static final String VIEWS = "const { second, details, pop, gated, plain } = window.uiReactVisible || {};";
-
-    // until a condition holds of what the views hand on, failing with what they hand on then
-    private void waitFor(String condition) {
-        try {
-            page.waitForFunction("() => { " + VIEWS + " try { return !!(" + condition + "); } catch (e) { return false; } }",
-                    null, new Page.WaitForFunctionOptions().setTimeout(10_000));
-        } catch (PlaywrightException e) {
-            throw new AssertionError("never " + condition + " - the views hand on " + page.evaluate("() => JSON.stringify(window.uiReactVisible)"), e);
-        }
-    }
+    private final View views = new View(VIEWS, "true", "the views hand on ", "window.uiReactVisible");
 
     private void expect(String expression, String expected) {
-        assertEquals(expression, expected, page.evaluate("() => { " + VIEWS + " return String(" + expression + "); }"));
+        assertEquals(expression, expected, views.value("String(" + expression + ")"));
     }
 
     private int ticks(String view) {
-        return ((Number) page.evaluate("() => { " + VIEWS + " return " + view + ".ticks; }")).intValue();
-    }
-
-    private static Locator text(Locator scope, String text) {
-        return scope.getByText(text, new Locator.GetByTextOptions().setExact(true));
-    }
-
-    // the errors the page logs from now on, but the browser's own: chrome has no push api in the context of a test
-    private List<String> consoleErrors() {
-        List<String> errors = new ArrayList<>();
-        page.onConsoleMessage(message -> {
-            if (message.type().equals("error") && !message.text().matches("(?s).*(Push API|Registration failed - permission denied).*"))
-                errors.add(message.text());
-        });
-        return errors;
+        return ((Number) views.value(view + ".ticks")).intValue();
     }
 }

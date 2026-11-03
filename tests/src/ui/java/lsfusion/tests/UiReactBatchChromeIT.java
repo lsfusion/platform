@@ -1,9 +1,6 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.PlaywrightException;
-import com.microsoft.playwright.options.WaitForSelectorState;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -32,28 +29,28 @@ public class UiReactBatchChromeIT extends UiTest {
     public void theToolbarsServerCallsInABatch() throws Exception {
         String[] items = items(seed());
         Locator form = open(FOLDER, "UiReactBatchChrome.uiRbcHeader");
-        waitFor("data.i.listView === 'grid'");
+        view.waitFor("data.i.listView === 'grid'");
         assertThat(names(form)).hasText(items);
-        assertEquals("controller.i.getCount(): " + REFUSAL, rejection("(() => { let count; controller.batch(() => { count = controller.i.getCount(); }); return count; })()"));
-        assertEquals("controller.i.getSum(): " + REFUSAL, rejection("(() => { let sum; controller.batch(() => { sum = controller.i.getSum('price'); }); return sum; })()"));
-        assertEquals("2", answer("controller.i.getCount()"));
+        assertEquals("controller.i.getCount(): " + REFUSAL, view.drawn().rejection("(() => { let count; controller.batch(() => { count = controller.i.getCount(); }); return count; })()"));
+        assertEquals("controller.i.getSum(): " + REFUSAL, view.drawn().rejection("(() => { let sum; controller.batch(() => { sum = controller.i.getSum('price'); }); return sum; })()"));
+        assertEquals("2", view.drawn().answer("controller.i.getCount()"));
 
         List<String> console = console();
-        call("controller.batch(() => { controller.i.manual.change(true); controller.i.update(); controller.i['export'](); controller.i.listView.change('pivot'); })");
+        view.drawn().call("controller.batch(() => { controller.i.manual.change(true); controller.i.update(); controller.i['export'](); controller.i.listView.change('pivot'); })");
         assertEquals(Arrays.asList("manual.change()", "update()", "export()", "listView.change()").stream()
                 .map(call -> "controller.i." + call + ": " + REFUSAL).collect(Collectors.toList()), console);
-        assertEquals("2", answer("controller.i.getCount()"));
-        assertEquals("false,grid", eval("[data.i.manual, data.i.listView].join()"));
+        assertEquals("2", view.drawn().answer("controller.i.getCount()"));
+        assertEquals("false,grid", view.drawn().eval("[data.i.manual, data.i.listView].join()"));
         assertThat(names(form)).hasText(items);
-        assertEquals("2.25", answer("controller.i.getSum('price')"));
-        call("controller.i.listView.change('pivot')");
+        assertEquals("2.25", view.drawn().answer("controller.i.getSum('price')"));
+        view.drawn().call("controller.i.listView.change('pivot')");
         assertThat(form.locator(".pvtTable.bodytable")).isVisible();
-        waitFor("data.i.listView === 'pivot'");
-        call("controller.i.listView.change('grid')");
+        view.waitFor("data.i.listView === 'pivot'");
+        view.drawn().call("controller.i.listView.change('grid')");
         assertThat(names(form)).hasText(items);
-        waitFor("data.i.listView === 'grid'");
-        call("controller.i.manual.change(true)");
-        waitFor("data.i.manual === true");
+        view.waitFor("data.i.listView === 'grid'");
+        view.drawn().call("controller.i.manual.change(true)");
+        view.waitFor("data.i.manual === true");
         assertThat(names(form)).hasText(items);
         close(form);
     }
@@ -66,21 +63,21 @@ public class UiReactBatchChromeIT extends UiTest {
     public void theFilterButtonInABatchOverAPropertyTheFormFollowsTheFocusOf() throws Exception {
         String[] items = items(seed());
         Locator form = open(FOLDER, "UiReactBatchChrome.uiRbcHeader");
-        waitFor("data.i.filterControlsVisible === false");
+        view.waitFor("data.i.filterControlsVisible === false");
         cell(form, "name", items[0]).click();
-        page.locator(".lsf-blocking").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
-        call("controller.batch(() => controller.i.filterControlsVisible.change(true))");
-        waitFor("data.i.filterControlsVisible === true");
+        idle();
+        view.drawn().call("controller.batch(() => controller.i.filterControlsVisible.change(true))");
+        view.waitFor("data.i.filterControlsVisible === true");
         assertThat(button(form, "Add filter")).isVisible();
         assertThat(form.locator(".filter:visible")).hasCount(1);
         assertThat(form.locator(".filter:visible input")).isFocused();
         assertThat(form.locator(".filter:visible input")).hasValue(items[0]);
         form.locator(".filter:visible input").fill(items[1]);
-        page.locator(".lsf-blocking").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
+        idle();
         page.keyboard().press("Enter");
         assertThat(names(form)).hasText(new String[] {items[1]});
         button(form, "Reset all filters").click();
-        waitFor("data.i.filterControlsVisible === false");
+        view.waitFor("data.i.filterControlsVisible === false");
         assertThat(names(form)).hasText(items);
         assertThat(page.locator(".modal-content")).hasCount(0);
         close(form);
@@ -93,19 +90,19 @@ public class UiReactBatchChromeIT extends UiTest {
     public void theFilterButtonInABatchOverANumberInADiv() throws Exception {
         String[] items = items(seed());
         Locator form = open(FOLDER, "UiReactBatchChrome.uiRbcHeaderNumber");
-        waitFor("data.i.filterControlsVisible === false");
+        view.waitFor("data.i.filterControlsVisible === false");
         assertThat(names(form)).hasText(items);
         form.locator("td[lsfusion-container='PROPERTY(price)']").first().click();
-        page.locator(".lsf-blocking").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
-        call("controller.batch(() => controller.i.filterControlsVisible.change(true))");
-        waitFor("data.i.filterControlsVisible === true");
+        idle();
+        view.drawn().call("controller.batch(() => controller.i.filterControlsVisible.change(true))");
+        view.waitFor("data.i.filterControlsVisible === true");
         assertThat(form.locator(".filter:visible input")).isFocused();
         form.locator(".filter:visible input").fill("0.75");
-        page.locator(".lsf-blocking").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
+        idle();
         page.keyboard().press("Enter");
         assertThat(names(form)).hasText(new String[] {items[1]});
         button(form, "Reset all filters").click();
-        waitFor("data.i.filterControlsVisible === false");
+        view.waitFor("data.i.filterControlsVisible === false");
         assertThat(names(form)).hasText(items);
         assertThat(page.locator(".modal-content")).hasCount(0);
         close(form);
@@ -119,27 +116,27 @@ public class UiReactBatchChromeIT extends UiTest {
     public void aTreesMembersInABatch() throws Exception {
         String[] names = seed();
         Locator form = open(FOLDER, "UiReactBatchChrome.uiRbcTreeBox");
-        waitFor("data.c.list.length === 3");
-        call("controller.c.change(data.c.list[2])");
-        waitFor("data.c.list[2].isCurrent");
-        call("controller.batch(() => { controller.c.change(data.c.list[0]); controller.cats.expandCurrent(); })");
-        waitFor("opened() === '" + names[0] + "' && rows() === '" + names[2] + "," + names[3] + "' && loaded()");
-        call("controller.batch(() => controller.cats.addFilter())");
-        waitFor("conditions() === 'c.catName = " + names[0] + "' && data.c.list.map(r => r.catName.value).join() === '" + names[0] + "'");
-        call("controller.batch(() => controller.cats.resetFilters())");
-        waitFor("conditions() === '' && data.c.list.length === 3");
-        call("controller.c.collapseAll()");
-        waitFor("opened() === '' && rows() === ''");
-        call("controller.batch(() => controller.c.expandAll())");
-        waitFor("opened() === '" + names[0] + "," + names[4] + "' && rows() === '" + names[2] + "," + names[3] + "," + names[5] + "' && loaded()");
+        view.waitFor("data.c.list.length === 3");
+        view.drawn().call("controller.c.change(data.c.list[2])");
+        view.waitFor("data.c.list[2].isCurrent");
+        view.drawn().call("controller.batch(() => { controller.c.change(data.c.list[0]); controller.cats.expandCurrent(); })");
+        view.waitFor("opened() === '" + names[0] + "' && rows() === '" + names[2] + "," + names[3] + "' && loaded()");
+        view.drawn().call("controller.batch(() => controller.cats.addFilter())");
+        view.waitFor("conditions() === 'c.catName = " + names[0] + "' && data.c.list.map(r => r.catName.value).join() === '" + names[0] + "'");
+        view.drawn().call("controller.batch(() => controller.cats.resetFilters())");
+        view.waitFor("conditions() === '' && data.c.list.length === 3");
+        view.drawn().call("controller.c.collapseAll()");
+        view.waitFor("opened() === '' && rows() === ''");
+        view.drawn().call("controller.batch(() => controller.c.expandAll())");
+        view.waitFor("opened() === '" + names[0] + "," + names[4] + "' && rows() === '" + names[2] + "," + names[3] + "," + names[5] + "' && loaded()");
 
         List<String> console = console();
-        call("controller.batch(() => controller.cats['export']())");
+        view.drawn().call("controller.batch(() => controller.cats['export']())");
         assertEquals(Arrays.asList("controller.cats.export(): " + REFUSAL), console);
         assertEquals("controller.cats.filterControlsVisible.change(): has no filter controls of the platform's to show: the platform "
                 + "draws neither the conditions nor FILTERCONTROLS here, or its toolbar turns its filters off (showFilters)",
-                refusal("controller.batch(() => controller.cats.filterControlsVisible.change(true))"));
-        assertEquals("false", eval("data.cats.filterControlsVisible"));
+                view.drawn().refusal("controller.batch(() => controller.cats.filterControlsVisible.change(true))"));
+        assertEquals("false", view.drawn().eval("data.cats.filterControlsVisible"));
         close(form);
     }
 
@@ -153,15 +150,15 @@ public class UiReactBatchChromeIT extends UiTest {
         String[] closed = {names[0], names[4], names[1]}, open = {names[0], names[2], names[3], names[4], names[5], names[1]};
         assertThat(tree(form)).hasText(closed);
         select(form.locator("td[lsfusion-container='PROPERTY(catName)']").filter(new Locator.FilterOptions().setHasText(names[4])));
-        call("controller.batch(() => controller.cats.expandCurrent())");
+        view.drawn().call("controller.batch(() => controller.cats.expandCurrent())");
         assertThat(tree(form)).hasText(new String[] {names[0], names[4], names[5], names[1]});
         toggle(form, names[4]);
         assertThat(tree(form)).hasText(closed);
-        call("controller.batch(() => controller.cats.expandTree())");
+        view.drawn().call("controller.batch(() => controller.cats.expandTree())");
         assertThat(tree(form)).hasText(open);
-        call("controller.batch(() => controller.cats.filterControlsVisible.change(true))");
+        view.drawn().call("controller.batch(() => controller.cats.filterControlsVisible.change(true))");
         assertThat(form.locator(".filter:visible")).hasCount(1);
-        call("controller.batch(() => controller.cats.resetFilters())");
+        view.drawn().call("controller.batch(() => controller.cats.resetFilters())");
         assertThat(form.locator(".filter:visible")).hasCount(0);
         assertThat(tree(form)).hasText(open);
         close(form);
@@ -172,13 +169,13 @@ public class UiReactBatchChromeIT extends UiTest {
     public void aFilterGroupInABatch() throws Exception {
         String[] items = items(seed());
         Locator form = open(FOLDER, "UiReactBatchChrome.uiRbcFilterGroup");
-        waitFor("data.i.list.length === 2");
-        call("controller.batch(() => controller.i.uiRbcKind.change(0))");
-        waitFor("data.i.uiRbcKind.value === 0 && rows() === '" + items[0] + "'");
-        call("controller.batch(() => controller.i.uiRbcKind.change(1))");
-        waitFor("data.i.uiRbcKind.value === 1 && rows() === '" + items[1] + "'");
-        call("controller.batch(() => controller.i.uiRbcKind.change(null))");
-        waitFor("data.i.uiRbcKind.value === null && rows() === '" + items[0] + "," + items[1] + "'");
+        view.waitFor("data.i.list.length === 2");
+        view.drawn().call("controller.batch(() => controller.i.uiRbcKind.change(0))");
+        view.waitFor("data.i.uiRbcKind.value === 0 && rows() === '" + items[0] + "'");
+        view.drawn().call("controller.batch(() => controller.i.uiRbcKind.change(1))");
+        view.waitFor("data.i.uiRbcKind.value === 1 && rows() === '" + items[1] + "'");
+        view.drawn().call("controller.batch(() => controller.i.uiRbcKind.change(null))");
+        view.waitFor("data.i.uiRbcKind.value === null && rows() === '" + items[0] + "," + items[1] + "'");
         close(form);
     }
 
@@ -210,26 +207,14 @@ public class UiReactBatchChromeIT extends UiTest {
                 new Locator.FilterOptions().setHasText(Pattern.compile("\\S")));
     }
 
-    // a cell of the platform's tree clicked, and the change of the current object it makes on the server - sent a
-    // little after the click (GFormController.changeGroupObjectLater) - answered
-    private void select(Locator cell) {
-        page.waitForResponse(response -> response.request().postData() != null
-                && response.request().postData().contains("action.form.ChangeGroupObject/"), cell::click).finished();
-    }
-
     // the platform's tree node of a category opened or closed by a double click on its icon: a press on the icon in the
     // selected cell toggles the node, the double click's second press then let go, and a press in another cell only
     // selects it, the second press toggling the node
     private void toggle(Locator form, String category) {
         Locator icon = form.locator("tr").filter(new Locator.FilterOptions().setHas(page.locator("td[lsfusion-container='PROPERTY(catName)']")
                 .filter(new Locator.FilterOptions().setHasText(category)))).locator("[__tree_node]");
-        page.locator(".lsf-blocking").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
+        idle();
         icon.dblclick();
-    }
-
-    // a button of the platform's toolbar or filter controls, by its title
-    private static Locator button(Locator form, String title) {
-        return form.getByTitle(title, new Locator.GetByTitleOptions().setExact(true));
     }
 
     // the errors the page logs on the console from now on
@@ -245,57 +230,9 @@ public class UiReactBatchChromeIT extends UiTest {
     // what the view was last drawn with, its data and its controller, as a script names them; the categories it is
     // given open, the tree's conditions, each as `property compare value`, the names of the rows of a group it draws,
     // and whether no category's children are being loaded
-    private static final String VIEW = "const view = window.uiRbcView, data = view && view.data, controller = view && view.controller;"
-            + " const opened = () => data.c.list.filter(r => r.expanded).map(r => r.catName.value).join();"
+    private final View view = view("window.uiRbcView",
+            " const opened = () => data.c.list.filter(r => r.expanded).map(r => r.catName.value).join();"
             + " const conditions = () => data.cats.filters.map(f => f.property + ' ' + f.compare + ' ' + f.value).join('; ');"
             + " const rows = () => data.i.list.map(r => r.name.value).join();"
-            + " const loaded = () => data.c.list.every(r => !r.loading);";
-
-    // until a condition holds of what the view is drawn with, failing with what it is drawn with then
-    private void waitFor(String condition) {
-        try {
-            page.waitForFunction("() => { " + VIEW + " try { return !!data && !!(" + condition + "); } catch (e) { return false; } }",
-                    null, new Page.WaitForFunctionOptions().setTimeout(10_000));
-        } catch (PlaywrightException e) {
-            throw new AssertionError("never " + condition + " - the view is drawn with " + page.evaluate("() => JSON.stringify(window.uiRbcView && window.uiRbcView.data)"), e);
-        }
-    }
-
-    // the view drawn: what follows asks what it is drawn with
-    private void drawn() {
-        waitFor("true");
-    }
-
-    // what an expression over what the view is drawn with comes to - the answer of a Promise -, as a string
-    private String eval(String expression) {
-        drawn();
-        return (String) page.evaluate("async () => { " + VIEW + " return String(await (" + expression + ")); }");
-    }
-
-    // what a call answers with a Promise of comes to, as a string - the Promise refused unless there is one
-    private String answer(String call) {
-        drawn();
-        return (String) page.evaluate("async () => { " + VIEW + " const answer = " + call + ";"
-                + " if (!answer || typeof answer.then !== 'function') return 'not a Promise: ' + answer; return String(await answer); }");
-    }
-
-    // the reason a call answers with a Promise rejected with - refused unless there is one, and it is rejected
-    private String rejection(String call) {
-        drawn();
-        return (String) page.evaluate("async () => { " + VIEW + " const answer = " + call + ";"
-                + " if (!answer || typeof answer.then !== 'function') return 'not a Promise: ' + answer;"
-                + " try { await answer; return 'not rejected'; } catch (e) { return e.message; } }");
-    }
-
-    // a call of the view's controller, made as the view's own code makes it
-    private void call(String call) {
-        drawn();
-        page.evaluate("() => { " + VIEW + " " + call + "; }");
-    }
-
-    // the reason a call of the view's controller is refused with: thrown, or its Promise rejected with it
-    private String refusal(String call) {
-        drawn();
-        return (String) page.evaluate("async () => { " + VIEW + " try { await (" + call + "); return 'not refused'; } catch (e) { return e.message; } }");
-    }
+            + " const loaded = () => data.c.list.every(r => !r.loading);");
 }

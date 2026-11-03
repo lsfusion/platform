@@ -1,8 +1,6 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.PlaywrightException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,34 +22,34 @@ public class UiReactFiltersIT extends UiTest {
     public void theConditionsAViewDraws() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactFilters.uiRflConditions");
-        waitFor("data.i.filters.length === 0");
-        assertEquals("filterProperties,filters,properties", eval("Object.keys(data.i).sort().join()"));
-        assertEquals("filters/change", eval("Object.keys(controller.i).join() + '/' + Object.keys(controller.i.filters).join()"));
+        view.waitFor("data.i.filters.length === 0");
+        assertEquals("filterProperties,filters,properties", view.drawn().eval("Object.keys(data.i).sort().join()"));
+        assertEquals("filters/change", view.drawn().eval("Object.keys(controller.i).join() + '/' + Object.keys(controller.i.filters).join()"));
         assertThat(names(form)).hasText(items);
 
-        call("controller.i.filters.change({property: 'name', compare: '_', value: 'pp'})");
-        waitFor("conditions() === 'name _ pp'");
-        assertEquals("false,false", eval("[data.i.filters[0].negation, data.i.filters[0].or].join()"));
+        view.drawn().call("controller.i.filters.change({property: 'name', compare: '_', value: 'pp'})");
+        view.waitFor("conditions() === 'name _ pp'");
+        assertEquals("false,false", view.drawn().eval("[data.i.filters[0].negation, data.i.filters[0].or].join()"));
         assertThat(names(form)).hasText(new String[] {items[0]});
-        call("controller.i.filters.change({property: 'price', compare: '>', value: 1})");
-        waitFor("conditions() === 'name _ pp; price > 1'");
-        call("controller.i.filters.change({property: 'name', compare: '_', value: 'an'})");
-        waitFor("conditions() === 'name _ an; price > 1'");
+        view.drawn().call("controller.i.filters.change({property: 'price', compare: '>', value: 1})");
+        view.waitFor("conditions() === 'name _ pp; price > 1'");
+        view.drawn().call("controller.i.filters.change({property: 'name', compare: '_', value: 'an'})");
+        view.waitFor("conditions() === 'name _ an; price > 1'");
         assertThat(names(form)).hasCount(0);
-        call("controller.i.filters.change({property: 'price'})");
-        waitFor("conditions() === 'name _ an'");
+        view.drawn().call("controller.i.filters.change({property: 'price'})");
+        view.waitFor("conditions() === 'name _ an'");
         assertThat(names(form)).hasText(new String[] {items[1]});
-        call("controller.i.filters.change({property: 'price', compare: '>', value: 1})");
+        view.drawn().call("controller.i.filters.change({property: 'price', compare: '>', value: 1})");
         assertThat(names(form)).hasCount(0);
-        waitFor("conditions() === 'name _ an; price > 1'");
-        call("controller.i.filters.change({property: 'name', value: ''})");
+        view.waitFor("conditions() === 'name _ an; price > 1'");
+        view.drawn().call("controller.i.filters.change({property: 'name', value: ''})");
         assertThat(names(form)).hasText(new String[] {items[0]});
-        waitFor("conditions() === 'price > 1'");
-        call("controller.i.filters.change([{property: 'price', compare: '<', value: 1}])");
-        waitFor("conditions() === 'price < 1'");
+        view.waitFor("conditions() === 'price > 1'");
+        view.drawn().call("controller.i.filters.change([{property: 'price', compare: '<', value: 1}])");
+        view.waitFor("conditions() === 'price < 1'");
         assertThat(names(form)).hasText(new String[] {items[1]});
-        call("controller.i.filters.change([])");
-        waitFor("conditions() === ''");
+        view.drawn().call("controller.i.filters.change([])");
+        view.waitFor("conditions() === ''");
         assertThat(names(form)).hasText(items);
         close(form);
     }
@@ -63,21 +61,21 @@ public class UiReactFiltersIT extends UiTest {
     public void theNegationAndTheJunctionOfConditions() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactFilters.uiRflConditions");
-        call("controller.i.filters.change([{property: 'name', compare: '_', value: 'an', negation: true}])");
-        waitFor("conditions() === 'name _ an' && data.i.filters[0].negation === true");
+        view.drawn().call("controller.i.filters.change([{property: 'name', compare: '_', value: 'an', negation: true}])");
+        view.waitFor("conditions() === 'name _ an' && data.i.filters[0].negation === true");
         assertThat(names(form)).hasText(new String[] {items[0]});
-        call("controller.i.filters.change([{property: 'name', compare: '=', value: '" + items[0] + "', or: true},"
+        view.drawn().call("controller.i.filters.change([{property: 'name', compare: '=', value: '" + items[0] + "', or: true},"
                 + " {property: 'name', compare: '=', value: '" + items[1] + "'}])");
-        waitFor("data.i.filters.length === 2 && data.i.filters[0].or === true && data.i.filters[1].or === false");
+        view.waitFor("data.i.filters.length === 2 && data.i.filters[0].or === true && data.i.filters[1].or === false");
         assertThat(names(form)).hasText(items);
-        call("controller.i.filters.change([{property: 'name', compare: '=', value: '" + items[0] + "'},"
+        view.drawn().call("controller.i.filters.change([{property: 'name', compare: '=', value: '" + items[0] + "'},"
                 + " {property: 'name', compare: '=', value: '" + items[1] + "'}])");
-        waitFor("data.i.filters.length === 2 && data.i.filters[0].or === false");
+        view.waitFor("data.i.filters.length === 2 && data.i.filters[0].or === false");
         assertThat(names(form)).hasCount(0);
-        call("controller.i.filters.change([{property: 'name', compare: '_', value: 'an'}, {property: 'price', compare: '>=', value: 0.75}])");
+        view.drawn().call("controller.i.filters.change([{property: 'name', compare: '_', value: 'an'}, {property: 'price', compare: '>=', value: 0.75}])");
         assertThat(names(form)).hasText(new String[] {items[1]});
-        waitFor("conditions() === 'name _ an; price >= 0.75'");
-        assertEquals("[\"an\",0.75]", eval("JSON.stringify(data.i.filters.map(f => f.value))"));
+        view.waitFor("conditions() === 'name _ an; price >= 0.75'");
+        assertEquals("[\"an\",0.75]", view.drawn().eval("JSON.stringify(data.i.filters.map(f => f.value))"));
         close(form);
     }
 
@@ -89,8 +87,8 @@ public class UiReactFiltersIT extends UiTest {
     public void aMistakeInAConditionIsRefused() throws Exception {
         seed();
         Locator form = open(FOLDER, "UiReactFilters.uiRflConditions");
-        call("controller.i.filters.change({property: 'name', compare: '_', value: 'pp'})");
-        waitFor("conditions() === 'name _ pp'");
+        view.drawn().call("controller.i.filters.change({property: 'name', compare: '_', value: 'pp'})");
+        view.waitFor("conditions() === 'name _ pp'");
         String change = "controller.i.filters.change(): ";
         String[][] mistakes = {
                 {"{property: 'nope', value: 'x'}", "unknown property 'nope' of object group 'i'"},
@@ -106,9 +104,9 @@ public class UiReactFiltersIT extends UiTest {
                 {"7", "a condition must be an object {property, compare, value, negation, or}"},
                 {"['name']", "condition 0: a condition must be an object {property, compare, value, negation, or}"}};
         for (String[] mistake : mistakes)
-            assertEquals(mistake[0], change + mistake[1], refusal("controller.i.filters.change(" + mistake[0] + ")"));
-        call("controller.i.filters.change({property: 'price', compare: '>', value: 1})");
-        waitFor("conditions() === 'name _ pp; price > 1'");
+            assertEquals(mistake[0], change + mistake[1], view.drawn().refusal("controller.i.filters.change(" + mistake[0] + ")"));
+        view.drawn().call("controller.i.filters.change({property: 'price', compare: '>', value: 1})");
+        view.waitFor("conditions() === 'name _ pp; price > 1'");
         close(form);
     }
 
@@ -119,14 +117,14 @@ public class UiReactFiltersIT extends UiTest {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactFilters.uiRflConditions");
         action(form, "uiRflFilterPrice").click();
-        waitFor("conditions() === 'price > 1'");
+        view.waitFor("conditions() === 'price > 1'");
         assertThat(names(form)).hasText(new String[] {items[0]});
         action(form, "uiRflFilterNone").click();
-        waitFor("conditions() === ''");
+        view.waitFor("conditions() === ''");
         assertThat(names(form)).hasText(items);
 
-        call("controller.i.filters.change({property: 'name', compare: '_', value: 'an'})");
-        waitFor("conditions() === 'name _ an'");
+        view.drawn().call("controller.i.filters.change({property: 'name', compare: '_', value: 'an'})");
+        view.waitFor("conditions() === 'name _ an'");
         assertThat(names(form)).hasText(new String[] {items[1]});
         action(form, "uiRflReadFilters").click();
         check("UiReactFilters.uiRflCheckRead", "[{\"property\": \"name\", \"compare\": \"_\", \"negation\": false, \"value\": \"an\"}]");
@@ -138,7 +136,7 @@ public class UiReactFiltersIT extends UiTest {
     public void aFormOpenedWithACondition() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactFilters.uiRflOpened");
-        waitFor("conditions() === 'name _ pp'");
+        view.waitFor("conditions() === 'name _ pp'");
         assertThat(names(form)).hasText(new String[] {items[0]});
         close(form);
     }
@@ -151,23 +149,23 @@ public class UiReactFiltersIT extends UiTest {
     public void thePlatformsKeysOverTheConditionsAViewDraws() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactFilters.uiRflConditions");
-        call("controller.i.filters.change({property: 'name', compare: '_', value: 'an'})");
-        waitFor("conditions() === 'name _ an'");
+        view.drawn().call("controller.i.filters.change({property: 'name', compare: '_', value: 'an'})");
+        view.waitFor("conditions() === 'name _ an'");
         assertThat(names(form)).hasText(new String[] {items[1]});
         key(cell(form, "name", items[1]), "F3");
-        waitFor("conditions() === 'name _ " + items[1] + "'"); // the comparison of the one there
+        view.waitFor("conditions() === 'name _ " + items[1] + "'"); // the comparison of the one there
         assertThat(form.locator(".filter:visible")).hasCount(0);
         key(cell(form, "price", "0.75"), "F3");
-        waitFor("conditions() === 'name _ " + items[1] + "; price = 0.75'");
+        view.waitFor("conditions() === 'name _ " + items[1] + "; price = 0.75'");
         key(cell(form, "price", "0.75"), "Alt+F3");
-        waitFor("conditions() === 'price = 0.75'");
+        view.waitFor("conditions() === 'price = 0.75'");
         key(cell(form, "price", "0.75"), "Escape");
-        waitFor("conditions() === ''");
+        view.waitFor("conditions() === ''");
         assertThat(names(form)).hasText(items);
         key(cell(form, "name", items[1]), "F3");
-        waitFor("conditions() === 'name = " + items[1] + "'");
+        view.waitFor("conditions() === 'name = " + items[1] + "'");
         key(cell(form, "name", items[1]), "Shift+F3");
-        waitFor("conditions() === ''");
+        view.waitFor("conditions() === ''");
         assertThat(names(form)).hasText(items);
 
         // the dearer item's name typed into starts no condition - the count asked after it is of both rows -, so the
@@ -177,7 +175,7 @@ public class UiReactFiltersIT extends UiTest {
         button(form, "Number of Entries").click();
         popup("Number of Entries: 2");
         key(cell(form, "price", "1.5"), "F3");
-        waitFor("conditions() === 'price = 1.5'");
+        view.waitFor("conditions() === 'price = 1.5'");
         assertThat(names(form)).hasText(new String[] {items[0]});
         close(form);
     }
@@ -200,14 +198,14 @@ public class UiReactFiltersIT extends UiTest {
         button(form, "Number of Entries").click(); // asked after the show, the count would be of a condition it started
         popup("Number of Entries: 2");
         assertThat(form.locator(".filter:visible")).hasCount(0);
-        waitFor("conditions() === ''");
+        view.waitFor("conditions() === ''");
 
         cell(form, "name", items[0]).click();
         add.click();
-        waitFor("conditions() === 'name = " + items[0] + "'");
+        view.waitFor("conditions() === 'name = " + items[0] + "'");
         assertThat(names(form)).hasText(new String[] {items[0]});
         button(form, "Reset all filters").click();
-        waitFor("conditions() === ''");
+        view.waitFor("conditions() === ''");
         assertThat(names(form)).hasText(items);
         button(form, "Hide filter controls").click();
         assertThat(add).isHidden();
@@ -221,12 +219,12 @@ public class UiReactFiltersIT extends UiTest {
     public void twoChangesInARow() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactFilters.uiRflConditions");
-        waitFor("conditions() === ''");
-        call("window.uiRflDrawn = []; controller.i.filters.change({property: 'name', compare: '_', value: 'pp'});"
+        view.waitFor("conditions() === ''");
+        view.drawn().call("window.uiRflDrawn = []; controller.i.filters.change({property: 'name', compare: '_', value: 'pp'});"
                 + " controller.i.filters.change({property: 'name', compare: '_', value: 'an'})");
         assertThat(names(form)).hasText(new String[] {items[1]});
-        waitFor("conditions() === 'name _ an'");
-        assertEquals("true", eval("window.uiRflDrawn.slice(window.uiRflDrawn.indexOf('name _ an')).every(drawn => drawn === 'name _ an')"));
+        view.waitFor("conditions() === 'name _ an'");
+        assertEquals("true", view.drawn().eval("window.uiRflDrawn.slice(window.uiRflDrawn.indexOf('name _ an')).every(drawn => drawn === 'name _ an')"));
         close(form);
     }
 
@@ -243,8 +241,8 @@ public class UiReactFiltersIT extends UiTest {
             button(form, "Show filter controls").click();
             assertThat(button(form, "Add filter")).isVisible();
             assertThat(button(form, "Apply filters")).isVisible();
-            call("controller.i.filters.change({property: 'name', compare: '_', value: 'pp'})");
-            waitFor("conditions() === 'name _ pp'");
+            view.drawn().call("controller.i.filters.change({property: 'name', compare: '_', value: 'pp'})");
+            view.waitFor("conditions() === 'name _ pp'");
             assertThat(names(form)).hasText(items);
             button(form, "Apply filters").click();
             assertThat(names(form)).hasText(new String[] {items[0]});
@@ -262,24 +260,24 @@ public class UiReactFiltersIT extends UiTest {
     public void theConditionsOfTheWholeGroup() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactFilters.uiRflBox");
-        waitFor("data.i.list.length === 2");
-        assertEquals("true", eval("['list', 'byKey', 'keys', 'orders', 'properties', 'filters', 'filterProperties'].every(k => k in data.i)"
+        view.waitFor("data.i.list.length === 2");
+        assertEquals("true", view.drawn().eval("['list', 'byKey', 'keys', 'orders', 'properties', 'filters', 'filterProperties'].every(k => k in data.i)"
                 + " && ['change', 'orders', 'filters', 'name', 'price', 'sku'].every(k => k in controller.i)"));
-        assertEquals("name string,price number,sku string", eval("data.i.filterProperties.map(p => p.property + ' ' + p.type).join()"));
-        assertEquals("true,false", eval("[data.i.filterProperties.every(p => p.compares.length > 0 && !!p.defaultCompare), 'compares' in data.i.name].join()"));
+        assertEquals("name string,price number,sku string", view.drawn().eval("data.i.filterProperties.map(p => p.property + ' ' + p.type).join()"));
+        assertEquals("true,false", view.drawn().eval("[data.i.filterProperties.every(p => p.compares.length > 0 && !!p.defaultCompare), 'compares' in data.i.name].join()"));
 
-        call("window.uiRflListsDrawn = 0; controller.i.change(data.i.list[1])");
-        waitFor("data.i.list[1].isCurrent");
-        assertEquals("2", answer("controller.i.getCount()")); // the answer to the change has come before the count's
-        assertEquals("0", eval("window.uiRflListsDrawn"));
+        view.drawn().call("window.uiRflListsDrawn = 0; controller.i.change(data.i.list[1])");
+        view.waitFor("data.i.list[1].isCurrent");
+        assertEquals("2", view.drawn().answer("controller.i.getCount()")); // the answer to the change has come before the count's
+        assertEquals("0", view.drawn().eval("window.uiRflListsDrawn"));
 
-        call("controller.i.filters.change({property: 'price', compare: '>', value: 1})");
-        waitFor("conditions() === 'price > 1'");
+        view.drawn().call("controller.i.filters.change({property: 'price', compare: '>', value: 1})");
+        view.waitFor("conditions() === 'price > 1'");
         assertThat(rows(form)).hasText(new String[] {items[0]});
-        call("controller.i.filters.change([])");
+        view.drawn().call("controller.i.filters.change([])");
         assertThat(rows(form)).hasText(items);
         action(form, "uiRflBoxFilterPrice").click();
-        waitFor("conditions() === 'price > 1'");
+        view.waitFor("conditions() === 'price > 1'");
         assertThat(rows(form)).hasText(new String[] {items[0]});
         close(form);
     }
@@ -291,22 +289,22 @@ public class UiReactFiltersIT extends UiTest {
     public void theConditionsOfATreeAViewDraws() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactFilters.uiRflTree");
-        waitFor("data.cats.filters.length === 0 && data.c.list.length === 1");
-        assertEquals("false,false,true,false,false", eval("['filters' in data.c, 'filters' in data.i, 'filters' in controller.cats,"
+        view.waitFor("data.cats.filters.length === 0 && data.c.list.length === 1");
+        assertEquals("false,false,true,false,false", view.drawn().eval("['filters' in data.c, 'filters' in data.i, 'filters' in controller.cats,"
                 + " 'filters' in controller.c, 'filters' in controller.i].join()"));
-        call("controller.c.expandAll()");
-        waitFor("data.i.list.length === 2");
-        call("controller.cats.filters.change({property: 'i.price', compare: '>', value: 1})");
+        view.drawn().call("controller.c.expandAll()");
+        view.waitFor("data.i.list.length === 2");
+        view.drawn().call("controller.cats.filters.change({property: 'i.price', compare: '>', value: 1})");
         assertThat(rows(form)).hasText(new String[] {items[0]});
-        waitFor("conditions() === 'i.price > 1'");
+        view.waitFor("conditions() === 'i.price > 1'");
         assertEquals("controller.cats.filters.change(): 'price' names no property of a group of tree 'cats': a property is named by"
-                + " its group's name and its own, <group>.<property>", refusal("controller.cats.filters.change({property: 'price', compare: '>', value: 1})"));
-        call("controller.cats.filters.change([])");
+                + " its group's name and its own, <group>.<property>", view.drawn().refusal("controller.cats.filters.change({property: 'price', compare: '>', value: 1})"));
+        view.drawn().call("controller.cats.filters.change([])");
         assertThat(rows(form)).hasText(items);
-        waitFor("conditions() === ''");
+        view.waitFor("conditions() === ''");
         action(form, "uiRflTreeFilterPrice").click();
         assertThat(rows(form)).hasText(new String[] {items[0]});
-        waitFor("conditions() === 'i.price > 1'");
+        view.waitFor("conditions() === 'i.price > 1'");
         close(form);
     }
 
@@ -318,7 +316,7 @@ public class UiReactFiltersIT extends UiTest {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactFilters.uiRflPivot");
         drillDown(form, items);
-        waitFor("data.i.filters.length > 0 && data.i.filters.every(f => f.property === 'name')");
+        view.waitFor("data.i.filters.length > 0 && data.i.filters.every(f => f.property === 'name')");
         close(form);
 
         form = open(FOLDER, "UiReactFilters.uiRflPivotPlain");
@@ -355,58 +353,9 @@ public class UiReactFiltersIT extends UiTest {
         return form.locator(".ui-rfl-row");
     }
 
-
-    // what the popup of the count or of the sum shows; the popup let go then - shown, it takes the focus, and hides as
-    // it loses it, as to a click on nothing
-    private void popup(String text) {
-        Locator popup = page.locator("[data-tippy-root]");
-        assertThat(popup).hasText(text);
-        page.waitForFunction("() => !!document.activeElement && !!document.activeElement.closest('[data-tippy-root]')");
-        page.evaluate("() => document.activeElement.blur()");
-        assertThat(popup).hasCount(0);
-    }
-    // a button of the platform's toolbar or filter controls, by its title
-    private static Locator button(Locator form, String title) {
-        return form.getByTitle(title, new Locator.GetByTitleOptions().setExact(true));
-    }
-
-    // a button of the form's own action
-    private static Locator action(Locator form, String action) {
-        return form.locator("button[lsfusion-container='PROPERTY(" + action + "())']");
-    }
-
-    // a cell clicked, and what the click changes on the server answered and applied: a cell of a row not current makes
-    // the row current
-    private void click(Locator cell) {
-        answered(Boolean.TRUE.equals(cell.evaluate("cell => !!cell.closest('tr') && !cell.closest('tr').classList.contains('table-active')")) ? 1 : 0,
-                cell::click);
-    }
-
-    // ... and a key pressed in it: the client drops the keys typed while a request is in flight
-    private void key(Locator cell, String key) {
-        click(cell);
-        page.keyboard().press(key);
-    }
-
-    // a step, the changes of a current object it makes - a row's, sent a little after it, with no glass over the page
-    // (GFormController.changeGroupObjectLater) - sent, and every request of the page then answered and applied
-    private void answered(int changes, Runnable step) {
-        int before = ((Number) page.evaluate("() => window.uiRflRequests.changes")).intValue();
-        step.run();
-        page.waitForFunction("before => window.uiRflRequests.changes >= before && window.uiRflRequests.pending === 0", before + changes);
-    }
-
-    // the page's requests in flight, counted as they are sent and once the handlers of their answers have run - what an
-    // answer brings is applied there -, and the changes of a current object among them (window.uiRflRequests)
-    private static final String REQUESTS = "(() => { if (window.uiRflRequests) return; const requests = window.uiRflRequests = {pending: 0, changes: 0};"
-            + " const send = XMLHttpRequest.prototype.send; XMLHttpRequest.prototype.send = function (body) { requests.pending++;"
-            + " if (String(body).includes('action.form.ChangeGroupObject/')) requests.changes++;"
-            + " this.addEventListener('loadend', () => setTimeout(() => requests.pending--)); return send.apply(this, arguments); }; })()";
-
     @Before
     public void countRequests() {
-        page.addInitScript(REQUESTS);
-        page.evaluate(REQUESTS);
+        trackRequests();
     }
 
     private void reload() {
@@ -416,46 +365,6 @@ public class UiReactFiltersIT extends UiTest {
 
     // what the view was last drawn with, its data and its controller, as a script names them, and the conditions it is
     // given - a group's or a tree's -, each as `property compare value`
-    private static final String VIEW = "const view = window.uiRflView, data = view && view.data, controller = view && view.controller;"
-            + " const conditions = () => (data.cats || data.i).filters.map(f => f.property + ' ' + f.compare + ' ' + f.value).join('; ');";
-
-    // until a condition holds of what the view is drawn with, failing with what it is drawn with then
-    private void waitFor(String condition) {
-        try {
-            page.waitForFunction("() => { " + VIEW + " try { return !!data && !!(" + condition + "); } catch (e) { return false; } }",
-                    null, new Page.WaitForFunctionOptions().setTimeout(10_000));
-        } catch (PlaywrightException e) {
-            throw new AssertionError("never " + condition + " - the view is drawn with " + page.evaluate("() => JSON.stringify(window.uiRflView && window.uiRflView.data)"), e);
-        }
-    }
-
-    // the view drawn: what follows asks what it is drawn with
-    private void drawn() {
-        waitFor("true");
-    }
-
-    // what an expression over what the view is drawn with comes to, as a string
-    private String eval(String expression) {
-        drawn();
-        return (String) page.evaluate("async () => { " + VIEW + " return String(await (" + expression + ")); }");
-    }
-
-    // what a call answers with a Promise of comes to, as a string - the Promise refused unless there is one
-    private String answer(String call) {
-        drawn();
-        return (String) page.evaluate("async () => { " + VIEW + " const answer = " + call + ";"
-                + " if (!answer || typeof answer.then !== 'function') return 'not a Promise: ' + answer; return String(await answer); }");
-    }
-
-    // a call of the view's controller, made as the view's own code makes it
-    private void call(String call) {
-        drawn();
-        page.evaluate("() => { " + VIEW + " " + call + "; }");
-    }
-
-    // the reason a call of the controller is refused with
-    private String refusal(String call) {
-        drawn();
-        return (String) page.evaluate("async () => { " + VIEW + " try { await (" + call + "); return 'not refused'; } catch (e) { return e.message; } }");
-    }
+    private final View view = view("window.uiRflView",
+            " const conditions = () => (data.cats || data.i).filters.map(f => f.property + ' ' + f.compare + ' ' + f.value).join('; ');");
 }

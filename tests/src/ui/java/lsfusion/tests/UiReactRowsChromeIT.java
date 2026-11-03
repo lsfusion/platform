@@ -1,9 +1,6 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.PlaywrightException;
-import com.microsoft.playwright.options.WaitForSelectorState;
 import org.junit.Test;
 
 import java.util.regex.Pattern;
@@ -83,7 +80,7 @@ public class UiReactRowsChromeIT extends UiTest {
         assertThat(update).isDisabled();
         rename(form);
         assertThat(update).isEnabled();
-        waitFor("data.i.list.length === 2 && data.i.list.every(row => row.name.value === null)");
+        view.waitFor("data.i.list.length === 2 && data.i.list.every(row => row.name.value === null)");
         update.click();
         assertThat(rows(form)).hasText(new String[] {items[0] + "!", items[1]});
         button(form, "Manual update").click();
@@ -124,11 +121,11 @@ public class UiReactRowsChromeIT extends UiTest {
         Locator form = open(FOLDER, "UiReactRowsChrome.uiRrcFilterBox");
         Locator filters = host(form, "FILTERBOX(i)");
         assertThat(rows(form)).hasText(items);
-        assertEquals("false,false,false", eval("['filters' in data.i, 'filters' in controller.i, data.i.filterControlsVisible].join()"));
+        assertEquals("false,false,false", view.eval("['filters' in data.i, 'filters' in controller.i, data.i.filterControlsVisible].join()"));
         assertThat(button(form, "Number of Entries")).hasCount(0);
         assertThat(button(filters, "Add filter")).isHidden();
 
-        call("controller.i.filterControlsVisible.change(true)");
+        view.call("controller.i.filterControlsVisible.change(true)");
         assertThat(button(filters, "Add filter")).isVisible();
         Locator conditions = filters.locator(".filter:visible");
         assertThat(conditions).hasCount(1);
@@ -137,7 +134,7 @@ public class UiReactRowsChromeIT extends UiTest {
         button(filters, "Reset all filters").click();
         assertThat(rows(form)).hasText(items);
         assertThat(button(filters, "Add filter")).isHidden();
-        waitFor("data.i.filterControlsVisible === false");
+        view.waitFor("data.i.filterControlsVisible === false");
         close(form);
     }
 
@@ -163,24 +160,24 @@ public class UiReactRowsChromeIT extends UiTest {
         // asked after the show, the count would be of a condition it started
         button(toolbar, "Number of Entries").click();
         popup("Number of Entries: 2");
-        waitFor("data.i.filters.length === 0");
+        view.waitFor("data.i.filters.length === 0");
 
         rows(form).nth(1).click();
         assertThat(rows(form).nth(1)).hasClass(Pattern.compile("ui-rrc-current"));
         button(controls, "Add filter").click();
-        waitFor("conditions() === 'name = " + items[1] + "'");
+        view.waitFor("conditions() === 'name = " + items[1] + "'");
         assertThat(rows(form)).hasText(new String[] {items[1]});
         String id = items[0].substring("Apple".length()); // in both names
-        call("controller.i.filters.change({property: 'name', compare: '_', value: '" + id + "'})");
-        waitFor("conditions() === 'name _ " + id + "'");
+        view.call("controller.i.filters.change({property: 'name', compare: '_', value: '" + id + "'})");
+        view.waitFor("conditions() === 'name _ " + id + "'");
         assertThat(rows(form)).hasText(items);
         rows(form).nth(1).click();
         assertThat(rows(form).nth(1)).hasClass(Pattern.compile("ui-rrc-current"));
         button(controls, "Add filter").click();
-        waitFor("conditions() === 'name _ " + items[1] + "'"); // the comparison of the one there
+        view.waitFor("conditions() === 'name _ " + items[1] + "'"); // the comparison of the one there
         assertThat(rows(form)).hasText(new String[] {items[1]});
         button(controls, "Reset all filters").click();
-        waitFor("data.i.filters.length === 0");
+        view.waitFor("data.i.filters.length === 0");
         assertThat(rows(form)).hasText(items);
         assertThat(button(controls, "Add filter")).isVisible();
         button(toolbar, "Hide filter controls").click();
@@ -207,54 +204,13 @@ public class UiReactRowsChromeIT extends UiTest {
         return form.locator(".lsf-platform[data-lsf-sid='" + component + "']");
     }
 
-    // a button of the platform's toolbar or filter controls, by its title
-    private static Locator button(Locator scope, String title) {
-        return scope.getByTitle(title, new Locator.GetByTitleOptions().setExact(true));
-    }
-
     // the form's own action: the dearer item renamed and the change applied, which a manual update holds back
     private static void rename(Locator form) {
         form.locator("button[lsfusion-container='PROPERTY(uiRrcRename())']").click();
     }
 
-    // what the popup of the count shows; the popup let go then - shown, it takes the focus, and hides as it loses it,
-    // as to a click on nothing
-    private void popup(String text) {
-        Locator popup = page.locator("[data-tippy-root]");
-        assertThat(popup).hasText(text);
-        page.waitForFunction("() => !!document.activeElement && !!document.activeElement.closest('[data-tippy-root]')");
-        page.evaluate("() => document.activeElement.blur()");
-        assertThat(popup).hasCount(0);
-    }
-
-    // a key into a condition's editor once no request is in flight: the client drops the keys typed meanwhile
-    private void press(Locator editor, String key) {
-        page.locator(".lsf-blocking").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
-        editor.press(key);
-    }
-
     // what the view was last drawn with, its data and its controller, as a script names them, and the conditions it is
     // given, each as `property compare value`
-    private static final String VIEW = "const view = window.uiRrcView, data = view && view.data, controller = view && view.controller;"
-            + " const conditions = () => data.i.filters.map(f => f.property + ' ' + f.compare + ' ' + f.value).join('; ');";
-
-    // until a condition holds of what the view is drawn with, failing with what it is drawn with then
-    private void waitFor(String condition) {
-        try {
-            page.waitForFunction("() => { " + VIEW + " try { return !!data && !!(" + condition + "); } catch (e) { return false; } }",
-                    null, new Page.WaitForFunctionOptions().setTimeout(10_000));
-        } catch (PlaywrightException e) {
-            throw new AssertionError("never " + condition + " - the view is drawn with " + page.evaluate("() => JSON.stringify(window.uiRrcView && window.uiRrcView.data)"), e);
-        }
-    }
-
-    // what an expression over what the view is drawn with comes to, as a string
-    private String eval(String expression) {
-        return (String) page.evaluate("async () => { " + VIEW + " return String(await (" + expression + ")); }");
-    }
-
-    // a call of the view's controller, made as the view's own code makes it
-    private void call(String call) {
-        page.evaluate("() => { " + VIEW + " " + call + "; }");
-    }
+    private final View view = view("window.uiRrcView",
+            " const conditions = () => data.i.filters.map(f => f.property + ' ' + f.compare + ' ' + f.value).join('; ');");
 }

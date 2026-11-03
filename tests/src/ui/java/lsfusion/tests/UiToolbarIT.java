@@ -218,21 +218,6 @@ public class UiToolbarIT extends UiTest {
         return form.locator("table.lsf-table").first();
     }
 
-    // a button of the platform's toolbar, by its title
-    private static Locator button(Locator form, String title) {
-        return form.getByTitle(title, new Locator.GetByTitleOptions().setExact(true));
-    }
-
-    // what the popup of the count shows; the popup let go then - shown, it takes the focus, and hides as it loses it,
-    // as to a click on nothing
-    private void popup(String text) {
-        Locator popup = page.locator("[data-tippy-root]");
-        assertThat(popup).hasText(text);
-        page.waitForFunction("() => !!document.activeElement && !!document.activeElement.closest('[data-tippy-root]')");
-        page.evaluate("() => document.activeElement.blur()");
-        assertThat(popup).hasCount(0);
-    }
-
     // the form's own actions: the dearer item renamed, the cheaper one repriced, the change applied - which a manual
     // update holds back - and counted; until the count, which nothing holds back, comes with the form's answer
     private static void rename(Locator form, String changes) {

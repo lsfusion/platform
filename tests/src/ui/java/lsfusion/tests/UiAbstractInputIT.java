@@ -56,7 +56,7 @@ public class UiAbstractInputIT extends UiTest {
         String[] seed = seed();
         Locator form = open("UiAbstractInput.uiAbstractInput", "UiAbstractInput.uiAbstractInputDocuments");
         Locator way = cellOf(form, seed[0], "uiAbstractInputNameWay(d)");
-        select(way);
+        selectSent(way);
         page.keyboard().press("F12");
         pick(form("UiAbstractInput.uiAbstractInputWays"), "uiAbstractInputWayName(w)", seed[3]);
         assertThat(way).hasText(seed[3]);
@@ -83,15 +83,8 @@ public class UiAbstractInputIT extends UiTest {
 
     // an object picked in the dialog: its row selected, then OK
     private void pick(Locator dialog, String property, String name) {
-        select(cell(dialog, property, name));
+        selectSent(cell(dialog, property, name));
         dialog.locator("button[lsfusion-container='PROPERTY(formOk())']").click();
         dialog.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.DETACHED));
-    }
-
-    // a cell of a row other than the current one clicked, the row selected: the change of the current row is a request
-    // with no glass, sent a moment after the click, and the server takes a form's requests in their order, so what
-    // comes next goes once it is sent
-    private void select(Locator cell) {
-        page.waitForRequest(request -> request.postData() != null && request.postData().contains("ChangeGroupObject"), cell::click);
     }
 }

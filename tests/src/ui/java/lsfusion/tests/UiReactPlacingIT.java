@@ -1,8 +1,6 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.PlaywrightException;
 import com.microsoft.playwright.options.BoundingBox;
 import org.junit.Test;
 
@@ -22,6 +20,8 @@ import static org.junit.Assert.assertTrue;
 // view on a page of the platform's tab strip, in a window, under a SHOWIF of a container it draws, in a `tabbed`
 // container it draws
 public class UiReactPlacingIT extends UiTest {
+
+    private final View state = new View("", "true", "", "");
 
     // a panel property and an action the platform draws are placed by their names - the property's host showing its
     // value, both marked with the class lsf-platform, merged with the view's own, and with the name -, and a grid
@@ -69,9 +69,9 @@ public class UiReactPlacingIT extends UiTest {
         page.evaluate("() => { window.uiRplNoteView = document.querySelector('.ui-rpl-note').firstElementChild;"
                 + " window.uiRplMemoView = Array.from(document.querySelector('.ui-rpl-own-host').children)"
                 + ".find(child => !child.classList.contains('ui-rpl-own')); }");
-        waitFor("window.uiRplMemoView.contains(document.querySelector('.ui-rpl-own-host input'))");
+        state.waitFor("window.uiRplMemoView.contains(document.querySelector('.ui-rpl-own-host input'))");
 
-        click(form, "mistakes");
+        text(form, "mistakes").click();
         assertMistake(noteHost, "'c.nope' is not inside 'uiRplBoardView'");
         assertThat(noteHost).hasAttribute("data-lsf-sid", "c.nope");
         assertThat(noteHost).containsClass("lsf-platform ui-rpl-note ui-rpl-a");
@@ -104,19 +104,19 @@ public class UiReactPlacingIT extends UiTest {
                         + " projected data, not its key");
         assertQuantities(form);
         // the views are out of their hosts, and kept: in the page, in none of the view's hosts, out of sight
-        waitFor(parked("uiRplNoteView") + " && " + parked("uiRplMemoView"));
+        state.waitFor(parked("uiRplNoteView") + " && " + parked("uiRplMemoView"));
 
-        click(form, "switch class");
+        text(form, "switch class").click();
         assertThat(noteHost).containsClass("lsf-platform ui-rpl-note ui-rpl-b");
         assertMistake(noteHost, "'c.nope' is not inside 'uiRplBoardView'");
         assertThat(own).containsClass("ui-rpl-own-host ui-rpl-b");
         assertMistake(own, "'uiRplNothing' is not inside 'uiRplBoardView'");
         assertNotMarked(noteHost, own);
 
-        click(form, "right");
+        text(form, "right").click();
         assertThat(noteHost.locator(".lsf-view-error")).hasCount(0);
         assertShows(noteHost, note);
-        waitFor("document.querySelector('.ui-rpl-note').contains(window.uiRplNoteView)"
+        state.waitFor("document.querySelector('.ui-rpl-note').contains(window.uiRplNoteView)"
                 + " && document.querySelector('.ui-rpl-own-host').contains(window.uiRplMemoView)"); // the same views
         assertThat(own.locator("span.lsf-view-error")).hasCount(0);
         assertThat(own.locator("b.ui-rpl-own")).hasText("mine");
@@ -124,13 +124,13 @@ public class UiReactPlacingIT extends UiTest {
         assertShows(own, "memo");
         assertNotMarked(noteHost, own);
         assertThat(form.locator(".ui-rpl-no-row, .ui-rpl-one-view, .ui-rpl-drawn, .ui-rpl-column, .ui-rpl-not-a-row")).hasCount(0);
-        waitFor(FILLS);
+        state.waitFor(FILLS);
 
-        click(form, "switch class"); // with the view in the host
+        text(form, "switch class").click(); // with the view in the host
         assertThat(noteHost).containsClass("lsf-platform ui-rpl-note ui-rpl-a");
         assertShows(noteHost, note);
         assertNotMarked(noteHost, own);
-        waitFor(FILLS);
+        state.waitFor(FILLS);
         close(form);
     }
 
@@ -191,11 +191,11 @@ public class UiReactPlacingIT extends UiTest {
         assertThat(box).containsClass("lsf-platform ui-rpl-box");
         assertThat(box).hasAttribute("data-lsf-sid", "uiRplBox");
 
-        click(form, "toggle box");
+        text(form, "toggle box").click();
         assertThat(boxEntry).hasText("box hidden");
         assertThat(box).isHidden();
         assertThat(box.locator(":scope > *")).not().hasCount(0); // the platform's view stays in the host
-        click(form, "toggle box");
+        text(form, "toggle box").click();
         assertThat(boxEntry).hasText("box shown");
         assertThat(box).isVisible();
         assertShows(box, "in box");
@@ -204,10 +204,10 @@ public class UiReactPlacingIT extends UiTest {
         assertShows(note, "shown note");
         assertThat(form.locator(".ui-rpl-note-comment")).hasText("Note comment");
         assertThat(note).not().containsText("Note comment");
-        click(form, "toggle note");
+        text(form, "toggle note").click();
         assertThat(noteEntry).hasText("note hidden");
         assertThat(note).isHidden();
-        click(form, "toggle note");
+        text(form, "toggle note").click();
         assertThat(noteEntry).hasText("note shown");
         assertThat(note).isVisible();
         assertShows(note, "shown note");
@@ -338,11 +338,6 @@ public class UiReactPlacingIT extends UiTest {
         return tab.locator("xpath=descendant-or-self::*[contains(concat(' ', normalize-space(@class), ' '), ' " + captionClass + " ')]");
     }
 
-    // a button of a view, by its text
-    private static void click(Locator form, String text) {
-        form.getByText(text, new Locator.GetByTextOptions().setExact(true)).click();
-    }
-
     private static String box(BoundingBox box) {
         return "(" + box.x + ", " + box.y + ", " + box.width + " x " + box.height + ")";
     }
@@ -352,16 +347,6 @@ public class UiReactPlacingIT extends UiTest {
     private static final String FILLS = "(() => { const host = document.querySelector('.ui-rpl-note'), view = window.uiRplNoteView;"
             + " return host.contains(view) && host.getBoundingClientRect().height >= 119"
             + " && view.getBoundingClientRect().height >= host.getBoundingClientRect().height - 20; })()";
-
-    // until a condition holds in the page
-    private void waitFor(String condition) {
-        try {
-            page.waitForFunction("() => { try { return !!(" + condition + "); } catch (e) { return false; } }",
-                    null, new Page.WaitForFunctionOptions().setTimeout(10_000));
-        } catch (PlaywrightException e) {
-            throw new AssertionError("never " + condition, e);
-        }
-    }
 
     // the complete error log, with no dependence on the order React mounts its hosts
     private void assertLogged(List<String> errors, String... expected) {

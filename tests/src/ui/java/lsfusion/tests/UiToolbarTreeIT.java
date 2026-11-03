@@ -1,9 +1,6 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.PlaywrightException;
-import com.microsoft.playwright.options.WaitForSelectorState;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,38 +29,38 @@ public class UiToolbarTreeIT extends UiTest {
         Locator form = open(FOLDER, "UiToolbarTree.uiTtrRows");
         Locator toolbar = form.locator("[lsfusion-container='TOOLBARSYSTEM(TREE cats)']");
         String all = names[2] + "," + names[3] + "," + names[5];
-        waitFor("data.c.list.length === 3");
+        view.waitFor("data.c.list.length === 3");
         assertEquals(TREE_TOOLBAR, titles(toolbar));
-        assertEquals("true,false", eval("['expandAll' in controller.c, 'expandTree' in controller.c].join()"));
+        assertEquals("true,false", view.drawn().eval("['expandAll' in controller.c, 'expandTree' in controller.c].join()"));
 
         button(toolbar, "Expand whole tree").click();
-        waitFor("opened() === '" + names[0] + "," + names[4] + "' && items() === '" + all + "' && loaded()");
-        call("controller.c.collapseAll()");
-        waitFor("opened() === '' && items() === ''");
-        call("controller.c.change(data.c.list[1])");
-        waitFor("data.c.list[1].isCurrent");
+        view.waitFor("opened() === '" + names[0] + "," + names[4] + "' && items() === '" + all + "' && loaded()");
+        view.drawn().call("controller.c.collapseAll()");
+        view.waitFor("opened() === '' && items() === ''");
+        view.drawn().call("controller.c.change(data.c.list[1])");
+        view.waitFor("data.c.list[1].isCurrent");
         button(toolbar, "Expand current object").click();
-        waitFor("opened() === '" + names[4] + "' && items() === '" + names[5] + "' && loaded()");
-        call("controller.i.change(data.i.list[0])");
-        waitFor("data.i.list[0].isCurrent");
+        view.waitFor("opened() === '" + names[4] + "' && items() === '" + names[5] + "' && loaded()");
+        view.drawn().call("controller.i.change(data.i.list[0])");
+        view.waitFor("data.i.list[0].isCurrent");
         button(toolbar, "Expand current object").click();
         settled();
-        assertEquals(names[4] + "/" + names[5], eval("opened() + '/' + items()"));
+        assertEquals(names[4] + "/" + names[5], view.drawn().eval("opened() + '/' + items()"));
 
-        call("controller.c.change(data.c.list[0])");
-        waitFor("data.c.list[0].isCurrent");
+        view.drawn().call("controller.c.change(data.c.list[0])");
+        view.waitFor("data.c.list[0].isCurrent");
         button(toolbar, "Expand whole tree").click();
-        waitFor("opened() === '" + names[0] + "," + names[4] + "' && items() === '" + all + "' && loaded()");
-        call("controller.i.change(data.i.list[1])");
-        waitFor("data.i.list[1].isCurrent");
+        view.waitFor("opened() === '" + names[0] + "," + names[4] + "' && items() === '" + all + "' && loaded()");
+        view.drawn().call("controller.i.change(data.i.list[1])");
+        view.waitFor("data.i.list[1].isCurrent");
         button(toolbar, "Show filter controls").click();
         Locator conditions = form.locator(".filter:visible"), editor = conditions.locator("input");
         assertThat(conditions).hasCount(1);
         assertThat(editor).hasValue(names[3]);
         press(editor, "Enter");
-        waitFor("items() === '" + names[3] + "'");
+        view.waitFor("items() === '" + names[3] + "'");
         button(form, "Reset all filters").click();
-        waitFor("items() === '" + all + "'");
+        view.waitFor("items() === '" + all + "'");
         close(form);
     }
 
@@ -77,37 +74,37 @@ public class UiToolbarTreeIT extends UiTest {
         String[] names = seed();
         Locator form = open(FOLDER, "UiToolbarTree.uiTtrBox");
         String members = "['filterControlsVisible', 'expandCurrent', 'export', 'addFilter', 'applyFilters', 'resetFilters', 'filters']";
-        waitFor("data.c.list.length === 3");
-        assertEquals("true,false,false", eval("[" + members + ".every(m => m in controller.cats), 'expandTree' in controller.cats,"
+        view.waitFor("data.c.list.length === 3");
+        assertEquals("true,false,false", view.drawn().eval("[" + members + ".every(m => m in controller.cats), 'expandTree' in controller.cats,"
                 + " " + members + ".concat(['expandTree']).some(m => m in controller.c || m in controller.i)].join()"));
-        assertEquals("false,false,false,0", eval("[data.cats.filterControlsVisible, data.cats.filtersManual, data.cats.filtersPending,"
+        assertEquals("false,false,false,0", view.drawn().eval("[data.cats.filterControlsVisible, data.cats.filtersManual, data.cats.filtersPending,"
                 + " data.cats.filters.length].join()"));
         assertThat(form.getByTitle("Expand whole tree", new Locator.GetByTitleOptions().setExact(true))).hasCount(0);
 
-        call("controller.c.expandAll()");
-        waitFor("opened() === '" + names[0] + "," + names[4] + "' && items() === '" + names[2] + "," + names[3] + "," + names[5] + "' && loaded()");
-        call("controller.c.collapseAll()");
-        waitFor("opened() === '' && items() === ''");
-        call("controller.c.change(data.c.list[1])");
-        waitFor("data.c.list[1].isCurrent");
-        call("controller.cats.expandCurrent()");
-        waitFor("opened() === '" + names[4] + "' && items() === '" + names[5] + "' && loaded()");
+        view.drawn().call("controller.c.expandAll()");
+        view.waitFor("opened() === '" + names[0] + "," + names[4] + "' && items() === '" + names[2] + "," + names[3] + "," + names[5] + "' && loaded()");
+        view.drawn().call("controller.c.collapseAll()");
+        view.waitFor("opened() === '' && items() === ''");
+        view.drawn().call("controller.c.change(data.c.list[1])");
+        view.waitFor("data.c.list[1].isCurrent");
+        view.drawn().call("controller.cats.expandCurrent()");
+        view.waitFor("opened() === '" + names[4] + "' && items() === '" + names[5] + "' && loaded()");
 
-        call("controller.c.collapseAll()");
-        waitFor("opened() === '' && items() === ''");
-        call("controller.c.change(data.c.list[0])");
-        waitFor("data.c.list[0].isCurrent");
-        call("controller.cats.expandCurrent()");
-        waitFor("opened() === '" + names[0] + "' && items() === '" + names[2] + "," + names[3] + "' && loaded()");
-        call("controller.cats.addFilter()");
-        waitFor("conditions() === 'c.catName = " + names[0] + "'");
-        call("controller.cats.filters.change({property: 'i.price', compare: '>', value: 1})");
-        waitFor("conditions() === 'c.catName = " + names[0] + "; i.price > 1' && items() === '" + names[2] + "'");
-        call("controller.cats.resetFilters()");
-        waitFor("conditions() === '' && items() === '" + names[2] + "," + names[3] + "'");
+        view.drawn().call("controller.c.collapseAll()");
+        view.waitFor("opened() === '' && items() === ''");
+        view.drawn().call("controller.c.change(data.c.list[0])");
+        view.waitFor("data.c.list[0].isCurrent");
+        view.drawn().call("controller.cats.expandCurrent()");
+        view.waitFor("opened() === '" + names[0] + "' && items() === '" + names[2] + "," + names[3] + "' && loaded()");
+        view.drawn().call("controller.cats.addFilter()");
+        view.waitFor("conditions() === 'c.catName = " + names[0] + "'");
+        view.drawn().call("controller.cats.filters.change({property: 'i.price', compare: '>', value: 1})");
+        view.waitFor("conditions() === 'c.catName = " + names[0] + "; i.price > 1' && items() === '" + names[2] + "'");
+        view.drawn().call("controller.cats.resetFilters()");
+        view.waitFor("conditions() === '' && items() === '" + names[2] + "," + names[3] + "'");
         assertEquals("controller.cats.filterControlsVisible.change(): has no filter controls of the platform's to show: the platform "
                 + "draws neither the conditions nor FILTERCONTROLS here, or its toolbar turns its filters off (showFilters)",
-                refusal("controller.cats.filterControlsVisible.change(true)"));
+                view.drawn().refusal("controller.cats.filterControlsVisible.change(true)"));
         close(form);
     }
 
@@ -120,28 +117,28 @@ public class UiToolbarTreeIT extends UiTest {
         String[] names = seed();
         Locator form = open(FOLDER, "UiToolbarTree.uiTtrHeader");
         String[] closed = {names[0], names[4], names[1]}, nuts = {names[0], names[4], names[5], names[1]};
-        waitFor("!!data.cats");
-        assertEquals("true,false,false", eval("[['filterControlsVisible', 'expandCurrent', 'expandTree', 'export', 'addFilter', 'applyFilters',"
+        view.waitFor("!!data.cats");
+        assertEquals("true,false,false", view.drawn().eval("[['filterControlsVisible', 'expandCurrent', 'expandTree', 'export', 'addFilter', 'applyFilters',"
                 + " 'resetFilters'].every(m => m in controller.cats), 'c' in data, 'i' in data].join()"));
         assertThat(tree(form)).hasText(closed);
         assertThat(form.getByTitle("Expand whole tree", new Locator.GetByTitleOptions().setExact(true))).hasCount(0);
 
-        select(cell(form, "catName", names[4]));
-        call("controller.cats.expandCurrent()");
+        click(cell(form, "catName", names[4]));
+        view.drawn().call("controller.cats.expandCurrent()");
         assertThat(tree(form)).hasText(nuts);
         toggle(form, names[4]);
         assertThat(tree(form)).hasText(closed);
-        call("controller.cats.expandTree()");
+        view.drawn().call("controller.cats.expandTree()");
         assertThat(tree(form)).hasText(new String[] {names[0], names[2], names[3], names[4], names[5], names[1]});
-        call("controller.cats.filterControlsVisible.change(true)");
+        view.drawn().call("controller.cats.filterControlsVisible.change(true)");
         Locator conditions = form.locator(".filter:visible");
         assertThat(conditions).hasCount(1);
-        waitFor("data.cats.filterControlsVisible === true");
-        call("controller.cats.resetFilters()");
+        view.waitFor("data.cats.filterControlsVisible === true");
+        view.drawn().call("controller.cats.resetFilters()");
         assertThat(conditions).hasCount(0);
-        call("controller.cats.addFilter()");
+        view.drawn().call("controller.cats.addFilter()");
         assertThat(conditions).hasCount(1);
-        call("controller.cats.resetFilters()");
+        view.drawn().call("controller.cats.resetFilters()");
         assertThat(conditions).hasCount(0);
         close(form);
     }
@@ -159,7 +156,7 @@ public class UiToolbarTreeIT extends UiTest {
         assertEquals(TREE_TOOLBAR, titles(toolbar));
         assertThat(icon(form, names[0])).hasClass(Pattern.compile("collapsed-image"));
 
-        select(cell(form, "catName", names[1]));
+        click(cell(form, "catName", names[1]));
         button(toolbar, "Expand current object").click();
         settled();
         assertThat(tree(form)).hasText(closed);
@@ -168,7 +165,7 @@ public class UiToolbarTreeIT extends UiTest {
         toggle(form, names[0]);
         toggle(form, names[4]);
         assertThat(tree(form)).hasText(closed);
-        select(cell(form, "catName", names[0]));
+        click(cell(form, "catName", names[0]));
         button(toolbar, "Expand current object").click();
         assertThat(tree(form)).hasText(new String[] {names[0], names[2], names[3], names[4], names[1]});
         close(form);
@@ -260,52 +257,9 @@ public class UiToolbarTreeIT extends UiTest {
         return (List<String>) toolbar.locator("button:visible").evaluateAll("buttons => buttons.map(b => b.title)");
     }
 
-    // a button of the platform's toolbar or filter controls, by its title
-    private static Locator button(Locator scope, String title) {
-        return scope.getByTitle(title, new Locator.GetByTitleOptions().setExact(true));
-    }
-
-    // a key into a condition's editor once no request is in flight: the client drops the keys typed meanwhile
-    private void press(Locator editor, String key) {
-        idle();
-        editor.press(key);
-    }
-
-    private void idle() {
-        page.locator(".lsf-blocking").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
-    }
-
-    // the page's requests in flight, counted as they are sent and once the handlers of their answers have run - what an
-    // answer brings is applied there -, and the changes of a current object among them (window.uiTtrRequests); the
-    // glass the client puts over the page shows for some requests only
-    private static final String REQUESTS = "(() => { if (window.uiTtrRequests) return; const requests = window.uiTtrRequests = {pending: 0, changes: 0};"
-            + " const send = XMLHttpRequest.prototype.send; XMLHttpRequest.prototype.send = function (body) { requests.pending++;"
-            + " if (String(body).includes('action.form.ChangeGroupObject/')) requests.changes++;"
-            + " this.addEventListener('loadend', () => setTimeout(() => requests.pending--)); return send.apply(this, arguments); }; })()";
-
     @Before
     public void countRequests() {
-        page.addInitScript(REQUESTS);
-        page.evaluate(REQUESTS);
-    }
-
-    // until no request of the page is in flight, the answers applied
-    private void settled() {
-        answered(0, () -> { });
-    }
-
-    // a cell of the platform's tree clicked, and the change of the current object it makes on the server, a cell of a
-    // row not current, answered
-    private void select(Locator cell) {
-        answered(notCurrent(cell) ? 1 : 0, cell::click);
-    }
-
-    // a step, the changes of a current object it makes - each sent a little after it, with no glass over the page
-    // (GFormController.changeGroupObjectLater) - sent, and every request of the page then answered and applied
-    private void answered(int changes, Runnable step) {
-        int before = ((Number) page.evaluate("() => window.uiTtrRequests.changes")).intValue();
-        step.run();
-        page.waitForFunction("before => window.uiTtrRequests.changes >= before && window.uiTtrRequests.pending === 0", before + changes);
+        trackRequests();
     }
 
     // whether an element is in a row of the platform's tree that is not the current one
@@ -316,42 +270,9 @@ public class UiToolbarTreeIT extends UiTest {
     // what the view was last drawn with, its data and its controller, as a script names them; the categories it is
     // given open, the items it is given, by name, whether no category's children are being loaded, and the tree's
     // conditions, each as `property compare value`
-    private static final String VIEW = "const view = window.uiTtrView, data = view && view.data, controller = view && view.controller;"
-            + " const opened = () => data.c.list.filter(r => r.expanded).map(r => r.catName.value).join();"
+    private final View view = view("window.uiTtrView",
+            " const opened = () => data.c.list.filter(r => r.expanded).map(r => r.catName.value).join();"
             + " const items = () => data.i.list.map(r => r.name.value).join();"
             + " const loaded = () => data.c.list.every(r => !r.loading);"
-            + " const conditions = () => data.cats.filters.map(f => f.property + ' ' + f.compare + ' ' + f.value).join('; ');";
-
-    // until a condition holds of what the view is drawn with, failing with what it is drawn with then
-    private void waitFor(String condition) {
-        try {
-            page.waitForFunction("() => { " + VIEW + " try { return !!data && !!(" + condition + "); } catch (e) { return false; } }",
-                    null, new Page.WaitForFunctionOptions().setTimeout(10_000));
-        } catch (PlaywrightException e) {
-            throw new AssertionError("never " + condition + " - the view is drawn with " + page.evaluate("() => JSON.stringify(window.uiTtrView && window.uiTtrView.data)"), e);
-        }
-    }
-
-    // the view drawn: what follows asks what it is drawn with
-    private void drawn() {
-        waitFor("true");
-    }
-
-    // what an expression over what the view is drawn with comes to, as a string
-    private String eval(String expression) {
-        drawn();
-        return (String) page.evaluate("async () => { " + VIEW + " return String(await (" + expression + ")); }");
-    }
-
-    // a call of the view's controller, made as the view's own code makes it
-    private void call(String call) {
-        drawn();
-        page.evaluate("() => { " + VIEW + " " + call + "; }");
-    }
-
-    // the reason a call of the controller is refused with
-    private String refusal(String call) {
-        drawn();
-        return (String) page.evaluate("async () => { " + VIEW + " try { await (" + call + "); return 'not refused'; } catch (e) { return e.message; } }");
-    }
+            + " const conditions = () => data.cats.filters.map(f => f.property + ' ' + f.compare + ' ' + f.value).join('; ');");
 }

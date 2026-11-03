@@ -1,8 +1,6 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.PlaywrightException;
 import com.microsoft.playwright.Route;
 import com.microsoft.playwright.options.AriaRole;
 import org.junit.Test;
@@ -37,17 +35,17 @@ public class UiReactBatchIT extends UiTest {
     public void whatThePlatformDrawsHasAnEntryAndNoMember() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactBatch.uiRbShape");
-        waitFor("board", "names() === '" + String.join(",", items) + "'");
-        assertEquals("function,function,function", eval("board", "[typeof controller.i.note.change, typeof controller.i.incQty.exec,"
+        view("board").waitFor("names() === '" + String.join(",", items) + "'");
+        assertEquals("function,function,function", view("board").eval("[typeof controller.i.note.change, typeof controller.i.incQty.exec,"
                 + " typeof controller.toggleApprove.exec].join()"));
-        assertEquals("/undefined", eval("board", "Object.keys(data.i.approve).join() + '/' + typeof controller.i.approve"));
-        assertEquals("false,true,true,undefined", eval("board", "['caption' in data.i.bump, 'type' in data.i.bump, 'noSort' in data.i.bump,"
+        assertEquals("/undefined", view("board").eval("Object.keys(data.i.approve).join() + '/' + typeof controller.i.approve"));
+        assertEquals("false,true,true,undefined", view("board").eval("['caption' in data.i.bump, 'type' in data.i.bump, 'noSort' in data.i.bump,"
                 + " typeof controller.i.bump].join()"));
-        assertEquals("Qty,false,undefined", eval("board", "[data.i.qty.caption, 'qty' in row(" + js(items[1]) + "), typeof controller.i.qty].join()"));
-        assertEquals("Comment,undefined", eval("board", "[data.comment.caption, typeof controller.comment].join()"));
-        assertEquals("function,function,function", eval("board", "[typeof controller.form.exec, typeof controller.form.change, typeof controller.batch].join()"));
+        assertEquals("Qty,false,undefined", view("board").eval("[data.i.qty.caption, 'qty' in row(" + js(items[1]) + "), typeof controller.i.qty].join()"));
+        assertEquals("Comment,undefined", view("board").eval("[data.comment.caption, typeof controller.comment].join()"));
+        assertEquals("function,function,function", view("board").eval("[typeof controller.form.exec, typeof controller.form.change, typeof controller.batch].join()"));
 
-        assertEquals("Note,false,object,0,function", eval("side", "[data.i.sideNote.caption, 'list' in data.i, typeof controller.i,"
+        assertEquals("Note,false,object,0,function", view("side").eval("[data.i.sideNote.caption, 'list' in data.i, typeof controller.i,"
                 + " Object.keys(controller.i).length, typeof controller.batch].join()"));
         assertThat(form.locator(".ui-rb-side .lsf-platform input, .ui-rb-side .lsf-platform .panel-renderer-value").first()).isVisible();
         close(form);
@@ -60,25 +58,25 @@ public class UiReactBatchIT extends UiTest {
     public void thePlatformsEditorsAndButtonsInAView() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactBatch.uiRbShape");
-        waitFor("board", "names() === '" + String.join(",", items) + "'");
-        call("board", "controller.i.incQty.exec(row(" + js(items[1]) + "))");
-        waitFor("board", "row(" + js(items[1]) + ").qtyEcho.value === 12");
+        view("board").waitFor("names() === '" + String.join(",", items) + "'");
+        view("board").call("controller.i.incQty.exec(row(" + js(items[1]) + "))");
+        view("board").waitFor("row(" + js(items[1]) + ").qtyEcho.value === 12");
         assertThat(boardRow(form, items[1]).locator(".ui-rb-qty")).hasText("12");
 
-        call("board", "controller.i.change(row(" + js(items[2]) + "))");
-        waitFor("board", "current() === " + js(items[2]));
+        view("board").call("controller.i.change(row(" + js(items[2]) + "))");
+        view("board").waitFor("current() === " + js(items[2]));
         form.locator(".ui-rb-approve button").click();
-        waitFor("board", "row(" + js(items[2]) + ").approvals.value === 1");
+        view("board").waitFor("row(" + js(items[2]) + ").approvals.value === 1");
         boardRow(form, items[0]).locator(".ui-rb-bump button").click();
-        waitFor("board", "row(" + js(items[0]) + ").bumps.value === 1");
-        waitFor("board", "row(" + js(items[2]) + ").bumps.value === null && row(" + js(items[2]) + ").approvals.value === 1");
+        view("board").waitFor("row(" + js(items[0]) + ").bumps.value === 1");
+        view("board").waitFor("row(" + js(items[2]) + ").bumps.value === null && row(" + js(items[2]) + ").approvals.value === 1");
 
         Locator approve = form.locator(".ui-rb-approve > .lsf-platform");
-        call("board", "controller.toggleApprove.exec()");
-        waitFor("board", "data.i.approve.hidden === true");
+        view("board").call("controller.toggleApprove.exec()");
+        view("board").waitFor("data.i.approve.hidden === true");
         assertThat(approve).isHidden();
-        call("board", "controller.toggleApprove.exec()");
-        waitFor("board", "!('hidden' in data.i.approve)");
+        view("board").call("controller.toggleApprove.exec()");
+        view("board").waitFor("!('hidden' in data.i.approve)");
         assertThat(approve).isVisible();
         save(form);
         close(form);
@@ -93,16 +91,16 @@ public class UiReactBatchIT extends UiTest {
         String note = "b" + System.nanoTime();
         List<String> errors = errors();
         Locator form = open(FOLDER, "UiReactBatch.uiRbShape");
-        waitFor("board", "names() === '" + String.join(",", items) + "'");
-        call("board", "controller.i.change(row(" + js(items[0]) + "))");
-        waitFor("board", "current() === " + js(items[0]));
-        List<String> requests = requests();
-        call("board", "controller.batch(() => { controller.i.change(row(" + js(items[1]) + ")); controller.i.orders.change({property: 'sum', desc: true});"
+        view("board").waitFor("names() === '" + String.join(",", items) + "'");
+        view("board").call("controller.i.change(row(" + js(items[0]) + "))");
+        view("board").waitFor("current() === " + js(items[0]));
+        List<String> requests = requests(request -> request.method().equals("POST"));
+        view("board").call("controller.batch(() => { controller.i.change(row(" + js(items[1]) + ")); controller.i.orders.change({property: 'sum', desc: true});"
                 + " controller.i.note.change(" + js(note) + "); controller.i.incQty.exec(row(" + js(items[2]) + ")); })");
-        waitFor("board", "names() === '" + items[1] + "," + items[2] + "," + items[0] + "' && current() === " + js(items[1])
+        view("board").waitFor("names() === '" + items[1] + "," + items[2] + "," + items[0] + "' && current() === " + js(items[1])
                 + " && row(" + js(items[1]) + ").note.value === " + js(note) + " && row(" + js(items[2]) + ").qtyEcho.value === 13");
-        assertEquals("[{\"property\":\"sum\",\"desc\":true}]", eval("board", "JSON.stringify(data.i.orders)"));
-        assertEquals("null", eval("board", "row(" + js(items[0]) + ").note.value"));
+        assertEquals("[{\"property\":\"sum\",\"desc\":true}]", view("board").eval("JSON.stringify(data.i.orders)"));
+        assertEquals("null", view("board").eval("row(" + js(items[0]) + ").note.value"));
         assertEquals(1, count(requests, "ExecuteBatch"));
         assertEquals(0, requests.stream().filter(request -> !request.contains(signature("ExecuteBatch")) && (request.contains(signature("ChangeGroupObject"))
                 || request.contains(signature("SetPropertyOrders")) || request.contains(signature("ExecuteEventAction")))).count());
@@ -118,12 +116,12 @@ public class UiReactBatchIT extends UiTest {
         String[] items = seed();
         String note = "x" + System.nanoTime();
         Locator form = open(FOLDER, "UiReactBatch.uiRbShape");
-        waitFor("board", "names() === '" + String.join(",", items) + "'");
-        call("board", "controller.i.change(row(" + js(items[1]) + "))");
-        waitFor("board", "current() === " + js(items[1]));
-        List<String> requests = requests();
-        assertEquals("stop", refusal("board", "controller.batch(() => { controller.i.note.change(" + js(note) + "); throw new Error('stop'); })"));
-        waitFor("board", "row(" + js(items[1]) + ").note.value === " + js(note) + " && !row(" + js(items[1]) + ").note.loading");
+        view("board").waitFor("names() === '" + String.join(",", items) + "'");
+        view("board").call("controller.i.change(row(" + js(items[1]) + "))");
+        view("board").waitFor("current() === " + js(items[1]));
+        List<String> requests = requests(request -> request.method().equals("POST"));
+        assertEquals("stop", view("board").refusal("controller.batch(() => { controller.i.note.change(" + js(note) + "); throw new Error('stop'); })"));
+        view("board").waitFor("row(" + js(items[1]) + ").note.value === " + js(note) + " && !row(" + js(items[1]) + ").note.loading");
         assertEquals(1, count(requests, "ExecuteBatch"));
         saveAndCheckNotes(form, items, "-", note, "-");
         close(form);
@@ -137,23 +135,23 @@ public class UiReactBatchIT extends UiTest {
         String[] items = seed();
         String note = "y" + System.nanoTime();
         Locator form = open(FOLDER, "UiReactBatch.uiRbShape");
-        waitFor("board", "names() === '" + String.join(",", items) + "'");
-        call("board", "controller.i.change(row(" + js(items[1]) + "))");
-        waitFor("board", "current() === " + js(items[1]));
-        List<String> requests = requests();
-        call("board", "window.uiRbRefused = window.uiRbLookup = 'pending'; controller.batch(() => { controller.i.note.change('outer');"
+        view("board").waitFor("names() === '" + String.join(",", items) + "'");
+        view("board").call("controller.i.change(row(" + js(items[1]) + "))");
+        view("board").waitFor("current() === " + js(items[1]));
+        List<String> requests = requests(request -> request.method().equals("POST"));
+        view("board").call("window.uiRbRefused = window.uiRbLookup = 'pending'; controller.batch(() => { controller.i.note.change('outer');"
                 + " window.uiRbViews.side.controller.batch(() => controller.i.note.change(" + js(note) + "));"
                 + " controller.form.exec('uiRbPing').then(() => window.uiRbRefused = 'made', e => window.uiRbRefused = e.message);"
                 + " controller.i.note.getValues('').then(() => window.uiRbLookup = 'made', e => window.uiRbLookup = e.message); })");
-        waitFor("board", "window.uiRbRefused !== 'pending' && window.uiRbLookup !== 'pending'");
-        assertEquals("controller.form.exec(): " + REFUSAL, eval("board", "window.uiRbRefused"));
-        assertEquals("controller.i.note.getValues(): " + REFUSAL, eval("board", "window.uiRbLookup"));
-        waitFor("board", "row(" + js(items[1]) + ").note.value === " + js(note) + " && !row(" + js(items[1]) + ").note.loading");
+        view("board").waitFor("window.uiRbRefused !== 'pending' && window.uiRbLookup !== 'pending'");
+        assertEquals("controller.form.exec(): " + REFUSAL, view("board").eval("window.uiRbRefused"));
+        assertEquals("controller.i.note.getValues(): " + REFUSAL, view("board").eval("window.uiRbLookup"));
+        view("board").waitFor("row(" + js(items[1]) + ").note.value === " + js(note) + " && !row(" + js(items[1]) + ").note.loading");
         assertEquals(0, requests.stream().filter(request -> request.contains(signature("ControllerExecAction")) || request.contains(signature("GetAsyncValues"))
                 || request.contains(signature("GetPriorityAsyncValues"))).count());
         assertEquals(1, count(requests, "ExecuteBatch"));
 
-        assertEquals("ok", eval("board", "controller.form.exec('uiRbPing').then(() => 'ok')"));
+        assertEquals("ok", view("board").eval("controller.form.exec('uiRbPing').then(() => 'ok')"));
         saveAndCheckNotes(form, items, "-", note, "-");
         close(form);
     }
@@ -167,22 +165,22 @@ public class UiReactBatchIT extends UiTest {
         String[] items = seed();
         List<String> errors = errors();
         Locator form = open(FOLDER, "UiReactBatch.uiRbShape");
-        waitFor("board", "names() === '" + String.join(",", items) + "'");
-        assertEquals("resolved", eval("board", "controller.i.note.change('p1', row(" + js(items[0]) + ")).then(() => 'resolved')"));
-        assertEquals("resolved", eval("board", "controller.i.incQty.exec(row(" + js(items[0]) + ")).then(() => 'resolved')"));
-        assertEquals("resolved", eval("board", "(() => { let made; const batch = controller.batch(() => { made = controller.i.note.change('p2', row("
+        view("board").waitFor("names() === '" + String.join(",", items) + "'");
+        assertEquals("resolved", view("board").eval("controller.i.note.change('p1', row(" + js(items[0]) + ")).then(() => 'resolved')"));
+        assertEquals("resolved", view("board").eval("controller.i.incQty.exec(row(" + js(items[0]) + ")).then(() => 'resolved')"));
+        assertEquals("resolved", view("board").eval("(() => { let made; const batch = controller.batch(() => { made = controller.i.note.change('p2', row("
                 + js(items[1]) + ")); }); return made === batch ? batch.then(() => 'resolved') : 'another Promise'; })()"));
 
-        call("board", "window.uiRbTold = 'pending'; controller.i.tell.exec(row(" + js(items[2]) + ")).then(() => window.uiRbTold = 'over')");
+        view("board").call("window.uiRbTold = 'pending'; controller.i.tell.exec(row(" + js(items[2]) + ")).then(() => window.uiRbTold = 'over')");
         assertThat(dialog("told " + items[2])).isVisible();
-        assertEquals("pending", eval("board", "window.uiRbTold"));
+        assertEquals("pending", view("board").eval("window.uiRbTold"));
         closeDialog("told " + items[2]);
-        waitFor("board", "window.uiRbTold === 'over'");
+        view("board").waitFor("window.uiRbTold === 'over'");
 
-        String failed = eval("board", "controller.crash.exec().then(() => 'resolved', e => e.message)");
+        String failed = view("board").eval("controller.crash.exec().then(() => 'resolved', e => e.message)");
         assertTrue(failed, failed.contains("uiRbCrash: the action failed"));
         closeDialog("uiRbCrash: the action failed");
-        call("board", "controller.crash.exec()"); // no one waits for its Promise
+        view("board").call("controller.crash.exec()"); // no one waits for its Promise
         closeDialog("uiRbCrash: the action failed");
         assertEquals(Collections.emptyList(), errors);
         saveAndCheckNotes(form, items, "p1", "p2", "-");
@@ -194,11 +192,11 @@ public class UiReactBatchIT extends UiTest {
     public void aClassicViewsCallIsThePromiseOfItsRequest() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactBatch.uiRbClassic");
-        classic("list.length === 3");
-        assertEquals("resolved", classicEval("controller.changeProperty('note', row(" + js(items[0]) + "), 'c1').then(() => 'resolved')"));
-        assertEquals("resolved", classicEval("controller.batch(() => controller.changeProperty('note', row(" + js(items[1]) + "), 'c2'))"
+        classic.waitFor("list.length === 3");
+        assertEquals("resolved", classic.eval("controller.changeProperty('note', row(" + js(items[0]) + "), 'c1').then(() => 'resolved')"));
+        assertEquals("resolved", classic.eval("controller.batch(() => controller.changeProperty('note', row(" + js(items[1]) + "), 'c2'))"
                 + ".then(() => 'resolved')"));
-        classic("row(" + js(items[0]) + ").note === 'c1' && row(" + js(items[1]) + ").note === 'c2'");
+        classic.waitFor("row(" + js(items[0]) + ").note === 'c1' && row(" + js(items[1]) + ").note === 'c2'");
         saveAndCheckNotes(form, items, "c1", "c2", "-");
         close(form);
     }
@@ -211,17 +209,17 @@ public class UiReactBatchIT extends UiTest {
         String[] items = seed();
         String stamp = String.valueOf(System.nanoTime());
         Locator form = open(FOLDER, "UiReactBatch.uiRbShape");
-        waitFor("board", "names() === '" + String.join(",", items) + "'");
-        call("board", "controller.i.note.change('Apple" + stamp + "', row(" + js(items[0]) + "))");
-        waitFor("board", "row(" + js(items[0]) + ").note.value === 'Apple" + stamp + "' && !row(" + js(items[0]) + ").note.loading");
+        view("board").waitFor("names() === '" + String.join(",", items) + "'");
+        view("board").call("controller.i.note.change('Apple" + stamp + "', row(" + js(items[0]) + "))");
+        view("board").waitFor("row(" + js(items[0]) + ").note.value === 'Apple" + stamp + "' && !row(" + js(items[0]) + ").note.loading");
         saveAndCheckNotes(form, items, "Apple" + stamp, "-", "-");
-        call("board", "controller.i.note.change('Apricot" + stamp + "', row(" + js(items[0]) + "))");
-        waitFor("board", "row(" + js(items[0]) + ").note.value === 'Apricot" + stamp + "' && !row(" + js(items[0]) + ").note.loading");
+        view("board").call("controller.i.note.change('Apricot" + stamp + "', row(" + js(items[0]) + "))");
+        view("board").waitFor("row(" + js(items[0]) + ").note.value === 'Apricot" + stamp + "' && !row(" + js(items[0]) + ").note.loading");
         String lookup = "controller.i.note.getValues('Ap').then(async answer => { const names = data => data.map(value => value.rawString).join();"
                 + " return names(answer.data) + '|' + (answer.more ? names((await answer.more).data) : 'final'); })";
-        assertEquals("Apple" + stamp + "|Apricot" + stamp, eval("board", lookup));
-        assertEquals("Apricot" + stamp + "|final", eval("board", lookup));
-        assertEquals("Apricot" + stamp + "|final", eval("board", lookup.replace("controller.i.note.getValues('Ap')", "controller.form.getValues('i.note', 'Ap')")));
+        assertEquals("Apple" + stamp + "|Apricot" + stamp, view("board").eval(lookup));
+        assertEquals("Apricot" + stamp + "|final", view("board").eval(lookup));
+        assertEquals("Apricot" + stamp + "|final", view("board").eval(lookup.replace("controller.i.note.getValues('Ap')", "controller.form.getValues('i.note', 'Ap')")));
         saveAndCheckNotes(form, items, "Apricot" + stamp, "-", "-");
         close(form);
     }
@@ -232,15 +230,15 @@ public class UiReactBatchIT extends UiTest {
     public void aSortingNamesAPropertyWhereverItIsDrawn() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactBatch.uiRbShape");
-        waitFor("board", "names() === '" + String.join(",", items) + "'");
-        call("board", "controller.i.orders.change([{property: 'weight', desc: true}])");
-        waitFor("board", "names() === '" + items[0] + "," + items[2] + "," + items[1] + "' && JSON.stringify(data.i.orders) === '[{\"property\":\"weight\",\"desc\":true}]'");
-        call("board", "controller.i.orders.change([{property: 'qty', desc: false}])");
-        waitFor("board", "names() === '" + String.join(",", items) + "' && JSON.stringify(data.i.orders) === '[{\"property\":\"qty\",\"desc\":false}]'");
+        view("board").waitFor("names() === '" + String.join(",", items) + "'");
+        view("board").call("controller.i.orders.change([{property: 'weight', desc: true}])");
+        view("board").waitFor("names() === '" + items[0] + "," + items[2] + "," + items[1] + "' && JSON.stringify(data.i.orders) === '[{\"property\":\"weight\",\"desc\":true}]'");
+        view("board").call("controller.i.orders.change([{property: 'qty', desc: false}])");
+        view("board").waitFor("names() === '" + String.join(",", items) + "' && JSON.stringify(data.i.orders) === '[{\"property\":\"qty\",\"desc\":false}]'");
         assertEquals("controller.i.orders.change(): unknown property 'nosuch' of object group 'i'",
-                refusal("board", "controller.i.orders.change({property: 'nosuch', desc: true})"));
-        call("board", "controller.i.orders.change([])");
-        waitFor("board", "data.i.orders.length === 0");
+                view("board").refusal("controller.i.orders.change({property: 'nosuch', desc: true})"));
+        view("board").call("controller.i.orders.change([])");
+        view("board").waitFor("data.i.orders.length === 0");
         close(form);
     }
 
@@ -253,10 +251,10 @@ public class UiReactBatchIT extends UiTest {
         String[] items = seed();
         String before = "g" + System.nanoTime();
         Locator form = open(FOLDER, "UiReactBatch.uiRbShape");
-        waitFor("board", "names() === '" + String.join(",", items) + "'");
-        call("board", "controller.i.note.change(" + js(before) + ", row(" + js(items[2]) + "))");
-        waitFor("board", "row(" + js(items[2]) + ").note.value === " + js(before) + " && !row(" + js(items[2]) + ").note.loading");
-        call("board", "controller.toggleFail.exec()"); // a request before the batch's
+        view("board").waitFor("names() === '" + String.join(",", items) + "'");
+        view("board").call("controller.i.note.change(" + js(before) + ", row(" + js(items[2]) + "))");
+        view("board").waitFor("row(" + js(items[2]) + ").note.value === " + js(before) + " && !row(" + js(items[2]) + ").note.loading");
+        view("board").call("controller.toggleFail.exec()"); // a request before the batch's
         // the batch's request held until the view shows its change
         List<Route> held = new CopyOnWriteArrayList<>();
         page.route("**/main/dispatch", route -> {
@@ -265,17 +263,17 @@ public class UiReactBatchIT extends UiTest {
             else
                 route.resume();
         });
-        call("board", "controller.batch(() => { controller.i.orders.change({property: 'sum', desc: true});"
+        view("board").call("controller.batch(() => { controller.i.orders.change({property: 'sum', desc: true});"
                 + " controller.i.note.change('f1', row(" + js(items[2]) + ")); controller.i.note.change('f2', row(" + js(items[2]) + ")); })");
-        waitFor("board", "row(" + js(items[2]) + ").note.value === 'f2' && row(" + js(items[2]) + ").note.loading === true");
+        view("board").waitFor("row(" + js(items[2]) + ").note.value === 'f2' && row(" + js(items[2]) + ").note.loading === true");
         page.waitForCondition(() -> !held.isEmpty());
         held.get(0).resume();
         page.unroute("**/main/dispatch");
         assertThat(dialog("uiRbFail: a sorting failed")).isVisible();
-        waitFor("board", "row(" + js(items[2]) + ").note.value === " + js(before) + " && !row(" + js(items[2]) + ").note.loading");
+        view("board").waitFor("row(" + js(items[2]) + ").note.value === " + js(before) + " && !row(" + js(items[2]) + ").note.loading");
         closeDialog("uiRbFail: a sorting failed");
-        call("board", "controller.toggleFail.exec()"); // the next request, which the sorting fails no more
-        waitFor("board", "row(" + js(items[2]) + ").note.value === 'f2' && !row(" + js(items[2]) + ").note.loading");
+        view("board").call("controller.toggleFail.exec()"); // the next request, which the sorting fails no more
+        view("board").waitFor("row(" + js(items[2]) + ").note.value === 'f2' && !row(" + js(items[2]) + ").note.loading");
         saveAndCheckNotes(form, items, "-", "-", "f2");
         close(form);
     }
@@ -289,51 +287,51 @@ public class UiReactBatchIT extends UiTest {
         String[] items = seed();
         String stamp = String.valueOf(System.nanoTime());
         Locator form = open(FOLDER, "UiReactBatch.uiRbClassic");
-        classic("list.length === 3");
-        List<String> requests = requests();
-        classicCall("controller.batch(() => { controller.changeProperty('note', row(" + js(items[0]) + "), 'a" + stamp + "');"
+        classic.waitFor("list.length === 3");
+        List<String> requests = requests(request -> request.method().equals("POST"));
+        classic.call("controller.batch(() => { controller.changeProperty('note', row(" + js(items[0]) + "), 'a" + stamp + "');"
                 + " controller.changeProperty('note', row(" + js(items[1]) + "), 'b" + stamp + "'); })");
-        classic("row(" + js(items[0]) + ").note === 'a" + stamp + "' && row(" + js(items[1]) + ").note === 'b" + stamp + "'");
+        classic.waitFor("row(" + js(items[0]) + ").note === 'a" + stamp + "' && row(" + js(items[1]) + ").note === 'b" + stamp + "'");
         assertEquals(1, count(requests, "ExecuteBatch"));
         assertEquals(0, requests.stream().filter(request -> !request.contains(signature("ExecuteBatch")) && request.contains(signature("ExecuteEventAction"))).count());
         saveAndCheckNotes(form, items, "a" + stamp, "b" + stamp, "-");
 
-        requests = requests();
-        classicCall("controller.changeProperties(['note', 'note', 'nosuch'], [row(" + js(items[1]) + "), row(" + js(items[2]) + "), row(" + js(items[2]) + ")],"
+        requests = requests(request -> request.method().equals("POST"));
+        classic.call("controller.changeProperties(['note', 'note', 'nosuch'], [row(" + js(items[1]) + "), row(" + js(items[2]) + "), row(" + js(items[2]) + ")],"
                 + " ['c" + stamp + "', 'd" + stamp + "', 'x'])");
-        classic("row(" + js(items[1]) + ").note === 'c" + stamp + "' && row(" + js(items[2]) + ").note === 'd" + stamp + "'");
+        classic.waitFor("row(" + js(items[1]) + ").note === 'c" + stamp + "' && row(" + js(items[2]) + ").note === 'd" + stamp + "'");
         assertEquals(1, count(requests, "ExecuteBatch"));
         saveAndCheckNotes(form, items, "a" + stamp, "c" + stamp, "d" + stamp);
 
-        requests = requests();
-        classicCall("controller.batch(() => { controller.changeProperty('note', row(" + js(items[2]) + "), 'n1" + stamp + "');"
+        requests = requests(request -> request.method().equals("POST"));
+        classic.call("controller.batch(() => { controller.changeProperty('note', row(" + js(items[2]) + "), 'n1" + stamp + "');"
                 + " controller.changeProperties(['note'], [row(" + js(items[2]) + ")], ['n2" + stamp + "']); })");
-        classic("row(" + js(items[2]) + ").note === 'n2" + stamp + "'");
+        classic.waitFor("row(" + js(items[2]) + ").note === 'n2" + stamp + "'");
         assertEquals(1, count(requests, "ExecuteBatch"));
         saveAndCheckNotes(form, items, "a" + stamp, "c" + stamp, "n2" + stamp);
 
-        requests = requests();
-        classicCall("window.uiRbLookup = 'pending'; controller.batch(() => { controller.changeProperty('note', row(" + js(items[1]) + "), 'g" + stamp + "');"
+        requests = requests(request -> request.method().equals("POST"));
+        classic.call("window.uiRbLookup = 'pending'; controller.batch(() => { controller.changeProperty('note', row(" + js(items[1]) + "), 'g" + stamp + "');"
                 + " controller.getPropertyValues('note', '', () => window.uiRbLookup = 'made', () => window.uiRbLookup = 'failed'); })");
-        classic("row(" + js(items[1]) + ").note === 'g" + stamp + "'");
+        classic.waitFor("row(" + js(items[1]) + ").note === 'g" + stamp + "'");
         assertEquals("failed", page.evaluate("() => window.uiRbLookup"));
         assertEquals(0, requests.stream().filter(request -> request.contains(signature("GetAsyncValues")) || request.contains(signature("GetPriorityAsyncValues"))).count());
         assertEquals(1, count(requests, "ExecuteBatch"));
         saveAndCheckNotes(form, items, "a" + stamp, "g" + stamp, "n2" + stamp);
 
-        requests = requests();
+        requests = requests(request -> request.method().equals("POST"));
         String promise = (String) page.evaluate("() => { const controller = window.uiRbClassic.controller, row = " + ROW + ";"
                 + " try { controller.batch(() => { controller.changeProperty('note', row(" + js(items[0]) + "), 'p" + stamp + "'); return {then: () => {}}; });"
                 + " return 'not refused'; } catch (e) { return e.message; } }");
         assertEquals("controller.batch(): the function returned a Promise: a batch is sent when it returns, so what follows an await in it would be"
                 + " made outside it. Await before the batch", promise);
-        classic("row(" + js(items[0]) + ").note === 'p" + stamp + "'");
+        classic.waitFor("row(" + js(items[0]) + ").note === 'p" + stamp + "'");
         assertEquals(1, count(requests, "ExecuteBatch"));
         saveAndCheckNotes(form, items, "p" + stamp, "g" + stamp, "n2" + stamp);
 
-        requests = requests();
-        classicCall("controller.changeProperty('note', row(" + js(items[0]) + "), 'e" + stamp + "')");
-        classic("row(" + js(items[0]) + ").note === 'e" + stamp + "'");
+        requests = requests(request -> request.method().equals("POST"));
+        classic.call("controller.changeProperty('note', row(" + js(items[0]) + "), 'e" + stamp + "')");
+        classic.waitFor("row(" + js(items[0]) + ").note === 'e" + stamp + "'");
         assertEquals(0, count(requests, "ExecuteBatch"));
         assertEquals(1, count(requests, "ExecuteEventAction"));
         saveAndCheckNotes(form, items, "e" + stamp, "g" + stamp, "n2" + stamp);
@@ -348,17 +346,17 @@ public class UiReactBatchIT extends UiTest {
         String[] items = seed();
         String stamp = String.valueOf(System.nanoTime());
         Locator form = open(FOLDER, "UiReactBatch.uiRbClassic");
-        classic("list.length === 3");
-        List<String> requests = requests();
-        classicCall("controller.batch(() => { controller.changeProperty('note', row(" + js(items[2]) + "), 'u" + stamp + "');"
+        classic.waitFor("list.length === 3");
+        List<String> requests = requests(request -> request.method().equals("POST"));
+        classic.call("controller.batch(() => { controller.changeProperty('note', row(" + js(items[2]) + "), 'u" + stamp + "');"
                 + " controller.setBooleanViewFilter('name', 1000); })");
         assertThat(dialog("SetViewFilters is no request a batch carries")).isVisible();
         assertEquals(1, requests.stream().filter(request -> request.contains(signature("ExecuteBatch")) && request.contains(signature("SetViewFilters"))).count());
         assertEquals(0, requests.stream().filter(request -> !request.contains(signature("ExecuteBatch")) && (request.contains(signature("SetViewFilters"))
                 || request.contains(signature("ExecuteEventAction")))).count());
         closeDialog("SetViewFilters is no request a batch carries");
-        classicCall("controller.changeProperty('note', row(" + js(items[0]) + "), 'v" + stamp + "')");
-        classic("row(" + js(items[0]) + ").note === 'v" + stamp + "' && row(" + js(items[2]) + ").note === 'u" + stamp + "' && list.length === 3");
+        classic.call("controller.changeProperty('note', row(" + js(items[0]) + "), 'v" + stamp + "')");
+        classic.waitFor("row(" + js(items[0]) + ").note === 'v" + stamp + "' && row(" + js(items[2]) + ").note === 'u" + stamp + "' && list.length === 3");
         saveAndCheckNotes(form, items, "v" + stamp, "-", "u" + stamp);
         close(form);
     }
@@ -382,26 +380,6 @@ public class UiReactBatchIT extends UiTest {
         String[] items = {"Alpha" + id, "Beta" + id, "Gamma" + id};
         exec("UiReactBatch.uiRbSeed", items);
         return items;
-    }
-
-    // the bodies of the requests the page posts from now on - GWT-RPC, naming each request's kind
-    private List<String> requests() {
-        List<String> requests = new CopyOnWriteArrayList<>();
-        page.onRequest(request -> {
-            if (request.method().equals("POST") && request.postData() != null)
-                requests.add(request.postData());
-        });
-        return requests;
-    }
-
-    // ... the requests of a kind among them, by its GWT-RPC type signature: the client's report of an error names a
-    // request's kind in its text
-    private static long count(List<String> requests, String kind) {
-        return requests.stream().filter(request -> request.contains(signature(kind))).count();
-    }
-
-    private static String signature(String kind) {
-        return "action.form." + kind + "/";
     }
 
     // the errors the page throws from now on
@@ -433,60 +411,16 @@ public class UiReactBatchIT extends UiTest {
         return "'" + text + "'";
     }
 
-    // what a React view was last drawn with, its data and its controller, as a script names them; a row of the group by
-    // its name, the names of the rows, the current one's
-    private static String scope(String view) {
-        return "const view = window.uiRbViews && window.uiRbViews." + view + ", data = view && view.data, controller = view && view.controller;"
-                + " const row = name => data.i.list.find(r => r.name.value === name);"
+    private View view(String name) {
+        return view("window.uiRbViews && window.uiRbViews." + name,
+                " const row = name => data.i.list.find(r => r.name.value === name);"
                 + " const names = () => data.i.list.map(r => r.name.value).join();"
-                + " const current = () => (data.i.list.find(r => r.isCurrent) || {name: {value: null}}).name.value;";
-    }
-
-    // until a condition holds of what a view is drawn with, failing with what it is drawn with then
-    private void waitFor(String view, String condition) {
-        try {
-            page.waitForFunction("() => { " + scope(view) + " try { return !!data && !!(" + condition + "); } catch (e) { return false; } }",
-                    null, new Page.WaitForFunctionOptions().setTimeout(10_000));
-        } catch (PlaywrightException e) {
-            throw new AssertionError("never " + condition + " - the view is drawn with "
-                    + page.evaluate("() => JSON.stringify(window.uiRbViews && window.uiRbViews." + view + " && window.uiRbViews." + view + ".data)"), e);
-        }
-    }
-
-    // what an expression over what a view is drawn with comes to - the answer of a Promise -, as a string
-    private String eval(String view, String expression) {
-        return (String) page.evaluate("async () => { " + scope(view) + " return String(await (" + expression + ")); }");
-    }
-
-    // a call of a view's controller, made as the view's own code makes it
-    private void call(String view, String call) {
-        page.evaluate("() => { " + scope(view) + " " + call + "; }");
-    }
-
-    // the reason a call of a view's controller is refused with: thrown, or its Promise rejected with it
-    private String refusal(String view, String call) {
-        return (String) page.evaluate("async () => { " + scope(view) + " try { await (" + call + "); return 'not refused'; } catch (e) { return e.message; } }");
+                + " const current = () => (data.i.list.find(r => r.isCurrent) || {name: {value: null}}).name.value;");
     }
 
     // the classic view's rows, a row by its name
     private static final String ROW = "name => window.uiRbClassic.list.find(r => r.name === name)";
-
-    // until a condition holds of the classic view's rows (list, row), failing with them
-    private void classic(String condition) {
-        try {
-            page.waitForFunction("() => { const list = window.uiRbClassic && window.uiRbClassic.list, row = " + ROW + ";"
-                    + " try { return !!list && !!(" + condition + "); } catch (e) { return false; } }", null, new Page.WaitForFunctionOptions().setTimeout(10_000));
-        } catch (PlaywrightException e) {
-            throw new AssertionError("never " + condition + " - the classic view has " + page.evaluate("() => JSON.stringify(window.uiRbClassic && window.uiRbClassic.list)"), e);
-        }
-    }
-
-    // a call of the classic view's controller, made as the view's own code makes it
-    private void classicCall(String call) {
-        page.evaluate("() => { const controller = window.uiRbClassic.controller, row = " + ROW + "; " + call + "; }");
-    }
-    // ... and what it comes to - the answer of a Promise -, as a string
-    private String classicEval(String expression) {
-        return (String) page.evaluate("async () => { const controller = window.uiRbClassic.controller, row = " + ROW + "; return String(await (" + expression + ")); }");
-    }
+    private final View classic = new View("const list = window.uiRbClassic && window.uiRbClassic.list,"
+            + " controller = window.uiRbClassic && window.uiRbClassic.controller, row = " + ROW + ";",
+            "!!list", "the classic view has ", "window.uiRbClassic && window.uiRbClassic.list");
 }

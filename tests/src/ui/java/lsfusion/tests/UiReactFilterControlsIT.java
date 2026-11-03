@@ -1,9 +1,6 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.PlaywrightException;
-import com.microsoft.playwright.options.WaitForSelectorState;
 import org.junit.Test;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -25,28 +22,28 @@ public class UiReactFilterControlsIT extends UiTest {
     public void controlsAViewDrawsOverTheConditionsItDraws() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactFilterControls.uiRfcConditions");
-        waitFor("data.i.filters.length === 0");
-        assertEquals("addFilter,applyFilters,filters,resetFilters", eval("Object.keys(controller.i).sort().join()"));
-        assertEquals("false,false", eval("[data.i.filtersManual, data.i.filtersPending].join()"));
+        view.waitFor("data.i.filters.length === 0");
+        assertEquals("addFilter,applyFilters,filters,resetFilters", view.drawn().eval("Object.keys(controller.i).sort().join()"));
+        assertEquals("false,false", view.drawn().eval("[data.i.filtersManual, data.i.filtersPending].join()"));
         assertThat(button(form, "Show filter controls")).hasCount(0);
         assertThat(button(form, "Hide filter controls")).hasCount(0);
 
         cell(form, "name", items[1]).click();
-        call("controller.i.addFilter()");
-        waitFor("conditions() === 'name = " + items[1] + "'");
+        view.drawn().call("controller.i.addFilter()");
+        view.waitFor("conditions() === 'name = " + items[1] + "'");
         assertThat(names(form)).hasText(new String[] {items[1]});
-        call("controller.i.applyFilters()"); // nothing waits: nothing sent, nothing refused
+        view.drawn().call("controller.i.applyFilters()"); // nothing waits: nothing sent, nothing refused
         assertThat(names(form)).hasText(new String[] {items[1]});
-        waitFor("conditions() === 'name = " + items[1] + "' && data.i.filtersManual === false && data.i.filtersPending === false");
-        call("controller.i.resetFilters()");
-        waitFor("conditions() === ''");
+        view.waitFor("conditions() === 'name = " + items[1] + "' && data.i.filtersManual === false && data.i.filtersPending === false");
+        view.drawn().call("controller.i.resetFilters()");
+        view.waitFor("conditions() === ''");
         assertThat(names(form)).hasText(items);
         cell(form, "price", "1.5").click();
-        call("controller.i.addFilter()");
-        waitFor("conditions() === 'price = 1.5'");
+        view.drawn().call("controller.i.addFilter()");
+        view.waitFor("conditions() === 'price = 1.5'");
         assertThat(names(form)).hasText(new String[] {items[0]});
-        call("controller.i.resetFilters()");
-        waitFor("conditions() === ''");
+        view.drawn().call("controller.i.resetFilters()");
+        view.waitFor("conditions() === ''");
         close(form);
     }
 
@@ -59,17 +56,17 @@ public class UiReactFilterControlsIT extends UiTest {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactFilterControls.uiRfcPanel");
         Locator panel = host(form, "FILTERS(i)"), conditions = panel.locator(".filter:visible");
-        waitFor("data.i.filtersManual === false");
-        assertEquals("addFilter,applyFilters,resetFilters/false/false", eval("Object.keys(controller.i).sort().join() + '/' + ('filters' in data.i)"
+        view.waitFor("data.i.filtersManual === false");
+        assertEquals("addFilter,applyFilters,resetFilters/false/false", view.drawn().eval("Object.keys(controller.i).sort().join() + '/' + ('filters' in data.i)"
                 + " + '/' + data.i.filtersPending"));
         assertThat(button(form, "Show filter controls")).isVisible();
 
         cell(form, "name", items[1]).click();
-        call("controller.i.addFilter()");
+        view.drawn().call("controller.i.addFilter()");
         assertThat(conditions).hasCount(1);
         press(conditions.locator("input"), "Enter");
         assertThat(names(form)).hasText(new String[] {items[1]});
-        call("controller.i.resetFilters()");
+        view.drawn().call("controller.i.resetFilters()");
         assertThat(conditions).hasCount(0);
         assertThat(names(form)).hasText(items);
         close(form);
@@ -86,25 +83,25 @@ public class UiReactFilterControlsIT extends UiTest {
             reload(); // a client is told the mode as it starts
             Locator form = open(FOLDER, "UiReactFilterControls.uiRfcPanel");
             Locator conditions = host(form, "FILTERS(i)").locator(".filter:visible");
-            waitFor("data.i.filtersManual === true && data.i.filtersPending === false");
+            view.waitFor("data.i.filtersManual === true && data.i.filtersPending === false");
             cell(form, "name", items[1]).click();
             button(form, "Show filter controls").click();
-            waitFor("data.i.filtersManual === true && data.i.filtersPending === true");
+            view.waitFor("data.i.filtersManual === true && data.i.filtersPending === true");
             assertThat(conditions).hasCount(1);
             assertThat(conditions.locator("input")).isFocused();
             assertThat(conditions.locator("input")).hasValue(items[1]);
             press(conditions.locator("input"), "Enter");
             assertThat(conditions.locator("input")).hasCount(0);
             assertThat(conditions.locator(".filter-data-property-value")).hasText(items[1]);
-            waitFor("data.i.filtersPending === true");
+            view.waitFor("data.i.filtersPending === true");
             // asked after the Enter, the count would be of the condition applied
             button(form, "Number of Entries").click();
             popup("Number of Entries: 2");
             assertThat(names(form)).hasText(items);
-            call("controller.i.applyFilters()");
+            view.drawn().call("controller.i.applyFilters()");
             assertThat(names(form)).hasText(new String[] {items[1]});
-            waitFor("data.i.filtersPending === false");
-            call("controller.i.resetFilters()");
+            view.waitFor("data.i.filtersPending === false");
+            view.drawn().call("controller.i.resetFilters()");
             assertThat(names(form)).hasText(items);
             close(form);
         } finally {
@@ -118,16 +115,16 @@ public class UiReactFilterControlsIT extends UiTest {
     public void controlsAViewDrawsOverTheRowsItDraws() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactFilterControls.uiRfcBox");
-        waitFor("data.i.list.length === 2");
-        assertEquals("true,false,false", eval("[['addFilter', 'applyFilters', 'resetFilters'].every(m => m in controller.i), data.i.filtersManual,"
+        view.waitFor("data.i.list.length === 2");
+        assertEquals("true,false,false", view.drawn().eval("[['addFilter', 'applyFilters', 'resetFilters'].every(m => m in controller.i), data.i.filtersManual,"
                 + " data.i.filtersPending].join()"));
-        call("controller.i.change(data.i.list[1])");
-        waitFor("data.i.list[1].isCurrent");
-        call("controller.i.addFilter()");
-        waitFor("conditions() === 'name = " + items[1] + "'");
+        view.drawn().call("controller.i.change(data.i.list[1])");
+        view.waitFor("data.i.list[1].isCurrent");
+        view.drawn().call("controller.i.addFilter()");
+        view.waitFor("conditions() === 'name = " + items[1] + "'");
         assertThat(rows(form)).hasText(new String[] {items[1]});
-        call("controller.i.resetFilters()");
-        waitFor("conditions() === ''");
+        view.drawn().call("controller.i.resetFilters()");
+        view.waitFor("conditions() === ''");
         assertThat(rows(form)).hasText(items);
         close(form);
     }
@@ -140,17 +137,17 @@ public class UiReactFilterControlsIT extends UiTest {
         String[] items = seed();
         Locator form = open(FOLDER, "UiReactFilterControls.uiRfcPlaced");
         Locator panel = host(form, "FILTERS(i)"), conditions = panel.locator(".filter:visible");
-        waitFor("data.i.list.length === 2");
-        assertEquals("false,false,true", eval("['filters' in data.i, 'filters' in controller.i, ['addFilter', 'applyFilters', 'resetFilters']"
+        view.waitFor("data.i.list.length === 2");
+        assertEquals("false,false,true", view.drawn().eval("['filters' in data.i, 'filters' in controller.i, ['addFilter', 'applyFilters', 'resetFilters']"
                 + ".every(m => m in controller.i)].join()"));
         assertThat(panel).isAttached();
         assertThat(button(panel, "Add filter")).hasCount(0);
 
-        call("controller.i.addFilter()");
+        view.drawn().call("controller.i.addFilter()");
         assertThat(conditions).hasCount(1);
         press(conditions.locator("input"), "Enter");
         assertThat(rows(form)).hasText(new String[] {items[0]});
-        call("controller.i.resetFilters()");
+        view.drawn().call("controller.i.resetFilters()");
         assertThat(rows(form)).hasText(items);
         close(form);
     }
@@ -165,11 +162,11 @@ public class UiReactFilterControlsIT extends UiTest {
         Locator form = open(FOLDER, "UiReactFilterControls.uiRfcPlatformBox");
         Locator box = host(form, "FILTERBOX(i)"), conditions = box.locator(".filter:visible");
         assertThat(rows(form)).hasText(items);
-        assertEquals("false,false,false", eval("['filters' in data.i, 'filters' in controller.i, 'addFilter' in controller.i].join()"));
+        assertEquals("false,false,false", view.drawn().eval("['filters' in data.i, 'filters' in controller.i, 'addFilter' in controller.i].join()"));
         assertThat(box.locator("button[title='Add filter']")).hasCount(1);
-        call("controller.i.change(data.i.list[1])");
-        waitFor("data.i.list[1].isCurrent");
-        call("controller.i.filterControlsVisible.change(true)");
+        view.drawn().call("controller.i.change(data.i.list[1])");
+        view.waitFor("data.i.list[1].isCurrent");
+        view.drawn().call("controller.i.filterControlsVisible.change(true)");
         assertThat(box).isVisible();
         assertThat(button(box, "Add filter")).isVisible();
         assertThat(button(box, "Reset all filters")).isVisible();
@@ -228,42 +225,6 @@ public class UiReactFilterControlsIT extends UiTest {
         return form.locator(".lsf-platform[data-lsf-sid='" + component + "']");
     }
 
-
-    // what the popup of the count or of the sum shows; the popup let go then - shown, it takes the focus, and hides as
-    // it loses it, as to a click on nothing
-    private void popup(String text) {
-        Locator popup = page.locator("[data-tippy-root]");
-        assertThat(popup).hasText(text);
-        page.waitForFunction("() => !!document.activeElement && !!document.activeElement.closest('[data-tippy-root]')");
-        page.evaluate("() => document.activeElement.blur()");
-        assertThat(popup).hasCount(0);
-    }
-    // a button of the platform's toolbar or filter controls, by its title
-    private static Locator button(Locator scope, String title) {
-        return scope.getByTitle(title, new Locator.GetByTitleOptions().setExact(true));
-    }
-
-    // a key pressed in a cell, or into an editor, once no request is in flight: the client drops the keys typed
-    // meanwhile, and a click on a cell of another row sends one
-    private void key(Locator cell, String key) {
-        if (Boolean.TRUE.equals(cell.evaluate("element => !!element.closest('tr') && !element.closest('tr').classList.contains('table-active')")))
-            page.waitForRequest(request -> request.postData() != null && request.postData().contains("ChangeGroupObject"),
-                    () -> cell.click());
-        else
-            cell.click();
-        idle();
-        page.keyboard().press(key);
-    }
-
-    private void press(Locator editor, String key) {
-        idle();
-        editor.press(key);
-    }
-
-    private void idle() {
-        page.locator(".lsf-blocking").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
-    }
-
     private void reload() {
         page.reload();
         page.locator("[lsfusion-container='System.root']").waitFor();
@@ -271,39 +232,6 @@ public class UiReactFilterControlsIT extends UiTest {
 
     // what the view was last drawn with, its data and its controller, as a script names them, and the conditions it is
     // given, each as `property compare value`
-    private static final String VIEW = "const view = window.uiRfcView, data = view && view.data, controller = view && view.controller;"
-            + " const conditions = () => data.i.filters.map(f => f.property + ' ' + f.compare + ' ' + f.value).join('; ');";
-
-    // until a condition holds of what the view is drawn with, failing with what it is drawn with then
-    private void waitFor(String condition) {
-        try {
-            page.waitForFunction("() => { " + VIEW + " try { return !!data && !!(" + condition + "); } catch (e) { return false; } }",
-                    null, new Page.WaitForFunctionOptions().setTimeout(10_000));
-        } catch (PlaywrightException e) {
-            throw new AssertionError("never " + condition + " - the view is drawn with " + page.evaluate("() => JSON.stringify(window.uiRfcView && window.uiRfcView.data)"), e);
-        }
-    }
-
-    // the view drawn: what follows asks what it is drawn with
-    private void drawn() {
-        waitFor("true");
-    }
-
-    // what an expression over what the view is drawn with comes to, as a string
-    private String eval(String expression) {
-        drawn();
-        return (String) page.evaluate("async () => { " + VIEW + " return String(await (" + expression + ")); }");
-    }
-
-    // a call of the view's controller, made as the view's own code makes it
-    private void call(String call) {
-        drawn();
-        page.evaluate("() => { " + VIEW + " " + call + "; }");
-    }
-
-    // the reason a call of the controller is refused with
-    private String refusal(String call) {
-        drawn();
-        return (String) page.evaluate("async () => { " + VIEW + " try { await (" + call + "); return 'not refused'; } catch (e) { return e.message; } }");
-    }
+    private final View view = view("window.uiRfcView",
+            " const conditions = () => data.i.filters.map(f => f.property + ' ' + f.compare + ' ' + f.value).join('; ');");
 }

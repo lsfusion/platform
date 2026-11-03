@@ -1,11 +1,9 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Route;
 import com.microsoft.playwright.options.KeyboardModifier;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -20,6 +18,12 @@ import static org.junit.Assert.assertEquals;
 // of all its groups a view draws
 public class UiReactTreeIT extends UiTest {
 
+    private final View drawnView = view("window.uiRtrDrawnState",
+            " const node = (g, name) => data[g].list.find(r => (g === 'c' ? r.cName : r.iName).value === name);");
+    private final View foldersView = view("window.uiRtrFoldersState",
+            " const node = name => data.f.list.find(r => r.fName.value === name);");
+    private final View filtersView = view("window.uiRtrFiltersState", "");
+
     // the server's EXPAND and COLLAPSE - DOWN, ALL, ALL TOP - of a tree a React view draws: the rows the view gets and
     // their `expanded` follow from the keys, each item hanging under its category
     @Test
@@ -30,22 +34,22 @@ public class UiReactTreeIT extends UiTest {
         assertThat(categories).hasText(new String[] {p + " Fruit closed", p + " Veg closed", p + " Empty closed empty"});
         assertThat(items).hasCount(0);
 
-        button(form, "uiRtrExpandFruit").click();
+        action(form, "uiRtrExpandFruit").click();
         assertThat(categories).hasText(new String[] {p + " Fruit open", p + " Veg closed", p + " Empty closed empty"});
         assertThat(items).hasText(fruits(p));
-        button(form, "uiRtrCollapseAllFruit").click();
+        action(form, "uiRtrCollapseAllFruit").click();
         assertThat(categories).hasText(new String[] {p + " Fruit closed", p + " Veg closed", p + " Empty closed empty"});
         assertThat(items).hasCount(0);
-        button(form, "uiRtrExpandAllTop").click();
+        action(form, "uiRtrExpandAllTop").click();
         assertThat(categories).hasText(new String[] {p + " Fruit open", p + " Veg open", p + " Empty closed empty"});
         assertThat(items).hasText(all(p));
-        button(form, "uiRtrCollapseAllTop").click();
+        action(form, "uiRtrCollapseAllTop").click();
         assertThat(categories).hasText(new String[] {p + " Fruit closed", p + " Veg closed", p + " Empty closed empty"});
         assertThat(items).hasCount(0);
-        button(form, "uiRtrExpandAllFruit").click();
+        action(form, "uiRtrExpandAllFruit").click();
         assertThat(categories).hasText(new String[] {p + " Fruit open", p + " Veg closed", p + " Empty closed empty"});
         assertThat(items).hasText(fruits(p));
-        button(form, "uiRtrCollapseFruit").click();
+        action(form, "uiRtrCollapseFruit").click();
         assertThat(categories).hasText(new String[] {p + " Fruit closed", p + " Veg closed", p + " Empty closed empty"});
         assertThat(items).hasCount(0);
         close(form);
@@ -73,7 +77,7 @@ public class UiReactTreeIT extends UiTest {
         drawn("controller.c.expand(node('c', '" + p + " Fruit').key)");
         assertThat(items).hasText(fruits(p));
         assertEquals("controller.c.expand(): expects a row of 'c', its objects handle, or its key; that is none of them,"
-                + " or names no row the group has now", refusal("controller.c.expand('no such key')"));
+                + " or names no row the group has now", drawnView.syncRefusal("controller.c.expand('no such key')"));
 
         drawn("controller.c.collapseAll()");
         assertThat(categories).hasText(new String[] {p + " Fruit closed", p + " Veg closed", p + " Empty closed empty"});
@@ -93,7 +97,7 @@ public class UiReactTreeIT extends UiTest {
         assertEquals("the current key is cleared", true,
                 page.evaluate("() => window.uiRtrDrawnState.data.t.current === null"));
         assertEquals("controller.i.change(): expects a row of 'i', its objects handle, or its key; that is none of them,"
-                + " or names no row the group has now", refusal("controller.i.change('" + apple + "')"));
+                + " or names no row the group has now", drawnView.syncRefusal("controller.i.change('" + apple + "')"));
 
         drawn("controller.c.change(node('c', '" + p + " Veg'))");
         assertThat(current).hasText(p + " Veg");
@@ -227,13 +231,13 @@ public class UiReactTreeIT extends UiTest {
         Locator folders = form.locator(".ui-rtr-folder");
         assertThat(folders).hasText(new String[] {p + " Documents at the top closed", p + " Archive at the top empty"});
 
-        folders("controller.f.expand(node('" + p + " Documents'))");
+        foldersView.call("controller.f.expand(node('" + p + " Documents'))");
         assertThat(folders).hasText(new String[] {p + " Documents at the top open", p + " Invoices in " + p + " Documents closed",
                 p + " Archive at the top empty"});
-        folders("controller.f.expand(node('" + p + " Invoices'))");
+        foldersView.call("controller.f.expand(node('" + p + " Invoices'))");
         assertThat(folders).hasText(new String[] {p + " Documents at the top open", p + " Invoices in " + p + " Documents open",
                 p + " 2026 in " + p + " Invoices empty", p + " Archive at the top empty"});
-        folders("controller.f.collapseAll()");
+        foldersView.call("controller.f.collapseAll()");
         assertThat(folders).hasText(new String[] {p + " Documents at the top closed", p + " Archive at the top empty"});
         close(form);
     }
@@ -250,7 +254,7 @@ public class UiReactTreeIT extends UiTest {
         Locator form = open("UiReactTree.uiRtr", "UiReactTree.uiRtrDrawn");
         Locator categories = form.locator(".ui-rtr-category"), items = form.locator(".ui-rtr-item"),
                 orders = form.locator(".ui-rtr-orders");
-        button(form, "uiRtrExpandAllTop").click();
+        action(form, "uiRtrExpandAllTop").click();
         assertThat(items).hasText(all(p));
         assertThat(orders).hasText("");
 
@@ -267,12 +271,12 @@ public class UiReactTreeIT extends UiTest {
         assertThat(orders).hasText("c.cName desc, i.qty desc");
 
         assertEquals("controller.t.orders.change(): 'i.code' cannot be sorted by",
-                refusal("controller.t.orders.change({property: 'i.code', desc: true})"));
+                drawnView.syncRefusal("controller.t.orders.change({property: 'i.code', desc: true})"));
         assertThat(orders).hasText("c.cName desc, i.qty desc");
         assertThat(items).hasText(new String[] {"Potato 20 in " + p + " Veg", "Banana 9 in " + p + " Fruit",
                 "Apple 5 in " + p + " Fruit", "Cherry 1 in " + p + " Fruit"});
         assertEquals("controller.t.orders.change(): unknown property 'nope' of object group 'i'",
-                refusal("controller.t.orders.change({property: 'i.nope', desc: true})"));
+                drawnView.syncRefusal("controller.t.orders.change({property: 'i.nope', desc: true})"));
         assertThat(orders).hasText("c.cName desc, i.qty desc");
         assertThat(items).hasText(new String[] {"Potato 20 in " + p + " Veg", "Banana 9 in " + p + " Fruit",
                 "Apple 5 in " + p + " Fruit", "Cherry 1 in " + p + " Fruit"});
@@ -286,7 +290,7 @@ public class UiReactTreeIT extends UiTest {
         assertThat(items).hasText(new String[] {"Apple 5 in " + p + " Fruit", "Banana 9 in " + p + " Fruit",
                 "Cherry 1 in " + p + " Fruit", "Potato 20 in " + p + " Veg"});
         assertThat(orders).hasText("i.iName asc, i.qty desc");
-        button(form, "uiRtrOrderItems").click();
+        action(form, "uiRtrOrderItems").click();
         assertThat(items).hasText(new String[] {"Banana 9 in " + p + " Fruit", "Apple 5 in " + p + " Fruit",
                 "Cherry 1 in " + p + " Fruit", "Potato 20 in " + p + " Veg"});
         assertThat(orders).hasText("i.qty desc");
@@ -294,16 +298,16 @@ public class UiReactTreeIT extends UiTest {
         drawn("controller.t.orders.change([{property: 'i.qty', desc: false}])");
         assertThat(items).hasText(new String[] {"Cherry 1 in " + p + " Fruit", "Apple 5 in " + p + " Fruit",
                 "Banana 9 in " + p + " Fruit", "Potato 20 in " + p + " Veg"});
-        button(form, "uiRtrSaveOrders").click();
+        action(form, "uiRtrSaveOrders").click();
         drawn("controller.t.orders.change([])");
         assertThat(items).hasText(all(p));
         assertThat(orders).hasText("");
-        button(form, "uiRtrRestoreOrders").click();
+        action(form, "uiRtrRestoreOrders").click();
         assertThat(items).hasText(new String[] {"Cherry 1 in " + p + " Fruit", "Apple 5 in " + p + " Fruit",
                 "Banana 9 in " + p + " Fruit", "Potato 20 in " + p + " Veg"});
         assertThat(orders).hasText("i.qty asc");
 
-        button(form, "uiRtrTieQuantities").click();
+        action(form, "uiRtrTieQuantities").click();
         assertThat(items).hasText(new String[] {"Cherry 1 in " + p + " Fruit", "Banana 5 in " + p + " Fruit",
                 "Apple 5 in " + p + " Fruit", "Potato 20 in " + p + " Veg"});
         drawn("controller.t.orders.change([{property: 'i.qty', desc: false}, {property: 'i.iName', desc: false}])");
@@ -384,19 +388,19 @@ public class UiReactTreeIT extends UiTest {
         Locator fruit = glyph(form, p + " Fruit"), veg = glyph(form, p + " Veg"), items = itemCells(form);
         assertNode(fruit, "collapsed");
 
-        button(form, "uiRtrPlatformExpandAllTop").click();
+        action(form, "uiRtrPlatformExpandAllTop").click();
         assertNode(fruit, "expanded");
         assertNode(veg, "expanded");
         assertThat(items).hasText(new String[] {"Banana", "Apple", "Cherry", "Potato"});
-        button(form, "uiRtrPlatformCollapseAllTop").click();
+        action(form, "uiRtrPlatformCollapseAllTop").click();
         assertNode(fruit, "collapsed");
         assertNode(veg, "collapsed");
         assertThat(items).hasCount(0);
-        button(form, "uiRtrPlatformExpandFruit").click();
+        action(form, "uiRtrPlatformExpandFruit").click();
         assertNode(fruit, "expanded");
         assertNode(veg, "collapsed");
         assertThat(items).hasText(new String[] {"Banana", "Apple", "Cherry"});
-        button(form, "uiRtrPlatformCollapseAllFruit").click();
+        action(form, "uiRtrPlatformCollapseAllFruit").click();
         assertNode(fruit, "collapsed");
         assertThat(items).hasCount(0);
         close(form);
@@ -408,9 +412,9 @@ public class UiReactTreeIT extends UiTest {
     @Test
     public void aTreesHeaderDoesNotSortByANoSortColumn() throws Exception {
         String p = seed();
-        List<String> sortings = sortings();
+        List<String> sortings = requests("SetPropertyOrders");
         Locator form = open("UiReactTree.uiRtr", "UiReactTree.uiRtrPlatform");
-        button(form, "uiRtrPlatformExpandFruit").click();
+        action(form, "uiRtrPlatformExpandFruit").click();
         Locator items = itemCells(form);
         assertThat(items).hasText(new String[] {"Banana", "Apple", "Cherry"});
         assertArrows(form);
@@ -439,9 +443,9 @@ public class UiReactTreeIT extends UiTest {
     @Test
     public void aTreesHeaderSortsTheGroupOfItsColumnAlone() throws Exception {
         String p = seed();
-        List<String> sortings = sortings();
+        List<String> sortings = requests("SetPropertyOrders");
         Locator form = open("UiReactTree.uiRtr", "UiReactTree.uiRtrOrdered");
-        button(form, "uiRtrOrderedExpandAllTop").click();
+        action(form, "uiRtrOrderedExpandAllTop").click();
         Locator categories = form.locator("td[lsfusion-container='PROPERTY(cName)']"), items = itemCells(form);
         assertThat(categories).hasText(new String[] {p + " Veg", p + " Fruit", p + " Empty"});
         assertThat(items).hasText(new String[] {"Potato", "Cherry", "Apple", "Banana"});
@@ -468,7 +472,7 @@ public class UiReactTreeIT extends UiTest {
     public void aViewOfATreesFiltersChangesOneConditionOfAGroup() throws Exception {
         String p = seed();
         Locator form = open("UiReactTree.uiRtr", "UiReactTree.uiRtrFiltered");
-        button(form, "uiRtrFilteredExpandAllTop").click();
+        action(form, "uiRtrFilteredExpandAllTop").click();
         Locator filters = form.locator(".ui-rtr-filters"), items = itemCells(form),
                 categories = form.locator("td[lsfusion-container='PROPERTY(cName)']");
         assertThat(items).hasText(new String[] {"Banana", "Apple", "Cherry", "Potato"});
@@ -528,15 +532,15 @@ public class UiReactTreeIT extends UiTest {
     public void aFilterOfOneGroupOfATreeKeepsTheOthers() throws Exception {
         String p = seed();
         Locator form = open("UiReactTree.uiRtr", "UiReactTree.uiRtrFiltered");
-        button(form, "uiRtrFilteredExpandAllTop").click();
+        action(form, "uiRtrFilteredExpandAllTop").click();
         Locator filters = form.locator(".ui-rtr-filters"), items = itemCells(form),
                 categories = form.locator("td[lsfusion-container='PROPERTY(cName)']");
         assertThat(items).hasText(new String[] {"Banana", "Apple", "Cherry", "Potato"});
 
-        button(form, "uiRtrFilterItems").click();
+        action(form, "uiRtrFilterItems").click();
         assertThat(items).hasText(new String[] {"Banana", "Apple", "Potato"});
         assertThat(filters).hasText("i.qty > 2 (number)");
-        button(form, "uiRtrFilterCategories").click();
+        action(form, "uiRtrFilterCategories").click();
         assertThat(categories).hasText(new String[] {p + " Fruit"});
         assertThat(items).hasText(new String[] {"Banana", "Apple"});
         assertThat(filters).hasText("c.cName = " + p + " Fruit (string); i.qty > 2 (number)");
@@ -544,11 +548,11 @@ public class UiReactTreeIT extends UiTest {
         filtered("[{property: 'i.iName', compare: '_', value: 'an'}]");
         assertThat(categories).hasText(new String[] {p + " Fruit", p + " Veg", p + " Empty"});
         assertThat(items).hasText(new String[] {"Banana"});
-        button(form, "uiRtrSaveFilters").click();
+        action(form, "uiRtrSaveFilters").click();
         filtered("[]");
         assertThat(items).hasText(new String[] {"Banana", "Apple", "Cherry", "Potato"});
         assertThat(filters).hasText("no conditions");
-        button(form, "uiRtrRestoreFilters").click();
+        action(form, "uiRtrRestoreFilters").click();
         assertThat(items).hasText(new String[] {"Banana"});
         assertThat(filters).hasText("i.iName _ an (string)");
         close(form);
@@ -575,16 +579,9 @@ public class UiReactTreeIT extends UiTest {
     // calls of the members of the drawn tree's view, with its data, `node(group, name)` finding a row by its name -
     // failing with what they throw
     private void drawn(String calls) {
-        String refusal = refusal(calls);
+        String refusal = drawnView.syncRefusal(calls);
         if (refusal != null)
             throw new AssertionError(calls + ": " + refusal);
-    }
-
-    // ... what they throw, null if nothing
-    private String refusal(String calls) {
-        return (String) page.evaluate("() => { const {data, controller} = window.uiRtrDrawnState;"
-                + " const node = (g, name) => data[g].list.find(r => (g === 'c' ? r.cName : r.iName).value === name);"
-                + " try { " + calls + "; return null; } catch (e) { return e.message; } }");
     }
 
     // ... the names of the rows saved in uiRtrRows that the view now has other objects for, or none
@@ -592,12 +589,6 @@ public class UiReactTreeIT extends UiTest {
         return (String) page.evaluate("() => { const data = window.uiRtrDrawnState.data;"
                 + " return window.uiRtrRows.filter(([group, row]) => data[group].byKey[row.key] !== row)"
                 + ".map(([group, row, name]) => name).join(', '); }");
-    }
-
-    // ... of the folders' view, `node(name)` finding a folder
-    private void folders(String call) {
-        page.evaluate("() => { const {data, controller} = window.uiRtrFoldersState;"
-                + " const node = name => data.f.list.find(r => r.fName.value === name); " + call + "; }");
     }
 
     // ... a change of the conditions of the filtered tree through its view - failing with what it throws
@@ -609,34 +600,7 @@ public class UiReactTreeIT extends UiTest {
 
     // ... what it throws, null if nothing
     private String filterRefusal(String conditions) {
-        return (String) page.evaluate("() => { try { window.uiRtrFiltersState.controller.t.filters.change(" + conditions + ");"
-                + " return null; } catch (e) { return e.message; } }");
-    }
-
-    // the form's requests held from now on, until let go: the server sees none of them, so their answers wait
-    private final List<Route> held = new ArrayList<>();
-
-    private void hold() {
-        page.route("**/main/dispatch", held::add);
-    }
-
-    // ... the requests held let go, in the order they were made, and no more held
-    private void release() {
-        page.unroute("**/main/dispatch");
-        for (Route route : held)
-            route.resume();
-        held.clear();
-    }
-
-    // the requests the page sends from now on that set the sortings of a group (GWT-RPC names the action's class)
-    private List<String> sortings() {
-        List<String> sent = Collections.synchronizedList(new ArrayList<>());
-        page.onRequest(request -> {
-            String body = request.postData();
-            if (body != null && body.contains(".SetPropertyOrders/"))
-                sent.add(body);
-        });
-        return sent;
+        return filtersView.syncRefusal("controller.t.filters.change(" + conditions + ")");
     }
 
     // the glyph of a category's node in the platform's tree
@@ -684,10 +648,5 @@ public class UiReactTreeIT extends UiTest {
                 throw new AssertionError("the arrows are '" + shown + "', not '" + expected + "'");
             page.waitForTimeout(100);
         }
-    }
-
-    // a button the platform draws, by its action
-    private static Locator button(Locator form, String action) {
-        return form.locator("button[lsfusion-container='PROPERTY(" + action + "())']");
     }
 }

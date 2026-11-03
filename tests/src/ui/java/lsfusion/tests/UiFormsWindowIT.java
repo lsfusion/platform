@@ -34,9 +34,9 @@ public class UiFormsWindowIT extends UiTest {
     public void aWindowOfOneFormClosesTheFormItDisplaces() throws Exception {
         seed();
         Locator launcher = launcher(), one = window("one");
-        press(launcher, "uiFormsWindowFirstIntoOne");
+        action(launcher, "uiFormsWindowFirstIntoOne").click();
         assertThat(in(one, "uiFormsWindowFirst")).isVisible();
-        press(launcher, "uiFormsWindowSecondIntoOne");
+        action(launcher, "uiFormsWindowSecondIntoOne").click();
         assertThat(in(one, "uiFormsWindowSecond")).isVisible();
         assertThat(in(one, "uiFormsWindowFirst")).hasCount(0);
         assertThat(one.locator(".nav-tabs")).hasCount(0);
@@ -50,7 +50,7 @@ public class UiFormsWindowIT extends UiTest {
     public void twoOpensInOneActionLeaveTheSecondDrawn() throws Exception {
         seed();
         Locator launcher = launcher(), one = window("one");
-        press(launcher, "uiFormsWindowBothIntoOne");
+        action(launcher, "uiFormsWindowBothIntoOne").click();
         assertThat(in(one, "uiFormsWindowSecond")).isVisible();
         assertThat(in(one, "uiFormsWindowFirst")).hasCount(0);
         check("UiFormsWindow.uiFormsWindowCheckClosed", "1");
@@ -63,19 +63,19 @@ public class UiFormsWindowIT extends UiTest {
     public void aDisplacedFormWithUnsavedChangesAsksBeforeItCloses() throws Exception {
         String[] items = seed();
         Locator launcher = launcher(), one = window("one");
-        press(launcher, "uiFormsWindowItemsIntoOne");
+        action(launcher, "uiFormsWindowItemsIntoOne").click();
         Locator form = in(one, "uiFormsWindowItems"), quantity = quantity(form, items[0]);
         change(form, quantity);
 
-        press(launcher, "uiFormsWindowFirstIntoOne");
+        action(launcher, "uiFormsWindowFirstIntoOne").click();
         answer("No");
         assertThat(in(one, "uiFormsWindowFirst")).isVisible();
         assertThat(form).isHidden();
 
-        press(launcher, "uiFormsWindowActivateItems");
+        action(launcher, "uiFormsWindowActivateItems").click();
         assertThat(form).isVisible();
         assertThat(quantity).hasText("5");
-        press(launcher, "uiFormsWindowCloseItems");
+        action(launcher, "uiFormsWindowCloseItems").click();
         answer("Yes");
         assertThat(form).hasCount(0);
     }
@@ -86,14 +86,14 @@ public class UiFormsWindowIT extends UiTest {
     public void aFormThatRefusedToCloseIsAskedAgain() throws Exception {
         String[] items = seed();
         Locator launcher = launcher(), keep = window("keep");
-        press(launcher, "uiFormsWindowKeptIntoKeep");
+        action(launcher, "uiFormsWindowKeptIntoKeep").click();
         Locator form = in(keep, "uiFormsWindowItems");
         change(form, quantity(form, items[0]));
 
-        press(launcher, "uiFormsWindowCloseKept");
+        action(launcher, "uiFormsWindowCloseKept").click();
         answer("No");
         assertThat(form).isVisible();
-        press(launcher, "uiFormsWindowCloseKept");
+        action(launcher, "uiFormsWindowCloseKept").click();
         answer("Yes");
         assertThat(form).hasCount(0);
     }
@@ -103,12 +103,12 @@ public class UiFormsWindowIT extends UiTest {
     @Test
     public void aWindowThatClosesNothingKeepsWhatItDisplaced() throws Exception {
         Locator launcher = launcher(), keep = window("keep");
-        press(launcher, "uiFormsWindowFirstIntoKeep");
+        action(launcher, "uiFormsWindowFirstIntoKeep").click();
         assertThat(in(keep, "uiFormsWindowFirst")).isVisible();
-        press(launcher, "uiFormsWindowSecondIntoKeep");
+        action(launcher, "uiFormsWindowSecondIntoKeep").click();
         assertThat(in(keep, "uiFormsWindowSecond")).isVisible();
         assertThat(in(keep, "uiFormsWindowFirst")).isHidden();
-        press(launcher, "uiFormsWindowCloseSecond");
+        action(launcher, "uiFormsWindowCloseSecond").click();
         assertThat(in(keep, "uiFormsWindowSecond")).hasCount(0);
         assertThat(in(keep, "uiFormsWindowFirst")).isVisible();
     }
@@ -117,10 +117,10 @@ public class UiFormsWindowIT extends UiTest {
     @Test
     public void activateFormFromAFormBringsItForward() throws Exception {
         Locator launcher = launcher(), keep = window("keep");
-        press(launcher, "uiFormsWindowFirstIntoKeep");
-        press(launcher, "uiFormsWindowSecondIntoKeep");
+        action(launcher, "uiFormsWindowFirstIntoKeep").click();
+        action(launcher, "uiFormsWindowSecondIntoKeep").click();
         assertThat(in(keep, "uiFormsWindowFirst")).isHidden();
-        press(launcher, "uiFormsWindowActivateFirst");
+        action(launcher, "uiFormsWindowActivateFirst").click();
         assertThat(in(keep, "uiFormsWindowFirst")).isVisible();
         assertThat(in(keep, "uiFormsWindowSecond")).isHidden();
     }
@@ -131,24 +131,24 @@ public class UiFormsWindowIT extends UiTest {
     public void aFormIsAddressedByItsLabel() throws Exception {
         String[] items = seed();
         Locator launcher = launcher(), keep = window("keep");
-        press(launcher, "uiFormsWindowLabelledIntoKeep");
+        action(launcher, "uiFormsWindowLabelledIntoKeep").click();
         Locator forms = in(keep, "uiFormsWindowItem");
         assertThat(forms).hasCount(2);
         assertThat(text(keep, items[1])).isVisible();
         assertThat(text(keep, items[0])).isHidden();
 
-        press(launcher, "uiFormsWindowActivateA");
+        action(launcher, "uiFormsWindowActivateA").click();
         assertThat(text(keep, items[0])).isVisible();
         assertThat(text(keep, items[1])).isHidden();
-        press(launcher, "uiFormsWindowCloseA");
+        action(launcher, "uiFormsWindowCloseA").click();
         assertThat(forms).hasCount(1);
         assertThat(text(keep, items[1])).isVisible();
         check("UiFormsWindow.uiFormsWindowCheckItemClosed", "1,0");
 
-        press(launcher, "uiFormsWindowAIntoKeep");
+        action(launcher, "uiFormsWindowAIntoKeep").click();
         assertThat(forms).hasCount(2);
         assertThat(text(keep, items[0])).isVisible();
-        press(launcher, "uiFormsWindowCloseEveryItem");
+        action(launcher, "uiFormsWindowCloseEveryItem").click();
         assertThat(forms).hasCount(0);
         check("UiFormsWindow.uiFormsWindowCheckItemClosed", "2,1");
     }
@@ -158,9 +158,9 @@ public class UiFormsWindowIT extends UiTest {
     @Test
     public void aDockedModalChildKeepsItsOpener() throws Exception {
         Locator launcher = launcher(), one = window("one");
-        press(launcher, "uiFormsWindowFirstIntoOne");
+        action(launcher, "uiFormsWindowFirstIntoOne").click();
         Locator first = in(one, "uiFormsWindowFirst");
-        press(first, "uiFormsWindowChildIntoOne");
+        action(first, "uiFormsWindowChildIntoOne").click();
         Locator child = in(one, "uiFormsWindowThird");
         assertThat(child).isVisible();
         assertThat(first).isHidden();
@@ -173,10 +173,10 @@ public class UiFormsWindowIT extends UiTest {
     @Test
     public void aDockedModalChildFromAnotherWindowTakesNobodysPlace() throws Exception {
         Locator launcher = launcher(), one = window("one");
-        press(launcher, "uiFormsWindowFirstIntoOne");
+        action(launcher, "uiFormsWindowFirstIntoOne").click();
         Locator first = in(one, "uiFormsWindowFirst");
         assertThat(first).isVisible();
-        press(launcher, "uiFormsWindowSecondIntoOneWait");
+        action(launcher, "uiFormsWindowSecondIntoOneWait").click();
         Locator child = in(one, "uiFormsWindowSecond");
         assertThat(child).isVisible();
         assertThat(first).isHidden();
@@ -189,14 +189,14 @@ public class UiFormsWindowIT extends UiTest {
     @Test
     public void anOpenerClosedUnderItsChildLeavesTheWindowDrawing() throws Exception {
         Locator launcher = launcher(), keep = window("keep");
-        press(launcher, "uiFormsWindowSecondIntoKeep");
-        press(launcher, "uiFormsWindowFirstIntoKeep");
+        action(launcher, "uiFormsWindowSecondIntoKeep").click();
+        action(launcher, "uiFormsWindowFirstIntoKeep").click();
         Locator first = in(keep, "uiFormsWindowFirst"), second = in(keep, "uiFormsWindowSecond");
         assertThat(second).isHidden();
-        press(first, "uiFormsWindowChildIntoKeep");
+        action(first, "uiFormsWindowChildIntoKeep").click();
         Locator child = in(keep, "uiFormsWindowThird");
         assertThat(child).isVisible();
-        press(launcher, "uiFormsWindowCloseFirst");
+        action(launcher, "uiFormsWindowCloseFirst").click();
         assertThat(first).hasCount(0);
         assertThat(child).isVisible();
         close(child);
@@ -218,7 +218,7 @@ public class UiFormsWindowIT extends UiTest {
         check("UiFormsWindow.uiFormsWindowCheckBuilt", "1");
         assertThat(first).isVisible();
 
-        press(launcher, "uiFormsWindowSecondIntoKeep");
+        action(launcher, "uiFormsWindowSecondIntoKeep").click();
         assertThat(first).isHidden();
         pressCompleted(launcher, "uiFormsWindowFirstOnce");
         marks("after", "aspect after", "property after", "after", "aspect after", "property after");
@@ -227,7 +227,7 @@ public class UiFormsWindowIT extends UiTest {
         assertThat(second).isHidden();
         assertThat(first).hasCount(1);
 
-        press(launcher, "uiFormsWindowActivateSecond");
+        action(launcher, "uiFormsWindowActivateSecond").click();
         assertThat(first).isHidden();
         pressCompleted(launcher, "uiFormsWindowFirstOnceInSession");
         marks("after", "aspect after", "property after", "after", "aspect after", "property after", "in a session");
@@ -235,7 +235,7 @@ public class UiFormsWindowIT extends UiTest {
         assertThat(first).isVisible();
         assertThat(second).isHidden();
 
-        press(launcher, "uiFormsWindowActivateSecond");
+        action(launcher, "uiFormsWindowActivateSecond").click();
         assertThat(first).isHidden();
         pressCompleted(launcher, "uiFormsWindowFirstOnceIf");
         marks("after", "aspect after", "property after", "after", "aspect after", "property after", "in a session",
@@ -251,23 +251,23 @@ public class UiFormsWindowIT extends UiTest {
     public void anOpenThatActivatesReusesOnlyTheFormOfItsLabelAndWindow() throws Exception {
         seed();
         Locator launcher = launcher(), keep = window("keep"), one = window("one");
-        press(launcher, "uiFormsWindowFirstIntoKeep");
+        action(launcher, "uiFormsWindowFirstIntoKeep").click();
         assertThat(in(keep, "uiFormsWindowFirst")).isVisible();
         check("UiFormsWindow.uiFormsWindowCheckBuilt", "1");
 
-        press(launcher, "uiFormsWindowFirstOnceLabelled");
+        action(launcher, "uiFormsWindowFirstOnceLabelled").click();
         marks("labelled");
         check("UiFormsWindow.uiFormsWindowCheckBuilt", "2");
-        press(launcher, "uiFormsWindowFirstOnceLabelled");
+        action(launcher, "uiFormsWindowFirstOnceLabelled").click();
         marks("labelled", "labelled");
         check("UiFormsWindow.uiFormsWindowCheckBuilt", "2");
         assertThat(in(keep, "uiFormsWindowFirst")).hasCount(2);
 
-        press(launcher, "uiFormsWindowFirstOnceIntoOne");
+        action(launcher, "uiFormsWindowFirstOnceIntoOne").click();
         marks("labelled", "labelled", "into one");
         check("UiFormsWindow.uiFormsWindowCheckBuilt", "3");
         assertThat(in(one, "uiFormsWindowFirst")).isVisible();
-        press(launcher, "uiFormsWindowFirstOnceIntoOne");
+        action(launcher, "uiFormsWindowFirstOnceIntoOne").click();
         marks("labelled", "labelled", "into one", "into one");
         check("UiFormsWindow.uiFormsWindowCheckBuilt", "3");
         assertThat(in(one, "uiFormsWindowFirst")).hasCount(1);
@@ -308,9 +308,9 @@ public class UiFormsWindowIT extends UiTest {
     public void aDuplicateTheClientDoesNotShowIsClosed() throws Exception {
         seed();
         Locator launcher = launcher(), keep = window("keep"), first = in(keep, "uiFormsWindowFirst");
-        press(launcher, "uiFormsWindowFirstIntoKeep");
+        action(launcher, "uiFormsWindowFirstIntoKeep").click();
         assertThat(first).isVisible();
-        press(launcher, "uiFormsWindowFirstTwice");
+        action(launcher, "uiFormsWindowFirstTwice").click();
         check("UiFormsWindow.uiFormsWindowCheckClosed", "1");
         check("UiFormsWindow.uiFormsWindowCheckBuilt", "2");
         assertThat(first).hasCount(1);
@@ -449,9 +449,9 @@ public class UiFormsWindowIT extends UiTest {
     @Test
     public void aWindowAComponentDrawsClosesNothingByItself() throws Exception {
         Locator launcher = launcher(), board = window("board");
-        press(launcher, "uiFormsWindowFirstIntoBoard");
+        action(launcher, "uiFormsWindowFirstIntoBoard").click();
         assertThat(in(board, "uiFormsWindowFirst")).isVisible();
-        press(launcher, "uiFormsWindowSecondIntoBoard");
+        action(launcher, "uiFormsWindowSecondIntoBoard").click();
         assertThat(in(board, "uiFormsWindowSecond")).isVisible();
         assertThat(in(board, "uiFormsWindowFirst")).isVisible();
         board(SECOND, FIRST, SECOND);
@@ -465,14 +465,14 @@ public class UiFormsWindowIT extends UiTest {
         seed();
         Locator launcher = launcher(), board = window("board");
         place("current");
-        press(launcher, "uiFormsWindowFirstIntoBoard");
+        action(launcher, "uiFormsWindowFirstIntoBoard").click();
         board(FIRST, FIRST);
         // a form placed nowhere waits outside the window, so whether it is open is asked of the whole page
         Locator first = form(FIRST), second = form(SECOND);
         assertThat(in(board, "uiFormsWindowFirst")).isVisible();
         first.evaluate("form => form.dataset.uiFormsWindowLeft = 'first'"); // the element, to see that it comes back
 
-        press(launcher, "uiFormsWindowSecondIntoBoard");
+        action(launcher, "uiFormsWindowSecondIntoBoard").click();
         board(SECOND, FIRST, SECOND);
         assertThat(in(board, "uiFormsWindowSecond")).isVisible();
         assertThat(first).hasCount(1);
@@ -495,8 +495,8 @@ public class UiFormsWindowIT extends UiTest {
     @Test
     public void aClickIntoAFormTheComponentPlacesMakesItCurrent() throws Exception {
         Locator launcher = launcher(), board = window("board");
-        press(launcher, "uiFormsWindowFirstIntoBoard");
-        press(launcher, "uiFormsWindowSecondIntoBoard");
+        action(launcher, "uiFormsWindowFirstIntoBoard").click();
+        action(launcher, "uiFormsWindowSecondIntoBoard").click();
         board(SECOND, FIRST, SECOND);
         in(board, "uiFormsWindowFirst").locator("[lsfusion-container='PROPERTY(uiFormsWindowText())']").click();
         board(FIRST, FIRST, SECOND);
@@ -508,9 +508,9 @@ public class UiFormsWindowIT extends UiTest {
     public void aFormBlockedByItsChildIsNotClosed() throws Exception {
         List<String> console = console();
         Locator launcher = launcher(), board = window("board");
-        press(launcher, "uiFormsWindowFirstIntoBoard");
+        action(launcher, "uiFormsWindowFirstIntoBoard").click();
         Locator first = in(board, "uiFormsWindowFirst");
-        press(first, "uiFormsWindowChildIntoBoard");
+        action(first, "uiFormsWindowChildIntoBoard").click();
         Locator child = in(board, "uiFormsWindowThird");
         assertThat(child).isVisible();
         Locator opener = tab(board, "uiFormsWindowFirst");
@@ -532,9 +532,9 @@ public class UiFormsWindowIT extends UiTest {
     public void aComponentsCloseOfAllAsksTheFormWithUnsavedChanges() throws Exception {
         String[] items = seed();
         Locator launcher = launcher(), board = window("board");
-        press(launcher, "uiFormsWindowFirstIntoBoard");
-        press(launcher, "uiFormsWindowItemsIntoBoard");
-        press(launcher, "uiFormsWindowSecondIntoBoard");
+        action(launcher, "uiFormsWindowFirstIntoBoard").click();
+        action(launcher, "uiFormsWindowItemsIntoBoard").click();
+        action(launcher, "uiFormsWindowSecondIntoBoard").click();
         board(SECOND, FIRST, ITEMS, SECOND);
         Locator form = in(board, "uiFormsWindowItems");
         change(form, quantity(form, items[0]));
@@ -555,7 +555,7 @@ public class UiFormsWindowIT extends UiTest {
     @Test
     public void aComponentsPlaceThatCannotWorkSaysSo() throws Exception {
         Locator launcher = launcher(), board = window("board");
-        press(launcher, "uiFormsWindowFirstIntoBoard");
+        action(launcher, "uiFormsWindowFirstIntoBoard").click();
         place("twice");
         Locator firstPlace = board.locator(".ui-forms-window-board-first"), secondPlace = board.locator(".ui-forms-window-board-second");
         assertThat(in(firstPlace, "uiFormsWindowFirst")).isVisible();
@@ -574,7 +574,7 @@ public class UiFormsWindowIT extends UiTest {
     @Test
     public void aComponentsSelectMovesTheKeyboardIntoTheFormItDraws() throws Exception {
         Locator launcher = launcher(), board = window("board");
-        press(launcher, "uiFormsWindowFirstIntoBoard");
+        action(launcher, "uiFormsWindowFirstIntoBoard").click();
         Locator first = in(board, "uiFormsWindowFirst");
         assertThat(first).isVisible();
         launcher.locator("[lsfusion-container='PROPERTY(uiFormsWindowText())']").click();
@@ -588,7 +588,7 @@ public class UiFormsWindowIT extends UiTest {
     @Test
     public void aComponentChoosesTheEditModeAndFollowsACaption() throws Exception {
         Locator launcher = launcher(), board = window("board");
-        press(launcher, "uiFormsWindowSecondIntoBoard");
+        action(launcher, "uiFormsWindowSecondIntoBoard").click();
         Locator mode = board.locator(".ui-forms-window-board-edit-mode");
         assertThat(mode).hasText("DEFAULT");
         assertThat(board.locator(".ui-forms-window-board-mode")).hasText(new String[] {"Default Mode", "Link Mode", "Dialog Mode", "Group Change Mode"});
@@ -613,7 +613,7 @@ public class UiFormsWindowIT extends UiTest {
     public void aComponentsFullScreenAndTheKeyUndoEachOther() throws Exception {
         Locator launcher = launcher(), board = window("board");
         Locator navigator = page.locator("[lsfusion-container='System.root']");
-        press(launcher, "uiFormsWindowFirstIntoBoard");
+        action(launcher, "uiFormsWindowFirstIntoBoard").click();
         board(FIRST, FIRST);
         fullScreen(false);
 
@@ -670,15 +670,10 @@ public class UiFormsWindowIT extends UiTest {
         return scope.locator("[lsfusion-form='UiFormsWindow." + form + "']");
     }
 
-    // the button of an action drawn on a form, by its name there
-    private static void press(Locator form, String action) {
-        form.locator("button[lsfusion-container='PROPERTY(" + action + "())']").click();
-    }
-
     // the button of an action pressed, and its request answered: what the window draws then is what the server's
     // answer leaves, not only what the client predicted
     private void pressCompleted(Locator form, String action) {
-        completed("ExecuteEventAction", () -> press(form, action));
+        completed("ExecuteEventAction", () -> action(form, action).click());
     }
 
     // ... and an element of the navigator
@@ -692,11 +687,6 @@ public class UiFormsWindowIT extends UiTest {
         page.waitForResponse(response -> response.request().postData() != null
                 && response.request().postData().contains(request), click).finished();
         page.evaluate("() => new Promise(resolve => requestAnimationFrame(resolve))");
-    }
-
-    // until no request blocks the input, which the client drops while one does
-    private void idle() {
-        page.locator(".lsf-blocking").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
     }
 
     // what the board's component was given last forgotten - its controller kept -, to see it given it again
@@ -724,10 +714,6 @@ public class UiFormsWindowIT extends UiTest {
         edit(quantity, "5");
         assertThat(quantity).hasText("5");
         assertThat(save(form)).isEnabled();
-    }
-
-    private static Locator text(Locator scope, String text) {
-        return scope.getByText(text, new Locator.GetByTextOptions().setExact(true));
     }
 
     // the question a form with unsaved changes asks before it closes, answered

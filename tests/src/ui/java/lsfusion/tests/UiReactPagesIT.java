@@ -98,10 +98,6 @@ public class UiReactPagesIT extends UiTest {
         assertThat(view).hasText(rows);
     }
 
-    private static Locator text(Locator scope, String text) {
-        return scope.getByText(text, new Locator.GetByTextOptions().setExact(true));
-    }
-
     // the dialog the web client shows a failed answer in stays until it is closed: none is there
     private void assertNoErrorDialog() {
         assertThat(page.locator(".modal-content")).hasCount(0);

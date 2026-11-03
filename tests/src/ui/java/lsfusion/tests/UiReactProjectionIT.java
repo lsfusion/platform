@@ -1,11 +1,7 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Route;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -16,6 +12,9 @@ import static org.junit.Assert.assertEquals;
 // not show, which is not read; a row's own background as the server changes it - and the classic custom view's
 // changeProperty, which names a property of the whole form by the name alone
 public class UiReactProjectionIT extends UiTest {
+
+    private final View cardsView = new View("const controller = window.uiRpjCardsState.controller, list = window.uiRpjCardsState.list;",
+            "true", "", "");
 
     // an entry the form hides says so, its member staying the same: a column by its SHOWIF - its cells with no value,
     // and a call through its member refused meanwhile, so that once it shows the column has the change made before
@@ -30,36 +29,36 @@ public class UiReactProjectionIT extends UiTest {
                 member = form.locator(".ui-rpj-same-member"), refusal = form.locator(".ui-rpj-refusal");
         assertThat(price).hasText("price shown Price");
         assertThat(rows).hasText(new String[] {items[0] + "|10", items[1] + "|20"});
-        click(form, "price 42");
+        text(form, "price 42").click();
         assertThat(rows).hasText(new String[] {items[0] + "|42", items[1] + "|20"});
 
-        button(form, "uiRpjTogglePrice").click();
+        action(form, "uiRpjTogglePrice").click();
         assertThat(price).hasText("price hidden Price");
         assertThat(rows).hasText(new String[] {items[0] + "|no value", items[1] + "|no value"});
         assertThat(member).hasText("the same member");
-        click(form, "price 44");
+        text(form, "price 44").click();
         assertThat(refusal).hasText("controller.i.price.change(): 'price' is not shown by the form now (its entry is"
                 + " hidden), so it has nobody to change it for");
-        button(form, "uiRpjTogglePrice").click();
+        action(form, "uiRpjTogglePrice").click();
         assertThat(price).hasText("price shown Price");
         assertThat(rows).hasText(new String[] {items[0] + "|42", items[1] + "|20"});
         assertThat(member).hasText("the same member");
-        click(form, "price 43 by the first member"); // the member as the view first got it answers again
+        text(form, "price 43 by the first member").click(); // the member as the view first got it answers again
         assertThat(rows).hasText(new String[] {items[0] + "|43", items[1] + "|20"});
 
         Locator label = form.locator(".ui-rpj-label");
         assertThat(label).hasText("shown label");
-        button(form, "uiRpjToggleLabel").click();
+        action(form, "uiRpjToggleLabel").click();
         assertThat(label).hasText("hidden no value");
-        button(form, "uiRpjToggleLabel").click();
+        action(form, "uiRpjToggleLabel").click();
         assertThat(label).hasText("shown label");
 
         Locator grid = form.locator(".ui-rpj-grid");
         assertThat(grid).hasText("grid shown");
-        button(form, "uiRpjToggleGrid").click();
+        action(form, "uiRpjToggleGrid").click();
         assertThat(grid).hasText("grid hidden");
         assertThat(rows).hasText(new String[] {"no value|no value", "no value|no value"});
-        button(form, "uiRpjToggleGrid").click();
+        action(form, "uiRpjToggleGrid").click();
         assertThat(grid).hasText("grid shown");
         assertThat(rows).hasText(new String[] {items[0] + "|43", items[1] + "|20"});
         save(form);
@@ -76,10 +75,10 @@ public class UiReactProjectionIT extends UiTest {
         Locator current = form.locator(".ui-rpj-current"), read = form.locator(".ui-rpj-current-name");
         assertThat(current).hasText(items[0]);
         assertThat(read).hasText(items[0]);
-        click(form, "second current");
+        text(form, "second current").click();
         assertThat(current).hasText(items[1]);
         assertThat(read).hasText(items[1]);
-        click(form, "first current by key");
+        text(form, "first current by key").click();
         assertThat(current).hasText(items[0]);
         assertThat(read).hasText(items[0]);
         close(form);
@@ -94,7 +93,7 @@ public class UiReactProjectionIT extends UiTest {
         Locator rows = form.locator(".ui-rpj-value-row");
         String values = "|#ff0000|1767225600000.1769817600000"; // January 2026, its bounds midnights of UTC
         assertThat(rows).hasText(new String[] {items[0] + values, items[1] + "|null|null"});
-        click(form, "copy to the second");
+        text(form, "copy to the second").click();
         assertThat(rows).hasText(new String[] {items[0] + values, items[1] + values});
         save(form);
         check("UiReactProjection.uiRpjCheckValues", items[0], items[1]);
@@ -114,19 +113,19 @@ public class UiReactProjectionIT extends UiTest {
         assertThat(qty).hasText(new String[] {items[0] + "|1", items[1] + "|2"});
 
         hold();
-        click(form, "run");
+        text(form, "run").click();
         assertThat(run).hasText("run loading");
         release();
         assertThat(run).hasText("run answered");
         assertThat(counter).hasText("1");
 
         hold();
-        click(form, "qty 7");
+        text(form, "qty 7").click();
         assertThat(qty).hasText(new String[] {items[0] + "|7|loading", items[1] + "|2"});
         release();
         assertThat(qty).hasText(new String[] {items[0] + "|7", items[1] + "|2"});
 
-        Locator nativeRun = button(form, "uiRpjNativeRun");
+        Locator nativeRun = action(form, "uiRpjNativeRun");
         assertThat(loading(nativeRun)).hasCount(0);
         hold();
         page.evaluate("() => { window.uiRpjClassicController.changeProperty('uiRpjNativeRun'); }"); // its Promise waits for the held answer
@@ -159,22 +158,22 @@ public class UiReactProjectionIT extends UiTest {
         page.waitForRequest(request -> carries(request.postData(), "SetUserHidden"),
                 () -> form[0] = open("UiReactProjection.uiRpj", "UiReactProjection.uiRpjPages"));
         Locator witness = form[0].locator(".ui-rpj-witness"), count = form[0].locator(".ui-rpj-count");
-        Locator bump = button(form[0], "uiRpjBump");
+        Locator bump = action(form[0], "uiRpjBump");
 
         bump.click();
         assertThat(witness).hasText("1");
         assertThat(count).hasText("null");
-        page.waitForRequest(request -> carries(request.postData(), "SetUserHidden"), () -> click(form[0], "page B"));
+        page.waitForRequest(request -> carries(request.postData(), "SetUserHidden"), () -> text(form[0], "page B").click());
         assertThat(count).hasText("1");
         bump.click();
         assertThat(witness).hasText("2");
         assertThat(count).hasText("2");
 
-        page.waitForRequest(request -> carries(request.postData(), "SetUserHidden"), () -> click(form[0], "page A"));
+        page.waitForRequest(request -> carries(request.postData(), "SetUserHidden"), () -> text(form[0], "page A").click());
         bump.click();
         assertThat(witness).hasText("3");
         assertThat(count).hasText("null");
-        page.waitForRequest(request -> carries(request.postData(), "SetUserHidden"), () -> click(form[0], "page B"));
+        page.waitForRequest(request -> carries(request.postData(), "SetUserHidden"), () -> text(form[0], "page B").click());
         assertThat(count).hasText("3");
         close(form[0]);
     }
@@ -188,9 +187,9 @@ public class UiReactProjectionIT extends UiTest {
         Locator rows = form.locator(".ui-rpj-color-row span");
         String green = "|#d2f5d2", red = "|#ffc8c8";
         assertThat(rows).hasText(new String[] {items[0] + green, items[1] + green});
-        click(form, "toggle " + items[0]);
+        text(form, "toggle " + items[0]).click();
         assertThat(rows).hasText(new String[] {items[0] + red, items[1] + green});
-        click(form, "toggle " + items[0]);
+        text(form, "toggle " + items[0]).click();
         assertThat(rows).hasText(new String[] {items[0] + green, items[1] + green});
         close(form);
     }
@@ -242,47 +241,16 @@ public class UiReactProjectionIT extends UiTest {
 
     // a call of the classic custom view's controller with its rows, `list`, as it was given them last
     private void classic(String call) {
-        page.evaluate("() => { const controller = window.uiRpjCardsState.controller, list = window.uiRpjCardsState.list; controller." + call + "; }");
+        cardsView.call("controller." + call);
     }
 
     private void assertRefused(String call, String refusal) {
-        assertEquals(call, refusal, page.evaluate("() => { const controller = window.uiRpjCardsState.controller, list = window.uiRpjCardsState.list;"
-                + " try { controller." + call + "; return 'not refused'; } catch (e) { return e.message; } }"));
-    }
-
-    // the form's requests held from now on, until let go: the server sees none of them, so their answers wait
-    private final List<Route> held = new ArrayList<>();
-
-    private void hold() {
-        page.route("**/main/dispatch", held::add);
-    }
-
-    // ... the requests held let go, in the order they were made, and no more held
-    private void release() {
-        page.unroute("**/main/dispatch");
-        for (Route route : held)
-            route.resume();
-        held.clear();
-    }
-
-    // a GWT-RPC request carries the class of the action it is: "<package>.<class>/<hash>"
-    private static boolean carries(String body, String action) {
-        return body != null && body.contains("." + action + "/");
+        assertEquals(call, refusal, cardsView.syncRefusal("controller." + call, "not refused"));
     }
 
     // what says a platform's cell, or button, waits for its answer
     private static Locator loading(Locator view) {
         return view.locator(".property-toolbar-loading, .fa-spinner");
-    }
-
-    // a button the platform draws, by its property
-    private static Locator button(Locator form, String action) {
-        return form.locator("button[lsfusion-container='PROPERTY(" + action + "())']");
-    }
-
-    // a button of a view, by its text
-    private static void click(Locator form, String text) {
-        form.getByText(text, new Locator.GetByTextOptions().setExact(true)).click();
     }
 
     private static void save(Locator form) {

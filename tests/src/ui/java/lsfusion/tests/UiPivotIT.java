@@ -3,7 +3,6 @@ package lsfusion.tests;
 import com.microsoft.playwright.Locator;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -17,7 +16,6 @@ import static org.junit.Assert.assertTrue;
 public class UiPivotIT extends UiTest {
 
     private static final String RENDER_ERROR = "An error occurred rendering the PivotTable results.";
-    private static final Pattern PUSH_API = Pattern.compile("Push API|Registration failed - permission denied");
 
     // a group in manual update switched to its pivot and back to its table before an update there holds its rows back
     // until it is updated, and then nothing: the update brings the rows, the platform's update button is disabled and
@@ -101,7 +99,7 @@ public class UiPivotIT extends UiTest {
     @Test
     public void thePivotOfAGroupWhoseDesignHidesTheExportButton() throws Exception {
         String[] items = seed();
-        List<String> errors = consoleErrors();
+        List<String> errors = consoleAndPageErrors();
         Locator form = open("UiPivot.uiPivot", "UiPivot.uiPivotExportHidden");
         assertThat(names(form)).hasText(items);
         assertThat(form.locator("button[title='Export']")).hasCount(0);
@@ -116,7 +114,7 @@ public class UiPivotIT extends UiTest {
     @Test
     public void aGroupWhoseDesignHidesTheExportButtonOpenedAsAPivot() throws Exception {
         seed();
-        List<String> errors = consoleErrors();
+        List<String> errors = consoleAndPageErrors();
         Locator form = open("UiPivot.uiPivot", "UiPivot.uiPivotExportHiddenPivot");
         Locator pivot = form.locator(".subtotalouterdiv");
         assertThat(cellOf(pivot, "3")).hasCount(1);
@@ -179,23 +177,5 @@ public class UiPivotIT extends UiTest {
     // a cell of the pivot showing exactly this
     private static Locator cellOf(Locator pivot, String text) {
         return pivot.locator("td").filter(new Locator.FilterOptions().setHasText(Pattern.compile("^" + text + "$")));
-    }
-
-    private static Locator text(Locator scope, String text) {
-        return scope.getByText(text, new Locator.GetByTextOptions().setExact(true));
-    }
-
-    // the errors the page logs from now on, but the browser's own: chrome has no push api in the context of a test
-    private List<String> consoleErrors() {
-        List<String> errors = new ArrayList<>();
-        page.onConsoleMessage(message -> {
-            if (message.type().equals("error") && !PUSH_API.matcher(message.text()).find())
-                errors.add(message.text());
-        });
-        page.onPageError(error -> {
-            if (!PUSH_API.matcher(error).find())
-                errors.add("page error: " + error);
-        });
-        return errors;
     }
 }

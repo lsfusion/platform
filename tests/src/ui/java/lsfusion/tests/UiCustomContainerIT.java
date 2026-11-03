@@ -194,19 +194,8 @@ public class UiCustomContainerIT extends UiTest {
         value.fill(text);
     }
 
-    // a real key press to the element that has the focus, once no request blocks the input, which the client drops
-    // while one does
-    private void press(String key) {
-        idle();
-        page.keyboard().press(key);
-    }
-
     private void type(String text) {
         idle();
         page.keyboard().type(text);
-    }
-
-    private void idle() {
-        page.locator(".lsf-blocking").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
     }
 }

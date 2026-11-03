@@ -3,7 +3,6 @@ package lsfusion.tests;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.PlaywrightException;
-import com.microsoft.playwright.options.WaitForSelectorState;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -37,8 +36,8 @@ public class UiComponentViewIT extends UiTest {
         Locator form = open(FOLDER, "UiComponentView.uiCvGrid");
         Locator names = form.locator(".ui-cv-name");
         assertThat(names).hasText(items);
-        assertEquals("i", eval("grid", "Object.keys(data).join()"));
-        assertEquals("true", eval("grid", "['list', 'byKey', 'keys', 'orders', 'name', 'price'].every(k => k in data.i)"));
+        assertEquals("i", drawnView("grid").eval("Object.keys(data).join()"));
+        assertEquals("true", drawnView("grid").eval("['list', 'byKey', 'keys', 'orders', 'name', 'price'].every(k => k in data.i)"));
         assertThat(form.locator("[lsfusion-container='GRID(i)'] .ui-cv-grid")).isVisible();
         assertThat(form.locator("[lsfusion-container='TOOLBARSYSTEM(i)']")).isVisible();
         form.getByTitle("Number of Entries", new Locator.GetByTitleOptions().setExact(true)).click();
@@ -85,8 +84,8 @@ public class UiComponentViewIT extends UiTest {
         Locator form = open(FOLDER, "UiComponentView.uiCvToolbar");
         assertThat(form.locator("td[lsfusion-container='PROPERTY(name)']")).hasText(items);
         assertThat(form.locator("[lsfusion-container='TOOLBARSYSTEM(i)'] .ui-cv-toolbar")).isVisible();
-        assertEquals("i", eval("toolbar", "Object.keys(data).join()"));
-        assertEquals("true,true", eval("toolbar", "[['manual', 'filterControlsVisible', 'listView', 'listViews', 'updatePending'].every(k => k in data.i),"
+        assertEquals("i", drawnView("toolbar").eval("Object.keys(data).join()"));
+        assertEquals("true,true", drawnView("toolbar").eval("[['manual', 'filterControlsVisible', 'listView', 'listViews', 'updatePending'].every(k => k in data.i),"
                 + " ['getCount', 'getSum', 'export', 'manual', 'update'].every(k => k in controller.i)].join()"));
         assertEquals("2", answer("toolbar", "controller.i.getCount()"));
         close(form);
@@ -102,29 +101,29 @@ public class UiComponentViewIT extends UiTest {
         Locator rows = form.locator(".ui-cv-rows"), view = form.locator(".ui-cv-filter-group");
         String all = items[0] + ", " + items[1];
         assertThat(rows).hasText(all);
-        assertEquals("i", eval("filterGroup", "Object.keys(data).join()"));
-        assertEquals(Arrays.asList(null, Arrays.asList("Dear", "Cheap"), true), page.evaluate("() => { " + scope("filterGroup")
-                + " return [data.i.uiCvKind.value, data.i.uiCvKind.filters, data.i.uiCvKind.canClear]; }"));
-        call("filterGroup", "controller.i.uiCvKind.change(0)");
+        assertEquals("i", drawnView("filterGroup").eval("Object.keys(data).join()"));
+        assertEquals(Arrays.asList(null, Arrays.asList("Dear", "Cheap"), true), view("filterGroup")
+                .value("[data.i.uiCvKind.value, data.i.uiCvKind.filters, data.i.uiCvKind.canClear]"));
+        view("filterGroup").call("controller.i.uiCvKind.change(0)");
         assertThat(rows).hasText(items[0]);
         assertThat(view).hasText("kind: 0");
-        call("filterGroup", "controller.i.uiCvKind.change(null)");
+        view("filterGroup").call("controller.i.uiCvKind.change(null)");
         assertThat(rows).hasText(all);
         assertThat(view).hasText("kind: null");
-        key(view, "F10");
+        focusAndPress(view, "F10");
         assertThat(rows).hasText(items[0]);
         assertThat(view).hasText("kind: 0");
-        call("filterGroup", "controller.i.uiCvKind.change(null)");
+        view("filterGroup").call("controller.i.uiCvKind.change(null)");
         assertThat(rows).hasText(all);
 
         action(form, "uiCvToggle").click();
         assertThat(view).isHidden();
-        key(rows, "F10");
+        focusAndPress(rows, "F10");
         action(form, "uiCvToggle").click();
         assertThat(view).isVisible();
         assertThat(rows).hasText(all);
         assertThat(view).hasText("kind: null");
-        key(view, "F10");
+        focusAndPress(view, "F10");
         assertThat(rows).hasText(items[0]);
         assertThat(view).hasText("kind: 0");
         close(form);
@@ -139,16 +138,16 @@ public class UiComponentViewIT extends UiTest {
         Locator form = open(FOLDER, "UiComponentView.uiCvControls");
         Locator names = form.locator("td[lsfusion-container='PROPERTY(name)']"), conditions = form.locator(".filter:visible");
         assertThat(names).hasText(items);
-        assertEquals("i", eval("controls", "Object.keys(data).join()"));
+        assertEquals("i", drawnView("controls").eval("Object.keys(data).join()"));
         assertEquals("false,false,addFilter,applyFilters,resetFilters",
-                eval("controls", "[data.i.filtersPending, data.i.filtersManual, Object.keys(controller.i).sort()].join()"));
+                drawnView("controls").eval("[data.i.filtersPending, data.i.filtersManual, Object.keys(controller.i).sort()].join()"));
         cell(form, "name", items[1]).click();
-        call("controls", "controller.i.addFilter()");
+        view("controls").call("controller.i.addFilter()");
         assertThat(conditions).hasCount(1);
         idle();
         conditions.locator("input").press("Enter");
         assertThat(names).hasText(new String[] {items[1]});
-        call("controls", "controller.i.resetFilters()");
+        view("controls").call("controller.i.resetFilters()");
         assertThat(names).hasText(items);
         close(form);
     }
@@ -161,8 +160,8 @@ public class UiComponentViewIT extends UiTest {
         String[] items = seed();
         Locator form = open(FOLDER, "UiComponentView.uiCvPlaced");
         assertThat(form.locator(".ui-cv-board-rows")).hasText(items[0] + ", " + items[1]);
-        assertEquals("true,false", eval("board", "['TOOLBARSYSTEM(i)' in data, 'manual' in data.i].join()"));
-        assertEquals("i/true", eval("placedToolbar", "Object.keys(data).join() + '/' + ('manual' in data.i)"));
+        assertEquals("true,false", drawnView("board").eval("['TOOLBARSYSTEM(i)' in data, 'manual' in data.i].join()"));
+        assertEquals("i/true", drawnView("placedToolbar").eval("Object.keys(data).join() + '/' + ('manual' in data.i)"));
         Locator placed = form.locator(".ui-cv-board .ui-cv-board-host .ui-cv-placed-toolbar");
         assertThat(placed).isVisible();
         form.locator(".ui-cv-place").click();
@@ -181,7 +180,7 @@ public class UiComponentViewIT extends UiTest {
         List<String> errors = errors();
         Locator form = open(FOLDER, "UiComponentView.uiCvTree");
         assertThat(form.locator(".ui-cv-tree")).hasText(category);
-        assertEquals("c,cats,i", eval("tree", "Object.keys(data).sort().join()"));
+        assertEquals("c,cats,i", drawnView("tree").eval("Object.keys(data).sort().join()"));
         action(form, "uiCvRecaption").click();
         assertThat(value(form, "uiCvCaption")).hasText("Groups of things");
         assertEquals(Collections.emptyList(), errors);
@@ -199,16 +198,6 @@ public class UiComponentViewIT extends UiTest {
         category = "Fruit" + id;
         exec("UiComponentView.uiCvSeed", category, items[0], items[1]);
         return items;
-    }
-
-    // what the popup of the count shows; the popup let go then - shown, it takes the focus, and hides as it loses it,
-    // as to a click on nothing
-    private void popup(String text) {
-        Locator popup = page.locator("[data-tippy-root]");
-        assertThat(popup).hasText(text);
-        page.waitForFunction("() => !!document.activeElement && !!document.activeElement.closest('[data-tippy-root]')");
-        page.evaluate("() => document.activeElement.blur()");
-        assertThat(popup).hasCount(0);
     }
 
     // the errors the page logs from now on
@@ -231,51 +220,25 @@ public class UiComponentViewIT extends UiTest {
         return (List<String>) form.locator("[lsfusion-container='GRID(i)']").evaluate("grid => [grid.style.width, grid.style.height]");
     }
 
-    // a button of the form's own action, and the value of a property of the form
-    private static Locator action(Locator form, String action) {
-        return form.locator("button[lsfusion-container='PROPERTY(" + action + "())']");
-    }
-
     private static Locator value(Locator form, String property) {
         return form.locator("[lsfusion-container='PROPERTY(" + property + "())'] .panel-renderer-value");
     }
 
-    // a key pressed in an element once no request is in flight: the client drops the keys typed meanwhile
-    private void key(Locator element, String key) {
-        element.click();
-        idle();
-        page.keyboard().press(key);
+    private View view(String name) {
+        return view("window.uiCvViews && window.uiCvViews." + name, "");
     }
 
-    private void idle() {
-        page.locator(".lsf-blocking").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
-    }
-
-    // what a view was last drawn with, its data and its controller, as a script names them
-    private static String scope(String view) {
-        return "const view = window.uiCvViews && window.uiCvViews." + view + ", data = view && view.data, controller = view && view.controller;";
-    }
-
-    // what an expression over what a view is drawn with comes to - the answer of a Promise -, as a string, once the
-    // view is drawn
-    private String eval(String view, String expression) {
+    private View drawnView(String name) {
         try {
-            page.waitForFunction("() => !!(window.uiCvViews && window.uiCvViews." + view + ")", null, new Page.WaitForFunctionOptions().setTimeout(10_000));
+            page.waitForFunction("() => !!(window.uiCvViews && window.uiCvViews." + name + ")", null, new Page.WaitForFunctionOptions().setTimeout(10_000));
         } catch (PlaywrightException e) {
-            throw new AssertionError("the view " + view + " is never drawn", e);
+            throw new AssertionError("the view " + name + " is never drawn", e);
         }
-        return (String) page.evaluate("async () => { " + scope(view) + " return String(await (" + expression + ")); }");
+        return view(name);
     }
 
-    // what a call of a view answers with a Promise of comes to, as a string - the Promise refused unless there is one
-    private String answer(String view, String call) {
-        eval(view, "true");
-        return (String) page.evaluate("async () => { " + scope(view) + " const answer = " + call + ";"
-                + " if (!answer || typeof answer.then !== 'function') return 'not a Promise: ' + answer; return String(await answer); }");
-    }
-
-    // a call of a view's controller, made as the view's own code makes it
-    private void call(String view, String call) {
-        page.evaluate("() => { " + scope(view) + " " + call + "; }");
+    private String answer(String name, String call) {
+        drawnView(name).eval("true");
+        return view(name).answer(call);
     }
 }

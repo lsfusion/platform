@@ -1,10 +1,7 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.PlaywrightException;
 import com.microsoft.playwright.options.SelectOption;
-import com.microsoft.playwright.options.WaitForSelectorState;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -29,31 +26,30 @@ public class UiFilterGroupsIT extends UiTest {
     public void aFilterGroupAViewDraws() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiFilterGroups.uiFgrView");
-        waitFor("data.i.list.length === 2");
-        assertEquals(Arrays.asList(null, Arrays.asList("Dear", "Cheap"), true, true), page.evaluate("() => { " + VIEW
-                + " return [data.i.uiFgrKind.value, data.i.uiFgrKind.filters, data.i.uiFgrKind.canClear,"
-                + " typeof controller.i.uiFgrKind.change === 'function']; }"));
-        call("controller.i.uiFgrKind.change(0)");
+        view.waitFor("data.i.list.length === 2");
+        assertEquals(Arrays.asList(null, Arrays.asList("Dear", "Cheap"), true, true), view.value("[data.i.uiFgrKind.value,"
+                + " data.i.uiFgrKind.filters, data.i.uiFgrKind.canClear, typeof controller.i.uiFgrKind.change === 'function']"));
+        view.drawn().call("controller.i.uiFgrKind.change(0)");
         assertThat(rows(form)).hasText(new String[] {items[0]});
-        waitFor("data.i.uiFgrKind.value === 0");
-        call("controller.i.uiFgrKind.change(null)");
+        view.waitFor("data.i.uiFgrKind.value === 0");
+        view.drawn().call("controller.i.uiFgrKind.change(null)");
         assertThat(rows(form)).hasText(items);
-        waitFor("data.i.uiFgrKind.value === null");
+        view.waitFor("data.i.uiFgrKind.value === null");
         form.locator("button[lsfusion-container='PROPERTY(uiFgrKindCheap())']").click();
         assertThat(rows(form)).hasText(new String[] {items[1]});
-        waitFor("data.i.uiFgrKind.value === 1");
+        view.waitFor("data.i.uiFgrKind.value === 1");
         assertEquals("controller.i.uiFgrKind.change(): takes the index of one of its filters, 0 to 1, or null for none",
-                refusal("controller.i.uiFgrKind.change(5)"));
+                view.drawn().refusal("controller.i.uiFgrKind.change(5)"));
 
-        call("controller.i.uiFgrKind.change(null)");
+        view.drawn().call("controller.i.uiFgrKind.change(null)");
         assertThat(rows(form)).hasText(items);
         key(form.locator(".ui-fgr-view"), "F10");
         assertThat(rows(form)).hasText(new String[] {items[0]});
-        waitFor("data.i.uiFgrKind.value === 0");
+        view.waitFor("data.i.uiFgrKind.value === 0");
         key(form.locator(".ui-fgr-view"), "F10");
-        assertEquals("1", answer("controller.i.getCount()")); // asked after the key, the count would be of both rows
+        assertEquals("1", view.drawn().answer("controller.i.getCount()")); // asked after the key, the count would be of both rows
         assertThat(rows(form)).hasText(new String[] {items[0]});
-        waitFor("data.i.uiFgrKind.value === 0");
+        view.waitFor("data.i.uiFgrKind.value === 0");
         close(form);
     }
 
@@ -64,19 +60,18 @@ public class UiFilterGroupsIT extends UiTest {
     public void aFilterGroupOfATreesGroupAViewDraws() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiFilterGroups.uiFgrTree");
-        waitFor("!!data.i.uiFgrCheap");
-        assertEquals(Arrays.asList(null, Arrays.asList("Cheap"), true, true, false), page.evaluate("() => { " + VIEW
-                + " return [data.i.uiFgrCheap.value, data.i.uiFgrCheap.filters, data.i.uiFgrCheap.canClear,"
-                + " 'uiFgrCheap' in controller.i, 'cats' in data]; }"));
+        view.waitFor("!!data.i.uiFgrCheap");
+        assertEquals(Arrays.asList(null, Arrays.asList("Cheap"), true, true, false), view.value("[data.i.uiFgrCheap.value,"
+                + " data.i.uiFgrCheap.filters, data.i.uiFgrCheap.canClear, 'uiFgrCheap' in controller.i, 'cats' in data]"));
         assertThat(form.getByLabel("Cheap", new Locator.GetByLabelOptions().setExact(true))).hasCount(0);
         button(form, "Expand whole tree").click();
         assertThat(treeNames(form)).hasText(new String[] {category, items[0], items[1], emptyCategory});
-        call("controller.i.uiFgrCheap.change(0)");
+        view.drawn().call("controller.i.uiFgrCheap.change(0)");
         assertThat(treeNames(form)).hasText(new String[] {category, items[1], emptyCategory});
-        waitFor("data.i.uiFgrCheap.value === 0");
-        call("controller.i.uiFgrCheap.change(null)");
+        view.waitFor("data.i.uiFgrCheap.value === 0");
+        view.drawn().call("controller.i.uiFgrCheap.change(null)");
         assertThat(treeNames(form)).hasText(new String[] {category, items[0], items[1], emptyCategory});
-        waitFor("data.i.uiFgrCheap.value === null");
+        view.waitFor("data.i.uiFgrCheap.value === null");
         close(form);
     }
 
@@ -224,77 +219,6 @@ public class UiFilterGroupsIT extends UiTest {
         return form.locator("select.filter-group-select");
     }
 
-    // what the popup of the count or of the sum shows; the popup let go then - shown, it takes the focus, and hides as
-    // it loses it, as to a click on nothing
-    private void popup(String text) {
-        Locator popup = page.locator("[data-tippy-root]");
-        assertThat(popup).hasText(text);
-        page.waitForFunction("() => !!document.activeElement && !!document.activeElement.closest('[data-tippy-root]')");
-        page.evaluate("() => document.activeElement.blur()");
-        assertThat(popup).hasCount(0);
-    }
-
-    // a button of the platform's toolbar, by its title, and a button of the form's own action
-    private static Locator button(Locator form, String title) {
-        return form.getByTitle(title, new Locator.GetByTitleOptions().setExact(true));
-    }
-
-    private static Locator action(Locator form, String action) {
-        return form.locator("button[lsfusion-container='PROPERTY(" + action + "())']");
-    }
-
-    // a key pressed in an element - a cell, a view - once no request is in flight: the client drops the keys typed
-    // meanwhile, and a click on a cell of another row sends one
-    private void key(Locator element, String key) {
-        if (Boolean.TRUE.equals(element.evaluate("element => !!element.closest('tr') && !element.closest('tr').classList.contains('table-active')")))
-            page.waitForRequest(request -> request.postData() != null && request.postData().contains("ChangeGroupObject"),
-                    () -> element.click());
-        else
-            element.click();
-        page.locator(".lsf-blocking").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
-        page.keyboard().press(key);
-    }
-
     // what the view was last drawn with, its data and its controller, as a script names them
-    private static final String VIEW = "const view = window.uiFgrView, data = view && view.data, controller = view && view.controller;";
-
-    // until a condition holds of what the view is drawn with, failing with what it is drawn with then
-    private void waitFor(String condition) {
-        try {
-            page.waitForFunction("() => { " + VIEW + " try { return !!data && !!(" + condition + "); } catch (e) { return false; } }",
-                    null, new Page.WaitForFunctionOptions().setTimeout(10_000));
-        } catch (PlaywrightException e) {
-            throw new AssertionError("never " + condition + " - the view is drawn with " + page.evaluate("() => JSON.stringify(window.uiFgrView && window.uiFgrView.data)"), e);
-        }
-    }
-
-    // the view drawn: what follows asks what it is drawn with
-    private void drawn() {
-        waitFor("true");
-    }
-
-    // what an expression over what the view is drawn with comes to, as a string
-    private String eval(String expression) {
-        drawn();
-        return (String) page.evaluate("async () => { " + VIEW + " return String(await (" + expression + ")); }");
-    }
-
-    // what a call answers with a Promise of comes to, as a string - the Promise refused unless there is one
-    private String answer(String call) {
-        drawn();
-        return (String) page.evaluate("async () => { " + VIEW + " const answer = " + call + ";"
-                + " if (!answer || typeof answer.then !== 'function') return 'not a Promise: ' + answer; return String(await answer); }");
-    }
-
-    // a call of the view's controller, made as the view's own code makes it
-    private void call(String call) {
-        drawn();
-        page.evaluate("() => { " + VIEW + " " + call + "; }");
-    }
-
-    // the reason a call of the controller is refused with
-    private String refusal(String call) {
-        drawn();
-        return (String) page.evaluate("async () => { " + VIEW + " try { await (" + call + "); return 'not refused'; } catch (e) { return e.message; } }");
-    }
+    private final View view = view("window.uiFgrView", "");
 }

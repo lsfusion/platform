@@ -7,6 +7,8 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.PlaywrightException;
+import com.microsoft.playwright.Request;
+import com.microsoft.playwright.Route;
 import com.microsoft.playwright.Tracing;
 import com.microsoft.playwright.assertions.LocatorAssertions;
 import com.microsoft.playwright.options.ReducedMotion;
@@ -35,10 +37,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -250,6 +254,238 @@ public abstract class UiTest {
     }
 
     // ---------------------------------------------------------------- helpers
+
+    protected void idle() {
+        page.locator(".lsf-blocking").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
+    }
+
+    // the client drops keys typed while a request blocks the input
+    protected void press(Locator editor, String key) {
+        idle();
+        editor.press(key);
+    }
+
+    protected void press(String key) {
+        idle();
+        page.keyboard().press(key);
+    }
+
+    protected void pressAndWait(String key) {
+        press(key);
+        idle();
+    }
+
+    protected void key(Locator cell, String key) {
+        click(cell);
+        press(key);
+    }
+
+    protected void focusAndPress(Locator element, String key) {
+        element.click();
+        press(key);
+    }
+
+    // a row change is sent later and has no glass; its answer must be applied before the next click
+    protected void click(Locator cell) {
+        answered(Boolean.TRUE.equals(cell.evaluate("cell => !!cell.closest('tr') && !cell.closest('tr').classList.contains('table-active')")) ? 1 : 0,
+                cell::click);
+    }
+
+    protected void select(Locator cell) {
+        page.waitForResponse(response -> carries(response.request().postData(), "ChangeGroupObject"), cell::click).finished();
+    }
+
+    // a dialog's OK follows the row request in server order, so sending it is enough there
+    protected void selectSent(Locator cell) {
+        rowChangeSent(cell::click);
+    }
+
+    protected void rowChangeSent(Runnable step) {
+        page.waitForRequest(request -> carries(request.postData(), "ChangeGroupObject"), step);
+    }
+
+    // loadend precedes the next task, where the GWT handlers have applied the answer
+    private static final String REQUESTS = "(() => { if (window.uiTestRequests) return; const requests = window.uiTestRequests = {pending: 0, changes: 0};"
+            + " const send = XMLHttpRequest.prototype.send; XMLHttpRequest.prototype.send = function (body) { requests.pending++;"
+            + " if (String(body).includes('action.form.ChangeGroupObject/')) requests.changes++;"
+            + " this.addEventListener('loadend', () => setTimeout(() => requests.pending--)); return send.apply(this, arguments); }; })()";
+    private Page trackedPage;
+
+    protected void trackRequests() {
+        if (trackedPage != page) {
+            page.addInitScript(REQUESTS);
+            trackedPage = page;
+        }
+        page.evaluate(REQUESTS);
+    }
+
+    protected void answered(int changes, Runnable step) {
+        trackRequests();
+        int before = ((Number) page.evaluate("() => window.uiTestRequests.changes")).intValue();
+        step.run();
+        page.waitForFunction("before => window.uiTestRequests.changes >= before && window.uiTestRequests.pending === 0", before + changes);
+    }
+
+    protected void settled() {
+        answered(0, () -> { });
+    }
+
+    protected void popup(String text) {
+        Locator popup = page.locator("[data-tippy-root]");
+        assertThat(popup).hasText(text);
+        page.waitForFunction("() => !!document.activeElement && !!document.activeElement.closest('[data-tippy-root]')");
+        page.evaluate("() => document.activeElement.blur()");
+        assertThat(popup).hasCount(0);
+    }
+
+    protected static Locator button(Locator scope, String title) {
+        return scope.getByTitle(title, new Locator.GetByTitleOptions().setExact(true));
+    }
+
+    protected static Locator action(Locator form, String action) {
+        return propertyButton(form, action + "()");
+    }
+
+    protected static Locator propertyButton(Locator form, String property) {
+        return form.locator("button[lsfusion-container='PROPERTY(" + property + ")']");
+    }
+
+    protected static Locator text(Locator scope, String text) {
+        return scope.getByText(text, new Locator.GetByTextOptions().setExact(true));
+    }
+
+    protected List<String> requests() {
+        return requests(request -> true);
+    }
+
+    protected List<String> requests(String action) {
+        return requests(request -> carries(request.postData(), action));
+    }
+
+    protected List<String> requests(Predicate<Request> filter) {
+        List<String> bodies = new CopyOnWriteArrayList<>();
+        page.onRequest(request -> {
+            String body = request.postData();
+            if (body != null && filter.test(request))
+                bodies.add(body);
+        });
+        return bodies;
+    }
+
+    // a report of an error may name an action too, so a form request needs its full GWT-RPC signature
+    protected static String signature(String kind) {
+        return "action.form." + kind + "/";
+    }
+
+    protected static long count(List<String> requests, String kind) {
+        return requests.stream().filter(body -> body.contains(signature(kind))).count();
+    }
+
+    protected static boolean carries(String body, String action) {
+        return body != null && body.contains("." + action + "/");
+    }
+
+    protected static int countActions(List<String> requests, String action) {
+        return (int) requests.stream().filter(body -> carries(body, action)).count();
+    }
+
+    private final List<Route> held = new ArrayList<>();
+
+    protected void hold() {
+        page.route("**/main/dispatch", held::add);
+    }
+
+    protected void release() {
+        page.unroute("**/main/dispatch");
+        for (Route route : held)
+            route.resume();
+        held.clear();
+    }
+
+    protected List<String> consoleErrors() {
+        List<String> errors = new ArrayList<>();
+        page.onConsoleMessage(message -> {
+            if (message.type().equals("error") && !PUSH_API.matcher(message.text()).find())
+                errors.add(message.text());
+        });
+        return errors;
+    }
+
+    protected List<String> consoleAndPageErrors() {
+        List<String> errors = consoleErrors();
+        page.onPageError(error -> {
+            if (!PUSH_API.matcher(error).find())
+                errors.add("page error: " + error);
+        });
+        return errors;
+    }
+
+    protected View view(String state, String bindings) {
+        return new View("const view = " + state + ", data = view && view.data, controller = view && view.controller;" + bindings,
+                "!!data", "the view is drawn with ", "(" + state + ") && (" + state + ").data");
+    }
+
+    protected class View {
+        private final String scope, ready, description, diagnostic;
+
+        protected View(String scope, String ready, String description, String diagnostic) {
+            this.scope = scope;
+            this.ready = ready;
+            this.description = description;
+            this.diagnostic = diagnostic;
+        }
+
+        public void waitFor(String condition) {
+            try {
+                page.waitForFunction("() => { " + scope + " try { return " + ready + " && !!(" + condition + "); } catch (e) { return false; } }",
+                        null, new Page.WaitForFunctionOptions().setTimeout(10_000));
+            } catch (PlaywrightException e) {
+                throw new AssertionError("never " + condition + (description.isEmpty() ? "" : " - " + description
+                        + page.evaluate("() => JSON.stringify(" + diagnostic + ")")), e);
+            }
+        }
+
+        public View drawn() {
+            waitFor("true");
+            return this;
+        }
+
+        public Object value(String expression) {
+            return page.evaluate("() => { " + scope + " return " + expression + "; }");
+        }
+
+        public String eval(String expression) {
+            return (String) page.evaluate("async () => { " + scope + " return String(await (" + expression + ")); }");
+        }
+
+        // a returned Promise would make evaluate wait for the answer, which hold() may keep back
+        public void call(String call) {
+            page.evaluate("() => { " + scope + " " + call + "; }");
+        }
+
+        public String answer(String call) {
+            return (String) page.evaluate("async () => { " + scope + " const answer = " + call + ";"
+                    + " if (!answer || typeof answer.then !== 'function') return 'not a Promise: ' + answer; return String(await answer); }");
+        }
+
+        public String refusal(String call) {
+            return (String) page.evaluate("async () => { " + scope + " try { await (" + call + "); return 'not refused'; } catch (e) { return e.message; } }");
+        }
+
+        public String rejection(String call) {
+            return (String) page.evaluate("async () => { " + scope + " const answer = " + call + ";"
+                    + " if (!answer || typeof answer.then !== 'function') return 'not a Promise: ' + answer;"
+                    + " try { await answer; return 'not rejected'; } catch (e) { return e.message; } }");
+        }
+
+        public String syncRefusal(String call) {
+            return syncRefusal(call, null);
+        }
+
+        public String syncRefusal(String call, String success) {
+            return (String) page.evaluate("success => { " + scope + " try { " + call + "; return success; } catch (e) { return e.message; } }", success);
+        }
+    }
 
     // a form by its navigator element, named after the form, unfolding the folder when the element is not on the screen:
     // a folder's panel slides out of the viewport keeping its elements, which playwright still takes for visible. While

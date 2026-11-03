@@ -85,19 +85,19 @@ public class UiGridRecordIT extends UiTest {
         // again, which runs the card's ON COLLAPSE as the form opens: the log starts over once the form has answered
         // what came after, the changes of the current item
         exec("UiGridRecord.uiGridRecordForget");
-        button(form, "Unplace").click();
+        text(form, "Unplace").click();
         assertThat(host).hasCount(0);
         log("placed of " + items[0] + " collapsed");
-        button(form, "Place").click();
+        text(form, "Place").click();
         assertThat(host).containsText("ripe");
 
         assertThat(code).hasText("A1");
-        button(form, "Hide drawn").click();
+        text(form, "Hide drawn").click();
         log("placed of " + items[0] + " collapsed", "drawn of " + items[0] + " collapsed");
-        button(form, "Bump").click();
+        text(form, "Bump").click();
         assertThat(bumps).hasText("1"); // the bump answered
         assertThat(code).hasText("null");
-        button(form, "Show drawn").click();
+        text(form, "Show drawn").click();
         assertThat(code).hasText("A1+");
         assertNoErrorDialog();
         // saved, the form closes asking nothing
@@ -127,10 +127,6 @@ public class UiGridRecordIT extends UiTest {
     // a row the React view draws, by its item's name
     private static Locator row(Locator form, String name) {
         return form.locator(".ui-grid-record-row").filter(new Locator.FilterOptions().setHasText(name));
-    }
-
-    private static Locator button(Locator form, String text) {
-        return form.getByText(text, new Locator.GetByTextOptions().setExact(true));
     }
 
     // the dialog the web client shows a failed request in stays until it is closed: none is there

@@ -3,7 +3,6 @@ package lsfusion.tests;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Mouse;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Request;
 import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.BoundingBox;
 import com.microsoft.playwright.options.WaitForSelectorState;
@@ -46,15 +45,15 @@ public class UiKeysIT extends UiTest {
         assertThat(host).isHidden();
         assertThat(rows).hasText(String.join(", ", items));
         board.focus();
-        press("F10"); // Expensive, were it taken
-        button(form, "uiKeysToggleKind()").click();
+        pressAndWait("F10"); // Expensive, were it taken
+        propertyButton(form, "uiKeysToggleKind()").click();
         assertThat(board).hasAttribute("data-kind-hidden", "false");
         assertThat(host).isVisible();
         assertThat(rows).hasText(String.join(", ", items));
         board.focus();
-        press("F10"); // Expensive
+        pressAndWait("F10"); // Expensive
         assertThat(rows).hasText(items[0] + ", " + items[2]);
-        press("F11"); // Cheap
+        pressAndWait("F11"); // Cheap
         assertThat(rows).hasText(items[1]);
         close(form);
     }
@@ -68,16 +67,16 @@ public class UiKeysIT extends UiTest {
         Locator form = open(FOLDER, "UiKeys.uiKeysActions");
         Locator board = form.locator(".ui-keys-actions");
         board.focus();
-        press("F6");
-        press("F7");
+        pressAndWait("F6");
+        pressAndWait("F7");
         log("bumped by the platform", "bumped");
         makeCurrent(form, items[1]);
         board.focus();
-        press("F8");
+        pressAndWait("F8");
         log("bumped by the platform", "bumped", "marked " + items[1]);
         makeCurrent(form, items[2]);
         board.focus();
-        press("Control+F8");
+        pressAndWait("Control+F8");
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Yes").setExact(true)).click();
         log("bumped by the platform", "bumped", "marked " + items[1], "marked when asked " + items[2]);
         close(form);
@@ -90,12 +89,12 @@ public class UiKeysIT extends UiTest {
         String[] items = seed();
         Locator classic = open(FOLDER, "UiKeys.uiKeysClassic");
         name(classic, items[0]).click();
-        press("Escape");
+        pressAndWait("Escape");
         classic.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.DETACHED));
 
         Locator form = open(FOLDER, "UiKeys.uiKeysToolbar");
         form.locator(".ui-keys-toolbar").focus();
-        press("Escape");
+        pressAndWait("Escape");
         form.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.DETACHED));
     }
 
@@ -122,9 +121,9 @@ public class UiKeysIT extends UiTest {
         Locator form = open(FOLDER, "UiKeys.uiKeysRows");
         makeCurrent(form, items[1]);
         form.locator(".ui-keys-cards").focus();
-        press("F2");
+        pressAndWait("F2");
         assertThat(card(form, items[1]).locator("input")).isFocused();
-        press("Escape");
+        pressAndWait("Escape");
         close(form);
     }
 
@@ -137,11 +136,11 @@ public class UiKeysIT extends UiTest {
         Locator form = open(FOLDER, "UiKeys.uiKeysAsking");
         Locator board = form.locator(".ui-keys-ask"), log = form.locator(".ui-keys-log");
         board.focus();
-        press("F9");
+        pressAndWait("F9");
         form.locator(".ui-keys-exec-uiKeysAsk").click();
         assertThat(form.locator(".ui-keys-said")).containsText("'uiKeysAsk' asks for a value, which no call can give an action");
         board.focus();
-        cancelled(() -> press("Control+F9"));
+        cancelled(() -> pressAndWait("Control+F9"));
         assertThat(log).hasText("asked later");
         cancelled(() -> form.locator(".ui-keys-exec-uiKeysAskLater").click());
         assertThat(log).hasText("asked later, asked later");
@@ -171,12 +170,12 @@ public class UiKeysIT extends UiTest {
         String[] items = seed();
         Locator form = open(FOLDER, "UiKeys.uiKeysClassic");
         name(form, items[0]).click();
-        press("F7");
+        pressAndWait("F7");
         log("bumped");
         name(form, items[1]).click();
-        press("F8");
+        pressAndWait("F8");
         log("bumped", "marked " + items[1]);
-        press("F10"); // Expensive
+        pressAndWait("F10"); // Expensive
         assertThat(name(form, items[1])).hasCount(0);
         assertThat(name(form, items[0])).hasCount(1);
         name(form, items[2]).dblclick();
@@ -189,7 +188,7 @@ public class UiKeysIT extends UiTest {
     public void aDoubleClickPicksARowOfADialog() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiKeys.uiKeysClassic");
-        button(form, "uiKeysClassicPick()").click();
+        propertyButton(form, "uiKeysClassicPick()").click();
         doubleClick(name(form("UiKeys.uiKeysPickList"), items[1]));
         log("picked " + items[1]);
         close(form);
@@ -202,17 +201,17 @@ public class UiKeysIT extends UiTest {
         String[] items = seed();
         Locator form = open(FOLDER, "UiKeys.uiKeysClassic");
         Locator dialog = form("UiKeys.uiKeysPickList");
-        button(form, "uiKeysClassicPick()").click();
-        select(name(dialog, items[2]));
-        press("F7"); // the form's Bump
-        press("Control+Enter");
+        propertyButton(form, "uiKeysClassicPick()").click();
+        selectSent(name(dialog, items[2]));
+        pressAndWait("F7"); // the form's Bump
+        pressAndWait("Control+Enter");
         log("picked " + items[2]);
-        button(form, "uiKeysClassicPick()").click();
-        select(name(dialog, items[1]));
-        press("Escape");
+        propertyButton(form, "uiKeysClassicPick()").click();
+        selectSent(name(dialog, items[1]));
+        pressAndWait("Escape");
         dialog.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.DETACHED));
         name(form, items[0]).click();
-        press("F7");
+        pressAndWait("F7");
         log("picked " + items[2], "bumped");
         close(form);
     }
@@ -225,12 +224,12 @@ public class UiKeysIT extends UiTest {
         Locator form = open(FOLDER, "UiKeys.uiKeysEdits"), edit = form("UiKeys.uiKeysItem");
         name(form, items[1]).dblclick();
         assertThat(edit.locator("[lsfusion-container='PROPERTY(uiKeysName(i))'] input")).hasValue(items[1]);
-        press("Escape");
+        pressAndWait("Escape");
         edit.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.DETACHED));
         name(form, items[2]).click();
-        press("Enter");
+        pressAndWait("Enter");
         assertThat(edit.locator("[lsfusion-container='PROPERTY(uiKeysName(i))'] input")).hasValue(items[2]);
-        press("Escape");
+        pressAndWait("Escape");
         edit.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.DETACHED));
         close(form);
     }
@@ -240,24 +239,24 @@ public class UiKeysIT extends UiTest {
     @Test
     public void keysOnlyWhileShowIfShows() throws Exception {
         String[] items = seed();
-        Locator form = open(FOLDER, "UiKeys.uiKeysShowIf"), on = button(form, "uiKeysSwitch()");
+        Locator form = open(FOLDER, "UiKeys.uiKeysShowIf"), on = propertyButton(form, "uiKeysSwitch()");
         name(form, items[1]).click();
-        press("F7");
-        press("F8");
+        pressAndWait("F7");
+        pressAndWait("F8");
         on.click();
         log("on");
         name(form, items[1]).click();
-        press("F7");
-        press("F8");
+        pressAndWait("F7");
+        pressAndWait("F8");
         log("on", "ran", "marked " + items[1]);
         on.click();
         name(form, items[1]).click();
-        press("F7");
-        press("F8");
+        pressAndWait("F7");
+        pressAndWait("F8");
         on.click();
         name(form, items[1]).click();
-        press("F7");
-        press("F8");
+        pressAndWait("F7");
+        pressAndWait("F8");
         log("on", "ran", "marked " + items[1], "off", "on", "ran", "marked " + items[1]);
         close(form);
     }
@@ -268,14 +267,14 @@ public class UiKeysIT extends UiTest {
     public void keysOnAPageNotShown() throws Exception {
         seed();
         Locator form = open(FOLDER, "UiKeys.uiKeysTabs");
-        button(form, "uiKeysHere()").focus();
-        press("F9");
-        press("F7");
-        press("F6");
+        propertyButton(form, "uiKeysHere()").focus();
+        pressAndWait("F9");
+        pressAndWait("F7");
+        pressAndWait("F6");
         log("here", "there, showing all");
         form.getByText("Two", new Locator.GetByTextOptions().setExact(true)).click();
-        press("F7");
-        press("F6");
+        pressAndWait("F7");
+        pressAndWait("F6");
         log("here", "there, showing all", "there", "there, showing all");
         close(form);
     }
@@ -286,10 +285,10 @@ public class UiKeysIT extends UiTest {
         String[] items = seed();
         Locator form = open(FOLDER, "UiKeys.uiKeysGroups");
         cell(form, "uiKeysName(a)", items[1]).click();
-        press("F8");
+        pressAndWait("F8");
         log("marked in a " + items[1]);
         cell(form, "uiKeysName(b)", items[2]).click();
-        press("F8");
+        pressAndWait("F8");
         log("marked in a " + items[1], "marked in b " + items[2]);
         close(form);
     }
@@ -299,8 +298,8 @@ public class UiKeysIT extends UiTest {
     public void aKeyOfOnePriorityGoesToTheLaterInTheForm() throws Exception {
         seed();
         Locator form = open(FOLDER, "UiKeys.uiKeysPriorities");
-        button(form, "uiKeysFirst()").focus();
-        press("F9");
+        propertyButton(form, "uiKeysFirst()").focus();
+        pressAndWait("F9");
         log("second");
         close(form);
     }
@@ -310,8 +309,8 @@ public class UiKeysIT extends UiTest {
     public void aKeyGoesToTheHigherPriority() throws Exception {
         seed();
         Locator form = open(FOLDER, "UiKeys.uiKeysPriorities");
-        button(form, "uiKeysFirst()").focus();
-        press("F11");
+        propertyButton(form, "uiKeysFirst()").focus();
+        pressAndWait("F11");
         log("priority 200");
         close(form);
     }
@@ -321,22 +320,22 @@ public class UiKeysIT extends UiTest {
     @Test
     public void aKeyAPropertyGivesItself() throws Exception {
         seed();
-        Locator form = open(FOLDER, "UiKeys.uiKeysGiven"), run = button(form, "uiKeysRunGiven()");
+        Locator form = open(FOLDER, "UiKeys.uiKeysGiven"), run = propertyButton(form, "uiKeysRunGiven()");
         run.focus();
-        press("Control+F6");
+        pressAndWait("Control+F6");
         log("ran");
-        button(form, "uiKeysGiveF7()").click();
+        propertyButton(form, "uiKeysGiveF7()").click();
         run.focus();
-        press("Control+F7");
+        pressAndWait("Control+F7");
         log("ran", "ctrl F7 given", "ran");
-        press("Control+F6");
-        button(form, "uiKeysGiveNone()").click();
+        pressAndWait("Control+F6");
+        propertyButton(form, "uiKeysGiveNone()").click();
         run.focus();
-        press("Control+F7");
-        press("Control+F6");
-        button(form, "uiKeysGiveF6()").click();
+        pressAndWait("Control+F7");
+        pressAndWait("Control+F6");
+        propertyButton(form, "uiKeysGiveF6()").click();
         run.focus();
-        press("Control+F6");
+        pressAndWait("Control+F6");
         log("ran", "ctrl F7 given", "ran", "no key given", "ctrl F6 given", "ran");
         close(form);
     }
@@ -359,7 +358,7 @@ public class UiKeysIT extends UiTest {
         String[] items = seed();
         Locator form = open(FOLDER, "UiKeys.uiKeysColumns");
         cell(form, "uiKeysName(c)", items[1]).click();
-        press("Control+F8");
+        pressAndWait("Control+F8");
         log("column " + items[0]);
         close(form);
     }
@@ -392,28 +391,9 @@ public class UiKeysIT extends UiTest {
         check("UiKeys.uiKeysCheckLog", String.join(", ", done));
     }
 
-    // a real key press - Playwright's names, joined by + - to the element that has the focus, once no request blocks
-    // the input, which the client drops while one does; and until the request the key sends, if any, is answered
-    private void press(String keys) {
-        idle();
-        page.keyboard().press(keys);
-        idle();
-    }
-
-    private void idle() {
-        page.locator(".lsf-blocking").waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN));
-    }
-
     // what runs cancels an input it has no cell to enter in, saying so on the console
     private void cancelled(Runnable run) {
         page.waitForConsoleMessage(new Page.WaitForConsoleMessageOptions().setPredicate(message -> message.text().contains(NO_CELL)), run);
-    }
-
-    // a row of the platform's dialog other than its current one selected by a click, before a key picks it: the row a
-    // click selects goes to the server 50 ms after it, and what the dialog's OK does goes at once - it has no group to
-    // send the row first -, so the key waits until the row is sent
-    private void select(Locator cell) {
-        page.waitForRequest(UiKeysIT::changesRow, cell::click);
     }
 
     // a double click as a hand makes it: its first press selects the row, as select does, its second one - with the
@@ -421,16 +401,10 @@ public class UiKeysIT extends UiTest {
     private void doubleClick(Locator cell) {
         BoundingBox box = cell.boundingBox();
         double x = box.x + box.width / 2, y = box.y + box.height / 2;
-        page.waitForRequest(UiKeysIT::changesRow, () -> page.mouse().click(x, y));
+        rowChangeSent(() -> page.mouse().click(x, y));
         idle(); // a raw press is lost on the glass of a request
         page.mouse().down(new Mouse.DownOptions().setClickCount(2));
         page.mouse().up(new Mouse.UpOptions().setClickCount(2));
-    }
-
-    // the request that sends the current row of a group, after a click on another row
-    private static boolean changesRow(Request request) {
-        String body = request.postData();
-        return body != null && body.contains("ChangeGroupObject");
     }
 
     // a card of the rows a React view draws, made the current one by a click on its name, as the view shows it
@@ -446,9 +420,5 @@ public class UiKeysIT extends UiTest {
 
     private Locator name(Locator form, String name) {
         return cell(form, "uiKeysName(i)", name);
-    }
-
-    private static Locator button(Locator form, String property) {
-        return form.locator("button[lsfusion-container='PROPERTY(" + property + ")']");
     }
 }
