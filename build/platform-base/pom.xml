@@ -117,7 +117,7 @@
         <pdfbox.version>2.0.32</pdfbox.version>
         <amqp.client.version>5.37.0</amqp.client.version>
         <web.push.version>5.1.1</web.push.version>
-        <bouncycastle.version>1.85</bouncycastle.version>
+        <bouncycastle.version>1.86</bouncycastle.version>
     </properties>
 
     <!-- DEPENDENCY VERSIONS -->
