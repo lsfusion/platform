@@ -65,7 +65,7 @@
         <log4j2.version>2.24.3</log4j2.version>
         <org.jfree.version>1.0.23</org.jfree.version>
         <jjwt.version>0.12.6</jjwt.version>
-        <jackson.version>2.22.1</jackson.version>
+        <jackson.version>2.22.4</jackson.version>
         <jackson.annotations.version>2.22</jackson.annotations.version>
 
         <spring.version>5.3.39</spring.version>
