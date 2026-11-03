@@ -25,6 +25,9 @@ public final class JsniTestSupport {
 
     public static native JavaScriptObject field(JavaScriptObject object, String name) /*-{ return object[name]; }-*/;
     public static native boolean own(JavaScriptObject object, String name) /*-{ return Object.prototype.hasOwnProperty.call(object, name); }-*/;
+    // compiled JSNI runs in the module's window; $wnd is the page's window
+    public static native JavaScriptObject moduleWindow() /*-{ return window; }-*/;
+    public static native JavaScriptObject pageWindow() /*-{ return $wnd; }-*/;
     // a batch begun through a controller, run being what its function does - the Promise it returns
     public static native JavaScriptObject batch(JavaScriptObject controller, Runnable run) /*-{
         return controller.batch(function () { run.@java.lang.Runnable::run()(); });

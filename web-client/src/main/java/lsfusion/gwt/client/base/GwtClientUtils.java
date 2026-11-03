@@ -2320,15 +2320,6 @@ public class GwtClientUtils {
     }-*/;
     public static native JavaScriptObject copyArray(JavaScriptObject array)/*-{ return array.slice(); }-*/;
 
-    public static native JavaScriptObject removeField(JavaScriptObject object, String field)/*-{
-        if (object[field]) {
-            value = object[field];
-            delete object[field];
-            return value;
-        }
-        return null;
-    }-*/;
-
     public static native JavaScriptObject toJsObject(String field1, JavaScriptObject value1) /*-{
         var obj = $wnd.createPlainObject();
         obj[field1] = value1;

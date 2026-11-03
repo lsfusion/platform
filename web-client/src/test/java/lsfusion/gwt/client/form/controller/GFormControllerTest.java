@@ -28,6 +28,7 @@ import lsfusion.gwt.client.RemoteDispatchAsync;
 import lsfusion.gwt.client.action.GRequestUserInputAction;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 import lsfusion.gwt.client.base.GAsync;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.size.GSize;
@@ -102,6 +103,8 @@ import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.property.cell.classes.view.HTMLTextCellRenderer;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
@@ -156,6 +159,61 @@ public class GFormControllerTest extends GWTTestCase {
         if (server != null)
             replaceService(server.pageService);
     }
+
+    // Clearing a diff or an HTML cell deletes even 0, "", false, and never assigns a global value in either window.
+    public void testClearDiffDeletesFalsyPrevList() {
+        Element element = Document.get().createDivElement();
+        for (Object value : new Object[] {0.0, "", false}) {
+            GwtClientUtils.setField(element, "prevList", value);
+            assertTrue(own(element, "prevList"));
+            GSimpleStateTableView.clearDiff(element);
+            assertFalse("clearDiff kept falsy prevList: " + value, own(element, "prevList"));
+        }
+    }
+
+    public void testHtmlTextClearDeletesFalsyController() {
+        Element element = Document.get().createDivElement();
+        HTMLTextCellRenderer renderer = new HTMLTextCellRenderer(new GPropertyDraw(), true);
+        for (Object value : new Object[] {0.0, "", false}) {
+            GwtClientUtils.setField(element, "controller", value);
+            assertTrue(own(element, "controller"));
+            renderer.clearRenderContent(element, null);
+            assertFalse("clearRenderContent kept falsy controller: " + value, own(element, "controller"));
+        }
+    }
+
+    public void testClearDiffDoesNotLeakGlobalValue() {
+        Element element = Document.get().createDivElement();
+        GwtClientUtils.setField(element, "prevList", GwtClientUtils.newObject());
+        assertNoGlobalValue("before clearDiff");
+        try {
+            GSimpleStateTableView.clearDiff(element);
+            assertNoGlobalValue("clearDiff leaked");
+        } finally {
+            GwtClientUtils.deleteField(JsniTestSupport.moduleWindow(), "value");
+            GwtClientUtils.deleteField(JsniTestSupport.pageWindow(), "value");
+        }
+    }
+
+    public void testHtmlTextClearDoesNotLeakGlobalValue() {
+        Element element = Document.get().createDivElement();
+        HTMLTextCellRenderer renderer = new HTMLTextCellRenderer(new GPropertyDraw(), true);
+        GwtClientUtils.setField(element, "controller", GwtClientUtils.newObject());
+        assertNoGlobalValue("before clearRenderContent");
+        try {
+            renderer.clearRenderContent(element, null);
+            assertNoGlobalValue("clearRenderContent leaked");
+        } finally {
+            GwtClientUtils.deleteField(JsniTestSupport.moduleWindow(), "value");
+            GwtClientUtils.deleteField(JsniTestSupport.pageWindow(), "value");
+        }
+    }
+
+    private static void assertNoGlobalValue(String message) {
+        assertFalse(message + " window.value", own(JsniTestSupport.moduleWindow(), "value"));
+        assertFalse(message + " $wnd.value", own(JsniTestSupport.pageWindow(), "value"));
+    }
+
     // what the client's page gives it and a test's page does not (webapp/static/js/utils.js): its text and element
     // helpers the layout calls as it builds the views - here doing nothing, or answering as for plain text: nothing
     // here reads a caption -, and jQuery UI, which a modal window is made draggable and resizable with (ModalWindow)

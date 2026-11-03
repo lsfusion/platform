@@ -655,7 +655,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     // 1 - otherwise
 
     public static <K, V extends JavaScriptObject> void clearDiff(Element element) {
-        GwtClientUtils.removeField(element, "prevList");
+        GwtClientUtils.deleteField(element, "prevList");
     }
 
     public static <K, V extends JavaScriptObject> void diff(JsArray<V> list, Element element, JavaScriptObject proceed, JavaScriptObject getObjectString, String objectsField, boolean noDiffObjects, boolean removeFirst) {

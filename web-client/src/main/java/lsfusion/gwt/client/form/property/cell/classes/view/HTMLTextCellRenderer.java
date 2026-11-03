@@ -30,7 +30,7 @@ public class HTMLTextCellRenderer extends HTMLBasedCellRenderer {
 
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
-        GwtClientUtils.removeField(element, "controller");
+        GwtClientUtils.deleteField(element, "controller");
         return super.clearRenderContent(element, renderContext);
     }
 }
