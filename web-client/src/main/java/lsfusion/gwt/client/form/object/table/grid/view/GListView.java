@@ -38,8 +38,9 @@ public interface GListView extends GTableView {
     GGroupObjectValue getCurrentColumnKey(); // calculate sum / filtering default value
 
     boolean isNoColumns(); // hide if there're no columns after update
-    long getSetRequestIndex(); // we need to understand that view was already updated, to avoid unnecessary effects (for example making grid invisible)
-    void setSetRequestIndex(long index); // we need to understand that view was already updated, to avoid unnecessary effects (for example making grid invisible)
+    // the request that set the view: earlier answers belong to the previous view, so neither draw nor hide it yet
+    long getSetRequestIndex();
+    void setSetRequestIndex(long index);
 
     // focus
     default void focus(FocusUtils.Reason reason) {

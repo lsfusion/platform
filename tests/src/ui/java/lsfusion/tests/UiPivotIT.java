@@ -1,10 +1,18 @@
 package lsfusion.tests;
 
+import com.microsoft.playwright.APIResponse;
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Route;
+import com.microsoft.playwright.assertions.LocatorAssertions;
+import com.microsoft.playwright.options.ReducedMotion;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -12,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 // a group's pivot in the web client: what a group in manual update holds back once it is back from its pivot, and the
-// pivot of a group whose design hides the XLS export button
+// pivot of a group whose design hides the XLS export button, and a pivot switched on before a row change is answered
 public class UiPivotIT extends UiTest {
 
     private static final String RENDER_ERROR = "An error occurred rendering the PivotTable results.";
@@ -146,6 +154,94 @@ public class UiPivotIT extends UiTest {
         assertTrue("the states of the export button: " + states, states.matches("enabled(,disabled,enabled)+"));
         close(form);
     }
+
+    // a pivot switched on while the row change a click made is unanswered gets that answer before its own, and must
+    // still open with the selected column in its rows, not only the totals
+    @Test
+    public void aPivotSwitchedOnBeforeTheRowChangeIsAnsweredDrawsItsRows() throws Exception {
+        Page original = page;
+        BrowserContext context = original.context().browser().newContext(new Browser.NewContextOptions()
+                .setLocale("en-US").setTimezoneId("UTC").setViewportSize(1280, 800).setReducedMotion(ReducedMotion.REDUCE));
+        page = context.newPage();
+        try {
+            page.clock().install();
+            page.navigate(original.url());
+            page.locator("[lsfusion-container='System.root']").waitFor();
+            page.evaluate(REQUEST_PROBE);
+
+            String[] items = seed();
+            Locator form = open("UiPivot.uiPivot", "UiPivot.uiPivotAutomatic");
+            Locator names = names(form);
+            assertThat(names).hasText(items);
+
+            Route[] row = {null}, own = {null};
+            APIResponse[] rowAnswer = {null};
+            page.route("**/main/dispatch", route -> {
+                String body = route.request().postData();
+                if (isAction(body, "ChangeGroupObject")) {
+                    row[0] = route;
+                    rowAnswer[0] = route.fetch();
+                } else if (isAction(body, "ChangeMode") && own[0] == null) {
+                    own[0] = route;
+                } else
+                    route.resume();
+            });
+            page.clock().pauseAt(((Number) page.evaluate("() => Date.now()")).longValue() + 1000); // ahead of the time the call takes
+            names.nth(2).click(); // the first row is current when the form opens
+            page.clock().runFor(50); // the row change is sent 50 ms after the click
+            until(() -> row[0] != null, "the row change sent");
+            form.locator("button[title='Pivot']").click();
+            until(() -> own[0] != null, "the pivot's request sent");
+            row[0].fulfill(new Route.FulfillOptions().setResponse(rowAnswer[0]));
+            waitApplied("ChangeGroupObject");
+            page.clock().runFor(5);
+            own[0].fulfill(new Route.FulfillOptions().setResponse(own[0].fetch()));
+            waitApplied("ChangeMode");
+            for (int step = 0; step < 8; step++) {
+                page.clock().runFor(5);
+                waitApplied("ChangeMode");
+            }
+            page.clock().resume();
+            page.unroute("**/main/dispatch");
+
+            assertThat(form.locator(".pvtTable.bodytable .pvtRowLabel")).hasText(items,
+                    new LocatorAssertions.HasTextOptions().setTimeout(15_000));
+        } finally {
+            context.close();
+            page = original;
+        }
+    }
+
+    private void until(BooleanSupplier condition, String what) {
+        long deadline = System.currentTimeMillis() + 20_000;
+        while (!condition.getAsBoolean()) {
+            if (System.currentTimeMillis() > deadline)
+                throw new AssertionError("not " + what + ": " + page.evaluate("() => JSON.stringify(window.uiPivotRequests)"));
+            page.waitForTimeout(20);
+        }
+    }
+
+    // every request of the action sent by now answered and applied by the client
+    private void waitApplied(String action) {
+        until(() -> (Boolean) page.evaluate("a => window.uiPivotRequests.filter(e => e[0] === 'send' && e[1] === a).length"
+                        + " === window.uiPivotRequests.filter(e => e[0] === 'applied' && e[1] === a).length", action),
+                "every " + action + " applied");
+    }
+
+    private static boolean isAction(String body, String action) {
+        return body != null && body.contains("." + action + "/");
+    }
+
+    // the readystatechange listener runs after the client's own, once it has applied the answer
+    private static final String REQUEST_PROBE = "() => { window.uiPivotRequests = [];"
+            + " const send = XMLHttpRequest.prototype.send;"
+            + " XMLHttpRequest.prototype.send = function(body) {"
+            + "   const action = (String(body).match(/remote\\.action\\.[a-z.]*\\.([A-Za-z]+)\\//) || [])[1];"
+            + "   if (action === 'ChangeGroupObject' || action === 'ChangeMode') {"
+            + "     window.uiPivotRequests.push(['send', action]);"
+            + "     this.addEventListener('readystatechange', () => {"
+            + "       if (this.readyState === 4) window.uiPivotRequests.push(['applied', action]); }); }"
+            + "   return send.apply(this, arguments); }; }";
 
     // three items under names no other attempt has - what a failed attempt saved stays in the database for its rerun -,
     // shown from now on

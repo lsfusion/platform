@@ -4,8 +4,8 @@ REQUIRE System, SystemEvents;
 
 // the forms UiPivotIT works on in the browser - a group's pivot: a group in manual update switched to its pivot and
 // back to its table before an update there, on the platform's toolbar and on the toolbar a React view draws
-// (UiPivot.js), and the pivot of a group whose design hides the XLS export button -, and the action it seeds the items
-// with
+// (UiPivot.js), the pivot of a group whose design hides the XLS export button, and a pivot switched on before a row
+// change is answered -, and the action it seeds the items with
 
 CLASS UiPivotItem 'Item';
 uiPivotName 'Name' = DATA STRING[50] (UiPivotItem);
@@ -20,6 +20,14 @@ uiPivotRename 'Rename' () {
         APPLY;
     }
 }
+
+// an automatically updated grid: a click changes its current row before the toolbar switches it to a pivot
+FORM uiPivotAutomatic 'Automatic update'
+    OBJECTS i = UiPivotItem
+    PROPERTIES(i) READONLY uiPivotName, uiPivotQuantity
+    FILTERS uiPivotShown(i)
+    ORDERS uiPivotName(i)
+;
 
 // a group in manual update from the start, the platform's toolbar showing its switch
 FORM uiPivotManual 'Manual update'
@@ -90,6 +98,7 @@ onWebClientInit() + {
 
 NAVIGATOR {
     NEW FOLDER uiPivot 'UI pivot' WINDOW toolbar {
+        NEW uiPivotAutomatic;
         NEW uiPivotManual;
         NEW uiPivotManualHeader;
         NEW uiPivotExportHidden;

@@ -229,10 +229,15 @@ public final class GPlatformGridController extends GPlatformTableController<GGri
     }
 
     // hidden with no columns once the answer to the request that set the view has come - before it, it has none yet
+    // draw only then too: a pivot takes its default layout from its first drawing; an earlier answer (a row change or
+    // an edit in flight at the switch) can have no columns, and its late refresh (pivot.js, 10 ms) makes that empty
+    // layout its own, opening the pivot with no rows
     @Override
     protected boolean updateView(long requestIndex, GFormChanges fc) {
-        view.update(fc.updateStateObjects.get(groupObject));
-        return !(view.isNoColumns() && requestIndex >= view.getSetRequestIndex());
+        boolean viewSet = requestIndex >= view.getSetRequestIndex();
+        if (viewSet)
+            view.update(fc.updateStateObjects.get(groupObject));
+        return !(view.isNoColumns() && viewSet);
     }
 
     public List<GPropertyDraw> getGroupObjectProperties() {
