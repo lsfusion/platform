@@ -1,0 +1,87 @@
+MODULE UiReactRowEditors;
+
+REQUIRE TestUtils, SystemEvents;
+
+// the rows UiReactRowEditorsIT edits through the platform's editors, placed by uiReactRowEditors.jsx
+CLASS UiRreItem 'Item';
+uiRreName 'Name' = DATA STRING[80] (UiRreItem);
+uiRreItem (STRING[80] name) = GROUP AGGR UiRreItem i BY uiRreName(i);
+uiRreOrdinal 'Position' = DATA INTEGER (UiRreItem);
+uiRreQty 'Qty' = DATA INTEGER (UiRreItem);
+uiRreShown = DATA BOOLEAN (UiRreItem); // only the last seeded set is shown
+uiRreSuffix = DATA STRING[50] ();
+uiRreEditorsShown = DATA LOCAL NESTED BOOLEAN (); // keep the SHOWIF state when an edit applies
+
+uiRreToggle 'Hide/show editors' () { uiRreEditorsShown() <- NOT uiRreEditorsShown(); }
+
+uiRreAdd 'Add row' () {
+    NEW i = UiRreItem {
+        uiRreName(i) <- uiRreSuffix() + '-4';
+        uiRreOrdinal(i) <- 4;
+        uiRreQty(i) <- 40;
+        uiRreShown(i) <- TRUE;
+    }
+    APPLY;
+}
+
+uiRreRemove 'Delete row' (UiRreItem i) {
+    DELETE i;
+    APPLY;
+}
+
+// NOCUSTOM has no cell in the projection; the second draw lets the view show the same value beside the editor
+FORM uiRreRows 'Row editors'
+    OBJECTS i = UiRreItem PAGESIZE 5
+    PROPERTIES(i) READONLY name = uiRreName, ordinal = uiRreOrdinal, qtyShown = uiRreQty
+    PROPERTIES(i) qty = uiRreQty NOCUSTOM APPLY SHOWIF uiRreEditorsShown()
+    PROPERTIES(i) removeRow = uiRreRemove GRID
+    PROPERTIES() uiRreAdd, uiRreToggle
+    FILTERS uiRreShown(i)
+    ORDERS ordinal
+    EVENTS ON INIT { uiRreEditorsShown() <- TRUE; }
+;
+
+uiRreLast 'Last from server' () { ACTIVATE LAST uiRreRows.i; }
+
+EXTEND FORM uiRreRows
+    PROPERTIES() uiRreLast
+;
+
+DESIGN uiRreRows {
+    PROPERTY(qty) { changeKey = 'F2'; }
+    NEW uiRreBoard FIRST {
+        custom = 'UiRreEditors';
+        MOVE BOX(i);
+        MOVE PROPERTY(uiRreAdd());
+        MOVE PROPERTY(uiRreToggle());
+        MOVE PROPERTY(uiRreLast());
+    }
+}
+
+NAVIGATOR {
+    NEW FOLDER uiRre 'UI React row editors' WINDOW toolbar {
+        NEW uiRreRows;
+    }
+}
+
+uiRreSeed (STRING[50] suffix, INTEGER count) {
+    uiRreShown(UiRreItem i) <- NULL;
+    uiRreSuffix() <- suffix;
+    FOR iterate(INTEGER n, 1, count) DO
+        NEW i = UiRreItem {
+            uiRreName(i) <- suffix + '-' + STRING(n);
+            uiRreOrdinal(i) <- n;
+            uiRreQty(i) <- n * 10;
+            uiRreShown(i) <- TRUE;
+        }
+    APPLY;
+}
+
+uiRreCheckQty (STRING[80] name, INTEGER expected) {
+    assertEquals(uiRreQty(uiRreItem(name)), expected,
+                 CONCAT ' ', 'the quantity of', name, 'is', uiRreQty(uiRreItem(name)), 'not', expected);
+}
+
+uiRreCheckMissing (STRING[80] name) {
+    assertNull(uiRreItem(name), 'the deleted row still exists: ' + name);
+}
