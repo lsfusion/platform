@@ -115,6 +115,7 @@
 
         <tess4j.version>5.13.0</tess4j.version>
         <pdfbox.version>2.0.32</pdfbox.version>
+        <amqp.client.version>5.37.0</amqp.client.version>
         <web.push.version>5.1.1</web.push.version>
         <bouncycastle.version>1.85</bouncycastle.version>
     </properties>
@@ -721,6 +722,11 @@
                 <groupId>org.apache.pdfbox</groupId>
                 <artifactId>pdfbox</artifactId>
                 <version>${pdfbox.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rabbitmq</groupId>
+                <artifactId>amqp-client</artifactId>
+                <version>${amqp.client.version}</version>
             </dependency>
             <dependency>
                 <groupId>nl.martijndwars</groupId>

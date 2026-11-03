@@ -316,7 +316,6 @@
         <dependency>
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>
-            <version>5.26.0</version>
         </dependency>
         <!--websocket-->
         <dependency>
