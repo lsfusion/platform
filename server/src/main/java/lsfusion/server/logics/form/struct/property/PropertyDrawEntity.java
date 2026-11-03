@@ -1440,10 +1440,10 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return getCustomRenderFunction(context) != null || isGroupSimpleState(context) || isReactDrawn(context);
     }
 
-    // should match PropertyDrawEntity.isPredefinedImage
-    public boolean isPredefinedImage() {
+    // should match GPropertyDraw.isPredefinedImage
+    public boolean isPredefinedImage(FormInstanceContext context) {
         String sid = getIntegrationSID();
-        return sid != null && sid.equals("image");
+        return sid != null && sid.equals("image") && getSelectProperty(context) == null;
     }
 
     public PropertyDrawView<P, AddParent> view;

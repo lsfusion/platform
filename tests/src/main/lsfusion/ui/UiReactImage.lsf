@@ -17,15 +17,42 @@ DESIGN uiRiFooter {
     NEW uiRiBoard FIRST { custom = 'UiReactImageBoard'; MOVE BOX(r); }
 }
 
-uiRiSeed () {
+CLASS uiRiStatus;
+uiRiStatusName = DATA STRING[100] (uiRiStatus);
+uiRiStatusOf = DATA uiRiStatus (uiRiItem);
+uiRiNameStatus (uiRiItem r) = uiRiStatusName(uiRiStatusOf(r));
+
+// a SELECT named image is given as options, whoever draws it
+FORM uiRiSelect 'React image select'
+    OBJECTS r = uiRiItem
+    PROPERTIES(r) image = uiRiNameStatus SELECT
+    FILTERS uiRiShown(r)
+;
+DESIGN uiRiSelect {
+    NEW uiRiBoard FIRST { custom = 'UiReactImageBoard'; MOVE BOX(r); }
+}
+
+FORM uiRiPlatformSelect 'Platform image select'
+    OBJECTS r = uiRiItem
+    PROPERTIES(r) image = uiRiNameStatus SELECT 'dropdown' NOCUSTOM
+    FILTERS uiRiShown(r)
+;
+
+uiRiSeed (STRING[50] name) {
     uiRiShown(uiRiItem r) <- NULL;
-    NEW r = uiRiItem { uiRiShown(r) <- TRUE; }
+    NEW s = uiRiStatus {
+        uiRiStatusName(s) <- 'New ' + name;
+        NEW r = uiRiItem { uiRiShown(r) <- TRUE; uiRiStatusOf(r) <- s; }
+    }
+    NEW s = uiRiStatus { uiRiStatusName(s) <- 'Done ' + name; }
     APPLY;
 }
 
 NAVIGATOR {
     NEW FOLDER uiRiFolder 'UI React image' WINDOW toolbar {
         NEW uiRiFooter;
+        NEW uiRiSelect;
+        NEW uiRiPlatformSelect;
     }
 }
 

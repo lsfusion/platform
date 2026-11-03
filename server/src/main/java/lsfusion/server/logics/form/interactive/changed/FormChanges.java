@@ -466,7 +466,7 @@ public class FormChanges {
         if (reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty(context)) {
             PropertyDrawEntity<?, ?> propertyDraw = ((PropertyDrawInstance<?>) reader).entity;
             readerType = readType.get();
-            if (readerType instanceof RenderedClass || (propertyDraw.isPredefinedImage() && propertyDraw.needImage(context)))
+            if (readerType instanceof RenderedClass || (propertyDraw.isPredefinedImage(context) && propertyDraw.needImage(context)))
                 return getNeedImage(readerType, propertyDraw);
             else if (readerType instanceof FileClass && propertyDraw.needFile(context)) // where JS draws the value, the file itself, which the web server saves for JS to get a link to
                 return new NeedFile(readerType);

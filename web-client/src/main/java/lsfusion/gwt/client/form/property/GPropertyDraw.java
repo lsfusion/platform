@@ -1160,7 +1160,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     // should match PropertyDrawEntity.isPredefinedImage
     public boolean isPredefinedImage() {
         String sid = integrationSID;
-        return sid != null && sid.equals("image");
+        return sid != null && sid.equals("image") && select == null;
     }
 
     @Override
