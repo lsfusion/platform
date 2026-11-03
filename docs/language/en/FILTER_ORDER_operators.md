@@ -32,8 +32,8 @@ The form element is given by its name: `groupObjectId` — a group object (its o
 
 The value is in a serialized form that depends on the element:
 
-- for a group object's orders (`ORDER` / `ORDERS`) — `JSON`: a list of orders (the property name and the descending flag);
-- for a group object's filters (`FILTER` / `FILTERS`) — `JSON`: a list of filter conditions (the property name, comparison, negation, value, and `OR` junction);
+- for a group object's orders (`ORDER` / `ORDERS`) — `JSON`: a list of orders (the property's [name on the form](Properties_and_actions_block.md#name), such as `number(o)`, and the descending flag);
+- for a group object's filters (`FILTER` / `FILTERS`) — `JSON`: a list of filter conditions (the property's name on the form, comparison, negation, value, and `OR` junction);
 - for a filter group (`FILTERGROUP` / `FILTERGROUPS`) — `INTEGER`: the number of the active filter in the group, counting from 1, or 0 when no filter is active, in a `NONULL` group too; a number naming no filter of the group changes nothing;
 - for a property's filter (`FILTER PROPERTY` / `FILTERS PROPERTY`) — `STRING`: the property's filter value.
 
@@ -81,19 +81,19 @@ savedFilters = DATA JSON ();
 currentOrders = DATA JSON ();
 
 // save the current filters of group object o and re-apply them later;
-// savedFilters gets JSON like [{"property": "number", "compare": ">", "negation": false, "value": "1000"}]
+// savedFilters gets JSON like [{"property": "number(o)", "compare": ">", "negation": false, "value": "1000"}]
 saveFilters ()  { FILTERS orders.o TO savedFilters; }
 restoreFilters ()  { FILTER orders.o FROM savedFilters(); }
 
 // read the current order of group object o;
-// currentOrders gets JSON like [{"property": "date", "desc": true}, {"property": "number", "desc": false}]
+// currentOrders gets JSON like [{"property": "date(o)", "desc": true}, {"property": "number(o)", "desc": false}]
 readOrders ()  { ORDERS orders.o TO currentOrders; }
 
 // order group object o by date, latest first: JSON given by a literal is a raw literal
-sortByDate ()  { ORDER orders.o FROM JSON(r'[{"property": "date", "desc": true}]'); }
+sortByDate ()  { ORDER orders.o FROM JSON(r'[{"property": "date(o)", "desc": true}]'); }
 
 // show only the orders with number above 1000, the same way
-filterLarge ()  { FILTER orders.o FROM JSON(r'[{"property": "number", "compare": ">", "value": "1000"}]'); }
+filterLarge ()  { FILTER orders.o FROM JSON(r'[{"property": "number(o)", "compare": ">", "value": "1000"}]'); }
 
 // activate the second filter ("Small") in the filter group amount
 showSmall ()  { FILTERGROUP orders.amount FROM 2; }
