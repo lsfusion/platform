@@ -31,6 +31,19 @@ property, and the setting lets the start skip dropping the column of the removed
 the rename has already taken away. Later starts need no setting. There is no setting to switch the
 check off.
 
+### An `ORDER` or `FILTER` item naming no property of the form is now rejected
+
+An `ORDER` or `FILTER` item whose `property` names no property of the form now fails the action:
+`ORDER / FILTER o: property 'number' not found in form` for the name `number` in group object `o`.
+The lookup uses the property's name on the form: `PROPERTIES(o) number` names it `number(o)`,
+while an explicit alias replaces that name. In 6.x the same lookup silently skipped an unknown
+name, so `number` did not apply the item there either unless it was the alias.
+
+What an upgrading application can notice: an action that used to complete with an unapplied
+order or filter item now fails. Use `number(o)` or the property's alias in `property`, or remove
+the item if it should not be applied. Properties the user cannot view under the security policy
+and items with no `property` are still skipped. There is no setting to go back.
+
 ### A `TO` list of the bulk `NEW` that cannot be written is now reported at startup
 
 The bulk form `NEW className WHERE whereExpr TO propertyId(prm1, ..., prmN)` creates an object for

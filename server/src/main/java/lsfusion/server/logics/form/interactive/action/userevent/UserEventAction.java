@@ -60,6 +60,8 @@ public abstract class UserEventAction extends SystemExplicitAction {
         String propertyString = item.optString(PROPERTY_KEY);
         if (!isRedundantString(propertyString)) {
             PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyString);
+            if (propertyDraw == null && form.entity.getPropertyDraw(propertyString) == null)
+                throw new RuntimeException("ORDER / FILTER " + group.getSID() + ": property '" + propertyString + "' not found in form");
             if (propertyDraw != null && propertyDraw.toDraw == group && propertyDraw.getColumnGroupObjects().isEmpty())
                 return propertyDraw;
         }

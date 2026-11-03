@@ -61,6 +61,54 @@ testOrderFromRawLiteral 'ORDER takes JSON given by a raw literal, which a plain 
     assertEquals(STRING(uofOrders()), STRING(JSON(r'[{"property": "qty", "desc": true}]')), 'ORDERS read ' + STRING(uofOrders()));
 }
 
+uofNumber = DATA INTEGER (UofItem);
+
+FORM uofPropertyNames 'Items with property names qualified by their objects'
+    OBJECTS o = UofItem
+    PROPERTIES(o) READONLY uofNumber
+    OBJECTS other = UofItem
+    PROPERTIES(other) READONLY uofNumber
+;
+
+// ORDER and FILTER fail on a name that is no property of the form - the plain uofNumber, which the form names
+// uofNumber(o) - and still skip a property of another group object
+testFilterRejectsUnknownProperty 'FILTER rejects a name that is not a property of the form' () {
+    SHOW uofPropertyNames NOWAIT {
+        TRY {
+            FILTER uofPropertyNames.o FROM JSON(r'[{"property": "uofNumber", "compare": ">", "value": "2"}]');
+        } CATCH {
+        }
+        assertNotNull(messageCaughtException(), 'FILTER silently skipped an unknown property');
+        assertTrue(messageCaughtException() LIKE '%ORDER / FILTER o: property \'uofNumber\' not found in form%',
+                   'FILTER failed with ' + messageCaughtException());
+    };
+}
+
+testOrderRejectsUnknownProperty 'ORDER rejects a name that is not a property of the form' () {
+    SHOW uofPropertyNames NOWAIT {
+        TRY {
+            ORDER uofPropertyNames.o FROM JSON(r'[{"property": "uofNumber", "desc": true}]');
+        } CATCH {
+        }
+        assertNotNull(messageCaughtException(), 'ORDER silently skipped an unknown property');
+        assertTrue(messageCaughtException() LIKE '%ORDER / FILTER o: property \'uofNumber\' not found in form%',
+                   'ORDER failed with ' + messageCaughtException());
+    };
+}
+
+testOtherGroupPropertyIsSkipped 'ORDER and FILTER skip a property of another group object' () {
+    SHOW uofPropertyNames NOWAIT {
+        FILTER uofPropertyNames.o FROM JSON(r'[{"property": "uofNumber(other)", "compare": ">", "value": 9}, {"property": "uofNumber(o)", "compare": ">", "value": 2}]');
+        FILTERS uofPropertyNames.o TO uofFilters;
+        ORDER uofPropertyNames.o FROM JSON(r'[{"property": "uofNumber(other)", "desc": false}, {"property": "uofNumber(o)", "desc": true}]');
+        ORDERS uofPropertyNames.o TO uofOrders;
+    };
+    assertEquals(STRING(uofFilters()), STRING(JSON(r'[{"property": "uofNumber(o)", "compare": ">", "negation": false, "value": "2"}]')),
+                 'FILTER kept a property of another group: ' + STRING(uofFilters()));
+    assertEquals(STRING(uofOrders()), STRING(JSON(r'[{"property": "uofNumber(o)", "desc": true}]')),
+                 'ORDER kept a property of another group: ' + STRING(uofOrders()));
+}
+
 uofName 'Name' = DATA STRING[20] (UofItem);
 uofCurrent = DATA LOCAL UofItem ();
 uofOrderEvents = DATA LOCAL INTEGER ();
