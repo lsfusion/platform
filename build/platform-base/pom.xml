@@ -62,7 +62,7 @@
         <informix.version>4.10.9</informix.version>
         <mysql.version>8.4.0</mysql.version>
         <slf4j.version>1.7.36</slf4j.version>
-        <log4j2.version>2.24.3</log4j2.version>
+        <log4j2.version>2.25.5</log4j2.version>
         <org.jfree.version>1.0.23</org.jfree.version>
         <jjwt.version>0.12.6</jjwt.version>
         <jackson.version>2.22.4</jackson.version>
