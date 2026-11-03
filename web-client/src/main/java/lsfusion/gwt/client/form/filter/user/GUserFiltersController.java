@@ -83,7 +83,7 @@ public final class GUserFiltersController {
         this.transport = transport;
         this.applyControls = applyControls;
         for (GFilter filter : filters)
-            if (filter.container != null) // one the design removes is no slot
+            if (filter.isInForm()) // one the design removes, itself or with a container holding it, is no slot
                 slots.add(new Slot(filter));
         normalize();
     }

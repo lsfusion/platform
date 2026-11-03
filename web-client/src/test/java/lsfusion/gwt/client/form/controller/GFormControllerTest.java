@@ -2963,6 +2963,98 @@ public class GFormControllerTest extends GWTTestCase {
         into(rows.mainContainer, rows.groupObjects.get(0).grid.filtersContainer);
         assertNotNull(filterButton(controllerApart(rows), rows.groupObjects.get(0)));
     }
+
+    // a FILTER removed with FILTERS, FILTERBOX or another container that holds it is no slot of the form's user
+    // filters, nor a row of the platform's. With FILTERBOX removed there is nothing for the toolbar's filter button
+    // to show, nor an apply to wait for; the surviving controls or FILTERS box still have their button and mode
+    public void testAFilterInARemovedContainerHasNoSlotOrPlatformRow() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            for (String removed : new String[]{"FILTERS(items)", "FILTERBOX(items)", "holder"}) {
+                FiltersForm filters = new FiltersForm(true);
+                filters.noFilters();
+                GGrid grid = filters.group.grid;
+                grid.toolbar.visible = true;
+                grid.toolbar.nativeSID = "c12";
+                layout(grid.toolbar);
+                filters.form.mainContainer.add(grid.toolbar);
+                GFilter filter = filterIn(28, filters.price, grid.filtersContainer, grid);
+                GContainer holder = grid.filtersContainer;
+                if (removed.equals("FILTERBOX(items)")) {
+                    holder = container(29, removed, filters.form.mainContainer);
+                    holder.add(grid.filtersContainer);
+                    holder.add(grid.filterControls);
+                } else if (removed.equals("holder")) {
+                    holder = container(29, removed, filters.form.mainContainer);
+                    holder.add(filter);
+                }
+                holder.container.removeFromChildren(holder);
+                assertNotNull(filter.container);
+                assertFalse(filter.isInForm());
+                GFormController controller = filters.controller();
+                GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
+
+                assertNull(removed + ": no FILTER slot", filters.model(controller).getSlotEntry(filter));
+                assertNull(removed + ": no platform row", panelRow(panel, filter));
+                assertNull(removed + ": no component view", controller.getFormLayout().getBaseComponentViews().get(filter));
+                panel.setControlsVisible(true);
+                if (removed.equals("FILTERBOX(items)")) {
+                    assertNull(filterButton(controller, filters.group));
+                    assertFalse(filters.model(controller).isManual());
+                } else {
+                    GToolbarButton button = filterButton(controller, filters.group);
+                    assertNotNull(button);
+                    assertTrue(toolbarView(controller, filters.group).getElement().isOrHasChild(button.getElement()));
+                    assertTrue(filters.model(controller).isManual());
+                }
+            }
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
+    // with FILTERS still laid out, F3 on the column of a FILTER removed with its holder prepares a row of that box,
+    // not the detached FILTER's row. What the form sent stays till Apply, a value committed in manual mode too
+    public void testF3OnAFilterInARemovedContainerUsesTheVisibleFiltersBox() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            FiltersForm filters = new FiltersForm(true);
+            filters.noFilters();
+            GContainer holder = container(28, "holder", filters.form.mainContainer);
+            GFilter filter = filterIn(29, filters.price, holder, filters.group.grid);
+            filters.form.mainContainer.removeFromChildren(holder);
+            assertNotNull(filter.container);
+            filters.deliver(true);
+            GFormController controller = filters.controller();
+            GPlatformFilterInputController panel = (GPlatformFilterInputController) userFiltersController(controller, filters.group);
+            filters.report(controller, filters.condition(filters.quantity, PValue.getPValue(2), GCompare.EQUALS));
+
+            panel.setControlsVisible(true); // as the table's F3 does, before giving the key to its input
+            panel.addCondition(GKeyStroke.createAddUserFilterKeyEvent(), false, true);
+            List<GFilterConditionView> rows = freeRows(panel);
+            assertEquals("F3 prepares a row in the surviving FILTERS box", 2, rows.size());
+            GFilterConditionView row = rows.get(1);
+            GPropertyFilter condition = rowCondition(row);
+            assertSame(filters.price, condition.column.property);
+            assertSame(filters.group.grid.filtersContainer, condition.filter.container);
+            assertTrue(controller.getFormLayout().getContainerView(filters.group.grid.filtersContainer).getView()
+                    .getElement().isOrHasChild(row.getElement()));
+            assertValue(5, condition.value.value);
+            assertEquals(Collections.singletonList(filters.quantity), sentProperties(controller, filters));
+            assertValue(2, filters.first(controller, filters.quantity).value.value);
+            assertTrue(filters.model(controller).isManual());
+            changeRowValue(row, PValue.getPValue(6));
+            assertEquals(Collections.singletonList(filters.quantity), sentProperties(controller, filters));
+            panel.applyConditions();
+            assertEquals(Arrays.asList(filters.quantity, filters.price), sentProperties(controller, filters));
+            assertValue(6, filters.first(controller, filters.price).value.value);
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
     // a form of one grid the platform draws, GRID(items), its toolbar shown with the platform's filters, no FILTER, its
     // FILTERCONTROLS and FILTERS(items) REMOVEd till a test puts them into a container (into)
     private static GForm platformGridFilters() {

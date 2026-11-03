@@ -367,7 +367,7 @@ In the current platform implementation, `=` is required before an expression or 
 
     - `USER`
 
-        The property is added as a [user filter](../paradigm/Interactive_view.md#userfilters): its condition row is shown as soon as the form opens. This is the default behavior (unlike the fixed filters block, where the fixed filter is the default).
+        The property is added as a [user filter](../paradigm/Interactive_view.md#userfilters): its condition row is shown as soon as the form opens if its `FILTER` component and every container holding it remain in the form design. This is the default behavior (unlike the fixed filters block, where the fixed filter is the default).
 
     - `FIXED`
 

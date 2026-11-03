@@ -6416,6 +6416,30 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(f.filtersCalls.isEmpty());
     }
 
+    // a FILTER removed with a container that holds it is no FILTER for changeFilter to write: the form refuses it,
+    // sending nothing. Its property still takes a condition through the table's changeFilters
+    public void testTheFormsControllerRefusesAFilterInARemovedContainer() {
+        GFilter[] filter = new GFilter[1];
+        Fixture f = new Fixture(fixture -> {
+            GContainer holder = container(6);
+            fixture.c.add(holder);
+            filter[0] = fixture.filterIn(holder, fixture.price);
+            fixture.c.removeFromChildren(holder);
+        });
+        assertNotNull(filter[0].container);
+        assertFalse(filter[0].isInForm());
+        JavaScriptObject form = field(f.sb.controller, "form");
+        assertRefusal("controller.form.changeFilter('items.price'): 'items.price' has no FILTER: a condition on it is stated as the"
+                + " table's, through changeFilters", refusedWith(form, "changeFilter", "items.price", 1.0));
+        assertTrue(f.filtersCalls.isEmpty());
+        assertTrue(f.userFilters().getConditions().isEmpty());
+
+        call(form, "changeFilters", "items", parse("{\"property\": \"price\", \"compare\": \"=\", \"value\": 2}"));
+        assertEquals(Collections.singletonList("changeFilters items price="), f.filtersCalls);
+        assertSame(f.price, f.stated.get(0).column.property);
+        assertTrue(PValue.getPValue(2).equals(f.stated.get(0).value.value));
+    }
+
     // the last of a log
     private static String lastOf(List<String> log) {
         return log.get(log.size() - 1);

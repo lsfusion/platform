@@ -1627,9 +1627,10 @@ filter groups in the tree's `FILTERGROUPS(TREE <tree>)`.
 A property declared a [user filter](../paradigm/Interactive_view.md#userfilters) — `PROPERTIES(i) name FILTER`, or
 `USER` in the [filters block](../language/Filters_and_sortings_block.md) — has a filter of its own among the user filters
 of its group: a component the design names `FILTER(name(i))`, by the property's name on the form, which the platform's
-filter panel shows as a condition row there from the start. A property filter a view draws is a part of the group of
-its property there, as a filter group is: on the group's node, under `filter`, by the property's integration name — one
-object for the filters the view draws, with no prototype, as `byKey` is:
+filter panel shows as a condition row there from the start if the component and every container holding it remain in
+the form design. A property filter a view draws is a part of the group of its property there, as a filter group is: on
+the group's node, under `filter`, by the property's integration name — one object for the filters the view draws, with
+no prototype, as `byKey` is:
 
 ```lsf
 FORM items
@@ -1846,14 +1847,14 @@ of any view — nothing of it on the node, no members, no names taken.
 What the buttons act on is the platform's: `filterControlsVisible` shows and hides the PLATFORM's filter controls — its
 FILTERCONTROLS buttons, its panel's editors and the selectors of the property filters' rows it draws —, and where the
 platform has none for the group — it draws neither the `FILTERS(o)` panel nor `FILTERCONTROLS(o)` nor a property
-filter's row, the view drawing them or the design removing them, or the toolbar turns the platform's filters off
-(`showFilters = FALSE`) — it stays `false` and its change is refused, saying why. Controls a view draws itself are its
-own to show, its [filter controls](#filter-controls). The view type switch
-switches the platform's table: where a view draws the rows, `listViews` is empty, `listView` is `null`, and a change is
-refused. A group whose rows a view draws has the default `GRID` list view type: one the form gives another
-(`OBJECTS o = Order PIVOT`, and `MAP`, `CALENDAR`, `CUSTOM`) is refused when the form is built, since the server starts
-such a group as the platform's view of that kind needs it — give what draws the rows, the group's grid or its tree,
-`custom = NULL` for the platform to draw them there.
+filter's row, the view drawing them, or the design removing them or a container holding them, or the toolbar turns the
+platform's filters off (`showFilters = FALSE`) — it stays `false` and its change is refused, saying why. Controls a view
+draws itself are its own to show, its [filter controls](#filter-controls). The view type switch switches the platform's
+table: where a view draws the rows, `listViews` is empty, `listView` is `null`, and a change is refused. A group whose
+rows a view draws has the default `GRID` list view type: one the form gives another (`OBJECTS o = Order PIVOT`, and
+`MAP`, `CALENDAR`, `CUSTOM`) is refused when the form is built, since the server starts such a group as the platform's
+view of that kind needs it — give what draws the rows, the group's grid or its tree, `custom = NULL` for the platform
+to draw them there.
 
 Inside a [batch](How-to_Custom_view_controller.md#batch) the members that ask the server are refused. The settings of
 the platform's table are not there — a dialog of the platform's, over the table it draws. A toolbar placed back with

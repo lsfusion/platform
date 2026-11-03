@@ -337,20 +337,21 @@ public class GReactFormData {
     // once, as for any component - React or the platform -, each a view of the model: each property's FILTER -
     // FILTER(<property>), the user filter declared on a property of a group -, a part of the group of its property on
     // its node where the filter is drawn (filterScope, FilterPart), else the platform's row of it
-    // (PlatformFilters.addFilter), none of one the design removes; the FILTERS box, its part on the table's node where
-    // what it holds is drawn (filtersScope, FiltersPart) with the input over the conditions a view draws, which takes
-    // the platform's - the keys of the rows, the controls - (ReactFilterInputController), else the platform's rows of
-    // the box, its filter panel, with the panel's input - (platform, PlatformFilters). The platform's are none where
-    // its toolbar turns its filters off - nor an input then, over a box it would draw -, driven with the table by the
-    // toggle (GFilterControlsToggle), which is bound to the input once all of them are made. The input works on what
-    // draws the rows (rows), and the toggle shows the controls and the toolbar's button
-    // (GFormController.initializeTable); a group in PANEL view has none (GUserFiltersController.NONE)
+    // (PlatformFilters.addFilter), none of one the design removes, itself or with a container holding it; the FILTERS
+    // box, its part on the table's node where what it holds is drawn (filtersScope, FiltersPart) with the input over
+    // the conditions a view draws, which takes the platform's - the keys of the rows, the controls -
+    // (ReactFilterInputController), else the platform's rows of the box, its filter panel, with the panel's input -
+    // (platform, PlatformFilters). The platform's are none where its toolbar turns its filters off - nor an input
+    // then, over a box it would draw -, driven with the table by the toggle (GFilterControlsToggle), which is bound to
+    // the input once all of them are made. The input works on what draws the rows (rows), and the toggle shows the
+    // controls and the toolbar's button (GFormController.initializeTable); a group in PANEL view has none
+    // (GUserFiltersController.NONE)
     public FiltersControllers createFiltersControllers(GGridProperty table, GTableController rows, GFilterControlsToggle toggle, PlatformFilters platform) {
         GUserFiltersController userFilters = new GUserFiltersController(table.getGroups(), table.filters, verbs, toggle);
         for (GFilter filter : table.filters) {
             GUserFiltersController.View view = reactOrPlatform(filterScope(filter),
                     state -> new FilterPart(state.getOrCreateGroupNode(filter.property.groupObject), filter, userFilters),
-                    () -> filter.container != null ? platform.addFilter(filter, userFilters) : null);
+                    () -> filter.isInForm() ? platform.addFilter(filter, userFilters) : null);
             if (view != null)
                 userFilters.addView(view);
         }
