@@ -20,6 +20,8 @@ public class UiReactFileIT extends UiTest {
         assertEquals("a text", fetch("uiRfData.uiRfText.value"));
         assertEquals("a PDF", fetch("uiRfController.form.exec('uiRfPdfResult')"));
         assertEquals("an image", fetch("uiRfController.form.exec('uiRfImageResult')"));
+        // a property named image is given as the image its string names - its HTML, as a classic custom view is
+        assertEquals("<i class=\"bi bi-plus wrap-text-img\"></i>", page.evaluate("uiRfData.image.value"));
         close(form);
     }
 
