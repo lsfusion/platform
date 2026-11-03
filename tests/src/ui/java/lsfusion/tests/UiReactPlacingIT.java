@@ -59,7 +59,7 @@ public class UiReactPlacingIT extends UiTest {
     @Test
     public void aPlacementThatCannotWorkSaysSoInItsHost() throws Exception {
         String note = seed();
-        List<String> errors = pageErrors();
+        List<String> errors = consoleErrors();
         Locator form = open("UiReactPlacing.uiRpl", "UiReactPlacing.uiRplBoard");
         Locator noteHost = form.locator(".ui-rpl-note"), own = form.locator(".ui-rpl-own-host");
         assertShows(noteHost, note);
@@ -244,7 +244,7 @@ public class UiReactPlacingIT extends UiTest {
     // hidden by its own SHOWIF
     @Test
     public void aShowIfOnAContainerAViewDrawsReachesWhatIsInside() throws Exception {
-        List<String> errors = pageErrors();
+        List<String> errors = consoleErrors();
         Locator form = open("UiReactPlacing.uiRpl", "UiReactPlacing.uiRplShowIf");
         Locator container = form.locator(".ui-rpl-container-entry"), filter = form.locator(".ui-rpl-filter-entry"),
                 label = form.locator(".ui-rpl-label-entry");
@@ -364,19 +364,4 @@ public class UiReactPlacingIT extends UiTest {
         }
     }
 
-    // what the page fails with from now on - its errors and the errors it logs -, but the push registration a test's
-    // browser context refuses on every load
-    private List<String> pageErrors() {
-        List<String> errors = new ArrayList<>();
-        Pattern push = Pattern.compile("Push API|Registration failed - permission denied");
-        page.onPageError(error -> {
-            if (!push.matcher(error).find())
-                errors.add(error);
-        });
-        page.onConsoleMessage(message -> {
-            if (message.type().equals("error") && !push.matcher(message.text()).find())
-                errors.add(message.text());
-        });
-        return errors;
-    }
 }

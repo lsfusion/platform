@@ -8,8 +8,6 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -22,8 +20,6 @@ import static org.junit.Assert.assertTrue;
 public class UiComponentViewIT extends UiTest {
 
     private static final String FOLDER = "UiComponentView.uiCv";
-    // every load logs these two: chrome has no push api in an incognito context, which a test's is
-    private static final Pattern PUSH_API = Pattern.compile("Push API|Registration failed - permission denied");
 
     // a grid's own view draws its rows where the grid stands, given the group's node alone - no entry of the grid
     // itself -, the platform's toolbar over its rows, counting them; it places a column the platform draws in each row,
@@ -32,7 +28,7 @@ public class UiComponentViewIT extends UiTest {
     @Test
     public void aGridsOwnView() throws Exception {
         String[] items = seed();
-        List<String> errors = errors();
+        List<String> errors = consoleErrors();
         Locator form = open(FOLDER, "UiComponentView.uiCvGrid");
         Locator names = form.locator(".ui-cv-name");
         assertThat(names).hasText(items);
@@ -177,7 +173,7 @@ public class UiComponentViewIT extends UiTest {
     @Test
     public void aTreesOwnView() throws Exception {
         seed();
-        List<String> errors = errors();
+        List<String> errors = consoleErrors();
         Locator form = open(FOLDER, "UiComponentView.uiCvTree");
         assertThat(form.locator(".ui-cv-tree")).hasText(category);
         assertEquals("c,cats,i", drawnView("tree").eval("Object.keys(data).sort().join()"));
@@ -198,20 +194,6 @@ public class UiComponentViewIT extends UiTest {
         category = "Fruit" + id;
         exec("UiComponentView.uiCvSeed", category, items[0], items[1]);
         return items;
-    }
-
-    // the errors the page logs from now on
-    private List<String> errors() {
-        List<String> errors = new CopyOnWriteArrayList<>();
-        page.onConsoleMessage(message -> {
-            if (message.type().equals("error") && !PUSH_API.matcher(message.text()).find())
-                errors.add(message.text());
-        });
-        page.onPageError(error -> {
-            if (!PUSH_API.matcher(error).find())
-                errors.add(error);
-        });
-        return errors;
     }
 
     // the base size the layout gives the grid, or the grid's own view, as its style says

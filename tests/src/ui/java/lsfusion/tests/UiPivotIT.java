@@ -99,7 +99,7 @@ public class UiPivotIT extends UiTest {
     @Test
     public void thePivotOfAGroupWhoseDesignHidesTheExportButton() throws Exception {
         String[] items = seed();
-        List<String> errors = consoleAndPageErrors();
+        List<String> errors = consoleErrors();
         Locator form = open("UiPivot.uiPivot", "UiPivot.uiPivotExportHidden");
         assertThat(names(form)).hasText(items);
         assertThat(form.locator("button[title='Export']")).hasCount(0);
@@ -114,7 +114,7 @@ public class UiPivotIT extends UiTest {
     @Test
     public void aGroupWhoseDesignHidesTheExportButtonOpenedAsAPivot() throws Exception {
         seed();
-        List<String> errors = consoleAndPageErrors();
+        List<String> errors = consoleErrors();
         Locator form = open("UiPivot.uiPivot", "UiPivot.uiPivotExportHiddenPivot");
         Locator pivot = form.locator(".subtotalouterdiv");
         assertThat(cellOf(pivot, "3")).hasCount(1);

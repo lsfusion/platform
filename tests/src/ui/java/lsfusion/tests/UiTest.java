@@ -201,19 +201,25 @@ public abstract class UiTest {
             context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
             page = context.newPage();
             List<String> console = new ArrayList<>();
+            List<String> pageErrors = new ArrayList<>();
             page.onConsoleMessage(message -> {
                 if (message.type().equals("error") && !PUSH_API.matcher(message.text()).find())
                     console.add(message.text());
             });
             page.onPageError(error -> {
-                if (!PUSH_API.matcher(error).find())
-                    console.add("page error: " + error);
+                if (!PUSH_API.matcher(error).find()) {
+                    pageErrors.add(error);
+                    console.add("uncaught page error: " + error);
+                }
             });
             ScheduledFuture<?> watch = WATCHDOG > 0 ? DUMPS.scheduleAtFixedRate(dumps(name), WATCHDOG, WATCHDOG, TimeUnit.MILLISECONDS) : null;
             try {
                 page.navigate("http://localhost:" + webPort + "/main");
                 page.locator("[lsfusion-container='System.root']").waitFor(); // the navigator's top window
                 test.evaluate();
+                page.evaluate("() => 0"); // playwright hands the page's events to the handlers only during a call into it
+                if (!pageErrors.isEmpty())
+                    throw new AssertionError("uncaught page errors:\n" + String.join("\n", pageErrors));
                 context.tracing().stop();
             } catch (Throwable t) {
                 Path failure = Files.createDirectories(UI.resolve("failures")).resolve(name);
@@ -407,15 +413,6 @@ public abstract class UiTest {
         page.onConsoleMessage(message -> {
             if (message.type().equals("error") && !PUSH_API.matcher(message.text()).find())
                 errors.add(message.text());
-        });
-        return errors;
-    }
-
-    protected List<String> consoleAndPageErrors() {
-        List<String> errors = consoleErrors();
-        page.onPageError(error -> {
-            if (!PUSH_API.matcher(error).find())
-                errors.add("page error: " + error);
         });
         return errors;
     }

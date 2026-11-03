@@ -5,7 +5,6 @@ import com.microsoft.playwright.Route;
 import com.microsoft.playwright.options.AriaRole;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
@@ -23,8 +22,6 @@ public class UiReactBatchIT extends UiTest {
 
     private static final String FOLDER = "UiReactBatch.uiRb";
     private static final String REFUSAL = "a batch is running, which carries changes only: make this call before the batch or after it";
-    // every load logs these two: chrome has no push api in an incognito context, which a test's is
-    private static final Pattern PUSH_API = Pattern.compile("Push API|Registration failed - permission denied");
 
     // what the platform draws in a React view has an entry and no member - a panel action its entry saying only whether
     // it is shown, an action in each row its column's entry with what it is and no caption, a property its column's
@@ -89,7 +86,6 @@ public class UiReactBatchIT extends UiTest {
     public void aBatchIsOneRequest() throws Exception {
         String[] items = seed();
         String note = "b" + System.nanoTime();
-        List<String> errors = errors();
         Locator form = open(FOLDER, "UiReactBatch.uiRbShape");
         view("board").waitFor("names() === '" + String.join(",", items) + "'");
         view("board").call("controller.i.change(row(" + js(items[0]) + "))");
@@ -104,7 +100,6 @@ public class UiReactBatchIT extends UiTest {
         assertEquals(1, count(requests, "ExecuteBatch"));
         assertEquals(0, requests.stream().filter(request -> !request.contains(signature("ExecuteBatch")) && (request.contains(signature("ChangeGroupObject"))
                 || request.contains(signature("SetPropertyOrders")) || request.contains(signature("ExecuteEventAction")))).count());
-        assertEquals(Collections.emptyList(), errors);
         saveAndCheckNotes(form, items, "-", note, "-");
         close(form);
     }
@@ -163,7 +158,6 @@ public class UiReactBatchIT extends UiTest {
     @Test
     public void aCallIsThePromiseOfItsRequest() throws Exception {
         String[] items = seed();
-        List<String> errors = errors();
         Locator form = open(FOLDER, "UiReactBatch.uiRbShape");
         view("board").waitFor("names() === '" + String.join(",", items) + "'");
         assertEquals("resolved", view("board").eval("controller.i.note.change('p1', row(" + js(items[0]) + ")).then(() => 'resolved')"));
@@ -182,7 +176,6 @@ public class UiReactBatchIT extends UiTest {
         closeDialog("uiRbCrash: the action failed");
         view("board").call("controller.crash.exec()"); // no one waits for its Promise
         closeDialog("uiRbCrash: the action failed");
-        assertEquals(Collections.emptyList(), errors);
         saveAndCheckNotes(form, items, "p1", "p2", "-");
         close(form);
     }
@@ -382,15 +375,6 @@ public class UiReactBatchIT extends UiTest {
         return items;
     }
 
-    // the errors the page throws from now on
-    private List<String> errors() {
-        List<String> errors = new CopyOnWriteArrayList<>();
-        page.onPageError(error -> {
-            if (!PUSH_API.matcher(error).find())
-                errors.add(error);
-        });
-        return errors;
-    }
     // a dialog the platform shows, saying the text - a message, an error -, and it closed by its Close button
     private Locator dialog(String text) {
         return page.locator(".modal-content").filter(new Locator.FilterOptions().setHasText(text));
