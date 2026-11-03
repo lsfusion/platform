@@ -249,6 +249,12 @@ public class FileUtils {
 
                     images.put(gColorTheme, new ImageDescription(imageUrl, disabledImageUrl, width, height));
                 }
+            } else if(AppImage.isImageURL(imageHolder.getImagePath())) {
+                // external images carry their URL in imagePath and have no image bytes
+                String url = imageHolder.getImagePath();
+                images = new HashMap<>();
+                for (GColorTheme colorTheme : GColorTheme.values())
+                    images.put(colorTheme, new ImageDescription(url, url, -1, -1));
             }
             return new AppStaticImage(imageHolder.fontClasses, images);
         }

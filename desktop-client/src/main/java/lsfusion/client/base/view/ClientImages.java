@@ -62,6 +62,9 @@ public class ClientImages {
     private static ImageIcon UNKNOWN;
 
     public static ImageIcon calculateImage(AppImage imageHolder, ColorTheme colorTheme) {
+        if(AppImage.isImageURL(imageHolder.getImagePath()))
+            return null;
+
         RawFileData themeImage = imageHolder.getImage(colorTheme);
         if (themeImage == null) {
             if(colorTheme.isDefault()) {

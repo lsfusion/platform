@@ -398,7 +398,14 @@ public class GwtClientUtils {
     // the on that is in the app server resources
     public static String getAppStaticImageURL(String imagePath) {
         assert imagePath != null;
+        if(isImageURL(imagePath))
+            return imagePath;
         return getURL(imagePath);
+    }
+
+    // should match AppImage.isImageURL
+    private static boolean isImageURL(String imagePath) {
+        return imagePath != null && (imagePath.regionMatches(true, 0, "http://", 0, 7) || imagePath.regionMatches(true, 0, "https://", 0, 8));
     }
 
     public static String getAppStaticWebURL(String filePath) {

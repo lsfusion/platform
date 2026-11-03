@@ -162,7 +162,7 @@ To access design components, you can use their names or address property compone
 |`caption`|Container header. For the main container `BOX` — the caption of the form itself (of its window or tab) in the interactive view; an expression whose value depends on data updates it when the data changes, the form caption in the [navigator](../paradigm/Navigator.md) does not change. An empty string is equivalent to `NULL`: no header is created (and the container stops being `collapsible` by default)|Expression (string value)|`NULL`|`'Caption'`<br/>`'Order ' + number(o)`|
 |`captionClass`|CSS-classes of container header (separated by space)|Expression (string value)|`NULL`|`'some-caption-class'`|
 |`valueClass`|CSS-classes of container value (separated by space)|Expression (string value)|`NULL`|`'some-value-class'`|
-|`image`|Image shown in the container caption: a path relative to the `images` folder, or a property expression yielding the image|Expression (string value)|`NULL`|`'image.png'`|
+|`image`|Image shown in the container caption: a path relative to the `images` folder, icon font CSS classes, an HTTP(S) URL, or a property expression yielding one of these strings|Expression (string value)|`NULL`|`'image.png'`|
 |`collapsible`|Lets the user collapse and expand the container; when collapsed, only its caption is shown|Logical literal|depends on the caption|`TRUE`<br/>`FALSE`|
 |`popup`|Shows the container's content in a popup opened from its caption instead of inline (the container starts collapsed)|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`border`|Draws a border around the container|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
@@ -215,7 +215,7 @@ To access design components, you can use their names or address property compone
 |`caption`|Caption of a property or action|String literal|caption of a property or action|`'Caption'`|
 |`tag`|HTML tag used to render the value element (for example `input`, `a`, `button`, `select`); overrides the auto-chosen tag|String literal|`NULL`|`'a'`|
 |`inputType`|HTML input type used when editing the value (for example `password`, `range`); overrides the type-derived default|String literal|`NULL`|`'password'`|
-|`image`|The path to the file with the image to be displayed as an action icon. The path is specified relative to the `images` folder|String literal|`NULL`|`'image.png'`|
+|`image`|Image displayed as an action icon: a path relative to the `images` folder, icon font CSS classes, or an HTTP(S) URL|String literal|`NULL`|`'image.png'`|
 |`imagePath`|**deprecated since version 6, use `image`**|String literal|`NULL`|`'image.png'`|
 |`comment`|Comment of a property or action|Expression (string value)|`NULL`|`'Comment'`|
 |`commentClass`|Class of comment of property or action|Expression (string value)|`NULL`|`'comment-class'`|

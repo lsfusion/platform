@@ -54,5 +54,17 @@ public class UiReactImageIT extends UiTest {
         close(form);
     }
 
+    // a URL named image keeps its exact src without injecting HTML attributes
+    @Test
+    public void aUrlIsAnExternalImage() {
+        Locator form = open("UiReactImage.uiRiFolder", "UiReactImage.uiRiUrl");
+        view.waitFor("data.image.value != null");
+        String url = "hTtPs://example.invalid/ui-ri.png?size=2;theme=dark&copy;=b\" onerror=\"injected#image";
+        assertEquals(Map.of("src", url, "class", "wrap-text-img"),
+                view.value("Object.fromEntries(Array.from(new DOMParser().parseFromString(data.image.value, 'text/html')"
+                        + ".querySelector('img').attributes, a => [a.name, a.value]))"));
+        close(form);
+    }
+
     private final View view = view("window.uiRiView", "");
 }

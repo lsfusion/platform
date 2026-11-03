@@ -47,6 +47,15 @@ DESIGN uiRiIconClasses {
     NEW uiRiBoard FIRST { custom = 'UiReactImageBoard'; MOVE PROPERTY(image); }
 }
 
+// an external image keeps its URL, including entities and quotes, when its HTML is parsed
+uiRiURL () = 'hTtPs://example.invalid/ui-ri.png?size=2;theme=dark&copy;=b" onerror="injected#image';
+FORM uiRiUrl 'React image URL'
+    PROPERTIES() image = uiRiURL
+;
+DESIGN uiRiUrl {
+    NEW uiRiBoard FIRST { custom = 'UiReactImageBoard'; MOVE PROPERTY(image); }
+}
+
 uiRiSeed (STRING[50] name) {
     uiRiShown(uiRiItem r) <- NULL;
     NEW s = uiRiStatus {
@@ -63,6 +72,7 @@ NAVIGATOR {
         NEW uiRiSelect;
         NEW uiRiPlatformSelect;
         NEW uiRiIconClasses;
+        NEW uiRiUrl;
     }
 }
 

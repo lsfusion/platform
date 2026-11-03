@@ -3,7 +3,7 @@ slug: "/Icons"
 title: 'Icon assignment mechanism'
 ---
 
-In the lsFusion platform, developers can manually assign icons to UI elements corresponding to [properties](Properties.md), [actions](Actions.md), [forms](Forms.md), [containers](Form_design.md#containers), and [navigator elements](Navigator.md). You can specify either an image file path or icon font CSS classes.
+In the lsFusion platform, developers can manually assign icons to UI elements corresponding to [properties](Properties.md), [actions](Actions.md), [forms](Forms.md), [containers](Form_design.md#containers), and [navigator elements](Navigator.md). You can specify an image file path, icon font CSS classes, or an external HTTP(S) URL.
 
 In addition, the platform provides a mechanism that can automatically assign suitable icons for these elements. The mechanism analyzes their names and captions and selects the most appropriate icons from the available sets.
 
@@ -13,6 +13,9 @@ An icon is set using a string literal, which can be specified in one of the foll
 
 - File path: `'path/to/image.png'` (relative to the `images` directory)
 - Icon font CSS classes: `'fa fa-user'` (Font Awesome), `'bi bi-person'` (Bootstrap Icons)
+- External image URL: `'https://example.com/image.png'`
+
+A URL beginning with `http://` or `https://` (case-insensitive prefix) is used unchanged as the image source in the web client. The server does not download it or prepare theme variants.
 
 ::::info
 Icon font CSS classes are CSS classes for displaying vector icons from special fonts. Such icons scale without loss of quality and take up less space than raster images.

@@ -38,6 +38,11 @@ public class AppImage implements Serializable {
     public String getImagePath() {
         return imagePath;
     }
+
+    // should match GwtClientUtils.isImageURL
+    public static boolean isImageURL(String imagePath) {
+        return imagePath != null && (imagePath.regionMatches(true, 0, "http://", 0, 7) || imagePath.regionMatches(true, 0, "https://", 0, 8));
+    }
     
     public static boolean isGif(String imagePath) {
         return "gif".equalsIgnoreCase(BaseUtils.getFileExtension(imagePath));

@@ -68,10 +68,12 @@ public class AppServerImage {
     private AppImage appImage;
 
     private enum StringType {
-        FULL, PATH, ICON, NAME_OR_AUTO;
+        URL, FULL, PATH, ICON, NAME_OR_AUTO;
 
         public static StringType get(String imageString) {
-            if(imageString.contains(";"))
+            if(AppImage.isImageURL(imageString))
+                return URL;
+            else if(imageString.contains(";"))
                 return FULL;
             else if (imageString.contains("/") || imageString.contains("."))
                 return PATH;
@@ -109,6 +111,9 @@ public class AppServerImage {
         AppServerImage result = cachedImages.get(imageString);
         if(result == null) { // caching here is needed to cache getAppImage
             switch (type) {
+                case URL:
+                    result = new AppServerImage(imageString, null);
+                    break;
                 case FULL:
                     String[] split = imageString.split(";");
                     result = new AppServerImage(split[0], split[1]);
@@ -394,8 +399,8 @@ public class AppServerImage {
             String imagePath = this.imagePath;
 
             Map<ColorTheme, RawFileData> images = null;
-            String fullImagePath = null;
-            if(imagePath != null) {
+            String fullImagePath = imagePath;
+            if(imagePath != null && !AppImage.isImageURL(imagePath)) {
                 images = new HashMap<>();
 
                 for (ColorTheme colorTheme : ColorTheme.values()) {
@@ -438,6 +443,8 @@ public class AppServerImage {
     public static String convertFileValue(AppServerImage image, boolean asImage) throws IOException {
         if(asImage)
             return ScriptedStringUtils.wrapSerializedImage(IOUtils.serializeAppImage(getAppImage(image)));
+        else if(AppImage.isImageURL(image.imagePath))
+            return image.imagePath;
         else
             return ScriptedStringUtils.wrapResource(image.imagePath);
     }
