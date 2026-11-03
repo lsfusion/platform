@@ -9,6 +9,11 @@ REQUIRE TestUtils;
 // container is a nested CUSTOM REACT one, which draws its insides itself - a custom of its own makes it platform-drawn
 
 rrScript = DATA LOCAL STRING ();
+rrShown = DATA LOCAL BOOLEAN ();
+
+FORM rrChild
+    EVENTS ON INIT { rrShown() <- TRUE; }
+;
 
 rrIslandNote = DATA LOCAL STRING ();
 rrPlacedNote = DATA LOCAL STRING ();
@@ -60,6 +65,7 @@ DESIGN rrBoard {
         NEW rrPlatformFirst;
         NEW rrPlatformSecond { MOVE PROPERTY(rrPlatformNote()); }
     }
+    NEW rrPlatformPane;
 }
 
 EXTEND FORM rrBoard
@@ -73,6 +79,10 @@ EXTEND FORM rrBoard
         IF rrScript() = 'collapse island pane' THEN COLLAPSE CONTAINER rrBoard.rrIslandPane;
         IF rrScript() = 'activate placed tab' THEN ACTIVATE TAB rrBoard.rrPlacedSecond;
         IF rrScript() = 'activate platform tab' THEN ACTIVATE TAB rrBoard.rrPlatformSecond;
+        IF rrScript() = 'show in react' THEN SHOW rrChild IN rrBoard.rrReact NOWAIT;
+        IF rrScript() = 'show in react pane' THEN SHOW rrChild IN rrBoard.rrPane NOWAIT;
+        IF rrScript() = 'show in island' THEN SHOW rrChild IN rrBoard.rrIsland NOWAIT;
+        IF rrScript() = 'show in platform pane' THEN SHOW rrChild IN rrBoard.rrPlatformPane NOWAIT;
     }
 ;
 
@@ -136,4 +146,41 @@ testActivateTabPlatformDrawsGoesThrough 'ACTIVATE TAB on a tab the platform draw
     rrShow('activate platform tab');
     assertNull(messageCaughtException(), 'ACTIVATE TAB on a platform tab failed with ' + messageCaughtException());
     assertTrue(ACTIVE TAB rrBoard.rrPlatformSecond, 'ACTIVATE TAB on a platform tab did not activate it');
+}
+
+// SHOW ... IN must not open a form that React cannot draw; a custom = NULL container still hosts it.
+testShowInReactContainerIsRefused 'SHOW IN a CUSTOM REACT container is refused' () {
+    rrShow('show in react');
+    assertNotNull(messageCaughtException(), 'SHOW IN a React container was not refused');
+    assertTrue(messageCaughtException() LIKE '%SHOW%rrReact%CUSTOM REACT%custom = NULL%<Platform>%', 'SHOW IN failed with ' + messageCaughtException());
+    assertNull(rrShown(), 'SHOW IN a React container opened the child form');
+}
+
+testShowInReactDrawsIsRefused 'SHOW IN a container a React component draws is refused' () {
+    rrShow('show in react pane');
+    assertNotNull(messageCaughtException(), 'SHOW IN a container React draws was not refused');
+    assertTrue(messageCaughtException() LIKE '%SHOW%rrPane%CUSTOM REACT%custom = NULL%<Platform>%', 'SHOW IN failed with ' + messageCaughtException());
+    assertNull(rrShown(), 'SHOW IN a container React draws opened the child form');
+}
+
+testShowInPlacedContainerGoesThrough 'SHOW IN a platform-drawn container React places opens the form' () {
+    rrShow('show in island');
+    assertNull(messageCaughtException(), 'SHOW IN a platform-drawn container React places failed with ' + messageCaughtException());
+    assertTrue(rrShown(), 'SHOW IN a platform-drawn container React places did not open the child form');
+}
+
+testShowInPlatformContainerGoesThrough 'SHOW IN a container the platform draws opens the form' () {
+    rrShow('show in platform pane');
+    assertNull(messageCaughtException(), 'SHOW IN a platform container failed with ' + messageCaughtException());
+    assertTrue(rrShown(), 'SHOW IN a platform container did not open the child form');
+}
+
+// SHOW ... IN without a context form must keep the normal form-opening fallback.
+testShowInWithoutContextFormGoesThrough 'SHOW IN without a context form opens the form' () {
+    TRY {
+        SHOW rrChild IN rrBoard.rrPlatformPane NOWAIT;
+    } CATCH {
+    }
+    assertNull(messageCaughtException(), 'SHOW IN without a context form failed with ' + messageCaughtException());
+    assertTrue(rrShown(), 'SHOW IN without a context form did not open the child form');
 }

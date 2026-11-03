@@ -109,6 +109,8 @@ The `SHOW` operator creates an action that opens the specified form. The `OBJECT
 
     The [form layout](../paradigm/In_an_interactive_view_SHOW_DIALOG.md#location): `FLOAT` shows the form as a floating window, `WINDOW` as a tab in the system forms window `System.forms` - or in the [`FORMS` window](WINDOW_statement.md) `windowName` names, which is how a form is drawn as a header or a side panel - `EMBEDDED` and `POPUP` as in-place editors, and `IN` places the form inside `containerName` — a form-qualified [design component](DESIGN_statement.md#selector) (the form's name followed by the component's path within that form's design) that must be a container. By default, `FLOAT` is used in synchronous mode and `WINDOW` in asynchronous mode. In synchronous mode a `WINDOW` tab blocks the form it is opened from until it is closed, and from a form shown as a window it is shown as a window, like `FLOAT`: to open a tab from a form shown as a window, specify `NOWAIT`.
 
+    `IN` requires a container whose content the platform draws. A `CUSTOM REACT` container and a container a React view draws inside it cannot host the form: the server refuses such an opening at run time. Give the destination container `custom = NULL` for the platform to draw it, and place it with `<Platform>` inside the React view.
+
     - `windowName`
 
         Name of the window the form is docked into. [Composite ID](IDs.md#cid) of a window declared with `WINDOW ... FORMS`. Any other window is an error. The mobile web client and the desktop client draw `System.forms` alone, so there the form opens in `System.forms`, as a tab.

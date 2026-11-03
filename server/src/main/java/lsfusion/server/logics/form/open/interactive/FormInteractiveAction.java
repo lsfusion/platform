@@ -21,6 +21,7 @@ import lsfusion.server.logics.form.interactive.action.FormOptions;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapOpenForm;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
+import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.open.FormAction;
@@ -164,6 +165,17 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         // sync and modality types
         boolean syncType = heuristicSyncType(context, this.syncType);
         ShowFormType showFormType = getShowFormType(syncType);
+
+        if (showFormType instanceof ContainerShowFormType) {
+            FormInstance contextFormInstance = context.getFormInstance(false, false);
+            if (contextFormInstance != null) {
+                ComponentView container = contextFormInstance.entity.view.findById(((ContainerShowFormType) showFormType).inContainerId);
+                // The inserted form has no entry a React view can draw, so the platform must draw the container's content.
+                if (container != null && container.getContentReactPlace() != null)
+                    throw new RuntimeException("cannot SHOW a form IN container '" + container.getSID() + "', whose content a CUSTOM REACT"
+                            + " component draws: give it custom = NULL for the platform to draw it and place it with <Platform>");
+            }
+        }
 
         // The client reused a form at click time. Only this matching open is answered by that activation;
         // the surrounding action, its permissions and its aspects still execute on the server.
