@@ -3,6 +3,8 @@ package lsfusion.tests;
 import com.microsoft.playwright.Locator;
 import org.junit.Test;
 
+import java.util.Map;
+
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -37,6 +39,18 @@ public class UiReactImageIT extends UiTest {
         exec("UiReactImage.uiRiSeed", name);
         Locator form = open("UiReactImage.uiRiFolder", "UiReactImage.uiRiPlatformSelect");
         assertThat(form.locator("tbody select option:checked")).hasText("New " + name);
+        close(form);
+    }
+
+    // icon classes named image keep quotes as text without injecting HTML attributes
+    @Test
+    public void anIconKeepsItsClasses() {
+        Locator form = open("UiReactImage.uiRiFolder", "UiReactImage.uiRiIconClasses");
+        view.waitFor("data.image.value != null");
+        String classes = "bi-x\" onmouseover=\"injected";
+        assertEquals(Map.of("class", classes + " wrap-text-img"),
+                view.value("Object.fromEntries(Array.from(new DOMParser().parseFromString(data.image.value, 'text/html')"
+                        + ".querySelector('i').attributes, a => [a.name, a.value]))"));
         close(form);
     }
 

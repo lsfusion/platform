@@ -38,6 +38,15 @@ FORM uiRiPlatformSelect 'Platform image select'
     FILTERS uiRiShown(r)
 ;
 
+// icon classes keep quotes as text when the image's HTML is parsed
+uiRiClasses () = 'bi-x" onmouseover="injected';
+FORM uiRiIconClasses 'React image icon classes'
+    PROPERTIES() image = uiRiClasses
+;
+DESIGN uiRiIconClasses {
+    NEW uiRiBoard FIRST { custom = 'UiReactImageBoard'; MOVE PROPERTY(image); }
+}
+
 uiRiSeed (STRING[50] name) {
     uiRiShown(uiRiItem r) <- NULL;
     NEW s = uiRiStatus {
@@ -53,6 +62,7 @@ NAVIGATOR {
         NEW uiRiFooter;
         NEW uiRiSelect;
         NEW uiRiPlatformSelect;
+        NEW uiRiIconClasses;
     }
 }
 

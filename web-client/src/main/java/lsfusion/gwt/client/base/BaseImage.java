@@ -3,6 +3,7 @@ package lsfusion.gwt.client.base;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
@@ -48,10 +49,10 @@ public interface BaseImage extends Serializable {
 
     default String createImageHTML() {
         if(useIcon())
-            return "<i class=\"" + ((BaseStaticImage) this).getFontClasses() + " wrap-text-img\"></i>";
+            return "<i class=\"" + SafeHtmlUtils.htmlEscape(((BaseStaticImage) this).getFontClasses()) + " wrap-text-img\"></i>";
         else {
             String tag = getTag();
-            return "<" + tag + " src=\"" + getImageElementSrc(true) + "\" class=\"wrap-text-img\"></" + tag + ">";
+            return "<" + tag + " src=\"" + SafeHtmlUtils.htmlEscape(getImageElementSrc(true)) + "\" class=\"wrap-text-img\"></" + tag + ">";
         }
     }
     default Element createImage() {
