@@ -233,11 +233,6 @@ public final class GPlatformGridController extends GPlatformTableController<GGri
         return !(view.isNoColumns() && requestIndex >= view.getSetRequestIndex());
     }
 
-    @Override
-    public GGroupObject getSelectedGroupObject() {
-        return groupObject;
-    }
-
     public List<GPropertyDraw> getGroupObjectProperties() {
         ArrayList<GPropertyDraw> properties = new ArrayList<>();
         for (GPropertyDraw property : formController.getPropertyDraws()) {

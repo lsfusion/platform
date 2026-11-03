@@ -1035,7 +1035,6 @@ public class GReactFormDataTest extends GWTTestCase {
         public void updateRowSelectValues(NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) { }
         public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, PValue> values) { }
         public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> values) { }
-        public GGroupObject getSelectedGroupObject() { return null; }
         // the cell it is on, when a test puts it on one - on none, -1, else
         GPropertyDraw selectedProperty; PValue selectedValue; int selectedRow = -1;
         public GPropertyDraw getSelectedFilterProperty() { return selectedProperty; }
@@ -1062,7 +1061,6 @@ public class GReactFormDataTest extends GWTTestCase {
         public void expandCurrent() { asked.add("expand current"); }
         public void expandTree() { asked.add("expand tree"); }
         public GTreeController getOpenedByToolbarMembers() { return this; }
-        public GGroupObject getSelectedGroupObject() { return null; }
         public GPropertyDraw getSelectedFilterProperty() { return null; }
         public GGroupObjectValue getSelectedColumnKey() { return null; }
         public int getSelectedRow() { return -1; }
@@ -4233,8 +4231,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals(new Column(columns[0], GGroupObjectValue.EMPTY), filterColumns.get(0).first);
         assertEquals(new Column(columns[1], GGroupObjectValue.EMPTY), filterColumns.get(1).first);
         assertEquals(new Column(columns[2], GGroupObjectValue.EMPTY), filterColumns.get(2).first);
-        assertSame(f.cat, tree.getSelectedGroupObject()); // no current object yet: the top group, on no row
-        assertSame(columns[0], tree.getSelectedFilterProperty());
+        assertSame(columns[0], tree.getSelectedFilterProperty()); // no current object yet: the top group, on no row
         assertEquals(GGroupObjectValue.EMPTY, tree.getSelectedColumnKey());
         assertEquals(-1, tree.getSelectedRow());
 
@@ -4247,19 +4244,18 @@ public class GReactFormDataTest extends GWTTestCase {
         current.objects.put(f.item, f.i27);
         f.apply(current);
         assertTrue(tree.getSelectedRow() >= 0);
-        assertSame(f.item, tree.getSelectedGroupObject());
         assertSame(columns[1], tree.getSelectedFilterProperty());
         assertEquals(PValue.getPValue(270), tree.getSelectedValue(columns[2], GGroupObjectValue.EMPTY));
         // a column's value in its own group's current row
         assertEquals(PValue.getPValue(2), tree.getSelectedValue(columns[0], GGroupObjectValue.EMPTY));
 
         f.controllers.groups.get(f.cat).changeCurrentKey(f.c1); // the view's own choice, as the form hands it on
-        assertSame(f.cat, tree.getSelectedGroupObject());
+        assertSame(columns[0], tree.getSelectedFilterProperty());
         f.controllers.groups.get(f.item).updateCurrentKey(f.i27); // the server reporting a row it already was
-        assertSame(f.item, tree.getSelectedGroupObject());
+        assertSame(columns[1], tree.getSelectedFilterProperty());
         // the top group of an empty tree, reported on a path of NULLs: the top group, on no row - no condition starts
         f.controllers.groups.get(f.cat).updateCurrentKey(new GGroupObjectValue(60, (Serializable) null));
-        assertSame(f.cat, tree.getSelectedGroupObject());
+        assertSame(columns[0], tree.getSelectedFilterProperty());
         assertEquals(-1, tree.getSelectedRow());
 
         ArrayList<GPropertyFilter> conditions = new ArrayList<>();
@@ -4314,7 +4310,6 @@ public class GReactFormDataTest extends GWTTestCase {
         GTreeController tree = f.controllers.treeRows.get(f.tree);
         assertEquals(PValue.getPValue(150), tree.getSelectedValue(columns[0], GGroupObjectValue.EMPTY));
         f.controllers.groups.get(f.cat).changeCurrentKey(f.c2); // the view's choice of a category
-        assertSame(f.cat, tree.getSelectedGroupObject());
         assertNull(tree.getSelectedValue(columns[0], GGroupObjectValue.EMPTY)); // no item is current now
         f.projection.flush();
         assertTrue(flag(f.row(f.cat, f.c2), "isCurrent"));
@@ -4976,7 +4971,6 @@ public class GReactFormDataTest extends GWTTestCase {
         f.apply(delta);
         GTableController rows = f.controllers.gridRows.get(f.group);
 
-        assertSame(f.group, rows.getSelectedGroupObject());
         List<Pair<Column, String>> columns = rows.getFilterColumns();
         assertEquals(2, columns.size());
         assertEquals(new Column(f.price, GGroupObjectValue.EMPTY), columns.get(0).first);

@@ -9,7 +9,6 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController;
 import lsfusion.gwt.client.form.object.table.controller.GToolbarController;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
-import lsfusion.gwt.client.form.object.table.tree.view.GTreeGridRecord;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -40,15 +39,6 @@ public final class GPlatformTreeController extends GPlatformTableController<GTre
     protected boolean updateView(long requestIndex, GFormChanges fc) {
         view.update();
         return view.getColumnCount() > 1;
-    }
-
-    // used in filters and user preferences
-    @Override
-    public GGroupObject getSelectedGroupObject() {
-        GTreeGridRecord record = view.getCurrentRowValue();
-        return record != null
-                ? record.getGroup()
-                : table.groups.get(0);
     }
 
     @Override

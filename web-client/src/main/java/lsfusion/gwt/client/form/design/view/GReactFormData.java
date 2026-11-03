@@ -2126,9 +2126,6 @@ public class GReactFormData {
         void place() {
         }
 
-        public GGroupObject getSelectedGroupObject() {
-            return currentPart().node.group;
-        }
         public GPropertyDraw getSelectedFilterProperty() {
             return currentPart().getSelectedFilterProperty();
         }

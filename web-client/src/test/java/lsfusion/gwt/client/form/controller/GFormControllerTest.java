@@ -1848,7 +1848,7 @@ public class GFormControllerTest extends GWTTestCase {
         assertValue(20, rows.getSelectedValue(name, GGroupObjectValue.EMPTY));
     }
     // ... and over a tree the platform draws, TREE t (c = Category, i = Item): a node of another group - an item under
-    // the second category, the tree on the first - is the one whose group, property and value a condition starts on
+    // the second category, the tree on the first - is the one whose property and value a condition starts on
     public void testATreesFilterConditionStartsOnTheNodeTheFormChose() {
         GFormController controller = catalogTree();
         GGroupObject item = controller.getForm().groupObjects.get(1);
@@ -1857,7 +1857,6 @@ public class GFormControllerTest extends GWTTestCase {
         GTreeGroup tree = item.parent;
         controller.changeCurrentObject(item, i1);
         GTableController rows = tableController(controller, tree);
-        assertSame(item, rows.getSelectedGroupObject());
         assertSame(itemName, rows.getSelectedFilterProperty());
         assertValue(7, rows.getSelectedValue(itemName, GGroupObjectValue.EMPTY));
     }
