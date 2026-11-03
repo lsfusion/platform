@@ -3,6 +3,8 @@ package lsfusion.gwt.client.form.design.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
+import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.PlacedViews;
 import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -10,7 +12,8 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 // CUSTOM REACT 'fn': a React component (window[fn], fn = the container's custom) draws this container's subtree
 // from the form's projection - its props { data, controller } (GReactFormData), which the window.lsfusion hooks read
@@ -26,13 +29,13 @@ public class ReactContainerView extends ParkedContainerView {
     // the components this view places, by the name a <Platform> gives them (getName): those it is the React place of (GComponent.getReactPlace, the rule the
     // layout and the projection ask too) - its children and what is inside the containers it draws itself. What a
     // <Platform> name means is looked up here
-    private final Map<String, GComponent> placeable = new HashMap<>();
+    private final NativeStringMap<GComponent> placeable = new NativeStringMap<>();
     // ... and of them the platform-drawn ones, placed whole, one view each, named or not: what the server is told of
     // (reconcilePlaced)
     private final List<GComponent> platformViews = new ArrayList<>();
     // ... and the containers it draws itself, named, each with whether the component shows it (useShown): the server
     // is told of them too - a container is shown until the component says otherwise
-    private final Map<GComponent, Boolean> drawnShown = new LinkedHashMap<>();
+    private final NativeSIDMap<GComponent, Boolean> drawnShown = new NativeSIDMap<>();
 
     // name -> the host claimed for it (the first one wins). The child's view is mounted there once it exists, so
     // the host outlives a SHOWIF drop/rebuild of the view: whether the view exists now is indexOfPlatformView(sid) >= 0
@@ -70,7 +73,7 @@ public class ReactContainerView extends ParkedContainerView {
     // what the server has been told about the platform-drawn children: the SET this view places now, not the events
     // that led to it (reconcilePlaced). The children it was told are hidden - a child the server was told nothing about
     // is shown, the server's default
-    private final Set<GComponent> reportedHidden = new HashSet<>();
+    private final NativeSIDMap<GComponent, Boolean> reportedHidden = new NativeSIDMap<>();
     // a pending reconcile of an older generation is dropped: the root was unmounted since
     private int reconcileGeneration;
     private boolean reconcilePending;
@@ -101,7 +104,7 @@ public class ReactContainerView extends ParkedContainerView {
             @Override
             public void show(String name, boolean shown) {
                 GComponent component = placeable.get(name);
-                if (!drawnShown.containsKey(component)) {
+                if (component == null || !drawnShown.containsKey(component)) {
                     GwtClientUtils.logCustomViewError("useShown('" + name + "'): '" + name + "' is not a container '"
                             + container.sID + "' draws itself - one the platform draws is shown by placing it with"
                             + " <Platform>");
@@ -214,11 +217,10 @@ public class ReactContainerView extends ParkedContainerView {
             String name = GReactFormData.getName(child);
             report(child, name == null || !placed.isHeld(name)); // no <Platform> names one with no name
         }
-        for (Map.Entry<GComponent, Boolean> drawn : drawnShown.entrySet())
-            report(drawn.getKey(), !drawn.getValue());
+        drawnShown.foreachEntry((child, shown) -> report(child, !shown));
     }
     private void report(GComponent component, boolean hidden) {
-        if (hidden ? reportedHidden.add(component) : reportedHidden.remove(component))
+        if (hidden ? reportedHidden.put(component, true) == null : reportedHidden.remove(component) != null)
             formController.setUserHidden(component, hidden);
     }
 
