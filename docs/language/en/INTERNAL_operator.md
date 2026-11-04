@@ -42,10 +42,12 @@ The `INTERNAL` operator creates an action or an action statement that runs eithe
     ```js
     function reload(controller) { controller.exec('refreshData'); }
 
-    function chooseValue(name, controller, resolve, reject) {
-        controller.exec('findValue', name).then(resolve, reject);
+    function readClipboard(controller, resolve, reject) {
+        navigator.clipboard.readText().then(resolve, reject);
     }
     ```
+
+    A call made through the controller — but for a lookup of values (`getValues`), which may be answered out of turn — is a request of the form, and the form takes its requests one after another: the call runs once the action that made the `CLIENT` call is over. So a function the action waits for — a synchronous call, with `WAIT` or a `TO` — must not wait for a call it makes through the controller: the call waits for the action, the action for the function, and neither ends. The same goes for an asynchronous function followed in the action by a call the action waits for: the client starts a `CLIENT` call only once the asynchronous function before it has called one of its callbacks.
 
 - `syncType`
 

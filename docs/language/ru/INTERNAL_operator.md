@@ -42,10 +42,12 @@ CLIENT [syncType] execStrExpr
     ```js
     function reload(controller) { controller.exec('refreshData'); }
 
-    function chooseValue(name, controller, resolve, reject) {
-        controller.exec('findValue', name).then(resolve, reject);
+    function readClipboard(controller, resolve, reject) {
+        navigator.clipboard.readText().then(resolve, reject);
     }
     ```
+
+    Вызов через контроллер — кроме поиска значений (`getValues`), на который форма может ответить вне очереди, — это запрос формы, а форма выполняет свои запросы по одному: такой вызов выполняется после завершения действия, сделавшего вызов `CLIENT`. Поэтому функция, которую действие ждёт, — синхронный вызов, с `WAIT` или `TO`, — не должна ждать вызова, сделанного ею через контроллер: вызов ждёт действие, действие — функцию, и ни один из них не завершается. То же относится к асинхронной функции, за которой в действии следует вызов, который действие ждёт: клиент начинает вызов `CLIENT` только тогда, когда асинхронная функция перед ним вызвала один из своих обратных вызовов.
 
 - `syncType`
 
