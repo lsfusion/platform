@@ -89,7 +89,8 @@ public final class GFilterControlsToggle implements GUserFiltersController.Apply
         return visible;
     }
 
-    // the controls shown or hidden, the rows' selectors with them, the form laid out anew
+    // the controls shown or hidden, the rows' selectors with them - and, hidden, a row nobody filled in -, the form laid
+    // out anew
     public void setVisible(boolean visible) {
         if (shownBy == null) // nothing shows or hides them: they are always shown
             return;
@@ -102,7 +103,7 @@ public final class GFilterControlsToggle implements GUserFiltersController.Apply
 
         shownBy.showFilterControls(visible);
         if (userFilters != null)
-            userFilters.modeChanged();
+            userFilters.controlsChanged(visible);
     }
 
     // ===== WITH THE TABLE, as its input is told (GFilterInputController): what draws the rows has changed, once per

@@ -382,8 +382,14 @@ public final class GUserFiltersController {
     }
 
     // ===== THE MODE AND THE SLOTS' COLUMNS
-    // the apply button shown or hidden: what draws the model told - what waits stays
-    public void modeChanged() {
+    // the filter controls shown or hidden, the apply button with them: what draws the model told - what waits stays.
+    // Hidden, they take with them the box's entries the user never made his - only prepared by the platform's rows,
+    // never committed nor sent, which Escape would take away -: such a row filters nothing
+    public void controlsChanged(boolean visible) {
+        if (!visible)
+            for (GUserFilter entry : getFreeEntries())
+                if (!entry.confirmed && !entry.applied)
+                    entries.remove(entry);
         changed(NOTHING_SENT);
     }
     // a FILTER's column, where the platform draws it on a property grouped in columns: the one the table is on as the

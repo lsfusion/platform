@@ -5541,7 +5541,7 @@ public class GReactFormDataTest extends GWTTestCase {
         boolean manual = MainFrame.userFiltersManualApplyMode;
         MainFrame.userFiltersManualApplyMode = true;
         try {
-            userFilters.modeChanged();
+            userFilters.controlsChanged(true);
             f.projection.flush();
             assertTrue(flag(field(f.snapshots[2], "items"), "filtersManual"));
             assertTrue(isFalse(field(f.snapshots[2], "items"), "filtersPending"));
@@ -5551,7 +5551,7 @@ public class GReactFormDataTest extends GWTTestCase {
             assertTrue(f.filtersCalls.isEmpty());
 
             MainFrame.userFiltersManualApplyMode = false; // the setting off: no apply waited for - what waits stays
-            userFilters.modeChanged();                    // unsent till the next write
+            userFilters.controlsChanged(true);            // unsent till the next write
             f.projection.flush();
             assertTrue(isFalse(field(f.snapshots[2], "items"), "filtersManual"));
             assertTrue(flag(field(f.snapshots[2], "items"), "filtersPending"));

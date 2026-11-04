@@ -132,7 +132,8 @@ public class UiFilterPanelIT extends UiTest {
     }
 
     // the filter button over an empty panel shows its controls with a condition to fill in - on the grid's first
-    // property, its editor focused -, and hides them, the condition untouched, filtering nothing
+    // property, its editor focused -, and hides them, the condition left untouched going with them: it filters nothing.
+    // Shown again, they come with a new one
     @Test
     public void theFilterButtonOverAnEmptyPanel() throws Exception {
         String[] items = seed();
@@ -147,10 +148,13 @@ public class UiFilterPanelIT extends UiTest {
         assertThat(conditions.locator("input")).isFocused();
         button(form, "Hide filter controls").click();
         assertThat(button(form, "Add filter")).isHidden();
+        assertThat(conditions).hasCount(0);
         // asked after the controls hide, the count would be of a condition they applied
         button(form, "Number of Entries").click();
         popup("Number of Entries: 2");
         assertThat(names(form)).hasText(items);
+        button(form, "Show filter controls").click();
+        assertThat(conditions).hasCount(1);
         close(form);
     }
 
