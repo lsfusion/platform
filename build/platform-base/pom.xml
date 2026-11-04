@@ -85,7 +85,9 @@
         <com.ibm.icu.icu4j.version>77.1</com.ibm.icu.icu4j.version>
         <url.rewriter.version>4.0.3</url.rewriter.version>
         <scrimage.version>4.0.42</scrimage.version>
-        <httpcomponents.client5.httpclient5.version>5.6.5</httpcomponents.client5.httpclient5.version>
+        <!-- don't update to 5.5.2+: since 5.5.2 DefaultHttpClientConnectionOperator uses jdk.net.ExtendedSocketOptions.TCP_KEEPIDLE,
+             which is missing in Java 8 before 8u272 (NoSuchFieldError, and then every HTTP request fails) -->
+        <httpcomponents.client5.httpclient5.version>5.4.4</httpcomponents.client5.httpclient5.version>
 
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
         <gwt.version>2.10.0-patched-1</gwt.version>
