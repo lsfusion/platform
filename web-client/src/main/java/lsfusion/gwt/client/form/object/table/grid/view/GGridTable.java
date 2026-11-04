@@ -160,11 +160,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
             GGroupObjectValue columnKey = col >= 0 ? getColumnKey(col) : null;
             form.updatePropertyActive(property, columnKey, true, changeSelectionColumns);
 
-            // each column group's own objects of the column made current (GGroupObject.getRowKey) - the column's key
-            // carries all of theirs
+            // each column group's own objects of the column made current (GGroupObject.getRowKey) - of a group the
+            // column's key carries: a column group in PANEL view gives the columns no key, its current object being
+            // every column's
             ArrayList<GGroupObject> columnGroupObjects;
             if (col != prevCol && property != null && (columnGroupObjects = property.columnGroupObjects) != null)
-                columnGroupObjects.forEach(groupObject -> form.changeGroupObjectLater(groupObject, groupObject.getRowKey(columnKey), null, null));
+                for (GGroupObject groupObject : columnGroupObjects) {
+                    GGroupObjectValue rowKey = groupObject.getRowKey(columnKey);
+                    if (rowKey != null)
+                        form.changeGroupObjectLater(groupObject, rowKey, null, null);
+                }
         }
     }
 

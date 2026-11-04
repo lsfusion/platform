@@ -4,6 +4,8 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import org.junit.Test;
 
+import java.util.regex.Pattern;
+
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 // the platform's own filter panel over its grid (UiFilterPanel.lsf), no React view on it: its keys, its manual apply
@@ -196,6 +198,25 @@ public class UiFilterPanelIT extends UiTest {
         popup("Number of Entries: 2");
         assertThat(form.locator(".filter:visible")).hasCount(0);
         assertThat(names(form)).hasText(items);
+        close(form);
+    }
+
+    // a cell of a property in COLUMNS of a group in PANEL view, in another row: the click makes the row current and
+    // leaves the cell focused - the column group's current object, every column's, stays as it is -, and F3 starts a
+    // condition on its column
+    @Test
+    public void aColumnsCellOfAPanelGroupInAnotherRow() throws Exception {
+        String[] items = seed();
+        Locator form = open(FOLDER, "UiFilterPanel.uiFpnColumns");
+        Locator row = row(form, "name", items[1]);
+        assertThat(names(form)).hasText(items);
+        click(row.locator("td[lsfusion-container='PROPERTY(inCat)']"));
+        assertThat(row).hasClass(Pattern.compile("table-active"));
+        assertThat(form.locator("td.focused-cell")).hasAttribute("lsfusion-container", "PROPERTY(inCat)");
+        press("F3");
+        // the column's caption is its category's name, the seed's other names with Fruit in place of Apple
+        assertThat(form.locator(".filter:visible .filter-label").first()).hasText("Fruit" + items[0].substring("Apple".length()));
+        assertThat(page.locator(".modal-content")).hasCount(0);
         close(form);
     }
 

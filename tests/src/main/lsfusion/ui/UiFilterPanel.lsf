@@ -57,8 +57,20 @@ DESIGN uiFpnNoFilters {
     TOOLBARSYSTEM(TREE cats) { showFilters = FALSE; showPrintGroupXls = FALSE; }
 }
 
+// a property in COLUMNS of a group in PANEL view: one column, the current category's
+uiFpnInCat 'In category' (UiFpnItem i, UiFpnCategory c) = uiFpnCategory(i) == c;
+FORM uiFpnColumns 'Columns'
+    OBJECTS c = UiFpnCategory PANEL
+    OBJECTS i = UiFpnItem
+    PROPERTIES(i) READONLY name = uiFpnName, price = uiFpnPrice
+    PROPERTIES(i, c) READONLY inCat = uiFpnInCat COLUMNS (c) HEADER uiFpnCategoryName(c)
+    FILTERS uiFpnShown(i), uiFpnCategoryShown(c)
+    ORDERS name
+;
+
 NAVIGATOR {
     NEW FOLDER uiFpn 'UI filter panel' WINDOW toolbar {
+        NEW uiFpnColumns;
         NEW uiFpnItems;
         NEW uiFpnQuick;
         NEW uiFpnNoFilters;
