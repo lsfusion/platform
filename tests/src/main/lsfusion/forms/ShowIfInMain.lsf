@@ -1,0 +1,38 @@
+MODULE ShowIfInMain;
+
+REQUIRE TestUtils;
+
+// a container with a SHOWIF placed right in the form's main container: hidden as the form opens, what it holds is not
+// read; shown then, it is, as anything shown is - the main container is no container the design hides
+
+CLASS SimItem 'Item';
+simName 'Name' = DATA STRING[20] (SimItem);
+simItem = DATA LOCAL SimItem ();
+simShown = DATA LOCAL BOOLEAN ();
+
+FORM simForm 'SHOWIF in the main container'
+    OBJECTS i = SimItem
+    PROPERTIES(i) simName
+;
+
+DESIGN simForm {
+    NEW simGated FIRST {
+        showIf = simShown();
+        MOVE BOX(i);
+    }
+}
+
+testShowIfContainerInTheMainContainer 'A SHOWIF container right in the main container shows its rows once it is shown' () {
+    NEW i = SimItem {
+        simName(i) <- 'first';
+        simItem() <- i;
+    }
+    SHOW simForm NOWAIT {
+        readShown();
+        assertFalse(shownInForm(simItem()), 'the rows of a hidden SHOWIF container in the main container are read');
+
+        simShown() <- TRUE;
+        readShown();
+        assertTrue(shownInForm(simItem()), 'the rows of a shown SHOWIF container in the main container are not read');
+    };
+}

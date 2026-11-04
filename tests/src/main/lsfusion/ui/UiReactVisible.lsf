@@ -47,14 +47,9 @@ DESIGN uiReactVisibleViews {
         popup = TRUE;
         NEW popView { custom = 'UiReactVisiblePop'; }
     }
-    // the SHOWIF in a container of its own: one right in the form's main container fails the server's assertion
-    // as the SHOWIF shows it (FormInstance.isShowIfHidden goes on up to the main container, which it takes as one
-    // the design hides)
-    NEW gating {
-        NEW gated {
-            showIf = uiReactVisibleGated();
-            NEW gatedView { custom = 'UiReactVisibleGated'; }
-        }
+    NEW gated {
+        showIf = uiReactVisibleGated();
+        NEW gatedView { custom = 'UiReactVisibleGated'; }
     }
     NEW plain {
         NEW plainView { custom = 'UiReactVisiblePlain'; }

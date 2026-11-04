@@ -327,6 +327,8 @@ public abstract class ComponentView<This extends ComponentView<This, AddParent>,
 
     @IdentityLazy
     public boolean isDesignHidden() {
+        if(isMain()) // the form's main container has no container either, but it is the one never hidden
+            return false;
         ComponentView parent = getHiddenContainer();
         if(parent == null)
             return true;
