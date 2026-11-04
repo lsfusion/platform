@@ -4,10 +4,12 @@ import com.microsoft.playwright.Locator;
 import org.junit.Test;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
-// a value typed into a grid's cell reaches the database when the form is saved
+// the platform's grid (UiGrid.lsf)
 public class UiGridIT extends UiTest {
 
+    // a value typed into a cell reaches the database when the form is saved
     @Test
     public void editAndSave() throws Exception {
         String name = "Item " + System.nanoTime(); // unique : the item of a failed attempt stays in the database for its rerun
@@ -19,6 +21,16 @@ public class UiGridIT extends UiTest {
         assertThat(quantity).hasText("123");
         form.locator("button[lsfusion-container='PROPERTY(formApply())']").click();
         check("UiGrid.uiGridCheckQuantity", name, "123");
+        close(form);
+    }
+
+    // the footer of a column of images is an image too, which the grid draws as it draws the cells: the server sent it as
+    // TRUE, which the grid's image renderer threw on - the footer stayed empty, and the form no longer closed
+    @Test
+    public void anImageFooterIsDrawn() {
+        Locator form = open("UiGrid.uiGrid", "UiGrid.uiGridPictures");
+        assertEquals("a footer", form.locator("tfoot img").evaluate("img => fetch(img.src)"
+                + ".then(response => response.ok ? response.text() : img.src + ' -> HTTP ' + response.status)"));
         close(form);
     }
 }

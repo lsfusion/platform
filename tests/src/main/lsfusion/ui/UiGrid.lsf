@@ -2,7 +2,7 @@ MODULE UiGrid;
 
 REQUIRE TestUtils;
 
-// the grid UiGridIT edits in the browser, and the actions it seeds and checks its item with
+// the grids UiGridIT works on in the browser, and the actions it seeds and checks its item with
 
 CLASS UiGridItem 'Item';
 uiGridName 'Name' = DATA STRING[50] (UiGridItem);
@@ -14,9 +14,18 @@ FORM uiGridItems 'Items'
     PROPERTIES(i) uiGridName, uiGridQuantity
 ;
 
+// a column of images, whose footer, an image too, the grid draws as it draws the column's cells
+uiGridPicture 'Picture' = DATA IMAGEFILE (UiGridItem);
+
+FORM uiGridPictures 'Pictures'
+    OBJECTS i = UiGridItem
+    PROPERTIES(i) READONLY uiGridPicture FOOTER IMAGEFILE(FILE('a footer'))
+;
+
 NAVIGATOR {
     NEW FOLDER uiGrid 'UI grid' WINDOW toolbar {
         NEW uiGridItems;
+        NEW uiGridPictures;
     }
 }
 

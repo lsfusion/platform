@@ -463,16 +463,13 @@ public class FormChanges {
     private static ConvertData getConvertData(PropertyReaderInstance reader, FormInstanceContext context) {
         Supplier<Type> readType = () -> reader.getReaderProperty().getType();
         Type readerType;
-        if (reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty(context)) {
-            PropertyDrawEntity<?, ?> propertyDraw = ((PropertyDrawInstance<?>) reader).entity;
+        if ((reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty(context))
+                || (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.FOOTER.getPropertyReadType())) { // a footer goes as a value of its type, which the platform's grid draws with the column's renderer
+            PropertyDrawEntity<?, ?> propertyDraw = reader.getPropertyDraw().entity;
             readerType = readType.get();
-            if (readerType instanceof RenderedClass || (propertyDraw.isPredefinedImage(context) && propertyDraw.needImage(context)))
+            if (readerType instanceof RenderedClass || (reader instanceof PropertyDrawInstance && propertyDraw.isPredefinedImage(context) && propertyDraw.needImage(context))) // a property named image names an image by its value, not by its footer
                 return getNeedImage(readerType, propertyDraw);
             else if (readerType instanceof FileClass && propertyDraw.needFile(context)) // where JS draws the value, the file itself, which the web server saves for JS to get a link to
-                return new NeedFile(readerType);
-        } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.FOOTER.getPropertyReadType()) {
-            readerType = readType.get();
-            if (readerType instanceof FileClass && ((PropertyDrawInstance<?>.ExtraReaderInstance) reader).getPropertyDraw().entity.needFile(context)) // where JS draws the value, its footer too
                 return new NeedFile(readerType);
         } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.IMAGE.getPropertyReadType()) {
             return getNeedImage(readType.get(), ((PropertyDrawInstance<?>.ExtraReaderInstance) reader).getPropertyDraw().entity);
