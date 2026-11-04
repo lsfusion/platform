@@ -57,6 +57,27 @@ public class UiReactBatchChromeIT extends UiTest {
         close(form);
     }
 
+    // against the contract: a request a batch does not carry - the platform's own, the grid's column changed by a click
+    // made in fn while the name, whose focus the form follows, is current (ChangePropertyActive) - fails the batch on the
+    // server, which the client says, and the form goes on (#1875)
+    @Test
+    public void aRequestABatchDoesNotCarryFailsIt() throws Exception {
+        String[] items = items(seed());
+        Locator form = open(FOLDER, "UiReactBatchChrome.uiRbcHeader");
+        view.waitFor("data.i.listView === 'grid'");
+        cell(form, "name", items[0]).click();
+        idle();
+        List<String> requests = requests(request -> request.method().equals("POST"));
+        view.drawn().call("controller.batch(() => { const price = document.querySelector(\"td[lsfusion-container='PROPERTY(price)']\");"
+                + " for (const type of ['mousedown', 'mouseup', 'click']) price.dispatchEvent(new MouseEvent(type, {bubbles: true, cancelable: true, view: window})); })");
+        assertThat(dialog("ChangePropertyActive is no request a batch carries")).isVisible();
+        assertEquals(1, requests.stream().filter(request -> request.contains(signature("ExecuteBatch")) && request.contains(signature("ChangePropertyActive"))).count());
+        assertEquals(0, requests.stream().filter(request -> !request.contains(signature("ExecuteBatch")) && request.contains(signature("ChangePropertyActive"))).count());
+        closeDialog("ChangePropertyActive is no request a batch carries");
+        assertEquals("2", view.drawn().answer("controller.i.getCount()"));
+        close(form);
+    }
+
     // the filter button's member in a batch is the client's alone, made at once: the name - the form follows its focus
     // - current, the condition it starts on it takes the focus once the batch is sent, so the batch fails on no request
     // of the focus, and a value typed into it filters the grid; the panel's reset takes it off, hiding the controls

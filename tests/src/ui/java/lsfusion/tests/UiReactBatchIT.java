@@ -2,7 +2,6 @@ package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Route;
-import com.microsoft.playwright.options.AriaRole;
 import org.junit.Test;
 
 import java.util.List;
@@ -331,26 +330,22 @@ public class UiReactBatchIT extends UiTest {
         close(form);
     }
 
-    // against the contract: a request a batch does not carry - a classic view's view filter set in its batch - fails
-    // the batch on the server, which the client says; the change before it, made in the form's session, comes with the
-    // answer to the next one, and the form goes on (#1875)
+    // a classic view's view filter set in its batch goes with it, in its one request: the list the next update gets is
+    // the filtered one, the changes before the filter made (#1875)
     @Test
-    public void aRequestABatchDoesNotCarryFailsIt() throws Exception {
+    public void aClassicViewsViewFilterGoesWithItsBatch() throws Exception {
         String[] items = seed();
         String stamp = String.valueOf(System.nanoTime());
         Locator form = open(FOLDER, "UiReactBatch.uiRbClassic");
         classic.waitFor("list.length === 3");
         List<String> requests = requests(request -> request.method().equals("POST"));
         classic.call("controller.batch(() => { controller.changeProperty('note', row(" + js(items[2]) + "), 'u" + stamp + "');"
-                + " controller.setBooleanViewFilter('name', 1000); })");
-        assertThat(dialog("SetViewFilters is no request a batch carries")).isVisible();
+                + " controller.changeProperty('flag', row(" + js(items[2]) + "), true); controller.setBooleanViewFilter('flag', 1000); })");
+        classic.waitFor("list.length === 1 && list[0].note === 'u" + stamp + "'");
         assertEquals(1, requests.stream().filter(request -> request.contains(signature("ExecuteBatch")) && request.contains(signature("SetViewFilters"))).count());
         assertEquals(0, requests.stream().filter(request -> !request.contains(signature("ExecuteBatch")) && (request.contains(signature("SetViewFilters"))
                 || request.contains(signature("ExecuteEventAction")))).count());
-        closeDialog("SetViewFilters is no request a batch carries");
-        classic.call("controller.changeProperty('note', row(" + js(items[0]) + "), 'v" + stamp + "')");
-        classic.waitFor("row(" + js(items[0]) + ").note === 'v" + stamp + "' && row(" + js(items[2]) + ").note === 'u" + stamp + "' && list.length === 3");
-        saveAndCheckNotes(form, items, "v" + stamp, "-", "u" + stamp);
+        saveAndCheckNotes(form, items, "-", "-", "u" + stamp);
         close(form);
     }
 
@@ -373,15 +368,6 @@ public class UiReactBatchIT extends UiTest {
         String[] items = {"Alpha" + id, "Beta" + id, "Gamma" + id};
         exec("UiReactBatch.uiRbSeed", items);
         return items;
-    }
-
-    // a dialog the platform shows, saying the text - a message, an error -, and it closed by its Close button
-    private Locator dialog(String text) {
-        return page.locator(".modal-content").filter(new Locator.FilterOptions().setHasText(text));
-    }
-    private void closeDialog(String text) {
-        dialog(text).getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Close").setExact(true)).click();
-        assertThat(dialog(text)).hasCount(0);
     }
 
     // a row the board draws, by its name

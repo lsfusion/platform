@@ -70,6 +70,8 @@ public abstract class BatchRequest implements Serializable {
         void setUserFilters(S stack, SetUserFilters request) throws Exception;
 
         void setRegularFilter(S stack, SetRegularFilter request) throws Exception;
+
+        void setViewFilters(S stack, SetViewFilters request) throws Exception;
     }
 
     public static final class ChangeGroupObject extends BatchRequest {
@@ -205,6 +207,20 @@ public abstract class BatchRequest implements Serializable {
 
         public <S> void make(Requests<S> requests, S stack) throws Exception {
             requests.setRegularFilter(stack, this);
+        }
+    }
+
+    public static final class SetViewFilters extends BatchRequest {
+        public final byte[][] filters;
+        public final int pageSize;
+
+        public SetViewFilters(byte[][] filters, int pageSize) {
+            this.filters = filters;
+            this.pageSize = pageSize;
+        }
+
+        public <S> void make(Requests<S> requests, S stack) throws Exception {
+            requests.setViewFilters(stack, this);
         }
     }
 

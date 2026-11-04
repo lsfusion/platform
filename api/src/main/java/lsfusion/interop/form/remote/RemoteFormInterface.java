@@ -68,7 +68,6 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
     // sortings, user filters, a filter group's filter -, one or several, in their order: one processing, one answer
     ServerResponse executeBatch(long requestIndex, long lastReceivedRequestIndex, List<BatchRequest> requests) throws RemoteException;
 
-    ServerResponse setViewFilters(long requestIndex, long lastReceivedRequestIndex, byte[][] filters, int pageSize) throws RemoteException;
 
     // group object shortcut actions (system toolbar)
 

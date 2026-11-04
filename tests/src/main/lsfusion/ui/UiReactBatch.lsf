@@ -16,6 +16,7 @@ uiRbWeight 'Weight' = DATA INTEGER (UiRbItem);
 uiRbApprovals 'Approvals' = DATA INTEGER (UiRbItem);
 uiRbBumps 'Bumps' = DATA INTEGER (UiRbItem);
 uiRbShown = DATA BOOLEAN (UiRbItem); // the items of the test that seeded last: the forms show only them
+uiRbFlag = DATA BOOLEAN (UiRbItem); // what a classic view's view filter keeps rows by
 uiRbComment 'Comment' = DATA STRING[50] ();
 
 uiRbApprove 'Approve' (UiRbItem i) { uiRbApprovals(i) <- (OVERRIDE uiRbApprovals(i), 0) + 1; }
@@ -80,7 +81,7 @@ DESIGN uiRbShape {
 FORM uiRbClassic 'Batch of a classic view'
     OBJECTS c = UiRbItem CUSTOM 'UiRbClassic'
     PROPERTIES(c) READONLY name = uiRbName
-    PROPERTIES(c) note = uiRbNote
+    PROPERTIES(c) note = uiRbNote, flag = uiRbFlag
     FILTERS uiRbShown(c)
 ;
 

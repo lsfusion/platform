@@ -11,6 +11,7 @@ import com.microsoft.playwright.Request;
 import com.microsoft.playwright.Route;
 import com.microsoft.playwright.Tracing;
 import com.microsoft.playwright.assertions.LocatorAssertions;
+import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.ReducedMotion;
 import com.microsoft.playwright.options.WaitForSelectorState;
 import org.junit.AssumptionViolatedException;
@@ -342,6 +343,15 @@ public abstract class UiTest {
         page.waitForFunction("() => !!document.activeElement && !!document.activeElement.closest('[data-tippy-root]')");
         page.evaluate("() => document.activeElement.blur()");
         assertThat(popup).hasCount(0);
+    }
+
+    // a dialog the platform shows, saying the text - a message, an error -, and it closed by its Close button
+    protected Locator dialog(String text) {
+        return page.locator(".modal-content").filter(new Locator.FilterOptions().setHasText(text));
+    }
+    protected void closeDialog(String text) {
+        dialog(text).getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Close").setExact(true)).click();
+        assertThat(dialog(text)).hasCount(0);
     }
 
     protected static Locator button(Locator scope, String title) {
