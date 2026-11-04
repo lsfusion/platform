@@ -1556,7 +1556,10 @@ platform's panel, `FILTERS(o)` placed back with `custom = NULL` —, and each do
 (`userFiltersManualApplyMode`) is on — the controls a view draws always have the apply button; the platform's have it
 while they are shown, which the toolbar's filter button does. In it a change of the group's conditions waits for the
 apply, whoever states it — the view, a [property filter](#property-filters), F3, the platform's panel —; the reset is
-sent at once all the same, and so are a pivot's drill-down and a row the platform's panel deletes. `filtersPending` is
+sent at once all the same, and so are a pivot's drill-down and a row the platform's panel deletes. The apply sends the
+group's list as it stands: a value typed into an editor the view draws and kept in the view's own state — as the
+`FilterPanel` above keeps its text till Add — is not in the list until the view states it (`filters.change`, a
+property filter's `change`), so a view states it before the apply, or the apply does not send it. `filtersPending` is
 whether anything waits: the list differs from the one sent — in the manual apply mode till the apply, and in either mode
 while the platform's panel holds a value it prepared, F3's, which its editor has not committed. The setting is off by
 default: a change is sent at once, `filtersManual` stays `false`, and a view may as well not draw `FILTERCONTROLS(o)` at
