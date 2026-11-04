@@ -150,13 +150,14 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     public List<String> formOrDesignStatementList = new ArrayList<>();
-    public void addFormOrDesignStatementTokens(List<String> tokens) {
+    // synchronized : modules that do not require each other are parsed at once, and two of them can extend one form
+    public synchronized void addFormOrDesignStatementTokens(List<String> tokens) {
         String result = StringUtils.join(tokens, "");
         while(result.startsWith("\r") || result.startsWith("\n"))
             result = result.substring(1);
         formOrDesignStatementList.add(result);
     }
-    public String getCode() {
+    public synchronized String getCode() {
         return StringUtils.join(formOrDesignStatementList, "\n");
     }
 

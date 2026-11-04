@@ -1,0 +1,18 @@
+MODULE FormStatements;
+
+REQUIRE TestUtils;
+
+// a form keeps the text of the FORM, EXTEND FORM and DESIGN statements that build it - the code a user customizes it by.
+// Modules that do not require each other are parsed at once, each in a thread of its own, so two of them that extend one
+// form add to its statements at once: they went into a plain list, and now and then the server's start failed with an
+// ArrayIndexOutOfBoundsException from it
+
+FORM fsForm 'Statements';
+
+fsFailure = DATA LOCAL STRING ();
+fsAddAtOnce INTERNAL 'lsfusion.tests.AddFormStatementsAtOnceAction' ();
+
+testStatementsAddedAtOnce 'Statements two threads add to one form at once are both kept' () {
+    fsAddAtOnce();
+    assertNull(fsFailure(), fsFailure());
+}
