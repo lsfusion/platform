@@ -1,0 +1,22 @@
+MODULE KeyBindings;
+
+REQUIRE TestUtils;
+
+// a property of a form keeps the keys bound to it (ON KEYPRESS in its options). Modules that do not require each other
+// are parsed at once, each in a thread of its own, so two of them that bind keys to one property of a form (EXTEND
+// PROPERTIES) put them into its bindings at once: they went into a plain map, which two puts at once corrupt - one of
+// the bindings could be lost
+
+kbName = DATA LOCAL STRING ();
+
+FORM kbForm 'Key bindings'
+    PROPERTIES name = kbName()
+;
+
+kbFailure = DATA LOCAL STRING ();
+kbBindAtOnce INTERNAL 'lsfusion.tests.BindKeysAtOnceAction' ();
+
+testKeysBoundAtOnce 'Keys two threads bind to one property at once are both kept' () {
+    kbBindAtOnce();
+    assertNull(kbFailure(), kbFailure());
+}

@@ -22,6 +22,7 @@ import lsfusion.server.base.Custom;
 import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFMap;
 import lsfusion.server.base.version.interfaces.NFOrderMap;
@@ -741,6 +742,8 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return sync.get();
     }
 
+    // modules that do not require each other are parsed at once, and two of them can bind keys to it
+    @NFLazy
     public void setKeyAction(KeyStroke ks, String actionSID) {
         if (keyBindings == null) {
             keyBindings = new HashMap<>();
