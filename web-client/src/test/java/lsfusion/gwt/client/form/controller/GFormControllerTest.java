@@ -684,8 +684,7 @@ public class GFormControllerTest extends GWTTestCase {
     // nor its sync count, and must reject the report's own Promise.
     public void testThePlatformsExportOfAClosedFormIsRejectedWithoutQueuingARequest() {
         AskServer asks = asks();
-        FormDispatchAsync dispatcher = (FormDispatchAsync) dispatcher(asks.controller);
-        dispatcher.close();
+        FormDispatchAsync dispatcher = closeForm(asks.controller);
         int queued = queuedRequests(dispatcher), sync = dispatcher.syncCount, async = dispatcher.asyncCount;
         long next = nextRequestIndex(asks.controller);
         JavaScriptObject promise = asks.controller.runTableReport(asks.form.group.grid);
@@ -777,7 +776,7 @@ public class GFormControllerTest extends GWTTestCase {
         assertEquals("", consoleErrorsOf(() -> controller.batch(ask)));
         assertTrue(asks.actions.isEmpty());
         assertFalse(controller.isManualUpdate(group));
-        ((FormDispatchAsync) dispatcher(controller)).close();
+        closeForm(controller);
         assertEquals("", consoleErrorsOf(ask));
         assertTrue(asks.actions.isEmpty());
         assertFalse(controller.isManualUpdate(group));
@@ -972,7 +971,7 @@ public class GFormControllerTest extends GWTTestCase {
     // the form's controller is -, and the batch's function is not run
     public void testAChangeAndABatchOfAClosedFormAreRejected() {
         ChangeServer changes = changes();
-        ((FormDispatchAsync) dispatcher(changes.controller)).close();
+        closeForm(changes.controller);
         boolean[] ran = {false};
         JavaScriptObject batch = changes.controller.batch(() -> ran[0] = true);
         delayTestFinish(5000);
@@ -1162,7 +1161,7 @@ public class GFormControllerTest extends GWTTestCase {
         FilterServer filters = filters();
         GUserFiltersController model = filters.form.model(filters.controller);
         model.changeFilter(filters.form.drawn, filters.form.condition(null)); // sent at once
-        ((FormDispatchAsync) dispatcher(filters.controller)).close();
+        closeForm(filters.controller);
         JavaScriptObject promise = (JavaScriptObject) call(filters.controller.controller, "resetFilters", "items");
         assertTrue(filters.form.filters(filters.controller, filters.form.price));
         assertEquals(1, filters.actions.size());
@@ -1271,7 +1270,7 @@ public class GFormControllerTest extends GWTTestCase {
         JavaScriptObject batch = controller.batch(() -> made[0] = (JavaScriptObject) call(controller.controller, "expandTree", "t"));
         assertSame(batch, made[0]);
         assertTrue(groups.actions.isEmpty());
-        ((FormDispatchAsync) dispatcher(controller)).close();
+        closeForm(controller);
         JavaScriptObject closed = (JavaScriptObject) call(controller.controller, "expandCurrent", "t");
         delayTestFinish(5000);
         then(none, answer -> then(batch, batchAnswer -> then(closed, closedAnswer -> fail("resolved"), error -> {
@@ -1412,7 +1411,7 @@ public class GFormControllerTest extends GWTTestCase {
         GFormController controller = groups.controller;
         GGroupObject group = controller.getForm().groupObjects.get(0);
         GGroupObjectValue before = controller.getGroupController(group).getSelectedKey();
-        ((FormDispatchAsync) dispatcher(controller)).close();
+        closeForm(controller);
         JavaScriptObject chosen = controller.changeCurrentObject(group, new GGroupObjectValue(group.ID, 1));
         assertEquals(before, controller.getGroupController(group).getSelectedKey());
         assertTrue(groups.actions.isEmpty());
@@ -1545,6 +1544,16 @@ public class GFormControllerTest extends GWTTestCase {
     }
     // the form's dispatcher, which counts its requests, what a React container's view was last given, and the
     // `loading` of an entry in it, null where there is none - read where the client keeps them
+    // a form closed as the server closes it: hidden (hideForm), then its dispatcher closed (destroyForm)
+    public static FormDispatchAsync closeForm(GFormController controller) {
+        hide(controller);
+        FormDispatchAsync dispatcher = (FormDispatchAsync) dispatcher(controller);
+        dispatcher.close();
+        return dispatcher;
+    }
+    private static native void hide(GFormController controller) /*-{
+        controller.@lsfusion.gwt.client.form.controller.GFormController::formHidden = true;
+    }-*/;
     public static native RemoteDispatchAsync dispatcher(GFormController controller) /*-{
         return controller.@lsfusion.gwt.client.form.controller.GFormController::dispatcher;
     }-*/;

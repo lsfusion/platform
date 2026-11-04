@@ -69,11 +69,21 @@ public final class FormDockable extends WidgetForm {
     }
 
     public void showDockable(Integer index) {
+        removed = false;
         formsController.addDockable(this, index);
+    }
+
+    // taken out of its window: closed, or a close the client foresees (FormsController.asyncCloseForm), put back if
+    // the server refuses it
+    private boolean removed;
+    @Override
+    public boolean isRemoved() {
+        return removed;
     }
 
     @Override
     public void hide(EndReason editFormCloseReason) {
+        removed = true;
         formsController.removeDockable(this);
     }
 

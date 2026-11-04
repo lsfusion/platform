@@ -105,8 +105,15 @@ public abstract class EditingForm extends FormContainer {
     }
 
     private boolean finishedEditing;
+    // the editor ending - committed, cancelled -, the form taken out of its cell, its close asked
+    @Override
+    public boolean isRemoved() {
+        return finishedEditing;
+    }
     protected void finishEditing(EndReason editFormCloseReason) {
         assert !finishedEditing;
+        // first: the end of the editing below takes the form out of its cell, what draws it in React unmounted at once
+        finishedEditing = true;
 
         if(!async)
             form.checkCommitEditing(); // we need to check commit editing, otherwise form will be in editing mode, and for example ClosePressed won't be flushed
@@ -115,8 +122,6 @@ public abstract class EditingForm extends FormContainer {
             contextForm.commitEditing(GUserInputResult.singleValue(null), (CommitReason) editFormCloseReason);
         else
             contextForm.cancelEditing((CancelReason) editFormCloseReason);
-
-        finishedEditing = true;
     }
 
     @Override

@@ -98,17 +98,24 @@ public class UiCustomViewIT extends UiTest {
     }
 
     // a call made through the controller of a form that is closed throws nothing: the promise it returns is rejected -
-    // Form is closed - and does not hang. The form is closed for its controller once the client has let go of it,
-    // which follows its leaving the page, so the call is made until it is refused
+    // Form is closed - and does not hang. The form is closed for its controller as it leaves the page: a call made the
+    // moment its element goes is refused too, since it would run on a form the user no longer has
     @Test
     public void aCallOfAClosedFormIsRejected() throws Exception {
         Locator form = open(FOLDER, "UiCustomView.uiCustomViewCalls");
         call(form, "eval");
         assertThat(form.locator(".ui-custom-view-results li")).hasText(new String[] {"eval: number 42"});
+        page.evaluate("() => { const form = document.querySelector(\"[lsfusion-form='UiCustomView.uiCustomViewCalls']\"),"
+                + " controller = window.uiCustomViewCalls;"
+                + " const observer = new MutationObserver(() => { if (!form.isConnected) { observer.disconnect();"
+                + " controller.form.eval('run() { RETURN 1; }').then(() => { window.uiCustomViewGoneCall = 'resolved'; },"
+                + " error => { window.uiCustomViewGoneCall = error.message; }); } });"
+                + " observer.observe(document.body, {childList: true, subtree: true}); }");
         close(form);
-        assertEquals("Form is closed", page.waitForFunction("() => window.uiCustomViewCalls.form.eval('run() { RETURN 1; }')"
-                + ".then(() => false, error => error.message)", null,
+        assertEquals("Form is closed", page.waitForFunction("() => window.uiCustomViewGoneCall", null,
                 new Page.WaitForFunctionOptions().setTimeout(10_000)).jsonValue());
+        assertEquals("Form is closed", page.evaluate("() => window.uiCustomViewCalls.form.eval('run() { RETURN 1; }')"
+                + ".then(() => 'resolved', error => error.message)"));
     }
 
     // the JS function an INTERNAL CLIENT action runs is given the action's parameters and the form's controller: what

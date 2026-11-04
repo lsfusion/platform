@@ -34,7 +34,6 @@ import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.controller.GFormControllerTest;
 import lsfusion.gwt.client.form.controller.GController;
-import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.event.GInputBindingEvent;
@@ -4451,7 +4450,7 @@ public class GReactFormDataTest extends GWTTestCase {
         GFormChanges shown = closedPage(f);
         shown.objects.put(f.cat, f.c1);
         controller.applyRemoteChanges(shown, -1);
-        ((FormDispatchAsync) GFormControllerTest.dispatcher(controller)).close();
+        GFormControllerTest.closeForm(controller);
         ArrayList<String> errors = new ArrayList<>();
         delayTestFinish(5000);
         JavaScriptObject rejected = rejectedPromises(() -> {
