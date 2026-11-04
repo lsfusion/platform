@@ -392,7 +392,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         // reached - on the form's controller, controller.form
         @Override
         protected String getRefusal(String surface) {
-            return dispatcher.isBatching() ? getBatchRefusal("form." + surface) : super.getRefusal(surface);
+            return getBatchOrClosedRefusal("form." + surface);
         }
         @Override
         protected GwtActionDispatcher getControllerDispatcher() {
@@ -575,7 +575,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // waits: the dispatcher holds the counted requests the form makes meanwhile and sends them in ONE request
     // (ExecuteBatch) when it ends, under the index each was told at once (FormDispatchAsync.executeQueue). fn calls
     // members only (the docs' contract), whose edits are requests a batch carries; what a view asks the server is
-    // refused (getRefusal, refusesLookup). The projection is published once, when the batch ends
+    // refused (getBatchOrClosedRefusal, refusesLookup). The projection is published once, when the batch ends
 
     // a view's batch - a React view's (GReactFormData.Verbs.batch), a custom grid view's (GSimpleStateTableView.batch):
     // run, and the requests the form made while it ran sent when it ends - what was made before a throw too -, the
@@ -611,7 +611,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // (gController.getRefusal) -, not thrown: the code that makes it may run while fn does, re-entered - a custom grid
     // view's update, a CUSTOM cell renderer's, a custom cell editor, an INTERNAL CLIENT action -, and is not to be
     // broken off by it. Every lookup with callbacks comes here (getAsyncValues): a custom grid view's, a renderer's, an
-    // editor's; a member's, which answers with a Promise, is refused before it asks, as a toolbar's count is (getRefusal)
+    // editor's; a member's, which answers with a Promise, is refused before it asks, as a toolbar's count is
+    // (getBatchOrClosedRefusal)
     private boolean refusesLookup(GPropertyDraw property, AsyncCallback<GAsyncResult> callback) {
         if (!dispatcher.isBatching())
             return false;
@@ -623,10 +624,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     private static String getBatchRefusal(String surface) {
         return controllerPrefix(surface) + "a batch is running, which carries changes only: make this call before the batch or after it";
     }
-    // ... and a member's lookup or a call of a view's toolbar that asks the server,
-    // as a server call on the form's controller is - named as the view's member is
-    private String getRefusal(String surface) {
-        return dispatcher.isBatching() ? getBatchRefusal(surface) : gController.getRefusal(surface);
+    // ... and a member's lookup or a call of a view's toolbar that asks the server, as a server call on the form's
+    // controller is - named as the view's member is -; on a closed form refused as every call is
+    private String getBatchOrClosedRefusal(String surface) {
+        return dispatcher.isBatching() ? getBatchRefusal(surface) : gController.getClosedRefusal();
     }
     // ... and whether a batch runs (GPlatformFiltersController.isBatching)
     public boolean isBatching() {
@@ -800,7 +801,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // its `more`
     @Override
     public JavaScriptObject getPropertyValues(String surface, GPropertyDraw property, GGroupObjectValue key, String value, String actionSID, int increaseValuesNeededCount) {
-        String refusal = getRefusal(surface);
+        String refusal = getBatchOrClosedRefusal(surface);
         if (refusal != null)
             return GController.rejectedControllerPromise(refusal);
         int editIndex = editAsyncIndex++;
@@ -2566,7 +2567,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // answer given them, or the failure told, which is shown as any other
     @Override
     public JavaScriptObject countRecords(String surface, GGroupObject groupObject) {
-        String refusal = getRefusal(surface);
+        String refusal = getBatchOrClosedRefusal(surface);
         if (refusal != null)
             return GController.rejectedControllerPromise(refusal);
         return answerPromise((answer, failed) -> countRecords(groupObject, answer, failed));
@@ -2579,7 +2580,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
 
     @Override
     public JavaScriptObject calculateSum(String surface, GGroupObject groupObject, GPropertyDraw property, GGroupObjectValue columnKey) {
-        String refusal = getRefusal(surface);
+        String refusal = getBatchOrClosedRefusal(surface);
         if (refusal != null)
             return GController.rejectedControllerPromise(refusal);
         return answerPromise((answer, failed) -> calculateSum(groupObject, property, columnKey, answer, failed));
@@ -2623,7 +2624,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // changes the server holds back brought now
     @Override
     public JavaScriptObject changeUpdateMode(String surface, GGroupObject groupObject, GUpdateMode updateMode) {
-        String refusal = getRefusal(surface);
+        String refusal = getBatchOrClosedRefusal(surface);
         if (refusal != null)
             return GController.rejectedControllerPromise(refusal);
         return requestPromise(() -> changeUpdateMode(groupObject, updateMode));
@@ -2631,7 +2632,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
 
     @Override
     public JavaScriptObject changeListView(String surface, GListViewController views, GListViewType view) {
-        String refusal = getRefusal(surface);
+        String refusal = getBatchOrClosedRefusal(surface);
         if (refusal != null)
             return GController.rejectedControllerPromise(refusal);
         return requestPromise(() -> view == views.getListView() ? -1 : views.changeListView(view));
@@ -2677,16 +2678,21 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // the server's report of a table's rows: a grid's group's, or a tree's, of all its groups
     @Override
     public JavaScriptObject runTableReport(String surface, GGridProperty table) {
-        String refusal = getRefusal(surface);
+        String refusal = getBatchOrClosedRefusal(surface);
         if (refusal != null)
             return GController.rejectedControllerPromise(refusal);
-        return runTableReport(table);
+        return reportPromise(table);
     }
 
+    // ... the platform's export, which drops the Promise: a closed form's refusal handled
     public JavaScriptObject runTableReport(GGridProperty table) {
         String refusal = gController.getClosedRefusal();
         if (refusal != null)
             return closedPromise(refusal);
+        return reportPromise(table);
+    }
+
+    private JavaScriptObject reportPromise(GGridProperty table) {
         PendingPromise promise = newRequestPromise();
         FormRequestCountingAction<GroupReportResult> report = table.match(
                 grid -> new GroupReport(grid.groupObject.ID, getUserPreferences(), MainFrame.jasperReportsIgnorePageMargins),

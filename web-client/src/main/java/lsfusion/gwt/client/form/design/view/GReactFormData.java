@@ -122,7 +122,7 @@ public class GReactFormData {
     }
 
     // WHAT A MEMBER DOES: the form's own edit, the one a user makes, or a request of the form's own that changes
-    // nothing - a lookup, a count, an export -, which a batch does not carry (GFormController.getRefusal); and what the parts ask of
+    // nothing - a lookup, a count, an export -, which a batch does not carry (GFormController.getBatchOrClosedRefusal); and what the parts ask of
     // the form besides: its sortings and filters as it has them, the widget of the view that draws one, a part published
     // later. The members are made here, beside the entries they mirror, and each holds the state it stands for (a
     // ReactPropertyEntry, a Part): a call through one reads what it names - the row, the value - from that state, and
