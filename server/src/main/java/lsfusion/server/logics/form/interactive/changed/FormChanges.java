@@ -464,7 +464,7 @@ public class FormChanges {
         Supplier<Type> readType = () -> reader.getReaderProperty().getType();
         Type readerType;
         if ((reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty(context))
-                || (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.FOOTER.getPropertyReadType())) { // a footer goes as a value of its type, which the platform's grid draws with the column's renderer
+                || (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.FOOTER.getPropertyReadType())) { // a footer goes as a value of its type, which the platform's grid draws by a renderer of that type
             PropertyDrawEntity<?, ?> propertyDraw = reader.getPropertyDraw().entity;
             readerType = readType.get();
             if (readerType instanceof RenderedClass || (reader instanceof PropertyDrawInstance && propertyDraw.isPredefinedImage(context) && propertyDraw.needImage(context))) // a property named image names an image by its value, not by its footer

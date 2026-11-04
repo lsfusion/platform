@@ -33,7 +33,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     // and thus height for example always work like min-height, so the size depends on
     // and it can not be changed and it's behaviour is often very odd
     private static boolean needWrap(Element element, GPropertyDraw property, RendererType rendererType) {
-        return GwtClientUtils.isTDorTH(element) && !property.getCellRenderer(rendererType).canBeRenderedInTD();
+        return GwtClientUtils.isTDorTH(element) && !property.getCellRenderer(rendererType).canBeRenderedInTD(rendererType);
     }
 
     // pretty similar to GGridPropertyTableHeader.renderTD

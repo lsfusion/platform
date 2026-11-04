@@ -13,11 +13,11 @@ public class LogicalCellRenderer extends InputBasedCellRenderer {
     public LogicalCellRenderer(GPropertyDraw property, boolean threeState) {
         super(property);
         this.threeState = threeState;
-        assert isTagInput();
     }
 
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
+        assert isTagInput(updateContext.getRendererType());
         InputElement input = getInputElement(element);
 
         boolean newValue;

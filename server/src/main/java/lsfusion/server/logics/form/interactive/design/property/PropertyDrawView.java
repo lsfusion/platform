@@ -633,6 +633,19 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         if(differentValue)
             TypeSerializer.serializeType(outStream, getAssertValueType(pool.context));
 
+        // a footer of another kind of type than the value's - of another class, or of one it is not compatible with (a
+        // string, a file under images, a three-state logical under a two-state one) -, which the value's renderer cannot
+        // draw, is drawn as a value of its own type, its tag included; one of the value's kind (a sum) by the value's renderer
+        PropertyObjectEntity<?> footer = entity.getPropertyExtra(PropertyDrawExtraType.FOOTER);
+        Type footerType = footer != null ? footer.getType() : null;
+        Type valueType = isProperty(pool.context) ? getAssertValueType(pool.context) : null;
+        boolean differentFooter = footerType != null && (valueType == null || footerType.getClass() != valueType.getClass() || footerType.getCompatible(valueType) == null);
+        outStream.writeBoolean(differentFooter);
+        if(differentFooter) {
+            TypeSerializer.serializeType(outStream, footerType);
+            pool.writeString(outStream, getTypeTag(footerType, null, pool.context));
+        }
+
         pool.writeString(outStream, getTag(pool.context));
         pool.writeString(outStream, getInputType(pool.context));
         pool.writeString(outStream, getValueElementClass(pool.context));
@@ -1047,11 +1060,9 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
 
         Type changeType = getChangeType(context, false);
         if (isProperty(context)) {
-            Type type = getAssertCellType(context);
-            if(type instanceof LinkClass)
-                return "a";
-            if((type != null && type.useInputTag(!entity.isList(context), context.useBootstrap, changeType)))
-                return "input";
+            String typeTag = getTypeTag(getAssertCellType(context), changeType, context);
+            if(typeTag != null)
+                return typeTag;
 
             if(isLink(context) && !hasFlow(context, ChangeFlowType.INPUT))
                 return "a";
@@ -1060,6 +1071,14 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
                 return "button";
         }
 
+        return null;
+    }
+    // the tag a value of the type is drawn as - the cell's, and a footer's of another kind of type than the value's
+    private String getTypeTag(Type type, Type changeType, FormInstanceContext context) {
+        if(type instanceof LinkClass)
+            return "a";
+        if(type != null && type.useInputTag(!entity.isList(context), context.useBootstrap, changeType))
+            return "input";
         return null;
     }
     public void setTag(String value, Version version) {

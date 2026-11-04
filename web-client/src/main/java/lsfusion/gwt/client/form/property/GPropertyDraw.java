@@ -107,6 +107,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public GType getRenderType(RendererType type) {
         if(type == RendererType.CELL)
             return getCellType();
+        else if(type == RendererType.FOOTER)
+            return footerType;
         else
             return getValueType();
     }
@@ -117,10 +119,13 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public GType cellType;
     public GType valueType;
     public boolean differentValue;
+    public GType footerType;
+    public boolean differentFooter;
 
     public GClass returnClass;
 
     public String tag;
+    public String footerTag;
     public GInputType inputType;
     public String valueElementClass;
     public boolean toolbar;
@@ -504,6 +509,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
 
     private transient CellRenderer cellRenderer;
     private transient CellRenderer valueRenderer;
+    private transient CellRenderer footerRenderer;
 
     public boolean notNull;
 
@@ -664,7 +670,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     }
 
     public CellRenderer getCellRenderer(RendererType rendererType) {
-        if(rendererType == RendererType.CELL || !differentValue) {
+        if(rendererType == RendererType.FOOTER && differentFooter) {
+            if (footerRenderer == null)
+                footerRenderer = createCellRenderer(rendererType, true);
+            return footerRenderer;
+        } else if(rendererType == RendererType.CELL || !differentValue) {
             if (cellRenderer == null) {
                 cellRenderer = createCellRenderer(rendererType, false);
             }
@@ -853,7 +863,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
         return notNull && isPropertyReadonly == null;
     }
 
-    public boolean isTagInput() {
+    public String getTag(RendererType rendererType) {
+        return rendererType == RendererType.FOOTER ? footerTag : tag;
+    }
+    public boolean isTagInput(RendererType rendererType) {
+        String tag = getTag(rendererType);
         return tag != null && tag.equals("input");
     }
 
@@ -872,7 +886,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     }
 
     public GFlexAlignment getPanelValueAlignment() {
-        return getRenderType(RendererType.PANEL) instanceof GLogicalType && isTagInput() ? GFlexAlignment.CENTER : GFlexAlignment.STRETCH; // we don't want to stretch input, since it's usually has fixed size
+        return getRenderType(RendererType.PANEL) instanceof GLogicalType && isTagInput(RendererType.PANEL) ? GFlexAlignment.CENTER : GFlexAlignment.STRETCH; // we don't want to stretch input, since it's usually has fixed size
     }
 
     public GFlexAlignment getPanelCommentAlignment() {

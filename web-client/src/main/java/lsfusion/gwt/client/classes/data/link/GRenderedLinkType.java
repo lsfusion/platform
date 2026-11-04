@@ -8,6 +8,6 @@ public abstract class GRenderedLinkType extends GLinkType {
 
     @Override
     public CellRenderer createCellRenderer(GPropertyDraw property) {
-        return new ImageLinkCellRenderer(property);
+        return new ImageLinkCellRenderer(property, this);
     }
 }

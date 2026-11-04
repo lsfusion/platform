@@ -33,4 +33,20 @@ public class UiGridIT extends UiTest {
                 + ".then(response => response.ok ? response.text() : img.src + ' -> HTTP ' + response.status)"));
         close(form);
     }
+
+    // a footer of another type than its column's is drawn as a value of its own type, as its element too: under a column
+    // of images a text file as a file's icon, a string as a text, a link to an image as the image, a logical as a checked
+    // box, and under a column of logicals a string as a text, not in the column's input. The grid drew such a footer with
+    // the column's renderer, which threw on the image column's (the footers stayed empty) and drew the string as a box
+    @Test
+    public void aFooterOfAnotherTypeIsDrawnAsSuch() {
+        Locator form = open("UiGrid.uiGrid", "UiGrid.uiGridFooters");
+        assertThat(form.locator("tfoot i.bi-file-earmark")).hasCount(1);
+        assertThat(form.locator("tfoot")).containsText("a string footer");
+        assertThat(form.locator("tfoot img[src='a-link-footer.png']")).hasCount(1);
+        assertThat(form.locator("tfoot input[type=checkbox]")).isChecked();
+        assertThat(form.locator("tfoot input")).hasCount(1);
+        assertThat(form.locator("tfoot")).containsText("a footer of checks");
+        close(form);
+    }
 }

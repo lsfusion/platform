@@ -16,7 +16,7 @@ public class ColorCellRenderer extends TextBasedCellRenderer {
 
     @Override
     protected String getBackground(UpdateContext updateContext) {
-        if(!isTagInput()) {
+        if(!isTagInput(updateContext.getRendererType())) {
             String colorValue = getColorValue(updateContext.getValue());
             if (colorValue != null)
                 return colorValue;

@@ -14,7 +14,8 @@ uiRfImage 'Image' () = IMAGEFILE(FILE('an image'));
 uiRfText 'Text' () = TEXTFILE('a text');
 
 // ... and a column of files, whose footer, given on the form, the server sends to a React view as the file itself too,
-// and a column of images, whose footer it sends as an image made of the file, as an image's value
+// and a column of images, whose footer it sends as an image made of the file, as an image's value (a string footer of
+// the column of files, on the form too, a React view is given as the string, a value of its own type)
 CLASS uiRfItem { one }
 uiRfFile 'File' = DATA TEXTFILE (uiRfItem);
 uiRfPicture 'Picture' = DATA IMAGEFILE (uiRfItem);
@@ -32,6 +33,7 @@ FORM uiRfForm 'React files'
     PROPERTIES() image = uiRfNamedImage
     OBJECTS r = uiRfItem
     PROPERTIES(r) READONLY uiRfFile FOOTER TEXTFILE('a footer'), uiRfPicture FOOTER IMAGEFILE(FILE('an image footer'))
+    PROPERTIES(r) READONLY uiRfFileTotal = uiRfFile FOOTER 'a string footer'
     CUSTOMS uiRfPdfResult, uiRfImageResult
 ;
 

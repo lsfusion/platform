@@ -19,7 +19,7 @@ public abstract class FormatCellRenderer<T> extends TextBasedCellRenderer {
     @Override
     public String format(PValue value, RendererType rendererType, String pattern) {
         GFormatType formatType = getFormatType(rendererType);
-        return rendererType == RendererType.CELL && isTagInput() && isNative(getInputType(rendererType)) ?
+        return rendererType == RendererType.CELL && isTagInput(rendererType) && isNative(getInputType(rendererType)) ?
                 formatType.formatISOString(value) : formatType.formatString(value, pattern);
     }
 

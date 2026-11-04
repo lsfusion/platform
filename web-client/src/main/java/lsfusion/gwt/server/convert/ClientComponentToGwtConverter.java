@@ -318,9 +318,12 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
         propertyDraw.cellType = typeConverter.convertOrCast(clientPropertyDraw.baseType);
         propertyDraw.differentValue = clientPropertyDraw.valueType != null;
         propertyDraw.valueType = propertyDraw.differentValue ? typeConverter.convertOrCast(clientPropertyDraw.valueType) : propertyDraw.cellType;
+        propertyDraw.differentFooter = clientPropertyDraw.footerType != null;
+        propertyDraw.footerType = propertyDraw.differentFooter ? typeConverter.convertOrCast(clientPropertyDraw.footerType) : propertyDraw.valueType;
         propertyDraw.returnClass = typeConverter.convertOrCast(clientPropertyDraw.returnClass);
 
         propertyDraw.tag = clientPropertyDraw.tag;
+        propertyDraw.footerTag = propertyDraw.differentFooter ? clientPropertyDraw.footerTag : propertyDraw.tag;
         propertyDraw.inputType = clientPropertyDraw.inputType != null ? new GInputType(clientPropertyDraw.inputType) : null;
         propertyDraw.valueElementClass = clientPropertyDraw.valueElementClass;
         propertyDraw.captionElementClass = clientPropertyDraw.captionElementClass;

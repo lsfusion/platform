@@ -221,7 +221,7 @@ An option the platform computed nothing for is absent — a property with no `BA
 | `loading` | Whether a change of the cell still waits for the server's answer, whoever sent it — this view, through the property's member (`change` or `exec`, in a batch or outside one), or another part of the form. An action's cell says it while the action runs, and the entry of the form's Refresh button while the [form waits for the server](#form-loading). It is on the cell of a table property, and on the entry itself of a panel or empty-group one | `true`; absent otherwise |
 | `caption` | The property's caption | string |
 | `image` | The property's image | string with the image HTML |
-| `footer` | The column's footer value | converted like a cell value |
+| `footer` | The column's footer value | converted like a cell value of its own type |
 | `readOnly` | The cell is read-only, as delivered by `READONLYIF`. Absent otherwise — a statically `READONLY` property projects nothing here, since the view is not editing it anyway | `true` / absent |
 | `disabled` | The cell is disabled, as delivered by `DISABLEIF`. Absent otherwise. One cell never carries both `readOnly` and `disabled` | `true` / absent |
 | `background`, `foreground` | The background and text colors of the cell | string with a color |

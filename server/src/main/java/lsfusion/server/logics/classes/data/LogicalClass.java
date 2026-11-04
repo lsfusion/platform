@@ -120,7 +120,7 @@ public class LogicalClass extends DataClass<Boolean> {
 
     @Override
     public boolean useInputTag(boolean isPanel, boolean useBootstrap, Type changeType) {
-        return true; // see LogicalCellRenderer constructor assertion (isTagInput)
+        return true; // see LogicalCellRenderer's assertion (isTagInput)
     }
 
     @Override

@@ -28,6 +28,16 @@ public class UiReactFileIT extends UiTest {
         close(form);
     }
 
+    // a footer of another type than its column's is given as a value of its own type: a string footer under a column of
+    // files was converted as a file, and the view was given a link to a file of that name
+    @Test
+    public void aFooterIsGivenAsAValueOfItsOwnType() {
+        Locator form = open("UiReactFile.uiReactFile", "UiReactFile.uiRfForm");
+        page.waitForFunction("() => window.uiRfData && uiRfData.r?.uiRfFileTotal?.footer");
+        assertEquals("a string footer", page.evaluate("uiRfData.r.uiRfFileTotal.footer"));
+        close(form);
+    }
+
     // what the link an expression gives - awaited, 10 s at most - points at: its text, or the status it is refused with
     private String fetch(String link) {
         return (String) page.evaluate("async () => {"

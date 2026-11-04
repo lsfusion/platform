@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
 public enum RendererType {
-    CELL, VALUE;
+    CELL, VALUE, FOOTER;
 
     public static final RendererType GRID = CELL;
     public static final RendererType PANEL = CELL;
@@ -9,6 +9,5 @@ public enum RendererType {
 
     public static final RendererType PIVOT = VALUE;
     public static final RendererType FILTER = VALUE;
-    public static final RendererType FOOTER = VALUE;
 
 }

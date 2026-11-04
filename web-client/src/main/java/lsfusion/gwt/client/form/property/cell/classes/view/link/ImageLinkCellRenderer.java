@@ -8,12 +8,15 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.view.ImageCellRenderer;
 
 public class ImageLinkCellRenderer extends ImageCellRenderer {
-    public ImageLinkCellRenderer(GPropertyDraw property) {
+    private final GLinkType type; // not the property's: a footer of another type is drawn by a renderer of its own
+
+    public ImageLinkCellRenderer(GPropertyDraw property, GLinkType type) {
         super(property);
+        this.type = type;
     }
 
     @Override
     protected BaseImage getBaseImage(PValue value) {
-        return new AppLinkImage(PValue.getStringValue(value), ((GLinkType) property.getValueType()).getExtension());
+        return new AppLinkImage(PValue.getStringValue(value), type.getExtension());
     }
 }

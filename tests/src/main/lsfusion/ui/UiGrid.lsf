@@ -22,10 +22,23 @@ FORM uiGridPictures 'Pictures'
     PROPERTIES(i) READONLY uiGridPicture FOOTER IMAGEFILE(FILE('a footer'))
 ;
 
+// a column of images whose footers are of other types - a text file, a string, a link to an image, a logical -, and a
+// column of logicals with a string footer, which the grid draws as values of their own types
+uiGridPhoto 'Photo' = DATA IMAGEFILE (UiGridItem);
+uiGridChecked 'Checked' = DATA BOOLEAN (UiGridItem);
+
+FORM uiGridFooters 'Footers'
+    OBJECTS i = UiGridItem
+    PROPERTIES(i) READONLY uiGridPhoto FOOTER TEXTFILE('a text footer'), uiGridPhotoTotal = uiGridPhoto FOOTER 'a string footer',
+                           uiGridPhotoLink = uiGridPhoto FOOTER IMAGELINK('a-link-footer.png'), uiGridPhotoChecked = uiGridPhoto FOOTER TRUE,
+                           uiGridChecked FOOTER 'a footer of checks'
+;
+
 NAVIGATOR {
     NEW FOLDER uiGrid 'UI grid' WINDOW toolbar {
         NEW uiGridItems;
         NEW uiGridPictures;
+        NEW uiGridFooters;
     }
 }
 

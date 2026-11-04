@@ -101,9 +101,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public ClientType baseType; // cellType
     public ClientType valueType;
+    public ClientType footerType;
     public ClientClass returnClass;
 
     public String tag;
+    public String footerTag;
     public String inputType;
     public String valueElementClass;
     public String captionElementClass;
@@ -627,6 +629,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         baseType = ClientTypeSerializer.deserializeClientType(inStream);
         if(inStream.readBoolean())
             valueType = ClientTypeSerializer.deserializeClientType(inStream);
+        if(inStream.readBoolean()) {
+            footerType = ClientTypeSerializer.deserializeClientType(inStream);
+            footerTag = pool.readString(inStream);
+        }
 
         tag = pool.readString(inStream);
         inputType = pool.readString(inStream);

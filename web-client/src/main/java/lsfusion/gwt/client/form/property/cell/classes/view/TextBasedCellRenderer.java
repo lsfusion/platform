@@ -52,8 +52,8 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
     }
 
     @Override
-    public boolean canBeRenderedInTD() {
-        if(super.canBeRenderedInTD())
+    public boolean canBeRenderedInTD(RendererType rendererType) {
+        if(super.canBeRenderedInTD(rendererType))
             return true;
 
         // td always respects the inner text height, so if it is multi line and not autosized, we have wrap the content into a div
@@ -62,7 +62,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
 
         // input we have to render in td, since input is a void element, and it can not have children (and they are needed for the toolbar)
         // so the hack is to render it
-        return getTag() == null;
+        return getTag(rendererType) == null;
     }
 
     @Override
@@ -135,7 +135,7 @@ public abstract class TextBasedCellRenderer extends InputBasedCellRenderer {
         element.setTitle(property.echoSymbols || property.valueTooltip != null ? "" : innerText);
         Element inputElement = getInputElement(element);
         if(inputElement != null) {
-            assert isTagInput();
+            assert isTagInput(rendererType);
             if(property.isEditableNotNull(updateContext)) {
                 if (isNull) {
                     GwtClientUtils.addClassName(inputElement, "is-invalid");

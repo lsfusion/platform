@@ -122,7 +122,7 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
         GType renderType = property.getRenderType(rendererType);
 
         GInputType inputType = property.inputType;
-        if(inputType == null || (rendererType != RendererType.CELL && property.differentValue)) {
+        if(inputType == null || (rendererType != RendererType.CELL && property.differentValue) || (rendererType == RendererType.FOOTER && property.differentFooter)) {
             inputType = renderType.getValueInputType();
         }
         return new GFullInputType(inputType, renderType);
@@ -161,11 +161,11 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
 
 
     @Override
-    public boolean canBeRenderedInTD() {
-        if(isTagInput()) // input / textareas has fixed sizes, so can be used with multiline fixed sizes
+    public boolean canBeRenderedInTD(RendererType rendererType) {
+        if(isTagInput(rendererType)) // input / textareas has fixed sizes, so can be used with multiline fixed sizes
             return true;
 
-        return super.canBeRenderedInTD();
+        return super.canBeRenderedInTD(rendererType);
     }
 
     // key event when the editing is not started
@@ -175,7 +175,7 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
 
     @Override
     public Element createRenderElement(RendererType rendererType) {
-        if(isTagInput()) {
+        if(isTagInput(rendererType)) {
             if(needToRenderToolbarContent()) { // for an input with a toolbar we have to wrap it in a div to draw a toolbar
                 DivElement toolbarContainer = Document.get().createDivElement();
                 GwtClientUtils.addClassName(toolbarContainer, "prop-input-w-toolbar");
@@ -194,9 +194,9 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
 
         boolean isTDOrTH = GwtClientUtils.isTDorTH(element); // because canBeRenderedInTD can be true
         boolean isToolbarContainer = isToolbarContainer(element);
-        boolean isInput = isTagInput();
-
         RendererType rendererType = renderContext.getRendererType();
+        boolean isInput = isTagInput(rendererType);
+
         GFullInputType fullInputType = isInput ? getInputType(rendererType) : null;
         GInputType inputType = isInput ? fullInputType.inputType : null;
 
@@ -227,7 +227,7 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
     }
 
     protected GFullInputType getInputType(RendererType rendererType) {
-        assert isTagInput();
+        assert isTagInput(rendererType);
         return getInputType(property, rendererType);
     }
 
@@ -236,7 +236,7 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
 //        boolean renderedAlignment = false;
 
         boolean isTDOrTH = GwtClientUtils.isTDorTH(element); // because canBeRenderedInTD can be true
-        boolean isInput = isTagInput();
+        boolean isInput = isTagInput(renderContext.getRendererType());
 
         if (isInput && (isTDOrTH || isToolbarContainer(element))) { // needToRenderToolbarContent()
             InputBasedCellEditor.clearInputElement(element);

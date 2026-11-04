@@ -32,7 +32,7 @@ public class CustomCellRenderer extends CellRenderer {
     }
 
     @Override
-    public boolean canBeRenderedInTD() {
+    public boolean canBeRenderedInTD(RendererType rendererType) {
         return property.customCanBeRenderedInTD;
     }
 

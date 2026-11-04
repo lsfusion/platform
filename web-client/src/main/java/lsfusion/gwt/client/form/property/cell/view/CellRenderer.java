@@ -95,20 +95,20 @@ public abstract class CellRenderer {
         return element.hasClassName("is-editing");
     }
 
-    protected boolean isTagInput() {
-        return property.isTagInput();
+    protected boolean isTagInput(RendererType rendererType) {
+        return property.isTagInput(rendererType);
     }
 
-    protected String getTag() {
-        return property.tag;
+    protected String getTag(RendererType rendererType) {
+        return property.getTag(rendererType);
     }
 
     public Element createRenderElement(RendererType rendererType) {
-        assert !isTagInput();
+        assert !isTagInput(rendererType);
 
         Element renderElement;
 
-        String tag = getTag();
+        String tag = getTag(rendererType);
         if(tag != null)
             renderElement = GwtClientUtils.createFocusElementType(tag);
         else
@@ -116,7 +116,7 @@ public abstract class CellRenderer {
 
         return renderElement;
     }
-    public boolean canBeRenderedInTD() {
+    public boolean canBeRenderedInTD(RendererType rendererType) {
         return false;
     }
 
