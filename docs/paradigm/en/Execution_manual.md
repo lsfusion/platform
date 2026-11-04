@@ -5,7 +5,7 @@ title: 'For production'
 
 
 :::info
-To install the application server, web server and client, Java version 8 or later must first be installed on the computer.
+To install the application server, web server and client, Java version 8u272 or later must first be installed on the computer.
 :::
 
 
