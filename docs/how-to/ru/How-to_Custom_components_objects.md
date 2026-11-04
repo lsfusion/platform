@@ -220,8 +220,8 @@ onWebClientInit() + {
 | `getPropertyCustomOptions(property, object)` | значение опции `OPTIONS` свойства (разобранный JSON) |
 | `getPropertyValues(property, value[, mode], ok[, fail][, count])` | список подсказок значений свойства с сервера |
 | `diff(list, fnc[, noDiffObjects][, removeFirst])` / `clearDiff()` | вычисляет изменения списка (см. выше) |
-| `setBooleanViewFilter(property, pageSize)` | фильтрует представление условием «значение свойства истинно» |
-| `setDateIntervalViewFilter(startProperty, endProperty, pageSize, start, end)` | фильтрует представление по интервалу дат |
+| `setBooleanViewFilter(property, pageSize)` | фильтрует представление условием «значение свойства истинно»; `Promise` его запроса |
+| `setDateIntervalViewFilter(startProperty, endProperty, pageSize, start, end)` | фильтрует представление по интервалу дат; `Promise` его запроса |
 | `getColorThemeName()` | имя текущей цветовой темы: `'LIGHT'` или `'DARK'` |
 | `form` | [контроллер формы](How-to_Custom_view_controller.md) |
 

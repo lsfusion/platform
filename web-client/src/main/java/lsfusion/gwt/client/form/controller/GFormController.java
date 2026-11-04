@@ -2479,8 +2479,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         return requestIndex;
     }
 
-    public void setViewFilters(ArrayList<GPropertyFilter> conditions, int pageSize) {
-        asyncResponseDispatch(new SetViewFilters(conditions.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(ArrayList::new)), pageSize));
+    // a classic view's view filters and its page size: the Promise of their request, none with no filter
+    public JavaScriptObject setViewFilters(ArrayList<GPropertyFilter> conditions, int pageSize) {
+        return requestPromise(() -> conditions.isEmpty() ? -1 : asyncResponseDispatch(new SetViewFilters(conditions.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(ArrayList::new)), pageSize)));
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
@@ -2638,7 +2639,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
 
     @Override
     public JavaScriptObject changeListView(GListViewController views, GListViewType view) {
-        return requestPromise(() -> view == views.getListView() ? -1 : views.changeListView(view));
+        return requestPromise(() -> views.changeListView(view));
     }
 
     // change group mode with force refresh

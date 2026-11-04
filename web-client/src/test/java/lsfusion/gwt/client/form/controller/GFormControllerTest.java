@@ -58,6 +58,7 @@ import lsfusion.gwt.client.controller.remote.action.form.ExpandGroupObjectRecurs
 import lsfusion.gwt.client.controller.remote.action.form.CollapseGroupObject;
 import lsfusion.gwt.client.controller.remote.action.form.CollapseGroupObjectRecursive;
 import lsfusion.gwt.client.controller.remote.action.form.ExecuteBatch;
+import lsfusion.gwt.client.controller.remote.action.form.SetViewFilters;
 import lsfusion.gwt.client.controller.remote.action.form.FormRequestCountingAction;
 import lsfusion.gwt.client.controller.remote.action.form.ExecuteEventAction;
 import lsfusion.gwt.client.controller.remote.action.form.SetUserFilters;
@@ -360,7 +361,7 @@ public class GFormControllerTest extends GWTTestCase {
         boolean takes(Action<?> action) {
             return (action instanceof GetPriorityAsyncValues || action instanceof GetAsyncValues
                     || action instanceof CountRecords || action instanceof CalculateSum || action instanceof GroupReport || action instanceof ChangeMode
-                    || action instanceof ExecuteBatch)
+                    || action instanceof ExecuteBatch || action instanceof SetViewFilters)
                     && controller.getForm().sessionID.equals(((FormAction<?>) action).formSessionID);
         }
     }
@@ -721,7 +722,9 @@ public class GFormControllerTest extends GWTTestCase {
             GListViewType shown = GListViewType.GRID;
             public List<GListViewType> getListViews() { return Arrays.asList(GListViewType.GRID, GListViewType.PIVOT); }
             public GListViewType getListView() { return shown; }
-            public long changeListView(GListViewType view) {
+            public long changeListView(GListViewType view) { // as the platform's: the view shown is no switch
+                if (view == shown)
+                    return -1;
                 shown = view;
                 return controller.changeListViewType(group, 20, view, null);
             }
@@ -765,7 +768,9 @@ public class GFormControllerTest extends GWTTestCase {
             GListViewType shown = GListViewType.GRID;
             public List<GListViewType> getListViews() { return Arrays.asList(GListViewType.GRID, GListViewType.PIVOT); }
             public GListViewType getListView() { return shown; }
-            public long changeListView(GListViewType view) {
+            public long changeListView(GListViewType view) { // as the platform's: the view shown is no switch
+                if (view == shown)
+                    return -1;
                 shown = view;
                 return controller.changeListViewType(group, 20, view, null);
             }
@@ -799,6 +804,38 @@ public class GFormControllerTest extends GWTTestCase {
                 assertEquals("Form is closed", error);
                 assertTrue(controller.isManualUpdate(group));
                 assertEquals(1, asks.actions.size());
+                finishTest();
+            });
+        });
+    }
+
+    // A classic view's view filters are the Promise of their request: pending till its answer; with no filter - a
+    // property not among the view's columns - no request, resolved at once; in a batch the batch's; on a closed form
+    // refused before they run.
+    public void testViewFiltersAreThePromiseOfTheirRequest() {
+        AskServer asks = asks();
+        GFormController controller = asks.controller;
+        ArrayList<GPropertyFilter> filters = new ArrayList<>(Collections.singletonList(asks.form.condition(asks.form.quantity, PValue.getPValue(2), GCompare.EQUALS)));
+        ArrayList<String> settled = new ArrayList<>();
+        then(controller.setViewFilters(filters, 1000), answer -> settled.add("filtered"), error -> fail(error));
+        then(controller.setViewFilters(new ArrayList<>(), 1000), answer -> settled.add("none"), error -> fail(error));
+        assertEquals(1, asks.actions.size());
+        assertTrue(asks.actions.get(0) instanceof SetViewFilters);
+        JavaScriptObject[] inBatch = new JavaScriptObject[1];
+        JavaScriptObject batch = controller.batch(() -> inBatch[0] = controller.setViewFilters(filters, 1000));
+        assertSame(batch, inBatch[0]);
+        assertEquals(2, asks.actions.size());
+        assertTrue(asks.actions.get(1) instanceof ExecuteBatch);
+        delayTestFinish(5000);
+        inTurn(() -> {
+            assertEquals(Collections.singletonList("none"), settled);
+            asks.answer(0, false);
+        }, () -> {
+            assertEquals(Arrays.asList("none", "filtered"), settled);
+            closeForm(controller);
+            then(controller.setViewFilters(filters, 1000), answer -> fail("resolved"), error -> {
+                assertEquals("Form is closed", error);
+                assertEquals(2, asks.actions.size());
                 finishTest();
             });
         });
@@ -2702,6 +2739,19 @@ public class GFormControllerTest extends GWTTestCase {
         assertTrue(forceUpdateButton(controller, group).isEnabled());
         assertEquals(next, nextRequestIndex(controller));
     }
+    // the view a group's rows are shown as, set again, is no switch - for the platform's button, which switches through
+    // the grid's switch, as for a view's member -: no request, the view kept, not drawn anew
+    public void testTheListViewShownSetAgainIsNoSwitch() {
+        GFormController controller = manualUpdateGrid();
+        GGroupObject group = controller.getForm().groupObjects.get(0);
+        GListViewController views = (GListViewController) tableController(controller, group.grid);
+        DataGrid<?> shown = platformView(controller, group.grid);
+        long next = nextRequestIndex(controller);
+        assertEquals(-1, views.changeListView(GListViewType.GRID));
+        assertEquals(next, nextRequestIndex(controller));
+        assertSame(shown, platformView(controller, group.grid));
+    }
+
     // the index the form's next request takes, read where its dispatcher keeps it
     @UnsafeNativeLong
     private static native long nextRequestIndex(GFormController controller) /*-{

@@ -220,8 +220,8 @@ The methods of the local controller passed to _render_ and _update_, internal he
 | `getPropertyCustomOptions(property, object)` | the value of the property's `OPTIONS` option (a parsed JSON) |
 | `getPropertyValues(property, value[, mode], ok[, fail][, count])` | a server suggestion list for the property's values |
 | `diff(list, fnc[, noDiffObjects][, removeFirst])` / `clearDiff()` | compute the list changes (see above) |
-| `setBooleanViewFilter(property, pageSize)` | filter the view by the condition "the property value is true" |
-| `setDateIntervalViewFilter(startProperty, endProperty, pageSize, start, end)` | filter the view by a date interval |
+| `setBooleanViewFilter(property, pageSize)` | filter the view by the condition "the property value is true"; the `Promise` of its request |
+| `setDateIntervalViewFilter(startProperty, endProperty, pageSize, start, end)` | filter the view by a date interval; the `Promise` of its request |
 | `getColorThemeName()` | the current color theme name: `'LIGHT'` or `'DARK'` |
 | `form` | the [form controller](How-to_Custom_view_controller.md) |
 

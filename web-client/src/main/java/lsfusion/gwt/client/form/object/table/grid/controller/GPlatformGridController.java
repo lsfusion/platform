@@ -117,6 +117,8 @@ public final class GPlatformGridController extends GPlatformTableController<GGri
     }
 
     public long changeListView(GListViewType type) {
+        if (type == listView) // the view shown, the platform's button's as a view's member's: no switch
+            return -1;
         setListView(type);
         // a pivot makes a call to get the columns, to init its default config, in the manual mode, the user's taken back
         // once it has them (changeGroups); another view takes the user's back itself: a pivot replaced before it took it

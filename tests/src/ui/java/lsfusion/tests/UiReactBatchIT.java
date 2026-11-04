@@ -345,6 +345,12 @@ public class UiReactBatchIT extends UiTest {
         assertEquals(1, requests.stream().filter(request -> request.contains(signature("ExecuteBatch")) && request.contains(signature("SetViewFilters"))).count());
         assertEquals(0, requests.stream().filter(request -> !request.contains(signature("ExecuteBatch")) && (request.contains(signature("SetViewFilters"))
                 || request.contains(signature("ExecuteEventAction")))).count());
+        // ... and outside a batch the Promise of its own request - none for a property not among the view's columns
+        assertEquals("resolved", classic.eval("controller.setBooleanViewFilter('flag', 1000).then(() => 'resolved')"));
+        assertEquals(2, count(requests, "SetViewFilters")); // the batch's and this one's
+        assertEquals("resolved", classic.eval("controller.setBooleanViewFilter('missing', 1000).then(() => 'resolved')"));
+        assertEquals("resolved", classic.eval("controller.setDateIntervalViewFilter('missing', null, 1000, new Date(), new Date()).then(() => 'resolved')"));
+        assertEquals(2, count(requests, "SetViewFilters")); // the batch's and this one's
         saveAndCheckNotes(form, items, "-", "-", "u" + stamp);
         close(form);
     }

@@ -515,30 +515,32 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return GGroupObjectValue.createRow(object, objects); // shared with the cell renderer's controller
     }
 
-    protected void setDateIntervalViewFilter(String startProperty, String endProperty, int pageSize, JsDate start, JsDate end) {
+    protected JavaScriptObject setDateIntervalViewFilter(String startProperty, String endProperty, int pageSize, JsDate start, JsDate end) {
         Column startColumn = getColumn(startProperty);
         Column endColumn = endProperty != null ? getColumn(endProperty) : startColumn;
-        if(startColumn == null || endColumn == null)
-            return;
+        if(startColumn == null || endColumn == null) // a property not among the view's columns: no filter, no request
+            return form.setViewFilters(new ArrayList<>(), pageSize);
 
         boolean isDateTimeFilter = !(startColumn.property.getCellType() instanceof GDateType);
         PValue leftBorder = isDateTimeFilter ? GDateTimeType.instance.fromJsDate(start) : GDateType.instance.fromJsDate(start);
         PValue rightBorder = isDateTimeFilter ? GDateTimeType.instance.fromJsDate(end) : GDateType.instance.fromJsDate(end);
 
-        setViewFilters(pageSize, new GPropertyFilter(new GFilter(endColumn.property), grid.groupObject, endColumn.columnKey, leftBorder, GCompare.GREATER_EQUALS),
+        return setViewFilters(pageSize, new GPropertyFilter(new GFilter(endColumn.property), grid.groupObject, endColumn.columnKey, leftBorder, GCompare.GREATER_EQUALS),
                 new GPropertyFilter(new GFilter(startColumn.property), grid.groupObject, startColumn.columnKey, rightBorder, GCompare.LESS_EQUALS));
     }
 
-    protected void setBooleanViewFilter(String property, int pageSize) {
+    protected JavaScriptObject setBooleanViewFilter(String property, int pageSize) {
         Column column = getColumn(property);
         if(column == null)
-            return;
-        setViewFilters(pageSize, new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, PValue.getPValue(true), GCompare.EQUALS));
+            return form.setViewFilters(new ArrayList<>(), pageSize);
+        return setViewFilters(pageSize, new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, PValue.getPValue(true), GCompare.EQUALS));
     }
 
-    private void setViewFilters(int pageSize, GPropertyFilter... filters) {
-        form.setViewFilters(Arrays.stream(filters).collect(Collectors.toCollection(ArrayList::new)), pageSize);
+    // ... the Promise of their request
+    private JavaScriptObject setViewFilters(int pageSize, GPropertyFilter... filters) {
+        JavaScriptObject promise = form.setViewFilters(Arrays.stream(filters).collect(Collectors.toCollection(ArrayList::new)), pageSize);
         setPageSize(pageSize);
+        return promise;
     }
 
     protected void getAsyncValues(String property, String value, JavaScriptObject successCallBack, JavaScriptObject failureCallBack, int increaseValuesNeededCount, String mode) {
@@ -815,10 +817,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 return thisObj.@GSimpleStateTableView::changeSimpleGroupObject(*)(object, rendered, elementClicked);
             },
             setDateIntervalViewFilter: function (startProperty, endProperty, pageSize, start, end) {
-                thisObj.@GSimpleStateTableView::setDateIntervalViewFilter(*)(startProperty, endProperty, pageSize, start, end);
+                return thisObj.@GSimpleStateTableView::setDateIntervalViewFilter(*)(startProperty, endProperty, pageSize, start, end);
             },
             setBooleanViewFilter: function (property, pageSize) {
-                thisObj.@GSimpleStateTableView::setBooleanViewFilter(*)(property, pageSize);
+                return thisObj.@GSimpleStateTableView::setBooleanViewFilter(*)(property, pageSize);
             },
             getGroupObjectBackgroundColor: function(object) {
                 var color = object.color;
