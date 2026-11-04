@@ -26,6 +26,8 @@ While the application is running, there is a number of events for each form that
 -   `FILTERS PROPERTY` - the user changed the value of a property filter.
 -   `SELECT PROPERTY` - the [selection](Selection_SELECT.md) of the property as a column has changed.
 
+The `FILTER` and `ORDER` events of an object group also occur when the form reads the object group for the first time, as it opens: the group gets its filter and its order then. So do the `SELECT` event of the group and the `CHANGE` event of its objects, when the group gets a current object then.
+
 #### For properties or actions on the form {#property}
 
 -   `CHANGE` - the user initiated a property change or action call.
