@@ -2,6 +2,11 @@
     display: block;
 }
 
+/* a window opened without waiting covers the page with its dialog alone: a click around the dialog reaches the page */
+.modal-nowait > .modal {
+    pointer-events: none;
+}
+
 .modal-dialog.modal-fit-content {
     max-width: 100vw;
     width: fit-content;

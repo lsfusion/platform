@@ -359,7 +359,7 @@ public class UiFormsWindowIT extends UiTest {
 
     // a form whose close event opens a floating form, opened once more by an action a React view runs by name: the
     // client answers the open with the form the window holds and closes the duplicate the server built, unseen, and
-    // that close's event runs as any other - the floating form it opens arrives, once, and the mark after it is left,
+    // that close's event runs as any other - the floating form it opens is shown, once, and the mark after it is left,
     // with no error -, the push the unseen close carries taken for the confirmation of no open (#1841, #1848)
     @Test
     public void theCloseEventOfADuplicateClosedUnseenRuns() throws Exception {
@@ -372,11 +372,27 @@ public class UiFormsWindowIT extends UiTest {
         push.locator(".ui-forms-window-push-close-source").click();
         marks("query close");
         assertThat(target).hasCount(1);
+        assertThat(target).isVisible();
         assertThat(source).hasCount(1);
         assertThat(source).isVisible();
         assertThat(page.locator(".modal-dialog:not(:has([lsfusion-form]))")).hasCount(0);
+        close(target);
         close(source);
         close(push);
+    }
+
+    // a floating form opened without waiting for it is shown, with no backdrop: the page around it stays in use - the
+    // launcher under it opens a form as before
+    @Test
+    public void aFloatingFormNotWaitedForIsShown() throws Exception {
+        seed();
+        Locator launcher = launcher(), one = window("one"), target = form("UiFormsWindow.uiFormsWindowCloseTarget");
+        action(launcher, "uiFormsWindowCloseTargetFloating").click();
+        assertThat(target).isVisible();
+        action(launcher, "uiFormsWindowFirstIntoOne").click();
+        assertThat(in(one, "uiFormsWindowFirst")).isVisible();
+        assertThat(target).isVisible();
+        close(target);
     }
 
     // a form with two handlers of its close event, each opening the form already there with ACTIVATE: each handler

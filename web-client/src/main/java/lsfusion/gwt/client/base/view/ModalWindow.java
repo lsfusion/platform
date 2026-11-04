@@ -29,15 +29,15 @@ public class ModalWindow extends ResizableComplexPanel {
 
         this.resizable = resizable;
 
+        GwtClientUtils.addClassName(this, "modal-form");
         if (syncType) {
-            GwtClientUtils.addClassName(this, "modal-form");
-
             DivWidget modalBackDrop = new DivWidget();
             GwtClientUtils.addClassName(modalBackDrop, "modal-backdrop");
             GwtClientUtils.addClassName(modalBackDrop, "fade");
             GwtClientUtils.addClassName(modalBackDrop, "show");
             add(modalBackDrop);
-        }
+        } else // a window opened without waiting for it (SHOW ... FLOAT NOWAIT): no backdrop, the page around it in use
+            GwtClientUtils.addClassName(this, "modal-nowait");
 
         modal = new SimplePanel();
         GwtClientUtils.addClassName(modal, "modal");

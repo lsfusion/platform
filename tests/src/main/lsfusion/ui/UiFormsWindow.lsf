@@ -214,6 +214,10 @@ uiFormsWindowCloseSourceIntoForms () {
     SHOW uiFormsWindowCloseSource WINDOW NOWAIT ACTIVATE;
 }
 
+// the floating form opened from the launcher, not waited for
+uiFormsWindowCloseTargetFloating 'Close target, floating' () { SHOW uiFormsWindowCloseTarget FLOAT NOWAIT; }
+EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowCloseTargetFloating;
+
 uiFormsWindowStored 'Stored' = DATA STRING[50] ();
 uiFormsWindowCloser 'Closer' = DATA LOCAL INTEGER ();
 uiFormsWindowPlain 'Plain' = DATA LOCAL INTEGER ();
