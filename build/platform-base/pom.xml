@@ -258,7 +258,7 @@
             </dependency>
             <dependency>
                 <groupId>fr.opensagres.xdocreport</groupId>
-                <artifactId>fr.opensagres.poi.xwpf.converter.pdf</artifactId>
+                <artifactId>fr.opensagres.poi.xwpf.converter.pdf.openpdf</artifactId>
                 <version>${opensagres.xdocreport.version}</version>
             </dependency>
             <dependency>
