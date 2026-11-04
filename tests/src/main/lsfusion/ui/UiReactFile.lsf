@@ -13,6 +13,10 @@ uiRfImage 'Image' () = IMAGEFILE(FILE('an image'));
 // ... of another class, whose value the server sends to a React view as the file itself, saved
 uiRfText 'Text' () = TEXTFILE('a text');
 
+// ... and a column of files, whose footer, given on the form, the server sends to a React view as the file itself too
+CLASS uiRfItem { one }
+uiRfFile 'File' = DATA TEXTFILE (uiRfItem);
+
 // a string drawn as a property named image, which the server sends to a React view as the image it names, as to a
 // classic custom view
 uiRfNamedImage 'Named image' () = 'bi bi-plus';
@@ -24,6 +28,8 @@ uiRfImageResult () { RETURN uiRfImage(); }
 FORM uiRfForm 'React files'
     PROPERTIES() uiRfPdf, uiRfVideo, uiRfImage, uiRfText
     PROPERTIES() image = uiRfNamedImage
+    OBJECTS r = uiRfItem
+    PROPERTIES(r) READONLY uiRfFile FOOTER TEXTFILE('a footer')
     CUSTOMS uiRfPdfResult, uiRfImageResult
 ;
 
@@ -35,6 +41,7 @@ DESIGN uiRfForm {
         MOVE PROPERTY(uiRfImage());
         MOVE PROPERTY(uiRfText());
         MOVE PROPERTY(image);
+        MOVE BOX(r);
     }
 }
 

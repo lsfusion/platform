@@ -7,17 +7,18 @@ import static org.junit.Assert.assertEquals;
 
 // a file a React view is given is a link to it (UiReactFile.lsf, its view in UiReactFile.js), whatever the server sends
 // it as: the value of a PDF and of a video as an image made of the file, as an image's, the value of a file of another
-// class (a text) and what a call to the server returns as the file itself, an image's too
+// class (a text), a column's footer and what a call to the server returns as the file itself, an image's too
 public class UiReactFileIT extends UiTest {
 
     @Test
     public void aFileAViewIsGivenIsALinkToIt() throws Exception {
         Locator form = open("UiReactFile.uiReactFile", "UiReactFile.uiRfForm");
-        page.waitForFunction("() => window.uiRfData && uiRfData.uiRfPdf.value");
+        page.waitForFunction("() => window.uiRfData && uiRfData.uiRfPdf.value && uiRfData.r?.uiRfFile?.footer");
         assertEquals("a PDF", fetch("uiRfData.uiRfPdf.value"));
         assertEquals("a video", fetch("uiRfData.uiRfVideo.value"));
         assertEquals("an image", fetch("uiRfData.uiRfImage.value"));
         assertEquals("a text", fetch("uiRfData.uiRfText.value"));
+        assertEquals("a footer", fetch("uiRfData.r.uiRfFile.footer"));
         assertEquals("a PDF", fetch("uiRfController.form.exec('uiRfPdfResult')"));
         assertEquals("an image", fetch("uiRfController.form.exec('uiRfImageResult')"));
         // a property named image is given as the image its string names - its HTML, as a classic custom view is

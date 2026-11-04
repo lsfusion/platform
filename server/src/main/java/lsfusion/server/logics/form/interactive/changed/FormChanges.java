@@ -470,6 +470,10 @@ public class FormChanges {
                 return getNeedImage(readerType, propertyDraw);
             else if (readerType instanceof FileClass && propertyDraw.needFile(context)) // where JS draws the value, the file itself, which the web server saves for JS to get a link to
                 return new NeedFile(readerType);
+        } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.FOOTER.getPropertyReadType()) {
+            readerType = readType.get();
+            if (readerType instanceof FileClass && ((PropertyDrawInstance<?>.ExtraReaderInstance) reader).getPropertyDraw().entity.needFile(context)) // where JS draws the value, its footer too
+                return new NeedFile(readerType);
         } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.IMAGE.getPropertyReadType()) {
             return getNeedImage(readType.get(), ((PropertyDrawInstance<?>.ExtraReaderInstance) reader).getPropertyDraw().entity);
         } else if (reader instanceof ContainerViewInstance.ExtraReaderInstance && reader.getTypeID() == ContainerViewExtraType.IMAGE.getContainerReadType()) {
