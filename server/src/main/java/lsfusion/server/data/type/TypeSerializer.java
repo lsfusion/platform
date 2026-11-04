@@ -122,6 +122,7 @@ public class TypeSerializer {
         if (type == DataType.JSONFILE) return JSONFileClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.XML) return XMLClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.TABLE) return TableClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == DataType.DBF) return DBFClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == DataType.CUSTOMSTATICFORMATFILE) {
             boolean multiple = inStream.readBoolean();
             boolean storeName = inStream.readBoolean();
