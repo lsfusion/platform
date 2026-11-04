@@ -13,6 +13,7 @@ import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.server.base.Custom;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
@@ -161,7 +162,9 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         mainContainer.setHeight(-3, version);
     }
 
-    // a property's FILTER, a component the design names (FilterView.getSID), as any other
+    // a property's FILTER, a component the design names (FilterView.getSID), as any other. Modules that do not require
+    // each other are parsed at once, and two of them can give one property a filter
+    @NFLazy
     public void addFilter(PropertyDrawEntity filterProperty, Version version) {
         PropertyDrawView propertyDrawView = get(filterProperty);
         if (propertyDrawView.filter == null)

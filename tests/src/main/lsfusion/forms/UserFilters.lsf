@@ -1,0 +1,19 @@
+MODULE UserFilters;
+
+REQUIRE TestUtils;
+
+// a property of a form gets one component for its user filter (FILTERS ... USER, FILTER in its options, USERFILTERS),
+// however many statements give it one. Modules that do not require each other are parsed at once, each in a thread of
+// its own, so two of them that give one property of a form a user filter checked for its component at once, and both
+// could make one: the property got two filters
+
+CLASS UfItem 'Item';
+ufName 'Name' = DATA STRING (UfItem);
+
+ufFailure = DATA LOCAL STRING ();
+ufAddAtOnce INTERNAL 'lsfusion.tests.AddUserFiltersAtOnceAction' ();
+
+testUserFiltersAddedAtOnce 'A property two threads give a user filter at once gets one' () {
+    ufAddAtOnce();
+    assertNull(ufFailure(), ufFailure());
+}
