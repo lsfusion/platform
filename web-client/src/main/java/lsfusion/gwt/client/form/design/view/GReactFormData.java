@@ -2513,9 +2513,9 @@ public class GReactFormData {
 
         // ===== its controller (GFormController.propertyControllers): whether the form shows it now - a dropped one is
         // not, so a reconciliation does not make an old value up for it
-        // (GFormController.modifyFormChangesWithChangePropertyAsyncs) - where focus goes: nowhere, React draws it - and
-        // the client's own value for a cell, an optimistic change, into the draft only, published once the change
-        // that wrote it is over (change)
+        // (GFormController.modifyFormChangesWithChangePropertyAsyncs) - where focus goes: nowhere, React draws it, and
+        // the server refuses ACTIVATE PROPERTY of it (FormInstance.activateProperty) - and the client's own value for a
+        // cell, an optimistic change, into the draft only, published once the change that wrote it is over (change)
         public boolean isPropertyShown(GPropertyDraw property) {
             return shown;
         }

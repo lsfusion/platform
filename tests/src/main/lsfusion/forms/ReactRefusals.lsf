@@ -6,7 +6,10 @@ REQUIRE TestUtils;
 // component shows it or not -, so a scripted ACTIVATE TAB, COLLAPSE or EXPAND on it is refused at run time. A
 // platform-drawn container the component places is placed, so refused as well, but what is inside it the platform draws
 // again: a tab or a collapsible container there is activated or collapsed as anywhere else - unless the platform-drawn
-// container is a nested CUSTOM REACT one, which draws its insides itself - a custom of its own makes it platform-drawn
+// container is a nested CUSTOM REACT one, which draws its insides itself - a custom of its own makes it platform-drawn.
+// Nor has a property the component draws - a panel one, a column of the rows it draws - a field of the platform's to
+// focus, so ACTIVATE PROPERTY of it is refused as well; one the platform draws there - given custom = NULL, or inside a
+// platform-drawn container - is activated as anywhere else
 
 rrScript = DATA LOCAL STRING ();
 rrShown = DATA LOCAL BOOLEAN ();
@@ -18,14 +21,24 @@ FORM rrChild
 rrIslandNote = DATA LOCAL STRING ();
 rrPlacedNote = DATA LOCAL STRING ();
 rrPlatformNote = DATA LOCAL STRING ();
+rrReactNote = DATA LOCAL STRING ();
+rrHostedNote = DATA LOCAL STRING ();
+
+CLASS RrLine;
+rrLineNote = DATA STRING (RrLine);
 
 FORM rrBoard 'Board'
-    PROPERTIES() rrIslandNote, rrPlacedNote, rrPlatformNote
+    PROPERTIES() rrIslandNote, rrPlacedNote, rrPlatformNote, rrReactNote, rrHostedNote
+    OBJECTS rrl = RrLine
+    PROPERTIES(rrl) rrLineNote
 ;
 
 DESIGN rrBoard {
     NEW rrReact {
         custom = 'RrBoard';
+        MOVE PROPERTY(rrReactNote());
+        MOVE PROPERTY(rrHostedNote()) { custom = NULL; }
+        MOVE BOX(rrl);
         NEW rrPages {
             tabbed = TRUE;
             NEW rrFirstPage;
@@ -79,6 +92,11 @@ EXTEND FORM rrBoard
         IF rrScript() = 'collapse island pane' THEN COLLAPSE CONTAINER rrBoard.rrIslandPane;
         IF rrScript() = 'activate placed tab' THEN ACTIVATE TAB rrBoard.rrPlacedSecond;
         IF rrScript() = 'activate platform tab' THEN ACTIVATE TAB rrBoard.rrPlatformSecond;
+        IF rrScript() = 'activate react property' THEN ACTIVATE PROPERTY rrBoard.rrReactNote();
+        IF rrScript() = 'activate react column' THEN ACTIVATE PROPERTY rrBoard.rrLineNote(rrl);
+        IF rrScript() = 'activate hosted property' THEN ACTIVATE PROPERTY rrBoard.rrHostedNote();
+        IF rrScript() = 'activate island property' THEN ACTIVATE PROPERTY rrBoard.rrIslandNote();
+        IF rrScript() = 'activate platform property' THEN ACTIVATE PROPERTY rrBoard.rrPlatformNote();
         IF rrScript() = 'show in react' THEN SHOW rrChild IN rrBoard.rrReact NOWAIT;
         IF rrScript() = 'show in react pane' THEN SHOW rrChild IN rrBoard.rrPane NOWAIT;
         IF rrScript() = 'show in island' THEN SHOW rrChild IN rrBoard.rrIsland NOWAIT;
@@ -146,6 +164,33 @@ testActivateTabPlatformDrawsGoesThrough 'ACTIVATE TAB on a tab the platform draw
     rrShow('activate platform tab');
     assertNull(messageCaughtException(), 'ACTIVATE TAB on a platform tab failed with ' + messageCaughtException());
     assertTrue(ACTIVE TAB rrBoard.rrPlatformSecond, 'ACTIVATE TAB on a platform tab did not activate it');
+}
+
+testActivatePropertyReactDrawsIsRefused 'ACTIVATE PROPERTY of a property a React component draws is refused' () {
+    rrShow('activate react property');
+    assertNotNull(messageCaughtException(), 'ACTIVATE PROPERTY of a property React draws was not refused');
+    assertTrue(messageCaughtException() LIKE '%ACTIVATE PROPERTY%rrReactNote%CUSTOM REACT%', 'ACTIVATE PROPERTY failed with ' + messageCaughtException());
+}
+
+testActivatePropertyReactRowsIsRefused 'ACTIVATE PROPERTY of a column of the rows a React component draws is refused' () {
+    rrShow('activate react column');
+    assertNotNull(messageCaughtException(), 'ACTIVATE PROPERTY of a column React draws was not refused');
+    assertTrue(messageCaughtException() LIKE '%ACTIVATE PROPERTY%rrLineNote%CUSTOM REACT%', 'ACTIVATE PROPERTY failed with ' + messageCaughtException());
+}
+
+testActivatePropertyHostedGoesThrough 'ACTIVATE PROPERTY of a property the platform draws and a React component places goes through' () {
+    rrShow('activate hosted property');
+    assertNull(messageCaughtException(), 'ACTIVATE PROPERTY of a property given custom = NULL failed with ' + messageCaughtException());
+}
+
+testActivatePropertyInPlacedContainerGoesThrough 'ACTIVATE PROPERTY of a property inside a platform-drawn container React places goes through' () {
+    rrShow('activate island property');
+    assertNull(messageCaughtException(), 'ACTIVATE PROPERTY inside a platform-drawn container failed with ' + messageCaughtException());
+}
+
+testActivatePropertyPlatformDrawsGoesThrough 'ACTIVATE PROPERTY of a property the platform draws goes through' () {
+    rrShow('activate platform property');
+    assertNull(messageCaughtException(), 'ACTIVATE PROPERTY of a platform property failed with ' + messageCaughtException());
 }
 
 // SHOW ... IN must not open a form that React cannot draw; a custom = NULL container still hosts it.

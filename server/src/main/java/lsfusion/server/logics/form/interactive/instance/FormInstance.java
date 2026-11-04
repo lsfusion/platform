@@ -1944,6 +1944,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private ImList<PropertyDrawInstance> userActivateProps = ListFact.EMPTY(); 
     // программный activate property
     public void activateProperty(PropertyDrawEntity view) {
+        // what a CUSTOM REACT component draws is that component's - its visibility, its focus, its editor -, and the
+        // platform sends it no command: a property it draws - a panel one, a column of the rows it draws - has no field
+        // of the platform's to focus, so the client would drop this silently (GReactFormData's focusProperty of its
+        // entry). Refused as ACTIVATE TAB is (activateTab); one the platform draws and the component places is focused
+        // as anywhere else
+        if (entity.view.isReactDrawn(view))
+            throw new RuntimeException("ACTIVATE PROPERTY is set for '" + view.getSID() + "', which a CUSTOM REACT"
+                    + " component draws - its focus is controlled by that component");
         userActivateProps = userActivateProps.addList(instanceFactory.getInstance(view));
     }
     
