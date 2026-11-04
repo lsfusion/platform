@@ -1918,7 +1918,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // change event taking it instead of the user's input, or, with PValue.UNDEFINED, its change event run with none -,
     // the Promise of its request returned (requestPromises); refused on a closed form, whose requests are not sent
     // (RemoteDispatchAsync.gwtExecute). Several cells are changed in a batch (batch), each by its own change
-    public JavaScriptObject executePropertyEventAction(GPropertyDraw property, GGroupObjectValue fullKey, PValue newValue, Consumer<Long> onExec) {
+    public JavaScriptObject executePropertyEventAction(GPropertyDraw property, GGroupObjectValue fullKey, PValue newValue, ExecCallback onExec) {
         String refusal = gController.getClosedRefusal();
         if (refusal != null)
             return GController.rejectedControllerPromise(refusal);
@@ -1932,23 +1932,37 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         String actionSID = GEditBindingMap.changeOrGroupChange(!property.isList || pushAsyncResult != null);
         // the Promise the call returns - in a batch the batch's - put under the index of its request once the call makes
         // it: at once, or later - a NEW asks the server for the new object's id first, a close the user to confirm it
-        // (asyncAddRemove, asyncCloseFormConfirmed). A call the platform makes no request for - a NEW whose id is not
-        // given, a DELETE with no row to delete, a close not confirmed - leaves it pending
+        // (asyncAddRemove, asyncCloseFormConfirmed). A call the platform has no request to make for - a DELETE with no
+        // row to delete, a close not confirmed - is cancelled, its Promise resolved at once; one whose request it fails to
+        // make - a NEW whose id is not given, a request due once the form is closed - fails, rejected with the reason
         PendingPromise promise = dispatcher.isBatching() ? batchPromise : newRequestPromise();
-        Consumer<Long> onRequest = requestIndex -> {
-            onExec.accept(requestIndex);
-            requestPromises.put(requestIndex, promise);
+        ExecCallback onRequest = new ExecCallback() {
+            @Override
+            public void onSuccess(long requestIndex) {
+                onExec.onSuccess(requestIndex);
+                requestPromises.put(requestIndex, promise);
+            }
+
+            @Override
+            public void onCancel() {
+                promise.resolve();
+            }
+
+            @Override
+            public void onFailure(String reason) {
+                promise.reject(reason);
+            }
         };
         // an action / event run goes as the click it is - in a batch as its plain request, which the batch's request
         // carries: a click's predictions are keyed by its request's index, which all the parts of a batch share
         if(pushAsyncResult == null && !dispatcher.isBatching()) // execute action / event
             executePropertyEventAction(property, fullKey, actionSID, GEventSource.CUSTOM, onRequest);
         else // change the property with the value
-            onRequest.accept(asyncExecutePropertyEventAction(actionSID, null, null, property, GEventSource.CUSTOM, fullKey, pushAsyncResult));
+            onRequest.onSuccess(asyncExecutePropertyEventAction(actionSID, null, null, property, GEventSource.CUSTOM, fullKey, pushAsyncResult));
         return promise.promise;
     }
 
-    public void executePropertyEventAction(GPropertyDraw property, GGroupObjectValue fullKey, String actionSID, GEventSource eventSource, Consumer<Long> onExec) {
+    public void executePropertyEventAction(GPropertyDraw property, GGroupObjectValue fullKey, String actionSID, GEventSource eventSource, ExecCallback onExec) {
         executePropertyEventAction(null, null, new ExecContext() {
             @Override
             public GPropertyDraw getProperty() {
@@ -1962,11 +1976,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         }, actionSID, eventSource, onExec);
     }
 
-    public void executePropertyEventAction(EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GEventSource eventSource, Consumer<Long> onExec) {
+    public void executePropertyEventAction(EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GEventSource eventSource, ExecCallback onExec) {
         executePropertyEventAction(execContext.getProperty().getAsyncEventExec(actionSID), handler, editContext, execContext, actionSID, null, eventSource, onExec);
     }
 
-    private void executePropertyEventAction(GAsyncEventExec asyncEventExec, EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GUserInputResult value, GEventSource eventSource, Consumer<Long> onExec) {
+    private void executePropertyEventAction(GAsyncEventExec asyncEventExec, EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GUserInputResult value, GEventSource eventSource, ExecCallback onExec) {
         GPushAsyncInput pushAsyncInput = value != null ? new GPushAsyncInput(value) : null;
         if (asyncEventExec != null)
             asyncEventExec.exec(this, handler, editContext, execContext, actionSID, pushAsyncInput, eventSource, onExec);
@@ -1974,19 +1988,27 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
             syncExecutePropertyEventAction(editContext, handler, execContext.getProperty(), execContext.getFullKey(), pushAsyncInput, actionSID, eventSource, onExec);
     }
 
-    public void asyncExecutePropertyEventAction(String actionSID, EditContext editContext, ExecContext execContext, EventHandler handler, GPushAsyncResult pushAsyncResult, GEventSource eventSource, Consumer<Long> onRequestExec, Consumer<Long> onExec) {
+    public void asyncExecutePropertyEventAction(String actionSID, EditContext editContext, ExecContext execContext, EventHandler handler, GPushAsyncResult pushAsyncResult, GEventSource eventSource, Consumer<Long> onRequestExec, ExecCallback onExec) {
+        // a request due once the form's dispatcher is closed - a NEW's id answered, a close confirmed after it - is not
+        // made, such a dispatcher sending nothing (RemoteDispatchAsync.gwtExecute), and is refused as a call on a closed
+        // form is: nothing queued or predicted that no answer would clear. A form only off the page still sends it - an
+        // editor's form commits its input as it closes (EditingForm.finishEditing)
+        if (dispatcher.isFormClosed()) {
+            onExec.onFailure(GController.CLOSED_REFUSAL);
+            return;
+        }
         long requestIndex = asyncExecutePropertyEventAction(actionSID, editContext, handler, execContext.getProperty(), eventSource, execContext.getFullKey(), pushAsyncResult);
 
-        onExec.accept(requestIndex);
+        onExec.onSuccess(requestIndex);
 
         // should be after because for example onExec can setRemoteValue, but onRequestExec also does that and should have higher priority
         onRequestExec.accept(requestIndex);
     }
 
-    public void syncExecutePropertyEventAction(EditContext editContext, EventHandler handler, GPropertyDraw property, GGroupObjectValue fullKey, GPushAsyncInput pushAsyncResult, String actionSID, GEventSource eventSource, Consumer<Long> onExec) {
+    public void syncExecutePropertyEventAction(EditContext editContext, EventHandler handler, GPropertyDraw property, GGroupObjectValue fullKey, GPushAsyncInput pushAsyncResult, String actionSID, GEventSource eventSource, ExecCallback onExec) {
         long requestIndex = executePropertyEventAction(actionSID, true, editContext, handler, property, eventSource, fullKey, pushAsyncResult);
 
-        onExec.accept(requestIndex);
+        onExec.onSuccess(requestIndex);
     }
 
     public long asyncExecutePropertyEventAction(String actionSID, EditContext editContext, EventHandler handler, GPropertyDraw property, GEventSource eventSource, GGroupObjectValue fullKey, GPushAsyncResult pushAsyncResult) {
@@ -2038,7 +2060,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         return syncDispatch(action, new ServerResponseCallback());
     }
 
-    public void asyncInput(EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GAsyncInput asyncChange, GEventSource eventSource, Consumer<Long> onExec) {
+    public void asyncInput(EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GAsyncInput asyncChange, GEventSource eventSource, ExecCallback onExec) {
         if (editContext == null) { // no cell to host the editor on the controller / global change path - run on the server
             syncExecutePropertyEventAction(null, handler, execContext.getProperty(), execContext.getFullKey(), null, actionSID, eventSource, onExec);
             return;
@@ -2055,17 +2077,15 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         }
 
         edit(asyncChange.changeType, handler, false, null, asyncChange.multipleInput, inputList, inputListActions, (value, onRequestExec) ->
-            executePropertyEventAction(handler, editContext, inputListActions, value, actionSID, eventSource, requestIndex -> {
-                onExec.accept(requestIndex); // setLoading
-
+            executePropertyEventAction(handler, editContext, inputListActions, value, actionSID, eventSource, onExec.andThen(requestIndex -> { // onExec - setLoading
                 // doing that after to set the last value (onExec recursively can also set value)
                 onRequestExec.accept(requestIndex); // pendingChangeProperty
-        }), cancelReason -> {}, editContext, actionSID, asyncChange.customEditFunction);
+        })), cancelReason -> onExec.onCancel(), editContext, actionSID, asyncChange.customEditFunction);
     }
 
     private final static GAsyncNoWaitExec asyncExec = new GAsyncNoWaitExec();
 
-    private void executePropertyEventAction(EventHandler handler, EditContext editContext, GInputListAction[] inputListActions, GUserInputResult value, String actionSID, GEventSource eventSource, Consumer<Long> onExec) {
+    private void executePropertyEventAction(EventHandler handler, EditContext editContext, GInputListAction[] inputListActions, GUserInputResult value, String actionSID, GEventSource eventSource, ExecCallback onExec) {
         GInputListAction contextAction = getContextAction(inputListActions, value);
         executePropertyEventAction(contextAction != null ? contextAction.asyncExec : asyncExec, handler, editContext, editContext, actionSID, value, eventSource, onExec);
     }
@@ -2081,7 +2101,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         return null;
     }
 
-    public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
+    public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GPushAsyncInput pushAsyncResult, GEventSource eventSource, ExecCallback onExec) {
         // External changes can use a different prediction on the server, including another open form.
         GPushAsyncResult activated = pushAsyncResult == null && (eventSource == GEventSource.EDIT || eventSource == GEventSource.BINDING)
                 ? formsController.reuseOpenForm(asyncOpenForm, handler != null ? handler.event : null) : null;
@@ -2099,12 +2119,13 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     public PopupOwner getPopupOwner() {
         return new PopupOwner(getWidget());
     }
-    public void asyncCloseFormConfirmed(Runnable runnable) {
+    public void asyncCloseFormConfirmed(Runnable runnable, Runnable onCancel) {
         if(needConfirm) {
             DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), getPopupOwner(), chosenOption -> {
                 if(chosenOption == DialogBoxHelper.OptionType.YES) {
                     runnable.run();
-                }
+                } else
+                    onCancel.run();
             });
         } else {
             runnable.run();
@@ -2112,14 +2133,14 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     }
 
     public void asyncCloseForm(GAsyncExecutor asyncExecutor) {
-        asyncCloseFormConfirmed(() -> formsController.asyncCloseForm(asyncExecutor, formContainer));
+        asyncCloseFormConfirmed(() -> formsController.asyncCloseForm(asyncExecutor, formContainer), () -> {});
     }
 
-    public void asyncCloseForm(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
-        asyncCloseFormConfirmed(() -> asyncCloseForm(editContext, execContext, handler, actionSID, eventSource, onExec));
+    public void asyncCloseForm(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GPushAsyncInput pushAsyncResult, GEventSource eventSource, ExecCallback onExec) {
+        asyncCloseFormConfirmed(() -> asyncCloseForm(editContext, execContext, handler, actionSID, eventSource, onExec), onExec::onCancel);
     }
 
-    private void asyncCloseForm(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GEventSource eventSource, Consumer<Long> onExec) {
+    private void asyncCloseForm(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GEventSource eventSource, ExecCallback onExec) {
         asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, new GPushAsyncClose(), eventSource, requestIndex ->
                 formsController.asyncCloseForm(getAsyncFormController(requestIndex), formContainer), onExec);
     }
@@ -2187,12 +2208,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     }
 
     // for custom renderer, paste, quick access actions (in toolbar and keypress)
-    private void executePropertyEventAction(EventHandler handler, ExecuteEditContext editContext, String actionSID, GEventSource eventSource, GUserInputResult value, Consumer<Long> onExec) {
-        executePropertyEventAction(handler, editContext, editContext.getProperty().getInputListActions(), value, actionSID, eventSource, requestIndex -> {
-            onExec.accept(requestIndex);
-
+    private void executePropertyEventAction(EventHandler handler, ExecuteEditContext editContext, String actionSID, GEventSource eventSource, GUserInputResult value, ExecCallback onExec) {
+        executePropertyEventAction(handler, editContext, editContext.getProperty().getInputListActions(), value, actionSID, eventSource, onExec.andThen(requestIndex -> {
             setLoading(editContext, requestIndex);
-        });
+        }));
     }
 
     public interface ChangedRenderValueSupplier {
@@ -2239,11 +2258,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         return pending != null && pending.requestIndex == requestIndex ? pending.oldValue : oldValue;
     }
 
-    public void asyncNoWait(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncNoWaitExec asyncNoWait, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
+    public void asyncNoWait(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncNoWaitExec asyncNoWait, GPushAsyncInput pushAsyncResult, GEventSource eventSource, ExecCallback onExec) {
         asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, eventSource, requestIndex -> {}, onExec);
     }
 
-    public void asyncChange(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncChange asyncChange, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
+    public void asyncChange(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncChange asyncChange, GPushAsyncInput pushAsyncResult, GEventSource eventSource, ExecCallback onExec) {
         asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, eventSource, requestIndex -> {
             for (int propertyID : asyncChange.propertyIDs)
                 setLoadingValueAt(getProperty(propertyID), execContext.getFullKey(), PValue.convertFileValue(asyncChange.value), requestIndex);
@@ -2251,7 +2270,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     }
 
 
-    public void asyncAddRemove(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncAddRemove asyncAddRemove, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
+    public void asyncAddRemove(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncAddRemove asyncAddRemove, GPushAsyncInput pushAsyncResult, GEventSource eventSource, ExecCallback onExec) {
         final GObject object = form.getObject(asyncAddRemove.object);
         final boolean add = asyncAddRemove.add;
 
@@ -2262,6 +2281,12 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
                 @Override
                 public void onSuccess(GenerateIDResult result) {
                     asyncAddRemove(editContext, execContext, handler, actionSID, object, add, new GPushAsyncAdd(result.ID), new GGroupObjectValue(object.ID, new GCustomObjectValue(result.ID, null)), -1, eventSource, onExec);
+                }
+
+                @Override
+                public void onFailure(Throwable caught) {
+                    super.onFailure(caught);
+                    onExec.onFailure(caught.getMessage());
                 }
             });
         } else {
@@ -2274,14 +2299,16 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
             GGroupObjectValue value = object.groupObject.filterRowKeys(execContext.getFullKey());
             if(value == null || value.isEmpty())
                 value = controller.getSelectedKey();
-            if(value == null || value.isEmpty())
+            if(value == null || value.isEmpty()) {
+                onExec.onCancel();
                 return;
+            }
             // ... and where it goes back if the server keeps it: its own position, not the selected row's
             asyncAddRemove(editContext, execContext, handler, actionSID, object, add, pushAsyncResult, value, controller.getRow(value), eventSource, onExec);
         }
     }
 
-    private void asyncAddRemove(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GObject object, boolean add, GPushAsyncResult pushAsyncResult, GGroupObjectValue value, int position, GEventSource eventSource, Consumer<Long> onExec) {
+    private void asyncAddRemove(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GObject object, boolean add, GPushAsyncResult pushAsyncResult, GGroupObjectValue value, int position, GEventSource eventSource, ExecCallback onExec) {
         asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, eventSource, requestIndex -> {
             pendingChangeCurrentObjectsRequests.put(object.groupObject, requestIndex);
             pendingModifyObjectRequests.add(new ModifyObject(requestIndex, object, add, value, position));

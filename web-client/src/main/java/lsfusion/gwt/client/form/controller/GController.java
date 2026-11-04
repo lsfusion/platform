@@ -84,8 +84,9 @@ public abstract class GController {
     }
     // ... and why it refuses any request at all - a change too, which a batch carries -: it is closed
     protected String getClosedRefusal() {
-        return isClosed() ? "Form is closed" : null;
+        return isClosed() ? CLOSED_REFUSAL : null;
     }
+    public static final String CLOSED_REFUSAL = "Form is closed";
     public static native JavaScriptObject rejectedControllerPromise(String message) /*-{
         return $wnd.Promise.reject(new $wnd.Error(message));
     }-*/;

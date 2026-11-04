@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.async;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.AppStaticImage;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.form.controller.ExecCallback;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GEventSource;
@@ -13,8 +14,6 @@ import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GFormActivateType;
 import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
-
-import java.util.function.Consumer;
 
 public class GAsyncOpenForm extends GAsyncExec {
     public String canonicalName;
@@ -40,7 +39,7 @@ public class GAsyncOpenForm extends GAsyncExec {
     }
 
     @Override
-    public void exec(GFormController formController, EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
+    public void exec(GFormController formController, EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncResult, GEventSource eventSource, ExecCallback onExec) {
         formController.asyncOpenForm(this, editContext, execContext, handler, actionSID, pushAsyncResult, eventSource, onExec);
     }
 

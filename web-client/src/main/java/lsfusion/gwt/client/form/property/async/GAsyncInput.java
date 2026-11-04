@@ -2,12 +2,11 @@ package lsfusion.gwt.client.form.property.async;
 
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.data.GDataType;
+import lsfusion.gwt.client.form.controller.ExecCallback;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
-
-import java.util.function.Consumer;
 
 public class GAsyncInput extends GAsyncFormExec {
     public GDataType changeType;
@@ -31,7 +30,7 @@ public class GAsyncInput extends GAsyncFormExec {
     }
 
     @Override
-    public void exec(GFormController formController, EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
+    public void exec(GFormController formController, EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncResult, GEventSource eventSource, ExecCallback onExec) {
         formController.asyncInput(handler, editContext, execContext, actionSID, this, eventSource, onExec);
     }
 }

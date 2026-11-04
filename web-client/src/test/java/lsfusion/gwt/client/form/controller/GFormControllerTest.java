@@ -41,6 +41,7 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GActionType;
+import lsfusion.gwt.client.classes.GInputType;
 import lsfusion.gwt.client.classes.data.GIntegerType;
 import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.action.GAction;
@@ -67,6 +68,9 @@ import lsfusion.gwt.client.controller.remote.action.form.GetPriorityAsyncValues;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestAction;
+import lsfusion.gwt.client.controller.remote.action.logics.GenerateID;
+import lsfusion.gwt.client.controller.remote.action.logics.GenerateIDResult;
+import lsfusion.gwt.client.controller.dispatch.LogicsDispatchAsync;
 import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
 import lsfusion.gwt.client.form.controller.dispatch.GFormActionDispatcher;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
@@ -108,7 +112,9 @@ import lsfusion.gwt.client.form.property.GRowSelectReader;
 import lsfusion.gwt.client.form.property.GShowIfReader;
 import lsfusion.gwt.client.form.property.GEventSource;
 import lsfusion.gwt.client.form.property.async.GAsyncAddRemove;
+import lsfusion.gwt.client.form.property.async.GAsyncCloseForm;
 import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
+import lsfusion.gwt.client.form.property.async.GAsyncInput;
 import lsfusion.gwt.client.form.property.async.GPushAsyncInput;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyPanelValue;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
@@ -255,7 +261,7 @@ public class GFormControllerTest extends GWTTestCase {
             setHtmlOrText: noop, setNodeText: noop, fixHyphens: noop, setAttributeOrStyle: noop,
             removeAttributeOrStyle: noop, setGlobalClassName: noop, setReadonlyNative: noop, setReadonlyClass: noop,
             setReadonlyHeur: noop, setReadonlyType: noop, setDisabledNative: noop, setDisabledClass: noop,
-            setDisabledType: noop,
+            setDisabledType: noop, addShowCollapsedContainerEvent: noop,
             containsHtmlTag: function () { return false; },
             hasLongStringWithoutSpacesAndHTMLTags: function () { return false; },
             createPlainObject: function () { return {}; },
@@ -361,6 +367,9 @@ public class GFormControllerTest extends GWTTestCase {
     // -, of a form that sends nothing as it opens, so an answer is taken in as it comes, nothing before it in the
     // form's queue, and named apart, the other tests' forms asking the same requests
     private ChangeServer changes() {
+        return changes(form -> { });
+    }
+    private ChangeServer changes(Consumer<GForm> design) {
         GForm form = form("changes");
         form.sessionID = "changes" + (++changesForms);
         GContainer board = container(2, "board", form.mainContainer); // NEW board { custom = 'Board'; MOVE PROPERTY(note()); }
@@ -368,6 +377,7 @@ public class GFormControllerTest extends GWTTestCase {
         GPropertyDraw note = column(form, 20, "note", null);
         note.isList = false;
         note.container = board; board.children.add(note);
+        design.accept(form);
         form.initialFormChanges = GFormChangesTest.noChanges();
         ChangeServer changes = new ChangeServer(new GFormController(formsController(), null, formContainer(), form, false, "changes", 0, null), note);
         server = changes;
@@ -383,8 +393,8 @@ public class GFormControllerTest extends GWTTestCase {
         }
         @Override
         boolean takes(Action<?> action) {
-            return (action instanceof ExecuteEventAction || action instanceof ExecuteBatch || action instanceof ContinueInvocation)
-                    && controller.getForm().sessionID.equals(((FormAction<?>) action).formSessionID);
+            return action instanceof GenerateID || ((action instanceof ExecuteEventAction || action instanceof ExecuteBatch || action instanceof ContinueInvocation)
+                    && controller.getForm().sessionID.equals(((FormAction<?>) action).formSessionID));
         }
         // a change of the note, as its member makes it: the Promise of its request
         JavaScriptObject change(int value) {
@@ -842,6 +852,182 @@ public class GFormControllerTest extends GWTTestCase {
         });
     }
 
+    // A declined close makes no request: its Promise resolves after No, without marking the property as loading.
+    public void testADeclinedCloseResolvesItsPromise() {
+        ChangeServer changes = changes();
+        changes.note.asyncExecMap = Collections.singletonMap(GEditBindingMap.CHANGE, new GAsyncCloseForm());
+        GFormChanges confirm = new GFormChanges();
+        confirm.needConfirm = true;
+        changes.controller.applyRemoteChanges(confirm, -1);
+        JavaScriptObject promise = changes.controller.changeProperty(changes.note, GGroupObjectValue.EMPTY, PValue.UNDEFINED, PValue.UNDEFINED);
+        ArrayList<String> settled = new ArrayList<>();
+        then(promise, answer -> settled.add("resolved"), error -> fail(error));
+        delayTestFinish(5000);
+        inTurn(() -> {
+            assertTrue(settled.isEmpty());
+            assertTrue(changes.actions.isEmpty());
+            assertTrue(answerDialog(ClientMessages.Instance.get().doYouReallyWantToCloseForm(), ClientMessages.Instance.get().no()));
+        }, () -> {
+            assertEquals(Collections.singletonList("resolved"), settled);
+            assertTrue(changes.actions.isEmpty());
+            assertNoPendingPropertyRequests(changes.controller);
+            finishTest();
+        });
+    }
+
+    // A DELETE with no row has no request to await, including through the form's classic changeProperty.
+    public void testADeleteWithNoRowResolvesItsPromise() {
+        ChangeServer changes = changes(form -> platformGrid(form, 90, "items"));
+        changes.note.asyncExecMap = Collections.singletonMap(GEditBindingMap.CHANGE, new GAsyncAddRemove(90, false));
+        JavaScriptObject promise = (JavaScriptObject) call(changes.controller.controller, "changeProperty", "note");
+        assertTrue(changes.actions.isEmpty());
+        delayTestFinish(5000);
+        then(promise, answer -> {
+            assertNoPendingPropertyRequests(changes.controller);
+            finishTest();
+        }, error -> fail(error));
+    }
+
+    // A failed ID lookup sends no NEW event: the platform shows its error, and the exec's Promise is rejected with it.
+    public void testANewWithoutAnIdRejectsItsPromise() {
+        ChangeServer changes = changes(form -> platformGrid(form, 90, "items"));
+        changes.note.asyncExecMap = Collections.singletonMap(GEditBindingMap.CHANGE, new GAsyncAddRemove(90, true));
+        LogicsDispatchAsync pageLogics = MainFrame.logicsDispatchAsync;
+        MainFrame.logicsDispatchAsync = new LogicsDispatchAsync(null, null, null);
+        dispatchApart(MainFrame.logicsDispatchAsync);
+        JavaScriptObject promise;
+        try {
+            promise = changes.controller.executePropertyEventAction(changes.note, GGroupObjectValue.EMPTY, PValue.UNDEFINED,
+                    index -> fail("no event request was made"));
+        } finally {
+            MainFrame.logicsDispatchAsync = pageLogics;
+        }
+        assertEquals(1, changes.actions.size());
+        assertTrue(changes.actions.get(0) instanceof GenerateID);
+        ArrayList<String> settled = new ArrayList<>();
+        then(promise, answer -> fail("resolved"), error -> settled.add(error));
+        delayTestFinish(5000);
+        inTurn(() -> {
+            assertTrue(settled.isEmpty());
+            changes.callbacks.get(0).onFailure(new RuntimeException("no new object id"));
+            assertTrue(closeDialog("no new object id"));
+        }, () -> {
+            assertEquals(Collections.singletonList("no new object id"), settled);
+            assertEquals(1, changes.actions.size());
+            assertNoPendingPropertyRequests(changes.controller);
+            finishTest();
+        });
+    }
+
+    // Closing during ID generation must reject NEW without queuing its request or predicting a row it cannot clear.
+    public void testANewWhoseIdArrivesAfterTheFormClosesIsRejected() {
+        ChangeServer changes = changes(form -> platformGrid(form, 90, "items"));
+        changes.note.asyncExecMap = Collections.singletonMap(GEditBindingMap.CHANGE, new GAsyncAddRemove(90, true));
+        LogicsDispatchAsync pageLogics = MainFrame.logicsDispatchAsync;
+        MainFrame.logicsDispatchAsync = new LogicsDispatchAsync(null, null, null);
+        dispatchApart(MainFrame.logicsDispatchAsync);
+        JavaScriptObject promise;
+        try {
+            promise = changes.controller.changeProperty(changes.note, GGroupObjectValue.EMPTY, PValue.UNDEFINED, PValue.UNDEFINED);
+        } finally {
+            MainFrame.logicsDispatchAsync = pageLogics;
+        }
+        assertEquals(1, changes.actions.size());
+        assertTrue(changes.actions.get(0) instanceof GenerateID);
+        FormDispatchAsync dispatcher = (FormDispatchAsync) dispatcher(changes.controller);
+        int queued = queuedRequests(dispatcher), async = dispatcher.asyncCount;
+        GGroupObject group = changes.controller.getForm().groupObjects.get(0);
+        ArrayList<String> settled = new ArrayList<>();
+        then(promise, answer -> fail("resolved"), error -> settled.add(error));
+        delayTestFinish(5000);
+        inTurn(() -> {
+            assertTrue(settled.isEmpty());
+            closeForm(changes.controller);
+            changes.callbacks.get(0).onSuccess(new GenerateIDResult(123));
+        }, () -> {
+            assertEquals(queued, queuedRequests(dispatcher));
+            assertEquals(async, dispatcher.asyncCount);
+            assertTrue(rowKeys(platformGridView(changes.controller, group)).isEmpty());
+            assertNull(sentAt(changes.controller, group));
+            assertEquals(Collections.singletonList("Form is closed"), settled);
+            assertEquals(1, changes.actions.size());
+            assertNoPendingPropertyRequests(changes.controller);
+            finishTest();
+        });
+    }
+
+    // ... but a form only off the page, its dispatcher not closed yet, still makes it - an editor's form commits its
+    // input as it closes -, the Promise its request's
+    public void testANewWhoseIdArrivesAfterTheFormLeftThePageIsSent() {
+        ChangeServer changes = changes(form -> platformGrid(form, 90, "items"));
+        changes.note.asyncExecMap = Collections.singletonMap(GEditBindingMap.CHANGE, new GAsyncAddRemove(90, true));
+        LogicsDispatchAsync pageLogics = MainFrame.logicsDispatchAsync;
+        MainFrame.logicsDispatchAsync = new LogicsDispatchAsync(null, null, null);
+        dispatchApart(MainFrame.logicsDispatchAsync);
+        JavaScriptObject promise;
+        try {
+            promise = changes.controller.changeProperty(changes.note, GGroupObjectValue.EMPTY, PValue.UNDEFINED, PValue.UNDEFINED);
+        } finally {
+            MainFrame.logicsDispatchAsync = pageLogics;
+        }
+        assertEquals(1, changes.actions.size());
+        assertTrue(changes.actions.get(0) instanceof GenerateID);
+        ArrayList<String> settled = new ArrayList<>();
+        then(promise, answer -> settled.add("resolved"), error -> fail(error));
+        delayTestFinish(5000);
+        inTurn(() -> {
+            hide(changes.controller);
+            changes.callbacks.get(0).onSuccess(new GenerateIDResult(123));
+        }, () -> {
+            assertTrue(settled.isEmpty());
+            assertEquals(2, changes.actions.size());
+            assertTrue(changes.actions.get(1) instanceof ExecuteEventAction);
+            changes.answer(1, false);
+        }, () -> {
+            assertEquals(Collections.singletonList("resolved"), settled);
+            finishTest();
+        });
+    }
+
+    // In a batch the same calls are plain event requests and share its Promise until the batch's answer.
+    public void testNoRequestExecsInABatchWaitForItsAnswer() {
+        ChangeServer changes = changes(form -> platformGrid(form, 90, "items"));
+        GFormChanges confirm = new GFormChanges();
+        confirm.needConfirm = true;
+        changes.controller.applyRemoteChanges(confirm, -1);
+        ArrayList<JavaScriptObject> made = new ArrayList<>();
+        JavaScriptObject promise = changes.controller.batch(() -> {
+            for (GAsyncEventExec exec : new GAsyncEventExec[] {new GAsyncCloseForm(), new GAsyncAddRemove(90, false), new GAsyncAddRemove(90, true)}) {
+                changes.note.asyncExecMap = Collections.singletonMap(GEditBindingMap.CHANGE, exec);
+                made.add(changes.controller.changeProperty(changes.note, GGroupObjectValue.EMPTY, PValue.UNDEFINED, PValue.UNDEFINED));
+            }
+        });
+        for (JavaScriptObject member : made)
+            assertSame(promise, member);
+        assertEquals(1, changes.actions.size());
+        assertTrue(changes.actions.get(0) instanceof ExecuteBatch);
+        assertEquals(3, ((ExecuteBatch) changes.actions.get(0)).requests.size());
+        ArrayList<String> settled = new ArrayList<>();
+        then(promise, answer -> settled.add("resolved"), error -> fail(error));
+        delayTestFinish(5000);
+        inTurn(() -> {
+            assertTrue(settled.isEmpty());
+            assertFalse(answerDialog(ClientMessages.Instance.get().doYouReallyWantToCloseForm(), ClientMessages.Instance.get().no()));
+            changes.answerChanges(0);
+        }, () -> {
+            assertEquals(Collections.singletonList("resolved"), settled);
+            assertNoPendingPropertyRequests(changes.controller);
+            finishTest();
+        });
+    }
+
+    private static native void assertNoPendingPropertyRequests(GFormController controller) /*-{
+        @junit.framework.Assert::assertTrue(Z)(controller.@lsfusion.gwt.client.form.controller.GFormController::pendingLoadingPropertyRequests.@lsfusion.gwt.client.base.jsni.NativeSIDMap::isEmpty()());
+        @junit.framework.Assert::assertTrue(Z)(controller.@lsfusion.gwt.client.form.controller.GFormController::pendingChangePropertyRequests.@lsfusion.gwt.client.base.jsni.NativeSIDMap::isEmpty()());
+        @junit.framework.Assert::assertTrue(Z)(controller.@lsfusion.gwt.client.form.controller.GFormController::pendingModifyObjectRequests.@java.util.ArrayList::isEmpty()());
+        @junit.framework.Assert::assertTrue(Z)(controller.@lsfusion.gwt.client.form.controller.GFormController::requestPromises.@lsfusion.gwt.client.base.jsni.NativeHashMap::isEmpty()());
+    }-*/;
+
     // A deferred change gets its own request index; an earlier independent answer must not settle it.
     public void testADeferredChangeWaitsForItsLateRequestsAnswer() {
         ChangeServer changes = changes();
@@ -850,7 +1036,7 @@ public class GFormControllerTest extends GWTTestCase {
         changes.note.asyncExecMap.put(GEditBindingMap.CHANGE, new GAsyncEventExec() {
             @Override
             public void exec(GFormController formController, EventHandler handler, EditContext editContext, ExecContext execContext,
-                             String actionSID, GPushAsyncInput pushAsyncResult, GEventSource eventSource, Consumer<Long> onExec) {
+                             String actionSID, GPushAsyncInput pushAsyncResult, GEventSource eventSource, ExecCallback onExec) {
                 Scheduler.get().scheduleDeferred(() -> formController.syncExecutePropertyEventAction(editContext, handler,
                         execContext.getProperty(), execContext.getFullKey(), pushAsyncResult, actionSID, eventSource, onExec));
             }
@@ -888,13 +1074,16 @@ public class GFormControllerTest extends GWTTestCase {
         changes.callbacks.get(0).onFailure(new RuntimeException("the server failed"));
     }
     // a dialog the client shows, saying the text, closed as a user closes it - whether there was one
-    private static native boolean closeDialog(String text) /*-{
+    private static boolean closeDialog(String text) {
+        return answerDialog(text, ClientMessages.Instance.get().close());
+    }
+    private static native boolean answerDialog(String text, String answer) /*-{
         var dialogs = $doc.querySelectorAll('.modal-content');
         for (var i = 0; i < dialogs.length; i++)
             if (dialogs[i].textContent.indexOf(text) >= 0) {
                 var buttons = dialogs[i].querySelectorAll('button');
                 for (var j = 0; j < buttons.length; j++)
-                    if (buttons[j].textContent === 'Close') {
+                    if (buttons[j].textContent === answer) {
                         buttons[j].click();
                         return true;
                     }
@@ -2045,6 +2234,46 @@ public class GFormControllerTest extends GWTTestCase {
             RootPanel.get().remove(hostOne); RootPanel.get().remove(hostTwo);
         }
     }
+    // Cancelling an async input reports no request, so the platform must leave no loading mark behind.
+    public void testACancelledAsyncInputReportsNoRequestWithoutLoading() {
+        RowsForm rows = new RowsForm();
+        rows.qty.inputType = new GInputType("number");
+        rows.qty.asyncExecMap = Collections.singletonMap(GEditBindingMap.CHANGE,
+                new GAsyncInput(GIntegerType.instance, false, null, null, null));
+        GFormController controller = rows.controller();
+        GPlatformRowsPanelController panel = controller.getRowsPanelController(rows.qty);
+        FlowPanel host = new FlowPanel();
+        RootPanel.get().add(host);
+        try {
+            panel.place(rows.one, rows.qty, host.getElement());
+            ActionOrPropertyPanelValue value = rowValue(rowRenderer(panel, rows.qty, rows.one));
+            ArrayList<Long> requests = new ArrayList<>();
+            int[] cancelled = {0};
+            EventHandler handler = new EventHandler(Event.as(Document.get().createDblClickEvent(0, 0, 0, 0, 0, false, false, false, false)));
+            controller.executePropertyEventAction(handler, value, value, GEditBindingMap.CHANGE, GEventSource.EDIT, new ExecCallback() {
+                @Override
+                public void onSuccess(long index) {
+                    requests.add(index);
+                    controller.setLoading(value, index);
+                }
+
+                @Override
+                public void onCancel() {
+                    cancelled[0]++;
+                }
+            });
+            assertTrue(controller.isEditing());
+            controller.cancelEditing(CancelReason.ESCAPE_PRESSED);
+            assertFalse(controller.isEditing());
+            assertTrue(requests.isEmpty());
+            assertEquals(1, cancelled[0]);
+            assertNoPendingPropertyRequests(controller);
+            assertValue(1, value.getValue());
+        } finally {
+            RootPanel.get().remove(host);
+        }
+    }
+
     // server rows gain and lose only their own renderers; a new host can wait before reconciliation or arrive after it,
     // and the renderers of the rows that stay keep their identity, including when their positions change
     public void testAServerRowAddedOrDeletedMovesOnlyItsRenderers() {
@@ -2445,6 +2674,9 @@ public class GFormControllerTest extends GWTTestCase {
     private static native void dispatchApart(GFormController controller) /*-{
         var dispatcher = controller.@lsfusion.gwt.client.form.controller.GFormController::dispatcher;
         dispatcher.@lsfusion.gwt.client.RemoteDispatchAsync::gwtDispatch = @lsfusion.gwt.client.controller.dispatch.GWTDispatch::new()();
+    }-*/;
+    private static native void dispatchApart(LogicsDispatchAsync logics) /*-{
+        logics.@lsfusion.gwt.client.controller.dispatch.LogicsDispatchAsync::gwtDispatch = @lsfusion.gwt.client.controller.dispatch.GWTDispatch::new()();
     }-*/;
     // ... and the controller of a form as it opens, its requests sent so
     public static GFormController controllerApart(GForm form) {
