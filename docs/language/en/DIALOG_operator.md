@@ -188,10 +188,10 @@ The operator runs synchronously (waits for the form to close) whenever the input
 
     Overrides whether the *Cancel* system action (`System.formCancel[]`) is shown on the form. One of:
 
-    - `CANCEL` — force visible
-    - `NOCANCEL` — force hidden
+    - `CANCEL` — shown
+    - `NOCANCEL` — hidden
 
-    By default, it is shown if the form is the session owner and the form contains actions that can change the session.
+    By default, it is shown if the form is the session owner and the form contains actions that can change the session. With `CANCEL` as well, the action is shown only on a form that is the session owner and is not shown as an in-place editor (`EMBEDDED` or `POPUP`): a form opened with `NOMANAGESESSION`, for example, shows no *Cancel* action with either value.
 
 - `READONLY`
 
