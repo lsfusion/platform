@@ -7,15 +7,14 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.PropertyColumn;
+import lsfusion.server.logics.form.stat.struct.hierarchy.json.OrderedJSONObject;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import org.json.JSONObject;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ReadOrdersAction extends ReadUserEventsAction<ImOrderMap<PropertyColumn, Boolean>> {
     public ReadOrdersAction(GroupObjectEntity groupObject, LP<?> toProperty) {
@@ -34,12 +33,10 @@ public class ReadOrdersAction extends ReadUserEventsAction<ImOrderMap<PropertyCo
         for (PropertyColumn column : orders.keyOrderSet()) {
             Boolean order = orders.get(column);
             if (order != null) {
-                Map<String, Object> orderMap = new HashMap<>();
+                JSONObject json = new OrderedJSONObject(); // its keys in the order the docs list them in
 
-                orderMap.put(UserEventAction.PROPERTY_KEY, column.property.getSID());
-                orderMap.put(OrderAction.DESC_KEY, order); // true is for desc on server
-
-                JSONObject json = new JSONObject(orderMap);
+                json.put(UserEventAction.PROPERTY_KEY, column.property.getSID());
+                json.put(OrderAction.DESC_KEY, order); // true is for desc on server
 
                 objects.add(json);
             }

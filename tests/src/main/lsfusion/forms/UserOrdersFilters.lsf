@@ -38,6 +38,22 @@ testFilterReadBack 'FILTERS right after FILTER reads the filters it set' () {
                  'FILTERS read ' + STRING(uofFilters()));
 }
 
+// ... and each item's keys in one order, the one the description lists them in: a JSONTEXT, which keeps the text as it
+// is written, gets the same text for the same list
+uofOrdersText = DATA LOCAL JSONTEXT ();
+uofFiltersText = DATA LOCAL JSONTEXT ();
+testReadKeysInOrder 'ORDERS and FILTERS write the keys of an item in the order the description lists them in' () {
+    SHOW uofItems NOWAIT {
+        ORDER uofItems.i FROM (JSON FROM property = 'qty', desc = TRUE);
+        ORDERS uofItems.i TO uofOrdersText;
+        FILTER uofItems.i FROM (JSON FROM property = 'qty', compare = '>', value = 2);
+        FILTERS uofItems.i TO uofFiltersText;
+    };
+    assertEquals(STRING(uofOrdersText()), r'[{"property":"qty","desc":true}]', 'ORDERS wrote ' + STRING(uofOrdersText()));
+    assertEquals(STRING(uofFiltersText()), r'[{"property":"qty","compare":">","negation":false,"value":"2"}]',
+                 'FILTERS wrote ' + STRING(uofFiltersText()));
+}
+
 testFilterTakesBackFilters 'FILTER takes back what FILTERS wrote' () {
     SHOW uofItems NOWAIT {
         FILTER uofItems.i FROM (JSON FROM property = 'qty', compare = '>', value = 2);
