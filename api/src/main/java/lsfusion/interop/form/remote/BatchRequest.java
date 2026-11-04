@@ -1,7 +1,10 @@
 package lsfusion.interop.form.remote;
 
+import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.event.ChangeSelection;
+import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.EventSource;
+import lsfusion.interop.form.property.PropertyGroupType;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -72,6 +75,8 @@ public abstract class BatchRequest implements Serializable {
         void setRegularFilter(S stack, SetRegularFilter request) throws Exception;
 
         void setViewFilters(S stack, SetViewFilters request) throws Exception;
+
+        void changeMode(S stack, ChangeMode request) throws Exception;
     }
 
     public static final class ChangeGroupObject extends BatchRequest {
@@ -221,6 +226,36 @@ public abstract class BatchRequest implements Serializable {
 
         public <S> void make(Requests<S> requests, S stack) throws Exception {
             requests.setViewFilters(stack, this);
+        }
+    }
+
+    public static final class ChangeMode extends BatchRequest {
+        public final int groupObjectID;
+        public final boolean setGroup;
+        public final int[] propertyIDs;
+        public final byte[][] columnKeys;
+        public final int aggrProps;
+        public final PropertyGroupType aggrType;
+        public final Integer pageSize;
+        public final boolean forceRefresh;
+        public final UpdateMode updateMode;
+        public final ListViewType listViewType;
+
+        public ChangeMode(int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, int aggrProps, PropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, UpdateMode updateMode, ListViewType listViewType) {
+            this.groupObjectID = groupObjectID;
+            this.setGroup = setGroup;
+            this.propertyIDs = propertyIDs;
+            this.columnKeys = columnKeys;
+            this.aggrProps = aggrProps;
+            this.aggrType = aggrType;
+            this.pageSize = pageSize;
+            this.forceRefresh = forceRefresh;
+            this.updateMode = updateMode;
+            this.listViewType = listViewType;
+        }
+
+        public <S> void make(Requests<S> requests, S stack) throws Exception {
+            requests.changeMode(stack, this);
         }
     }
 

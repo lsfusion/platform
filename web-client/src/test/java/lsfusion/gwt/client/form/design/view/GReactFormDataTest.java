@@ -362,25 +362,21 @@ public class GReactFormDataTest extends GWTTestCase {
                 }
                 // ... the update mode kept, and what shows the group's toolbar told, as the form does - a mode the group
                 // has changes nothing
-                public JavaScriptObject changeUpdateMode(String surface, GGroupObject group, GUpdateMode updateMode) {
-                    if (batching)
-                        return GController.rejectedControllerPromise(batchRefusal(surface));
+                public JavaScriptObject changeUpdateMode(GGroupObject group, GUpdateMode updateMode) {
                     if (updateMode != GUpdateMode.FORCE) {
                         boolean manual = updateMode == GUpdateMode.MANUAL;
                         if (isManualUpdate(group) == manual)
-                            return requestPromise;
+                            return batching ? batchPromise : requestPromise;
                         manualUpdates.put(group, manual);
                         controllers.toolbars.get(group).showUpdateMode(manual);
                     }
                     toolbarCalls.add("updateMode " + group.sID + " " + updateMode);
-                    return requestPromise;
+                    return batching ? batchPromise : requestPromise;
                 }
-                public JavaScriptObject changeListView(String surface, GListViewController views, GListViewType view) {
-                    if (batching)
-                        return GController.rejectedControllerPromise(batchRefusal(surface));
+                public JavaScriptObject changeListView(GListViewController views, GListViewType view) {
                     if (view != views.getListView())
                         views.changeListView(view);
-                    return requestPromise;
+                    return batching ? batchPromise : requestPromise;
                 }
                 // as the form keeps it: as the server starts the group, until a toolbar changes it
                 public boolean isManualUpdate(GGroupObject group) {
@@ -648,11 +644,11 @@ public class GReactFormDataTest extends GWTTestCase {
             table.match(grid -> null, tree -> asked.add("export tree " + tree.groups.get(0).ID));
             return requestPromise;
         }
-        public JavaScriptObject changeUpdateMode(String surface, GGroupObject group, GUpdateMode updateMode) { return requestPromise; }
-        public JavaScriptObject changeListView(String surface, GListViewController views, GListViewType view) {
+        public JavaScriptObject changeUpdateMode(GGroupObject group, GUpdateMode updateMode) { return batching ? batchPromise : requestPromise; }
+        public JavaScriptObject changeListView(GListViewController views, GListViewType view) {
             if (view != views.getListView())
                 views.changeListView(view);
-            return requestPromise;
+            return batching ? batchPromise : requestPromise;
         }
         public boolean isManualUpdate(GGroupObject group) { return group.enableManualUpdate; }
         public JavaScriptObject changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) { return batching ? batchPromise : requestPromise; }

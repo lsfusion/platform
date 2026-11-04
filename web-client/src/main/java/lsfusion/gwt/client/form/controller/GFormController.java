@@ -2623,30 +2623,22 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // tells what shows the group's toolbar, nothing held back yet; the mode the group has changes nothing -, or the
     // changes the server holds back brought now
     @Override
-    public JavaScriptObject changeUpdateMode(String surface, GGroupObject groupObject, GUpdateMode updateMode) {
-        String refusal = getBatchOrClosedRefusal(surface);
-        if (refusal != null)
-            return GController.rejectedControllerPromise(refusal);
-        return requestPromise(() -> changeUpdateMode(groupObject, updateMode));
+    public JavaScriptObject changeUpdateMode(GGroupObject groupObject, GUpdateMode updateMode) {
+        return requestPromise(() -> {
+            if (updateMode != GUpdateMode.FORCE) {
+                boolean manual = updateMode == GUpdateMode.MANUAL;
+                if (isManualUpdate(groupObject) == manual)
+                    return -1;
+                manualUpdates.put(groupObject, manual);
+                gridToolbarControllers.get(groupObject).showUpdateMode(manual);
+            }
+            return changeMode(groupObject, false, null, null, 0, null, null, false, updateMode, null);
+        });
     }
 
     @Override
-    public JavaScriptObject changeListView(String surface, GListViewController views, GListViewType view) {
-        String refusal = getBatchOrClosedRefusal(surface);
-        if (refusal != null)
-            return GController.rejectedControllerPromise(refusal);
+    public JavaScriptObject changeListView(GListViewController views, GListViewType view) {
         return requestPromise(() -> view == views.getListView() ? -1 : views.changeListView(view));
-    }
-
-    public long changeUpdateMode(GGroupObject groupObject, GUpdateMode updateMode) {
-        if (updateMode != GUpdateMode.FORCE) {
-            boolean manual = updateMode == GUpdateMode.MANUAL;
-            if (isManualUpdate(groupObject) == manual)
-                return -1;
-            manualUpdates.put(groupObject, manual);
-            gridToolbarControllers.get(groupObject).showUpdateMode(manual);
-        }
-        return changeMode(groupObject, false, null, null, 0, null, null, false, updateMode, null);
     }
 
     // change group mode with force refresh

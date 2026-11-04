@@ -133,6 +133,22 @@ public class UiReactToolbarIT extends UiTest {
         close(form);
     }
 
+    // a pivot switched to and away again in one batch, replaced before it took the user's update mode back, leaves the
+    // group in the user's mode: a change made then is shown at once, nothing held back
+    @Test
+    public void aPivotSwitchedToAndAwayInABatchLeavesTheUsersUpdateMode() throws Exception {
+        String[] items = seed();
+        Locator form = open(FOLDER, "UiReactToolbar.uiRtbHeader");
+        view.waitFor("data.i.manual === false && data.i.listView === 'grid'");
+        view.call("controller.batch(() => { controller.i.listView.change('pivot'); controller.i.listView.change('grid'); })");
+        view.waitFor("data.i.listView === 'grid'");
+        assertThat(names(form)).hasText(items);
+        rename(form);
+        assertThat(names(form)).hasText(new String[] {items[0] + "!", items[1]});
+        view.waitFor("data.i.manual === false && data.i.updatePending === false");
+        close(form);
+    }
+
     // a view drawing the whole group has the toolbar's members and states all the same, with nothing of the platform's
     // to show or to switch - its filter controls' member and the view switch refused -; the count and the manual update
     // work over the rows it draws

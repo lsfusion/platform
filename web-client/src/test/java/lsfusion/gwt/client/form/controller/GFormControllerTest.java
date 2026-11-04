@@ -58,6 +58,7 @@ import lsfusion.gwt.client.controller.remote.action.form.ExpandGroupObjectRecurs
 import lsfusion.gwt.client.controller.remote.action.form.CollapseGroupObject;
 import lsfusion.gwt.client.controller.remote.action.form.CollapseGroupObjectRecursive;
 import lsfusion.gwt.client.controller.remote.action.form.ExecuteBatch;
+import lsfusion.gwt.client.controller.remote.action.form.FormRequestCountingAction;
 import lsfusion.gwt.client.controller.remote.action.form.ExecuteEventAction;
 import lsfusion.gwt.client.controller.remote.action.form.SetUserFilters;
 import lsfusion.gwt.client.controller.remote.action.form.SetPropertyOrders;
@@ -358,7 +359,8 @@ public class GFormControllerTest extends GWTTestCase {
         @Override
         boolean takes(Action<?> action) {
             return (action instanceof GetPriorityAsyncValues || action instanceof GetAsyncValues
-                    || action instanceof CountRecords || action instanceof CalculateSum || action instanceof GroupReport || action instanceof ChangeMode)
+                    || action instanceof CountRecords || action instanceof CalculateSum || action instanceof GroupReport || action instanceof ChangeMode
+                    || action instanceof ExecuteBatch)
                     && controller.getForm().sessionID.equals(((FormAction<?>) action).formSessionID);
         }
     }
@@ -724,12 +726,12 @@ public class GFormControllerTest extends GWTTestCase {
                 return controller.changeListViewType(group, 20, view, null);
             }
         };
-        JavaScriptObject sameMode = controller.changeUpdateMode("items.manual.change()", group, GUpdateMode.AUTO);
-        JavaScriptObject sameView = controller.changeListView("items.listView.change()", views, GListViewType.GRID);
+        JavaScriptObject sameMode = controller.changeUpdateMode(group, GUpdateMode.AUTO);
+        JavaScriptObject sameView = controller.changeListView(views, GListViewType.GRID);
         assertTrue(asks.actions.isEmpty());
-        JavaScriptObject manual = controller.changeUpdateMode("items.manual.change()", group, GUpdateMode.MANUAL);
-        JavaScriptObject view = controller.changeListView("items.listView.change()", views, GListViewType.PIVOT);
-        JavaScriptObject update = controller.changeUpdateMode("items.update()", group, GUpdateMode.FORCE);
+        JavaScriptObject manual = controller.changeUpdateMode(group, GUpdateMode.MANUAL);
+        JavaScriptObject view = controller.changeListView(views, GListViewType.PIVOT);
+        JavaScriptObject update = controller.changeUpdateMode(group, GUpdateMode.FORCE);
         assertEquals(3, asks.actions.size());
         ArrayList<String> settled = new ArrayList<>();
         then(sameMode, answer -> settled.add("same mode"), error -> fail(error));
@@ -753,16 +755,60 @@ public class GFormControllerTest extends GWTTestCase {
         });
     }
 
+    // The update mode and the view go with a batch: made at once, their requests sent in its one request, its Promise
+    // theirs; on a closed form refused before they run.
+    public void testTheUpdateModeAndTheViewGoWithABatch() {
+        AskServer asks = asks();
+        GFormController controller = asks.controller;
+        GGroupObject group = asks.form.group;
+        GListViewController views = new GListViewController() {
+            GListViewType shown = GListViewType.GRID;
+            public List<GListViewType> getListViews() { return Arrays.asList(GListViewType.GRID, GListViewType.PIVOT); }
+            public GListViewType getListView() { return shown; }
+            public long changeListView(GListViewType view) {
+                shown = view;
+                return controller.changeListViewType(group, 20, view, null);
+            }
+        };
+        ArrayList<JavaScriptObject> promises = new ArrayList<>();
+        JavaScriptObject batch = controller.batch(() -> {
+            promises.add(controller.changeUpdateMode(group, GUpdateMode.MANUAL));
+            promises.add(controller.changeListView(views, GListViewType.PIVOT));
+            promises.add(controller.changeUpdateMode(group, GUpdateMode.FORCE));
+            assertTrue(controller.isManualUpdate(group));
+            assertEquals(GListViewType.PIVOT, views.getListView());
+            assertTrue(asks.actions.isEmpty());
+        });
+        assertEquals(1, asks.actions.size());
+        ArrayList<FormRequestCountingAction<?>> requests = ((ExecuteBatch) asks.actions.get(0)).requests;
+        assertEquals(3, requests.size());
+        for (FormRequestCountingAction<?> request : requests)
+            assertTrue(request instanceof ChangeMode);
+        for (JavaScriptObject promise : promises)
+            assertSame(batch, promise);
+        ArrayList<String> settled = new ArrayList<>();
+        then(batch, answer -> settled.add("batch"), error -> fail(error));
+        delayTestFinish(5000);
+        inTurn(() -> {
+            assertTrue(settled.isEmpty());
+            asks.answer(0, false);
+        }, () -> {
+            assertEquals(Collections.singletonList("batch"), settled);
+            closeForm(controller);
+            then(controller.changeUpdateMode(group, GUpdateMode.AUTO), answer -> fail("resolved"), error -> {
+                assertEquals("Form is closed", error);
+                assertTrue(controller.isManualUpdate(group));
+                assertEquals(1, asks.actions.size());
+                finishTest();
+            });
+        });
+    }
+
     // Asks refuse inside the form: no request or state change, their Promise rejected with the reason.
     public void testAsksAreRefusedInABatchAndOnAClosedForm() {
         AskServer asks = asks();
         GFormController controller = asks.controller;
         GGroupObject group = asks.form.group;
-        GListViewController views = new GListViewController() {
-            public List<GListViewType> getListViews() { return Arrays.asList(GListViewType.GRID, GListViewType.PIVOT); }
-            public GListViewType getListView() { return GListViewType.GRID; }
-            public long changeListView(GListViewType view) { fail("view changed"); return -1; }
-        };
         ArrayList<JavaScriptObject> promises = new ArrayList<>();
         Runnable ask = () -> {
             promises.add(controller.countRecords("items.getCount()", group));
@@ -772,12 +818,7 @@ public class GFormControllerTest extends GWTTestCase {
             promises.add((JavaScriptObject) call(controller.controller, "getSum", "items", "price"));
             promises.add((JavaScriptObject) call(controller.controller, "getValues", "items.price", "ab", null));
             promises.add(controller.runTableReport("items.export()", group.grid));
-            promises.add(controller.changeUpdateMode("items.manual.change()", group, GUpdateMode.MANUAL));
-            promises.add(controller.changeUpdateMode("items.update()", group, GUpdateMode.FORCE));
-            promises.add(controller.changeListView("items.listView.change()", views, GListViewType.PIVOT));
             promises.add((JavaScriptObject) call(controller.controller, "export", "items"));
-            promises.add((JavaScriptObject) call(controller.controller, "changeManual", "items", true));
-            promises.add((JavaScriptObject) call(controller.controller, "update", "items"));
             assertTrue(refusalOf(() -> call(controller.controller, "getValues", "items.price", null, parse("{\"typo\":true}"))).contains("takes the query"));
             assertTrue(refusalOf(() -> call(controller.controller, "getValues", "items.price", "ab", parse("{\"typo\":true}"))).contains("unknown field 'typo'"));
             assertTrue(refusalOf(() -> call(controller.controller, "getSum", "items", "missing")).contains("unknown property 'missing'"));
@@ -785,15 +826,12 @@ public class GFormControllerTest extends GWTTestCase {
         };
         assertEquals("", consoleErrorsOf(() -> controller.batch(ask)));
         assertTrue(asks.actions.isEmpty());
-        assertFalse(controller.isManualUpdate(group));
         closeForm(controller);
         assertEquals("", consoleErrorsOf(ask));
         assertTrue(asks.actions.isEmpty());
-        assertFalse(controller.isManualUpdate(group));
         List<String> reasons = new ArrayList<>();
         for (String surface : Arrays.asList("items.getCount()", "items.getSum()", "items.price.getValues()", "form.getCount('items')",
-                "form.getSum('items')", "form.getValues('items.price')", "items.export()", "items.manual.change()", "items.update()",
-                "items.listView.change()", "form.export('items')", "form.changeManual('items')", "form.update('items')"))
+                "form.getSum('items')", "form.getValues('items.price')", "items.export()", "form.export('items')"))
             reasons.add("controller." + surface + ": a batch is running, which carries changes only: make this call before the batch or after it");
         reasons.addAll(Collections.nCopies(reasons.size(), "Form is closed"));
         int[] rejected = {0};

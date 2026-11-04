@@ -3,7 +3,6 @@ package lsfusion.tests;
 import com.microsoft.playwright.Locator;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
@@ -20,10 +19,10 @@ public class UiReactBatchChromeIT extends UiTest {
     private static final String FOLDER = "UiReactBatchChrome.uiRbc";
     private static final String REFUSAL = "a batch is running, which carries changes only: make this call before the batch or after it";
 
-    // a toolbar's calls that ask the server, in a batch: the count's and a sum's Promises rejected with the reason, the
-    // export, the manual update, the update and the view switch rejected with the reason, nothing of them
-    // made; after the batch the count, the sum, the view switch and the manual update are made - the export and the
-    // update outside a batch are UiReactToolbarIT's (#1884)
+    // a toolbar's calls in a batch: those that ask the server - the count, a sum, the export - rejected with the reason,
+    // nothing of them made; the view switch and the manual update go with the batch, in its one request, the update
+    // too; after the batch the count and the sum are made - the export and the update outside a batch are
+    // UiReactToolbarIT's (#1884)
     @Test
     public void theToolbarsServerCallsInABatch() throws Exception {
         String[] items = items(seed());
@@ -32,28 +31,19 @@ public class UiReactBatchChromeIT extends UiTest {
         assertThat(names(form)).hasText(items);
         assertEquals("controller.i.getCount(): " + REFUSAL, view.drawn().rejection("(() => { let count; controller.batch(() => { count = controller.i.getCount(); }); return count; })()"));
         assertEquals("controller.i.getSum(): " + REFUSAL, view.drawn().rejection("(() => { let sum; controller.batch(() => { sum = controller.i.getSum('price'); }); return sum; })()"));
+        assertEquals("controller.i.export(): " + REFUSAL, view.drawn().rejection("(() => { let result; controller.batch(() => { result = controller.i.export(); }); return result; })()"));
         assertEquals("2", view.drawn().answer("controller.i.getCount()"));
-
-        List<String> console = console();
-        for (String call : Arrays.asList("manual.change(true)", "update()", "export()", "listView.change('pivot')")) {
-            String surface = call.replace("true", "").replace("'pivot'", "");
-            assertEquals("controller.i." + surface + ": " + REFUSAL,
-                    view.drawn().rejection("(() => { let result; controller.batch(() => { result = controller.i." + call + "; }); return result; })()"));
-        }
-        assertEquals(0, console.size());
-        assertEquals("2", view.drawn().answer("controller.i.getCount()"));
-        assertEquals("false,grid", view.drawn().eval("[data.i.manual, data.i.listView].join()"));
-        assertThat(names(form)).hasText(items);
         assertEquals("2.25", view.drawn().answer("controller.i.getSum('price')"));
-        view.drawn().call("controller.i.listView.change('pivot')");
+
+        List<String> requests = requests(request -> request.method().equals("POST"));
+        view.drawn().call("controller.batch(() => { controller.i.listView.change('pivot'); controller.i.manual.change(true); controller.i.update(); })");
         assertThat(form.locator(".pvtTable.bodytable")).isVisible();
-        view.waitFor("data.i.listView === 'pivot'");
-        view.drawn().call("controller.i.listView.change('grid')");
+        view.waitFor("data.i.listView === 'pivot' && data.i.manual === true");
+        assertEquals(1, count(requests, "ExecuteBatch")); // the pivot asks for its layout apart, once it has the batch's answer
+        assertEquals(1, requests.stream().filter(request -> request.contains(signature("ExecuteBatch")) && request.contains(signature("ChangeMode"))).count());
+        view.drawn().call("controller.batch(() => { controller.i.listView.change('grid'); controller.i.manual.change(false); })");
         assertThat(names(form)).hasText(items);
-        view.waitFor("data.i.listView === 'grid'");
-        view.drawn().call("controller.i.manual.change(true)");
-        view.waitFor("data.i.manual === true");
-        assertThat(names(form)).hasText(items);
+        view.waitFor("data.i.listView === 'grid' && data.i.manual === false");
         close(form);
     }
 

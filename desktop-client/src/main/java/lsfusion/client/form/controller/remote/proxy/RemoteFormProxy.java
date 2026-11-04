@@ -3,14 +3,11 @@ package lsfusion.client.form.controller.remote.proxy;
 import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.proxy.RemoteRequestObjectProxy;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.event.ChangeSelection;
 import lsfusion.interop.form.event.FormEvent;
-import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
-import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.remote.BatchRequest;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
@@ -112,14 +109,6 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         logRemoteMethodStartVoidCall("selectAll");
         ServerResponse result = target.selectAll(requestIndex, lastReceivedRequestIndex, groupID, changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues);
         logRemoteMethodEndVoidCall("selectAll");
-        return result;
-    }
-
-    @Override
-    public ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, int aggrProps, PropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, UpdateMode updateMode, ListViewType viewType) throws RemoteException {
-        logRemoteMethodStartVoidCall("changeMode");
-        ServerResponse result = target.changeMode(requestIndex, lastReceivedRequestIndex, groupObjectID, setGroup, propertyIDs, columnKeys, aggrProps, aggrType, pageSize, forceRefresh, updateMode, viewType);
-        logRemoteMethodEndVoidCall("changeMode");
         return result;
     }
 

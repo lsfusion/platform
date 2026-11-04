@@ -1705,7 +1705,7 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changeMode") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.changeMode(requestIndex, lastReceivedRequestIndex, groupObject.ID, false, null, null, 0, null, null, false, updateMode, null);
+                return executeBatch(remoteForm, requestIndex, lastReceivedRequestIndex, new BatchRequest.ChangeMode(groupObject.ID, false, null, null, 0, null, null, false, updateMode, null));
             }
         });
     }

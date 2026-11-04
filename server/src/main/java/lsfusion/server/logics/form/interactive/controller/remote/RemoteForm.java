@@ -17,10 +17,8 @@ import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.FormClientData;
-import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.event.ChangeSelection;
 import lsfusion.interop.form.event.FormEvent;
-import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
@@ -28,7 +26,6 @@ import lsfusion.interop.form.order.Scroll;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.property.EventSource;
-import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.remote.BatchRequest;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -428,44 +425,42 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     @Override
-    public ServerResponse changeMode(long requestIndex, long lastReceivedRequestIndex, int groupObjectID, boolean setGroup, int[] propertyIDs, byte[][] columnKeys, int aggrProps, PropertyGroupType aggrType, Integer pageSize, boolean forceRefresh, UpdateMode updateMode, ListViewType listViewType) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            GroupObjectInstance groupObject = form.getGroupObjectInstance(groupObjectID);
+    public void changeMode(ExecutionStack stack, BatchRequest.ChangeMode request) throws IOException, SQLException, SQLHandledException {
+        GroupObjectInstance groupObject = form.getGroupObjectInstance(request.groupObjectID);
 
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("changeMode: [ID: %1$d]", groupObject.getID()));
-            }
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("changeMode: [ID: %1$d]", groupObject.getID()));
+        }
 
-            if(setGroup) { // should correspond FormInstance constructor
-                GroupMode setGroupMode = null;
-                if(propertyIDs != null) {
-                    MExclSet<PropertyColumn> mGroupProps = SetFact.mExclSet(propertyIDs.length);
-                    MExclSet<PropertyColumn> mAggrProps = SetFact.mExclSet(propertyIDs.length);
-                    for (int i = 0; i < propertyIDs.length; i++) {
-                        PropertyDrawInstance property = form.getPropertyDraw(propertyIDs[i]);
-                        PropertyColumn column = new PropertyColumn(property, deserializeDataKeysValues(columnKeys[i]));
-                        if (i >= aggrProps)
-                            mAggrProps.exclAdd(column);
-                        else
-                            mGroupProps.exclAdd(column);
-                    }
-                    setGroupMode = GroupMode.create(mGroupProps.immutable(), mAggrProps.immutable(), aggrType, form.instanceFactory);
+        if(request.setGroup) { // should correspond FormInstance constructor
+            GroupMode setGroupMode = null;
+            if(request.propertyIDs != null) {
+                MExclSet<PropertyColumn> mGroupProps = SetFact.mExclSet(request.propertyIDs.length);
+                MExclSet<PropertyColumn> mAggrProps = SetFact.mExclSet(request.propertyIDs.length);
+                for (int i = 0; i < request.propertyIDs.length; i++) {
+                    PropertyDrawInstance property = form.getPropertyDraw(request.propertyIDs[i]);
+                    PropertyColumn column = new PropertyColumn(property, deserializeDataKeysValues(request.columnKeys[i]));
+                    if (i >= request.aggrProps)
+                        mAggrProps.exclAdd(column);
+                    else
+                        mGroupProps.exclAdd(column);
                 }
-                groupObject.changeGroupMode(setGroupMode);
+                setGroupMode = GroupMode.create(mGroupProps.immutable(), mAggrProps.immutable(), request.aggrType, form.instanceFactory);
             }
-            
-            if(pageSize != null)
-                groupObject.setPageSize(pageSize < 0 ? Settings.get().getPageSizeDefaultValue() : pageSize);
-            
-            if(forceRefresh)
-                groupObject.forceRefresh();
+            groupObject.changeGroupMode(setGroupMode);
+        }
 
-            if(updateMode != null)
-                groupObject.setUpdateMode(updateMode);
+        if(request.pageSize != null)
+            groupObject.setPageSize(request.pageSize < 0 ? Settings.get().getPageSizeDefaultValue() : request.pageSize);
 
-            if(listViewType != null)
-                form.changeListViewType(groupObject, listViewType);
-        });
+        if(request.forceRefresh)
+            groupObject.forceRefresh();
+
+        if(request.updateMode != null)
+            groupObject.setUpdateMode(request.updateMode);
+
+        if(request.listViewType != null)
+            form.changeListViewType(groupObject, request.listViewType);
     }
 
     public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, final ArrayList<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<byte[]>> values, ArrayList<ArrayList<String>> rawValues, boolean forceGroupChange) throws RemoteException {

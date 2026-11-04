@@ -118,8 +118,11 @@ public final class GPlatformGridController extends GPlatformTableController<GGri
 
     public long changeListView(GListViewType type) {
         setListView(type);
-        // a pivot makes a call to get the columns, to init its default config
-        long requestIndex = formController.changeListViewType(groupObject, view.getPageSize(), type, type == GListViewType.PIVOT ? GUpdateMode.MANUAL : null);
+        // a pivot makes a call to get the columns, to init its default config, in the manual mode, the user's taken back
+        // once it has them (changeGroups); another view takes the user's back itself: a pivot replaced before it took it
+        // back - in the same batch, say - would leave the group manual
+        long requestIndex = formController.changeListViewType(groupObject, view.getPageSize(), type,
+                type == GListViewType.PIVOT || formController.isManualUpdate(groupObject) ? GUpdateMode.MANUAL : GUpdateMode.AUTO);
         view.setSetRequestIndex(requestIndex);
         updateSettingsButton();
         return requestIndex;

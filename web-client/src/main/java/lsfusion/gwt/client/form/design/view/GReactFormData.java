@@ -173,8 +173,8 @@ public class GReactFormData {
         // toolbar (TreeToolbarPart) ...
         JavaScriptObject runTableReport(String surface, GGridProperty table);
         // ... and its update mode: manual, automatic, or the changes the server holds back brought now
-        JavaScriptObject changeUpdateMode(String surface, GGroupObject group, GUpdateMode updateMode);
-        JavaScriptObject changeListView(String surface, GListViewController views, GListViewType view);
+        JavaScriptObject changeUpdateMode(GGroupObject group, GUpdateMode updateMode);
+        JavaScriptObject changeListView(GListViewController views, GListViewType view);
         // ... and whether its update is manual, as the form keeps it (GFormController.isManualUpdate)
         boolean isManualUpdate(GGroupObject group);
         // ... and a view's batch: run, the edits made in it shown at once and sent together, in one request, when it
@@ -3144,11 +3144,11 @@ public class GReactFormData {
     // toolbar told by the form, nothing held back yet (Verbs.changeUpdateMode)
     private JavaScriptObject changeManualUpdate(String surface, GGroupObject group, Object manual) {
         boolean value = readBoolean(controllerPrefix(surface), manual);
-        return verbs.changeUpdateMode(surface, group, value ? GUpdateMode.MANUAL : GUpdateMode.AUTO);
+        return verbs.changeUpdateMode(group, value ? GUpdateMode.MANUAL : GUpdateMode.AUTO);
     }
     // ... and the changes it holds back brought now, as the platform's button does
-    private JavaScriptObject forceUpdate(String surface, GGroupObject group) {
-        return verbs.changeUpdateMode(surface, group, GUpdateMode.FORCE);
+    private JavaScriptObject forceUpdate(GGroupObject group) {
+        return verbs.changeUpdateMode(group, GUpdateMode.FORCE);
     }
     // ... and a list group's rows shown as another view, one of those the design gives them, as the platform's button
     // does - none where no table of the platform's draws the rows (gridRows, GGridController.getListViewController): no
@@ -3167,7 +3167,7 @@ public class GReactFormData {
         }
         if (view == null)
             throw refusal(controllerPrefix(surface) + "takes the name of a view of the table: " + names);
-        return verbs.changeListView(surface, views, view);
+        return verbs.changeListView(views, view);
     }
     // ... and the platform's filter controls shown or hidden, as the toolbar's filter button does - on an empty list of
     // the platform's panel, with a condition to fill in -, the table's filter input controller's (filter) where its
@@ -3256,7 +3256,7 @@ public class GReactFormData {
         return changeManualUpdate(surface, readGridGroup(controllerPrefix(surface), name), manual);
     }
     private JavaScriptObject update(String surface, String name) {
-        return forceUpdate(surface, readGridGroup(controllerPrefix(surface), name));
+        return forceUpdate(readGridGroup(controllerPrefix(surface), name));
     }
     private JavaScriptObject changeListView(String surface, String name, Object view) {
         return switchListView(surface, readGridGroup(controllerPrefix(surface), name), view);
@@ -3565,7 +3565,7 @@ public class GReactFormData {
             }
         };
         member.update = function () {
-            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::forceUpdate(*)(sid + ".update()", group);
+            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::forceUpdate(*)(group);
         };
         member.listView = {
             change: function (name) {
