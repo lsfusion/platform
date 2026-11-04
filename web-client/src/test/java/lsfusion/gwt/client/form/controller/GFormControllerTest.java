@@ -11,6 +11,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.UnsafeNativeLong;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.Event;
@@ -2960,7 +2961,11 @@ public class GFormControllerTest extends GWTTestCase {
     // a key pressed in an element of the page, as the form's listener takes it (GFormController.checkGlobalKeyEvent):
     // its bindings asked in the preview, then in the plain pass - whether one of them took it
     private static boolean press(GFormController controller, Element target, int keyCode) {
-        NativeEvent key = Document.get().createKeyDownEvent(false, false, false, false, keyCode);
+        return press(controller, target, keyCode, false);
+    }
+    // ... with Alt held
+    private static boolean press(GFormController controller, Element target, int keyCode, boolean alt) {
+        NativeEvent key = Document.get().createKeyDownEvent(false, alt, false, false, keyCode);
         target.dispatchEvent(key);
         EventHandler handler = new EventHandler(Event.as(key));
         controller.checkKeyEvent(handler, true, false, false);
@@ -3745,6 +3750,61 @@ public class GFormControllerTest extends GWTTestCase {
         assertTrue(rowCondition(placed).nullValue());
     }
 
+    // F3 and Alt+F3 PRESSED in a grid the platform draws over the conditions a view draws, in the manual apply mode:
+    // the condition each key writes waits for the apply, as a view's own change does - F3's in the list, Alt+F3's
+    // alone -, the view shown it, the form's list as the server reported it, no request sent; the apply sends it. The
+    // controls the platform's - their apply button, which the mode comes with, hidden with them till each key shows
+    // them, before it writes (the toolbar's button hides them between the two) - or a view's, their apply always there
+    public void testF3AndAltF3OverAViewsConditionsWaitForTheApplyInManualMode() {
+        boolean manual = MainFrame.userFiltersManualApplyMode;
+        MainFrame.userFiltersManualApplyMode = true;
+        try {
+            for (boolean viewControls : new boolean[]{false, true}) {
+                FiltersForm filters = new FiltersForm(true);
+                filters.noFilters();
+                filters.platformRows();
+                filters.boxInBoard();
+                if (viewControls)
+                    filters.controlsInBoard();
+                filters.deliver(true); // the grid on the first row, its first column price: 5
+                GFormController controller = filters.controller();
+                GFilterInputController input = ((GPlatformTableController<?, ?, ?>) tableController(controller, filters.group.grid)).getFilter();
+                filters.report(controller, filters.condition(filters.quantity, PValue.getPValue(2), GCompare.EQUALS));
+                assertEquals(viewControls, filters.model(controller).isManual()); // the platform's apply hidden with its controls
+
+                // the element the grid takes its keys in, put on the page - a binding holds while its widget is
+                // shown -, its widget not attached: a key pressed there reaches the form's bindings alone
+                Element keys = platformGridView(controller, filters.group).getTableDataFocusElement();
+                Element parent = keys.getParentElement();
+                Node next = keys.getNextSibling();
+                RootPanel.getBodyElement().appendChild(keys);
+                long requests = nextRequestIndex(controller);
+                try {
+                    assertTrue(press(controller, keys, 114)); // F3
+                    assertTrue(filters.model(controller).isManual());
+                    assertEquals("quantity=2 price=5", viewConditions(filters.view(controller)));
+                    input.setControlsVisible(false); // the toolbar's button: what waits stays
+                    assertTrue(press(controller, keys, 114, true)); // Alt+F3
+                    assertTrue(filters.model(controller).isManual());
+                    assertEquals("price=5", viewConditions(filters.view(controller)));
+                } finally {
+                    parent.insertBefore(keys, next);
+                }
+                assertEquals(requests, nextRequestIndex(controller)); // nothing sent
+                assertEquals(Collections.singletonList(filters.quantity), sentProperties(controller, filters));
+                assertTrue(filters.model(controller).isPending());
+
+                input.applyConditions(); // the controls' apply
+                assertEquals(requests + 1, nextRequestIndex(controller));
+                assertEquals(Collections.singletonList(filters.price), sentProperties(controller, filters));
+                assertValue(5, filters.first(controller, filters.price).value.value);
+                assertFalse(filters.model(controller).isPending());
+            }
+        } finally {
+            MainFrame.userFiltersManualApplyMode = manual;
+        }
+    }
+
     // a FILTER's row bound to another entry - its own taken off, the next on its column shown - shows no loading of the
     // one it showed
     public void testAFiltersRowBoundToAnotherEntryIsNotLoading() {
@@ -4436,6 +4496,19 @@ public class GFormControllerTest extends GWTTestCase {
                 box.container.children.remove(box);
             box.container = board; board.children.add(box);
         }
+        // ... and FILTERCONTROLS(items) drawn by the board too: the controls a view draws, their apply always there
+        void controlsInBoard() {
+            GFilterControls controls = group.grid.filterControls;
+            form.mainContainer.children.remove(controls);
+            controls.container = board; board.children.add(controls);
+        }
+        // ... and the rows the platform's - GRID(items) with no view of its own, shown as a grid, its cells drawn -: a
+        // grid that takes the table's keys
+        void platformRows() {
+            group.grid.custom = null; group.grid.react = false;
+            group.listViewType = GListViewType.GRID;
+            price.cellType = price.valueType; quantity.cellType = quantity.valueType;
+        }
         // ... and no FILTER at all: the panel's rows its own alone
         void noFilters() {
             group.grid.filters.clear();
@@ -4532,6 +4605,14 @@ public class GFormControllerTest extends GWTTestCase {
     private static native double filterValue(Object view, String property) /*-{
         var state = view.@lsfusion.gwt.client.form.design.view.ReactContainerView::state;
         return state.@lsfusion.gwt.client.form.design.view.GReactFormData.ViewState::current()().items.filter[property].value;
+    }-*/;
+    // ... and the conditions of the group's list it draws, as its view is given them now: each one's property,
+    // comparison and value
+    private static native String viewConditions(Object view) /*-{
+        var state = view.@lsfusion.gwt.client.form.design.view.ReactContainerView::state;
+        return state.@lsfusion.gwt.client.form.design.view.GReactFormData.ViewState::current()().items.filters.map(function (condition) {
+            return condition.property + condition.compare + condition.value;
+        }).join(' ');
     }-*/;
     // the platform's rows of a FILTER of a table - what reports its row's events -, none where React draws it, read
     // where the platform keeps its rows of the table's user filters, which its input's toggle drives; and its row: its
