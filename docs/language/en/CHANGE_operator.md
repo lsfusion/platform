@@ -31,7 +31,7 @@ The `CHANGE` operator creates an action that writes the value of `valueExpr` int
 
 - `whereExpr`
 
-    Expression whose value is the condition under which the value is written. If not specified, it is considered equal to `TRUE`.
+    Expression whose value is the condition under which the value is written. If not specified, it is considered equal to `TRUE`. The `WHERE` keyword belongs to the nearest preceding operator with a `WHERE` block of its own: when `valueExpr` ends with a [`GROUP`](GROUP_operator.md) operator written without parentheses and without a `WHERE` block of its own, the condition is read as the `WHERE` block of that operator and the assignment is left without a condition — for `SUM`, `MAX`, `MIN`, `EQUAL`, which have no such block, the module fails to load, and for `AGGR`, `NAGGR`, `CONCAT`, `LAST` the condition silently filters the aggregated object collections instead. To make it the condition of the assignment, enclose `valueExpr` in parentheses: `count(x) <- (GROUP SUM 1 IF f(Y y, x)) WHERE active(x)`.
 
 ### Examples
 

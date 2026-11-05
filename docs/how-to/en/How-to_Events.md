@@ -58,7 +58,7 @@ WHEN LOCAL (CHANGED(quantity(OrderDetail d)) OR CHANGED(price(d)))
 }
 ```
 
-Events of type `LOCAL` count all property changes relative not to the state of the database but to the values at the time of the previous occurrence of this event (or rather, the end of its handling). We need to check that `sum` has not changed, to avoid erasing changes made by previous changes. For example, if order lines have been imported from a file, in which the quantity, price and amount are recorded, then this event will no longer take effect.
+Events of type `LOCAL` count all property changes relative not to the state of the database but to the values at the end of the previous execution of local events in the session (after each change on a form, when a form is opened, at the start of applying changes), whether or not this event fired then. We need to check that `sum[OrderDetail]` has not changed since then, to avoid erasing an amount set together with the quantity or price. For example, if order lines have been imported from a file, in which the quantity, price and amount are recorded, then this event does not overwrite the imported amount. An amount entered earlier, before the previous execution of local events, no longer counts as changed, so it is recalculated.
 
 ## Example 3
 

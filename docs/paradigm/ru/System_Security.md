@@ -37,7 +37,7 @@ title: 'Security'
 | `firstRole[User]`                 | роль с наименьшим номером, отличная от `default`, иначе роль `default`      |
 | `rolesCount[User]`                | число ролей пользователя                                                    |
 
-### Системные роли
+### Системные роли {#systemRoles}
 
 `createSystemUserRoles[]` создаёт четыре встроенные роли, если их нет, определяя их по `sid`:
 
@@ -49,6 +49,8 @@ title: 'Security'
 | `selfRegister` | Самостоятельная регистрация | запрет на `System.root`, разрешение на папку `Authentication.account` |
 
 Назначение привязано к событиям пользователя: при создании пользователя (`SETCHANGED` на `User`) назначается роль `default`, а при логине `admin` — ещё и роль `admin`. При самостоятельной регистрации (`onUserRegister`) назначается роль `selfRegister`.
+
+Самостоятельная регистрация отключается признаком `disableRole[UserRole]` у роли `selfRegister` (`disableRole(userRoleSID('selfRegister')) <- TRUE`): `getServerSettings[]` выдает его как `disableRegistration`, страница входа веб-клиента перестает показывать ссылку на регистрацию и отдавать страницу регистрации, а вход через провайдера OAuth2 больше не создает нового пользователя. Само API-действие `registerUser[JSONFILE]` этот признак не ограничивает.
 
 ### Права
 

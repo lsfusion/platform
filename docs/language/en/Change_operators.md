@@ -13,7 +13,7 @@ typeChange(propExpr)
 
 ### Description
 
-Change operators create [properties](../paradigm/Properties.md) which determine whether a given type of change has occurred for a certain property in the current session. They are [context-dependent](Property_operators.md) property operators and can be used inside [expressions](Expression.md). Inside an [event handler](../paradigm/Events.md#change) they switch to event mode and report changes since the previous occurrence of that event.
+Change operators create [properties](../paradigm/Properties.md) which determine whether a given type of change has occurred for a certain property in the current session. They are [context-dependent](Property_operators.md) property operators and can be used inside [expressions](Expression.md). Inside an [event handler](../paradigm/Events.md#change) they switch to event mode and report changes since the previous occurrence of that event — for a local event, since the previous execution of local events in the session, not since the last time this particular handler fired.
 
 ### Parameters
 
