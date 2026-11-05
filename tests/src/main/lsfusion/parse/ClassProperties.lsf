@@ -1,0 +1,18 @@
+MODULE ClassProperties;
+
+REQUIRE TestUtils;
+
+// a class has one property of being of that class - what IS and the class changes of a session go through -, made the
+// first time it is asked for, which is in the parse. Modules that do not require each other are parsed at once, each in
+// a thread of its own, so two of them that ask for it at once (o IS Item in one, Item NONULL in another) both made one:
+// what was built on the second the class did not keep never saw the class's changes
+
+CLASS CpItem 'Item';
+
+cpFailure = DATA LOCAL STRING ();
+cpMakeAtOnce INTERNAL 'lsfusion.tests.MakeClassPropertiesAtOnceAction' ();
+
+testClassPropertiesMadeAtOnce 'A class property asked for waits for another one asking for it' () {
+    cpMakeAtOnce();
+    assertNull(cpFailure(), cpFailure());
+}

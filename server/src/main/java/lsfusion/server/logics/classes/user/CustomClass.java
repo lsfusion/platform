@@ -17,6 +17,7 @@ import lsfusion.interop.classes.DataType;
 import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
@@ -570,7 +571,10 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     private IsClassProperty property;
+    // the parse asks for it first, from modules parsed at once and under locks of their own (is, the class props'
+    // cache), and a second IsClassProperty of the class would be one its class changes never reach
     @ManualLazy
+    @NFLazy
     public IsClassProperty getProperty() {
         if(property==null)
             property = getProperty(this);

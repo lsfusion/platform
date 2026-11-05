@@ -8,6 +8,7 @@ import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.FormulaClass;
@@ -269,6 +270,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
 
     private IsClassProperty property;
     @ManualLazy
+    @NFLazy // see CustomClass.getProperty
     public IsClassProperty getProperty() {
         if(property == null)
             property = CustomClass.getProperty(this);
