@@ -1,0 +1,16 @@
+MODULE ConnectionLsn;
+
+REQUIRE TestUtils;
+
+// a connection keeps the LSN of its last commit, which a replica its session is moved to has to have reached. The
+// connection balancing and restart read it from threads of their own, beside the connection's requests - and the read
+// was checked as if it were one of them: a second thread inside the connection, an AssertionError under -ea (for a
+// request that was committing, after its commit)
+
+clFailure = DATA LOCAL STRING ();
+clReadBeside INTERNAL 'lsfusion.tests.ReadLsnBesideRequestAction' ();
+
+testLsnReadBesideARequest 'The LSN is read by the balancing beside a request of the connection' () {
+    clReadBeside();
+    assertNull(clFailure(), clFailure());
+}

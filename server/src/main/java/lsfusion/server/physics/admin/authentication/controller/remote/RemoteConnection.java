@@ -284,13 +284,15 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    private LogSequenceNumber lsn;
+    // read by the connection balancing and restart too (SQLSession.balanceConnection / restartConnection), from threads
+    // of their own beside the connection's requests - so volatile, and not @AssertSynchronized, which took such a read
+    // for a second thread inside the connection (and under -ea failed the request, after its commit)
+    private volatile LogSequenceNumber lsn;
     @AssertSynchronized
     public void updateLSN(LogSequenceNumber lsn) {
         this.lsn = lsn;
     }
 
-    @AssertSynchronized
     public LogSequenceNumber getLSN() {
         return lsn;
     }
