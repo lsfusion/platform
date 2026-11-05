@@ -544,6 +544,24 @@ public class GFormControllerTest extends GWTTestCase {
         lookups.answer(0, suggestion("fast"), GAsync.RECHECK);
     }
 
+    // ... and once the form is closed, the Promise of that answer is rejected as a call on a closed form is: the form
+    // asks nothing more
+    public void testAPreliminaryAnswerAfterTheFormClosesRejectsTheFinalOne() {
+        LookupServer lookups = lookups();
+        JavaScriptObject promise = lookups.getValues("ab");
+        closeForm(lookups.controller);
+        delayTestFinish(5000);
+        then(promise, (JavaScriptObject answer) -> {
+            assertEquals(answer("fast", true), jsonStringify(answer));
+            then(field(answer, "more"), (JavaScriptObject last) -> fail("answered " + jsonStringify(last)), error -> {
+                assertEquals("Form is closed", error);
+                assertEquals(1, lookups.actions.size());
+                finishTest();
+            });
+        }, error -> fail(error));
+        lookups.answer(0, suggestion("fast"), GAsync.RECHECK);
+    }
+
     // a lookup with no list in its mode - a change of a property that cannot be changed - is rejected, not cancelled
     public void testALookupWithNoListIsRejected() {
         LookupServer lookups = lookups();
@@ -909,6 +927,80 @@ public class GFormControllerTest extends GWTTestCase {
                 assertEquals(Collections.singletonList("resolved"), settled);
                 finishTest();
             });
+        });
+    }
+
+    // ... and over once the form is closed: a request made before the close and answered after it, the answer asking
+    // the client to go on with it - with a question's answer, with the failure of what the client ran -, fails, its
+    // continuation not sent, and its Promise is rejected as a call on a closed form is - a member's change, and an exec
+    // on the form's controller -, with nothing left queued or counted (the busy dialog stayed up) and nothing shown
+    public void testAContinuationDueAfterTheFormClosesRejectsItsRequest() {
+        ChangeServer changes = changes();
+        JavaScriptObject change = changes.change(5);
+        JavaScriptObject exec = (JavaScriptObject) call(changes.controller.controller, "exec", "act");
+        assertEquals(2, changes.actions.size());
+        FormDispatchAsync dispatcher = closeForm(changes.controller);
+        ArrayList<String> settled = new ArrayList<>();
+        then(change, answer -> fail("resolved"), error -> settled.add("change: " + error));
+        then(exec, answer -> fail("resolved"), error -> settled.add("exec: " + error));
+        delayTestFinish(5000);
+        changes.answer(0, true); // the server asks the client to go on with the change
+        GAction failing = d -> { throw new RuntimeException("the client failed"); };
+        changes.callbacks.get(1).onSuccess(new ServerResponseResult(new GAction[] {failing},
+                ((FormRequestAction<?>) changes.actions.get(1)).requestIndex, true)); // ... and with the exec, what it asked the client to run failing
+        inTurn(() -> {
+            assertEquals(Arrays.asList("change: Form is closed", "exec: Form is closed"), settled);
+            assertEquals(2, changes.actions.size()); // nothing sent,
+            assertEquals(0, queuedRequests(dispatcher)); // ... left queued
+            assertEquals(0, dispatcher.syncCount); // ... or counted
+            assertFalse(closeDialog("Form is closed")); // ... or shown
+            assertNoPendingPropertyRequests(changes.controller);
+            finishTest();
+        });
+    }
+
+    // ... but a form only off the page, its dispatcher not closed yet, still goes on with it - the server hides a form
+    // and may ask before it closes it -, the Promise resolved once the continuation is answered
+    public void testAContinuationDueAfterTheFormLeftThePageIsSent() {
+        ChangeServer changes = changes();
+        ArrayList<String> settled = new ArrayList<>();
+        then(changes.change(5), answer -> settled.add("resolved"), error -> fail(error));
+        delayTestFinish(5000);
+        hide(changes.controller);
+        changes.answer(0, true); // the server asks the client to go on with the change
+        assertEquals(2, changes.actions.size());
+        assertTrue(changes.actions.get(1) instanceof ContinueInvocation);
+        changes.answer(1, false);
+        Scheduler.get().scheduleDeferred(() -> {
+            assertEquals(Collections.singletonList("resolved"), settled);
+            finishTest();
+        });
+    }
+
+    // ... and any request made once the form's dispatcher is closed fails, as it is not sent - the platform's own, which
+    // nothing refuses before it is made: a dialog of the form's answered after it closed; a classic view's lookup -,
+    // told to whoever waits for it, with nothing left queued or counted (a sync one kept the busy dialog up) and nothing
+    // shown
+    public void testARequestMadeOnAClosedFormFails() {
+        LookupServer lookups = lookups();
+        FormDispatchAsync dispatcher = closeForm(lookups.controller);
+        ArrayList<String> told = new ArrayList<>();
+        lookups.controller.executeVoidAction(); // a sync request
+        lookups.controller.getRemoteChanges(false); // ... an async one
+        lookups.controller.getAsyncValues("ab", lookups.form.price, GGroupObjectValue.EMPTY, "objects", new AsyncCallback<GFormController.GAsyncResult>() {
+            @Override public void onFailure(Throwable caught) { told.add(caught.getMessage()); }
+            @Override public void onSuccess(GFormController.GAsyncResult result) { told.add("answered"); }
+        }, 0); // ... and a lookup
+        delayTestFinish(5000);
+        inTurn(() -> {
+            assertEquals(Collections.singletonList("Form is closed"), told);
+            assertTrue(lookups.actions.isEmpty());
+            assertEquals(0, queuedRequests(dispatcher));
+            assertEquals(0, dispatcher.syncCount);
+            assertEquals(0, dispatcher.asyncCount);
+            assertFalse(dispatcher.getBusyDialogDisplayer().isVisible());
+            assertFalse(closeDialog("Form is closed"));
+            finishTest();
         });
     }
 

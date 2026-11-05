@@ -2,6 +2,7 @@ package lsfusion.gwt.client;
 
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.AsyncCallbackEx;
@@ -11,6 +12,7 @@ import lsfusion.gwt.client.controller.dispatch.GWTDispatch;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.*;
 import lsfusion.gwt.client.controller.remote.action.form.GetAsyncValues;
+import lsfusion.gwt.client.form.controller.dispatch.FormClosedException;
 import lsfusion.gwt.client.form.controller.dispatch.QueuedAction;
 import lsfusion.gwt.client.view.ServerMessageProvider;
 import net.customware.gwt.dispatch.shared.Result;
@@ -271,6 +273,8 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
                     callback.onFailure(caught);
                 }
             });
-        }
+        } else // a closed dispatcher sends nothing: the request fails, refused as a call on a closed form is - after its
+               // caller has taken it, as an answer comes -, so that whoever waits for it is told (FormClosedException)
+            Scheduler.get().scheduleDeferred(() -> callback.onFailure(new FormClosedException()));
     }
 }

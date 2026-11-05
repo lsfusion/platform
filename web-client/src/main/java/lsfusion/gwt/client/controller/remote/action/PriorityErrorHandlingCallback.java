@@ -9,6 +9,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.exception.*;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.PopupOwner;
+import lsfusion.gwt.client.form.controller.dispatch.FormClosedException;
 
 public class PriorityErrorHandlingCallback<T> implements PriorityAsyncCallback<T> {
 
@@ -23,6 +24,9 @@ public class PriorityErrorHandlingCallback<T> implements PriorityAsyncCallback<T
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
     public static void showErrorMessage(final Throwable caught, PopupOwner popupOwner) {
+        if (caught instanceof FormClosedException) // a request of a closed form, refused unsent: nothing gone wrong
+            return;
+
         GwtClientUtils.removeLoaderFromHostedPage();
 
         GExceptionManager.logClientError(caught, popupOwner);
