@@ -175,6 +175,7 @@ public class UiReactBatchIT extends UiTest {
         closeDialog("uiRbCrash: the action failed");
         view("board").call("controller.crash.exec()"); // no one waits for its Promise
         closeDialog("uiRbCrash: the action failed");
+        reported("uiRbCrash: the action failed");
         saveAndCheckNotes(form, items, "p1", "p2", "-");
         close(form);
     }
@@ -264,6 +265,7 @@ public class UiReactBatchIT extends UiTest {
         assertThat(dialog("uiRbFail: a sorting failed")).isVisible();
         view("board").waitFor("row(" + js(items[2]) + ").note.value === " + js(before) + " && !row(" + js(items[2]) + ").note.loading");
         closeDialog("uiRbFail: a sorting failed");
+        reported("uiRbFail: a sorting failed");
         view("board").call("controller.toggleFail.exec()"); // the next request, which the sorting fails no more
         view("board").waitFor("row(" + js(items[2]) + ").note.value === 'f2' && !row(" + js(items[2]) + ").note.loading");
         saveAndCheckNotes(form, items, "-", "-", "f2");

@@ -285,6 +285,7 @@ public class UiReactPlacingIT extends UiTest {
                 + " or places - its visibility is controlled by that component");
         refusal.getByText("Close", new Locator.GetByTextOptions().setExact(true)).click();
         assertThat(refusal).hasCount(0);
+        reported("ACTIVATE TAB is set for 'uiRplTabbedSecond'");
         close(form);
     }
 

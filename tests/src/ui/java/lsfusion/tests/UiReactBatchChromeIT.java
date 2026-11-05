@@ -64,6 +64,7 @@ public class UiReactBatchChromeIT extends UiTest {
         assertEquals(1, requests.stream().filter(request -> request.contains(signature("ExecuteBatch")) && request.contains(signature("ChangePropertyActive"))).count());
         assertEquals(0, requests.stream().filter(request -> !request.contains(signature("ExecuteBatch")) && request.contains(signature("ChangePropertyActive"))).count());
         closeDialog("ChangePropertyActive is no request a batch carries");
+        reported("ChangePropertyActive is no request a batch carries");
         assertEquals("2", view.drawn().answer("controller.i.getCount()"));
         close(form);
     }

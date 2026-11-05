@@ -49,16 +49,19 @@ import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static lsfusion.tests.TestServer.BASE;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /** The base of the browser tests: a test server, the web client's war in a web container of its own and a browser
  *  driven by playwright. The stack is one for all the classes of the run: the first test starts it, the jvm's exit
- *  stops it. Each test gets a browser context of its own with /main open in it. A failed test leaves a screenshot, the
- *  page and a trace in target/ui/failures/<Class>.<method>.*, and its message lists the errors the page logged; one
- *  listed in quarantine.txt as <Class>.<method> is reported as skipped. -Dui.container is the web container, jetty,
- *  which the client is developed with, or tomcat, which it is shipped in; -Dui.browser is a playwright channel (chrome,
- *  msedge) or docker - playwright's image, for a box with no browser; -Dui.headless=false shows the browser;
- *  -Dui.watchdog=<ms> takes thread dumps of the server and of the web container into target/ui/slow every that many ms
- *  a test runs. */
+ *  stops it. Each test gets a browser context of its own with /main open in it. A test fails on an uncaught page error
+ *  and on an error the client reports itself (reported takes the ones a test causes on purpose). A failed test leaves
+ *  a screenshot, the page and a trace in target/ui/failures/<Class>.<method>.*, and its message lists the errors the
+ *  page logged; one listed in quarantine.txt as <Class>.<method> is reported as skipped. -Dui.container is the web
+ *  container, jetty, which the client is developed with, or tomcat, which it is shipped in; -Dui.browser is a
+ *  playwright channel (chrome, msedge) or docker - playwright's image, for a box with no browser; -Dui.headless=false
+ *  shows the browser; -Dui.watchdog=<ms> takes thread dumps of the server and of the web container into target/ui/slow
+ *  every that many ms a test runs. */
 public abstract class UiTest {
 
     private static final Path UI = BASE.resolve("target/ui");
@@ -67,6 +70,12 @@ public abstract class UiTest {
     private static final long WATCHDOG = Long.getLong("ui.watchdog", 0);
     private static final String WEB_CONTAINER = System.getProperty("ui.container", "jetty");
     private static final ScheduledExecutorService DUMPS = Executors.newSingleThreadScheduledExecutor();
+    // the console line of an error the client reports itself, which GExceptionManager logs with gwt-log - nothing
+    // else in the client does - as "(file:line) date time [ERROR] message": an exception GWT hands to MainFrame (an
+    // "Error" box shows it too), like a renderer's, a request's failure, even one a retry got over. The client's other
+    // console errors - the cancel of an input with no cell, what a custom view shows as its error - are by design, and
+    // only listed
+    private static final Pattern CLIENT_ERROR = Pattern.compile("^\\([^)]*\\) [^\\[\\n]*\\[ERROR] ");
 
     private static Process server, web; // the test server and the web container
     private static int httpPort, webPort;
@@ -76,6 +85,7 @@ public abstract class UiTest {
     private static Throwable startFailure; // the classes after the first one fail with it rather than start another stack
 
     protected Page page;
+    private final List<String> clientErrors = new ArrayList<>();
 
     @BeforeClass
     public static void startStack() throws Throwable {
@@ -206,8 +216,11 @@ public abstract class UiTest {
             List<String> console = new ArrayList<>();
             List<String> pageErrors = new ArrayList<>();
             page.onConsoleMessage(message -> {
-                if (message.type().equals("error"))
+                if (message.type().equals("error")) {
                     console.add(message.text());
+                    if (CLIENT_ERROR.matcher(message.text()).find())
+                        clientErrors.add(message.text());
+                }
             });
             page.onPageError(error -> {
                 pageErrors.add(error);
@@ -221,6 +234,8 @@ public abstract class UiTest {
                 page.evaluate("() => 0"); // playwright hands the page's events to the handlers only during a call into it
                 if (!pageErrors.isEmpty())
                     throw new AssertionError("uncaught page errors:\n" + String.join("\n", pageErrors));
+                if (!clientErrors.isEmpty())
+                    throw new AssertionError("errors the client reported:\n" + String.join("\n", clientErrors));
                 context.tracing().stop();
             } catch (Throwable t) {
                 Path failure = Files.createDirectories(UI.resolve("failures")).resolve(name);
@@ -425,6 +440,17 @@ public abstract class UiTest {
                 errors.add(message.text());
         });
         return errors;
+    }
+
+    // takes the errors the client has reported so far - they fail the test no more -, each of which must be of what
+    // the test has the server fail or refuse on purpose, and one at least: the client reports such a failure as well as
+    // shows it
+    protected void reported(String what) {
+        page.evaluate("() => 0"); // see the rule
+        assertFalse("the client reported no " + what, clientErrors.isEmpty());
+        for (String error : clientErrors)
+            assertTrue(error, error.contains(what));
+        clientErrors.clear();
     }
 
     protected View view(String state, String bindings) {
