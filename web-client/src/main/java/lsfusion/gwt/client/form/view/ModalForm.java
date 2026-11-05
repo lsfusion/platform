@@ -68,6 +68,9 @@ public class ModalForm extends FormContainer {
         contentWidget.setBodyWidget(widget);
     }
 
+    // the form this one took the keyboard from, which it hands the keyboard back to as it closes. Floating forms not
+    // waited for (SHOW ... FLOAT NOWAIT) close in any order, so by then it may be closed itself: then it is the one
+    // that form took the keyboard from, and so on down
     private FormContainer prevForm;
 
     @Override
@@ -104,11 +107,22 @@ public class ModalForm extends FormContainer {
 
     @Override
     public void hide(EndReason editFormCloseReason) {
-        onBlur(true);
+        // only the form holding the keyboard hands it back: a floating form not waited for may close under the one
+        // opened from it, which keeps the keyboard
+        if (MainFrame.getAssertCurrentForm() == this) {
+            onBlur(true);
 
-        // we need it before to avoid focus going to the body
-        if(prevForm != null)
-            prevForm.onFocus(false);
+            // we need it before to avoid focus going to the body. A form that has left the page is closed - a floating
+            // form's window gone, a docked form out of its window -: a floating one is passed by for the form it took
+            // the keyboard from, and past any other the keyboard goes to a form a window shows
+            FormContainer prev = prevForm;
+            while (prev != null && !GwtClientUtils.isInDocument(prev.getContentElement()))
+                prev = prev instanceof ModalForm ? ((ModalForm) prev).prevForm : null;
+            if (prev != null)
+                prev.onFocus(false);
+            else
+                formsController.focusShownForm();
+        }
 
         contentWidget.hide();
     }

@@ -412,6 +412,53 @@ public class UiFormsWindowIT extends UiTest {
         close(third);
     }
 
+    // three floating forms not waited for, each opened from the one under it, closed out of the order they were opened
+    // in - the middle one first, by the upper one's CLOSE FORM: the upper one keeps the keyboard while it is open, then
+    // hands it to the lower one, past the middle one, and the lower one to the launcher they were opened from, whose
+    // key runs
+    @Test
+    public void floatingFormsClosedOutOfOrderGiveTheKeyboardBack() throws Exception {
+        seed();
+        Locator launcher = launcher(), lower = form("UiFormsWindow.uiFormsWindowLower"),
+                middle = form("UiFormsWindow.uiFormsWindowMiddle"), upper = form("UiFormsWindow.uiFormsWindowUpper");
+        action(launcher, "uiFormsWindowLowerFloating").click();
+        assertThat(lower).isVisible();
+        action(lower, "uiFormsWindowMiddleFloating").click();
+        assertThat(middle).isVisible();
+        action(middle, "uiFormsWindowUpperFloating").click();
+        assertThat(upper).isVisible();
+
+        action(upper, "uiFormsWindowCloseMiddle").click();
+        assertThat(middle).hasCount(0);
+        assertThat(upper.locator(":focus")).hasCount(1);
+
+        close(upper);
+        assertThat(lower.locator(":focus")).hasCount(1);
+        close(lower);
+        assertThat(launcher.locator(":focus")).hasCount(1);
+        press("F6");
+        marks("launcher key");
+    }
+
+    // a floating form not waited for whose opener - the launcher - is closed under it: once the floating form is closed
+    // too, the keyboard goes to the form System.forms shows then, the launcher being gone
+    @Test
+    public void aFloatingFormWhoseOpenerClosedGivesTheKeyboardToTheFormShown() throws Exception {
+        Locator launcher = launcher(), lower = form("UiFormsWindow.uiFormsWindowLower"), second = form(SECOND);
+        action(launcher, "uiFormsWindowSecondIntoForms").click();
+        assertThat(second).isVisible();
+        page.locator(".tab-bar .nav-item").filter(new Locator.FilterOptions().setHasText(Pattern.compile("^Launcher$"))).click();
+        assertThat(launcher).isVisible();
+        action(launcher, "uiFormsWindowLowerFloating").click();
+        assertThat(lower).isVisible();
+
+        action(lower, "uiFormsWindowCloseLauncher").click();
+        assertThat(launcher).hasCount(0);
+        assertThat(second).isVisible();
+        close(lower);
+        assertThat(second.locator(":focus")).hasCount(1);
+    }
+
     // a form with two handlers of its close event, each opening the form already there with ACTIVATE: each handler
     // takes the activation the request carries and runs on - the form is not built again, both leave their mark -,
     // and the form closes. It is closed by its tab's close button: its Close button closes it with no close event

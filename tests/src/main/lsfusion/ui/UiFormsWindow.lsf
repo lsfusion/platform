@@ -223,6 +223,26 @@ uiFormsWindowCloseSourceIntoForms () {
 uiFormsWindowCloseTargetFloating 'Close target, floating' () { SHOW uiFormsWindowCloseTarget FLOAT NOWAIT; }
 EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowCloseTargetFloating;
 
+// three floating forms not waited for, each opened from the one under it, the middle one closed by the upper one: out
+// of the order they were opened in. The lower one closes the launcher under it as well. And the launcher's key, which
+// the keyboard reaches once it is back in the launcher, and its open of Second in System.forms
+FORM uiFormsWindowLower 'Lower';
+FORM uiFormsWindowMiddle 'Middle';
+uiFormsWindowCloseMiddle 'Close middle' () { CLOSE FORM uiFormsWindowMiddle; }
+FORM uiFormsWindowUpper 'Upper'
+    PROPERTIES() uiFormsWindowCloseMiddle
+;
+uiFormsWindowUpperFloating 'Upper, floating' () { SHOW uiFormsWindowUpper FLOAT NOWAIT; }
+EXTEND FORM uiFormsWindowMiddle PROPERTIES() uiFormsWindowUpperFloating;
+uiFormsWindowMiddleFloating 'Middle, floating' () { SHOW uiFormsWindowMiddle FLOAT NOWAIT; }
+uiFormsWindowCloseLauncher 'Close launcher' () { CLOSE FORM uiFormsWindowLauncher; }
+EXTEND FORM uiFormsWindowLower PROPERTIES() uiFormsWindowMiddleFloating, uiFormsWindowCloseLauncher;
+
+uiFormsWindowLowerFloating 'Lower, floating' () { SHOW uiFormsWindowLower FLOAT NOWAIT; }
+uiFormsWindowLauncherKey 'Launcher key' () { uiFormsWindowMark('launcher key'); } CHANGEKEY 'F6';
+uiFormsWindowSecondIntoForms 'Second into forms' () { SHOW uiFormsWindowSecond WINDOW NOWAIT; }
+EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowLowerFloating, uiFormsWindowLauncherKey, uiFormsWindowSecondIntoForms;
+
 uiFormsWindowStored 'Stored' = DATA STRING[50] ();
 uiFormsWindowCloser 'Closer' = DATA LOCAL INTEGER ();
 uiFormsWindowPlain 'Plain' = DATA LOCAL INTEGER ();

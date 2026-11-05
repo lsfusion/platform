@@ -110,9 +110,11 @@ public class PopupForm extends EditingForm {
         return cellEditor;
     }
 
+    // none once its editing has stopped and taken the content out: a floating form handing the keyboard back asks a
+    // popup it was opened from whether it is still on the page
     @Override
     public Element getContentElement() {
-        return contentWidget.getElement();
+        return contentWidget != null ? contentWidget.getElement() : null;
     }
 
     public PopupForm(FormsController formsController, GFormController contextForm, long editRequestIndex, boolean async, Event editEvent, EditContext editContext) {
