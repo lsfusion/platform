@@ -13,6 +13,7 @@ import com.microsoft.playwright.Tracing;
 import com.microsoft.playwright.assertions.LocatorAssertions;
 import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.ReducedMotion;
+import com.microsoft.playwright.options.ServiceWorkerPolicy;
 import com.microsoft.playwright.options.WaitForSelectorState;
 import org.junit.AssumptionViolatedException;
 import org.junit.BeforeClass;
@@ -66,8 +67,6 @@ public abstract class UiTest {
     private static final long WATCHDOG = Long.getLong("ui.watchdog", 0);
     private static final String WEB_CONTAINER = System.getProperty("ui.container", "jetty");
     private static final ScheduledExecutorService DUMPS = Executors.newSingleThreadScheduledExecutor();
-    // every load logs these two: chrome has no push api in an incognito context, which a test's is
-    private static final Pattern PUSH_API = Pattern.compile("Push API|Registration failed - permission denied");
 
     private static Process server, web; // the test server and the web container
     private static int httpPort, webPort;
@@ -197,21 +196,22 @@ public abstract class UiTest {
         @Override
         public void evaluate() throws Throwable {
             String name = description.getTestClass().getSimpleName() + "." + description.getMethodName();
-            BrowserContext context = browser.newContext(new Browser.NewContextOptions()
+            // no service worker, which the client registers at every load for push notifications no test uses:
+            // playwright 1.63's driver keeps a closed context's page alive by its session (microsoft/playwright#43009),
+            // so the driver grew by every test's requests and responses - with the ~40 MB gwt-dev bundle tracing reads
+            BrowserContext context = browser.newContext(new Browser.NewContextOptions().setServiceWorkers(ServiceWorkerPolicy.BLOCK)
                     .setLocale("en-US").setTimezoneId("UTC").setViewportSize(1280, 800).setReducedMotion(ReducedMotion.REDUCE));
             context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
             page = context.newPage();
             List<String> console = new ArrayList<>();
             List<String> pageErrors = new ArrayList<>();
             page.onConsoleMessage(message -> {
-                if (message.type().equals("error") && !PUSH_API.matcher(message.text()).find())
+                if (message.type().equals("error"))
                     console.add(message.text());
             });
             page.onPageError(error -> {
-                if (!PUSH_API.matcher(error).find()) {
-                    pageErrors.add(error);
-                    console.add("uncaught page error: " + error);
-                }
+                pageErrors.add(error);
+                console.add("uncaught page error: " + error);
             });
             ScheduledFuture<?> watch = WATCHDOG > 0 ? DUMPS.scheduleAtFixedRate(dumps(name), WATCHDOG, WATCHDOG, TimeUnit.MILLISECONDS) : null;
             try {
@@ -421,7 +421,7 @@ public abstract class UiTest {
     protected List<String> consoleErrors() {
         List<String> errors = new ArrayList<>();
         page.onConsoleMessage(message -> {
-            if (message.type().equals("error") && !PUSH_API.matcher(message.text()).find())
+            if (message.type().equals("error"))
                 errors.add(message.text());
         });
         return errors;
