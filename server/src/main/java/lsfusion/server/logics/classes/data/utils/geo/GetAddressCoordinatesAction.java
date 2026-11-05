@@ -1,11 +1,6 @@
 package lsfusion.server.logics.classes.data.utils.geo;
 
 import com.google.common.base.Throwables;
-import com.google.maps.GeoApiContext;
-import com.google.maps.GeocodingApi;
-import com.google.maps.errors.ApiException;
-import com.google.maps.model.GeocodingResult;
-import com.google.maps.model.LatLng;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingErrorLog;
@@ -15,12 +10,14 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.json.JSONReader;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.Locale;
 
 public class GetAddressCoordinatesAction extends GeoAction {
     private final ClassPropertyInterface latitudeInterface;
@@ -64,15 +61,14 @@ public class GetAddressCoordinatesAction extends GeoAction {
                     if (serverAPIKey != null && !serverAPIKey.trim().isEmpty())
                         apiKey = serverAPIKey;
 
-                    GeoApiContext geoApiContext = new GeoApiContext.Builder().apiKey(apiKey).build();
-                    GeocodingResult[] results = GeocodingApi.reverseGeocode(geoApiContext,
-                            new LatLng(latitude.doubleValue(), longitude.doubleValue())).language(language).await();
-                    address = (results.length > 0) ? results[0].formattedAddress : null;
+                    JSONArray results = readGoogleGeocode("latlng=" + String.format(Locale.ENGLISH, "%.8f,%.8f", latitude, longitude)
+                            + (language != null ? "&language=" + language : ""), apiKey);
+                    address = results.length() > 0 ? results.getJSONObject(0).getString("formatted_address") : null;
                 }
 
                 findProperty("readAddress[]").change(address, session);
             }
-        } catch (IOException | JSONException | SQLException | ScriptingErrorLog.SemanticErrorException | InterruptedException | ApiException e) {
+        } catch (IOException | JSONException | SQLException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
     }

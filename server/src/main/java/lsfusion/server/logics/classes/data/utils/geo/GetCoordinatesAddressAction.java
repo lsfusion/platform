@@ -1,11 +1,6 @@
 package lsfusion.server.logics.classes.data.utils.geo;
 
 import com.google.common.base.Throwables;
-import com.google.maps.GeoApiContext;
-import com.google.maps.GeocodingApi;
-import com.google.maps.errors.ApiException;
-import com.google.maps.model.GeocodingResult;
-import com.google.maps.model.LatLng;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingErrorLog;
@@ -65,18 +60,17 @@ public class GetCoordinatesAddressAction extends GeoAction {
                     if (serverAPIKey != null && !serverAPIKey.trim().isEmpty())
                         apiKey = serverAPIKey;
 
-                    GeoApiContext geoApiContext = new GeoApiContext.Builder().apiKey(apiKey).build();
-                    GeocodingResult[] results = GeocodingApi.geocode(geoApiContext, address).await();
-                    LatLng location = results[0].geometry.location;
+                    JSONObject location = readGoogleGeocode("address=" + URLEncoder.encode(address, String.valueOf(StandardCharsets.UTF_8)), apiKey)
+                            .getJSONObject(0).getJSONObject("geometry").getJSONObject("location");
 
-                    longitude = BigDecimal.valueOf(location.lng);
-                    latitude = BigDecimal.valueOf(location.lat);
+                    longitude = BigDecimal.valueOf(location.getDouble("lng"));
+                    latitude = BigDecimal.valueOf(location.getDouble("lat"));
                 }
 
                 findProperty("readLatitude[]").change(latitude.doubleValue(), session);
                 findProperty("readLongitude[]").change(longitude.doubleValue(), session);
             }
-        } catch (IOException | JSONException | SQLException | ScriptingErrorLog.SemanticErrorException | InterruptedException | ApiException e) {
+        } catch (IOException | JSONException | SQLException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
     }

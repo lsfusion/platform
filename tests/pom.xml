@@ -54,7 +54,7 @@
                         </goals>
                         <configuration>
                             <!-- what the logics has at run time, not junit or playwright, which only the runners use; with
-                                 -Pui a jar both use (gson) still comes in playwright's version -->
+                                 -Pui a jar both use (error_prone_annotations) still comes in playwright's version -->
                             <includeScope>runtime</includeScope>
                             <outputFile>${project.build.directory}/server-classpath.txt</outputFile>
                         </configuration>
