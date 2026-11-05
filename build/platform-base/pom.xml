@@ -60,6 +60,9 @@
         <sejda.imageio.version>0.1.6</sejda.imageio.version>
         <ojdbc14.version>11.2.0.4</ojdbc14.version>
         <informix.version>4.10.9</informix.version>
+        <!-- stay on 8.4.0, the last 8.x line: 9.x changes the connection defaults (caching_sha2_password becomes the default authentication plugin),
+             which can break connecting (MySQLDataAdapter, EXTERNAL SQL 'jdbc:mysql://...') to old MySQL servers.
+             So protobuf-java 3.25.1 that the driver pulls keeps CVE-2024-7254 (fixed only from 9.2.0), but the driver uses protobuf only for X DevAPI, not for JDBC -->
         <mysql.version>8.4.0</mysql.version>
         <slf4j.version>1.7.36</slf4j.version>
         <log4j2.version>2.25.5</log4j2.version>
