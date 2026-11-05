@@ -1,0 +1,19 @@
+MODULE ActionAspects;
+
+REQUIRE TestUtils;
+
+// an action keeps the actions BEFORE and AFTER give it. Modules that do not require each other are parsed at once, each
+// in a thread of its own, so two of them that add BEFORE or AFTER to one action added to its lists at once: they were
+// plain arrays, which two adds at once corrupt - an aspect could be lost, or the start fail with an
+// ArrayIndexOutOfBoundsException
+
+aaDo () { MESSAGE 'aa do'; }
+aaAspect () { MESSAGE 'aa aspect'; }
+
+aaFailure = DATA LOCAL STRING ();
+aaAddAtOnce INTERNAL 'lsfusion.tests.AddActionAspectsAtOnceAction' ();
+
+testActionAspectsAddedAtOnce 'BEFORE and AFTER added to an action wait for another one added to it' () {
+    aaAddAtOnce();
+    assertNull(aaFailure(), aaFailure());
+}

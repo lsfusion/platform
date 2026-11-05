@@ -14,6 +14,7 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
@@ -448,6 +449,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     private Object beforeAspects = ListFact.mCol();
+    // modules that do not require each other are parsed at once, and two of them can add BEFORE / AFTER to one action
+    @NFLazy
     public void addBeforeAspect(ActionMapImplement<?, P> action) {
         ((MCol<ActionMapImplement<?, P>>)beforeAspects).add(action);
     }
@@ -456,6 +459,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return (ImCol<ActionMapImplement<?,P>>)beforeAspects;
     }
     private Object afterAspects = ListFact.mCol();
+    @NFLazy // see addBeforeAspect
     public void addAfterAspect(ActionMapImplement<?, P> action) {
         ((MCol<ActionMapImplement<?, P>>)afterAspects).add(action);
     }
