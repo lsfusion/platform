@@ -23,6 +23,7 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -150,14 +151,16 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     public List<String> formOrDesignStatementList = new ArrayList<>();
-    // synchronized : modules that do not require each other are parsed at once, and two of them can extend one form
-    public synchronized void addFormOrDesignStatementTokens(List<String> tokens) {
+    // modules that do not require each other are parsed at once, and two of them can extend one form
+    @NFLazy
+    public void addFormOrDesignStatementTokens(List<String> tokens) {
         String result = StringUtils.join(tokens, "");
         while(result.startsWith("\r") || result.startsWith("\n"))
             result = result.substring(1);
         formOrDesignStatementList.add(result);
     }
-    public synchronized String getCode() {
+    @NFLazy
+    public String getCode() {
         return StringUtils.join(formOrDesignStatementList, "\n");
     }
 
