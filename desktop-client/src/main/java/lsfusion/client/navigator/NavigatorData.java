@@ -2,6 +2,7 @@ package lsfusion.client.navigator;
 
 import lsfusion.client.navigator.window.ClientAbstractWindow;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
+import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.interop.navigator.NavigatorScheduler;
 
 import java.io.ByteArrayInputStream;
@@ -22,18 +23,21 @@ public class NavigatorData {
     public final ClientAbstractWindow forms;
     public final List<ClientAbstractWindow> formsWindows; // every FORMS window, System.forms among them, not aside
 
+    public final String custom; // NAVIGATOR CUSTOM: the React component that lays the windows out, which only the web client draws
+
     public final List<NavigatorScheduler> navigatorSchedulers;
 
     public NavigatorData(ClientNavigatorElement root, Map<String, ClientNavigatorWindow> windows,
                          ClientNavigatorChanges navigatorChanges,
                          ClientAbstractWindow logs, ClientAbstractWindow forms, List<ClientAbstractWindow> formsWindows,
-                         List<NavigatorScheduler> navigatorSchedulers) {
+                         String custom, List<NavigatorScheduler> navigatorSchedulers) {
         this.root = root;
         this.windows = windows;
         this.navigatorChanges = navigatorChanges;
         this.logs = logs;
         this.forms = forms;
         this.formsWindows = formsWindows;
+        this.custom = custom;
         this.navigatorSchedulers = navigatorSchedulers;
     }
 
@@ -84,12 +88,14 @@ public class NavigatorData {
             formsWindows.add(new ClientAbstractWindow(inStream));
         ClientAbstractWindow forms = formsWindows.stream().filter(ClientAbstractWindow::isSystemForms).findFirst().orElse(null);
 
+        String custom = SerializationUtil.readString(inStream);
+
         List<NavigatorScheduler> navigatorSchedulers = new ArrayList<>();
         int size = inStream.readInt();
         for (int i = 0; i < size; i++) {
             navigatorSchedulers.add(new NavigatorScheduler(inStream.readInt(), inStream.readBoolean()));
         }
 
-        return new NavigatorData(elements.isEmpty() ? null : elements.get(0), windows, clientNavigatorChanges, logs, forms, formsWindows, navigatorSchedulers);
+        return new NavigatorData(elements.isEmpty() ? null : elements.get(0), windows, clientNavigatorChanges, logs, forms, formsWindows, custom, navigatorSchedulers);
     }
 }

@@ -837,6 +837,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         navigatorSchedulers.put(scheduler, action);
     }
 
+    // NAVIGATOR CUSTOM: the React component that lays the windows out instead of the standard layout, if any
+    public String navigatorCustom;
+
     private void initNavigators() throws ScriptingErrorLog.SemanticErrorException {
 
         // Окна

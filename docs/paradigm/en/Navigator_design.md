@@ -38,6 +38,8 @@ Each window occupies a predefined section of the desktop. Graphically, this can 
 
 The entire desktop is `100 x 100` *points* in size. When creating a window, you must specify the window's upper left coordinate, width and height, expressed in *points*. It is desirable that windows should "cover" the entire area of the desktop. If this does not happen, then the free area will be given to one of the windows (there is no guarantee as to which one). Two windows are allowed to have absolutely identical coordinates and sizes. In this case they will be displayed in the same place, but switching between them will be possible using tabs.
 
+This is the standard layout. The windows can be laid out by a React component instead: it decides where each window goes and how large it is, and the content of each window is drawn as without it, in the place the component gives the window. The coordinates and sizes of the windows are then not used.
+
 ### Selected folder {#selectedfolder}
 
 At any moment in time in each window there can be one current *user-selected* navigator folder. Accordingly, if the element item belongs to a window other than the window of its parent folder, then this element is shown in its window if and only if its parent folder is selected in its window. The predefined `System.root` folder is always considered to be selected. If at some point a window does not display any navigator element, then that window is automatically hidden.
@@ -71,7 +73,7 @@ By default, the desktop has the following layout (the left coordinate, upper coo
 
 ### Language
 
-To manage windows, use the [`WINDOW` statement](../language/WINDOW_statement.md).
+To manage windows, use the [`WINDOW` statement](../language/WINDOW_statement.md). A React component is given the layout of the windows with the `CUSTOM` option of the [`NAVIGATOR` statement](../language/NAVIGATOR_statement.md).
 
 ### Examples
 

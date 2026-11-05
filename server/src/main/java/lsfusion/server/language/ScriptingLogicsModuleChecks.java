@@ -195,13 +195,14 @@ public class ScriptingLogicsModuleChecks {
     }
 
     // a native window a component may draw is drawn from what the running application put in it - the forms open in the
-    // forms window, the messages logged in the log window - and that exists only at runtime: a template would have to
-    // name those, and a property would have nothing to compute that the component cannot compute itself
-    public void checkComponentOnlyWindowCustom(String name, String custom, boolean property) throws ScriptingErrorLog.SemanticErrorException {
+    // forms window, the messages logged in the log window -, and the navigator's windows a component lays out exist only
+    // on the client too: a template would have to name those, and a property would have nothing to compute that the
+    // component cannot compute itself
+    public void checkComponentOnlyCustom(String what, String name, String custom, boolean property) throws ScriptingErrorLog.SemanticErrorException {
         if (property || !Custom.isReactComponent(custom)) {
-            errLog.emitComponentOnlyWindowCustomError(parser, name);
+            errLog.emitComponentOnlyCustomError(parser, what, name);
         }
-        checkCustomLength("window", name, custom); // the other window path checks it, and the throw it prevents is the same one
+        checkCustomLength(what, name, custom); // the other window path checks it, and the throw it prevents is the same one
     }
 
     public void checkNavigatorElement(NavigatorElement element, String name) throws ScriptingErrorLog.SemanticErrorException {

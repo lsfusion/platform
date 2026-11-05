@@ -1,0 +1,9 @@
+MODULE NavigatorCustomProperty;
+
+REQUIRE System;
+
+// a computed value has nothing to compute that the component cannot: only a component name, written, lays the
+// navigator's windows out
+navigatorCustomLayout = DATA STRING[100] ();
+
+NAVIGATOR CUSTOM navigatorCustomLayout();

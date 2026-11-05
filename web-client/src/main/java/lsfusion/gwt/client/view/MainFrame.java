@@ -618,7 +618,7 @@ public class MainFrame implements EntryPoint {
             allWindows.addAll(navigatorWindows);
             allWindows.addAll(commonWindows.keySet());
 
-            windowsController.initializeWindows(allWindows, formsWindow);
+            windowsController.initializeWindows(allWindows, formsWindow, result.custom);
         }
 
         formsController.initRoot();

@@ -19,7 +19,7 @@ import java.util.*;
 
 public abstract class WindowsController {
     private NativeSIDMap<GAbstractWindow, WindowElement> windowElementsMapping = new NativeSIDMap<>();
-    public FlexWindowElement rootElement;
+    public WindowElement rootElement;
     public GAbstractWindow formsWindow;
 
     public static final String NAVBAR_TEXT_HIDDEN = "navbar-text-hidden";
@@ -58,18 +58,22 @@ public abstract class WindowsController {
         return rWindow.result;
     }
 
-    public void initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
+    // custom: NAVIGATOR CUSTOM, the React component that lays the windows out instead of the standard splits and tabs
+    public void initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow, String custom) {
+        if (custom != null)
+            rootElement = new ReactWindowElement(this, custom, allWindows, formsWindow);
+        else {
+            WindowNode rootNode = new WindowNode(0, 0, 100, 100);
+            rootNode.isFlex = true;
 
-        WindowNode rootNode = new WindowNode(0, 0, 100, 100);
-        rootNode.isFlex = true;
+            initializeNodes(allWindows, rootNode, formsWindow);
 
-        initializeNodes(allWindows, rootNode, formsWindow);
+            if (MainFrame.verticalNavbar) {
+                rootNode = rotateNavbar(rootNode);
+            }
 
-        if (MainFrame.verticalNavbar) {
-            rootNode = rotateNavbar(rootNode);
+            rootElement = fillWindowChildren(rootNode);
         }
-        
-        rootElement = (FlexWindowElement) fillWindowChildren(rootNode);
         rootElement.initializeView(this);
         rootElement.onAddView(this);
         initNavigatorRootView(rootElement.getView());

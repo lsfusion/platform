@@ -295,6 +295,9 @@
 }
 
 /* popup over selected hover */
+/* NAVIGATOR CUSTOM: a window a React component lays out is not popped out - it fills the host the component gave it
+   (.lsf-platform, layout.css), and its class is for the component's stylesheet to give a meaning to. So the rules below
+   that hold whatever the window's parent is skip that host, at no specificity (:where) */
 .flex-dir-horz > .navbar.navbar-popup-over-selected-hover {
     flex-direction: column;
 }
@@ -303,16 +306,16 @@
 }
 
 /* flex-wrap breaks align-self */
-.navbar.navbar-popup-over-selected-hover {
+:where(:not(.lsf-platform)) > .navbar.navbar-popup-over-selected-hover {
     flex-wrap: nowrap;
 }
-.navbar-popup-over-selected-hover .wrap-text-not-empty {
+:where(:not(.lsf-platform)) > .navbar-popup-over-selected-hover .wrap-text-not-empty {
     white-space: nowrap; /* wrapping text looks really odd on hover */
 }
 
 /* popping to the right / bottom */
-.navbar.navbar-popup-over-selected-hover:not(:last-child) > .navbar-nav.navbar-nav-horz,
-.navbar.navbar-popup-over-selected-hover:not(:last-child) > .navbar-nav.navbar-nav-vert {
+:where(:not(.lsf-platform)) > .navbar.navbar-popup-over-selected-hover:not(:last-child) > .navbar-nav.navbar-nav-horz,
+:where(:not(.lsf-platform)) > .navbar.navbar-popup-over-selected-hover:not(:last-child) > .navbar-nav.navbar-nav-vert {
     align-self: flex-start;
 }
 .flex-dir-horz > .navbar.navbar-popup-over-selected-hover:not(.nav-has-bg):not(:last-child) > .navbar-nav {
@@ -325,8 +328,8 @@
 }
 
 /* popping to the left / top */
-.navbar.navbar-popup-over-selected-hover:last-child > .navbar-nav.navbar-nav-horz,
-.navbar.navbar-popup-over-selected-hover:last-child > .navbar-nav.navbar-nav-vert {
+:where(:not(.lsf-platform)) > .navbar.navbar-popup-over-selected-hover:last-child > .navbar-nav.navbar-nav-horz,
+:where(:not(.lsf-platform)) > .navbar.navbar-popup-over-selected-hover:last-child > .navbar-nav.navbar-nav-vert {
     align-self: flex-end;
 }
 .flex-dir-horz > .navbar.navbar-popup-over-selected-hover:not(.nav-has-bg):last-child > .navbar-nav {
@@ -397,7 +400,7 @@
     bottom: 0;
 }
 
-.navbar.navbar-popup-over-selected-hover {
+:where(:not(.lsf-platform)) > .navbar.navbar-popup-over-selected-hover {
     /*needed to add extra hover space, it works because navbar-popup-over-selected-hover has overflow: visible*/
     /* plus to make z-index work */
     position: relative;
@@ -410,7 +413,7 @@
     z-index: 0;
 }
 
-.navbar.navbar-popup-over-selected-hover {
+:where(:not(.lsf-platform)) > .navbar.navbar-popup-over-selected-hover {
     overflow: visible;
     flex-grow: 0 !important;
     flex-basis: 0 !important;

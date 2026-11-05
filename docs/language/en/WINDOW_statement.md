@@ -61,6 +61,8 @@ NOCLOSE
 
 The `WINDOW` statement declares a new window and adds it to the current [module](../paradigm/Modules.md).
 
+Where a window is placed on the desktop - its `POSITION` and `AUTOSIZE` - is read by the standard layout. When the windows are laid out by a React component, given with the `CUSTOM` option of the [`NAVIGATOR` statement](NAVIGATOR_statement.md), the component places them, and these options are not used.
+
 By default a window is created that displays [navigator elements](../paradigm/Navigator.md). A `FORMS` window holds forms instead, the way `System.forms` does: a form is opened into it with [`SHOW ... WINDOW windowName`](SHOW_operator.md), which is how a form becomes the application's header or side panel.
 
 The `EXTEND WINDOW` statement gives an already declared window - a standard one included - the React component or HTML template that draws its navigator elements, leaving everything else about the window as it is. The elements keep the window they were placed in, so the navigator's structure, its selection and its startup behavior stay as they were, and only the renderer changes. The window must already exist. A `FORMS` window and `System.log` can be given a component and nothing else, while any other `NATIVE` window can be given neither. When several modules extend one window, the last literal is the markup the window starts with and the last property is the one that recomputes it.

@@ -5561,8 +5561,17 @@ orientation returns [Orientation val]
 ////////////////////////////////////////////////////////////////////////////////
 
 navigatorStatement
-	:	'NAVIGATOR' navigatorElementStatementBody[self.baseLM.root]
-
+	:	'NAVIGATOR'
+		// what lays the navigator's windows out instead of the standard layout - said of the navigator as a whole, so
+		// it is an option of the statement and not of an element
+		(	cst=windowCustom
+			{
+				if (inMainParseState()) {
+					self.setNavigatorCustom($cst.custom, $cst.property);
+				}
+			}
+		)?
+		navigatorElementStatementBody[self.baseLM.root]
 	;
 
 navigatorElementStatementBody[NavigatorElement parentElement]

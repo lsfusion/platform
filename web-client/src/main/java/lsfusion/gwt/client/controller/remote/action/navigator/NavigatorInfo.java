@@ -22,6 +22,8 @@ public class NavigatorInfo implements Serializable {
     public ArrayList<GAbstractWindow> formsWindows;
     public GAbstractWindow forms; // the one of them that is System.forms, which the window says by its name
 
+    public String custom; // NAVIGATOR CUSTOM: the React component that lays the windows out, if any
+
     public List<GNavigatorScheduler> navigatorSchedulers;
 
     @SuppressWarnings("unused")
@@ -29,7 +31,7 @@ public class NavigatorInfo implements Serializable {
     }
 
     public NavigatorInfo(GNavigatorElement root, ArrayList<GNavigatorWindow> navigatorWindows, GNavigatorChangesDTO navigatorChanges, GAbstractWindow log,
-                         ArrayList<GAbstractWindow> formsWindows, List<GNavigatorScheduler> navigatorSchedulers) {
+                         ArrayList<GAbstractWindow> formsWindows, String custom, List<GNavigatorScheduler> navigatorSchedulers) {
         this.root = root;
         this.navigatorWindows = navigatorWindows;
 
@@ -40,6 +42,8 @@ public class NavigatorInfo implements Serializable {
         for (GAbstractWindow window : formsWindows)
             if (window.isSystemForms())
                 forms = window;
+
+        this.custom = custom;
 
         this.navigatorSchedulers = navigatorSchedulers;
     }

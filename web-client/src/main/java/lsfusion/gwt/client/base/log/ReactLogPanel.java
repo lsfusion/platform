@@ -25,8 +25,9 @@ import lsfusion.gwt.client.view.MainFrame;
 public class ReactLogPanel extends LogPanel {
 
     // the window keeps the navbar wrapper the standard panel has - the component draws INSIDE it, not instead of it:
-    // the log window is hidden, popped out over the form and revealed on a new message by CSS written against
-    // .navbar > .navbar-nav, and that is how the pin mode toggled from anywhere else in the client reaches this window
+    // in the standard layout the log window is hidden, popped out over the form and revealed on a new message by CSS
+    // written against .navbar > .navbar-nav, and that is how the pin mode toggled from anywhere else in the client
+    // reaches this window
     private final ReactRoot root;
 
     private final Runnable togglePinMode;

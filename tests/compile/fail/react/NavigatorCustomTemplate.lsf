@@ -1,0 +1,6 @@
+MODULE NavigatorCustomTemplate;
+
+REQUIRE System;
+
+// the navigator's windows exist only on the client, so a template has none to name: only a component lays them out
+NAVIGATOR CUSTOM '<div class="layout"></div>';

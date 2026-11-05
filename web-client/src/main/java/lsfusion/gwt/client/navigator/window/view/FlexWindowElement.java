@@ -66,6 +66,7 @@ public class FlexWindowElement extends WindowElement {
         return children.stream().sorted((o1, o2) -> vertical ? o1.y - o2.y : o1.x - o2.x).collect(Collectors.toList());
     }
 
+    @Override
     public void resetWindowSize() {
         for (WindowElement child : children) {
             FlexPanel.FlexLayoutData flexLayoutData = ((FlexPanel.WidgetLayoutData) child.getView().getLayoutData()).flex;

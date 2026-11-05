@@ -23,6 +23,25 @@ public final class JsniTestSupport {
             $wnd.pageSetup = {};
     }-*/;
 
+    // HtmlUnit has no ResizeObserver: one that only remembers what it observes, and resize(element) plays the browser
+    // telling every observer of the element that its size changed. A fresh one each time, so a test hears its own
+    public static native void installResizeObserver() /*-{
+        var observers = [];
+        $wnd.ResizeObserver = function (callback) {
+            this.callback = callback;
+            this.targets = [];
+            observers.push(this);
+        };
+        $wnd.ResizeObserver.prototype.observe = function (target) { this.targets.push(target); };
+        $wnd.ResizeObserver.observers = observers;
+    }-*/;
+    public static native void resize(com.google.gwt.dom.client.Element target) /*-{
+        $wnd.ResizeObserver.observers.forEach(function (observer) {
+            if (observer.targets.indexOf(target) >= 0)
+                observer.callback([{ target: target }]);
+        });
+    }-*/;
+
     public static native JavaScriptObject field(JavaScriptObject object, String name) /*-{ return object[name]; }-*/;
     public static native boolean own(JavaScriptObject object, String name) /*-{ return Object.prototype.hasOwnProperty.call(object, name); }-*/;
     // compiled JSNI runs in the module's window; $wnd is the page's window

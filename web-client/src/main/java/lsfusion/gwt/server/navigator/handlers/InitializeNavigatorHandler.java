@@ -100,7 +100,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
             navigatorSchedulers.add(converter.convertNavigatorScheduler(navigatorScheduler));
         }
 
-        return new NavigatorInfo(root, navigatorWindows, navigatorChanges, log, formsWindows, navigatorSchedulers);
+        return new NavigatorInfo(root, navigatorWindows, navigatorChanges, log, formsWindows, navigatorData.custom, navigatorSchedulers);
     }
 
     @Override

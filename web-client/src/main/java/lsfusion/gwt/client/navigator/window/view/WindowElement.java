@@ -37,6 +37,7 @@ public abstract class WindowElement {
     
     public void storeWindowsSizes(Storage storage) {}
     public void restoreWindowsSizes(Storage storage) {}
+    public void resetWindowSize() {}
 
     public void setWindowVisible(WindowElement window) {}
     public void setWindowInvisible(WindowElement window) {}

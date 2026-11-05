@@ -1,0 +1,10 @@
+MODULE NavigatorCustom;
+
+REQUIRE System;
+
+// the navigator's windows laid out by a React component: the option on its own, and before a block of elements
+NAVIGATOR CUSTOM 'NavigatorCustomLayout';
+
+NAVIGATOR CUSTOM 'NavigatorCustomLayout' {
+    NEW FOLDER navigatorCustomFolder 'Navigator custom' WINDOW toolbar;
+}

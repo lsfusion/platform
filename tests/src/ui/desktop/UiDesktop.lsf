@@ -1,0 +1,42 @@
+MODULE UiDesktop;
+
+REQUIRE SystemEvents;
+
+// UiDesktopIT's application, on a test server of its own: the navigator's windows are laid out by a React component
+// (UiDesktop.js) instead of the standard layout, which is the whole page, so no other browser test could share it
+
+NAVIGATOR CUSTOM 'UiDesktop';
+
+// a window of forms the component places only when the test asks it to
+WINDOW uiDesktopAside 'Aside' FORMS HIDETITLE;
+// a window of the navigator the component places nowhere: the items of the second section are drawn there
+WINDOW uiDesktopMenu 'Menu' VERTICAL HIDETITLE;
+
+uiDesktopText 'Text' = DATA LOCAL STRING[50] ();
+
+FORM uiDesktopFirst 'Desktop first'
+    PROPERTIES() uiDesktopText
+;
+
+FORM uiDesktopSecond 'Desktop second'
+    PROPERTIES() uiDesktopText
+;
+
+uiDesktopSecondIntoAside 'Second into aside' () { SHOW uiDesktopSecond WINDOW uiDesktopAside NOWAIT; }
+
+NAVIGATOR {
+    // a section whose items System.toolbar draws - the first one, which the navigator selects at the start -, and one
+    // whose items another window draws, which leaves the toolbar nothing to draw (a section with no items at all would
+    // not do: the navigator leaves an empty folder out)
+    NEW FOLDER uiDesktopSection 'Desktop section' WINDOW toolbar FIRST {
+        NEW uiDesktopFirst;
+        NEW uiDesktopSecondIntoAside;
+    }
+    NEW FOLDER uiDesktopOther 'Desktop other' WINDOW uiDesktopMenu AFTER uiDesktopSection {
+        NEW uiDesktopSecond;
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiDesktop.js') <- 1;
+}

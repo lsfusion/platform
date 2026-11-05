@@ -357,8 +357,8 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("CUSTOM of %s '%s' is %d characters long, which is more than the %d a written value can carry; a template this size is computed by a property instead", what, name, length, lsfusion.server.base.Custom.MAX_LENGTH));
     }
 
-    public void emitComponentOnlyWindowCustomError(ScriptParser parser, String name) throws SemanticErrorException {
-        emitSimpleError(parser, format("CUSTOM of window '%s' must be a React component name: the window is drawn from what the running application put in it - the forms open in it, the messages logged in it - and that exists only while the application runs, so there is nothing for a template or a computed value to name", name));
+    public void emitComponentOnlyCustomError(ScriptParser parser, String what, String name) throws SemanticErrorException {
+        emitSimpleError(parser, format("CUSTOM of %s '%s' must be a React component name: what it draws - the forms open in a window, the messages logged in it, the navigator's windows - exists only while the application runs, so there is nothing for a template or a computed value to name", what, name));
     }
 
     public void emitWindowCustomReactPropertyError(ScriptParser parser, String name, String custom) throws SemanticErrorException {

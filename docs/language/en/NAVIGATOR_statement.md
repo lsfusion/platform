@@ -10,12 +10,15 @@ The `NAVIGATOR` statement - managing and configuring the [navigator](../paradigm
 The syntax consists of nested blocks of *navigator statements*. The outer statement block is described after the keyword `NAVIGATOR`:
 
 ```
-NAVIGATOR {
+NAVIGATOR [CUSTOM customExpr] {
     navigatorStatement1 
     ...
     navigatorStatementN
 }
+NAVIGATOR CUSTOM customExpr;
 ```
+
+A statement that only gives the `CUSTOM` option may end with a semicolon instead of the block.
 
 Each `navigatorStatement` describes a single navigator statement, and at the end it may contain a nested block of navigator statements. There are three types of navigator statements:  
 
@@ -63,7 +66,13 @@ The move and modify statements allow to change the caption and options of a navi
 
 The hierarchy described within a single `NAVIGATOR` statement can have an arbitrary nesting level and describe any number of elements at each level.
 
+The `CUSTOM` option gives the [windows](../paradigm/Navigator_design.md) a React component that lays them out on the desktop instead of the standard layout. The component decides where each window goes and how large it is, and the platform draws the content of each window as it does without the component - the window's navigator elements, the forms open in it, the messages logged in it - in the place the component gives the window. The windows' positions and `AUTOSIZE` are then not used. When several `NAVIGATOR` statements give the option, the last one is used. Only the desktop web client draws the component: the mobile web client and the desktop client keep their own layout of the windows.
+
 ### Parameters
+
+- `customExpr`
+
+    A [string literal](Literals.md#strliteral) matching `[A-Z][A-Za-z0-9_$]*` - the name of a React component. Neither an HTML template nor a property is accepted: the windows exist only on the client, so a template would have no windows to name and a property nothing to compute.
 
 - `name`
 
@@ -245,6 +254,9 @@ NAVIGATOR {
     // scheduler: the hello action is executed every 10 minutes
     SCHEDULE PERIOD 600 hello();
 }
+
+// the windows laid out on the desktop by the application's React component AppLayout instead of the standard layout
+NAVIGATOR CUSTOM 'AppLayout';
 ```
 
 

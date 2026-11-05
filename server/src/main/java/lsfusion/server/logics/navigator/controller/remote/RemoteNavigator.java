@@ -23,6 +23,7 @@ import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.form.remote.RemoteFormInterface;
+import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.interop.navigator.ClientInfo;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.NavigatorScheduler;
@@ -576,6 +577,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             dataStream.writeInt(formsWindows.size());
             for (AbstractWindow window : formsWindows)
                 window.serialize(dataStream);
+
+            SerializationUtil.writeString(dataStream, businessLogics.LM.navigatorCustom);
 
             Map<NavigatorScheduler, LA> navigatorSchedulers = businessLogics.LM.navigatorSchedulers;
             dataStream.writeInt(navigatorSchedulers.size());

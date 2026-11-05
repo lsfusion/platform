@@ -12,8 +12,9 @@ import java.util.List;
 import java.util.Map;
 
 // the bookkeeping behind <Platform name/>: a component renders a host node, and the platform moves its own view into
-// it. Four owners do this - a form container's platform-drawn children, a navigator window's buttons, the forms
-// window's forms and the log window's messages - and they differ only in what a name means and what moving costs.
+// it. Five owners do this - a form container's platform-drawn children, a navigator window's buttons, the forms
+// window's forms, the log window's messages and the navigator's windows - and they differ only in what a name means and
+// what moving costs.
 // Everything else is the same every time, and getting it slightly different in each copy is what this exists to stop:
 //
 //   - a host asked for a view that does not exist YET is remembered, not refused: React renders a host once and never

@@ -5818,7 +5818,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (forms) {
             window = new FormsWindow(elementCanonicalName(name), caption, single, closeDelay);
             if (custom) {
-                checks.checkComponentOnlyWindowCustom(name, options.custom, options.customProperty != null);
+                checks.checkComponentOnlyCustom("window", name, options.custom, options.customProperty != null);
                 window.setCustom(options.custom);
             }
         } else {
@@ -5870,9 +5870,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         // what they show is made while the application runs - the forms opened in one, the messages logged in the
         // other - so a template would have nothing to name and a computed value nothing to compute
         checks.checkNativeWindowCustom(name, !(window instanceof FormsWindow) && window != baseLM.baseWindows.log);
-        checks.checkComponentOnlyWindowCustom(name, custom, customProperty != null);
+        checks.checkComponentOnlyCustom("window", name, custom, customProperty != null);
 
         window.setCustom(custom);
+    }
+
+    // NAVIGATOR CUSTOM: the React component that lays the navigator's windows out instead of the standard layout. Like
+    // a FORMS window's and log's, it can only be a component - it is drawn from the windows, and those exist only on the
+    // client - and, as there, a later statement replaces an earlier one
+    public void setNavigatorCustom(String custom, LPWithParams customProperty) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkComponentOnlyCustom("navigator", "NAVIGATOR", custom, customProperty != null);
+
+        baseLM.navigatorCustom = custom;
     }
 
     // the one place a NAVIGATOR window is told what draws it, whichever statement said so - as the grammar has one
