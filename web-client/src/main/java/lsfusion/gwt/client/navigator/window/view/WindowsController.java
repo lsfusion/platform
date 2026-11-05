@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.navigator.window.view;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.BaseImage;
@@ -484,20 +486,35 @@ public abstract class WindowsController {
         });
     }
 
-    // in current layout formsWindow is always added as the CENTER widget.
-    // so to enable full screen mode we only need to hide all non-CENTER windows in root split panel
-    private Widget formsWidget;
-    public void setFullScreenMode(boolean fullScreen) {
-        ResizableSimplePanel formsPanel = (ResizableSimplePanel) getWindowView(formsWindow);
-        if(fullScreen) {
-            RootLayoutPanel.get().remove(rootElement.getView());
-            formsWidget = formsPanel.getWidget();
-            RootLayoutPanel.get().add(formsWidget);
-        } else {
-            formsPanel.setWidget(formsWidget);
-            formsWidget = null;
-            RootLayoutPanel.get().add(rootElement.getView());
+    // the full screen draws System.forms alone, over the whole page. Nothing is taken out of the page for it: a widget
+    // taken out is detached, and a React view in it - System.forms' component, a form's own view, another window's
+    // component - would be unmounted and drawn anew as it comes back, its state lost and its effects run again. So the
+    // layout stays, hidden as HIDE WINDOW hides a window, and the view of the forms window - still the child of its
+    // window - is moved over it as an element, into a layer of its own. The layer passes the page's resizes on to the
+    // view - the one RootLayoutPanel gives every layer as it lays them out after setWidgetVisible, and the browser
+    // window's: the hidden layout passes none
+    private final ResizableSimplePanel fullScreenLayer = new ResizableSimplePanel() {
+        @Override
+        public void onResize() {
+            ((RequiresResize) getFormsView()).onResize();
         }
+    };
+    public void setFullScreenMode(boolean fullScreen) {
+        Element formsView = getFormsView().getElement();
+        RootLayoutPanel root = RootLayoutPanel.get();
+        if(fullScreen) {
+            root.add(fullScreenLayer);
+            fullScreenLayer.getElement().appendChild(formsView);
+        } else {
+            getWindowView(formsWindow).getElement().appendChild(formsView);
+            root.remove(fullScreenLayer);
+        }
+        root.setWidgetVisible(rootElement.getView(), !fullScreen);
+    }
+
+    // what the forms window draws its forms with, the same widget all along (FormsView.getView)
+    private Widget getFormsView() {
+        return ((ResizableSimplePanel) getWindowView(formsWindow)).getWidget();
     }
 
     public abstract Widget getWindowView(GAbstractWindow window);

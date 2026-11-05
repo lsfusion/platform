@@ -48,6 +48,17 @@ window.UiFormsWindowBoard = function (props) {
         hosts);
 };
 
+// the form uiFormsWindowCounter: a button that counts its clicks in the view's own state, and the times the view is
+// drawn anew - its effect runs once a mount - in window.uiFormsWindowCounterMounts
+window.UiFormsWindowCounter = function () {
+    var e = React.createElement, counting = React.useState(0), count = counting[0];
+    React.useEffect(function () {
+        window.uiFormsWindowCounterMounts = (window.uiFormsWindowCounterMounts || 0) + 1;
+    }, []);
+    return e('button', { className: 'ui-forms-window-counter', onClick: function () { counting[1](count + 1); } },
+        'Clicked ' + count);
+};
+
 // the form uiFormsWindowPush: buttons that change its four properties the way a view does, through their members, and
 // three that run actions by their names - the open of First, the close of the form followed by an open of First, and
 // the open of the close source

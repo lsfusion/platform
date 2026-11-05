@@ -19,8 +19,8 @@ public interface FormsView {
     }
 
 
-    // the same widget for the view's lifetime: WindowsController.setFullScreenMode lifts the forms window's child
-    // straight into the root layout, so this must not be swapped out from under it
+    // the same widget for the view's lifetime: WindowsController.setFullScreenMode moves its element over the page,
+    // so this must not be swapped out from under it
     Widget getView();
 
     void formAdded(FormDockable dockable, Integer index);

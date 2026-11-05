@@ -687,7 +687,8 @@ public class UiFormsWindowIT extends UiTest {
     }
 
     // the component's full screen and the platform's key for it (ALT+F11) undo each other, either way round: in full
-    // screen the page draws System.forms alone - no navigator, no other window, the board neither -, and once it is
+    // screen the page draws System.forms alone - no navigator, no other window, the board neither: hidden, its
+    // component kept and given the forms all the same, with full screen off, which is System.forms' -, and once it is
     // over the board is drawn again, its component given the forms as they were and full screen off
     @Test
     public void aComponentsFullScreenAndTheKeyUndoEachOther() throws Exception {
@@ -697,10 +698,13 @@ public class UiFormsWindowIT extends UiTest {
         board(FIRST, FIRST);
         fullScreen(false);
 
+        forget();
         board.locator(".ui-forms-window-board-full-screen").click();
-        assertThat(navigator).hasCount(0);
-        assertThat(board).hasCount(0);
+        assertThat(navigator).isHidden();
+        assertThat(board).isHidden();
         assertThat(launcher).isVisible();
+        board(FIRST, FIRST);
+        fullScreen(false);
         forget();
         idle();
         page.keyboard().press("Alt+F11");
@@ -711,14 +715,79 @@ public class UiFormsWindowIT extends UiTest {
 
         idle();
         page.keyboard().press("Alt+F11");
-        assertThat(navigator).hasCount(0);
-        assertThat(board).hasCount(0);
+        assertThat(navigator).isHidden();
+        assertThat(board).isHidden();
         forget();
         page.evaluate("() => window.uiFormsWindowBoard.controller.toggleFullScreen()");
         assertThat(navigator).isVisible();
         assertThat(in(board, "uiFormsWindowFirst")).isVisible();
         board(FIRST, FIRST);
         fullScreen(false);
+    }
+
+    // the React view of a form in System.forms through the full screen, which draws System.forms alone, and back: the
+    // same view all along - what it counted in its own state stays, and its effect does not run again
+    @Test
+    public void theFullScreenKeepsAViewInSystemForms() throws Exception {
+        Locator launcher = launcher(), counter = form("UiFormsWindow.uiFormsWindowCounter").locator(".ui-forms-window-counter");
+        Locator navigator = page.locator("[lsfusion-container='System.root']");
+        action(launcher, "uiFormsWindowCounterIntoForms").click();
+        counter.click();
+        assertThat(counter).hasText("Clicked 1");
+        mounts(1);
+
+        idle();
+        page.keyboard().press("Alt+F11");
+        assertThat(navigator).isHidden();
+        assertThat(counter).hasText("Clicked 1");
+        idle();
+        page.keyboard().press("Alt+F11");
+        assertThat(navigator).isVisible();
+        assertThat(counter).hasText("Clicked 1");
+        mounts(1);
+    }
+
+    // the grid of a form in System.forms through the full screen and back: given the whole page, it asks for the rows
+    // that fit there, and for the ones that fit its window again after - the full screen's layer passes the page's
+    // resizes on to System.forms' view, which the hidden layout passes none
+    @Test
+    public void theFullScreenResizesTheFormsOfSystemForms() throws Exception {
+        String[] items = seed();
+        Locator launcher = launcher(), navigator = page.locator("[lsfusion-container='System.root']");
+        List<String> pageSizes = requests("ChangePageSize");
+        action(launcher, "uiFormsWindowItemsIntoForms").click();
+        assertThat(text(form(ITEMS), items[0])).isVisible();
+        page.waitForTimeout(1000); // the page size the grid asks for as it opens, sent 100 ms after it is measured
+
+        int opened = pageSizes.size();
+        idle();
+        page.keyboard().press("Alt+F11");
+        assertThat(navigator).isHidden();
+        waitForSent(pageSizes, opened + 1);
+        idle();
+        page.keyboard().press("Alt+F11");
+        assertThat(navigator).isVisible();
+        waitForSent(pageSizes, opened + 2);
+    }
+
+    // the component of another forms window through the full screen, which does not draw that window, and back: the
+    // same component all along - what it chose to place, in its own state, stays chosen
+    @Test
+    public void theFullScreenKeepsTheComponentOfAnotherWindow() throws Exception {
+        Locator launcher = launcher(), board = window("board");
+        action(launcher, "uiFormsWindowFirstIntoBoard").click();
+        action(launcher, "uiFormsWindowSecondIntoBoard").click();
+        board(SECOND, FIRST, SECOND);
+        place("current");
+        assertThat(in(board, "uiFormsWindowFirst")).isHidden();
+
+        idle();
+        page.keyboard().press("Alt+F11");
+        assertThat(board).isHidden();
+        idle();
+        page.keyboard().press("Alt+F11");
+        assertThat(in(board, "uiFormsWindowSecond")).isVisible();
+        assertThat(in(board, "uiFormsWindowFirst")).isHidden();
     }
 
     // ---------------------------------------------------------------- helpers
@@ -786,6 +855,17 @@ public class UiFormsWindowIT extends UiTest {
     // until the board's component is given the full screen mode expected
     private void fullScreen(boolean expected) {
         page.waitForFunction("expected => window.uiFormsWindowBoard.data.fullScreen === expected", expected);
+    }
+
+    // until the counter's view has been drawn anew - mounted - the number of times expected, failing with how many
+    private void mounts(int expected) {
+        try {
+            page.waitForFunction("expected => window.uiFormsWindowCounterMounts === expected", expected,
+                    new Page.WaitForFunctionOptions().setTimeout(5_000));
+        } catch (PlaywrightException e) {
+            throw new AssertionError("the counter's view was mounted " + page.evaluate("() => window.uiFormsWindowCounterMounts")
+                    + " times, not " + expected, e);
+        }
     }
 
     private static Locator save(Locator form) {
@@ -857,6 +937,16 @@ public class UiFormsWindowIT extends UiTest {
         List<String> messages = new ArrayList<>();
         page.onConsoleMessage(message -> messages.add(message.text()));
         return messages;
+    }
+
+    // until that many requests of the kind are sent, failing with how many were
+    private void waitForSent(List<String> requests, int count) {
+        long deadline = System.currentTimeMillis() + 10_000;
+        while (requests.size() < count) {
+            if (System.currentTimeMillis() > deadline)
+                throw new AssertionError(requests.size() + " requests sent, not " + count);
+            page.waitForTimeout(100);
+        }
     }
 
     private void waitFor(List<String> console, String text) {

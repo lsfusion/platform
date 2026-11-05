@@ -174,9 +174,11 @@ public class ReactFormsView implements FormsView {
 
     private JavaScriptObject buildData() {
         // the CHOSEN edit mode, which is the one the chooser shows and the one stored between sessions - not the force
-        // mode a held modifier switches to, which getEditModeIndex looks past for the same reason
+        // mode a held modifier switches to, which getEditModeIndex looks past for the same reason. The full screen is
+        // System.forms' alone: the window of another component is hidden meanwhile, its component kept, and never
+        // sees it on
         JavaScriptObject data = createData(EditMode.getMode(FormsController.getEditModeIndex()).name(), editModes,
-                                           formsController.isFullScreenMode());
+                                           formsWindow.main && formsController.isFullScreenMode());
         for (int i = 0; i < forms.size(); i++) {
             FormDockable dockable = forms.get(i);
             GFormController form = dockable.getForm();

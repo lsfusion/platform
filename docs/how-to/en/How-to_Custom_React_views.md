@@ -749,7 +749,7 @@ The scheduled run differs from a request the component would make itself. A time
 
 ### A hidden view {#hidden-view}
 
-The platform hides a view without taking it down: in a tab of a `tabbed` container that is not selected, in a collapsed container, in a `popup` container that is not open, under a `SHOWIF` — of the view's container or of a container above it —, and in a form that is not on screen: in a background tab, or one the [forms window](#forms-window) component does not place. The component stays mounted and keeps its state, and what it draws is not seen.
+The platform hides a view without taking it down: in a tab of a `tabbed` container that is not selected, in a collapsed container, in a `popup` container that is not open, under a `SHOWIF` — of the view's container or of a container above it —, and in a form that is not on screen: in a background tab, one the [forms window](#forms-window) component does not place, or one in another window while System.forms is expanded to the full screen. The component stays mounted and keeps its state, and what it draws is not seen.
 
 While the form hides the view's container, the server does not read what the view draws, as it does not read a hidden part of any form: the rows of a group stay as they were last sent, and a property whose value changes meanwhile reads as `null` — unless a part of the form that is shown reads the same. The first answer after the container is shown brings the current values. A form that is not on screen is read as usual.
 
@@ -935,7 +935,7 @@ The component never draws a form: it renders a place for the form it wants shown
 | `byName` | Each form by name |
 | `editMode` | The name of the chosen edit mode — the one the platform's mode button chooses, and the one kept between sessions. A mode switched on by holding Ctrl, Shift or Alt lasts while the key is held and does not change `editMode` |
 | `editModes` | Every edit mode, in the order the mode button offers them |
-| `fullScreen` | Whether System.forms is expanded to the full screen, the page drawing it alone |
+| `fullScreen` | Whether System.forms is expanded to the full screen, the page drawing it alone; the component of another forms window always gets `false` |
 
 and each form carries:
 

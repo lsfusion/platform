@@ -243,6 +243,21 @@ uiFormsWindowLauncherKey 'Launcher key' () { uiFormsWindowMark('launcher key'); 
 uiFormsWindowSecondIntoForms 'Second into forms' () { SHOW uiFormsWindowSecond WINDOW NOWAIT; }
 EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowLowerFloating, uiFormsWindowLauncherKey, uiFormsWindowSecondIntoForms;
 
+// a form a React view draws (UiFormsWindowCounter), opened from the launcher in System.forms, the window the full screen
+// draws alone
+FORM uiFormsWindowCounter 'Counter';
+
+DESIGN uiFormsWindowCounter {
+    NEW counter FIRST {
+        custom = 'UiFormsWindowCounter';
+    }
+}
+
+uiFormsWindowCounterIntoForms 'Counter into forms' () { SHOW uiFormsWindowCounter WINDOW NOWAIT; }
+// and the grid of items in System.forms, sized by the room its window gives it
+uiFormsWindowItemsIntoForms 'Items into forms' () { SHOW uiFormsWindowItems WINDOW NOWAIT NEWSESSION; }
+EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowCounterIntoForms, uiFormsWindowItemsIntoForms;
+
 uiFormsWindowStored 'Stored' = DATA STRING[50] ();
 uiFormsWindowCloser 'Closer' = DATA LOCAL INTEGER ();
 uiFormsWindowPlain 'Plain' = DATA LOCAL INTEGER ();
