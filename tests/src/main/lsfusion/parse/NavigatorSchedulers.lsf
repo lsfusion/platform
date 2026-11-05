@@ -1,0 +1,17 @@
+MODULE NavigatorSchedulers;
+
+REQUIRE TestUtils;
+
+// the actions NAVIGATOR { SCHEDULE ... } schedules for the navigator are kept in one map of the base module's.
+// Modules that do not require each other are parsed at once, each in a thread of its own, so any two of them that
+// schedule an action put it into that map at once: it was a plain HashMap, which two puts at once corrupt
+
+nsTick () { MESSAGE 'ns tick'; }
+
+nsFailure = DATA LOCAL STRING ();
+nsScheduleAtOnce INTERNAL 'lsfusion.tests.AddNavigatorSchedulersAtOnceAction' ();
+
+testNavigatorSchedulersAddedAtOnce 'An action scheduled for the navigator waits for another one scheduled' () {
+    nsScheduleAtOnce();
+    assertNull(nsFailure(), nsFailure());
+}

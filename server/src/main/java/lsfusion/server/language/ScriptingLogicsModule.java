@@ -6080,7 +6080,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addNavigatorScheduler(LA action, NavigatorScheduler scheduler) {
-        baseLM.navigatorSchedulers.put(scheduler, action);
+        baseLM.putNavigatorScheduler(scheduler, action);
     }
 
     public static class ImageOption {

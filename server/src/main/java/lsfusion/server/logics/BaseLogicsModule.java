@@ -830,6 +830,12 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public NavigatorElement system;
 
     public Map<NavigatorScheduler, LA> navigatorSchedulers = new HashMap<>();
+    // a plain map every module's NAVIGATOR { SCHEDULE ... } puts into, and modules that do not require each other are
+    // parsed at once
+    @NFLazy
+    public void putNavigatorScheduler(NavigatorScheduler scheduler, LA action) {
+        navigatorSchedulers.put(scheduler, action);
+    }
 
     private void initNavigators() throws ScriptingErrorLog.SemanticErrorException {
 
