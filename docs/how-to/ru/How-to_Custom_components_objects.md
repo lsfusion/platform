@@ -205,7 +205,7 @@ onWebClientInit() + {
 | метод | что делает |
 | --- | --- |
 | `isCurrent(object)` | является ли объект текущим в группе |
-| `changeObject(object[, rendered[, element]])` | задает текущий объект группы (см. выше); с `element` показывает рядом с ним [запись](../paradigm/Form_design.md#record) таблицы |
+| `changeObject(object[, rendered[, element]])` | задает текущий объект группы (см. выше); с `element` показывает рядом с ним [запись](../paradigm/Form_design.md#record) таблицы; `Promise` его запроса |
 | `changeProperty(property[, object][, value])` | изменяет значение свойства или выполняет действие — на текущем объекте или на переданном (см. выше); `Promise` его запроса |
 | `batch(fn)` | выполнить `fn`; вызовы `changeProperty` и фильтров представления в ней уходят вместе, одним запросом; `Promise` этого запроса |
 | `changeProperties(properties, objects, values)` | устарел: вызовы `changeProperty` из параллельных массивов, в `batch` |

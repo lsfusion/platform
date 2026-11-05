@@ -12,6 +12,7 @@ import lsfusion.gwt.client.base.ImageHtmlOrTextType;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.data.*;
+import lsfusion.gwt.client.form.controller.ExecCallback;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.view.GReactFormData;
@@ -177,16 +178,25 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     }
 
 
-    protected void changeSimpleGroupObject(JavaScriptObject object, boolean rendered, P elementClicked) {
+    // ... the Promise of its request - none made for the current object, or an object naming none
+    protected JavaScriptObject changeSimpleGroupObject(JavaScriptObject object, boolean rendered, P elementClicked) {
+        return form.requestPromise(call -> changeCurrentObject(object, rendered, elementClicked, call));
+    }
+    private void changeCurrentObject(JavaScriptObject object, boolean rendered, P elementClicked, ExecCallback call) {
         GGroupObjectValue key = getObjects(object);
-        if(key == null && !GwtClientUtils.isUndefinedOrNull(object)) // an EXPLICIT object that didn't resolve (bare key / clone):
-            return; // no-op like the form controller, rather than clearing the current object via changeGroupObject(null)
+        if(key == null && !GwtClientUtils.isUndefinedOrNull(object)) { // an EXPLICIT object that didn't resolve (bare key / clone):
+            call.onCancel(); // no-op like the form controller, rather than clearing the current object via changeGroupObject(null)
+            return;
+        }
 
         long requestIndex;
-        if(!GwtClientUtils.nullEquals(this.currentKey, key))
+        if(!GwtClientUtils.nullEquals(this.currentKey, key)) {
             requestIndex = changeGroupObject(key, rendered);
-        else
+            call.onSuccess(requestIndex);
+        } else {
             requestIndex = -2; // we're not waiting for any response, just show popup as it is
+            call.onCancel();
+        }
 
         Widget recordView;
         if(elementClicked != null && (recordView = grid.recordView) != null) {

@@ -526,7 +526,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // ... and the Promise of a view's call - a React member's, a custom grid view's -: refused on a closed form before
     // the call runs - a call made through another one drops the inner Promise, so the refusal is handled -; else the
     // call tells what came of it (PromiseExecCallback)
-    private JavaScriptObject requestPromise(Consumer<ExecCallback> call) {
+    public JavaScriptObject requestPromise(Consumer<ExecCallback> call) {
         String refusal = gController.getClosedRefusal();
         if (refusal != null)
             return closedPromise(refusal);

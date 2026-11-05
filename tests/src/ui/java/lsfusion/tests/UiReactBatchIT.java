@@ -180,7 +180,8 @@ public class UiReactBatchIT extends UiTest {
         close(form);
     }
 
-    // a classic view's changeProperty and batch return the Promise of their request too
+    // a classic view's changeProperty, changeObject and batch return the Promise of their request too - changeObject's
+    // settled by its request's answer, and at once for the current object, which makes no request
     @Test
     public void aClassicViewsCallIsThePromiseOfItsRequest() throws Exception {
         String[] items = seed();
@@ -190,6 +191,16 @@ public class UiReactBatchIT extends UiTest {
         assertEquals("resolved", classic.eval("controller.batch(() => controller.changeProperty('note', row(" + js(items[1]) + "), 'c2'))"
                 + ".then(() => 'resolved')"));
         classic.waitFor("row(" + js(items[0]) + ").note === 'c1' && row(" + js(items[1]) + ").note === 'c2'");
+        List<String> requests = requests(request -> request.method().equals("POST"));
+        hold();
+        classic.call("window.uiRbChanged = 'pending'; controller.changeObject(row(" + js(items[2]) + "))"
+                + ".then(() => { window.uiRbChanged = 'resolved'; })");
+        assertEquals("pending", classic.value("window.uiRbChanged")); // its request's answer held back
+        release();
+        classic.waitFor("window.uiRbChanged === 'resolved'");
+        assertEquals(1, count(requests, "ChangeGroupObject"));
+        assertEquals("resolved", classic.eval("controller.changeObject(row(" + js(items[2]) + ")).then(() => 'resolved')"));
+        assertEquals(1, count(requests, "ChangeGroupObject"));
         saveAndCheckNotes(form, items, "c1", "c2", "-");
         close(form);
     }
