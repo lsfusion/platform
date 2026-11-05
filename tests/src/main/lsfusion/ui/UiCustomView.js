@@ -49,11 +49,21 @@ window.UiCustomViewQuantities = function (props) {
 
 // buttons that call the server through the form's controller, each listing what its call resolved with - the type and
 // the value - or was rejected with; the controller is kept as window.uiCustomViewCalls, to be called once the form is
-// closed
+// closed. As the view is unmounted - the form taken out of the page - it runs what a test left in
+// window.uiCustomViewUnmounted, given the controller: in a layout effect's cleanup, which React runs at once, while the
+// platform is taking the form out
 window.UiCustomViewCalls = function (props) {
     var e = React.createElement, controller = props.controller;
     var said = React.useState([]), results = said[0], setResults = said[1];
     window.uiCustomViewCalls = controller;
+    React.useLayoutEffect(function () {
+        return function () {
+            var unmounted = window.uiCustomViewUnmounted;
+            window.uiCustomViewUnmounted = undefined;
+            if (unmounted)
+                unmounted(controller);
+        };
+    }, []);
     function say(result) {
         setResults(function (list) { return list.concat(result); });
     }

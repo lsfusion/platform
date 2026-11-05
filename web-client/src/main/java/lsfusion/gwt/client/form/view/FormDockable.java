@@ -74,9 +74,8 @@ public final class FormDockable extends WidgetForm {
     }
 
     // taken out of its window: closed, or a close the client foresees (FormsController.asyncCloseForm), put back if
-    // the server refuses it
+    // the server refuses it - so from before the taking out, which unmounts what React draws of the form at once
     private boolean removed;
-    @Override
     public boolean isRemoved() {
         return removed;
     }

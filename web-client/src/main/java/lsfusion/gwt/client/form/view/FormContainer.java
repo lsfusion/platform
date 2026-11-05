@@ -40,13 +40,6 @@ public abstract class FormContainer {
         return asyncHidden;
     }
 
-    // whether the container has let go of its form ahead of the form's hiding, the close under way - the form's
-    // controller refuses its calls from then on (GFormController): a docked form's close the client foresees, an
-    // editor's end
-    public boolean isRemoved() {
-        return false;
-    }
-
     private static int formNameCounter = 0;
     // the name a custom forms view addresses this open form by - the one it writes in <Platform name/>, and the one the
     // projection carries. Allocated HERE, not on GFormController, because an async open shows a placeholder container

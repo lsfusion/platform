@@ -105,14 +105,10 @@ public abstract class EditingForm extends FormContainer {
     }
 
     private boolean finishedEditing;
-    // the editor ending - committed, cancelled -, the form taken out of its cell, its close asked
-    @Override
-    public boolean isRemoved() {
-        return finishedEditing;
-    }
     protected void finishEditing(EndReason editFormCloseReason) {
         assert !finishedEditing;
-        // first: the end of the editing below takes the form out of its cell, what draws it in React unmounted at once
+        // first: the end of the editing below takes in the answers the form held while it edited, the form's hiding among
+        // them, which comes back here (hide)
         finishedEditing = true;
 
         if(!async)

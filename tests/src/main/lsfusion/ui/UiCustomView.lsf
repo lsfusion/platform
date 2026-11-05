@@ -66,15 +66,30 @@ uiCustomViewCount 'Count' = DATA LOCAL INTEGER ();
 uiCustomViewDouble (INTEGER a) {
     RETURN a * 2;
 }
+// an action that may close the form, whose close the client foresees all the same, taking the form off the page until
+// the server answers: the server refuses it while the form is to be kept, and only stops keeping it
+uiCustomViewKeep = DATA LOCAL BOOLEAN ();
+uiCustomViewTryClose 'Try to close' () {
+    IF uiCustomViewKeep() THEN
+        uiCustomViewKeep() <- NULL;
+    ELSE
+        formClose();
+}
+// ... and one that closes it, which the view calls through its member
+uiCustomViewClose 'Close' () {
+    formClose();
+}
 
 FORM uiCustomViewCalls 'Calls'
     PROPERTIES() READONLY uiCustomViewCount
+    PROPERTIES() uiCustomViewTryClose, uiCustomViewClose
     CUSTOMS uiCustomViewDouble, uiCustomViewCount
 ;
 
 DESIGN uiCustomViewCalls {
     NEW calls FIRST {
         custom = 'UiCustomViewCalls';
+        MOVE PROPERTY(uiCustomViewClose());
     }
 }
 

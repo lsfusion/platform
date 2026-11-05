@@ -679,8 +679,12 @@ public abstract class FormsController {
         asyncCloseForm(asyncExecutor.execute(new GPushAsyncClose()), formContainer);
     }
 
+    // a docked form taken out of its window as its close is asked, put back if the server refuses it (onServerInvocation)
+    // - once: a close asked again before the server's answer, by a view's call - one its unmounting makes as well, while
+    // the form is being taken out -, finds the form out already (FormDockable.isRemoved), and the server's taking that
+    // close hides the form as it hides any form it closes
     public void asyncCloseForm(GAsyncFormController asyncFormController, FormContainer formContainer) {
-        if(formContainer instanceof FormDockable) {
+        if(formContainer instanceof FormDockable && !((FormDockable) formContainer).isRemoved()) {
             asyncFormController.putAsyncClosedForm(new Pair<>((FormDockable) formContainer, getFormsWindow((FormDockable) formContainer).indexOf((FormDockable) formContainer)));
             formContainer.queryHide(CancelReason.HIDE);
         }

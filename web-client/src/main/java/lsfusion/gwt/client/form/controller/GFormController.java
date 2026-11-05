@@ -381,12 +381,14 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         protected long dispatchChange(String property, ArrayList<Serializable> keyParams, Serializable value, GwtActionDispatcher.ServerResponseCallback callback) {
             return asyncDispatch(new ControllerChangeAction(property, keyParams, value), callback);
         }
-        // from its hiding on - the form off the page, its close sent later (destroyForm, which the server always sends
-        // after the hiding) -, and from its container's letting go of it before that (FormContainer.isRemoved): a call
-        // made then would run on a form the user no longer has
+        // from its hiding on - the server has closed the form, its close sent later (destroyForm, which the server always
+        // sends after the hiding) -: a call made then would run on a form the user no longer has. Not before, while the
+        // client only foresees the close (a docked form taken out of its window as its close is asked, an editor's form
+        // as the editing ends): the server may refuse it - the action asked keeps the form -, so a call made then - a
+        // view's input committed as the form goes - is sent in its turn, as the form's own requests are
         @Override
         protected boolean isClosed() {
-            return formHidden || formContainer.isRemoved();
+            return formHidden;
         }
         // ... and, while a batch runs, a server call: refused as a rejected promise (refusesLookup), named as it is
         // reached - on the form's controller, controller.form

@@ -97,25 +97,65 @@ public class UiCustomViewIT extends UiTest {
         close(form);
     }
 
-    // a call made through the controller of a form that is closed throws nothing: the promise it returns is rejected -
-    // Form is closed - and does not hang. The form is closed for its controller as it leaves the page: a call made the
-    // moment its element goes is refused too, since it would run on a form the user no longer has
+    // a call made through the controller of a form the server has closed throws nothing: the promise it returns is
+    // rejected - Form is closed - and does not hang. A close the client only foresees, taking the form off the page as
+    // an action that may close it is clicked, is not that yet: the server may refuse it, so a call made the moment the
+    // form's element goes - a view's input committed as the form goes - is sent and runs after the close's request, on
+    // the form the user gets back as on the one that closes
     @Test
     public void aCallOfAClosedFormIsRejected() throws Exception {
         Locator form = open(FOLDER, "UiCustomView.uiCustomViewCalls");
         call(form, "eval");
         assertThat(form.locator(".ui-custom-view-results li")).hasText(new String[] {"eval: number 42"});
-        page.evaluate("() => { const form = document.querySelector(\"[lsfusion-form='UiCustomView.uiCustomViewCalls']\"),"
-                + " controller = window.uiCustomViewCalls;"
-                + " const observer = new MutationObserver(() => { if (!form.isConnected) { observer.disconnect();"
-                + " controller.form.eval('run() { RETURN 1; }').then(() => { window.uiCustomViewGoneCall = 'resolved'; },"
-                + " error => { window.uiCustomViewGoneCall = error.message; }); } });"
-                + " observer.observe(document.body, {childList: true, subtree: true}); }");
-        close(form);
-        assertEquals("Form is closed", page.waitForFunction("() => window.uiCustomViewGoneCall", null,
-                new Page.WaitForFunctionOptions().setTimeout(10_000)).jsonValue());
+        page.evaluate("() => window.uiCustomViewCalls.form.evalAction('UiCustomView.uiCustomViewKeep() <- TRUE;')");
+        Locator tryClose = form.locator("button[lsfusion-container='PROPERTY(uiCustomViewTryClose())']");
+
+        callAsTheFormGoes("controller.form.change('uiCustomViewCount', 7)");
+        tryClose.click();
+        assertEquals("resolved", goneCall());
+        assertThat(form).isVisible();
+        assertThat(value(form, "uiCustomViewCount")).hasText("7");
+
+        callAsTheFormGoes("controller.form.change('uiCustomViewCount', 8)");
+        tryClose.click();
+        assertEquals("resolved", goneCall());
+        assertThat(form).hasCount(0);
         assertEquals("Form is closed", page.evaluate("() => window.uiCustomViewCalls.form.eval('run() { RETURN 1; }')"
                 + ".then(() => 'resolved', error => error.message)"));
+    }
+
+    // a close asked while the client foresees one - a view's member running a close action as the view is unmounted,
+    // while the form is being taken out of its window - is not foreseen again: the server refusing the first close and
+    // taking the second, the form the first answer puts back goes with the second, as a form the server closes does
+    @Test
+    public void aCloseAskedWhileOneIsForeseenClosesTheForm() throws Exception {
+        Locator form = open(FOLDER, "UiCustomView.uiCustomViewCalls");
+        call(form, "eval");
+        assertThat(form.locator(".ui-custom-view-results li")).hasText(new String[] {"eval: number 42"});
+        page.evaluate("() => window.uiCustomViewCalls.form.evalAction('UiCustomView.uiCustomViewKeep() <- TRUE;')");
+
+        page.evaluate("() => { window.uiCustomViewGoneCall = undefined; window.uiCustomViewUnmounted = controller =>"
+                + " controller.uiCustomViewClose.exec().then(() => { window.uiCustomViewGoneCall = 'resolved'; },"
+                + " error => { window.uiCustomViewGoneCall = error.message; }); }");
+        form.locator("button[lsfusion-container='PROPERTY(uiCustomViewTryClose())']").click();
+        assertEquals("resolved", goneCall());
+        assertThat(form).hasCount(0);
+    }
+
+    // a call through the view's controller - `controller` in it - made the moment the form's element leaves the page,
+    // what came of it - resolved, or the message it was rejected with - read by goneCall
+    private void callAsTheFormGoes(String call) {
+        page.evaluate("() => { window.uiCustomViewGoneCall = undefined;"
+                + " const form = document.querySelector(\"[lsfusion-form='UiCustomView.uiCustomViewCalls']\"),"
+                + " controller = window.uiCustomViewCalls;"
+                + " const observer = new MutationObserver(() => { if (!form.isConnected) { observer.disconnect();"
+                + " " + call + ".then(() => { window.uiCustomViewGoneCall = 'resolved'; },"
+                + " error => { window.uiCustomViewGoneCall = error.message; }); } });"
+                + " observer.observe(document.body, {childList: true, subtree: true}); }");
+    }
+    private String goneCall() {
+        return (String) page.waitForFunction("() => window.uiCustomViewGoneCall", null,
+                new Page.WaitForFunctionOptions().setTimeout(10_000)).jsonValue();
     }
 
     // the JS function an INTERNAL CLIENT action runs is given the action's parameters and the form's controller: what
