@@ -722,11 +722,13 @@ public class GFormControllerTest extends GWTTestCase {
             GListViewType shown = GListViewType.GRID;
             public List<GListViewType> getListViews() { return Arrays.asList(GListViewType.GRID, GListViewType.PIVOT); }
             public GListViewType getListView() { return shown; }
-            public long changeListView(GListViewType view) { // as the platform's: the view shown is no switch
-                if (view == shown)
-                    return -1;
+            public void changeListView(GListViewType view, ExecCallback onExec) { // as the platform's: the view shown is no switch
+                if (view == shown) {
+                    onExec.onCancel();
+                    return;
+                }
                 shown = view;
-                return controller.changeListViewType(group, 20, view, null);
+                onExec.onSuccess(controller.changeListViewType(group, 20, view, null));
             }
         };
         JavaScriptObject sameMode = controller.changeUpdateMode(group, GUpdateMode.AUTO);
@@ -768,11 +770,13 @@ public class GFormControllerTest extends GWTTestCase {
             GListViewType shown = GListViewType.GRID;
             public List<GListViewType> getListViews() { return Arrays.asList(GListViewType.GRID, GListViewType.PIVOT); }
             public GListViewType getListView() { return shown; }
-            public long changeListView(GListViewType view) { // as the platform's: the view shown is no switch
-                if (view == shown)
-                    return -1;
+            public void changeListView(GListViewType view, ExecCallback onExec) { // as the platform's: the view shown is no switch
+                if (view == shown) {
+                    onExec.onCancel();
+                    return;
+                }
                 shown = view;
-                return controller.changeListViewType(group, 20, view, null);
+                onExec.onSuccess(controller.changeListViewType(group, 20, view, null));
             }
         };
         ArrayList<JavaScriptObject> promises = new ArrayList<>();
@@ -2747,7 +2751,12 @@ public class GFormControllerTest extends GWTTestCase {
         GListViewController views = (GListViewController) tableController(controller, group.grid);
         DataGrid<?> shown = platformView(controller, group.grid);
         long next = nextRequestIndex(controller);
-        assertEquals(-1, views.changeListView(GListViewType.GRID));
+        ArrayList<String> told = new ArrayList<>();
+        views.changeListView(GListViewType.GRID, new ExecCallback() {
+            public void onSuccess(long requestIndex) { told.add("request"); }
+            public void onCancel() { told.add("none"); }
+        });
+        assertEquals(Collections.singletonList("none"), told);
         assertEquals(next, nextRequestIndex(controller));
         assertSame(shown, platformView(controller, group.grid));
     }

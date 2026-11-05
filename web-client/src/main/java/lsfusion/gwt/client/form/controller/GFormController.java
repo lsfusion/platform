@@ -523,20 +523,49 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
             requestPromises.put(requestIndex, promise = newRequestPromise());
         return promise;
     }
-    // ... and the Promise of a view's call whose request is made now, request giving its index (-1: none made): in a
-    // batch the batch's, which carries it; none made resolved at once; refused on a closed form before the call runs -
-    // a call made through another one drops the inner Promise, so the refusal is handled
-    private JavaScriptObject requestPromise(LongSupplier request) {
+    // ... and the Promise of a view's call - a React member's, a custom grid view's -: refused on a closed form before
+    // the call runs - a call made through another one drops the inner Promise, so the refusal is handled -; else the
+    // call tells what came of it (PromiseExecCallback)
+    private JavaScriptObject requestPromise(Consumer<ExecCallback> call) {
         String refusal = gController.getClosedRefusal();
         if (refusal != null)
             return closedPromise(refusal);
-        long requestIndex = request.getAsLong();
-        if (dispatcher.isBatching())
-            return batchPromise.promise;
-        PendingPromise promise = requestIndex >= 0 ? requestPromise(requestIndex) : newRequestPromise();
-        if (requestIndex < 0)
-            promise.resolve();
-        return promise.promise;
+        PromiseExecCallback callback = new PromiseExecCallback();
+        call.accept(callback);
+        return callback.get().promise;
+    }
+    // ... told at once - the request made: the Promise kept under its index, the one kept there already shared (a
+    // request in flight another call waits for); none to make: resolved; failing to make it: rejected with the reason
+    // -, or later, the Promise returned taking the request. In a batch it is the batch's, which the batch's request
+    // settles
+    private final class PromiseExecCallback implements ExecCallback {
+        private PendingPromise promise;
+
+        @Override
+        public void onSuccess(long requestIndex) {
+            if (promise == null)
+                promise = dispatcher.isBatching() ? batchPromise : requestPromise(requestIndex);
+            else
+                requestPromises.put(requestIndex, promise);
+        }
+
+        @Override
+        public void onCancel() {
+            if (get() != batchPromise)
+                promise.resolve();
+        }
+
+        @Override
+        public void onFailure(String reason) {
+            if (get() != batchPromise)
+                promise.reject(reason);
+        }
+
+        PendingPromise get() {
+            if (promise == null)
+                promise = dispatcher.isBatching() ? batchPromise : newRequestPromise();
+            return promise;
+        }
     }
     private static JavaScriptObject closedPromise(String refusal) {
         JavaScriptObject promise = GController.rejectedControllerPromise(refusal);
@@ -548,15 +577,18 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // tree's controller -: refused on a closed form before it runs, the Promise the one of these groups' request in
     // flight (requests); requests are answered in order, so the latest one covers every group named
     private JavaScriptObject getPromise(List<GGroupObject> groups, NativeSIDMap<GGroupObject, Long> requests, Runnable change) {
-        return requestPromise(() -> {
+        return requestPromise(call -> {
             change.run();
-            long latest = -1;
+            Long latest = null;
             for (GGroupObject group : groups) {
                 Long requestIndex = requests.get(group);
-                if (requestIndex != null && requestIndex > latest)
+                if (requestIndex != null && (latest == null || requestIndex > latest))
                     latest = requestIndex;
             }
-            return latest;
+            if (latest != null)
+                call.onSuccess(latest);
+            else
+                call.onCancel();
         });
     }
 
@@ -645,7 +677,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // object
     @Override
     public JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key) {
-        return requestPromise(() -> changeGroupObject(group, key));
+        return requestPromise(call -> call.onSuccess(changeGroupObject(group, key)));
     }
     // ... and a tree group member's expand / collapse / toggle, once it has read the node and decided
     // (TreeRowsPart): the platform's own request, which takes the state asked for - and the group's controller
@@ -653,46 +685,46 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // tells it of a current object
     @Override
     public JavaScriptObject expandNode(GGroupObject group, GGroupObjectValue key) {
-        return requestPromise(() -> {
+        return requestPromise(call -> {
             long requestIndex = expandGroupObject(group, key, true);
             getGroupController(group).changeExpanded(key, true, requestIndex);
-            return requestIndex;
+            call.onSuccess(requestIndex);
         });
     }
     @Override
     public JavaScriptObject collapseNode(GGroupObject group, GGroupObjectValue key) {
-        return requestPromise(() -> {
+        return requestPromise(call -> {
             long requestIndex = expandGroupObject(group, key, false);
             getGroupController(group).changeExpanded(key, false, requestIndex);
-            return requestIndex;
+            call.onSuccess(requestIndex);
         });
     }
     // ... and its expandAll / collapseAll: the server starts at the group it is given - its nodes under the open nodes
     // of the group above, all of them for the top group - and goes down
     @Override
     public JavaScriptObject expandAll(GGroupObject group) {
-        return requestPromise(() -> {
+        return requestPromise(call -> {
             long requestIndex = expandGroupObjectRecursive(group, false, true); // false: the whole group, not the current object
             getGroupController(group).changeExpandedAll(true, requestIndex);
-            return requestIndex;
+            call.onSuccess(requestIndex);
         });
     }
     @Override
     public JavaScriptObject collapseAll(GGroupObject group) {
-        return requestPromise(() -> {
+        return requestPromise(call -> {
             long requestIndex = expandGroupObjectRecursive(group, false, false);
             getGroupController(group).changeExpandedAll(false, requestIndex);
-            return requestIndex;
+            call.onSuccess(requestIndex);
         });
     }
     // ... and the tree's own "expand current", where React draws its rows (GReactFormData.TreeTablePart): the server
     // opens the group's current node - the one the projection names - and every node under it
     @Override
     public JavaScriptObject expandCurrent(GGroupObject group, GGroupObjectValue key) {
-        return requestPromise(() -> {
+        return requestPromise(call -> {
             long requestIndex = expandGroupObjectRecursive(group, true, true);
             getGroupController(group).changeExpandedUnder(key, requestIndex);
-            return requestIndex;
+            call.onSuccess(requestIndex);
         });
     }
 
@@ -1917,12 +1949,12 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
 
     // a custom view's change of one cell - a React member's, a custom grid view's: the value pushed, the property's
     // change event taking it instead of the user's input, or, with PValue.UNDEFINED, its change event run with none -,
-    // the Promise of its request returned (requestPromises); refused on a closed form, whose requests are not sent
+    // the Promise of its request returned (requestPromise); refused on a closed form, whose requests are not sent
     // (RemoteDispatchAsync.gwtExecute). Several cells are changed in a batch (batch), each by its own change
     public JavaScriptObject executePropertyEventAction(GPropertyDraw property, GGroupObjectValue fullKey, PValue newValue, ExecCallback onExec) {
-        String refusal = gController.getClosedRefusal();
-        if (refusal != null)
-            return GController.rejectedControllerPromise(refusal);
+        return requestPromise(call -> changeCell(property, fullKey, newValue, call.andThen(onExec::onSuccess)));
+    }
+    private void changeCell(GPropertyDraw property, GGroupObjectValue fullKey, PValue newValue, ExecCallback onRequest) {
         GPushAsyncResult pushAsyncResult = newValue == PValue.UNDEFINED ? null : new GPushAsyncInput(GUserInputResult.singleValue(newValue));
         // the guard GPropertyDraw states for the same mistake, in the terms this path has: a property that is not a
         // list has no group to change, and a call that CARRIES a value carries the value its caller wrote, which is
@@ -1931,36 +1963,12 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         // dropped. A call with no value is left alone: that is a view forwarding a click, where a held modifier still
         // means what it means anywhere else. GPropertyDraw says it as changeOrGroupChange(isCharAddKeyEvent(editEvent))
         String actionSID = GEditBindingMap.changeOrGroupChange(!property.isList || pushAsyncResult != null);
-        // the Promise the call returns - in a batch the batch's - put under the index of its request once the call makes
-        // it: at once, or later - a NEW asks the server for the new object's id first, a close the user to confirm it
-        // (asyncAddRemove, asyncCloseFormConfirmed). A call the platform has no request to make for - a DELETE with no
-        // row to delete, a close not confirmed - is cancelled, its Promise resolved at once; one whose request it fails to
-        // make - a NEW whose id is not given, a request due once the form is closed - fails, rejected with the reason
-        PendingPromise promise = dispatcher.isBatching() ? batchPromise : newRequestPromise();
-        ExecCallback onRequest = new ExecCallback() {
-            @Override
-            public void onSuccess(long requestIndex) {
-                onExec.onSuccess(requestIndex);
-                requestPromises.put(requestIndex, promise);
-            }
-
-            @Override
-            public void onCancel() {
-                promise.resolve();
-            }
-
-            @Override
-            public void onFailure(String reason) {
-                promise.reject(reason);
-            }
-        };
         // an action / event run goes as the click it is - in a batch as its plain request, which the batch's request
         // carries: a click's predictions are keyed by its request's index, which all the parts of a batch share
         if(pushAsyncResult == null && !dispatcher.isBatching()) // execute action / event
             executePropertyEventAction(property, fullKey, actionSID, GEventSource.CUSTOM, onRequest);
         else // change the property with the value
             onRequest.onSuccess(asyncExecutePropertyEventAction(actionSID, null, null, property, GEventSource.CUSTOM, fullKey, pushAsyncResult));
-        return promise.promise;
     }
 
     public void executePropertyEventAction(GPropertyDraw property, GGroupObjectValue fullKey, String actionSID, GEventSource eventSource, ExecCallback onExec) {
@@ -2387,11 +2395,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // - at once, or in its batch's one request -, and shown at once; the answer reports it, or the one the server holds
     @Override
     public JavaScriptObject changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
-        return requestPromise(() -> {
+        return requestPromise(call -> {
             long requestIndex = asyncResponseDispatch(new SetRegularFilter(filterGroup.ID, filter == null ? -1 : filter.ID));
             pendingChangeRegularFilterRequests.put(filterGroup, requestIndex);
             filterGroupControllers.get(filterGroup).showFilter(filter);
-            return requestIndex;
+            call.onSuccess(requestIndex);
         });
     }
 
@@ -2425,8 +2433,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     public JavaScriptObject changeOrders(List<GGroupObject> groups, LinkedHashMap<Column, Boolean> orders) {
         // a request per group, as the platform's header sends them: answered in order, so the last one's Promise covers
         // a tree's other groups - one of them failing the platform shows, as it shows any failed request
-        return requestPromise(() -> {
-            long requestIndex = -1;
+        return requestPromise(call -> {
+            Long requestIndex = null;
             for (GGroupObject group : groups) {
                 LinkedHashMap<Column, Boolean> groupOrders = new LinkedHashMap<>();
                 for (Map.Entry<Column, Boolean> order : orders.entrySet())
@@ -2434,7 +2442,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
                         groupOrders.put(order.getKey(), order.getValue());
                 requestIndex = changeOrders(group, groupOrders);
             }
-            return requestIndex;
+            if (requestIndex != null)
+                call.onSuccess(requestIndex);
+            else
+                call.onCancel();
         });
     }
 
@@ -2481,7 +2492,12 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
 
     // a classic view's view filters and its page size: the Promise of their request, none with no filter
     public JavaScriptObject setViewFilters(ArrayList<GPropertyFilter> conditions, int pageSize) {
-        return requestPromise(() -> conditions.isEmpty() ? -1 : asyncResponseDispatch(new SetViewFilters(conditions.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(ArrayList::new)), pageSize)));
+        return requestPromise(call -> {
+            if (conditions.isEmpty())
+                call.onCancel();
+            else
+                call.onSuccess(asyncResponseDispatch(new SetViewFilters(conditions.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(ArrayList::new)), pageSize)));
+        });
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
@@ -2625,21 +2641,23 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // changes the server holds back brought now
     @Override
     public JavaScriptObject changeUpdateMode(GGroupObject groupObject, GUpdateMode updateMode) {
-        return requestPromise(() -> {
+        return requestPromise(call -> {
             if (updateMode != GUpdateMode.FORCE) {
                 boolean manual = updateMode == GUpdateMode.MANUAL;
-                if (isManualUpdate(groupObject) == manual)
-                    return -1;
+                if (isManualUpdate(groupObject) == manual) {
+                    call.onCancel();
+                    return;
+                }
                 manualUpdates.put(groupObject, manual);
                 gridToolbarControllers.get(groupObject).showUpdateMode(manual);
             }
-            return changeMode(groupObject, false, null, null, 0, null, null, false, updateMode, null);
+            call.onSuccess(changeMode(groupObject, false, null, null, 0, null, null, false, updateMode, null));
         });
     }
 
     @Override
     public JavaScriptObject changeListView(GListViewController views, GListViewType view) {
-        return requestPromise(() -> views.changeListView(view));
+        return requestPromise(call -> views.changeListView(view, call));
     }
 
     // change group mode with force refresh

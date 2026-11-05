@@ -51,7 +51,7 @@ public final class GPlatformGridToolbarController extends GPlatformToolbarContro
             GToolbarButton viewButton = new GToolbarButton(getViewImage(listView), getViewCaption(listView)) {
                 @Override
                 public ClickHandler getClickHandler() {
-                    return event -> table.changeListView(listView);
+                    return event -> table.changeListView(listView, requestIndex -> {});
                 }
             };
             viewButtons.put(listView, viewButton);

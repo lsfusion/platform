@@ -31,6 +31,7 @@ import lsfusion.gwt.client.classes.data.GPDFType;
 import lsfusion.gwt.client.classes.data.GRenderedType;
 import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.form.GUpdateMode;
+import lsfusion.gwt.client.form.controller.ExecCallback;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.controller.GFormControllerTest;
 import lsfusion.gwt.client.form.controller.GController;
@@ -375,7 +376,7 @@ public class GReactFormDataTest extends GWTTestCase {
                 }
                 public JavaScriptObject changeListView(GListViewController views, GListViewType view) {
                     if (view != views.getListView())
-                        views.changeListView(view);
+                        views.changeListView(view, requestIndex -> {});
                     return batching ? batchPromise : requestPromise;
                 }
                 // as the form keeps it: as the server starts the group, until a toolbar changes it
@@ -647,7 +648,7 @@ public class GReactFormDataTest extends GWTTestCase {
         public JavaScriptObject changeUpdateMode(GGroupObject group, GUpdateMode updateMode) { return batching ? batchPromise : requestPromise; }
         public JavaScriptObject changeListView(GListViewController views, GListViewType view) {
             if (view != views.getListView())
-                views.changeListView(view);
+                views.changeListView(view, requestIndex -> {});
             return batching ? batchPromise : requestPromise;
         }
         public boolean isManualUpdate(GGroupObject group) { return group.enableManualUpdate; }
@@ -977,7 +978,7 @@ public class GReactFormDataTest extends GWTTestCase {
 
         public List<GListViewType> getListViews() { return Arrays.asList(GListViewType.GRID, GListViewType.PIVOT); }
         public GListViewType getListView() { return shown; }
-        public long changeListView(GListViewType view) { shown = view; changed.add(view); toolbar.showView(view); return 0; }
+        public void changeListView(GListViewType view, ExecCallback onExec) { shown = view; changed.add(view); toolbar.showView(view); onExec.onSuccess(0); }
     }
 
     private static GContainer container(int id) {

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object.table.controller;
 
+import lsfusion.gwt.client.form.controller.ExecCallback;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 
 import java.util.List;
@@ -12,6 +13,6 @@ public interface GListViewController {
     List<GListViewType> getListViews();
     // ... the one it shows now
     GListViewType getListView();
-    // ... and another shown instead
-    long changeListView(GListViewType view);
+    // ... and another shown instead, telling what came of it: the request made, or none - the view shown already
+    void changeListView(GListViewType view, ExecCallback onExec);
 }
