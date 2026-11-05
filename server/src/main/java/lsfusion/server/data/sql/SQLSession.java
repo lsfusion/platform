@@ -589,13 +589,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return lockWrite(owner, true);
     }
     private boolean lockWrite(OperationOwner owner, boolean tryLock) {
-        checkClosed();
-
         if(tryLock) {
+            // a try comes from the connection balancing or restart, which go through the sessions they took a while
+            // ago : one its owner has closed since then is not taken, rather than failed on (a session it locks before
+            // the close goes through, or after it, it finds with no connection to move)
+            if(isClosed())
+                return false;
             boolean locked = lock.writeLock().tryLock();
             if(!locked)
                 return false;
         } else {
+            checkClosed();
 //            ServerLoggers.pausableLogStack("LOCKWRITE TRY " + this);
             lock.writeLock().lock();
         }

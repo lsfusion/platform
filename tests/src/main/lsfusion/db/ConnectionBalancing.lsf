@@ -1,0 +1,16 @@
+MODULE ConnectionBalancing;
+
+REQUIRE TestUtils;
+
+// the connection balancing goes, every few seconds, through the sessions it took at the start of its round, opening a
+// connection for each one before it locks it - and an owner can close its session meanwhile. Such a session failed the
+// lock ("Sql session is already closed", an AssertionError under -ea), which ended the round and left the connection
+// opened for it open
+
+cbFailure = DATA LOCAL STRING ();
+cbBalanceClosed INTERNAL 'lsfusion.tests.BalanceClosedSessionAction' ();
+
+testClosedSessionBalanced 'A session closed after the balancing took it is skipped' () {
+    cbBalanceClosed();
+    assertNull(cbFailure(), cbFailure());
+}
