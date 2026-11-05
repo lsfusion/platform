@@ -43,6 +43,6 @@ public abstract class NFAColImpl<T, CH extends NFColChange<T>, F extends Iterabl
     }
 
     public Iterable<T> getNFCopyIt(Version version) {
-        return getNFCol(version, true);
+        return readCopy(() -> getNFCol(version, true));
     }
 }

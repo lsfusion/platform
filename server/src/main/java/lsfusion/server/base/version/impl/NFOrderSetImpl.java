@@ -41,7 +41,7 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
 
     @Override
     public ImOrderSet<T> getNFCopyOrderSet(Version version) {
-        return getNF(version, true);
+        return readCopy(() -> getNF(version, true));
     }
 
     public ImOrderSet<T> getNFOrderSet(Version version) {

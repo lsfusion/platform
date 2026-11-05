@@ -42,7 +42,7 @@ public class NFComplexOrderSetImpl<T> extends NFChangeImpl<NFComplexOrderSetChan
 
     @Override
     public Pair<ImOrderSet<T>, ImList<Integer>> getNFCopy(Version version) {
-        return getNF(version, true);
+        return readCopy(() -> getNF(version, true));
     }
 
     private Pair<ImOrderSet<T>, ImList<Integer>> getNF(Version version, boolean allowRead) {

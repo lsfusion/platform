@@ -22,7 +22,7 @@ public class NFMapImpl<K, V> extends NFChangeImpl<NFMapChange<K, V>, ImMap<K, V>
 
     @Override
     public ImMap<K, V> getNFCopy(Version version) {
-        return getNF(version, true);
+        return readCopy(() -> getNF(version, true));
     }
 
     public ImMap<K, V> getNF(Version version, boolean allowRead) {

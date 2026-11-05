@@ -30,7 +30,7 @@ public class NFOrderMapImpl<K, V> extends NFChangeImpl<NFOrderMapChange<K, V>, I
 
     @Override
     public ImOrderMap<K, V> getNFCopy(Version version) {
-        return getNF(version, true);
+        return readCopy(() -> getNF(version, true));
     }
 
     public ImOrderMap<K, V> getNF(Version version, boolean allowRead) {

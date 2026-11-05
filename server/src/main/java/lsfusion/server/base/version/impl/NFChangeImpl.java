@@ -22,10 +22,10 @@ public abstract class NFChangeImpl<CH, F> extends NFImpl<TreeMap<Version, MList<
     protected boolean isEmptyChanges(Version version) {
         if(version != Version.last()) { // same monitor proceedChanges takes below : a write that completed before this read has to be visible to it
             synchronized (this) {
-                return getChanges() == null;
+                return readChanges() == null;
             }
         }
-        return getChanges() == null; // addChange is the only thing that creates the map, and it always puts something in it
+        return readChanges() == null; // addChange is the only thing that creates the map, and it always puts something in it
     }
 
     protected interface ChangeProcessor<CH> {
@@ -42,7 +42,7 @@ public abstract class NFChangeImpl<CH, F> extends NFImpl<TreeMap<Version, MList<
     }
 
     private void syncProceedChanges(ChangeProcessor<CH> processor, Version version) {
-        TreeMap<Version, MList<CH>> changes = getChanges();
+        TreeMap<Version, MList<CH>> changes = readChanges();
         if(changes == null)
             return;
 
@@ -54,7 +54,18 @@ public abstract class NFChangeImpl<CH, F> extends NFImpl<TreeMap<Version, MList<
 
             MList<CH> list = change.getValue();
             for(int i=0,size=list.size();i<size;i++)
-                processor.proceed(list.get(i), i + 1 < size ? list.get(i + 1) : null);
+                proceed(processor, list.get(i), i + 1 < size ? list.get(i + 1) : null);
+        }
+    }
+
+    // a restart met inside a change - a read the change makes, of another collection or of this one - is no look of
+    // this read's own : made again (readCopy), the read would find this collection final and skip the rest of the
+    // change, so it fails as before
+    private static <CH> void proceed(ChangeProcessor<CH> processor, CH change, CH nextChange) {
+        try {
+            processor.proceed(change, nextChange);
+        } catch (RestartedException e) {
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 

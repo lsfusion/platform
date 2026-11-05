@@ -29,7 +29,7 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
 
     @Override
     public ImList<T> getNFCopyList(Version version) {
-        return getNFList(version, true);
+        return readCopy(() -> getNFList(version, true));
     }
 
     public ImList<T> getNFList(Version version, boolean allowRead) {

@@ -33,7 +33,7 @@ public abstract class NFASetImpl<T, CH extends NFSetChange<T>, R extends Iterabl
 
     @Override
     public ImSet<T> getNFCopySet(Version version) {
-        return getNFSet(version, true);
+        return readCopy(() -> getNFSet(version, true));
     }
 
     public ImSet<T> getNFSet(Version version, boolean allowRead) {
