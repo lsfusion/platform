@@ -76,6 +76,9 @@ public abstract class UiTest {
     // console errors - the cancel of an input with no cell, what a custom view shows as its error - are by design, and
     // only listed
     private static final Pattern CLIENT_ERROR = Pattern.compile("^\\([^)]*\\) [^\\[\\n]*\\[ERROR] ");
+    private static final String[] SERVER_SETTINGS = {
+            "settings.enableAPI=2", "settings.enableUI=2", // anonymous both ways : neither /exec nor the browser logs in
+            "user.language=en", "user.country=US", "user.timezone=UTC"}; // the captions and formats follow the server, not the browser
 
     private static Process server, web; // the test server and the web container
     private static int httpPort, webPort;
@@ -99,6 +102,26 @@ public abstract class UiTest {
             }
     }
 
+    // where a test's page goes on the web client: the suite's application, unless the class has one of its own
+    protected String main() {
+        return "/main";
+    }
+
+    // an application of a class's own, for what the suite's cannot hold - a page drawn otherwise as a whole: a test
+    // server beside the suite's, with its own database and the modules of the root given, on the same web client, which
+    // a page asks for it by its rmi port (?port=). The class stops it, and the database is dropped then
+    protected static Process startServer(String database, int[] ports, String root) throws Exception {
+        Path log = UI.resolve(database + ".log");
+        Process server = TestServer.start(database, ports, log, root, SERVER_SETTINGS);
+        try {
+            TestServer.waitStarted(server, log);
+        } catch (Throwable t) { // the class never gets the process to stop, so its database would stay
+            TestServer.stop(server, database);
+            throw t;
+        }
+        return server;
+    }
+
     // the server, the web container and the browser start side by side: the web client looks the server up on a
     // request, not at its own start
     private static void start() throws Exception {
@@ -115,9 +138,7 @@ public abstract class UiTest {
         httpPort = ports[0];
         webPort = ports[4];
         Path serverLog = UI.resolve("server.log");
-        server = TestServer.start(DATABASE, ports, serverLog,
-                "settings.enableAPI=2", "settings.enableUI=2", // anonymous both ways : neither /exec nor the browser logs in
-                "user.language=en", "user.country=US", "user.timezone=UTC"); // the captions and formats follow the server, not the browser
+        server = TestServer.start(DATABASE, ports, serverLog, "target/classes", SERVER_SETTINGS);
 
         Path webLog = UI.resolve(WEB_CONTAINER + ".log");
         List<String> command = new ArrayList<>(Arrays.asList(Paths.get(System.getProperty("java.home"), "bin", "java").toString(),
@@ -228,7 +249,7 @@ public abstract class UiTest {
             });
             ScheduledFuture<?> watch = WATCHDOG > 0 ? DUMPS.scheduleAtFixedRate(dumps(name), WATCHDOG, WATCHDOG, TimeUnit.MILLISECONDS) : null;
             try {
-                page.navigate("http://localhost:" + webPort + "/main");
+                page.navigate("http://localhost:" + webPort + main());
                 page.locator("[lsfusion-container='System.root']").waitFor(); // the navigator's top window
                 test.evaluate();
                 page.evaluate("() => 0"); // playwright hands the page's events to the handlers only during a call into it

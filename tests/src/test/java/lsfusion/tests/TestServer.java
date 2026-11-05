@@ -39,13 +39,13 @@ class TestServer {
     }
 
     // the test logics on a database of its own and on the given ports - http, rmi, websocket, debugger - all of them
-    // free ones, as whoever runs this usually has a server of their own up
-    static Process start(String database, int[] ports, Path log, String... settings) throws IOException {
+    // free ones, as whoever runs this usually has a server of their own up. `root` holds the logics' modules
+    static Process start(String database, int[] ports, Path log, String root, String... settings) throws IOException {
         List<String> properties = new ArrayList<>(Arrays.asList(
                 "db.name=" + database, "db.server=" + DB_SERVER, "db.user=" + DB_USER, "db.password=" + DB_PASSWORD,
                 "http.port=" + ports[0], "rmi.port=" + ports[1], "webSocket.port=" + ports[2], "debugger.port=" + ports[3]));
         properties.addAll(Arrays.asList(settings));
-        return start(classPath("target/classes"), log, Collections.emptyList(), properties.toArray(new String[0]));
+        return start(classPath(root), log, Collections.emptyList(), properties.toArray(new String[0]));
     }
 
     interface Check {
