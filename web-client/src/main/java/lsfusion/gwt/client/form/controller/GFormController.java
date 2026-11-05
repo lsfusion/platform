@@ -1665,6 +1665,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         PendingPromise promise = requestPromises.remove(exceptionResult.requestIndex);
         if (promise != null)
             promise.reject(exceptionResult.throwable.getMessage());
+        // ... and an exec / eval / change of the form's controller (GController): a continuation's failure too, which the
+        // request's own callback does not see
+        gController.controllerCallbackException(exceptionResult.requestIndex, exceptionResult.throwable.getMessage(), false);
     }
 
     // a current object chosen and sent at once - by a view of the platform's that waits for the answer (a popup of its

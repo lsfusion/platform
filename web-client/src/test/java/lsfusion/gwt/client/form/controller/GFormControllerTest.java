@@ -47,6 +47,7 @@ import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ContinueInvocation;
+import lsfusion.gwt.client.controller.remote.action.form.ControllerExecAction;
 import lsfusion.gwt.client.controller.remote.action.form.CountRecords;
 import lsfusion.gwt.client.controller.remote.action.form.CalculateSum;
 import lsfusion.gwt.client.controller.remote.action.form.GroupReport;
@@ -366,9 +367,9 @@ public class GFormControllerTest extends GWTTestCase {
         }
     }
 
-    // ... and the requests of the changes a view's calls make - a property's change, a batch, a continuation of either
-    // -, of a form that sends nothing as it opens, so an answer is taken in as it comes, nothing before it in the
-    // form's queue, and named apart, the other tests' forms asking the same requests
+    // ... and the requests of the changes a view's calls make - a property's change, a batch, an exec on the form's
+    // controller, a continuation of any -, of a form that sends nothing as it opens, so an answer is taken in as it
+    // comes, nothing before it in the form's queue, and named apart, the other tests' forms asking the same requests
     private ChangeServer changes() {
         return changes(form -> { });
     }
@@ -396,8 +397,8 @@ public class GFormControllerTest extends GWTTestCase {
         }
         @Override
         boolean takes(Action<?> action) {
-            return action instanceof GenerateID || ((action instanceof ExecuteEventAction || action instanceof ExecuteBatch || action instanceof ContinueInvocation)
-                    && controller.getForm().sessionID.equals(((FormAction<?>) action).formSessionID));
+            return action instanceof GenerateID || ((action instanceof ExecuteEventAction || action instanceof ExecuteBatch || action instanceof ControllerExecAction
+                    || action instanceof ContinueInvocation) && controller.getForm().sessionID.equals(((FormAction<?>) action).formSessionID));
         }
         // a change of the note, as its member makes it: the Promise of its request
         JavaScriptObject change(int value) {
@@ -1151,6 +1152,21 @@ public class GFormControllerTest extends GWTTestCase {
             finishTest();
         });
         changes.callbacks.get(0).onFailure(new RuntimeException("the server failed"));
+    }
+
+    // ... an exec on the form's controller too, when it is a continuation of the request that fails
+    public void testAFailedContinuationRejectsAnExecOnTheFormsController() {
+        ChangeServer changes = changes();
+        JavaScriptObject exec = (JavaScriptObject) call(changes.controller.controller, "exec", "act");
+        delayTestFinish(5000);
+        then(exec, answer -> fail("resolved"), error -> {
+            assertEquals("the continuation failed", error);
+            assertTrue(closeDialog("the continuation failed"));
+            finishTest();
+        });
+        changes.answer(0, true); // the server asks the client to go on with the exec
+        assertTrue(changes.actions.get(1) instanceof ContinueInvocation);
+        changes.callbacks.get(1).onFailure(new RuntimeException("the continuation failed"));
     }
     // a dialog the client shows, saying the text, closed as a user closes it - whether there was one
     private static boolean closeDialog(String text) {
