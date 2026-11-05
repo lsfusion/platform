@@ -109,6 +109,45 @@ public abstract class AtOnceAction extends InternalAction {
         return met ? null : "the second thread neither waited for the first one nor was done in 30 seconds";
     }
 
+    // null when a thread doing `call` waits for the monitor the test holds - as a second thread waits while a first one
+    // is inside a method synchronized on that monitor : the test stands in for that first thread where what the method
+    // writes to can not be swapped for one that goes through a Hold -; else `through` for a call that went through
+    // meanwhile, what it failed with, or that it did neither in 30 seconds. Once it waits, the monitor is let go and the
+    // call goes on; the thread is stopped when this returns
+    protected static String runWhileHeld(ExecutionContext<ClassPropertyInterface> context, Object monitor, String through,
+                                         Runnable call) {
+        ExecutorService threads = ExecutorFactory.createNewThreadService((ExecutionContext) context, 1, false);
+        try {
+            try {
+                AtomicReference<Thread> thread = new AtomicReference<>();
+                Future<?> done;
+                boolean waited;
+                boolean wentThrough;
+                synchronized (monitor) {
+                    Future<?> submitted = threads.submit(() -> {
+                        thread.set(Thread.currentThread());
+                        call.run();
+                    });
+                    waited = poll(() -> submitted.isDone() || waitsFor(thread.get(), monitor));
+                    wentThrough = submitted.isDone();
+                    done = submitted;
+                }
+
+                String failure = failure("the thread", done);
+                if (failure != null)
+                    return failure;
+                if (wentThrough)
+                    return through;
+                return waited ? null : "the thread neither waited for the monitor nor was done in 30 seconds";
+            } finally {
+                threads.shutdownNow();
+                threads.awaitTermination(1, TimeUnit.MINUTES);
+            }
+        } catch (InterruptedException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     private static boolean poll(BooleanSupplier check) throws InterruptedException {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
         while (!check.getAsBoolean()) {

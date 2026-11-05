@@ -1,0 +1,18 @@
+MODULE PropertyKeyBindings;
+
+REQUIRE TestUtils;
+
+// a property keeps the keys actions are bound to it by (ASON KEYPRESS). Modules that do not require each other are
+// parsed at once, each in a thread of its own, so two of them that bind actions to keys of one property put them into
+// its bindings at once: they went into a plain map, created by the first binding, and bindings were lost
+
+pkName = DATA LOCAL STRING ();
+pkAction () { MESSAGE 'pk'; }
+
+pkFailure = DATA LOCAL STRING ();
+pkBindAtOnce INTERNAL 'lsfusion.tests.BindPropertyKeysAtOnceAction' ();
+
+testPropertyKeysBoundAtOnce 'A key bound to a property waits for another binding to it' () {
+    pkBindAtOnce();
+    assertNull(pkFailure(), pkFailure());
+}

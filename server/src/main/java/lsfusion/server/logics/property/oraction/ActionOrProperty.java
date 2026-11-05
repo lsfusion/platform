@@ -344,6 +344,9 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     private Object contextMenuBindings;
     private Object eventActions;
 
+    // as the two below : modules that do not require each other are parsed at once, and two of them can bind keys to
+    // one property (ASON KEYPRESS)
+    @NFLazy
     public void setKeyAction(KeyStroke ks, String actionSID) {
         if (keyBindings == null) {
             keyBindings = MapFact.mMap(MapFact.override());
