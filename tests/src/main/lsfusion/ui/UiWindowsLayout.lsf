@@ -1,0 +1,17 @@
+MODULE UiWindowsLayout;
+
+REQUIRE SystemEvents, Service;
+
+// the navigator UiWindowsLayoutIT works on in the browser: a section whose item System.system draws - while it is the
+// section selected, System.toolbar has nothing to draw -, and the form there, with the button of Service's reset of the
+// windows' layout
+
+FORM uiWindowsLayoutReset 'Reset the layout'
+    PROPERTIES() resetWindowsLayout
+;
+
+NAVIGATOR {
+    NEW FOLDER uiWindowsLayout 'UI windows layout' WINDOW system {
+        NEW uiWindowsLayoutReset;
+    }
+}

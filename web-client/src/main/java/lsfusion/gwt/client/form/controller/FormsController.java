@@ -840,6 +840,10 @@ public abstract class FormsController {
     public void resetWindowsLayout() {
         setFullScreenMode(false);
         windowsController.resetLayout();
+        // the declared visibility is back, a navigator window with nothing to draw shown with it: the navigator hides it
+        // again, as it does at the start, rather than leaving it empty until its next update - the desktop client's reset
+        // updates it too
+        navigatorController.update();
     }
 
     public abstract <T extends net.customware.gwt.dispatch.shared.Result> long syncDispatch(final NavigatorRequestAction<T> action, RequestCountingAsyncCallback<T> callback);

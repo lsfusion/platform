@@ -1,6 +1,7 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.APIResponse;
+import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Route;
 import org.junit.Test;
 
@@ -9,7 +10,8 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-// the sizes of the navigator's windows, which the client keeps in the browser's local storage when the page is left
+// the layout of the navigator's windows: their sizes, which the client keeps in the browser's local storage when the page
+// is left, and Service's reset of the layout (UiWindowsLayout.lsf)
 public class UiWindowsLayoutIT extends UiTest {
 
     // the sizes are stored when the page is left in a browser that does not fire unload: Chrome stops firing it for a
@@ -31,5 +33,28 @@ public class UiWindowsLayoutIT extends UiTest {
         page.reload();
         page.locator("[lsfusion-container='System.root']").waitFor();
         assertEquals(true, page.evaluate("() => Object.keys(localStorage).some(key => key.endsWith('_System.log'))"));
+    }
+
+    // the reset puts back the visibility the windows are declared with, and the navigator's rule over it, as the desktop
+    // client does: a navigator window with nothing to draw stays hidden - here System.toolbar, while the section
+    // selected has its item drawn by System.system -, not shown empty until the navigator's next update
+    @Test
+    public void aResetLeavesAWindowWithNothingToDrawHidden() {
+        Locator toolbar = page.locator("[lsfusion-container='System.toolbar']");
+        assertEquals(true, shown(toolbar));
+        Locator form = open("UiWindowsLayout.uiWindowsLayout", "UiWindowsLayout.uiWindowsLayoutReset");
+        assertEquals(false, shown(toolbar));
+
+        // the reset comes with the answer to the button's request, and is done once that answer is applied
+        page.waitForResponse(response -> carries(response.request().postData(), "ExecuteEventAction"),
+                () -> action(form, "resetWindowsLayout").click()).finished();
+        page.evaluate("() => new Promise(resolve => requestAnimationFrame(resolve))");
+        assertEquals(false, shown(toolbar));
+    }
+
+    // whether the layout shows a window: it hides one with display none - an unpinned toolbar, slid out of the viewport,
+    // is still shown
+    private static boolean shown(Locator window) {
+        return !"none".equals(window.evaluate("element => element.style.display"));
     }
 }
