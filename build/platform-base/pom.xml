@@ -38,7 +38,6 @@
         <apache.poi.version>5.5.1</apache.poi.version>
         <opensagres.xdocreport.version>2.0.6</opensagres.xdocreport.version>
         <docking.frames.version>1.1.3p1</docking.frames.version>
-        <jexcelapi.version>2.6.12</jexcelapi.version>
         <batik.version>1.17</batik.version>
         <xmlgraphics.commons.version>2.6</xmlgraphics.commons.version>
         <barcode4j.version>2.1</barcode4j.version>
@@ -270,17 +269,6 @@
                 <groupId>bibliothek.gui</groupId>
                 <artifactId>dockingFramesCommon</artifactId>
                 <version>${docking.frames.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.sourceforge.jexcelapi</groupId>
-                <artifactId>jxl</artifactId>
-                <version>${jexcelapi.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.xmlgraphics</groupId>
