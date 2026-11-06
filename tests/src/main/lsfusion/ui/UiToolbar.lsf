@@ -1,14 +1,16 @@
 MODULE UiToolbar;
 
-REQUIRE System;
+REQUIRE System, Time;
 
 // the forms UiToolbarIT works on in the browser - the platform's own toolbar of a grid, no React view on them: its
 // buttons and views, the manual update across a pivot, a group shown as a pivot or in manual update from the start, a
-// manual update whose switch the design hides -, and the actions it seeds and changes its items with
+// calendar switched to in manual update, a manual update whose switch the design hides -, and the actions it seeds and
+// changes its items with
 
 CLASS UiTbrItem 'Item';
 uiTbrName 'Name' = DATA STRING[50] (UiTbrItem);
 uiTbrPrice 'Price' = DATA NUMERIC[10,2] (UiTbrItem);
+uiTbrDate 'Date' = DATA DATE (UiTbrItem); // shown, it gives the group a calendar
 uiTbrShown = DATA BOOLEAN (UiTbrItem); // the items of the test that seeded last: the forms show only them
 
 // changes made on the form and applied, which a manual update holds back - the dearer item's name gets a '!', the
@@ -53,10 +55,11 @@ DESIGN uiTbrPivotManual {
     GRID(i) { enableManualUpdate = TRUE; }
 }
 
-// a group started in manual update, its switch shown, and hidden by the design
+// a group started in manual update, its switch shown - a date shown too, so that it has a calendar -, and hidden by
+// the design
 FORM uiTbrManual 'Manual update from the start'
     OBJECTS i = UiTbrItem
-    PROPERTIES(i) READONLY name = uiTbrName, price = uiTbrPrice
+    PROPERTIES(i) READONLY name = uiTbrName, price = uiTbrPrice, date = uiTbrDate
     PROPERTIES() uiTbrRename, uiTbrChanges READONLY
     FILTERS uiTbrShown(i)
     ORDERS name
@@ -89,18 +92,21 @@ NAVIGATOR {
     }
 }
 
-// two items shown from now on, the dearer one first by name, and no change counted yet
+// two items shown from now on, the dearer one first by name, both dated today - the day a calendar with no current row
+// opens on -, and no change counted yet
 uiTbrSeed (STRING[50] dear, STRING[50] cheap) {
     uiTbrShown(UiTbrItem i) <- NULL;
     uiTbrChanges() <- NULL;
     NEW i = UiTbrItem {
         uiTbrName(i) <- dear;
         uiTbrPrice(i) <- 1.50;
+        uiTbrDate(i) <- currentDate();
         uiTbrShown(i) <- TRUE;
     }
     NEW i = UiTbrItem {
         uiTbrName(i) <- cheap;
         uiTbrPrice(i) <- 0.75;
+        uiTbrDate(i) <- currentDate();
         uiTbrShown(i) <- TRUE;
     }
     APPLY;

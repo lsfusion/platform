@@ -73,7 +73,11 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             element.getStyle().setProperty("cursor", "default");
             String locale = LocaleInfo.getCurrentLocale().getLocaleName();
 
-            calendar = createCalendar(element, controller, getCalendarDateProps(calendarDateProps), currentDateProp.integrationSID, getCalendarDatePropCaptions(calendarDateProps), locale);
+            // the first day shown is the current row's, if the view has one yet: a group in manual update gets its
+            // columns before its rows, and the calendar then opens on today
+            GGroupObjectValue currentKey = getCurrentKey();
+            calendar = createCalendar(element, controller, getCalendarDateProps(calendarDateProps), currentDateProp.integrationSID, getCalendarDatePropCaptions(calendarDateProps),
+                    currentKey != null ? getValue(currentDateProp.integrationSID, currentKey) : null, locale);
         }
         updateEvents(list);
     }
@@ -142,7 +146,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         }
     }
 
-    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, JsArrayString calendarDateProps, String calendarDateProp, JsArrayString calendarDatePropCaptions, String locale)/*-{
+    protected native JavaScriptObject createCalendar(Element element, JavaScriptObject controller, JsArrayString calendarDateProps, String calendarDateProp, JsArrayString calendarDatePropCaptions, JavaScriptObject initialDate, String locale)/*-{
         var thisObj = this;
         var getHeaderToolbar = function() {
             return {
@@ -156,7 +160,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             height: 'parent',
             locale: locale,
             firstDay: 1,
-            initialDate: controller.getValue(calendarDateProp),
+            initialDate: initialDate,
             headerToolbar: getHeaderToolbar(),
             dayMaxEvents: true,
             //to prevent the expand of a single event without "end"-param to the next day "nextDayThreshold" should be equal to "defaultTimedEventDuration", which by default is 01:00:00

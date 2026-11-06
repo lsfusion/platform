@@ -12,8 +12,8 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import static org.junit.Assert.assertEquals;
 
 // the platform's own toolbar of a grid (UiToolbar.lsf), no React view on it: its buttons and its views, the manual
-// update across a pivot, a group shown as a pivot or in manual update from the start, and a manual update whose switch
-// the design hides
+// update across a pivot, a group shown as a pivot or in manual update from the start, a calendar switched to in manual
+// update, and a manual update whose switch the design hides
 public class UiToolbarIT extends UiTest {
 
     private static final String FOLDER = "UiToolbar.uiTbr";
@@ -167,6 +167,27 @@ public class UiToolbarIT extends UiTest {
         assertThat(names(form)).hasText(new String[] {items[0] + "!", items[1]});
         assertThat(update).isDisabled();
         assertThat(grid(form)).hasCSS("filter", "none");
+        close(form);
+    }
+
+    // ... switched to its calendar: the switch's answer brings the group's columns and holds its rows back, so the
+    // calendar is first drawn with no current row - on today, the items' day - and dimmed, and the update brings the
+    // rows into it. It took its first day from the current row while there was none, failed, and was never drawn
+    @Test
+    public void aGroupInManualUpdateSwitchedToItsCalendar() throws Exception {
+        String[] items = seed();
+        Locator form = open(FOLDER, "UiToolbar.uiTbrManual");
+        Locator update = button(form, "Update"), calendar = form.locator(".fc"), view = calendar.locator("..");
+        update.click();
+        assertThat(names(form)).hasText(items);
+        button(form, "Calendar").click();
+        assertThat(calendar).isVisible();
+        assertThat(view).hasCSS("filter", "opacity(0.5)");
+        assertThat(update).isEnabled();
+        update.click();
+        assertThat(form.locator(".fc-event").filter(new Locator.FilterOptions().setHasText(items[0]))).isVisible();
+        assertThat(view).hasCSS("filter", "none");
+        assertThat(update).isDisabled();
         close(form);
     }
 

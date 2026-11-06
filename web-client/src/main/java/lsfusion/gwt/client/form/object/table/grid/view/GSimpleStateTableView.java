@@ -431,7 +431,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return getChangeMouse(column.property, column.columnKey);
     }
 
-    private JavaScriptObject getValue(String property, GGroupObjectValue groupObjectValue) {
+    protected JavaScriptObject getValue(String property, GGroupObjectValue groupObjectValue) {
         Column column = getColumn(property);
         if(column == null)
             return null;
