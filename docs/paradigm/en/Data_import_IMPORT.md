@@ -67,8 +67,12 @@ import()  {
         }
 
 
+    // without a header the columns are named A, B, C, ... No column ID is given for field2, so it receives column D, the one after C
     INPUT f = FILE DO
-        IMPORT CSV '*' HEADER CHARSET 'utf-8' FROM f TO field1 = C, field2, field3 = F, field4 = A;
+        IMPORT CSV '*' NOHEADER CHARSET 'utf-8' FROM f TO field1 = C, field2, field3 = F, field4 = A;
+    // with a header the column IDs are the names from the header row
+    INPUT f = FILE DO
+        IMPORT CSV ';' HEADER FROM f TO field1 = 'Product name', field2, field3 = quantity;
     INPUT f = FILE DO
         IMPORT XML ATTR FROM f TO field1, field2;
     INPUT f = FILE DO

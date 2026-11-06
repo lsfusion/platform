@@ -92,7 +92,7 @@ When exporting to **JSON**, a string value that starts and ends with a square or
 
 - `propertyExpr1, ..., propertyExprN`
 
-    List of [expressions](Expression.md) from whose values the data is exported. Each property is mapped to a table column of the result file.
+    List of [expressions](Expression.md) from whose values the data is exported. Each property is mapped to a table column of the result file. An inline [`GROUP`](GROUP_operator.md) operator that ends with one of its comma-separated lists is enclosed in parentheses when another column follows it, otherwise that column is read as one more element of that list.
 
 - `columnId1, ..., columnIdN`
 

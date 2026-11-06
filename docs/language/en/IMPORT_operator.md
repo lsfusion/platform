@@ -89,7 +89,7 @@ The first passed file is used to automatically determine a flat file format by i
     - column names are considered to be: `A`, `B`, ..., `Z`, `AA`, ...,  `AE`, ...
     - if a column is not found / does not match the type of the destination property, the value of this column is considered to be `NULL` (in other import formats, in the platform throws an error in these cases).
 
-    When using the `HEADER` option, if a **CSV** record has fewer fields than the header, the missing fields are considered to be `NULL`. Empty lines of a **CSV** file are skipped and are not counted in the row index.
+    When using the `HEADER` option, the column names are the values of the header row (the first row of the file), and the generated names `A`, `B`, ... are not used: a column ID that does not occur in the header is treated as the ID of a nonexistent column (see `columnId1, ..., columnIdN`). If a **CSV** record has fewer fields than the header, the missing fields are considered to be `NULL`. Empty lines of a **CSV** file are skipped and are not counted in the row index.
 
 - `ESCAPE` | `NOESCAPE`
 
@@ -212,11 +212,15 @@ import()  {
         }
 
 
+    // without a header the columns are named A, B, C, ... No column ID is given for field2, so it receives column D, the one after C
     INPUT f = FILE DO
-        IMPORT CSV '*' HEADER CHARSET 'utf-8' FROM f TO field1 = C, field2, field3 = F, field4 = A;
+        IMPORT CSV '*' NOHEADER CHARSET 'utf-8' FROM f TO field1 = C, field2, field3 = F, field4 = A;
     // the delimiter and the encoding are calculated when importing, NULL means the default ones
     INPUT f = FILE DO
-        IMPORT CSV csvSeparator() HEADER CHARSET csvCharset() FROM f TO field1 = C, field2, field3 = F, field4 = A;
+        IMPORT CSV csvSeparator() NOHEADER CHARSET csvCharset() FROM f TO field1 = C, field2, field3 = F, field4 = A;
+    // with a header the column IDs are the names from the header row. No column ID is given for field2, so it receives the column after 'Product name'
+    INPUT f = FILE DO
+        IMPORT CSV ';' HEADER FROM f TO field1 = 'Product name', field2, field3 = quantity;
     INPUT f = FILE DO
         IMPORT XML ATTR FROM f TO field1, field2;
     INPUT f = FILE DO
