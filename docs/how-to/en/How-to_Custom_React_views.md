@@ -875,7 +875,7 @@ and each element carries:
 | `selected` | Whether it is the selected element **of this window** |
 | `children` | The canonical names of its children that this window draws |
 
-An element declared [`NOCUSTOM`](../language/NAVIGATOR_statement.md) is drawn by the platform, so what it draws is not projected: its entry carries `name`, `caption`, `image`, `children` and `platformDrawn: true`, and none of the rest.
+An element declared [`NOCUSTOM`](../language/NAVIGATOR_statement.md) is drawn by the platform, so what it draws is not projected: its entry carries `name`, `caption`, `image`, `hidden`, `children` and `platformDrawn: true`, and none of the rest. While its `hidden` is `true`, `<Platform>` hides the [place](#standard-button) of its button.
 
 The window is given the elements it is responsible for: an element that crossed into another window, and a subtree gated out because its parent is not selected, are absent — the same rule that decides what the standard toolbar draws. What that rule keeps, the projection keeps, hidden or not. The component is drawn once the navigator has worked out the window's elements, and a window with none is drawn too, with `root` empty. `props.controller` is the navigator controller, whose [`activate`](How-to_Custom_view_controller.md#navigator-controller) does what clicking the element does: selects a folder, or runs an action.
 
@@ -907,7 +907,7 @@ NAVIGATOR {
 }
 ```
 
-A `NOCUSTOM` element no `<Platform>` names is not shown, as on a form. Four mistakes are reported in the page: a name no navigator element has, a name that is not `NOCUSTOM`, which the component is expected to draw from the projection instead, a name of an element another window draws, and a name a second `<Platform>` places again. A name the window merely does not draw right now — an element `SHOWIF` hides, one gated out because its parent is not selected — is not a mistake and is not reported: the place stays empty and waits, and is filled as soon as the window draws that element. Which window draws an element is not such a case: waiting for a button another window owns would wait for good.
+A `NOCUSTOM` element no `<Platform>` names is not shown, as on a form. Four mistakes are reported in the page: a name no navigator element has, a name that is not `NOCUSTOM`, which the component is expected to draw from the projection instead, a name of an element another window draws, and a name a second `<Platform>` places again. A name the window merely does not draw right now — an element `SHOWIF` hides, one gated out because its parent is not selected — is not a mistake and is not reported: the place waits, and is filled as soon as the window draws that element. Meanwhile the place of an element `SHOWIF` hides is hidden, as its entry's `hidden` says, and the place of one gated out, which has no entry, stays empty. Which window draws an element is not such a case: waiting for a button another window owns would wait for good.
 
 A menu that is mostly standard is written this way as one `<Platform>` for each element the platform draws, and markup only for the elements the component draws itself.
 

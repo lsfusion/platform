@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.navigator.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
@@ -76,6 +77,12 @@ public class NavigatorButtons {
             NavigatorImageButton button = buttons.get(canonicalName);
             if (button != null)
                 park.appendChild(button.getElement()); // back to the park, still attached, tooltip alive
+        }
+
+        // an element's entry is in byName, where the window's projection keeps its entries (ReactNavigatorView)
+        @Override
+        public JavaScriptObject entryOf(JavaScriptObject data, String canonicalName) {
+            return GwtClientUtils.getOwnField(GwtClientUtils.getOwnField(data, "byName"), canonicalName);
         }
     });
     // the names of the LAST refresh, and the only ones that may be placed: an element the selection took out of the

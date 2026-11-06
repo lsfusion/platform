@@ -158,8 +158,9 @@
         // name keys in the root's data says `hidden` - a platform-drawn child's entry: its SHOWIF, or a container's
         // above it - the host is `hidden` too, and stays: a child no host places is not read, SHOWIF and all, so it
         // would never come back. The root's view says which entry a name keys: a component's descriptor under that
-        // name; a form container's platform-drawn panel property's under its integration name, on its group's node. Not
-        // a row's host: what hides a per-row renderer is its column
+        // name; a form container's platform-drawn panel property's under its integration name, on its group's node; a
+        // navigator window's NOCUSTOM element's under its canonical name in byName - hidden by its SHOWIF. Not a row's
+        // host: what hides a per-row renderer is its column
         var unsubscribed = function () { return function () {}; }; // a root with no store: nothing is ever hidden
         ns.usePlatform = function (name, options) {
             var context = React.useContext(Ctx);

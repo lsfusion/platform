@@ -109,11 +109,13 @@ public class ReactNavigatorView extends ParkedNavigatorView {
     // `name` is on the entry itself, so an entry passed around alone still knows what it is called - `root` and
     // `children` are arrays of names, and without it every consumer had to carry the key beside the entry.
     // A NOCUSTOM element is DRAWN by the platform, so what it draws is not on the entry at all: it carries only what
-    // the component may still want around the button it places, the same reduction a platform-drawn form child gets
+    // the component may still want around the button it places, the same reduction a platform-drawn form child gets -
+    // and `hidden`, which hides the host of that button (usePlatform): the window draws no button for an element SHOWIF
+    // hides, so the host would wait for one on the page, empty
     private native JavaScriptObject createEntry(JavaScriptObject data, String canonicalName, String caption, String image,
                                                 boolean platformDrawn, String elementClass, boolean hidden, boolean folder, boolean selected)/*-{
         var entry = platformDrawn
-                ? { name: canonicalName, caption: caption, image: image, platformDrawn: true, children: [] }
+                ? { name: canonicalName, caption: caption, image: image, hidden: hidden, platformDrawn: true, children: [] }
                 : { name: canonicalName, caption: caption, image: image, elementClass: elementClass,
                     hidden: hidden, folder: folder, selected: selected, children: [] };
         data.byName[canonicalName] = entry;

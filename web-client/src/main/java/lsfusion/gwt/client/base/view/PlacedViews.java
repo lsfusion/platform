@@ -44,7 +44,8 @@ public class PlacedViews {
         }
     }
 
-    // what only the owner knows: whether a name names anything, how to move the view, and where it waits
+    // what only the owner knows: whether a name names anything, how to move the view, where it waits, and where the
+    // entry of a name is in what the owner projects
     public interface Views {
         // null if the name is fine
         Problem problem(String name);
@@ -57,6 +58,12 @@ public class PlacedViews {
 
         // the host the view is in changed size: the view measures itself again, as when a split's border is dragged
         default void resized(String name) {
+        }
+
+        // the entry the name keys in the data the owner projects, which hides the host while it says `hidden`
+        // (ReactRoot.Placement.entryOf): the field of that name, unless the owner keeps its entries elsewhere
+        default JavaScriptObject entryOf(JavaScriptObject data, String name) {
+            return GwtClientUtils.getOwnField(data, name);
         }
     }
 
@@ -78,8 +85,8 @@ public class PlacedViews {
     }
 
     // the Placement of a React root whose <Platform>s place only this owner's views: they mount and unmount straight
-    // here, and the owner says only what its hosts are dressed in. A form container keys and shows more than that, so
-    // its root has a placement of its own
+    // here, and the owner says only what its hosts are dressed in - and, through its views, where the entry of a name
+    // is. A form container keys and shows more than that, so its root has a placement of its own
     public ReactRoot.Placement placement(ReactRoot.Host kind) {
         return new ReactRoot.Placement() {
             @Override
@@ -95,6 +102,11 @@ public class PlacedViews {
             @Override
             public ReactRoot.Host getHost() {
                 return kind;
+            }
+
+            @Override
+            public JavaScriptObject entryOf(JavaScriptObject data, String name) {
+                return views.entryOf(data, name);
             }
         };
     }

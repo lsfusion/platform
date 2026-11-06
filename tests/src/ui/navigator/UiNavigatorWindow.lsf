@@ -1,0 +1,34 @@
+MODULE UiNavigatorWindow;
+
+REQUIRE SystemEvents;
+
+// UiNavigatorWindowIT's application, on a test server of its own: System.toolbar is drawn by a React component
+// (UiNavigatorWindow.js), and a window is on every page of its application - in the suite's, it would be on the page of
+// every other browser test too
+
+EXTEND WINDOW System.toolbar CUSTOM 'UiNavigatorWindow';
+
+// what shows the element SHOWIF hides at the start, switched by the toggle beside it
+uiNavigatorWindowShown = DATA BOOLEAN ();
+
+uiNavigatorWindowToggle 'Toggle' () {
+    uiNavigatorWindowShown() <- NOT uiNavigatorWindowShown();
+    APPLY;
+}
+
+uiNavigatorWindowSometimes 'Sometimes' () {
+    MESSAGE 'Sometimes';
+}
+
+NAVIGATOR {
+    // the first section, which the navigator selects at the start: its items are System.toolbar's, both of them
+    // NOCUSTOM - the component places the platform's buttons
+    NEW FOLDER uiNavigatorWindowSection 'Navigator window' WINDOW toolbar FIRST {
+        NEW uiNavigatorWindowToggle NOCUSTOM;
+        NEW uiNavigatorWindowSometimes NOCUSTOM SHOWIF uiNavigatorWindowShown();
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiNavigatorWindow.js') <- 1;
+}
