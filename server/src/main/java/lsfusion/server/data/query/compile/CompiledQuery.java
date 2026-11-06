@@ -774,6 +774,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
         final WhereJoins whereJoins;
         final Map<Table.Join, Where> genJoins;
+        // the NOT NULL conditions fillInnerJoins puts into the where for the DBMS's index (SQLSyntax.hasNotNullIndexProblem)
+        private ImSet<BaseExpr> notNullIndexExprs = SetFact.EMPTY();
 
         public InnerJoins getInnerJoins() {
             return whereJoins.getInnerJoins();
@@ -972,7 +974,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
             for(Where genWhere : genJoins.values())
                 result = result.and(genWhere);
-            return result;
+            return result.and(BaseExpr.getNotNullWhere(notNullIndexExprs));
         }
 
         public String getFrom(Where where, MCol<String> whereSelect, DebugInfoWriter debugInfoWriter) {
@@ -1113,9 +1115,11 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             mImplicitJoins = null;
             mOuterOrLateralPendingJoins = null;
 
-            if(syntax.hasNotNullIndexProblem())
-                for(BaseExpr notNull : usedNotNulls.result)
+            if(syntax.hasNotNullIndexProblem()) {
+                notNullIndexExprs = usedNotNulls.result;
+                for(BaseExpr notNull : notNullIndexExprs)
                     whereSelect.add(notNull.getNotNullSource(this));
+            }
 
         }
 

@@ -1,0 +1,56 @@
+MODULE NotNullIndex;
+
+REQUIRE TestUtils, Utils, Reflection, Service;
+
+// On PostgreSQL the compiled SQL gets "f IS NOT NULL" for a field most rows of which are NULL when the field's index
+// cuts the reading of its table (SQLSyntax.hasNotNullIndexProblem) - meant for a join by the field, where the where
+// does not say it. A filter on such a field says it itself, and the condition went into the SQL twice: PostgreSQL took
+// it for two conditions and underestimated the rows (#1965). Most rows being NULL is what the statistics say, so the
+// tests fill the tables and recalculate them first
+
+CLASS NniItem;
+TABLE nniItem (NniItem);
+nniNumber = DATA INTEGER (NniItem);
+nniNumbered (INTEGER n) = GROUP AGGR NniItem i BY nniNumber(i);
+nniLocked = DATA BOOLEAN (NniItem);
+nniActive (NniItem i) = i IS NniItem AND NOT nniLocked(i) MATERIALIZED;
+INDEX nniActive(NniItem i);
+
+CLASS NniOrder;
+TABLE nniOrder (NniOrder);
+nniItem = DATA NniItem (NniOrder);
+INDEX nniItem(NniOrder o);
+nniItemLocked (NniOrder o) = nniLocked(nniItem(o));
+
+nniSql = DATA LOCAL TEXT ();
+nniNotNulls = DATA LOCAL INTEGER ();
+nniReadSql INTERNAL 'lsfusion.tests.ReadFilterSqlAction' (STRING, STRING);
+
+// 2000 items, one in 20 of them not locked, and 2000 orders, one in 20 of them with an item - applied, as the
+// statistics are read from the database
+nniFill () {
+    IF NOT (GROUP SUM 1 IF NniItem i IS NniItem) THEN {
+        FOR iterate(INTEGER n, 1, 2000) NEW i = NniItem DO {
+            nniNumber(i) <- n;
+            nniLocked(i) <- TRUE IF mod(n, 20) != 0;
+        }
+        FOR iterate(INTEGER n, 1, 2000) NEW o = NniOrder DO
+            nniItem(o) <- nniNumbered(n) IF mod(n, 20) == 0;
+        APPLY;
+        recalculateStats(tableSID('NotNullIndex_nniItem'));
+        recalculateStats(tableSID('NotNullIndex_nniOrder'));
+        updateStats();
+    }
+}
+
+testNniFilter 'A filter on an indexed field mostly NULL checks it once' () {
+    nniFill();
+    nniReadSql('nniActive[NniItem]', 'nniActive[NniItem]');
+    assertEquals(nniNotNulls(), 1, 'the IS NOT NULL of nniActive in ' + nniSql());
+}
+
+testNniJoin 'A join by an indexed field mostly NULL still checks it' () {
+    nniFill();
+    nniReadSql('nniItemLocked[NniOrder]', 'nniItem[NniOrder]');
+    assertEquals(nniNotNulls(), 1, 'the IS NOT NULL of nniItem in ' + nniSql());
+}
