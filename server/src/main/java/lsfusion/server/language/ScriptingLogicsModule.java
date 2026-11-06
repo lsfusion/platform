@@ -138,6 +138,7 @@ import lsfusion.server.physics.admin.reflection.property.CanonicalNameProperty;
 import lsfusion.server.physics.dev.debug.*;
 import lsfusion.server.physics.dev.debug.action.ShowRecDepAction;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.physics.dev.integration.internal.to.InlineInternalAction;
 import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
@@ -1902,7 +1903,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LA addScriptedInternalAction(String javaClassName, ImList<ValueClass> paramClasses, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
         try {
             Object instanceObject = null;
-            Class<?> javaClass = Class.forName(javaClassName);
+            Class<?> javaClass = Class.forName(javaClassName, false, ScriptingLogicsModule.class.getClassLoader()); // initialized only by making the action's instance below
+            if (!Action.class.isAssignableFrom(javaClass))
+                throw new IllegalArgumentException("not an action");
 
             ValueClass[] params = getParams(paramClasses, false);
 
@@ -1920,7 +1923,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (instance instanceof ExplicitAction && allowNullValue) {
                 ((ExplicitAction) instance).allowNullValue = true;
             }
-            return baseLM.addAProp(null, instance);
+            return addAProp(null, instance); // with this module's version, as its other actions : an eval module's one is seen only by it
         } catch (ClassNotFoundException e) {
             errLog.emitClassNotFoundError(parser, javaClassName);
         } catch (Exception e) {
@@ -1961,13 +1964,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
             SimpleCompiler sc = new SimpleCompiler();
             sc.cook(javaClass);
-            Class<?> executeClass = sc.getClassLoader().loadClass("ExecuteAction");
-
-            Action instance = (Action) executeClass.getConstructor(ScriptingLogicsModule.class).newInstance(this);
-            if (instance instanceof ExplicitAction && allowNullValue) {
-                ((ExplicitAction) instance).allowNullValue = true;
-            }
-            return baseLM.addAProp(null, instance);
+            InlineInternalAction instance = new InlineInternalAction(this, sc.getClassLoader().loadClass("ExecuteAction"));
+            if (allowNullValue)
+                instance.allowNullValue = true;
+            return addAProp(null, instance);
         } catch (Exception e) {
             errLog.emitCreatingClassInstanceError(parser, e.getMessage(), script);
         }
@@ -5545,7 +5545,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void addNavigatorScheduler(LA action, NavigatorScheduler scheduler) {
+    public void addNavigatorScheduler(LA action, NavigatorScheduler scheduler) throws ScriptingErrorLog.SemanticErrorException {
         baseLM.navigatorSchedulers.put(scheduler, action);
     }
 
