@@ -21,18 +21,20 @@ The result class is defined as:
 
 where `blankPadded`, `caseInsensitive` and `length` are determined similarly to the rules for construction of a [common ancestor](Built-in_classes.md#commonparentclass) for two built-in classes (Strings family). For `CONCAT`, the result length also includes the delimiter inserted between operands.
 
-In the `+` operator, operands which classes are other than string are cast to strings in accordance with the following table:
+In the `+` and `CONCAT` operators, operands whose classes are other than string are cast to strings in accordance with the following table:
 
-|Class                     |Cast class          |
-|--------------------------|--------------------|
-|`DATE`, `DATETIME`, `TIME`|`STRING[25]`        |
-|`NUMERIC`                 |`STRING[p.length]`  |
-|`LOGICAL`                 |`STRING[1]`         |
-|`FILE`                    |`TEXT`              |
-|[Object](User_classes.md) |`STRING[10]`        |
-|Other                     |`STRING[8]`         |
+|Class                                  |Cast class          |
+|---------------------------------------|--------------------|
+|`DATE`, `DATETIME`, `ZDATETIME`, `TIME`|`STRING[25]`        |
+|`NUMERIC`                              |`STRING[p.length]`  |
+|`INTEGER`, `YEAR`                      |`STRING[11]`        |
+|`LONG`, `DOUBLE`                       |`STRING[20]`        |
+|`BOOLEAN`, `TBOOLEAN`                  |`STRING[1]`         |
+|`FILE`, `NAMEDFILE`, files of a specific type, file links, `HTML`|`STRING` (unlimited length)|
+|[Object](User_classes.md)              |`STRING[20]`        |
+|Other                                  |`STRING[8]`         |
 
-If any operand belongs to the unlimited-length string class `TEXT` (or to one of its variants such as rich or HTML text), the result is that text class rather than a fixed-length string.
+If any operand belongs to the unlimited-length string class `TEXT` (or to one of its variants such as rich or HTML text), the result is that text class rather than a fixed-length string. For `+` with several such operands, `RICHTEXT` takes precedence over `HTMLTEXT`, and both over `TEXT`. For `CONCAT`, the last operand of the `TEXT`, `RICHTEXT`, `HTMLTEXT`, `JSON` or `JSONTEXT` class determines the result class: `JSON` and `JSONTEXT` give `TEXT`. Otherwise, the result has the class of that operand.
 
 ### Language
 
