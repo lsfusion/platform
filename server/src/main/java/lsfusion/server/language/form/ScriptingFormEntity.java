@@ -638,7 +638,7 @@ public class ScriptingFormEntity {
         Map<KeyStroke, String> keyBindings = options.getKeyBindings();
         if (keyBindings != null) {
             for (KeyStroke key : keyBindings.keySet()) {
-                property.setKeyAction(key, keyBindings.get(key));
+                property.setKeyAction(key, keyBindings.get(key), version);
             }
         }
         

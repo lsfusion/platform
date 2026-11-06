@@ -22,7 +22,6 @@ import lsfusion.server.base.Custom;
 import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
-import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFMap;
 import lsfusion.server.base.version.interfaces.NFOrderMap;
@@ -101,7 +100,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     private final NFProperty<Boolean> remove = NFFact.property();
 
     private final NFOrderMap<String, ActionOrProperty.ContextMenuBinding> contextMenuBindings = NFFact.orderMap();
-    private Map<KeyStroke, String> keyBindings;
+    private final NFMap<KeyStroke, String> keyBindings = NFFact.map();
     private final NFMap<String, ActionObjectSelector> eventActions = NFFact.map();
 
     private final NFProperty<Boolean> isSelector = NFFact.property();
@@ -742,13 +741,8 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         return sync.get();
     }
 
-    // modules that do not require each other are parsed at once, and two of them can bind keys to it
-    @NFLazy
-    public void setKeyAction(KeyStroke ks, String actionSID) {
-        if (keyBindings == null) {
-            keyBindings = new HashMap<>();
-        }
-        keyBindings.put(ks, actionSID);
+    public void setKeyAction(KeyStroke ks, String actionSID, Version version) {
+        keyBindings.add(ks, actionSID, version);
     }
 
     public void setContextMenuAction(String actionSID, LocalizedString caption, Version version) {
@@ -832,10 +826,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
     }
 
     public ImMap<KeyStroke, String> getKeyBindings(FormInstanceContext context) {
-        ImMap<KeyStroke, String> propertyKeyBindings = getBindingProperty(context).getKeyBindings();
-        if(keyBindings != null)
-            propertyKeyBindings = propertyKeyBindings.merge(MapFact.fromJavaMap(keyBindings), MapFact.override());
-        return propertyKeyBindings;
+        return getBindingProperty(context).getKeyBindings().merge(keyBindings.getMap(), MapFact.override());
     }
 
     public ImOrderSet<GroupObjectEntity> getColumnGroupObjects() {
@@ -1483,6 +1474,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         mapping.set(toDraw, src.toDraw);
 
         mapping.adds(contextMenuBindings, src.contextMenuBindings);
+        mapping.adds(keyBindings, src.keyBindings);
 
         mapping.sets(isSelector, src.isSelector);
         mapping.sets(optimisticAsync, src.optimisticAsync);

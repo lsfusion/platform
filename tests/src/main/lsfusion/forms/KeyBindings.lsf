@@ -9,14 +9,29 @@ REQUIRE TestUtils;
 
 kbName = DATA LOCAL STRING ();
 
-FORM kbForm 'Key bindings'
-    PROPERTIES name = kbName()
-;
-
 kbFailure = DATA LOCAL STRING ();
 kbBindAtOnce INTERNAL 'lsfusion.tests.BindKeysAtOnceAction' ();
 
 testKeysBoundAtOnce 'Keys two threads bind to one property at once are both kept' () {
     kbBindAtOnce();
     assertNull(kbFailure(), kbFailure());
+}
+
+// ... and a form built from another one (FORMS) has the keys bound to the other's properties : they were not copied
+kbKeyed () { MESSAGE 'kb keyed'; }
+
+FORM kbBound 'Bound keys'
+    PROPERTIES bound = kbName() ON KEYPRESS 'F7' kbKeyed()
+;
+
+FORM kbBuilt 'Built from bound keys'
+    FORMS kbBound
+;
+
+kbBuiltBinding = DATA LOCAL STRING ();
+kbReadBuiltBinding INTERNAL 'lsfusion.tests.ReadBuiltKeyBindingAction' ();
+
+testKeysOfBuiltForm 'A form built from another one has the keys bound to its properties' () {
+    kbReadBuiltBinding();
+    assertNull(kbBuiltBinding(), kbBuiltBinding());
 }

@@ -283,6 +283,11 @@ public class ObjectMapping {
         to.add(from, p -> p, version);
     }
 
+    public <K, V> void adds(NFMap<K, V> to, NFMap<K, V> from) {
+        assert to != from;
+        to.add(from, p -> p, version);
+    }
+
     public <M extends MappingInterface<M>> void set(NFProperty<M> to, NFProperty<M> from) {
         assert to != from;
         to.set(from, this::get, version);
