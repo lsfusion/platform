@@ -361,7 +361,28 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         if(reportPattern != null)
             reportField.pattern = reportPattern;
 
+        setupFooter(reportField, type);
+
         return reportField;
+    }
+
+    // what the footer is printed with, see ReportDrawField
+    private void setupFooter(ReportDrawField field, Type type) {
+        PropertyObjectEntity<?> footer = entity.getPropertyExtra(FOOTER);
+        Type footerType = footer != null ? footer.getType() : null;
+        if (footerType != null) {
+            ReportDrawField footerField = new ReportDrawField("", "", 0);
+            footerType.fillReportDrawField(footerField);
+            field.footerMarkupHtml = footerField.markupHtml;
+            field.differentFooter = isOfAnotherKind(footerType, type);
+            field.footerPattern = footerField.pattern;
+        }
+    }
+
+    // a value of another kind of type than the property's - of another class, or of one it is not compatible with (a string,
+    // a file under images, a three-state logical under a two-state one) -, which the property's renderer cannot draw
+    private static boolean isOfAnotherKind(Type type, Type valueType) {
+        return valueType == null || type.getClass() != valueType.getClass() || type.getCompatible(valueType) == null;
     }
 
     private void setupGeometry(ReportDrawField reportField, int scale) {
@@ -633,13 +654,11 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         if(differentValue)
             TypeSerializer.serializeType(outStream, getAssertValueType(pool.context));
 
-        // a footer of another kind of type than the value's - of another class, or of one it is not compatible with (a
-        // string, a file under images, a three-state logical under a two-state one) -, which the value's renderer cannot
-        // draw, is drawn as a value of its own type, its tag included; one of the value's kind (a sum) by the value's renderer
+        // a footer of another kind of type than the value's, which the value's renderer cannot draw, is drawn as a value of
+        // its own type, its tag included; one of the value's kind (a sum) by the value's renderer
         PropertyObjectEntity<?> footer = entity.getPropertyExtra(PropertyDrawExtraType.FOOTER);
         Type footerType = footer != null ? footer.getType() : null;
-        Type valueType = isProperty(pool.context) ? getAssertValueType(pool.context) : null;
-        boolean differentFooter = footerType != null && (valueType == null || footerType.getClass() != valueType.getClass() || footerType.getCompatible(valueType) == null);
+        boolean differentFooter = footerType != null && isOfAnotherKind(footerType, isProperty(pool.context) ? getAssertValueType(pool.context) : null);
         outStream.writeBoolean(differentFooter);
         if(differentFooter) {
             TypeSerializer.serializeType(outStream, footerType);

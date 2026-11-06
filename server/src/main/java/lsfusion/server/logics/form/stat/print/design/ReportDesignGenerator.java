@@ -326,7 +326,7 @@ public class ReportDesignGenerator {
             if(reportField.markupHtml) {
                 textField.setMarkup(JRCommonText.MARKUP_HTML);
             }
-            setPattern(textField, reportField);
+            setPattern(textField, reportField.sID, reportField.valueClass, reportField.pattern);
             setBackground(textField, reportField);
             setForeground(textField, reportField);
             dataField = textField;
@@ -336,19 +336,18 @@ public class ReportDesignGenerator {
 
         JRDesignTextField footerField = null;
         if (reportField.hasExtraType(ReportFieldExtraType.FOOTER)) {
-            JRDesignExpression footerExpr = ReportUtils.createExpression(
-                    ReportUtils.createFieldString(reportField.sID + footerSuffix),
-                    reportField.getExtraTypeClass(ReportFieldExtraType.FOOTER)
-            );
+            String footerSID = reportField.sID + footerSuffix;
+            Class footerClass = reportField.getExtraTypeClass(ReportFieldExtraType.FOOTER);
+            JRDesignExpression footerExpr = ReportUtils.createExpression(ReportUtils.createFieldString(footerSID), footerClass);
             footerField = ReportUtils.createTextField(style, footerExpr, toStretch);
             footerField.setHorizontalTextAlign(reportField.alignment);
             footerField.setBlankWhenNull(true);
             footerField.setPositionType(PositionTypeEnum.FLOAT);
             footerField.setKey(reportField.columnGroupName);
-            if (reportField.markupHtml) {
+            if (reportField.footerMarkupHtml) {
                 footerField.setMarkup(JRCommonText.MARKUP_HTML);
             }
-            setPattern(footerField, reportField);
+            setPattern(footerField, footerSID, footerClass, reportField.getFooterPattern());
         }
 
         layout.add(reportField, captionField, dataField, footerField);
@@ -358,14 +357,13 @@ public class ReportDesignGenerator {
         return reportField.valueClass == InputStream.class; //IMAGEFILE
     }
 
-    private void setPattern(JRDesignTextField dataField, ReportDrawField reportField) {
-        String pattern = reportField.pattern;
-        if (pattern != null && needToFixExcelSeparatorProblem(pattern, reportField)) {
-            pattern = ReportUtils.createPatternExpressionForExcelSeparatorProblem(pattern, reportField.sID, reportField.valueClass);
+    private void setPattern(JRDesignTextField dataField, String fieldName, Class cls, String pattern) {
+        if (pattern != null && needToFixExcelSeparatorProblem(pattern, cls)) {
+            pattern = ReportUtils.createPatternExpressionForExcelSeparatorProblem(pattern, fieldName, cls);
             assert pattern != null;
-            dataField.setPatternExpression(ReportUtils.createExpression(pattern, reportField.valueClass));
+            dataField.setPatternExpression(ReportUtils.createExpression(pattern, cls));
         } else {
-            JRExpression convertedExpression = ReportUtils.createConvertExcelDateTimeExpression(printType, reportField.sID, reportField.valueClass, pattern);
+            JRExpression convertedExpression = ReportUtils.createConvertExcelDateTimeExpression(printType, fieldName, cls, pattern);
             if (convertedExpression != null) {
                 dataField.setExpression(convertedExpression);
             }
@@ -373,9 +371,8 @@ public class ReportDesignGenerator {
         }
     }
     
-    private boolean needToFixExcelSeparatorProblem(String pattern, ReportDrawField reportField) {
+    private boolean needToFixExcelSeparatorProblem(String pattern, Class cls) {
         if (printType == FormPrintType.XLS || printType == FormPrintType.XLSX) {
-            Class cls = reportField.valueClass;
             return (cls == Double.class || cls == BigDecimal.class) && pattern.matches(ReportUtils.EXCEL_SEPARATOR_PROBLEM_REGEX);
         }
         return false;

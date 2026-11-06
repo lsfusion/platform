@@ -91,3 +91,13 @@ assertDrawn (STRING form, STRING property, STRING drawer)
 // a list group of the open form the action runs in, by its name, switched to one of its views - GRID, PIVOT, ... -, as
 // the switch on a client's toolbar asks for it: a pivot holds the group's changes back until it is updated
 changeListView INTERNAL 'lsfusion.tests.ChangeListViewAction' (STRING, STRING);
+
+// what the cells of the first sheet of an Excel file show, by their row and column (both from 0), as of the last
+// readExcel(): each value, a formula's computed, formatted by its cell's format, as Excel formats it, in the US locale; a
+// cell that shows nothing has none
+excelText = DATA LOCAL STRING (INTEGER, INTEGER);
+readExcelCells INTERNAL 'lsfusion.tests.ReadExcelCellsAction' (FILE);
+readExcel (FILE file) {
+    excelText(INTEGER row, INTEGER column) <- NULL;
+    readExcelCells(file);
+}

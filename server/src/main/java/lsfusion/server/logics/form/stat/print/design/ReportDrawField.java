@@ -38,6 +38,17 @@ public class ReportDrawField implements AbstractRowLayoutElement {
 
     public String pattern;
 
+    // the footer is printed as a value of its own type (its class is the FOOTER extra type's): with its type's markup, and
+    // with its type's pattern where it is of another kind of type than the value's, with the value's where it is of the
+    // value's kind (a sum)
+    public boolean footerMarkupHtml;
+    public boolean differentFooter;
+    public String footerPattern;
+
+    public String getFooterPattern() {
+        return differentFooter ? footerPattern : pattern;
+    }
+
     public boolean hasColumnGroupObjects = false;
     public String columnGroupName;
     

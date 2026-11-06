@@ -1,0 +1,71 @@
+MODULE PrintFooters;
+
+REQUIRE TestUtils, Utils;
+
+// a footer is printed and exported to Excel as a value of its own type: its own value, its type's markup, the pattern of
+// its type where it is of another kind of type than its column's, the column's where it is of the column's kind. Both
+// took the column's for it: under a column of dates a footer printed the last row's date, whatever it was; the column's
+// markup and pattern went to a footer of any type; and Excel's pattern of a footer of numbers - one with the fraction
+// digits or one without - was chosen by the last row's number
+
+CLASS PftItem;
+pftShown = DATA LOCAL BOOLEAN (PftItem);
+// dates in an order no locale writes them in, so that a footer printed by its column's pattern cannot be taken for one
+// printed by its type's default pattern
+pftDate 'Date' = DATA DATE (PftItem) PATTERN 'yyyy.dd.MM';
+pftNumber 'Number' = DATA NUMERIC[10,2] (PftItem) PATTERN '000000';
+pftName 'Name' = DATA STRING[50] (PftItem);
+pftAmount 'Amount' = DATA NUMERIC[10,2] (PftItem) PATTERN '#,##0.##';
+
+pftDue = DATA LOCAL DATE ();
+pftCount () = GROUP SUM 1 IF pftShown(PftItem i);
+pftBold = DATA LOCAL HTMLTEXT ();
+pftTotal () = GROUP SUM pftAmount(PftItem i) IF pftShown(i);
+
+// under the dates a string - short, as a text wider than its column is cut - and a date, under the numbers a count of
+// the items, under the names a bold text, under the amounts their sum
+FORM pftItems 'Items'
+    OBJECTS i = PftItem
+    PROPERTIES(i) pftDate FOOTER 'Total', pftDueDate 'Due' = pftDate FOOTER pftDue(), pftNumber FOOTER pftCount(),
+                  pftName FOOTER pftBold(), pftAmount FOOTER pftTotal()
+    FILTERS pftShown(i)
+    ORDERS pftAmount(i)
+;
+
+pftFile = DATA LOCAL FILE ();
+
+pftSeed () {
+    NEW i = PftItem { pftShown(i) <- TRUE; pftDate(i) <- 2026_01_01; pftNumber(i) <- 7; pftName(i) <- 'first'; pftAmount(i) <- 1.5; }
+    NEW i = PftItem { pftShown(i) <- TRUE; pftDate(i) <- 2026_01_02; pftNumber(i) <- 9; pftName(i) <- 'second'; pftAmount(i) <- 2; }
+    pftDue() <- 2031_12_31;
+    pftBold() <- '<b>a bold footer</b>';
+}
+
+testPftPrintedFooters 'a footer is printed as a value of its own type' () {
+    pftSeed();
+    PRINT pftItems HTML TO pftFile;
+    fileToString(pftFile());
+
+    assertTrue(isSubstring(resultString(), 'Total'), 'a string footer under dates is not printed: ' + resultString());
+    assertTrue(isSubstring(resultString(), '2031.31.12'), 'a date footer is not printed by the dates\' pattern: ' + resultString());
+    assertTrue(isSubstring(resultString(), '000007'), 'the numbers are not printed by their pattern: ' + resultString());
+    assertFalse(isSubstring(resultString(), '000002'), 'a count footer is printed by the numbers\' pattern: ' + resultString());
+    assertTrue(isSubstring(resultString(), 'bold;">a bold footer'), 'an HTML footer under strings is not printed bold: ' + resultString());
+    assertFalse(isSubstring(resultString(), '&lt;b&gt;'), 'an HTML footer under strings is printed as a string: ' + resultString());
+}
+
+// in the sheet readExcel read last, the footers' row - the last one -, the column of a caption, and the footers of the
+// form's columns, in their order
+pftFooterRow () = GROUP MAX INTEGER row IF excelText(row, INTEGER column);
+pftColumn (STRING caption) = GROUP MAX INTEGER column IF excelText(INTEGER row, column) = caption;
+pftFooterInExcel (STRING caption) = excelText(pftFooterRow(), pftColumn(caption));
+pftFootersInExcel () = CONCAT ' | ', pftFooterInExcel('Date'), pftFooterInExcel('Due'), pftFooterInExcel('Number'),
+                                     pftFooterInExcel('Name'), pftFooterInExcel('Amount');
+
+testPftExportedFooters 'a footer is exported to Excel as a value of its own type' () {
+    pftSeed();
+    PRINT pftItems XLSX TO pftFile;
+    readExcel(pftFile());
+
+    assertEquals(pftFootersInExcel(), 'Total | 2031.31.12 | 2 | a bold footer | 3.5', 'the footers are exported as ' + pftFootersInExcel());
+}
