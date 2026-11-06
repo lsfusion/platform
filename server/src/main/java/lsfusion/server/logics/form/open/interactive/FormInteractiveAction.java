@@ -248,19 +248,13 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 //    }
 
 
+    // modal: whether the opener waits for the form. A docked form it waits for is docked-modal; a floating one it does
+    // not wait for (FLOAT NOWAIT) leaves the page around it in use, and so has to the window the client shows for it
+    // until the form comes, which the form then arrives in
     @Override
     public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, ImSet<Action<?>> recursiveAbstracts) {
-        ShowFormType showFormType = getShowFormType();
-        return new AsyncMapOpenForm<>(form, activateType, formId, showFormType.isModal(), showFormType.getWindowType(), null, mapObjects.size() == 1 ? mapObjects.singleValue() : null);
-    }
-
-    private ShowFormType getShowFormType() {
-        boolean syncType;
-        if(this.syncType != null)
-            syncType = this.syncType;
-        else
-            syncType = heuristicSyncType();
-
-        return getShowFormType(syncType);
+        boolean syncType = this.syncType != null ? this.syncType : heuristicSyncType();
+        ShowFormType showFormType = getShowFormType(syncType);
+        return new AsyncMapOpenForm<>(form, activateType, formId, showFormType.isModal() && syncType, showFormType.getWindowType(), null, mapObjects.size() == 1 ? mapObjects.singleValue() : null);
     }
 }

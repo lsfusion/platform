@@ -652,7 +652,9 @@ public abstract class FormsController {
         FormDockable duplicateForm = getDuplicateForm(windowType, openForm.canonicalName, openForm.formId, openForm.activateType, null);
         if (duplicateForm == null) {
             Scheduler.ScheduledCommand runOpenForm = () -> {
-                FormContainer formContainer = createFormContainer(windowType, true, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, editEvent, editContext, formController);
+                // waited for or not as the open is (modal), since the form arrives in this window: a floating form not
+                // waited for has no backdrop
+                FormContainer formContainer = createFormContainer(windowType, true, openForm.modal, asyncFormController.getEditRequestIndex(), openForm.canonicalName, editEvent, editContext, formController);
 
                 formContainer.requestedCaption = openForm.caption;
 

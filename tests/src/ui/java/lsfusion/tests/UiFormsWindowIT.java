@@ -459,6 +459,30 @@ public class UiFormsWindowIT extends UiTest {
         assertThat(second.locator(":focus")).hasCount(1);
     }
 
+    // a floating form not waited for whose answer comes after the client's placeholder - the window the client shows
+    // for an open it predicts, 100 ms after the click, which the form then arrives in -: the placeholder and the form
+    // in it are a window not waited for - no backdrop, the page around it in use, a floating form the launcher under it
+    // opens then coming on top of it. The placeholder was built as a window waited for, which the form kept
+    @Test
+    public void aFloatingFormNotWaitedForAnsweredLateLeavesThePageInUse() throws Exception {
+        Locator launcher = launcher(), target = form("UiFormsWindow.uiFormsWindowCloseTarget"), second = form(SECOND);
+        Locator placeholder = page.locator(".modal-form:not(:has([lsfusion-form]))");
+        hold();
+        action(launcher, "uiFormsWindowCloseTargetFloating").click();
+        assertThat(placeholder.locator(".modal-dialog")).isVisible();
+        assertThat(placeholder.locator("> .modal-backdrop")).hasCount(0);
+        release();
+        assertThat(target).isVisible();
+        Locator window = page.locator(".modal-form").filter(new Locator.FilterOptions().setHas(target));
+        assertThat(window.locator("> .modal-backdrop")).hasCount(0);
+        assertThat(window).hasClass(Pattern.compile("\\bmodal-nowait\\b"));
+        action(launcher, "uiFormsWindowSecondFloating").click();
+        assertThat(second).isVisible();
+        onTop(second);
+        close(second);
+        close(target);
+    }
+
     // a form with two handlers of its close event, each opening the form already there with ACTIVATE: each handler
     // takes the activation the request carries and runs on - the form is not built again, both leave their mark -,
     // and the form closes. It is closed by its tab's close button: its Close button closes it with no close event

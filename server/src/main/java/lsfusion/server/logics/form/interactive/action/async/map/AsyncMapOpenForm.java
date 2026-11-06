@@ -134,6 +134,8 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
         if(mergedType == null)
             return null;
 
+        // a branch that waits for the form wins: shown as one not waited for, its window would leave the page in use
+        // while the opener waits - the other way a floating form not waited for comes in a window with a backdrop
         return new AsyncMapOpenForm<>(mergedForm, mergeActivateType(activateType, asyncOpenForm.activateType),
                 BaseUtils.nullEquals(formId, asyncOpenForm.formId) ? formId : null, modal || asyncOpenForm.modal, mergedType, mergedClass, BaseUtils.nullEquals(propertyInterface, asyncOpenForm.propertyInterface) ? propertyInterface : null);
     }
