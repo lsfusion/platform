@@ -70,6 +70,8 @@ The `ACTIVATE ... formObjectId = expr` and `ACTIVATE ... formGroupObjectId [OBJE
     - `LAST` - for additional objects, the **last** matching collection is selected. For seek objects, if the required collection is not found, the **previous** closest one is selected.
     - `NULL` - the current values of the objects of the specified object group are reset to `NULL`. For the single-object form and for the group form with an `OBJECTS` block, all objects of the group not listed explicitly in the operator (including *additional* ones) are reset. The explicitly listed objects take the specified values.
 
+    In an object tree, `FIRST` and `LAST` without seek objects do not change the current objects.
+
     If this option is omitted, the [default objects type](Object_blocks.md) set on the object group is used (`PREV` cannot be written directly in the operator).
 
 - `formObjectId`

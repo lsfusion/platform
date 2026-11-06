@@ -35,6 +35,8 @@ The direction can take one of four values:
 -   `PREV` - the collection closest to the previous current one (that is, the state before the seek operation) is kept.
 -   `NULL` - the objects of the group are reset to `NULL`.
 
+In an [object tree](Interactive_view.md#tree), the `FIRST` and `LAST` directions are not applied: a seek without seek objects keeps the current objects of the group.
+
 In the operator, the direction is specified with the `FIRST`, `LAST`, or `NULL` keywords. `PREV` cannot be written directly. If none of these keywords is specified, the direction is taken from the [default objects type](Interactive_view.md#defaultobject) set on the object group (including `PREV`). If the group does not set a type explicitly, it is [chosen heuristically](Interactive_view.md#defaultobject) based on the group's filters — `FIRST` for a narrow filter, and `PREV` otherwise.
 
 #### Setting `NULL` values
