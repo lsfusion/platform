@@ -73,23 +73,9 @@ public class ReactLogPanel extends LogPanel {
 
         GwtClientUtils.addClassName(panel, "panel-react");
 
-        // the crossing BACK to the platform: the component renders the host node, we move the message's markup in
-        root = new ReactRoot(custom, createController(), new ReactRoot.Placement() {
-            @Override
-            public void mount(String name, Element host, JavaScriptObject row) {
-                placed.mount(name, host);
-            }
-
-            @Override
-            public void unmount(String name, Element host, JavaScriptObject row) {
-                placed.unmount(name, host);
-            }
-
-            @Override
-            public ReactRoot.Host getHost() {
-                return new ReactRoot.PlainHost(); // a message's host is left as the component rendered it
-            }
-        });
+        // the crossing BACK to the platform: the component renders the host node, we move the message's markup in. A
+        // message's host is left as the component rendered it
+        root = new ReactRoot(custom, createController(), placed.placement(new ReactRoot.PlainHost()));
         // nothing is logged yet, and that is a state the component draws, so the window starts from it - shaped as
         // every later snapshot is, so the first render already reads data.messages - instead of waiting for the first
         // message

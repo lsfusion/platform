@@ -91,23 +91,9 @@ public class ReactFormsView implements FormsView {
         this.forms = formsWindow.getForms();
         this.selection = selection;
 
-        // the crossing BACK to the platform: the component renders the host node, we move the form's own view in
-        root = new ReactRoot(custom, createController(), new ReactRoot.Placement() {
-            @Override
-            public void mount(String name, Element host, JavaScriptObject row) {
-                placed.mount(name, host);
-            }
-
-            @Override
-            public void unmount(String name, Element host, JavaScriptObject row) {
-                placed.unmount(name, host);
-            }
-
-            @Override
-            public ReactRoot.Host getHost() {
-                return new ReactRoot.MarkedHost(); // a form's host holds the form's view, which the layout fills it with by its marks
-            }
-        });
+        // the crossing BACK to the platform: the component renders the host node, we move the form's own view in. A form's
+        // host holds the form's view, which the layout fills it with by its marks
+        root = new ReactRoot(custom, createController(), placed.placement(new ReactRoot.MarkedHost()));
         // no form is open yet, and that is a state the component draws - a start page, say - so the window starts
         // from it, shaped as every later snapshot is, instead of waiting for the first form to be drawn at all
         root.updateData(buildData());

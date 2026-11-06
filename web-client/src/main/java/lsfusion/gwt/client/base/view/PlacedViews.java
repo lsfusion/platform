@@ -76,6 +76,28 @@ public class PlacedViews {
         this.views = views;
     }
 
+    // the Placement of a React root whose <Platform>s place only this owner's views: they mount and unmount straight
+    // here, and the owner says only what its hosts are dressed in. A form container keys and shows more than that, so
+    // its root has a placement of its own
+    public ReactRoot.Placement placement(ReactRoot.Host kind) {
+        return new ReactRoot.Placement() {
+            @Override
+            public void mount(String name, Element host, JavaScriptObject row) {
+                PlacedViews.this.mount(name, host);
+            }
+
+            @Override
+            public void unmount(String name, Element host, JavaScriptObject row) {
+                PlacedViews.this.unmount(name, host);
+            }
+
+            @Override
+            public ReactRoot.Host getHost() {
+                return kind;
+            }
+        };
+    }
+
     public boolean mount(String name, Element host) {
         Problem problem = views.problem(name);
         if (problem != null) {

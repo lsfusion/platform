@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.base.view.PlacedViews;
+import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
@@ -166,13 +167,10 @@ public class NavigatorButtons {
         placed.parkAll();
     }
 
-    // the component's half of the crossing: it renders the node, we fill it
-    public void mountButton(String canonicalName, Element host) {
-        placed.mount(canonicalName, host);
-    }
-
-    public void unmountButton(String canonicalName, Element host) {
-        placed.unmount(canonicalName, host);
+    // the component's half of the crossing: it renders the node, we fill it - the node a button goes into is left as the
+    // component rendered it
+    public ReactRoot.Placement placement() {
+        return placed.placement(new ReactRoot.PlainHost());
     }
 
     // the names of the current bucket, in the order the standard panel draws them

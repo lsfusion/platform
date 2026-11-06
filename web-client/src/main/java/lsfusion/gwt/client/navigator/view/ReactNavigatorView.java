@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.navigator.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
@@ -24,22 +23,7 @@ public class ReactNavigatorView extends ParkedNavigatorView {
         GwtClientUtils.addClassName(panel, "panel-react");
 
         // the crossing BACK to the platform: the component renders the host node, we fill it with the standard button
-        root = new ReactRoot(window.custom, navigatorController.getController(), new ReactRoot.Placement() {
-            @Override
-            public void mount(String name, Element host, JavaScriptObject row) {
-                buttons.mountButton(name, host);
-            }
-
-            @Override
-            public void unmount(String name, Element host, JavaScriptObject row) {
-                buttons.unmountButton(name, host);
-            }
-
-            @Override
-            public ReactRoot.Host getHost() {
-                return new ReactRoot.PlainHost(); // the node a button goes into is left as the component rendered it
-            }
-        });
+        root = new ReactRoot(window.custom, navigatorController.getController(), buttons.placement());
         // nothing is pushed here: what the window draws is a bucket the navigator works out, and it has worked out none
         // yet, so an empty one would say "nothing to draw" about a window that may well have elements. Its first update
         // refreshes every window - one with nothing in it too, with an empty bucket - and that is what draws it
