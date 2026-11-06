@@ -37,7 +37,7 @@ import java.util.Set;
  *       {@code RemoteLogics.access} runs the per-role {@code enableAPI} check, then the
  *       classpath scan runs without a session.</li>
  *   <li>Script execution — {@code lsfusion_eval} via {@link MCPEvalTool} → {@code RemoteLogics.eval}.
- *       Reuses the API-eval pipeline incl. {@code checkEnableApi} (so {@code @api} applies).</li>
+ *       Reuses the API-eval pipeline incl. {@code checkEnableApi}, which ignores the script's own annotations.</li>
  * </ul>
  *
  * <p>Authentication itself (bogus-bearer rejection, anonymous-vs-{@code enableAPI=2}

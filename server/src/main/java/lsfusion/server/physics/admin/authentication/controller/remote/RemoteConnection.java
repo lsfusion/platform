@@ -644,7 +644,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     private void checkEnableApi(LA<?> property, Object actionParam, boolean script, ExternalRequest request, boolean redirect) {
-        if(property.action.hasAnnotation("noauth"))
+        // the annotations of a script's run are written by the caller, not by the developer
+        if(!script && property.action.hasAnnotation("noauth"))
             return;
 
         if(request.signature != null && securityManager.verifyData(ExternalUtils.generate(actionParam, script, request.getImplicitParamValues()), request.signature))
@@ -653,7 +654,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         if(authException != null)
             throw authException;
 
-        checkAPIAccess(property.action.hasAnnotation("api"), redirect);
+        checkAPIAccess(!script && property.action.hasAnnotation("api"), redirect);
     }
 
     public void writeRequestInfo(ExecutionEnvironment env, Action<?> action, ExternalRequest request, String actionPathInfo) throws SQLException, SQLHandledException {
