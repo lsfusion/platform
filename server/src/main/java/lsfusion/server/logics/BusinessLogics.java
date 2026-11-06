@@ -1566,7 +1566,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public boolean propertyListInitialized;
-    // should be synchronized because of actionChangeProps / links, but it is already synchronized with the IdentityStrongLazy
+    // fills and drops actionChangeProps / links of the properties, which the lists of every filter share : only the start's two lists
+    // (NO and SESSION) are built strictly one after the other (lsfusion.xml), the IdentityStrongLazy above keeps apart the builds of
+    // one filter, not the first builds of two other filters at runtime
     public Pair<ImOrderSet<ActionOrProperty>, Graph<ActionOrProperty>> calcPropertyListWithGraph(ApplyFilter filter, DebugInfoWriter debugInfoWriter, BiConsumer<ImOrderSet<ActionOrProperty>, HMap<Link, List<Link>>> debugConsumer) {
         assert ImplementTable.updatedStats;
         assert propertyListInitialized;
