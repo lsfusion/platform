@@ -57,6 +57,64 @@ public class ReactRootTest extends GWTTestCase {
         return { n: n };
     }-*/;
 
+    // a projection its owner builds anew each time - the navigator window's, the forms window's - is shared with the
+    // snapshot pushed last: an entry that did not change is the very object pushed before, and so is the array of
+    // names that orders them, while an entry that changed is the new build; a push that changed nothing at all is the
+    // snapshot already there
+    public void testARebuiltSnapshotKeepsWhatDidNotChange() {
+        ReactRoot root = new ReactRoot("NoSuchComponent", JavaScriptObject.createObject(), new NoPlacement());
+        root.updateRebuiltData(built("b"));
+        JavaScriptObject first = snapshotOf(root);
+
+        root.updateRebuiltData(built("B"));
+        JavaScriptObject second = snapshotOf(root);
+        assertNotSame(first, second);
+        assertSame(entry(first, "a"), entry(second, "a"));
+        assertNotSame(entry(first, "b"), entry(second, "b"));
+        assertEquals("B", text(entry(second, "b"), "caption"));
+        assertSame(JsniTestSupport.field(first, "order"), JsniTestSupport.field(second, "order"));
+
+        root.updateRebuiltData(built("B"));
+        assertSame(second, snapshotOf(root));
+    }
+
+    // ... and a build whose keys are other ones, or an array of another length, is new even where every value it
+    // carries is one the last snapshot has: a key with no value, a hole in an array
+    public void testARebuiltSnapshotOfOtherKeysIsNew() {
+        ReactRoot root = new ReactRoot("NoSuchComponent", JavaScriptObject.createObject(), new NoPlacement());
+        root.updateRebuiltData(keyed("a"));
+        JavaScriptObject a = snapshotOf(root);
+        root.updateRebuiltData(keyed("b"));
+        assertNotSame(a, snapshotOf(root));
+
+        root.updateRebuiltData(names(1));
+        JavaScriptObject one = snapshotOf(root);
+        root.updateRebuiltData(names(2));
+        assertNotSame(one, snapshotOf(root));
+    }
+
+    private static native JavaScriptObject keyed(String key) /*-{
+        var data = {};
+        data[key] = undefined;
+        return data;
+    }-*/;
+    // an array of `length`: 'a', and holes after it
+    private static native JavaScriptObject names(int length) /*-{
+        var names = ['a'];
+        names.length = length;
+        return { names: names };
+    }-*/;
+
+    // two entries in their order, the second one's caption given, the first one naming the second as its child
+    private static native JavaScriptObject built(String caption) /*-{
+        return { order: ['a', 'b'], byName: { a: { name: 'a', caption: 'A', children: ['b'] },
+                                              b: { name: 'b', caption: caption, children: [] } } };
+    }-*/;
+    private static native JavaScriptObject entry(JavaScriptObject data, String name) /*-{ return data.byName[name]; }-*/;
+    private static native JavaScriptObject snapshotOf(ReactRoot root) /*-{
+        return root.@lsfusion.gwt.client.base.view.ReactRoot::store.getSnapshot();
+    }-*/;
+
     // each listener told writes down its name and the snapshot it reads then; the list keeps the first one's
     // unsubscribe
     private static native JavaScriptObject subscribeThreeTheMiddleThrowing(ReactRoot root) /*-{

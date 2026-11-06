@@ -774,8 +774,9 @@ public class UiFormsWindowIT extends UiTest {
 
     // the component's full screen and the platform's key for it (ALT+F11) undo each other, either way round: in full
     // screen the page draws System.forms alone - no navigator, no other window, the board neither: hidden, its
-    // component kept and given the forms all the same, with full screen off, which is System.forms' -, and once it is
-    // over the board is drawn again, its component given the forms as they were and full screen off
+    // component kept with the forms all the same and full screen off, which is System.forms' -, and once it is over
+    // the board is drawn again, its component holding the forms as they were and full screen off. Nothing the board is
+    // given changes on the way, so it is given nothing new: what it holds is what it was given before
     @Test
     public void aComponentsFullScreenAndTheKeyUndoEachOther() throws Exception {
         Locator launcher = launcher(), board = window("board");
@@ -784,14 +785,12 @@ public class UiFormsWindowIT extends UiTest {
         board(FIRST, FIRST);
         fullScreen(false);
 
-        forget();
         board.locator(".ui-forms-window-board-full-screen").click();
         assertThat(navigator).isHidden();
         assertThat(board).isHidden();
         assertThat(launcher).isVisible();
         board(FIRST, FIRST);
         fullScreen(false);
-        forget();
         idle();
         page.keyboard().press("Alt+F11");
         assertThat(navigator).isVisible();
@@ -803,7 +802,6 @@ public class UiFormsWindowIT extends UiTest {
         page.keyboard().press("Alt+F11");
         assertThat(navigator).isHidden();
         assertThat(board).isHidden();
-        forget();
         page.evaluate("() => window.uiFormsWindowBoard.controller.toggleFullScreen()");
         assertThat(navigator).isVisible();
         assertThat(in(board, "uiFormsWindowFirst")).isVisible();
@@ -931,11 +929,6 @@ public class UiFormsWindowIT extends UiTest {
         page.waitForResponse(response -> response.request().postData() != null
                 && response.request().postData().contains(request), click).finished();
         page.evaluate("() => new Promise(resolve => requestAnimationFrame(resolve))");
-    }
-
-    // what the board's component was given last forgotten - its controller kept -, to see it given it again
-    private void forget() {
-        page.evaluate("() => { window.uiFormsWindowBoard.data = null; }");
     }
 
     // until the board's component is given the full screen mode expected

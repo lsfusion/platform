@@ -15,7 +15,6 @@ import java.util.LinkedHashSet;
 public class ReactNavigatorView extends ParkedNavigatorView {
 
     private final ReactRoot root;
-    private JavaScriptObject lastData; // the projection last built, so an unchanged entry can keep its reference
 
     public ReactNavigatorView(GNavigatorWindow window, GINavigatorController navigatorController) {
         super(window, navigatorController);
@@ -39,7 +38,7 @@ public class ReactNavigatorView extends ParkedNavigatorView {
     @Override
     public void refresh(LinkedHashSet<GNavigatorElement> elements, GNavigatorElement selected) {
         buttons.refresh(elements, selected); // so that <Platform name/> has a standard button to place
-        root.updateData(buildData(elements, selected));
+        root.updateRebuiltData(buildData(elements, selected));
     }
 
     // the projection is built from the BUCKET, not from the element tree: a child that crossed into another window, or
@@ -58,52 +57,11 @@ public class ReactNavigatorView extends ParkedNavigatorView {
             if (!elements.contains(element.parent)) // the same root elements the standard view draws, children hang off them
                 addRoot(data, element.canonicalName);
         }
-        return lastData = reuse(lastData, data);
+        return data;
     }
 
     private native JavaScriptObject createData()/*-{
         return { root: [], byName: {} };
-    }-*/;
-
-    // structural sharing, the same guarantee the form projection gives: an entry that did not change keeps its
-    // reference, so a component memoized on it does not re-render, and a refresh that changed nothing at all returns
-    // the very same snapshot, which ReactRoot then skips entirely
-    private native JavaScriptObject reuse(JavaScriptObject prev, JavaScriptObject next)/*-{
-        if (!prev) return next;
-
-        var sameArray = function (a, b) {
-            if (a.length !== b.length) return false;
-            for (var i = 0; i < a.length; i++)
-                if (a[i] !== b[i]) return false;
-            return true;
-        };
-        // over the entry's OWN keys, so a field added to createEntry cannot be forgotten here - and forgetting one
-        // fails silently, by handing back the previous entry for ever
-        var sameEntry = function (a, b) {
-            var keys = Object.keys(a);
-            if (keys.length !== Object.keys(b).length) return false;
-            for (var i = 0; i < keys.length; i++) {
-                var key = keys[i];
-                if (key === 'children' ? !sameArray(a.children, b.children) : a[key] !== b[key]) return false;
-            }
-            return true;
-        };
-
-        var names = Object.keys(next.byName);
-        var same = names.length === Object.keys(prev.byName).length;
-        for (var i = 0; i < names.length; i++) {
-            var name = names[i], before = prev.byName[name];
-            if (before && sameEntry(before, next.byName[name]))
-                next.byName[name] = before;
-            else
-                same = false;
-        }
-
-        if (!sameArray(prev.root, next.root))
-            return next;
-
-        next.root = prev.root; // the order did not change either, so the array itself is worth keeping
-        return same ? prev : next;
     }-*/;
 
     // `name` is on the entry itself, so an entry passed around alone still knows what it is called - `root` and

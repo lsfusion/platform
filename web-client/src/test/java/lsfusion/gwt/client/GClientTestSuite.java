@@ -8,6 +8,7 @@ import lsfusion.gwt.client.form.controller.GFormControllerTest;
 import lsfusion.gwt.client.form.design.view.GReactFormDataTest;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTableTreeTest;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManagerTest;
+import lsfusion.gwt.client.form.view.ReactFormsViewTest;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcherTest;
 import lsfusion.gwt.client.navigator.window.view.ReactWindowLayoutTest;
 
@@ -27,6 +28,7 @@ public class GClientTestSuite {
         suite.addTestSuite(GFormControllerTest.class);
         suite.addTestSuite(NativeLinkedSIDMapTest.class);
         suite.addTestSuite(ReactWindowLayoutTest.class);
+        suite.addTestSuite(ReactFormsViewTest.class);
         return suite;
     }
 }

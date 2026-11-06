@@ -96,7 +96,7 @@ public class ReactFormsView implements FormsView {
         root = new ReactRoot(custom, createController(), placed.placement(new ReactRoot.MarkedHost()));
         // no form is open yet, and that is a state the component draws - a start page, say - so the window starts
         // from it, shaped as every later snapshot is, instead of waiting for the first form to be drawn at all
-        root.updateData(buildData());
+        root.updateRebuiltData(buildData());
 
         GwtClientUtils.addClassName(panel, "forms-container");
         park.getStyle().setDisplay(Style.Display.NONE);
@@ -160,7 +160,7 @@ public class ReactFormsView implements FormsView {
 
     @Override
     public void formsChanged() {
-        root.updateData(buildData());
+        root.updateRebuiltData(buildData());
     }
 
     private JavaScriptObject buildData() {

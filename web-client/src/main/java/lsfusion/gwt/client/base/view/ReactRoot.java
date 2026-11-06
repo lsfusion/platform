@@ -166,6 +166,37 @@ public class ReactRoot {
             notifyStore();
     }
 
+    // ... of a projection its owner builds anew each time - the navigator window's, the forms window's: structural
+    // sharing with the snapshot pushed last, the guarantee every projection gives. Whatever did not change keeps its
+    // reference, so a component memoized on an entry that did not change does not re-render, and a push that changed
+    // nothing at all is the very same snapshot, which is then skipped
+    public void updateRebuiltData(JavaScriptObject data) {
+        updateData(reuse(lastData, data));
+    }
+
+    // over the OWN keys, at every level, so a field an owner adds to its entries cannot be forgotten here - and
+    // forgetting one fails silently, by handing back the previous value for ever. `next` is a new build nobody has
+    // seen yet, so what did not change is put into it in place
+    private static native JavaScriptObject reuse(JavaScriptObject prev, JavaScriptObject next)/*-{
+        var reuse = function (prev, next) {
+            if (prev === next || prev === null || next === null || typeof prev !== 'object' || typeof next !== 'object'
+                    || Array.isArray(prev) !== Array.isArray(next))
+                return next;
+
+            // the same keys, and an array's length too - a hole has no key
+            var keys = Object.keys(next), same = keys.length === Object.keys(prev).length
+                    && (!Array.isArray(next) || prev.length === next.length);
+            for (var i = 0; i < keys.length; i++) {
+                var key = keys[i], own = Object.prototype.hasOwnProperty.call(prev, key);
+                var value = next[key] = reuse(own ? prev[key] : undefined, next[key]);
+                if (!own || value !== prev[key])
+                    same = false;
+            }
+            return same ? prev : next;
+        };
+        return reuse(prev, next);
+    }-*/;
+
     private JavaScriptObject findComponent() {
         return GwtClientUtils.getGlobalField(componentName, "reactView", true);
     }
