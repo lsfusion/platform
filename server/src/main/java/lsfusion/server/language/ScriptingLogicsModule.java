@@ -159,6 +159,7 @@ import lsfusion.server.physics.dev.id.name.PropertyCompoundNameParser;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors.ResolvingError;
 import lsfusion.server.physics.dev.integration.external.to.*;
+import lsfusion.server.physics.dev.integration.internal.to.InlineInternalAction;
 import lsfusion.server.physics.dev.integration.internal.to.InternalCompiler;
 import lsfusion.server.physics.dev.integration.external.to.file.ReadAction;
 import lsfusion.server.physics.dev.integration.external.to.file.WriteAction;
@@ -1975,7 +1976,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LA addScriptedInternalAction(String javaClassName, ImList<ValueClass> paramClasses, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
         Class<?> javaClass = null;
         try {
-            javaClass = Class.forName(javaClassName);
+            javaClass = Class.forName(javaClassName, false, ScriptingLogicsModule.class.getClassLoader()); // initialized only by making the action's instance below
         } catch (ClassNotFoundException e) {
             String source = findJavaSource(javaClassName);
             if (source == null)
@@ -1986,6 +1987,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                 errLog.emitCreatingClassInstanceError(parser, ce.getMessage(), javaClassName);
             }
         }
+
+        if (!Action.class.isAssignableFrom(javaClass))
+            errLog.emitCreatingClassInstanceError(parser, "not an action", javaClassName);
 
         try {
             Object instanceObject = null;
@@ -2006,7 +2010,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (instance instanceof ExplicitAction && allowNullValue) {
                 ((ExplicitAction) instance).allowNullValue = true;
             }
-            return baseLM.addAProp(null, instance);
+            return addAProp(null, instance); // with this module's version, as its other actions : an eval module's one is seen only by it
         } catch (Exception e) {
             errLog.emitCreatingClassInstanceError(parser, e.getMessage(), javaClassName);
         }
@@ -2050,13 +2054,10 @@ public class ScriptingLogicsModule extends LogicsModule {
                     "    }\n" +
                     "}";
 
-            Class<?> executeClass = InternalCompiler.compile("ExecuteAction", javaClass);
-
-            Action instance = (Action) executeClass.getConstructor(ScriptingLogicsModule.class).newInstance(this);
-            if (instance instanceof ExplicitAction && allowNullValue) {
-                ((ExplicitAction) instance).allowNullValue = true;
-            }
-            return baseLM.addAProp(null, instance);
+            InlineInternalAction instance = new InlineInternalAction(this, InternalCompiler.compile("ExecuteAction", javaClass));
+            if (allowNullValue)
+                instance.allowNullValue = true;
+            return addAProp(null, instance);
         } catch (Exception e) {
             errLog.emitCreatingClassInstanceError(parser, e.getMessage(), script);
         }
@@ -6073,7 +6074,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void addNavigatorScheduler(LA action, NavigatorScheduler scheduler) {
+    public void addNavigatorScheduler(LA action, NavigatorScheduler scheduler) throws ScriptingErrorLog.SemanticErrorException {
         baseLM.putNavigatorScheduler(scheduler, action);
     }
 

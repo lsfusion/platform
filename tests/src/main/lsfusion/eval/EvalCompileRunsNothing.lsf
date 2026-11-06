@@ -1,0 +1,81 @@
+MODULE EvalCompileRunsNothing;
+
+REQUIRE TestUtils;
+
+// compiling an EVAL script runs nothing of it and leaves nothing of it for the sessions of others : only running it does
+
+// what the script fails with is in messageCaughtException()
+ecrEval (TEXT script) {
+    TRY {
+        EVAL script;
+    } CATCH {
+    }
+}
+
+testEvalNavigatorSchedulerIsRefused 'A navigator scheduler declared in EVAL is refused' () {
+    ecrEval('NAVIGATOR \{ SCHEDULE PERIOD 60 \{ \} \} run() \{ \}');
+    assertNotNull(messageCaughtException(), 'a navigator scheduler was not refused');
+    assertTrue(messageCaughtException() LIKE '%NAVIGATOR statement cannot be used in EVAL module%', 'a navigator scheduler failed with ' + messageCaughtException());
+}
+
+testEvalNavigatorElementChangeIsRefused 'A change of a navigator element in EVAL is refused' () {
+    ecrEval('NAVIGATOR \{ System.administration \'ecr\'; \} run() \{ \}');
+    assertNotNull(messageCaughtException(), 'a change of a navigator element was not refused');
+    assertTrue(messageCaughtException() LIKE '%NAVIGATOR statement cannot be used in EVAL module%', 'a change of a navigator element failed with ' + messageCaughtException());
+}
+
+testEvalWindowIsRefused 'A window declared in EVAL is refused' () {
+    ecrEval('WINDOW ecrWindow VERTICAL; run() \{ \}');
+    assertNotNull(messageCaughtException(), 'a window was not refused');
+    assertTrue(messageCaughtException() LIKE '%WINDOW statement cannot be used in EVAL module%', 'a window failed with ' + messageCaughtException());
+}
+
+testEvalHideWindowIsRefused 'HIDE WINDOW in EVAL is refused' () {
+    ecrEval('HIDE WINDOW System.toolbar; run() \{ \}');
+    assertNotNull(messageCaughtException(), 'HIDE WINDOW was not refused');
+    assertTrue(messageCaughtException() LIKE '%HIDE WINDOW statement cannot be used in EVAL module%', 'HIDE WINDOW failed with ' + messageCaughtException());
+}
+
+ecrTarget () { }
+ecrTargetProperty = DATA LOCAL BOOLEAN ();
+
+testEvalAsonIsRefused 'ASON in EVAL is refused' () {
+    ecrEval('ecrHandler() \{ \} ASON CONTEXTMENU EvalCompileRunsNothing.ecrTargetProperty; run() \{ \}');
+    assertNotNull(messageCaughtException(), 'ASON was not refused');
+    assertTrue(messageCaughtException() LIKE '%ASON option cannot be used in EVAL module%', 'ASON failed with ' + messageCaughtException());
+}
+
+testEvalAspectIsRefused 'BEFORE in EVAL is refused' () {
+    ecrEval('BEFORE EvalCompileRunsNothing.ecrTarget() DO \{ \} run() \{ \}');
+    assertNotNull(messageCaughtException(), 'BEFORE was not refused');
+    assertTrue(messageCaughtException() LIKE '%BEFORE statement cannot be used in EVAL module%', 'BEFORE failed with ' + messageCaughtException());
+}
+
+ecrProbeInitialized = DATA LOCAL BOOLEAN ();
+ecrReadProbe () INTERNAL <{ findProperty("ecrProbeInitialized[]").change(System.getProperty("lsfusion.tests.InitializedProbe") != null ? Boolean.TRUE : null, context); }>;
+
+testEvalInternalClassIsNotInitialized 'A class an INTERNAL in EVAL names is not initialized when it is no action' () {
+    ecrEval('ecrNotAnAction() INTERNAL \'lsfusion.tests.InitializedProbe\'; run() \{ \}');
+    assertTrue(messageCaughtException() LIKE '%not an action%', 'a class that is no action failed with ' + messageCaughtException());
+    ecrReadProbe();
+    assertFalse(ecrProbeInitialized(), 'compiling the INTERNAL initialized the class it names');
+}
+
+ecrInlineTarget () INTERNAL <{ }>;
+ecrInlineMade = DATA LOCAL BOOLEAN ();
+ecrReadInlineMade () INTERNAL 'lsfusion.tests.InlineInternalMadeAction';
+
+testInlineInternalIsMadeOnItsFirstRun 'An inline INTERNAL gets an instance of its code on its first run, not when it is compiled' () {
+    ecrReadInlineMade();
+    assertFalse(ecrInlineMade(), 'the inline INTERNAL had an instance of its code before it ran');
+    ecrInlineTarget();
+    ecrReadInlineMade();
+    assertTrue(ecrInlineMade(), 'the inline INTERNAL got no instance of its code when it ran');
+}
+
+ecrRan = DATA LOCAL BOOLEAN ();
+
+testEvalInlineInternalRuns 'The inline INTERNAL of an EVAL script runs when the script runs' () {
+    EVAL 'ecrInline() INTERNAL <\{ findProperty("EvalCompileRunsNothing.ecrRan[]").change(Boolean.TRUE, context); \}>; run() \{ ecrInline(); \}';
+    assertTrue(ecrRan(), 'the inline INTERNAL did not run');
+}

@@ -33,6 +33,8 @@ title: 'Выполнение программного кода (EVAL)'
 -   объявление [группы](Groups_of_properties_and_actions.md) с родительской группой из другого модуля или привязка свойства или действия к группе из другого модуля
 -   добавление базовых событий к существующим действиям
 -   [абстрактные](Property_extension.md) свойства и действия: добавление реализации объявленному вне кода, а также объявление в коде и использование объявленного
+-   [навигатор](Navigator.md) и его [окна](Navigator_design.md): инструкция [`NAVIGATOR`](../language/NAVIGATOR_statement.md), включая её `SCHEDULE`, и инструкции [`WINDOW`](../language/WINDOW_statement.md) и `HIDE WINDOW`
+-   [опция](../language/Action_options.md) действия `ASON` и инструкции [`BEFORE`](../language/BEFORE_statement.md) и [`AFTER`](../language/AFTER_statement.md), которые привязывают действие к существующему свойству или действию
 
 [Data-свойства](Data_properties_DATA.md), объявленные внутри eval-кода, приводятся к области сессии. Постоянные data-объявления не допускаются.
 
