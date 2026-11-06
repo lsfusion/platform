@@ -1,0 +1,37 @@
+MODULE FormsOfForms;
+
+REQUIRE TestUtils;
+
+// a form built from another one (FORMS) copies the other's collections and maps what it copies into itself as it reads
+// them - while the other form can be finalized in another chunk of the start, which finalizes forms in parallel. A form's
+// finalization read its event actions at the current version, which holds the collections read, its own and the ones it
+// copies, while the copies are mapped - and a mapping waits for the form it maps into. With C built from B built from A,
+// and A given a property and an event after its change (ON CHANGE PROPERTY AFTER) by a later module - which B maps only
+// as it is read -, C's finalization held B's event actions waiting for form B, while B's own held B and waited for its
+// event actions : the start hung, as a lab start of such forms did
+
+CLASS FfItem;
+ffName = DATA STRING (FfItem);
+ffNote = DATA STRING (FfItem);
+ffNoted () { MESSAGE 'ff noted'; }
+
+ffFailure = DATA LOCAL STRING ();
+ffFinalizeAtOnce INTERNAL 'lsfusion.tests.FinalizeFormsOfFormsAction' ();
+
+testFormsOfFormsFinalizedAtOnce 'A form built from a form built from another one is finalized beside that one' () {
+    ffFinalizeAtOnce();
+    assertNull(ffFailure(), ffFailure());
+}
+
+// ON INIT that runs something on the client asynchronously ends with waiting for it
+ffLoad () { INTERNAL CLIENT 'ffLoad.js'; }
+FORM ffLoading 'Loading'
+    EVENTS ON INIT ffLoad()
+;
+ffLastInit = DATA LOCAL STRING ();
+ffReadLastInit INTERNAL 'lsfusion.tests.ReadLastInitAction' ();
+
+testInitWaitsForClient 'ON INIT that runs something on the client asynchronously waits for it at the end' () {
+    ffReadLastInit();
+    assertEquals(ffLastInit(), 'INTERNAL CLIENT WAIT', ffLastInit());
+}

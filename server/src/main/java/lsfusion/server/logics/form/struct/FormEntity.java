@@ -191,16 +191,9 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     public Iterable<ActionObjectEntity<?>> getEventActionsListIt(FormServerEvent eventObject) {
         return getGroupEventActionsList().get(eventObject);
     }
-    public Iterable<ActionObjectEntity<?>> getNFEventActionsListIt(FormServerEvent eventObject, Version version) {
-        List<ActionObjectEntity<?>> list = new ArrayList<>();
-        for(EventAction eventAction : eventActions.getNFListIt(version))
-            if(eventAction.event.equals(eventObject))
-                list.add(eventAction.action);
-        return list;
-    }
     @IdentityLazy
     public ImMap<FormServerEvent, ImList<ActionObjectEntity<?>>> getGroupEventActionsList() {
-        return eventActions.getList().groupList(key -> key.event).mapValues(key -> key.mapListValues(event -> event.action));
+        return checkInternalClientAction(eventActions.getList().groupList(key -> key.event).mapValues(key -> key.mapListValues(event -> event.action)));
     }
 
     // form controller API allow-list (issue #1650): actions/properties callable via the form controller exec/change,
@@ -1397,8 +1390,6 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
             }
         }
 
-        checkInternalClientAction();
-
         groups.finalizeChanges();
         objects.finalizeChanges();
         treeGroups.finalizeChanges();
@@ -1452,20 +1443,24 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         return false;
     }
 
-    private void checkInternalClientAction() {
-        Version version = Version.current();
-        Iterable<ActionObjectEntity<?>> eventActionsNFList = getNFEventActionsListIt(FormEventType.INIT, version);
-        if (eventActionsNFList != null) {
-            for (ActionObjectEntity<?> actionObjectEntity : eventActionsNFList) {
+    // ON INIT ends with INTERNAL CLIENT WAIT when an action of it runs on the client asynchronously. That is added to the
+    // final list, not written into the collection as the form is finalized : the read the write needed, at the current
+    // version, took the monitors of the collection and of the ones it copies (FORMS) and ran the copies' mappings under
+    // them, which wait for the form they map into. The start finalizes forms in parallel chunks, so with C FORMS B FORMS A
+    // C's finalization held B's collection waiting for form B, while B's held form B waiting for its collection
+    private static ImMap<FormServerEvent, ImList<ActionObjectEntity<?>>> checkInternalClientAction(ImMap<FormServerEvent, ImList<ActionObjectEntity<?>>> eventActionsList) {
+        ImList<ActionObjectEntity<?>> initActions = eventActionsList.get(FormEventType.INIT);
+        if (initActions != null) {
+            for (ActionObjectEntity<?> actionObjectEntity : initActions) {
                 if (actionObjectEntity.property.hasFlow(ChangeFlowType.INTERNALASYNC)) {
                     ActionMapImplement<?, PropertyInterface> internalClientAction = PropertyFact
                             .createJoinAction(new InternalClientAction(ListFact.EMPTY(), ListFact.EMPTY(), true),
                                     PropertyFact.createStatic(LocalizedString.create("empty.js", false), StringClass.text));
-                    addActionsOnEvent(FormEventType.INIT, version, new ActionObjectEntity<>(internalClientAction.action, MapFact.EMPTYREV()));
-                    return;
+                    return eventActionsList.replaceValue(FormEventType.INIT, initActions.addList(new ActionObjectEntity<>(internalClientAction.action, MapFact.EMPTYREV())));
                 }
             }
         }
+        return eventActionsList;
     }
 
     public String getCanonicalName() {

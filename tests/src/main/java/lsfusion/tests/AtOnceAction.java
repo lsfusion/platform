@@ -10,6 +10,7 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
+import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -20,6 +21,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 // two threads of the server doing one thing at once, as two modules parsed at once do to a form both extend. What the
@@ -146,6 +148,13 @@ public abstract class AtOnceAction extends InternalAction {
     // call goes on; the thread is stopped when this returns
     protected static String runWhileHeld(ExecutionContext<ClassPropertyInterface> context, Object monitor, String through,
                                          Runnable call) {
+        return runWhileHeld(context, monitor, through, call, thread -> null);
+    }
+
+    // as above, and the thread waiting for the monitor is looked at before it is let go : `whileWaiting` says what is
+    // wrong with it - what it holds meanwhile, say -, null if nothing
+    protected static String runWhileHeld(ExecutionContext<ClassPropertyInterface> context, Object monitor, String through,
+                                         Runnable call, Function<Thread, String> whileWaiting) {
         ExecutorService threads = ExecutorFactory.createNewThreadService((ExecutionContext) context, 1, false);
         try {
             try {
@@ -153,6 +162,7 @@ public abstract class AtOnceAction extends InternalAction {
                 Future<?> done;
                 boolean waited;
                 boolean wentThrough;
+                String waiting = null;
                 synchronized (monitor) {
                     Future<?> submitted = threads.submit(() -> {
                         thread.set(Thread.currentThread());
@@ -160,6 +170,8 @@ public abstract class AtOnceAction extends InternalAction {
                     });
                     waited = poll(() -> submitted.isDone() || waitsFor(thread.get(), monitor));
                     wentThrough = submitted.isDone();
+                    if (waited && !wentThrough)
+                        waiting = whileWaiting.apply(thread.get());
                     done = submitted;
                 }
 
@@ -168,6 +180,8 @@ public abstract class AtOnceAction extends InternalAction {
                     return failure;
                 if (wentThrough)
                     return through;
+                if (waiting != null)
+                    return waiting;
                 return waited ? null : "the thread neither waited for the monitor nor was done in 30 seconds";
             } finally {
                 threads.shutdownNow();
@@ -186,6 +200,16 @@ public abstract class AtOnceAction extends InternalAction {
             Thread.sleep(10);
         }
         return true;
+    }
+
+    // whether the thread holds the monitor of the object
+    protected static boolean holds(Thread thread, Object object) {
+        ThreadInfo info = ManagementFactory.getThreadMXBean().getThreadInfo(new long[]{thread.getId()}, true, false)[0];
+        if (info != null)
+            for (MonitorInfo monitor : info.getLockedMonitors())
+                if (monitor.getIdentityHashCode() == System.identityHashCode(object))
+                    return true;
+        return false;
     }
 
     // whether the thread waits for the monitor. Being blocked is not enough : before it gets to the hold, it could be
