@@ -1,0 +1,16 @@
+MODULE ScheduledTasks;
+
+REQUIRE TestUtils;
+
+// the scheduler runs tasks in a pool of threads, and keeps the tasks running in a set, so as not to start one again while
+// it runs : a plain set, which each run added itself to and removed itself from, at once with the other threads' runs -
+// a set two threads change at once can keep a task for good, which then never runs again -, and which a run looked at
+// before it added itself, so two runs of one task could both find it not running
+
+stFailure = DATA LOCAL STRING ();
+stRunAtOnce INTERNAL 'lsfusion.tests.RunScheduledTaskAtOnceAction' ();
+
+testScheduledTaskRunAtOnce 'Of two runs of one scheduled task at once the second finds the task running, and a run takes its task out whatever fails' () {
+    stRunAtOnce();
+    assertNull(stFailure(), stFailure());
+}

@@ -109,6 +109,36 @@ public abstract class AtOnceAction extends InternalAction {
         return met ? null : "the second thread neither waited for the first one nor was done in 30 seconds";
     }
 
+    // null when `meanwhile` - done by the caller while `first`, in another thread, is held inside the hold - left `first`
+    // to go on without a failure; else what failed. The thread is stopped when this returns
+    protected static String runWhileHolding(ExecutionContext<ClassPropertyInterface> context, Hold hold, Runnable first, Runnable meanwhile) {
+        ExecutorService threads = ExecutorFactory.createNewThreadService((ExecutionContext) context, 1, false);
+        try {
+            try {
+                Future<?> firstDone = threads.submit(first);
+                if (!hold.entered.await(30, TimeUnit.SECONDS)) {
+                    hold.release.countDown();
+                    String failure = failure("the thread", firstDone);
+                    return failure != null ? failure : "the thread did not get to the hold in 30 seconds";
+                }
+                try {
+                    meanwhile.run();
+                } finally {
+                    hold.release.countDown();
+                }
+                String failure = failure("the thread", firstDone);
+                if (failure != null)
+                    return failure;
+                return hold.expired ? "the thread was let go after a minute, not by the test" : null;
+            } finally {
+                threads.shutdownNow();
+                threads.awaitTermination(1, TimeUnit.MINUTES);
+            }
+        } catch (InterruptedException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     // null when a thread doing `call` waits for the monitor the test holds - as a second thread waits while a first one
     // is inside a method synchronized on that monitor : the test stands in for that first thread where what the method
     // writes to can not be swapped for one that goes through a Hold -; else `through` for a call that went through

@@ -1,0 +1,16 @@
+MODULE DebuggerDelegates;
+
+REQUIRE TestUtils;
+
+// with the actions' debugger on (-Dlsfusion.server.debug.actions), the start compiles a class of breakpoint delegates
+// for each module and loads them in parallel chunks of a hundred modules, into one map of the debugger's : a plain one,
+// which the chunks put into at once - a lab start of mycompany (615 modules, 7 chunks) kept 611 of the classes, and the
+// breakpoints of the modules lost never fired
+
+ddFailure = DATA LOCAL STRING ();
+ddLoadAtOnce INTERNAL 'lsfusion.tests.LoadDebuggerDelegatesAtOnceAction' ();
+
+testDebuggerDelegatesLoadedAtOnce 'Two chunks of modules load delegate classes into the debugger one after the other' () {
+    ddLoadAtOnce();
+    assertNull(ddFailure(), ddFailure());
+}

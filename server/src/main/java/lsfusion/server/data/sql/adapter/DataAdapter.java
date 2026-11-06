@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -145,7 +146,9 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         return master;
     }
 
-    protected final List<Server> servers = Collections.synchronizedList(new ArrayList<>());
+    // read on every connection taken, and walked meanwhile a replica joins or leaves : a walk goes over the list as it
+    // was when it began
+    protected final List<Server> servers = new CopyOnWriteArrayList<>();
 
     public boolean isServerAvailable(Server server) {
         return servers.contains(server);

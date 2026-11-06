@@ -57,6 +57,7 @@ import java.net.URLClassLoader;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Arrays.asList;
 import static lsfusion.server.physics.dev.debug.ActionDelegationType.*;
@@ -92,7 +93,8 @@ public class ActionDebugger implements DebuggerService {
 
     //в Java есть ограничение на количество имён в файле (~65000), поэтому нельзя всё впихнуть в один файл
     //приходится разбивать - пока просто для каждого модуля - свой класс
-    private Map<String, Class> delegatesHolderClasses = new HashMap<>();
+    // the start loads them in parallel chunks of modules (InitActionDebuggerTask), into this one map
+    private Map<String, Class> delegatesHolderClasses = new ConcurrentHashMap<>();
 
     private ActionDebugger() {
     } //singleton

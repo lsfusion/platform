@@ -1,0 +1,15 @@
+MODULE ReplicaServers;
+
+REQUIRE TestUtils;
+
+// with replicas, a connection is taken on the least loaded of the database servers, found by a walk over the adapter's
+// list of them - a list a replica joining or leaving changes meanwhile, in another thread : the walk failed, and the
+// request with it
+
+rsFailure = DATA LOCAL STRING ();
+rsWalkWhileJoined INTERNAL 'lsfusion.tests.WalkServersWhileJoinedAction' ();
+
+testServersWalkedWhileJoined 'A walk over the database servers goes on while a server joins' () {
+    rsWalkWhileJoined();
+    assertNull(rsFailure(), rsFailure());
+}

@@ -304,7 +304,8 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         }
     }
 
-    Set<Object> executingTasks = new HashSet<>();
+    // the tasks running, which the runs in the scheduler's threads add and take out at once
+    Set<Object> executingTasks = ConcurrentHashMap.newKeySet();
 
     public class SchedulerTask {
         private final Long scheduledTaskId;
@@ -404,23 +405,24 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         @ThisMessage
         public void run(ExecutionStack stack) {
             boolean isTimeToRun = isTimeToRun();
-            boolean alreadyExecuting = executingTasks.contains(scheduledTaskObject.getValue());
+            // a run that is to go adds its task at once with the check, as two runs of one task can come at once - the
+            // scheduled one and an EXECUTE, say -, and takes it out at the end, whatever fails after the add
+            boolean alreadyExecuting = isTimeToRun ? !executingTasks.add(scheduledTaskObject.getValue()) : executingTasks.contains(scheduledTaskObject.getValue());
+            try {
+                logInitTask(isTimeToRun, alreadyExecuting);
 
-            logInitTask(isTimeToRun, alreadyExecuting);
-
-            if(isTimeToRun) {
-                if (alreadyExecuting) {
-                    logAlreadyExecutingTask(nameScheduledTask, stack);
-                } else {
-                    executingTasks.add(scheduledTaskObject.getValue());
-                    try {
+                if(isTimeToRun) {
+                    if (alreadyExecuting) {
+                        logAlreadyExecutingTask(nameScheduledTask, stack);
+                    } else {
                         for (final ScheduledTaskDetail detail : lapMap.values())
                             if (!run(detail) && !detail.ignoreExceptions)
                                 break;
-                    } finally {
-                        executingTasks.remove(scheduledTaskObject.getValue());
                     }
                 }
+            } finally {
+                if(isTimeToRun && !alreadyExecuting)
+                    executingTasks.remove(scheduledTaskObject.getValue());
             }
         }
 
