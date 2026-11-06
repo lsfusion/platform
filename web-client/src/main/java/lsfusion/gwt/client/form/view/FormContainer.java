@@ -67,6 +67,12 @@ public abstract class FormContainer {
 
     public abstract GWindowFormType getWindowType();
 
+    // whether a form opened as the window type and the sync type given goes in this container - a placeholder an async
+    // open put up is of what the client predicted, which may be another branch of the action
+    public boolean isOfType(GWindowFormType windowType, boolean syncType) {
+        return GwtClientUtils.nullEquals(getWindowType(), windowType); // by value: a docked type names its window
+    }
+
     protected FormContainer getContainerForm() { // hack
         return this;
     }

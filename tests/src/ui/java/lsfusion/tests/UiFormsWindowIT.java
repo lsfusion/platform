@@ -483,6 +483,38 @@ public class UiFormsWindowIT extends UiTest {
         close(target);
     }
 
+    // a floating form that comes in the placeholder of another branch of its action - the client predicts the first
+    // branch when two branches open two forms, and an open waited for when they open one form both ways -: its window is
+    // its own all the same, with a backdrop if the form is waited for and with none if not
+    @Test
+    public void aFloatingFormHasABackdropIfWaitedForWhicheverBranchWasPredicted() throws Exception {
+        Locator launcher = launcher(), target = form("UiFormsWindow.uiFormsWindowCloseTarget");
+        Locator placeholder = page.locator(".modal-form:not(:has([lsfusion-form]))");
+        Locator window = page.locator(".modal-form").filter(new Locator.FilterOptions().setHas(target));
+
+        // predicted: Third not waited for; opened: Close target waited for
+        hold();
+        action(launcher, "uiFormsWindowBranchesOfTwoForms").click();
+        assertThat(placeholder.locator(".modal-dialog")).isVisible();
+        assertThat(placeholder.locator("> .modal-backdrop")).hasCount(0);
+        release();
+        assertThat(target).isVisible();
+        assertThat(window.locator("> .modal-backdrop")).hasCount(1);
+        assertThat(window).not().hasClass(Pattern.compile("\\bmodal-nowait\\b"));
+        close(target);
+
+        // predicted: Close target waited for, the branches merged; opened: Close target not waited for
+        hold();
+        action(launcher, "uiFormsWindowBranchesOfOneForm").click();
+        assertThat(placeholder.locator(".modal-dialog")).isVisible();
+        assertThat(placeholder.locator("> .modal-backdrop")).hasCount(1);
+        release();
+        assertThat(target).isVisible();
+        assertThat(window.locator("> .modal-backdrop")).hasCount(0);
+        assertThat(window).hasClass(Pattern.compile("\\bmodal-nowait\\b"));
+        close(target);
+    }
+
     // a form with two handlers of its close event, each opening the form already there with ACTIVATE: each handler
     // takes the activation the request carries and runs on - the form is not built again, both leave their mark -,
     // and the form closes. It is closed by its tab's close button: its Close button closes it with no close event

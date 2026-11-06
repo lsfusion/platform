@@ -489,7 +489,7 @@ public abstract class FormsController {
 
         // if form is async opened with different type - close it
         GWindowFormType windowType = showFormType.getWindowType();
-        if(asyncOpened && !nullEquals(formContainer.getWindowType(), windowType) && !formContainer.isAsyncHidden()) { // by value: a docked type names its window
+        if(asyncOpened && !formContainer.isOfType(windowType, syncType) && !formContainer.isAsyncHidden()) {
             formContainer.hide(CancelReason.HIDE);
             asyncOpened = false;
         }

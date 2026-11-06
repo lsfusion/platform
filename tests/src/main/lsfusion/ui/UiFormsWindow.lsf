@@ -258,6 +258,18 @@ uiFormsWindowCounterIntoForms 'Counter into forms' () { SHOW uiFormsWindowCounte
 uiFormsWindowItemsIntoForms 'Items into forms' () { SHOW uiFormsWindowItems WINDOW NOWAIT NEWSESSION; }
 EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowCounterIntoForms, uiFormsWindowItemsIntoForms;
 
+// two actions whose branches open floating forms, one waited for and one not, run their second branch - the first only
+// shapes what the client predicts: the branches of one form merge into an open waited for, those of two forms do not,
+// and the first is predicted. Either way the form comes in a placeholder of the other sync type
+uiFormsWindowFirstBranch = DATA LOCAL BOOLEAN ();
+uiFormsWindowBranchesOfOneForm 'Branches of one form' () {
+    IF uiFormsWindowFirstBranch() THEN SHOW uiFormsWindowCloseTarget FLOAT WAIT; ELSE SHOW uiFormsWindowCloseTarget FLOAT NOWAIT;
+}
+uiFormsWindowBranchesOfTwoForms 'Branches of two forms' () {
+    IF uiFormsWindowFirstBranch() THEN SHOW uiFormsWindowThird FLOAT NOWAIT; ELSE SHOW uiFormsWindowCloseTarget FLOAT WAIT;
+}
+EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowBranchesOfOneForm, uiFormsWindowBranchesOfTwoForms;
+
 uiFormsWindowStored 'Stored' = DATA STRING[50] ();
 uiFormsWindowCloser 'Closer' = DATA LOCAL INTEGER ();
 uiFormsWindowPlain 'Plain' = DATA LOCAL INTEGER ();

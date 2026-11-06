@@ -28,6 +28,12 @@ public class ModalForm extends FormContainer {
         return GModalityWindowFormType.FLOAT;
     }
 
+    // a window waited for has a backdrop and keeps the later windows of its opener under it, one not waited for neither
+    @Override
+    public boolean isOfType(GWindowFormType windowType, boolean syncType) {
+        return super.isOfType(windowType, syncType) && contentWidget.isSyncType() == syncType;
+    }
+
     @Override
     public Element getContentElement() {
         return contentWidget.getElement();

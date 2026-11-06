@@ -13,6 +13,10 @@ public class ResizableModalWindow extends ModalWindow {
         this.syncType = syncType;
     }
 
+    public boolean isSyncType() {
+        return syncType;
+    }
+
     //This scheme is necessary when one modal window is started before the second one, but is displayed later due to delays.
     //In this case, the order in which the windows are displayed must be maintained according to the order of request indexes.
     // That is for a window waited for: the server runs its opener's later requests only once it is closed. A window not
