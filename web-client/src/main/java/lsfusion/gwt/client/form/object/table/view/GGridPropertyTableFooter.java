@@ -140,9 +140,11 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
         return true;
     }
 
+    // the column's pattern is for a footer of the column's kind of type (a sum); one of another kind (a count under dates) is
+    // formatted by its own type, as the print view does (ReportDrawField.getFooterPattern)
     @Override
     public String getPattern() {
-        return nvl(pattern, property.getPattern());
+        return property.differentFooter ? null : nvl(pattern, property.getPattern());
     }
 
     @Override

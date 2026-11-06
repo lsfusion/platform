@@ -35,6 +35,18 @@ FORM uiGridFooters 'Footers'
                            uiGridChecked FOOTER 'a footer of checks'
 ;
 
+// columns with a PATTERN - dates in an order no locale writes them in, numbers with leading zeros - whose footers are of
+// another kind of type - a whole number, as a count is, under each -, which the grid formats by their own types, or of the
+// column's kind - a date under the dates, a number under the numbers -, which it formats by the column's pattern
+uiGridDate 'Date' = DATA DATE (UiGridItem) PATTERN 'yyyy.dd.MM';
+uiGridNumber 'Number' = DATA NUMERIC[10,2] (UiGridItem) PATTERN '000000';
+
+FORM uiGridPatterns 'Patterns'
+    OBJECTS i = UiGridItem
+    PROPERTIES(i) READONLY uiGridDate FOOTER 42, uiGridDateDue = uiGridDate FOOTER 2031_12_31,
+                           uiGridNumber FOOTER 42, uiGridNumberTotal = uiGridNumber FOOTER 7.0
+;
+
 // a column a render function draws (uiGridHtml), of a property named image, whose cells name an image each and whose
 // string footer is a text
 uiGridIcon (UiGridItem i) = 'bi bi-plus';
@@ -49,6 +61,7 @@ NAVIGATOR {
         NEW uiGridItems;
         NEW uiGridPictures;
         NEW uiGridFooters;
+        NEW uiGridPatterns;
         NEW uiGridIcons;
     }
 }

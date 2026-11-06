@@ -50,6 +50,17 @@ public class UiGridIT extends UiTest {
         close(form);
     }
 
+    // the column's pattern formats a footer of the column's kind of type only, as the print view does: a whole number under
+    // the dates or under the numbers with leading zeros is shown as a number, a date under the dates and a number under the
+    // numbers by their columns' patterns. The grid formatted every footer by its column's pattern - the number under the
+    // dates as "yyyy42.dd", a number pattern read out of the date pattern, and under the numbers as "000042"
+    @Test
+    public void aFooterOfAnotherTypeIsNotFormattedByItsColumnsPattern() {
+        Locator form = open("UiGrid.uiGrid", "UiGrid.uiGridPatterns");
+        assertThat(form.locator("tfoot th:not(.arrow-th)")).hasText(new String[]{"42", "2031.31.12", "42", "000007"});
+        close(form);
+    }
+
     // a render function of a property named image is given the HTML of the image a cell names, and its string footer as
     // the text: the footer was converted as a cell is, as the image it names, and threw on the string - "createImageHTML
     // is not a function" in an Error box, the footer left empty
