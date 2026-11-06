@@ -21,7 +21,7 @@ import java.util.Map;
 // NAVIGATOR CUSTOM: the windows laid out by a React component - the entries it is given, and a window placed in a host
 // and parked again. No React draws anything here, HtmlUnit has none: the root is never mounted, and the component's
 // side is played through the context a <Platform> works with - the store it reads and the view it places with
-public class ReactWindowElementTest extends GWTTestCase {
+public class ReactWindowLayoutTest extends GWTTestCase {
     @Override public String getModuleName() { return "lsfusion.gwt.main"; }
 
     // a window's view as its owner builds it, counting what the layout tells it
@@ -34,7 +34,7 @@ public class ReactWindowElementTest extends GWTTestCase {
     private GAbstractWindow log, forms;
     private final Map<GAbstractWindow, View> views = new HashMap<>();
     private WindowsController controller;
-    private ReactWindowElement element;
+    private ReactWindowLayout element;
 
     @Override
     protected void gwtSetUp() {
@@ -53,7 +53,7 @@ public class ReactWindowElementTest extends GWTTestCase {
             }
         };
         controller.initializeWindows(Arrays.asList(root, toolbar, log), forms, "AppLayout");
-        element = (ReactWindowElement) controller.rootElement;
+        element = (ReactWindowLayout) controller.rootElement;
     }
 
     @Override
@@ -150,14 +150,14 @@ public class ReactWindowElementTest extends GWTTestCase {
         return host;
     }
 
-    private static native JavaScriptObject data(ReactWindowElement element) /*-{
-        return element.@lsfusion.gwt.client.navigator.window.view.ReactWindowElement::root.@lsfusion.gwt.client.base.view.ReactRoot::store.getSnapshot();
+    private static native JavaScriptObject data(ReactWindowLayout element) /*-{
+        return element.@lsfusion.gwt.client.navigator.window.view.ReactWindowLayout::root.@lsfusion.gwt.client.base.view.ReactRoot::store.getSnapshot();
     }-*/;
-    private static native void mount(ReactWindowElement element, String name, Element host) /*-{
-        element.@lsfusion.gwt.client.navigator.window.view.ReactWindowElement::root.@lsfusion.gwt.client.base.view.ReactRoot::context.view.mount(name, host);
+    private static native void mount(ReactWindowLayout element, String name, Element host) /*-{
+        element.@lsfusion.gwt.client.navigator.window.view.ReactWindowLayout::root.@lsfusion.gwt.client.base.view.ReactRoot::context.view.mount(name, host);
     }-*/;
-    private static native void unmount(ReactWindowElement element, String name, Element host) /*-{
-        element.@lsfusion.gwt.client.navigator.window.view.ReactWindowElement::root.@lsfusion.gwt.client.base.view.ReactRoot::context.view.unmount(name, host);
+    private static native void unmount(ReactWindowLayout element, String name, Element host) /*-{
+        element.@lsfusion.gwt.client.navigator.window.view.ReactWindowLayout::root.@lsfusion.gwt.client.base.view.ReactRoot::context.view.unmount(name, host);
     }-*/;
     private static native String keys(JavaScriptObject data) /*-{ return Object.keys(data).sort().join(','); }-*/;
     private static native String string(JavaScriptObject object, String name) /*-{ return object[name]; }-*/;

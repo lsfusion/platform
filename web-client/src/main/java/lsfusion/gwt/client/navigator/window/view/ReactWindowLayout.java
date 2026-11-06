@@ -26,7 +26,7 @@ import java.util.List;
 // does not place: its buttons refresh, its forms stay open, the log logs. What the component is told of a window is what
 // places and labels it, and the rest of the standard layout - the sizes the user drags, the tabs of windows sharing a
 // place - is the component's own
-public class ReactWindowElement extends WindowElement {
+public final class ReactWindowLayout extends WindowLayout {
 
     private final ResizableComplexPanel panel = new ResizableComplexPanel();
     private final ReactRoot root;
@@ -65,9 +65,7 @@ public class ReactWindowElement extends WindowElement {
     // the platform's
     private JavaScriptObject data = JavaScriptObject.createObject();
 
-    public ReactWindowElement(WindowsController controller, String custom, List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
-        super(controller, 0, 0, 100, 100);
-
+    public ReactWindowLayout(WindowsController controller, String custom, List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
         List<GAbstractWindow> navigatorWindows = new ArrayList<>(allWindows);
         navigatorWindows.add(formsWindow);
         for (GAbstractWindow window : navigatorWindows) {
@@ -95,7 +93,7 @@ public class ReactWindowElement extends WindowElement {
     @Override
     public void initializeView(WindowsController controller) {
         byName.foreachValue(window -> {
-            window.initializeView(controller); // registered, so its visibility reaches this element
+            window.initializeView(controller); // registered, so its visibility reaches this layout
 
             Widget view = window.getView();
             panel.addToElement(view, park); // a logical child of the panel, parked in the DOM until the component says where it goes
@@ -136,28 +134,8 @@ public class ReactWindowElement extends WindowElement {
     }
 
     @Override
-    public void addElement(WindowElement window) {
-        throw new UnsupportedOperationException(); // its windows are every window of the navigator, taken when it is built
-    }
-
-    @Override
-    public String getCaption() {
-        return null;
-    }
-
-    @Override
     public Widget getView() {
         return panel;
-    }
-
-    @Override
-    public boolean isAutoSize(boolean vertical) {
-        return false;
-    }
-
-    @Override
-    public String getSID() {
-        return null; // a SID keys the sizes a split keeps for its children, and this is the root
     }
 
     private static native void observeResize(Element view, Runnable resized)/*-{

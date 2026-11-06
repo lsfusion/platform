@@ -9,7 +9,7 @@ import lsfusion.gwt.client.form.design.view.GReactFormDataTest;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTableTreeTest;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManagerTest;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcherTest;
-import lsfusion.gwt.client.navigator.window.view.ReactWindowElementTest;
+import lsfusion.gwt.client.navigator.window.view.ReactWindowLayoutTest;
 
 // the client's GWT tests, run as one suite: GWT compiles a module once per JVM, with the test classes it knows of at
 // that moment, so test classes of one module run one by one would leave all but the first out of it. Surefire runs
@@ -26,7 +26,7 @@ public class GClientTestSuite {
         suite.addTestSuite(GNavigatorActionDispatcherTest.class);
         suite.addTestSuite(GFormControllerTest.class);
         suite.addTestSuite(NativeLinkedSIDMapTest.class);
-        suite.addTestSuite(ReactWindowElementTest.class);
+        suite.addTestSuite(ReactWindowLayoutTest.class);
         return suite;
     }
 }

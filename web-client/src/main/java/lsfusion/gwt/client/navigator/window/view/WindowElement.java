@@ -1,15 +1,13 @@
 package lsfusion.gwt.client.navigator.window.view;
 
-import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public abstract class WindowElement {
-    protected WindowElement parent;
+public abstract class WindowElement extends WindowLayout {
+    protected WindowLayout parent;
     protected WindowsController controller;
 
     public int x;
@@ -34,23 +32,9 @@ public abstract class WindowElement {
             }
         }
     }
-    
-    public void storeWindowsSizes(Storage storage) {}
-    public void restoreWindowsSizes(Storage storage) {}
-    public void resetWindowSize() {}
-
-    public void setWindowVisible(WindowElement window) {}
-    public void setWindowInvisible(WindowElement window) {}
-    
-    
-    public void initializeView(WindowsController controller) {
-    }
-    public void onAddView(WindowsController controller) {
-    }
 
     public abstract void addElement(WindowElement window);
     public abstract String getCaption();
-    public abstract Widget getView();
     public abstract boolean isAutoSize(boolean vertical);
 
     // a group of windows is sized by its content along an axis only when EVERY window in it is: along the axis a
