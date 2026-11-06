@@ -125,72 +125,75 @@ public class Group extends AbstractNode {
     }
 
     public void cleanAllActionOrPropertiesCaches() {
-        actionOrProperties = null;
-        properties = null;
-        actions = null;
+        actionOrPropertiesCaches = new ActionOrPropertiesCaches();
 
         for (AbstractNode child : getChildrenListIt())
             if(child instanceof Group)
                 ((Group) child).cleanAllActionOrPropertiesCaches();
     }
     public void cleanParentActionOrPropertiesCaches(Version version) {
-        actionOrProperties = null;
-        properties = null;
-        actions = null;
+        actionOrPropertiesCaches = new ActionOrPropertiesCaches();
 
         Group parent = getNFParent(version, true);
         if(parent != null)
             parent.cleanParentActionOrPropertiesCaches(version);
     }
 
-    // this memo and the two views below are not safe against a registration running beside a read : a reader that started before the
-    // registration publishes its result after the drop, and the group then lists the pre-registration set for good - for any reader, not
-    // only one that registers itself. The three startup tasks that both read the whole set and register into a simple group are ordered
-    // against each other for that reason (setupPropertyPolicyFormsTask -> setupDrillDownTask -> setupActionPolicyFormsTask in
-    // lsfusion.xml), and everything that reads afterwards waits for all three through finalizePropsTask. Adding another task that
-    // registers into a simple group means ordering it there too.
-    // Still open, and deliberately not paid for : checkAbstractTask and the finishLogInitTask branch read the whole set beside those
-    // three, and LazyDrillDownAction registers its action on first execution, long after startup
-    private ImOrderSet<ActionOrProperty> actionOrProperties;
+    // the group's set of actions and properties, and the two views of it - both walk every action and property of the group,
+    // and the whole application is asked for them repeatedly while it starts. A drop starts new caches, and a read fills the ones
+    // it began with : a read a registration came during fills caches no later read takes. Nulls written by the drop instead let
+    // such a read publish the set as it saw it, for every reader after - the start registers the elements of dialog, policy and
+    // drill-down forms into the private group while other tasks read the whole set, and lab starts published a dozen such. No
+    // lock : every registration into the private group drops it and the root, from every thread of the parse.
+    // A reader may still miss what is registered while it reads : the startup tasks that need each other's registrations are
+    // ordered for that (setupPropertyPolicyFormsTask -> setupDrillDownTask -> setupActionPolicyFormsTask in lsfusion.xml), and what
+    // reads the whole set for good waits for all three through finalizePropsTask; checkAbstractTask and the finishLogInitTask branch
+    // read it beside them, needing none of it. LazyDrillDownAction registers its action on first execution, long after startup
+    private static class ActionOrPropertiesCaches {
+        private volatile ImOrderSet<ActionOrProperty> actionOrProperties;
+        private volatile ImOrderSet<Property> properties;
+        private volatile ImOrderSet<Action> actions;
+    }
+    private volatile ActionOrPropertiesCaches actionOrPropertiesCaches = new ActionOrPropertiesCaches();
 
     @ManualLazy
     public ImOrderSet<ActionOrProperty> getActionOrProperties() {
-        ImOrderSet<ActionOrProperty> result = actionOrProperties; // need this scheme for the proper concurrency (to guarantee that cache won't be dropped)
+        return getActionOrProperties(actionOrPropertiesCaches);
+    }
+
+    private ImOrderSet<ActionOrProperty> getActionOrProperties(ActionOrPropertiesCaches caches) {
+        ImOrderSet<ActionOrProperty> result = caches.actionOrProperties;
         if (result == null) {
             MOrderSet<ActionOrProperty> mResult = SetFact.mOrderSet();
             for (AbstractNode child : getChildrenListIt()) {
                 mResult.addAll(child.getActionOrProperties());
             }
             result = mResult.immutableOrder();
-            actionOrProperties = result;
+            caches.actionOrProperties = result;
         }
 
         return result;
     }
-    
-    // the two views of the set above : both walk every action and property of the group, and the whole application is asked
-    // for them repeatedly while it starts. Memoized beside it and dropped by the same two methods
-    private ImOrderSet<Property> properties;
 
     @ManualLazy
     public ImOrderSet<Property> getProperties() {
-        ImOrderSet<Property> result = properties; // the same scheme as above, so the cache cannot be dropped between the read and the return
+        ActionOrPropertiesCaches caches = actionOrPropertiesCaches;
+        ImOrderSet<Property> result = caches.properties;
         if (result == null) {
-            result = BaseUtils.immutableCast(getActionOrProperties().filterOrder(element -> element instanceof Property));
-            properties = result;
+            result = BaseUtils.immutableCast(getActionOrProperties(caches).filterOrder(element -> element instanceof Property));
+            caches.properties = result;
         }
 
         return result;
     }
 
-    private ImOrderSet<Action> actions;
-
     @ManualLazy
     public ImOrderSet<Action> getActions() {
-        ImOrderSet<Action> result = actions;
+        ActionOrPropertiesCaches caches = actionOrPropertiesCaches;
+        ImOrderSet<Action> result = caches.actions;
         if (result == null) {
-            result = BaseUtils.immutableCast(getActionOrProperties().filterOrder(element -> element instanceof Action));
-            actions = result;
+            result = BaseUtils.immutableCast(getActionOrProperties(caches).filterOrder(element -> element instanceof Action));
+            caches.actions = result;
         }
 
         return result;

@@ -1,0 +1,18 @@
+MODULE GroupMemos;
+
+REQUIRE TestUtils;
+
+// a group keeps what its actions and properties are, read from its groups and dropped when one of them gets another
+// action or property. The start registers the actions of dialog, policy and drill-down forms while other tasks read the
+// whole set, and a read that began before such a registration kept its result after it : the group listed the set as it
+// was read for every reader after - lab starts did so a dozen times each
+
+gmName = DATA LOCAL STRING ();
+
+gmFailure = DATA LOCAL STRING ();
+gmReadWhileRegistered INTERNAL 'lsfusion.tests.ReadGroupWhileRegisteredAction' ();
+
+testGroupReadWhileRegistered 'A group read while a property is registered under it lists the property afterwards' () {
+    gmReadWhileRegistered();
+    assertNull(gmFailure(), gmFailure());
+}
