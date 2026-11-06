@@ -2,8 +2,10 @@ package lsfusion.gwt.client.form.object.panel.controller;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.RefusedHosts;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.design.view.GReactFormData;
@@ -14,7 +16,6 @@ import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 // a panel controller whose keys are ROWS: it draws a group's platform-drawn GRID properties once per row of that group
@@ -143,7 +144,7 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
         Map<String, Element> propertyHosts = getPropertyHosts(rowKey);
         Element current = propertyHosts.get(property.sID);
         if (current != null && current != host) {
-            refused(rowKey, property).add(host);
+            refusedHosts.add(new Pair<>(rowKey, property.sID), host);
             return current;
         }
 
@@ -168,9 +169,11 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
 
     public void unplace(GGroupObjectValue rowKey, GPropertyDraw property, Element host) {
         Map<String, Element> propertyHosts = rowHosts.get(rowKey);
-        if (propertyHosts == null || propertyHosts.get(property.sID) != host) { // a stale unplace, from a host that
-            forget(rowKey, property, host);   // lost the row - or one that was refused and is now gone, and a host the
-            return;                           // component has taken away is not one waiting for anything
+        // a stale unplace, from a host that lost the row - or one that was refused and is now gone, and a host the
+        // component has taken away is not one waiting for anything
+        if (propertyHosts == null || propertyHosts.get(property.sID) != host) {
+            refusedHosts.forget(new Pair<>(rowKey, property.sID), host);
+            return;
         }
 
         propertyHosts.remove(property.sID);
@@ -181,54 +184,12 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
         if (view != null) // back to waiting, NOT destroyed: React unmounts a row merely by scrolling it out of view
             view.appendTo(getParkElement());
 
-        takeOver(rowKey, property); // ...and only then to a place that asked for it while this one held it
+        // ...and only then to a place that asked for it while this one held it
+        refusedHosts.takeOver(new Pair<>(rowKey, property.sID), next -> place(rowKey, property, next));
     }
 
-    // the hosts that asked for a renderer another host already had, in the order they asked. React renders the same
-    // <Platform> until its own props change, so a host refused here is never offered again on its own
-    private final NativeHashMap<GGroupObjectValue, Map<String, List<Element>>> refusedHosts = new NativeHashMap<>();
-
-    private List<Element> refused(GGroupObjectValue rowKey, GPropertyDraw property) {
-        Map<String, List<Element>> byProperty = refusedHosts.get(rowKey);
-        if (byProperty == null) {
-            byProperty = new HashMap<>();
-            refusedHosts.put(rowKey, byProperty);
-        }
-        return byProperty.computeIfAbsent(property.sID, sid -> new ArrayList<>());
-    }
-
-    private void forget(GGroupObjectValue rowKey, GPropertyDraw property, Element host) {
-        Map<String, List<Element>> byProperty = refusedHosts.get(rowKey);
-        List<Element> asked = byProperty != null ? byProperty.get(property.sID) : null;
-        if (asked != null && asked.remove(host) && asked.isEmpty()) {
-            byProperty.remove(property.sID);
-            if (byProperty.isEmpty())
-                refusedHosts.remove(rowKey);
-        }
-    }
-
-    // the host that had the renderer is gone: the eldest one that asked meanwhile takes it, if it is still in the
-    // page - a component that removed both in one render leaves nothing to take over
-    private void takeOver(GGroupObjectValue rowKey, GPropertyDraw property) {
-        Map<String, List<Element>> byProperty = refusedHosts.get(rowKey);
-        List<Element> asked = byProperty != null ? byProperty.get(property.sID) : null;
-        if (asked == null)
-            return;
-
-        while (!asked.isEmpty()) {
-            Element next = asked.remove(0);
-            if (GwtClientUtils.isInDocument(next)) {
-                GwtClientUtils.clearCustomViewError(next); // it has been holding "already placed by another <Platform>"
-                place(rowKey, property, next);
-                break;
-            }
-        }
-        if (asked.isEmpty()) {
-            byProperty.remove(property.sID);
-            if (byProperty.isEmpty())
-                refusedHosts.remove(rowKey);
-        }
-    }
+    // the hosts that asked for a renderer another host already had, by its row and its property
+    private final RefusedHosts<Pair<GGroupObjectValue, String>> refusedHosts = new RefusedHosts<>();
 
     // ---- data ----
 

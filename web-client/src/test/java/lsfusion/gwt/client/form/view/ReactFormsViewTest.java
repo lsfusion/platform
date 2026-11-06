@@ -1,7 +1,10 @@
 package lsfusion.gwt.client.form.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.junit.client.GWTTestCase;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
@@ -16,9 +19,9 @@ import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import net.customware.gwt.dispatch.shared.Result;
 
-// the forms window a React component draws (WINDOW ... CUSTOM): what it is given of the open forms. No React draws
-// anything here, HtmlUnit has none: the root is never mounted, and the snapshots are read from the store a component's
-// hooks read
+// the forms window a React component draws (WINDOW ... CUSTOM): what it is given of the open forms, and a form placed in
+// a host. No React draws anything here, HtmlUnit has none: the root is never mounted, the snapshots are read from the
+// store a component's hooks read, and the component's side is played through the context a <Platform> works with
 public class ReactFormsViewTest extends GWTTestCase {
     @Override public String getModuleName() { return "lsfusion.gwt.main"; }
 
@@ -29,6 +32,7 @@ public class ReactFormsViewTest extends GWTTestCase {
     @Override
     protected void gwtSetUp() {
         JsniTestSupport.installMapDelete();
+        JsniTestSupport.installResizeObserver(); // the hosts are watched for their size
         GFormControllerTest.installPageHelpers(); // the forms controller builds its toolbar's buttons
         JsniTestSupport.installPageSetup(); // ... and the edit modes their images
 
@@ -73,6 +77,29 @@ public class ReactFormsViewTest extends GWTTestCase {
         assertSame(renamed, data(view));
     }
 
+    // a second place of a form says the first keeps it, and once the component takes the first away the eldest place
+    // still waiting takes the form, the mistake it showed gone - not one the component took away meanwhile, nor one no
+    // longer in the page (removed with the first, in one render) -, and the next one in line once that one goes
+    public void testAPlaceRefusedAFormTakesItOnceTheFirstGoes() {
+        FormDockable form = open("First");
+        Element content = form.getContentWidget().getElement();
+        Element first = host(), withdrawn = host(), removed = host(), next = host(), last = host();
+        for (Element host : new Element[] {first, withdrawn, removed, next, last})
+            mount(view, form.formName, host);
+        assertSame(first, content.getParentElement());
+        assertTrue(next.getInnerText(), next.getInnerText().contains("already placed by another <Platform>"));
+
+        unmount(view, form.formName, withdrawn);
+        removed.removeFromParent();
+        unmount(view, form.formName, first);
+        assertSame(next, content.getParentElement());
+        assertFalse(next.getInnerText(), next.getInnerText().contains("already placed"));
+        assertTrue(last.getInnerText(), last.getInnerText().contains("already placed by another <Platform>"));
+
+        unmount(view, form.formName, next);
+        assertSame(last, content.getParentElement());
+    }
+
     // a form the window is waiting for - an async open's placeholder, so with the caption its open asked for -, put in
     // as FormsWindowController puts it, and the window told
     private FormDockable open(String caption) {
@@ -84,6 +111,12 @@ public class ReactFormsViewTest extends GWTTestCase {
         return dockable;
     }
 
+    private static Element host() {
+        Element host = Document.get().createDivElement();
+        RootPanel.getBodyElement().appendChild(host);
+        return host;
+    }
+
     private static JavaScriptObject entry(JavaScriptObject data, FormDockable dockable) {
         return JsniTestSupport.field(JsniTestSupport.field(data, "byName"), dockable.formName);
     }
@@ -93,6 +126,12 @@ public class ReactFormsViewTest extends GWTTestCase {
     }-*/;
     private static native JavaScriptObject data(ReactFormsView view) /*-{
         return view.@lsfusion.gwt.client.form.view.ReactFormsView::root.@lsfusion.gwt.client.base.view.ReactRoot::store.getSnapshot();
+    }-*/;
+    private static native void mount(ReactFormsView view, String name, Element host) /*-{
+        view.@lsfusion.gwt.client.form.view.ReactFormsView::root.@lsfusion.gwt.client.base.view.ReactRoot::context.view.mount(name, host);
+    }-*/;
+    private static native void unmount(ReactFormsView view, String name, Element host) /*-{
+        view.@lsfusion.gwt.client.form.view.ReactFormsView::root.@lsfusion.gwt.client.base.view.ReactRoot::context.view.unmount(name, host);
     }-*/;
     private static native String caption(JavaScriptObject entry) /*-{ return entry.caption; }-*/;
 }

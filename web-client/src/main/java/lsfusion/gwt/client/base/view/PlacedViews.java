@@ -6,11 +6,6 @@ import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 // the bookkeeping behind <Platform name/>: a component renders a host node, and the platform moves its own view into
 // it. Five owners do this - a form container's platform-drawn children, a navigator window's buttons, the forms
 // window's forms, the log window's messages and the navigator's windows - and they differ only in what a name means and
@@ -72,10 +67,8 @@ public class PlacedViews {
     // a host comes and goes only through addHost / removeHost, which watch its size while it is here
     private final NativeStringMap<Element> hosts = new NativeStringMap<>();  // where a view was asked for, moved or not
     private final NativeStringMap<Element> filled = new NativeStringMap<>(); // where one actually sits
-    // the hosts that asked for a name another host already had. React renders the same <Platform> until its own props
-    // change, so a host refused here is never offered again - and a component that stops rendering the one that WON
-    // would leave the view parked with a place for it still on the screen. Kept in order: the eldest asks first
-    private final Map<String, List<Element>> refused = new HashMap<>();
+    // the hosts that asked for a name another host already had
+    private final RefusedHosts<String> refused = new RefusedHosts<>();
     // watches the size of the hosts in `hosts`. Made with the first of them: an owner whose component places nothing
     // needs none
     private JavaScriptObject resizes;
@@ -120,7 +113,7 @@ public class PlacedViews {
 
         Element asked = hosts.get(name);
         if (asked != null && asked != host) {
-            refused.computeIfAbsent(name, key -> new ArrayList<>()).add(host);
+            refused.add(name, host);
             reportDuplicate(name, host);
             return false;
         }
@@ -138,7 +131,7 @@ public class PlacedViews {
         if (ours) // the component took the host away, so nothing waits for it any more
             removeHost(name);
         else
-            forget(name, host);
+            refused.forget(name, host);
 
         if (filled.get(name) == host) {
             filled.remove(name);
@@ -149,38 +142,10 @@ public class PlacedViews {
         // the view is back in the park by now, so a host that was refused while this one held the name can take it -
         // and takes it whether or not this host ever got the view, since either way the name is free
         if (ours)
-            takeOver(name);
+            refused.takeOver(name, next -> mount(name, next));
 
         return ours;
     }
-
-    // the host that had the name is gone. The eldest host that asked for it meanwhile takes it, if it is still in the
-    // document - a component that removed both in one render leaves nothing to take over, and a host React has thrown
-    // away is not one of ours to fill
-    private void takeOver(String name) {
-        List<Element> asked = refused.get(name);
-        if (asked == null)
-            return;
-
-        while (!asked.isEmpty()) {
-            Element next = asked.remove(0);
-            if (GwtClientUtils.isInDocument(next)) {
-                GwtClientUtils.clearCustomViewError(next); // it has been holding "already placed by another <Platform>"
-                mount(name, next);
-                break;
-            }
-        }
-        if (asked.isEmpty())
-            refused.remove(name);
-    }
-
-    // a host that asked and was refused, and that the component has now taken away: it is not waiting any more
-    private void forget(String name, Element host) {
-        List<Element> asked = refused.get(name);
-        if (asked != null && asked.remove(host) && asked.isEmpty())
-            refused.remove(name);
-    }
-
 
     // said in one place, because the row path of a form container reports the same thing without going through the
     // bookkeeping here: a per-row renderer has one host per ROW, which is not the one-view / one-host ledger below

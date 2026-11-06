@@ -39,6 +39,7 @@ import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.PlacedViews;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.GInputType;
@@ -2375,6 +2376,43 @@ public class GFormControllerTest extends GWTTestCase {
             assertFalse(park.isOrHasChild(twoElement));
         } finally {
             RootPanel.get().remove(hostOne); RootPanel.get().remove(hostTwo);
+        }
+    }
+    // a second host of a row's renderer is refused while the first holds it, and once the first is taken away the
+    // eldest host still waiting takes the renderer, the mistake it showed gone - not one the view took away meanwhile,
+    // nor one no longer in the page (removed with the first, in one render) -, and the next one in line once that one
+    // goes
+    public void testAHostRefusedARowsRendererTakesItOnceTheFirstGoes() {
+        RowsForm rows = new RowsForm();
+        GFormController controller = rows.controller();
+        GPlatformRowsPanelController panel = controller.getRowsPanelController(rows.qty);
+        FlowPanel first = new FlowPanel(), withdrawn = new FlowPanel(), removed = new FlowPanel(), next = new FlowPanel(),
+                last = new FlowPanel();
+        FlowPanel[] hosts = {first, withdrawn, removed, next, last};
+        for (FlowPanel host : hosts)
+            RootPanel.get().add(host);
+        try {
+            assertNull(panel.place(rows.one, rows.qty, first.getElement()));
+            for (FlowPanel host : new FlowPanel[] {withdrawn, removed, next, last}) {
+                assertSame(first.getElement(), panel.place(rows.one, rows.qty, host.getElement()));
+                PlacedViews.reportDuplicate("i.qty", host.getElement()); // as the view's placement does
+            }
+            Element one = assertRowRenderer(controller, rows, rows.one, first, 1);
+
+            panel.unplace(rows.one, rows.qty, withdrawn.getElement());
+            RootPanel.get().remove(removed);
+            panel.unplace(rows.one, rows.qty, first.getElement());
+            assertSame(one, assertRowRenderer(controller, rows, rows.one, next, 1));
+            assertFalse(next.getElement().getInnerText(), next.getElement().getInnerText().contains("already placed"));
+            assertFalse(withdrawn.getElement().isOrHasChild(one));
+            assertFalse(removed.getElement().isOrHasChild(one));
+            assertFalse(last.getElement().isOrHasChild(one));
+
+            panel.unplace(rows.one, rows.qty, next.getElement());
+            assertSame(one, assertRowRenderer(controller, rows, rows.one, last, 1));
+        } finally {
+            for (FlowPanel host : hosts)
+                RootPanel.get().remove(host);
         }
     }
     // changing the second row through its renderer sends that row's key even while the first row is current;
