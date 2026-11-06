@@ -33,6 +33,11 @@ public final class JsniTestSupport {
             observers.push(this);
         };
         $wnd.ResizeObserver.prototype.observe = function (target) { this.targets.push(target); };
+        $wnd.ResizeObserver.prototype.unobserve = function (target) {
+            var index = this.targets.indexOf(target);
+            if (index >= 0)
+                this.targets.splice(index, 1);
+        };
         $wnd.ResizeObserver.observers = observers;
     }-*/;
     public static native void resize(com.google.gwt.dom.client.Element target) /*-{

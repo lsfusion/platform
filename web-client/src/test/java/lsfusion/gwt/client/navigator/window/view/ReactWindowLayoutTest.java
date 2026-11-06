@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.navigator.window.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
@@ -135,13 +136,23 @@ public class ReactWindowLayoutTest extends GWTTestCase {
         assertTrue(second.getInnerText(), second.getInnerText().contains("already placed by another <Platform>"));
     }
 
-    // the component re-lays itself out on its own: a window whose size changed is told, as a split's child is when its
-    // border is dragged, so a grid, a pivot's chart, a map measure themselves again
+    // the component resizes the place a window fills: the window's view is told, as a split's child is when its border
+    // is dragged, so a grid, a pivot's chart, a map measure themselves again - deferred, as PlacedViews' other owners do
     public void testAWindowIsToldItsSizeChanged() {
+        Element host = host();
+        mount(element, "System.forms", host);
         View view = views.get(forms);
-        int resized = view.resized;
-        JsniTestSupport.resize(view.getElement());
-        assertEquals(resized + 1, view.resized);
+
+        delayTestFinish(5000);
+        // counted from after the layout the setup scheduled (RootLayoutPanel lays out finally), which resizes the view too
+        Scheduler.get().scheduleDeferred(() -> {
+            int resized = view.resized;
+            JsniTestSupport.resize(host);
+            Scheduler.get().scheduleDeferred(() -> {
+                assertEquals(resized + 1, view.resized);
+                finishTest();
+            });
+        });
     }
 
     private static Element host() {

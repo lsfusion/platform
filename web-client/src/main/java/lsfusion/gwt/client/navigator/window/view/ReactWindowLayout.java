@@ -4,13 +4,13 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.PlacedViews;
 import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
+import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 
 import java.util.ArrayList;
@@ -59,6 +59,11 @@ public final class ReactWindowLayout extends WindowLayout {
         public void park(String name) {
             park.appendChild(byName.get(name).getView().getElement()); // still attached and alive, ready to be placed again
         }
+
+        @Override
+        public void resized(String name) {
+            FlexTabbedPanel.scheduleOnResize(byName.get(name).getView());
+        }
     });
 
     // the projection: an entry per window under its canonical name, and nothing else - no state of the arrangement is
@@ -95,14 +100,7 @@ public final class ReactWindowLayout extends WindowLayout {
         byName.foreachValue(window -> {
             window.initializeView(controller); // registered, so its visibility reaches this layout
 
-            Widget view = window.getView();
-            panel.addToElement(view, park); // a logical child of the panel, parked in the DOM until the component says where it goes
-            // the view hears that its size changed - the component re-lays itself out on its own, and after any onResize
-            // the platform sends, while a grid, a pivot's chart and a map measure themselves on onResize, as a split's
-            // child does when its border is dragged. Watched on the view, which fills its host, so that neither the
-            // hosts nor the park need any bookkeeping: a view placed or parked changes size too
-            if (view instanceof RequiresResize)
-                observeResize(view.getElement(), ((RequiresResize) view)::onResize);
+            panel.addToElement(window.getView(), park); // a logical child of the panel, parked in the DOM until the component says where it goes
 
             // shown as the standard layout shows it to begin with, so the declared visibility that follows changes nothing
             addEntry(data, window.window.canonicalName, window.window.caption, !window.window.visible, window.window.vertical);
@@ -137,12 +135,6 @@ public final class ReactWindowLayout extends WindowLayout {
     public Widget getView() {
         return panel;
     }
-
-    private static native void observeResize(Element view, Runnable resized)/*-{
-        new $wnd.ResizeObserver(function () {
-            resized.@java.lang.Runnable::run()();
-        }).observe(view);
-    }-*/;
 
     // `name` is on the entry itself, so an entry passed around alone still knows its window, as on the entries of the
     // other windows' projections. `vertical`: the window draws its buttons in a column - its own orientation, and the
