@@ -1,8 +1,9 @@
 MODULE UiGrid;
 
-REQUIRE TestUtils;
+REQUIRE TestUtils, SystemEvents;
 
-// the grids UiGridIT works on in the browser, and the actions it seeds and checks its item with
+// the grids UiGridIT works on in the browser, the render function it draws one with (UiGrid.js), and the actions it
+// seeds and checks its item with
 
 CLASS UiGridItem 'Item';
 uiGridName 'Name' = DATA STRING[50] (UiGridItem);
@@ -34,12 +35,26 @@ FORM uiGridFooters 'Footers'
                            uiGridChecked FOOTER 'a footer of checks'
 ;
 
+// a column a render function draws (uiGridHtml), of a property named image, whose cells name an image each and whose
+// string footer is a text
+uiGridIcon (UiGridItem i) = 'bi bi-plus';
+
+FORM uiGridIcons 'Icons'
+    OBJECTS i = UiGridItem
+    PROPERTIES(i) READONLY image = uiGridIcon CUSTOM 'uiGridHtml' FOOTER 'a string footer of icons'
+;
+
 NAVIGATOR {
     NEW FOLDER uiGrid 'UI grid' WINDOW toolbar {
         NEW uiGridItems;
         NEW uiGridPictures;
         NEW uiGridFooters;
+        NEW uiGridIcons;
     }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiGrid.js') <- 1;
 }
 
 uiGridSeed (STRING[50] name) {

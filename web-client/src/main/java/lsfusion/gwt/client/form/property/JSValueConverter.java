@@ -176,8 +176,10 @@ public class JSValueConverter {
         return "string";
     }
 
+    // a footer is converted by its type alone: a property named image names an image by its value, not by its footer,
+    // which the server sends as it is (FormChanges.getConvertData)
     public static JavaScriptObject convertToJSValue(GPropertyDraw property, PValue value, RendererType rendererType, boolean imageToHTML) {
-        return convertToJSValue(property.getRenderType(rendererType), property, imageToHTML, value);
+        return convertToJSValue(property.getRenderType(rendererType), rendererType != RendererType.FOOTER ? property : null, imageToHTML, value);
     }
 
     // ===== the casts between Java's values and JS's own

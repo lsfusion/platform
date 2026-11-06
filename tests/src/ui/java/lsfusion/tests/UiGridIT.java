@@ -49,4 +49,16 @@ public class UiGridIT extends UiTest {
         assertThat(form.locator("tfoot")).containsText("a footer of checks");
         close(form);
     }
+
+    // a render function of a property named image is given the HTML of the image a cell names, and its string footer as
+    // the text: the footer was converted as a cell is, as the image it names, and threw on the string - "createImageHTML
+    // is not a function" in an Error box, the footer left empty
+    @Test
+    public void aRenderFunctionIsGivenAStringFooterAsAText() throws Exception {
+        exec("UiGrid.uiGridSeed", "Item " + System.nanoTime());
+        Locator form = open("UiGrid.uiGrid", "UiGrid.uiGridIcons");
+        assertThat(form.locator("tfoot")).containsText("a string footer of icons");
+        assertThat(form.locator("tbody i.bi-plus").first()).isVisible();
+        close(form);
+    }
 }
