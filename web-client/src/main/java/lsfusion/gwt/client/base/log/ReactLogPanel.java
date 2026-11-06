@@ -1,13 +1,11 @@
 package lsfusion.gwt.client.base.log;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
+import lsfusion.gwt.client.base.view.Park;
 import lsfusion.gwt.client.base.view.PlacedViews;
 import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.base.view.RecentlyEventClassHandler;
@@ -34,10 +32,7 @@ public class ReactLogPanel extends LogPanel {
 
     private final RecentlyEventClassHandler recentlySelected;
 
-    // where a message's markup lives while nothing places it. It has to stay in the document and stay a logical child
-    // of the panel, or GWT would detach the widget; the node itself must be OUTSIDE the panel, because React clears
-    // its own root
-    private final Element park = Document.get().createDivElement();
+    private final Park park = new Park(panel); // where a message's markup waits while nothing places it
 
     private final NativeStringMap<Widget> messages = new NativeStringMap<>();
 
@@ -58,7 +53,7 @@ public class ReactLogPanel extends LogPanel {
 
         @Override
         public void park(String name) {
-            park.appendChild(messages.get(name).getElement()); // still attached and alive, ready to be placed again
+            park.put(messages.get(name)); // still attached and alive, ready to be placed again
         }
     });
 
@@ -82,17 +77,9 @@ public class ReactLogPanel extends LogPanel {
         // message
         root.updateData(data);
 
-        park.getStyle().setDisplay(Style.Display.NONE);
-        RootPanel.getBodyElement().appendChild(park);
-
         recentlySelected = new RecentlyEventClassHandler(panel, true, "parent-was-selected-recently", 2000);
 
-        panel.addAttachHandler(event -> {
-            if (event.isAttached())
-                root.mount(panel.getElement(), false); // never measured, so it stays asynchronous
-            else
-                root.unmount();
-        });
+        root.mountWhileAttached(panel);
     }
 
     @Override
@@ -100,8 +87,7 @@ public class ReactLogPanel extends LogPanel {
         String name = "message" + messageCounter++; // prefixed, so it cannot match a form's name by accident
 
         messages.put(name, message);
-        panel.addToElement(message, park); // a logical child of the panel, parked in the DOM until the component says
-                                           // where it goes
+        park.add(message); // parked until the component says where it goes
         // the errorLogMessage / successLogMessage class the standard panel writes onto the markup is not written here:
         // it is that panel's own styling of its own list, and the component styles its list from `failed`. The classes
         // the message was BUILT with (alert, alert-info / alert-danger) are part of the markup and come along with it

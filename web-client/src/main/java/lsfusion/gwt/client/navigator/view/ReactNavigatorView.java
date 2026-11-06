@@ -27,12 +27,7 @@ public class ReactNavigatorView extends ParkedNavigatorView {
         // yet, so an empty one would say "nothing to draw" about a window that may well have elements. Its first update
         // refreshes every window - one with nothing in it too, with an empty bucket - and that is what draws it
 
-        panel.addAttachHandler(event -> {
-            if (event.isAttached())
-                root.mount(panel.getElement(), false); // never measured, so it stays asynchronous
-            else
-                root.unmount();
-        });
+        root.mountWhileAttached(panel);
     }
 
     @Override

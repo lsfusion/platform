@@ -1,13 +1,12 @@
 package lsfusion.gwt.client.form.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
+import lsfusion.gwt.client.base.view.Park;
 import lsfusion.gwt.client.base.view.PlacedViews;
 import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
@@ -37,10 +36,9 @@ public class ReactFormsView implements FormsView {
     private final FormsController formsController;
     private final FormsView.SelectionHandler selection;
 
-    // where a form's view lives while nothing places it. It has to stay in the document and stay a logical child of
-    // the panel, or GWT would detach the widget; the node itself must be OUTSIDE the panel, because React clears its
-    // own root. display:none is what stops the form's schedulers, exactly as an unselected tab does
-    private final Element park = Document.get().createDivElement();
+    // where a form's view waits while nothing places it: display:none is what stops the form's schedulers, exactly as
+    // an unselected tab does
+    private final Park park = new Park(panel);
 
     private final PlacedViews placed = new PlacedViews(new PlacedViews.Views() {
         @Override
@@ -66,7 +64,7 @@ public class ReactFormsView implements FormsView {
         public void park(String name) {
             FormDockable dockable = byName.get(name);
             if (dockable != null) // still attached and alive, exactly as a background tab is
-                park.appendChild(dockable.getContentWidget().getElement());
+                park.put(dockable.getContentWidget());
         }
 
         @Override
@@ -99,15 +97,8 @@ public class ReactFormsView implements FormsView {
         root.updateRebuiltData(buildData());
 
         GwtClientUtils.addClassName(panel, "forms-container");
-        park.getStyle().setDisplay(Style.Display.NONE);
 
-        panel.addAttachHandler(event -> {
-            if (event.isAttached()) {
-                Document.get().getBody().appendChild(park);
-                root.mount(panel.getElement(), false); // never measured, so it stays asynchronous
-            } else
-                root.unmount();
-        });
+        root.mountWhileAttached(panel);
     }
 
     @Override
@@ -117,9 +108,9 @@ public class ReactFormsView implements FormsView {
 
     @Override
     public void formAdded(FormDockable dockable, Integer index) {
-        // a logical child of the panel, parked in the DOM until the component says where it goes
+        // parked until the component says where it goes
         byName.put(dockable.formName, dockable);
-        panel.addToElement(dockable.getContentWidget(), park);
+        park.add(dockable.getContentWidget());
 
         // what FlexTabBar.insertTab does for the strip: a form put in at or before the current one pushes it along.
         // Only a form put back after an async close the server did not confirm arrives at an index at all, and it

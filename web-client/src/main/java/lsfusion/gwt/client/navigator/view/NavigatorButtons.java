@@ -1,13 +1,11 @@
 package lsfusion.gwt.client.navigator.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.user.client.ui.RootPanel;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
+import lsfusion.gwt.client.base.view.Park;
 import lsfusion.gwt.client.base.view.PlacedViews;
 import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
@@ -28,11 +26,7 @@ public class NavigatorButtons {
     private final GNavigatorWindow window;
     private final GINavigatorController navigatorController;
     private final ResizableComplexPanel panel;
-
-    // where a button lives while nothing places it. It has to stay in the document and stay a logical child of the
-    // window's panel, or GWT would detach the widget and destroy its tooltip; the node itself must be OUTSIDE the
-    // panel, because both drawing paths overwrite the panel's content (React clears its root, a template its innerHTML)
-    private final Element park = Document.get().createDivElement();
+    private final Park park; // where a button waits until the template or the component places it
 
     private final NativeStringMap<NavigatorImageButton> buttons = new NativeStringMap<>();
     // what is wrong with a name, if anything. `requirePlatformDrawn` is the difference between the two surfaces: a
@@ -76,7 +70,7 @@ public class NavigatorButtons {
         public void park(String canonicalName) {
             NavigatorImageButton button = buttons.get(canonicalName);
             if (button != null)
-                park.appendChild(button.getElement()); // back to the park, still attached, tooltip alive
+                park.put(button); // back to the park, still attached, tooltip alive
         }
 
         // an element's entry is in byName, where the window's projection keeps its entries (ReactNavigatorView)
@@ -93,9 +87,7 @@ public class NavigatorButtons {
         this.window = window;
         this.navigatorController = navigatorController;
         this.panel = panel;
-
-        park.getStyle().setDisplay(Style.Display.NONE);
-        RootPanel.getBodyElement().appendChild(park);
+        this.park = new Park(panel);
     }
 
     // the same walk the standard panel makes, so a placed button carries the level class it would carry there
@@ -115,7 +107,7 @@ public class NavigatorButtons {
         if (button == null) {
             button = new NavigatorImageButton(element, window.hasVerticalTextPosition(), level, active, navigatorController::activate);
             buttons.put(element.canonicalName, button);
-            panel.addToElement(button, park); // a logical child of the panel, parked in the DOM
+            park.add(button);
         } else
             button.change(element, level, active); // caption / image / class / hide are written into the element in
                                                    // place, and the level or the active state may have changed too

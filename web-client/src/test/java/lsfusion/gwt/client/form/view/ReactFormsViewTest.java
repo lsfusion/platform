@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -75,6 +76,22 @@ public class ReactFormsViewTest extends GWTTestCase {
 
         view.formsChanged();
         assertSame(renamed, data(view));
+    }
+
+    // a form placed goes into its host and fills it, and taken away it goes back to wait in the park - not shown, as a
+    // background tab is, and still the window's
+    public void testAFormIsPlacedInItsHostAndParkedAgain() {
+        FormDockable form = open("First");
+        Element content = form.getContentWidget().getElement(), host = host();
+        mount(view, form.formName, host);
+        assertSame(host, content.getParentElement());
+        assertTrue(content.hasClassName("fill-parent-flex"));
+
+        unmount(view, form.formName, host);
+        Element park = content.getParentElement();
+        assertNotSame(host, park);
+        assertEquals(Style.Display.NONE.getCssName(), park.getStyle().getDisplay());
+        assertSame(view.getView(), form.getContentWidget().getParent());
     }
 
     // a second place of a form says the first keeps it, and once the component takes the first away the eldest place

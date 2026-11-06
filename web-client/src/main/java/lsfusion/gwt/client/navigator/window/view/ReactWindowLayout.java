@@ -1,12 +1,11 @@
 package lsfusion.gwt.client.navigator.window.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
+import lsfusion.gwt.client.base.view.Park;
 import lsfusion.gwt.client.base.view.PlacedViews;
 import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
@@ -35,10 +34,7 @@ public final class ReactWindowLayout extends WindowLayout {
     // the canonical name <Platform> places it by
     private final NativeStringMap<SimpleWindowElement> byName = new NativeStringMap<>();
 
-    // where a window's view lives while nothing places it. It has to stay in the document and stay a logical child of
-    // the panel, or GWT would detach the widget; the node itself must be OUTSIDE the panel, because React clears its
-    // own root. display:none, as a background tab is
-    private final Element park = Document.get().createDivElement();
+    private final Park park = new Park(panel); // where a window's view waits while nothing places it
 
     private final PlacedViews placed = new PlacedViews(new PlacedViews.Views() {
         @Override
@@ -57,7 +53,7 @@ public final class ReactWindowLayout extends WindowLayout {
 
         @Override
         public void park(String name) {
-            park.appendChild(byName.get(name).getView().getElement()); // still attached and alive, ready to be placed again
+            park.put(byName.get(name).getView()); // still attached and alive, ready to be placed again
         }
 
         @Override
@@ -83,16 +79,7 @@ public final class ReactWindowLayout extends WindowLayout {
         // window's host holds the window's view, which the layout fills it with by its marks. Nothing about the
         // arrangement is the platform's to do, so the controller has nothing on it
         root = new ReactRoot(custom, JavaScriptObject.createObject(), placed.placement(new ReactRoot.MarkedHost()));
-
-        park.getStyle().setDisplay(Style.Display.NONE);
-        Document.get().getBody().appendChild(park);
-
-        panel.addAttachHandler(event -> {
-            if (event.isAttached())
-                root.mount(panel.getElement(), false); // never measured, so it stays asynchronous
-            else
-                root.unmount();
-        });
+        root.mountWhileAttached(panel);
     }
 
     @Override
@@ -100,7 +87,7 @@ public final class ReactWindowLayout extends WindowLayout {
         byName.foreachValue(window -> {
             window.initializeView(controller); // registered, so its visibility reaches this layout
 
-            panel.addToElement(window.getView(), park); // a logical child of the panel, parked in the DOM until the component says where it goes
+            park.add(window.getView()); // parked until the component says where it goes
 
             // shown as the standard layout shows it to begin with, so the declared visibility that follows changes nothing
             addEntry(data, window.window.canonicalName, window.window.caption, !window.window.visible, window.window.vertical);

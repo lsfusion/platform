@@ -2,6 +2,7 @@ package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 
 // the React root drawing an application component, with the store its descendants subscribe to. `host` is NOT this:
@@ -139,6 +140,17 @@ public class ReactRoot {
             return true;
         }
         return false;
+    }
+
+    // drawn in the panel while it is attached: mounted as it is attached, unmounted as it is detached - for an owner
+    // that is never measured, so the first render stays asynchronous
+    public void mountWhileAttached(Widget panel) {
+        panel.addAttachHandler(event -> {
+            if (event.isAttached())
+                mount(panel.getElement(), false);
+            else
+                unmount();
+        });
     }
 
     // a component that cannot be drawn says so in the element the window or the container would have filled, not only
