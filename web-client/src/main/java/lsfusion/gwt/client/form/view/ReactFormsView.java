@@ -161,7 +161,6 @@ public class ReactFormsView implements FormsView {
     @Override
     public void formsChanged() {
         root.updateData(buildData());
-        placed.retryPending(); // a form asked for before it existed goes into its host as soon as it does
     }
 
     private JavaScriptObject buildData() {
