@@ -10,6 +10,7 @@ import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
@@ -261,12 +262,19 @@ public abstract class NavigatorElement {
 
     public abstract AsyncExec getAsyncExec(ConnectionContext context);
 
-    public void setPropertyImage(Property imageProperty) {
-        this.propertyImage = imageProperty;
+    // the pairs below are written together : modules that do not require each other are parsed at once, and two of them
+    // can set one element up (NAVIGATOR { element WINDOW ... IMAGE ... })
+    @NFLazy
+    public void setWindow(NavigatorWindow window, boolean parentWindow) {
+        this.window = window;
+        this.parentWindow = parentWindow;
     }
 
-    public void setImage(String imagePath) {
-        image = AppServerImage.createNavigatorImage(imagePath, this);
+    // a path (AppServerImage.AUTO, NULL or a file), and the property computing the image, if any
+    @NFLazy
+    public void setImage(String imagePath, Property imageProperty) {
+        this.propertyImage = imageProperty;
+        this.image = AppServerImage.createNavigatorImage(imagePath, this);
     }
 
     public void setPropertyElementClass(Property elementClassProperty) {
@@ -285,11 +293,13 @@ public abstract class NavigatorElement {
         this.showIfProperty = showIfProperty;
     }
 
+    @NFLazy
     public void setChangeKey(String code, boolean showChangeKey) {
         this.changeKey = KeyStrokeConverter.parseInputBindingEvent(code, false);
         this.showChangeKey = showChangeKey;
     }
 
+    @NFLazy
     public void setChangeMouse(String code, boolean showChangeMouse) {
         this.changeMouse = KeyStrokeConverter.parseInputBindingEvent(code, true);
         this.showChangeMouse = showChangeMouse;

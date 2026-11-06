@@ -877,6 +877,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public enum CheckType { CHECK_NO, CHECK_ALL, CHECK_SOME }
     public CheckType checkChange = CheckType.CHECK_NO;
     public ImSet<Property<?>> checkProperties = null;
+    // the two of one constraint go together : modules that do not require each other are parsed at once, and two of them
+    // can put constraints on one property
+    @NFLazy
+    public void setCheckChange(CheckType checkChange, ImSet<Property<?>> checkProperties) {
+        this.checkChange = checkChange;
+        this.checkProperties = checkProperties;
+    }
 
     public <O extends ObjectSelector> ImSet<ContextFilterEntity<?, T, O>> getCheckFilters(O object) {
         return ThreadLocalContext.getBusinessLogics().getCheckConstrainedProperties(this).filterFn(property -> depends(property, this)).
@@ -1723,11 +1730,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         ChangeEvent<T> event = new ChangeEvent<>(this, valueImplement, whereImplement);
         // запишем в DataProperty
-        for(DataProperty dataProperty : getChangeProps()) {
-            if(Settings.get().isCheckUniqueEvent() && dataProperty.event!=null)
-                throw new RuntimeException(ThreadLocalContext.localize(LocalizedString.createFormatted("{logics.property.already.has.event}", dataProperty)));
-            dataProperty.event = event;
-        }
+        for(DataProperty dataProperty : getChangeProps())
+            dataProperty.setEvent(event);
     }
 
     public void setNotNull(ImMap<T, DataObject> values, ExecutionEnvironment env, ExecutionStack stack, boolean notNull, boolean check) throws SQLException, SQLHandledException {

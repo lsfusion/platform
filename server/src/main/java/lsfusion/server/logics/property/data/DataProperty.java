@@ -9,6 +9,8 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
@@ -44,6 +46,7 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.drilldown.form.DataDrillDownFormEntity;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -72,6 +75,14 @@ public abstract class DataProperty extends AbstractDataProperty {
     }
 
     public ChangeEvent<?> event = null;
+    // modules that do not require each other are parsed at once, and two of them can give one property events (WHEN) :
+    // the check and the write go together
+    @NFLazy
+    public void setEvent(ChangeEvent<?> event) {
+        if(Settings.get().isCheckUniqueEvent() && this.event != null)
+            throw new RuntimeException(ThreadLocalContext.localize(LocalizedString.createFormatted("{logics.property.already.has.event}", this)));
+        this.event = event;
+    }
 
     protected boolean useSimpleIncrement() {
         return false;

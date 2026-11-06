@@ -1,0 +1,20 @@
+MODULE WhenEvents;
+
+REQUIRE TestUtils;
+
+// a property written by an event of its own (p <- v WHEN c) keeps that event in its data properties, one each, which with
+// checkUniqueEvent a second event of a property is refused for. Modules that do not require each other are parsed at
+// once, each in a thread of its own, so two of them giving one property events wrote them at once, and both could pass
+// that check (a lab start of eight such modules had all eight in the write at once)
+
+weFlag = DATA BOOLEAN ();
+weData = DATA STRING ();
+weData() <- 'we' WHEN weFlag();
+
+weFailure = DATA LOCAL STRING ();
+weSetAtOnce INTERNAL 'lsfusion.tests.SetWhenEventsAtOnceAction' ();
+
+testWhenEventsSetAtOnce 'An event written to a property waits for another one written to it' () {
+    weSetAtOnce();
+    assertNull(weFailure(), weFailure());
+}

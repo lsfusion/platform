@@ -2276,8 +2276,7 @@ public abstract class LogicsModule {
         Property<?> property = lp.property;
         Property<?> messageProperty = messageLP.property;
 
-        property.checkChange = type;
-        property.checkProperties = checkProps;
+        property.setCheckChange(type, checkProps);
 
         assert type != Property.CheckType.CHECK_SOME || checkProps != null;
 

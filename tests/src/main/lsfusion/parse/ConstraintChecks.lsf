@@ -1,0 +1,19 @@
+MODULE ConstraintChecks;
+
+REQUIRE TestUtils;
+
+// a property a constraint is put on (CONSTRAINT p(a) ...) keeps which changes are checked against it : a type and, for
+// CHECKED BY, the properties. Modules that do not require each other are parsed at once, each in a thread of its own,
+// so two of them that put constraints on one property of another module wrote the two at once, and the type of one
+// could be left with the properties of the other - CHECKED BY with none, which failed the start
+
+ccName = DATA LOCAL STRING ();
+ccNegative () = ccName() == 'negative';
+
+ccFailure = DATA LOCAL STRING ();
+ccCheckAtOnce INTERNAL 'lsfusion.tests.SetConstraintChecksAtOnceAction' ();
+
+testConstraintChecksSetAtOnce 'What a constraint checks a property against waits for another constraint on it' () {
+    ccCheckAtOnce();
+    assertNull(ccFailure(), ccFailure());
+}

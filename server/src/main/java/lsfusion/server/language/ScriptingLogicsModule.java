@@ -5883,18 +5883,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         // the literal is the markup the window starts with, the property recomputes it. Checked against the WINDOW and
         // not against one statement, since the two can come from two modules - and against THIS statement too, since
         // one statement can carry both. Only one combination is not a pair: a React component draws the window itself
-        // and would never be handed a computed template
-        String literal = custom != null ? custom : window.getCustom();
-        if ((customProperty != null || window.getPropertyCustom() != null) && Custom.isReactComponent(literal))
-            errLog.emitWindowCustomReactPropertyError(parser, name, literal);
-
-        // each half is written by the statement that brought it, so a statement carrying both keeps both. The literal
-        // goes first: setPropertyCustom stands a placeholder template in for a missing one, and a literal that is
-        // already there is what the window is drawn from until the property computes its first value
-        if (custom != null)
-            window.setCustom(resolveWindowTemplate(name, custom));
-        if (customProperty != null)
-            window.setPropertyCustom(customProperty.getLP().property);
+        // and would never be handed a computed template. Each half is written by the statement that brought it, so a
+        // statement carrying both keeps both, and a literal that is already there is what the window is drawn from
+        // until the property computes its first value
+        String reactComponent = window.setCustoms(custom != null ? resolveWindowTemplate(name, custom) : null,
+                                                  customProperty != null ? customProperty.getLP().property : null);
+        if (reactComponent != null)
+            errLog.emitWindowCustomReactPropertyError(parser, name, reactComponent);
     }
 
     // a place in a window's template names its element the way the rest of the module does - by a name resolved in the
@@ -6071,8 +6066,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             AbstractWindow window = findWindow(windowName);
 
             if (window instanceof NavigatorWindow) {
-                element.window = (NavigatorWindow) window;
-                element.parentWindow = parentWindow;
+                element.setWindow((NavigatorWindow) window, parentWindow);
             } else {
                 errLog.emitAddToSystemWindowError(parser, element.getName(), windowName);
             }
@@ -6107,16 +6101,15 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void setNavigatorElementImage(NavigatorElement element, ImageOption imageOption) {
         if (imageOption == null) return;
         assert imageOption.imageLP == null || imageOption.imagePath == null;
-        
-        element.setPropertyImage(null);
-        element.setImage(AppServerImage.AUTO);
-        
+
         if (!imageOption.hasImage) {
-            element.setImage(AppServerImage.NULL);
+            element.setImage(AppServerImage.NULL, null);
         } else if (imageOption.imageLP != null) {
-            element.setPropertyImage(imageOption.imageLP.getLP().property);
+            element.setImage(AppServerImage.AUTO, imageOption.imageLP.getLP().property);
         } else if (imageOption.imagePath != null) {
-            element.setImage(imageOption.imagePath);
+            element.setImage(imageOption.imagePath, null);
+        } else {
+            element.setImage(AppServerImage.AUTO, null);
         }
     }
 

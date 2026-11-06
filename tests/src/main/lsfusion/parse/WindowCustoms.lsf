@@ -1,0 +1,19 @@
+MODULE WindowCustoms;
+
+REQUIRE TestUtils;
+
+// a navigator window keeps what draws it (EXTEND WINDOW ... CUSTOM) in two halves : a literal it starts with and a
+// property computing it, with a placeholder for a literal a property comes without. Modules that do not require each
+// other are parsed at once, each in a thread of its own, so two of them giving one window its halves wrote them at once :
+// a lab start of such modules lost the literal to the placeholder, and the check that a React component is not given a
+// property could be passed the same way
+
+wcCustom () = '<div>wc</div>';
+
+wcFailure = DATA LOCAL STRING ();
+wcSetAtOnce INTERNAL 'lsfusion.tests.SetWindowCustomsAtOnceAction' ();
+
+testWindowCustomsSetAtOnce 'The halves of the CUSTOM of a window wait for another statement giving them' () {
+    wcSetAtOnce();
+    assertNull(wcFailure(), wcFailure());
+}

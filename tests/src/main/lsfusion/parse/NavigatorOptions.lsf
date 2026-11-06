@@ -1,0 +1,17 @@
+MODULE NavigatorOptions;
+
+REQUIRE TestUtils;
+
+// a navigator element keeps the options statements give it (NAVIGATOR { element WINDOW ... IMAGE ... CHANGEKEY ... }),
+// some of them in pairs : a window and whether it is the parent's, an image and the property computing it, a key and
+// whether it is shown. Modules that do not require each other are parsed at once, each in a thread of its own, so two of
+// them that set one element up wrote the pairs at once : a lab start of eight such modules left the element with the
+// window of one and the PARENT of another
+
+noFailure = DATA LOCAL STRING ();
+noSetAtOnce INTERNAL 'lsfusion.tests.SetNavigatorOptionsAtOnceAction' ();
+
+testNavigatorOptionsSetAtOnce 'The pairs of options of a navigator element wait for another statement setting them' () {
+    noSetAtOnce();
+    assertNull(noFailure(), noFailure());
+}

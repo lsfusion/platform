@@ -4,6 +4,7 @@ import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.interop.navigator.window.WindowType;
 import lsfusion.server.base.Custom;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
@@ -48,6 +49,9 @@ public class AbstractWindow {
         return custom;
     }
 
+    // the setters below : modules that do not require each other are parsed at once, and two of them can give one window
+    // its two halves (EXTEND WINDOW ... CUSTOM)
+    @NFLazy
     public void setCustom(String custom) {
         this.custom = custom;
     }
@@ -56,10 +60,28 @@ public class AbstractWindow {
         return propertyCustom;
     }
 
+    @NFLazy
     public void setPropertyCustom(Property propertyCustom) {
         this.propertyCustom = propertyCustom;
         if (custom == null) // the view is chosen before the first value arrives, so SOMETHING has to be there; a
             custom = Custom.EMPTY_TEMPLATE; // literal, if one was written, is that something and is left alone
+    }
+
+    // the halves a statement brings, each written if given - unless a property would then compute what a React component
+    // draws, which is refused : that component is returned and nothing written. Checked against the window as it is,
+    // since the halves can come from two modules
+    @NFLazy
+    public String setCustoms(String custom, Property propertyCustom) {
+        String literal = custom != null ? custom : this.custom;
+        if ((propertyCustom != null || this.propertyCustom != null) && Custom.isReactComponent(literal))
+            return literal;
+
+        // the literal goes first : setPropertyCustom stands a placeholder template in for a missing one
+        if (custom != null)
+            setCustom(custom);
+        if (propertyCustom != null)
+            setPropertyCustom(propertyCustom);
+        return null;
     }
 
     public boolean isReact() {
