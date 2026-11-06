@@ -494,7 +494,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     private void checkEnableApi(LA<?> property, Object actionParam, boolean script, ExternalRequest request, boolean redirect) {
-        if(property.action.hasAnnotation("noauth"))
+        // the annotations of a script's run are written by the caller, not by the developer
+        if(!script && property.action.hasAnnotation("noauth"))
             return;
 
         if(request.signature != null && securityManager.verifyData(ExternalUtils.generate(actionParam, script, request.getImplicitParamValues()), request.signature))
@@ -505,7 +506,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
         byte enableApi = Settings.get().getEnableAPI();
         if(enableApi == 0) {
-            if(property.action.hasAnnotation("api"))
+            if(!script && property.action.hasAnnotation("api"))
                 enableApi = 1;
             else
                 throw new RuntimeException("Api is disabled. It can be enabled by using setting enableAPI.");
