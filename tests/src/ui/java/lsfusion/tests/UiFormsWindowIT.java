@@ -731,6 +731,24 @@ public class UiFormsWindowIT extends UiTest {
         assertThat(first.locator(":focus")).hasCount(1);
     }
 
+    // a form the component places is given the size of its place whenever the component changes it, as it is when the
+    // page is resized: the grid of Items keeps its selected row in sight as its place is made smaller
+    @Test
+    public void aFormIsGivenTheSizeTheComponentGivesItsPlace() throws Exception {
+        String prefix = "Many " + System.nanoTime();
+        exec("UiFormsWindow.uiFormsWindowSeedMany", prefix);
+        Locator launcher = launcher(), items = in(window("board"), "uiFormsWindowItems");
+        action(launcher, "uiFormsWindowItemsIntoBoard").click();
+        Locator row = cell(items, "uiFormsWindowName(i)", prefix + " 15");
+        placeHeight(items, 600);
+        assertThat(row).isInViewport();
+        select(row);
+        gridsSettled(); // nothing on its way to the form any more, whose answer would measure it again
+
+        placeHeight(items, 350);
+        assertThat(row).isInViewport();
+    }
+
     // the component chooses the edit mode the platform's mode button chooses, among the modes it is given, and is given
     // the mode chosen; it is given the caption of a form as the form's data changes it
     @Test

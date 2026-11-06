@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.base.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -20,6 +21,8 @@ import java.util.Map;
 //   - the FIRST host of a name keeps it, so a second cannot be left silently empty
 //   - a placement that can never work says so in the host itself, not only in the console
 //   - cleanup is the exact inverse of mount, so React's mount->cleanup->mount cannot strand a view
+//   - a host the component resizes is said to the owner: GWT hears nothing of a size CSS gives, and a view that measures
+//     itself - a grid, a pivot's chart, a map - would keep the size it had until the page itself is resized
 public class PlacedViews {
 
     // a placement that can never work, in the owner's own words. The page gets the short form - it sits inside the
@@ -50,6 +53,10 @@ public class PlacedViews {
 
         // take the view back out of wherever it is
         void park(String name);
+
+        // the host the view is in changed size: the view measures itself again, as when a split's border is dragged
+        default void resized(String name) {
+        }
     }
 
     private final Views views;
@@ -60,6 +67,9 @@ public class PlacedViews {
     // change, so a host refused here is never offered again - and a component that stops rendering the one that WON
     // would leave the view parked with a place for it still on the screen. Kept in order: the eldest asks first
     private final Map<String, List<Element>> refused = new HashMap<>();
+    // watches the size of the hosts in `hosts`. Made with the first of them: an owner whose component places nothing
+    // needs none
+    private JavaScriptObject resizes;
 
     public PlacedViews(Views views) {
         this.views = views;
@@ -80,6 +90,7 @@ public class PlacedViews {
         }
 
         hosts.put(name, host);
+        observe(host);
         tryPlace(name, host);
         return true;
     }
@@ -89,9 +100,10 @@ public class PlacedViews {
     // has stopped asking just as surely as one that was holding the view
     public boolean unmount(String name, Element host) {
         boolean ours = hosts.get(name) == host;
-        if (ours) // the component took the host away, so nothing waits for it any more
+        if (ours) { // the component took the host away, so nothing waits for it any more
             hosts.remove(name);
-        else
+            unobserve(host);
+        } else
             forget(name, host);
 
         if (filled.get(name) == host) {
@@ -177,6 +189,7 @@ public class PlacedViews {
 
     // the whole tree this belonged to is gone: every host and every placement with it
     public void reset() {
+        hosts.foreachValue(this::unobserve);
         hosts.clear();
         filled.clear();
         refused.clear();
@@ -188,9 +201,37 @@ public class PlacedViews {
     // come back, and its host must not be reused by whatever takes its name next
     public void viewRemoved(String name, boolean mayReturn) {
         filled.remove(name);
-        if (!mayReturn)
-            hosts.remove(name);
+        if (!mayReturn) {
+            Element host = hosts.remove(name);
+            if (host != null)
+                unobserve(host);
+        }
     }
+
+    // a host changed size - what the browser says after the layout: the view in it, if one is, is told
+    private void resized(Element host) {
+        filled.foreachEntry((name, filledHost) -> {
+            if (filledHost == host)
+                views.resized(name);
+        });
+    }
+
+    private native void observe(Element host)/*-{
+        var resizes = this.@lsfusion.gwt.client.base.view.PlacedViews::resizes;
+        if (!resizes) {
+            var placed = this;
+            resizes = this.@lsfusion.gwt.client.base.view.PlacedViews::resizes = new $wnd.ResizeObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    placed.@lsfusion.gwt.client.base.view.PlacedViews::resized(Lcom/google/gwt/dom/client/Element;)(entry.target);
+                });
+            });
+        }
+        resizes.observe(host);
+    }-*/;
+
+    private native void unobserve(Element host)/*-{
+        this.@lsfusion.gwt.client.base.view.PlacedViews::resizes.unobserve(host);
+    }-*/;
 
     private void tryPlace(String name, Element host) {
         if (filled.get(name) != null) // already sitting there

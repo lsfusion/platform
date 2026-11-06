@@ -4,8 +4,8 @@ REQUIRE TestUtils, SystemEvents;
 
 // the forms UiCustomContainerIT works on in the browser - containers drawn by React components (UiCustomContainer.js,
 // and two no-build .jsx files of web/init) and by an HTML template: the size of a window whose content is such a
-// container, two .jsx files on one page, and the keys in fields a view or a custom cell renderer draws itself and in
-// the platform's own editors
+// container, the size of a grid such a container places, two .jsx files on one page, and the keys in fields a view or a
+// custom cell renderer draws itself and in the platform's own editors
 
 // the content of each is one container the platform does not draw, which draws a block of a fixed size and nothing the
 // platform measures: opened as a window, the form takes the size of what the container drew when it opened
@@ -104,6 +104,23 @@ FORM uiCustomContainerCell 'Cell'
     PROPERTIES() uiCustomContainerCellText CUSTOM 'uiCustomContainerCell', uiCustomContainerAfter
 ;
 
+// a grid the platform draws of forty numbers - more rows than it has room for in a small place -, placed by a React
+// view (UiCustomContainerSized) in a place whose height the test sets
+uiCustomContainerNumber 'Number' (INTEGER i) = i;
+
+FORM uiCustomContainerSized 'Sized'
+    OBJECTS i = INTEGER
+    PROPERTIES(i) READONLY uiCustomContainerNumber
+    FILTERS iterate(i, 1, 40)
+;
+
+DESIGN uiCustomContainerSized {
+    NEW sized FIRST {
+        custom = 'UiCustomContainerSized';
+        MOVE BOX(i) { custom = NULL; }
+    }
+}
+
 onWebClientInit() + {
     onWebClientInit('UiCustomContainer.js') <- 1;
 }
@@ -117,5 +134,6 @@ NAVIGATOR {
         NEW uiCustomContainerPlain;
         NEW uiCustomContainerPlaced;
         NEW uiCustomContainerCell;
+        NEW uiCustomContainerSized;
     }
 }

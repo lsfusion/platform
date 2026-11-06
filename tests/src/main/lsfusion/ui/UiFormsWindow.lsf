@@ -365,6 +365,18 @@ uiFormsWindowSeed (STRING[50] first, STRING[50] second) {
     APPLY;
 }
 
+// forty items shown from now on - more rows than the grid of Items has room for in a small place -, under names no
+// other attempt has
+uiFormsWindowSeedMany (STRING[50] prefix) {
+    uiFormsWindowShown(UiFormsWindowItem i) <- NULL;
+    FOR iterate(INTEGER n, 1, 40) DO
+        NEW i = UiFormsWindowItem {
+            uiFormsWindowName(i) <- prefix + ' ' + STRING(n);
+            uiFormsWindowShown(i) <- TRUE;
+        }
+    APPLY;
+}
+
 uiFormsWindowCheckBuilt (INTEGER expected) {
     assertEquals((OVERRIDE uiFormsWindowBuilt(), 0), expected, CONCAT ' ', 'First was built', (OVERRIDE uiFormsWindowBuilt(), 0), 'times, not', expected);
 }

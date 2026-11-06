@@ -39,6 +39,11 @@ window.UiCustomContainerPlaced = function () {
         React.createElement(window.lsfusion.Platform, { name: 'uiCustomContainerText' }));
 };
 
+// the place of the box of numbers the platform draws, in the form uiCustomContainerSized
+window.UiCustomContainerSized = function () {
+    return React.createElement(window.lsfusion.Platform, { name: 'BOX(i)', className: 'ui-custom-container-sized' });
+};
+
 // the custom cell renderer of uiCustomContainerCellText: a field of its own in the cell, which says nothing of what is
 // edited in it
 window.uiCustomContainerCell = function () {

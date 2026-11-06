@@ -352,6 +352,21 @@ public abstract class UiTest {
         answered(0, () -> { });
     }
 
+    // until the grids have asked for their page sizes and got the answers: a grid measured asks the server for the rows its
+    // place has room for a second later, and every answer to its form measures the form again (GFormLayout.update) - so
+    // what a test changes after this is measured only by what the change itself sets off
+    protected void gridsSettled() {
+        trackRequests(); // before the wait, so that a request sent during it is waited for too
+        page.waitForTimeout(1500);
+        settled();
+    }
+
+    // the place a React view put the view of the platform's that holds this element, made this tall - as the component
+    // would make it with its CSS
+    protected static void placeHeight(Locator inside, int height) {
+        inside.evaluate("(element, height) => { element.closest('.lsf-platform').style.height = height + 'px'; }", height);
+    }
+
     protected void popup(String text) {
         Locator popup = page.locator("[data-tippy-root]");
         assertThat(popup).hasText(text);

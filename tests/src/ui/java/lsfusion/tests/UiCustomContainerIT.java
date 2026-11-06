@@ -9,8 +9,9 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import static org.junit.Assert.assertTrue;
 
 // containers a React component or an HTML template draws (UiCustomContainer.lsf): the size of the window a form opens
-// in when such a container is its content, two no-build .jsx views on one page, and the form's ENTER and ESCAPE in
-// fields and blocks a view or a custom cell renderer draws itself, and in the platform's own editors
+// in when such a container is its content, the size a grid a component places is given, two no-build .jsx views on one
+// page, and the form's ENTER and ESCAPE in fields and blocks a view or a custom cell renderer draws itself, and in the
+// platform's own editors
 public class UiCustomContainerIT extends UiTest {
 
     private static final String FOLDER = "UiCustomContainer.uiCustomContainer";
@@ -44,6 +45,22 @@ public class UiCustomContainerIT extends UiTest {
 
     private static String box(BoundingBox box) {
         return Math.round(box.x) + "," + Math.round(box.y) + " " + Math.round(box.width) + "x" + Math.round(box.height);
+    }
+
+    // a grid the platform draws, placed by a React view, is given the size of its place whenever the view changes it, as
+    // it is when the page is resized: it keeps its selected row in sight as its place is made smaller
+    @Test
+    public void aPlacedGridIsGivenTheSizeTheViewGivesItsPlace() throws Exception {
+        Locator form = open(FOLDER, "UiCustomContainer.uiCustomContainerSized");
+        Locator row = cell(form, "uiCustomContainerNumber(i)", "15");
+        placeHeight(row, 600);
+        assertThat(row).isInViewport();
+        select(row);
+        gridsSettled(); // nothing on its way to the form any more, whose answer would measure it again
+
+        placeHeight(row, 350);
+        assertThat(row).isInViewport();
+        close(form);
     }
 
     // two .jsx files in web/init, each with a React view, both run on one page: what the transform adds to the classic

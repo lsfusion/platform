@@ -69,6 +69,11 @@ public class ReactContainerView extends ParkedContainerView {
             if (index >= 0) // if a SHOWIF already dropped the view there is nothing to park
                 parkChild(index);
         }
+
+        @Override
+        public void resized(String sid) {
+            resizeChildren();
+        }
     });
     // what the server has been told about the platform-drawn children: the SET this view places now, not the events
     // that led to it (reconcilePlaced). The children it was told are hidden - a child the server was told nothing about

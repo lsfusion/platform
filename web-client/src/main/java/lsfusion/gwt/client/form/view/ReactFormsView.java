@@ -16,6 +16,7 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.FormsWindowController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
 import java.util.List;
 
@@ -66,6 +67,11 @@ public class ReactFormsView implements FormsView {
             FormDockable dockable = byName.get(name);
             if (dockable != null) // still attached and alive, exactly as a background tab is
                 park.appendChild(dockable.getContentWidget().getElement());
+        }
+
+        @Override
+        public void resized(String name) {
+            FlexTabbedPanel.scheduleOnResize(byName.get(name).getContentWidget());
         }
     });
 
