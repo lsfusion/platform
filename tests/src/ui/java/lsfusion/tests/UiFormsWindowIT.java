@@ -395,6 +395,23 @@ public class UiFormsWindowIT extends UiTest {
         close(target);
     }
 
+    // two floating forms not waited for, opened one after the other from the same form, the launcher under them: the
+    // later one comes on top of the earlier one, the keyboard in it. A window the server waits for keeps under it the
+    // windows its opener's later requests open - those requests run only once it is closed -; one not waited for holds
+    // no request back, yet it kept the later one under it as well
+    @Test
+    public void aFloatingFormOpenedLaterFromTheSameFormComesOnTop() throws Exception {
+        Locator launcher = launcher(), third = form("UiFormsWindow.uiFormsWindowThird"), second = form(SECOND);
+        action(launcher, "uiFormsWindowThirdFloating").click();
+        assertThat(third).isVisible();
+        action(launcher, "uiFormsWindowSecondFloating").click();
+        assertThat(second).isVisible();
+        onTop(second);
+        assertThat(second.locator(":focus")).hasCount(1);
+        close(second);
+        close(third);
+    }
+
     // a form with two handlers of its close event, each opening the form already there with ACTIVATE: each handler
     // takes the activation the request carries and runs on - the form is not built again, both leave their mark -,
     // and the form closes. It is closed by its tab's close button: its Close button closes it with no close event
@@ -684,6 +701,15 @@ public class UiFormsWindowIT extends UiTest {
     // a form of the module inside a window or a form
     private static Locator in(Locator scope, String form) {
         return scope.locator("[lsfusion-form='UiFormsWindow." + form + "']");
+    }
+
+    // a click into the form reaches it - no other window is over it -, as playwright's checks before a click tell
+    private static void onTop(Locator form) {
+        try {
+            form.click(new Locator.ClickOptions().setTrial(true).setTimeout(5_000));
+        } catch (PlaywrightException e) {
+            throw new AssertionError("another window is over " + form, e);
+        }
     }
 
     // the button of an action pressed, and its request answered: what the window draws then is what the server's
