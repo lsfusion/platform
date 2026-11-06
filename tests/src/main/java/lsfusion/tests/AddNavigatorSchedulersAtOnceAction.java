@@ -36,7 +36,13 @@ public class AddNavigatorSchedulersAtOnceAction extends AtOnceAction {
             String failure;
             try {
                 failure = runWhileHeld(context, baseLM, "a thread scheduled an action while another one held the base module",
-                        () -> LM.addNavigatorScheduler(tick, new NavigatorScheduler(60, false)));
+                        () -> {
+                            try {
+                                LM.addNavigatorScheduler(tick, new NavigatorScheduler(60, false));
+                            } catch (ScriptingErrorLog.SemanticErrorException e) {
+                                throw Throwables.propagate(e);
+                            }
+                        });
             } finally {
                 baseLM.navigatorSchedulers = schedulers;
             }
