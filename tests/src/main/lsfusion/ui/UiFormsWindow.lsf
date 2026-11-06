@@ -3,8 +3,9 @@ MODULE UiFormsWindow;
 REQUIRE TestUtils, SystemEvents;
 
 // the FORMS windows UiFormsWindowIT works on in the browser - one that draws a form at a time and closes the form it
-// displaces, one that keeps it, one a React component draws (UiFormsWindow.js) -, the forms opened into them, the
-// launcher in System.forms whose buttons open, activate and close them, and the actions the test seeds and checks with
+// displaces, one that keeps it, one a React component draws (UiFormsWindow.js), one HIDE WINDOW hides -, the forms
+// opened into them, the launcher in System.forms whose buttons open, activate and close them, and the actions the test
+// seeds and checks with
 
 // bands above System.forms, each as tall as the form it draws: empty, they take no room, and the other browser tests
 // keep the layout they had. They are stacked in POSITION, one under another, and the first is two rows high, so that
@@ -13,6 +14,9 @@ REQUIRE TestUtils, SystemEvents;
 WINDOW uiFormsWindowOne 'One form' FORMS AUTOSIZE POSITION(20, 6, 80, 2) HIDETITLE CLASS 'ui-forms-window-one';
 WINDOW uiFormsWindowKeep 'Kept forms' FORMS NOCLOSE AUTOSIZE POSITION(20, 8, 80, 1) HIDETITLE CLASS 'ui-forms-window-keep';
 WINDOW uiFormsWindowBoard 'Board' FORMS AUTOSIZE POSITION(20, 9, 80, 1) HIDETITLE CLASS 'ui-forms-window-board' CUSTOM 'UiFormsWindowBoard';
+// ... and one the layout never draws: what is opened into it is open, and not seen
+WINDOW uiFormsWindowHidden 'Hidden' FORMS AUTOSIZE POSITION(20, 10, 80, 1) HIDETITLE CLASS 'ui-forms-window-hidden';
+HIDE WINDOW uiFormsWindowHidden;
 
 CLASS UiFormsWindowItem 'Item';
 uiFormsWindowName 'Name' = DATA STRING[50] (UiFormsWindowItem);
@@ -385,3 +389,10 @@ uiFormsWindowCheckStored (STRING expected) {
 uiFormsWindowCheckMarks (TEXT expected) {
     assertEquals(uiFormsWindowMarks(), expected, CONCAT ' ', 'the marks are', (OVERRIDE uiFormsWindowMarks(), 'none'), 'not', expected);
 }
+
+// ---------------------------------------------------------------- where the keyboard goes
+
+// the launcher's open of Second into the hidden window, and its key, which runs while the keyboard is the launcher's
+uiFormsWindowSecondIntoHidden 'Second into hidden' () { SHOW uiFormsWindowSecond WINDOW uiFormsWindowHidden NOWAIT; }
+uiFormsWindowLauncherKeyboard 'Launcher keyboard' () { uiFormsWindowMark('launcher keyboard'); } CHANGEKEY 'F9';
+EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowSecondIntoHidden, uiFormsWindowLauncherKeyboard;

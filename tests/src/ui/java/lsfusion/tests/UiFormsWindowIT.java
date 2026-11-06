@@ -19,9 +19,9 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 
 // the FORMS windows of an application (UiFormsWindow.lsf): what a window that draws one form at a time does with the
 // form it displaces - closes it, asks about its changes, keeps it -, docked-modal pairs in it, the address ACTIVATE
-// FORM and CLOSE FORM name a form by, an open that activates the form it finds, a value a React view supplies, and a
-// window a React component draws. The forms are opened from the buttons of a launcher in System.forms, or from the
-// navigator
+// FORM and CLOSE FORM name a form by, an open that activates the form it finds, a value a React view supplies, a window
+// HIDE WINDOW hides, and a window a React component draws. The forms are opened from the buttons of a launcher in
+// System.forms, or from the navigator
 public class UiFormsWindowIT extends UiTest {
 
     private static final String FOLDER = "UiFormsWindow.uiFormsWindow";
@@ -578,6 +578,18 @@ public class UiFormsWindowIT extends UiTest {
         close(form);
     }
 
+    // a form opened into a window HIDE WINDOW leaves undrawn is open, and not seen, and does not take the keyboard: the
+    // form the user works in keeps it
+    @Test
+    public void aFormOpenedIntoAHiddenWindowLeavesTheKeyboardWhereItIs() throws Exception {
+        seed();
+        Locator launcher = launcher(), second = form(SECOND);
+        action(launcher, "uiFormsWindowSecondIntoHidden").click();
+        assertThat(second).hasCount(1);
+        assertThat(second).isHidden();
+        launcherHasTheKeyboard();
+    }
+
     // ---------------------------------------------------------------- a window a React component draws
 
     // a window a React component draws closes nothing by itself, though it is declared to close a displaced form at
@@ -970,6 +982,14 @@ public class UiFormsWindowIT extends UiTest {
     private void place(String what) {
         page.waitForFunction("() => !!window.uiFormsWindowBoard");
         page.evaluate("what => window.uiFormsWindowBoard.place(what)", what);
+    }
+
+    // the keyboard is the launcher's: its key runs with the focus nowhere - on the page itself, which hands a key to
+    // the form the keyboard works in
+    private void launcherHasTheKeyboard() throws Exception {
+        page.evaluate("() => document.activeElement.blur()");
+        press("F9");
+        marks("launcher keyboard");
     }
 
     // until the board's component is given exactly the forms named - by their canonical names, in the order given,

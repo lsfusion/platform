@@ -99,7 +99,10 @@ public class FormsWindowController {
             public void selected(int index) {
                 if(index >= 0) {
                     cancelClosing(forms.get(index));
-                    if (!keepFocus) // the keyboard is already where it belongs
+                    // keepFocus: the keyboard is already where it belongs. A form a window does not show - one HIDE WINDOW
+                    // leaves undrawn still holds its forms - takes none either; a component draws the form only after the
+                    // selection, so its window does not ask
+                    if (!keepFocus && (window.react || GwtClientUtils.isShowing(forms.get(index).getContentWidget())))
                         forms.get(index).onFocus(isAdding);
                     formFocusOrder.set(index, focusOrderCount++);
                     isAdding = false;
