@@ -688,6 +688,105 @@ console.log('useSeekOnScroll');
         check('a hook outside the view the platform draws does nothing, and says so', view.seeks.length === 0
             && w.__errors.length === 1 && w.__errors[0].indexOf('outside the view') > 0, JSON.stringify(w.__errors));
     }
+
+    // the window the server reads, in a box of the view's own: rows of 10px laid out in their order under a header of
+    // the view's (`head` px), 100px of the box on screen, each row's box where its place and the box's scroll put it.
+    // show() is one answer of the server - drawn, committed in React's order (the refs of the rows gone let go, the DOM
+    // changed, the rows come handed over; the rows kept are not handed again) and its effects run -, frame() the
+    // browser's next frame: what it scheduled, then what the box shows told to the observer, then the settle
+    const windowed = (w, run) => {
+        const root = node(null);
+        const box = node(root, { overflowY: 'auto', clientHeight: 100, rect: { top: 0, bottom: 100 } });
+        let laid = [], top = 0, head = 0;
+        Object.defineProperties(box, { // the browser keeps the scroll within the content
+            scrollHeight: { get: () => head + laid.length * 10 },
+            scrollTop: { get: () => top, set: (v) => { top = Math.max(0, Math.min(v, head + laid.length * 10 - 100)); } },
+        });
+        const elements = new Map();
+        const rowOf = (n) => {
+            if (!elements.has(n)) {
+                const el = node(box, {
+                    getBoundingClientRect() { const at = head + laid.indexOf(this) * 10 - top; return { top: at, bottom: at + 10 }; },
+                    compareDocumentPosition(other) { return laid.indexOf(other) > laid.indexOf(this) ? 4 : 2; },
+                });
+                Object.defineProperty(el, 'isConnected', { get: () => laid.includes(el) });
+                elements.set(n, el);
+            }
+            return elements.get(n);
+        };
+        const seeks = [], controller = { change: (row) => seeks.push(row.key) }, hook = instance();
+        let refs = new Map();
+        const show = (from, to, current) => {
+            makeReact.__ctxValue = { element: root, view: null, store: null };
+            const seekRef = render(hook, () => w.lsfusion.useSeekOnScroll(controller));
+            const next = new Map();
+            for (let n = from; n <= to; n++)
+                next.set(n, seekRef({ key: String(n), isCurrent: n === current }));
+            refs.forEach((ref, n) => { if (!next.has(n)) ref(null); });
+            laid = [...next.keys()].map(rowOf);
+            next.forEach((ref, n) => { if (!refs.has(n)) ref(rowOf(n)); });
+            refs = next;
+            flushEffects();
+        };
+        const frame = () => {
+            run();
+            w.__observer.callback(laid.map(el => {
+                const r = el.getBoundingClientRect(), seen = Math.max(0, Math.min(r.bottom, 100) - Math.max(r.top, 0)) / 10;
+                return { target: el, isIntersecting: seen > 0, intersectionRatio: seen };
+            }));
+            run();
+        };
+        return { box, seeks, show, frame, at: (n) => rowOf(n).getBoundingClientRect().top, grow: (px) => { head += px; } };
+    };
+    // a page of 50, rows 1..150 read, the first one current; the user scrolls 111..120 into sight, so the hook reseats
+    // the current on 111; the server answers with 111 current and the window a page further down, 51..200
+    const soughtOnShift = (w, run) => {
+        const view = windowed(w, run);
+        view.show(1, 150, 1);
+        view.frame();
+        view.box.scrollTop = 1100;
+        view.frame();
+        view.show(51, 200, 111);
+        view.frame();
+        return view;
+    };
+
+    {
+        const w = load(), run = browser(w);
+        const view = soughtOnShift(w, run);
+        check("the hook's own seek landing on a window a page further: the row it sought stays where it was on screen",
+            view.seeks.join() === '111' && view.at(111) === 0, view.seeks.join() + ' ' + view.at(111));
+        // ACTIVATE LAST: rows 101..250 read, 250 current - and 111, the row the hook sought, still among them
+        view.show(101, 250, 250);
+        view.frame();
+        check('...then a jump from outside that keeps that row in the window: the new current is scrolled into view',
+            view.at(250) >= 0 && view.at(250) <= 90, view.at(250));
+        check('...and nothing is sought away from it', view.seeks.join() === '111', view.seeks.join());
+        check("...and the box's own anchoring is given back", view.box.style.overflowAnchor === undefined,
+            view.box.style.overflowAnchor);
+    }
+    {
+        const w = load(), run = browser(w);
+        const view = soughtOnShift(w, run);
+        // ACTIVATE of 115, a row on screen, 40px down: the window read around it, 40..189 - eleven rows more above
+        view.show(40, 189, 115);
+        view.frame();
+        check('a current moved from outside onto a row on screen, the window shifting under it: it stays where it was',
+            view.at(115) === 40, view.at(115));
+        check('...and nothing is sought away from it', view.seeks.join() === '111', view.seeks.join());
+    }
+    {
+        const w = load(), run = browser(w);
+        const view = soughtOnShift(w, run);
+        // the view's header grows by 30px, mounting no row: the rows on screen go down by as much, and stay there
+        view.grow(30);
+        view.frame();
+        // a click on 115, 70px down: the same window, nothing mounted or gone
+        view.show(51, 200, 115);
+        view.frame();
+        check('a current moved from outside with no row mounted or gone: the box is not corrected for a shift that came'
+            + ' before it', view.at(115) === 70 && view.seeks.join() === '111', view.at(115) + ' ' + view.seeks.join());
+    }
 }
 
 // ---- the registry itself ---------------------------------------------------------------------------------------

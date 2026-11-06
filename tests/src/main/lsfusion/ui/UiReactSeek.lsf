@@ -1,0 +1,62 @@
+MODULE UiReactSeek;
+
+REQUIRE System, Utils, SystemEvents;
+
+// the form UiReactSeekIT works on in the browser - numbered items a React view (UiReactSeek.js) scrolls in a box of
+// its own, read with the server's default page size -, the ACTIVATEs it moves the current row with from outside the
+// view, and the actions that seed the items and aim the last ACTIVATE
+CLASS UiReactSeekItem 'Item';
+uiReactSeekNumber 'Number' = DATA INTEGER (UiReactSeekItem);
+uiReactSeekShown = DATA BOOLEAN (UiReactSeekItem); // only the items of the test that seeded last are shown
+uiReactSeekByNumber = GROUP AGGR UiReactSeekItem i WHERE uiReactSeekShown(i) BY uiReactSeekNumber(i);
+uiReactSeekAim = DATA INTEGER ();
+
+FORM uiReactSeekCards 'Seek cards'
+    OBJECTS i = UiReactSeekItem
+    PROPERTIES(i) READONLY number = uiReactSeekNumber
+    FILTERS uiReactSeekShown(i)
+    ORDERS number
+;
+
+uiReactSeekLast 'To last' () { ACTIVATE LAST uiReactSeekCards.i; }
+uiReactSeek400 'To 400' () { ACTIVATE uiReactSeekCards.i = uiReactSeekByNumber(400); }
+uiReactSeekToAim 'To aim' () { ACTIVATE uiReactSeekCards.i = uiReactSeekByNumber(uiReactSeekAim()); }
+
+EXTEND FORM uiReactSeekCards
+    PROPERTIES() toLast = uiReactSeekLast, to400 = uiReactSeek400, toAim = uiReactSeekToAim
+;
+
+DESIGN uiReactSeekCards {
+    NEW uiReactSeekView FIRST {
+        custom = 'UiReactSeekCards';
+        MOVE BOX(i);
+        MOVE PROPERTY(toLast);
+        MOVE PROPERTY(to400);
+        MOVE PROPERTY(toAim);
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiReactSeek.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiReactSeek 'UI React seek' WINDOW toolbar {
+        NEW uiReactSeekCards;
+    }
+}
+
+uiReactSeekSeed (INTEGER n) {
+    uiReactSeekShown(UiReactSeekItem i) <- NULL;
+    FOR iterate(INTEGER k, 1, n) DO
+        NEW i = UiReactSeekItem {
+            uiReactSeekNumber(i) <- k;
+            uiReactSeekShown(i) <- TRUE;
+        }
+    APPLY;
+}
+
+uiReactSeekSetAim (INTEGER n) {
+    uiReactSeekAim() <- n;
+    APPLY;
+}

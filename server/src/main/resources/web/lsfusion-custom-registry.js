@@ -533,6 +533,13 @@
                 t.lastCurrentKey = key;
                 if (key != null && key === t.asked) { t.asked = null; return undefined; } // our seek landed
                 if (cur && enabled) {
+                    // the row the hook sought is no longer the one to hold, so the anchor goes - once the shift this
+                    // commit made is corrected for, as the grid keeps its viewport before it shows the new selection:
+                    // left to the next frame, that correction would take the view away from the row shown below. Only
+                    // rows mounted or unmounted have one due: a shift that came otherwise - a row grown above - was
+                    // never corrected, and is not this move's to correct
+                    if (t.raf != null) { cancelAnimationFrame(t.raf); t.raf = null; compensate(); }
+                    dropAnchor();
                     var sc = scrollerOf(cur.el);
                     // nothing of the view's own scrolls the row: if it is out of sight, the hook cannot bring it in
                     if (!sc) {
