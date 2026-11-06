@@ -1202,9 +1202,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private static class ParamRef<K> {
         public K param;
+        public final ConcurrentIdentityWeakHashSet<ParamRef<K>> paramRefs; // the set of the property's refs it is in
 
-        public ParamRef(K param) {
+        public ParamRef(K param, ConcurrentIdentityWeakHashSet<ParamRef<K>> paramRefs) {
             this.param = param;
+            this.paramRefs = paramRefs;
         }
 
         private void drop() {
@@ -1263,20 +1265,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         public V proceed(ActionOrProperty property, K param, SQLCallable<V> function) throws SQLException, SQLHandledException {
+            ConcurrentIdentityWeakHashSet<ParamRef<K>> paramRefs = propCache.get(property);
             ValueRef<K, V> valueRef = valueCache.get(property, param);
-            if(valueRef != null && valueRef.ref.param != null)
+            // flush drops only the refs in the sets propCache has, and propCache can let a set go (lru) or get another one put over it (two first reads at once) while the values registered in it are still read
+            if(valueRef != null && valueRef.ref.param != null && valueRef.ref.paramRefs == paramRefs)
                 return valueRef.values;
 
             // has to be before reading to be sure that ref will be dropped when changes are made
-            ParamRef<K> ref = new ParamRef<>(param);
-            ConcurrentIdentityWeakHashSet<ParamRef<K>> paramRefs;
-            synchronized (propCache) { // two reads of one property at once each put a set of their own, and a flush never got to the refs of the set replaced
-                paramRefs = propCache.get(property);
-                if(paramRefs == null) {
-                    paramRefs = new ConcurrentIdentityWeakHashSet<>();
-                    propCache.put(property, paramRefs);
-                }
+            if(paramRefs == null) {
+                paramRefs = new ConcurrentIdentityWeakHashSet<>();
+                propCache.put(property, paramRefs);
             }
+            ParamRef<K> ref = new ParamRef<>(param, paramRefs);
             paramRefs.add(ref);
 
             V values = function.call();

@@ -1,0 +1,61 @@
+MODULE LazyFlush;
+
+REQUIRE TestUtils;
+
+// the server caches the values of LAZY properties until the properties they depend on change : a read registers itself
+// in a set of the property's reads, and a change drops the reads of the sets it reaches. The sets and the values are
+// kept in two LRU maps, a set used only by the reads that miss, a value by every read : the map of the sets let a set
+// go while its values went on being read, and the changes after that never reached them - the values were read stale
+// through any number of changes, as long as they were read often enough (#1967). The same befell a read registered in
+// a set another one was put over, as two first reads of a property at once left it
+
+lfWait = DATA INTEGER () LAZY WAIT;
+lfNoWait = DATA INTEGER () LAZY;
+lfReplaced = DATA INTEGER () LAZY WAIT;
+
+lfLetGoSets INTERNAL 'lsfusion.tests.LetGoLazyValueSetsAction' ();
+lfReplaceSet INTERNAL 'lsfusion.tests.ReplaceLazyValueSetAction' ();
+lfFlush INTERNAL 'lsfusion.tests.FlushLazyValuesAction' ();
+
+// a LAZY property is read from the cache as an argument, and from the database in an expression - the message, say
+lfAssertRead (INTEGER read, INTEGER expected, STRING property) {
+    assertEquals(read, expected, property + ' read ' + read + ', not ' + expected);
+}
+
+testLazyFlushedWithItsSetLetGo 'A change flushes the cached values of LAZY properties whose sets of reads were let go' () {
+    NEWSESSION {
+        lfWait() <- 1;
+        lfNoWait() <- 1;
+        APPLY;
+    }
+    lfFlush(); // a change reads the cached value first, and for NOWAIT the one from before the change stays till a flush
+    lfAssertRead(lfWait(), 1, 'LAZY WAIT');
+    lfAssertRead(lfNoWait(), 1, 'LAZY NOWAIT');
+
+    lfLetGoSets();
+
+    NEWSESSION {
+        lfWait() <- 2;
+        lfNoWait() <- 2;
+        APPLY;
+    }
+    lfFlush();
+    lfAssertRead(lfWait(), 2, 'LAZY WAIT');
+    lfAssertRead(lfNoWait(), 2, 'LAZY NOWAIT');
+}
+
+testLazyFlushedWithItsSetReplaced 'A change flushes the cached value of a LAZY property whose set of reads another one replaced' () {
+    NEWSESSION {
+        lfReplaced() <- 1;
+        APPLY;
+    }
+    lfAssertRead(lfReplaced(), 1, 'LAZY');
+
+    lfReplaceSet();
+
+    NEWSESSION {
+        lfReplaced() <- 2;
+        APPLY;
+    }
+    lfAssertRead(lfReplaced(), 2, 'LAZY');
+}
