@@ -1269,10 +1269,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             // has to be before reading to be sure that ref will be dropped when changes are made
             ParamRef<K> ref = new ParamRef<>(param);
-            ConcurrentIdentityWeakHashSet<ParamRef<K>> paramRefs = propCache.get(property);
-            if(paramRefs == null) {
-                paramRefs = new ConcurrentIdentityWeakHashSet<>();
-                propCache.put(property, paramRefs);
+            ConcurrentIdentityWeakHashSet<ParamRef<K>> paramRefs;
+            synchronized (propCache) { // two reads of one property at once each put a set of their own, and a flush never got to the refs of the set replaced
+                paramRefs = propCache.get(property);
+                if(paramRefs == null) {
+                    paramRefs = new ConcurrentIdentityWeakHashSet<>();
+                    propCache.put(property, paramRefs);
+                }
             }
             paramRefs.add(ref);
 
