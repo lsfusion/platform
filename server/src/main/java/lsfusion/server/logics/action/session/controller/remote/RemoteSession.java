@@ -72,7 +72,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
                     findActionName = findActionName.substring(0, lastSlash);
                 }
                 if (action != null) {
-                    result = executeExternal(action, request);
+                    result = executeExternal(action, false, request);
                 } else {
                     throw new RuntimeException(String.format("Action %s was not found", actionName));
                 }
@@ -94,7 +94,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
                 String script = StringClass.text.parseHTTP(paramScript, charset);
                 LA<?> runAction = businessLogics.evaluateRun(script, action);
                 if(runAction != null) {
-                    result = executeExternal(runAction, request);
+                    result = executeExternal(runAction, true, request);
                 } else {
                     throw new RuntimeException("Action with name 'run' was not found");
                 }
@@ -107,8 +107,8 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         return result;
     }
 
-    private ExternalResponse executeExternal(LA<?> property, ExternalRequest request) throws SQLException, ParseException, SQLHandledException, IOException {
-        checkEnableApi(property);
+    private ExternalResponse executeExternal(LA<?> property, boolean script, ExternalRequest request) throws SQLException, ParseException, SQLHandledException, IOException {
+        checkEnableApi(property, script);
 
         writeRequestInfo(dataSession, property.action, request);
 
@@ -139,10 +139,10 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         return super.getCurrentAuthToken();
     }
 
-    private void checkEnableApi(LA<?> property) {
+    private void checkEnableApi(LA<?> property, boolean script) {
         boolean forceAPI = false;
         String annotation = property.action.annotation;
-        if(annotation != null) {
+        if(annotation != null && !script) { // the annotation of a script's run is written by the caller, not by the developer
             if(annotation.equals("noauth"))
                 return;
             forceAPI = annotation.equals("api");
