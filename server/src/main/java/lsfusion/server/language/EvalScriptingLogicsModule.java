@@ -8,7 +8,10 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.session.LocalNestedType;
+import lsfusion.server.language.action.LA;
+import lsfusion.server.language.navigator.window.NavigatorWindowOptions;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.property.LazyProperty;
@@ -176,6 +179,46 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
         return super.addScriptedDProp(returnClass, paramClasses, signature, true, innerProp, isLocalScope, nestedType);
     }
     
+    // the navigator, the windows and what other modules' properties and actions run are the whole server's : a script would change
+    // them for every user, and what it puts there - an element's property, an ASON handler, a BEFORE / AFTER aspect - would run in
+    // their sessions
+    @Override
+    public void addScriptedWindow(WindowType type, String name, LocalizedString captionStr, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+        emitEvalError("WINDOW statement");
+    }
+
+    @Override
+    public void hideWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
+        emitEvalError("HIDE WINDOW statement");
+    }
+
+    @Override
+    public NavigatorElement createScriptedNavigatorElement(String name, LocalizedString caption, DebugInfo.DebugPoint point,
+                                                           NamedPropertyUsage actionUsage, String formName, boolean isAction) throws ScriptingErrorLog.SemanticErrorException {
+        emitEvalError("NAVIGATOR statement");
+        return null;
+    }
+
+    @Override
+    public void setupNavigatorElement(NavigatorElement element, LocalizedString caption, NavigatorElement parentElement, NavigatorElementOptions options, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
+        emitEvalError("NAVIGATOR statement");
+    }
+
+    @Override
+    public void addToContextMenuFor(LA onContextAction, LocalizedString contextMenuCaption, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
+        emitEvalError("ASON option");
+    }
+
+    @Override
+    public void setAsEventActionFor(LA eventAction, String eventActionSID, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
+        emitEvalError("ASON option");
+    }
+
+    @Override
+    public void addScriptedAspect(NamedPropertyUsage mainPropUsage, List<TypedParameter> mainPropParams, LAWithParams action, boolean before) throws ScriptingErrorLog.SemanticErrorException {
+        emitEvalError(before ? "BEFORE statement" : "AFTER statement");
+    }
+
     private void emitEvalError(String errorPrefix) throws ScriptingErrorLog.SemanticErrorException {
         errLog.emitEvalModuleError(parser, errorPrefix);
     }
