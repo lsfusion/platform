@@ -1275,8 +1275,8 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
 
     public String getCustomRenderFunction(FormInstanceContext context) {
         Select selectProperty = getCustomSelectProperty(context);
-        if(selectProperty != null)
-            return "select" + selectProperty.type + (selectProperty.html ? "HTML" : "") + (selectProperty.changeValue ? "Value" : "") + selectProperty.elementType;
+        if(selectProperty != null) // select.js's function of the element, given the selection's parameters as data (GSelect)
+            return "select" + selectProperty.elementType;
 
         return getCustom();
     }

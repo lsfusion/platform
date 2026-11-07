@@ -233,6 +233,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean select;
     public boolean selectMulti;
     public boolean selectNotNull;
+    public boolean selectHtml;
     public boolean selectChangeValue;
     public String selectSeparator;
 
@@ -734,6 +735,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (select) {
             selectMulti = inStream.readBoolean();
             selectNotNull = inStream.readBoolean();
+            selectHtml = inStream.readBoolean();
             selectChangeValue = inStream.readBoolean();
             selectSeparator = pool.readString(inStream);
         }

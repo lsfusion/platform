@@ -21,7 +21,7 @@ public class UiSelectIT extends UiTest {
 
     // a SELECT with NOCUSTOM is drawn by the platform inside a React view, which places it - in the panel, per row -, and
     // picks as the platform's element picks; a render function given in CUSTOM draws a SELECT, given the options as that
-    // element is
+    // element is, and the kind of the selection as its argument
     @Test
     public void aSelectionThePlatformDrawsInAReactView() throws Exception {
         String[] orders = seed();
@@ -37,12 +37,35 @@ public class UiSelectIT extends UiTest {
 
         assertThat(text(form, "fn New")).hasAttribute("aria-pressed", "true");
         assertThat(text(form, "fn Lost")).hasAttribute("aria-pressed", "false");
+        assertThat(form.locator(".ui-select-fn [data-ui-select-kind]")).hasAttribute("data-ui-select-kind",
+                "{\"multi\":false,\"notNull\":false,\"html\":false,\"changeValue\":false}");
         text(form, "fn Lost").click();
         assertThat(text(form, "fn Lost")).hasAttribute("aria-pressed", "true");
 
         save(form);
         check("UiSelect.uiSelectCheckStatus", orders[1], "Done");
         check("UiSelect.uiSelectCheckStatus", orders[0], "Lost");
+        close(form);
+    }
+
+    // a render function given in CUSTOM is given the kind of each selection: a value that has to be there with HTML
+    // views and an explicit INPUT, several values, one value or none; each draws its options, including the multi list
+    @Test
+    public void theKindsARenderFunctionIsGiven() throws Exception {
+        String task = seedTask();
+        Locator form = open("UiSelect.uiSelect", "UiSelect.uiSelectFnKinds");
+        assertThat(property(form, "phaseHtmlValue")).hasAttribute("data-ui-select-kind",
+                "{\"multi\":false,\"notNull\":true,\"html\":true,\"changeValue\":true}");
+        assertThat(property(form, "tags")).hasAttribute("data-ui-select-kind",
+                "{\"multi\":true,\"notNull\":false,\"html\":false,\"changeValue\":false}");
+        assertThat(property(form, "status")).hasAttribute("data-ui-select-kind",
+                "{\"multi\":false,\"notNull\":false,\"html\":false,\"changeValue\":false}");
+        assertThat(property(form, "phaseHtmlValue").locator("button")).hasCount(3);
+        assertThat(property(form, "tags").locator("button")).hasText(new String[] {"fn blue", "fn green", "fn red"});
+        assertThat(text(property(form, "tags"), "fn red")).hasAttribute("aria-pressed", "true");
+        assertThat(text(property(form, "tags"), "fn green")).hasAttribute("aria-pressed", "false");
+        assertThat(text(property(form, "status"), "fn New")).hasAttribute("aria-pressed", "true");
+        check("UiSelect.uiSelectCheckTask", task, "New / New / red");
         close(form);
     }
 

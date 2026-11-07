@@ -21,7 +21,7 @@ import java.util.List;
 // client is sent for the form's current objects (PropertyDrawInstance.getReaderProperty) - where the form builds a
 // selection for the property, the list of its options -, written into sentInForm as text, and the function it tells the
 // client to draw the property by - a render function given in CUSTOM, the platform's element of the property's
-// selection (select<type><element>), or none -, written into renderInForm, of a selection of several values the text
+// selection (select<element>), or none -, written into renderInForm, of a selection of several values the text
 // its value joins the options by, written into separatorInForm, and the parameters of a selection - the words multi,
 // notNull, html, changeValue of the ones it has, none for none -, written into selectInForm
 public class ReadSentAction extends InternalAction {

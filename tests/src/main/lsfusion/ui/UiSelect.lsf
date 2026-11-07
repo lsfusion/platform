@@ -83,6 +83,16 @@ uiSelectChangeHtmlPhase (UiSelectTask t) { INPUT s = uiSelectTaskPhaseOf(t) LIST
 uiSelectChangeStatus (UiSelectTask t) { INPUT s = uiSelectTaskStatusOf(t) LIST uiSelectStatusName(s) DO uiSelectTaskStatusOf(t) <- s; }
 uiSelectChangeHtmlStatus (UiSelectTask t) { INPUT s = uiSelectTaskStatusOf(t) LIST uiSelectStatusHtml(s) DO uiSelectTaskStatusOf(t) <- s; }
 
+// the kinds a render function given in CUSTOM is given: a value that has to be there, HTML, an explicit INPUT;
+// several values; one value or none. The function only draws them here, keeping its argument for the browser test
+FORM uiSelectFnKinds 'Render function kinds'
+    OBJECTS t = UiSelectTask PANEL
+    PROPERTIES(t) phaseHtmlValue 'Phase, HTML, to the INPUT' = uiSelectTaskHtmlPhase SELECT CUSTOM 'uiSelectFn' ON CHANGE uiSelectChangeHtmlPhase(t),
+                  tags 'Tags' = uiSelectTaskTags SELECT CUSTOM 'uiSelectFn',
+                  status 'Status' = uiSelectTaskStatus SELECT CUSTOM 'uiSelectFn'
+    FILTERS uiSelectTaskShown(t)
+;
+
 // a change of the server's own, never saved - an option renamed, one deleted, one added -: of the statuses New renamed
 // Fresh, Lost deleted, Late added and the task's phase, its status none; of the tags red renamed crimson, blue deleted,
 // black added and the task's tags black and green
@@ -275,6 +285,7 @@ NAVIGATOR {
         NEW uiSelectReadonly;
         NEW uiSelectReadonlyKinds;
         NEW uiSelectReadonlyIf;
+        NEW uiSelectFnKinds;
         NEW uiSelectRows;
         NEW uiSelectOpenDropdown;
     }

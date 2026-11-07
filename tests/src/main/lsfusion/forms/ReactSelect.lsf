@@ -89,7 +89,7 @@ testRsSelectionApartFromWhoDraws 'A selection is apart from who draws the proper
         rsStatus(o) <- GROUP MAX RsStatus s IF rsName(s) = 'Done';
         SHOW rsSelects OBJECTS o = o NOWAIT {
             readSent('placed');
-            assertEquals(renderInForm('placed'), 'selectNullButtonGroup', CONCAT '', 'SELECT with NOCUSTOM is drawn by ',
+            assertEquals(renderInForm('placed'), 'selectButtonGroup', CONCAT '', 'SELECT with NOCUSTOM is drawn by ',
                          (OVERRIDE renderInForm('placed'), 'nothing'), ', not by the element of the platform');
             readSent('drawnBy');
             assertEquals(renderInForm('drawnBy'), 'rsStatusButtons', CONCAT '', 'SELECT with CUSTOM is drawn by ',
@@ -105,7 +105,7 @@ testRsSelectionApartFromWhoDraws 'A selection is apart from who draws the proper
             assertTrue(NOT renderInForm('edited'), CONCAT '', 'SELECT given after CUSTOM CHANGE is drawn by ',
                        renderInForm('edited'), ': the editor is dropped');
             readSent('designed');
-            assertEquals(renderInForm('designed'), 'selectNullDropdown', CONCAT '', 'select with custom = NULL after it is drawn by ',
+            assertEquals(renderInForm('designed'), 'selectDropdown', CONCAT '', 'select with custom = NULL after it is drawn by ',
                          (OVERRIDE renderInForm('designed'), 'nothing'), ', not by the element of the platform');
         };
     }
@@ -121,7 +121,7 @@ testRsSelectionEmbedded 'A form embedding another has its selections apart from 
     NEW o = RsOrder {
         SHOW rsEmbedded OBJECTS o = o NOWAIT {
             readSent('placed');
-            assertEquals(renderInForm('placed'), 'selectNullButtonGroup', CONCAT '', 'an embedded SELECT with NOCUSTOM is drawn by ',
+            assertEquals(renderInForm('placed'), 'selectButtonGroup', CONCAT '', 'an embedded SELECT with NOCUSTOM is drawn by ',
                          (OVERRIDE renderInForm('placed'), 'nothing'), ', not by the element of the platform');
             readSent('drawnBy');
             assertEquals(renderInForm('drawnBy'), 'rsStatusButtons', CONCAT '', 'an embedded SELECT with CUSTOM is drawn by ',
@@ -251,7 +251,8 @@ testRsAllOptionsForAReactView 'A React view is given all the options of a select
 // to draw it by: the element SELECT names - a list, buttons, a button group, a drop-down list, an input -, the selection
 // - of one value that has to be there (a task's phase), of one value or none (its status), of several values (its tags)
 // -, the options viewed as text or as HTML, a pick of one value given to the property or to its explicit INPUT as the
-// option's view (Value). The platform's element is its render function (select.js), named by all of them
+// option's view (Value). The platform's element is a render function of select.js named by the element, given the
+// selection's parameters as data
 rsStatusHtml 'Status' (RsStatus s) = HTMLTEXT('<b>' + rsName(s) + '</b>');
 rsTagHtml 'Tag' (RsTag t) = HTMLTEXT('<i>' + rsTagName(t) + '</i>');
 
@@ -324,55 +325,55 @@ testRsElementOfEachKind 'The element of the platform of each kind of a selection
         rsTaskPhaseOf(t) <- GROUP MAX RsStatus s IF rsName(s) = 'New';
         SHOW rsList OBJECTS t = t NOWAIT {
             rsAssertDrawnBy('phase', 'selectList', 'notNull');
-            rsAssertDrawnBy('phaseValue', 'selectValueList', 'notNull changeValue');
-            rsAssertDrawnBy('phaseHtml', 'selectHTMLList', 'notNull html');
-            rsAssertDrawnBy('phaseHtmlValue', 'selectHTMLValueList', 'notNull html changeValue');
-            rsAssertDrawnBy('status', 'selectNullList', 'none');
-            rsAssertDrawnBy('statusValue', 'selectNullValueList', 'changeValue');
-            rsAssertDrawnBy('statusHtml', 'selectNullHTMLList', 'html');
-            rsAssertDrawnBy('statusHtmlValue', 'selectNullHTMLValueList', 'html changeValue');
-            rsAssertDrawnBy('tags', 'selectMultiList', 'multi');
-            rsAssertDrawnBy('tagsHtml', 'selectMultiHTMLList', 'multi html');
+            rsAssertDrawnBy('phaseValue', 'selectList', 'notNull changeValue');
+            rsAssertDrawnBy('phaseHtml', 'selectList', 'notNull html');
+            rsAssertDrawnBy('phaseHtmlValue', 'selectList', 'notNull html changeValue');
+            rsAssertDrawnBy('status', 'selectList', 'none');
+            rsAssertDrawnBy('statusValue', 'selectList', 'changeValue');
+            rsAssertDrawnBy('statusHtml', 'selectList', 'html');
+            rsAssertDrawnBy('statusHtmlValue', 'selectList', 'html changeValue');
+            rsAssertDrawnBy('tags', 'selectList', 'multi');
+            rsAssertDrawnBy('tagsHtml', 'selectList', 'multi html');
         };
         SHOW rsButton OBJECTS t = t NOWAIT {
             rsAssertDrawnBy('phase', 'selectButton', 'notNull');
-            rsAssertDrawnBy('phaseValue', 'selectValueButton', 'notNull changeValue');
-            rsAssertDrawnBy('phaseHtml', 'selectHTMLButton', 'notNull html');
-            rsAssertDrawnBy('phaseHtmlValue', 'selectHTMLValueButton', 'notNull html changeValue');
-            rsAssertDrawnBy('status', 'selectNullButton', 'none');
-            rsAssertDrawnBy('statusValue', 'selectNullValueButton', 'changeValue');
-            rsAssertDrawnBy('statusHtml', 'selectNullHTMLButton', 'html');
-            rsAssertDrawnBy('statusHtmlValue', 'selectNullHTMLValueButton', 'html changeValue');
-            rsAssertDrawnBy('tags', 'selectMultiButton', 'multi');
-            rsAssertDrawnBy('tagsHtml', 'selectMultiHTMLButton', 'multi html');
+            rsAssertDrawnBy('phaseValue', 'selectButton', 'notNull changeValue');
+            rsAssertDrawnBy('phaseHtml', 'selectButton', 'notNull html');
+            rsAssertDrawnBy('phaseHtmlValue', 'selectButton', 'notNull html changeValue');
+            rsAssertDrawnBy('status', 'selectButton', 'none');
+            rsAssertDrawnBy('statusValue', 'selectButton', 'changeValue');
+            rsAssertDrawnBy('statusHtml', 'selectButton', 'html');
+            rsAssertDrawnBy('statusHtmlValue', 'selectButton', 'html changeValue');
+            rsAssertDrawnBy('tags', 'selectButton', 'multi');
+            rsAssertDrawnBy('tagsHtml', 'selectButton', 'multi html');
         };
         SHOW rsButtonGroup OBJECTS t = t NOWAIT {
             rsAssertDrawnBy('phase', 'selectButtonGroup', 'notNull');
-            rsAssertDrawnBy('phaseValue', 'selectValueButtonGroup', 'notNull changeValue');
-            rsAssertDrawnBy('phaseHtml', 'selectHTMLButtonGroup', 'notNull html');
-            rsAssertDrawnBy('phaseHtmlValue', 'selectHTMLValueButtonGroup', 'notNull html changeValue');
-            rsAssertDrawnBy('status', 'selectNullButtonGroup', 'none');
-            rsAssertDrawnBy('statusValue', 'selectNullValueButtonGroup', 'changeValue');
-            rsAssertDrawnBy('statusHtml', 'selectNullHTMLButtonGroup', 'html');
-            rsAssertDrawnBy('statusHtmlValue', 'selectNullHTMLValueButtonGroup', 'html changeValue');
-            rsAssertDrawnBy('tags', 'selectMultiButtonGroup', 'multi');
-            rsAssertDrawnBy('tagsHtml', 'selectMultiHTMLButtonGroup', 'multi html');
+            rsAssertDrawnBy('phaseValue', 'selectButtonGroup', 'notNull changeValue');
+            rsAssertDrawnBy('phaseHtml', 'selectButtonGroup', 'notNull html');
+            rsAssertDrawnBy('phaseHtmlValue', 'selectButtonGroup', 'notNull html changeValue');
+            rsAssertDrawnBy('status', 'selectButtonGroup', 'none');
+            rsAssertDrawnBy('statusValue', 'selectButtonGroup', 'changeValue');
+            rsAssertDrawnBy('statusHtml', 'selectButtonGroup', 'html');
+            rsAssertDrawnBy('statusHtmlValue', 'selectButtonGroup', 'html changeValue');
+            rsAssertDrawnBy('tags', 'selectButtonGroup', 'multi');
+            rsAssertDrawnBy('tagsHtml', 'selectButtonGroup', 'multi html');
         };
         SHOW rsDropdown OBJECTS t = t NOWAIT {
             rsAssertDrawnBy('phase', 'selectDropdown', 'notNull');
-            rsAssertDrawnBy('phaseValue', 'selectValueDropdown', 'notNull changeValue');
-            rsAssertDrawnBy('phaseHtml', 'selectHTMLDropdown', 'notNull html');
-            rsAssertDrawnBy('phaseHtmlValue', 'selectHTMLValueDropdown', 'notNull html changeValue');
-            rsAssertDrawnBy('status', 'selectNullDropdown', 'none');
-            rsAssertDrawnBy('statusValue', 'selectNullValueDropdown', 'changeValue');
-            rsAssertDrawnBy('statusHtml', 'selectNullHTMLDropdown', 'html');
-            rsAssertDrawnBy('statusHtmlValue', 'selectNullHTMLValueDropdown', 'html changeValue');
-            rsAssertDrawnBy('tags', 'selectMultiDropdown', 'multi');
-            rsAssertDrawnBy('tagsHtml', 'selectMultiHTMLDropdown', 'multi html');
+            rsAssertDrawnBy('phaseValue', 'selectDropdown', 'notNull changeValue');
+            rsAssertDrawnBy('phaseHtml', 'selectDropdown', 'notNull html');
+            rsAssertDrawnBy('phaseHtmlValue', 'selectDropdown', 'notNull html changeValue');
+            rsAssertDrawnBy('status', 'selectDropdown', 'none');
+            rsAssertDrawnBy('statusValue', 'selectDropdown', 'changeValue');
+            rsAssertDrawnBy('statusHtml', 'selectDropdown', 'html');
+            rsAssertDrawnBy('statusHtmlValue', 'selectDropdown', 'html changeValue');
+            rsAssertDrawnBy('tags', 'selectDropdown', 'multi');
+            rsAssertDrawnBy('tagsHtml', 'selectDropdown', 'multi html');
         };
         SHOW rsInput OBJECTS t = t NOWAIT {
-            rsAssertDrawnBy('tags', 'selectMultiInput', 'multi');
-            rsAssertDrawnBy('tagsHtml', 'selectMultiHTMLInput', 'multi html');
+            rsAssertDrawnBy('tags', 'selectInput', 'multi');
+            rsAssertDrawnBy('tagsHtml', 'selectInput', 'multi html');
         };
     }
 }

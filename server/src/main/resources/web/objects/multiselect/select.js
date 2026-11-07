@@ -1,11 +1,20 @@
 
 var lsf_events_defined = false;
 
-function selectMultiHTMLInput() {
-    return selectMultiInput(); // check how it will work
+// The platform's element of a selection is one of five render functions, named by the element the server picks
+// (PropertyDrawEntity.getCustomRenderFunction): selectList, selectButton, selectButtonGroup, selectDropdown and
+// selectInput. Each is given the selection's parameters as its argument (the client's GSelect): multi - of several
+// values, notNull - of one value that has to be there, html - the options' views are HTML, changeValue - a pick of one
+// value goes to the property's explicit change as the option's view. Given none - a group's CUSTOM calls its render
+// function so (utils/Eval.lsf) - it draws what its name always drew: a selection of one value that has to be there, the
+// views as text. The parameters are read from `arguments`: a render function a group's CUSTOM names that declares
+// parameters is taken for one drawing the rows itself (GCustom)
+function _selection(selection) {
+    return selection != null ? selection : { multi: false, notNull: true, html: false, changeValue: false };
 }
 
-function selectMultiInput() {
+// of several values only, its views drawn as HTML whatever they are
+function selectInput() {
     function handleSelectizeKeyEvent(selectize, e, keyDown) {
        handleInputKeyEvent(selectize.isOpen, selectize.controller, e, keyDown);
     }
@@ -266,135 +275,25 @@ function selectMultiInput() {
 }
 
 function selectList() {
-    return _defaultRadioCheckBox('radio', true, true, false, false, false);
-}
-
-function selectValueList() {
-    return _defaultRadioCheckBox('radio', true, true, false, false, true);
-}
-
-function selectHTMLList() {
-    return _defaultRadioCheckBox('radio', true, true, false, true, false);
-}
-
-function selectHTMLValueList() {
-    return _defaultRadioCheckBox('radio', true, true, false, true, true);
+    return _option(arguments[0], false, ['form-check'], ['form-check-input'], ['form-check-label', 'option-item']);
 }
 
 function selectButton() {
-    return _checkBoxRadioButtonToggle('radio', true, true, false, false, false);
-}
-
-function selectValueButton() {
-    return _checkBoxRadioButtonToggle('radio', true, true, false, false, true);
-}
-
-function selectHTMLButton() {
-    return _checkBoxRadioButtonToggle('radio', true, true, false, true, false);
-}
-
-function selectHTMLValueButton() {
-    return _checkBoxRadioButtonToggle('radio', true, true, false, true, true);
+    return _option(arguments[0], false, null, ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item']);
 }
 
 function selectButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', true, true, false, false, false);
+    return _option(arguments[0], true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item']);
 }
 
-function selectValueButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', true, true, false, false, true);
+// the old names a group's CUSTOM names: the input (IntegrationFormEntity), and buttons of one value or none
+function selectMultiInput() {
+    return selectInput();
 }
 
-function selectHTMLButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', true, true, false, true, false);
-}
-
-function selectHTMLValueButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', true, true, false, true, true);
-}
-
-function selectMultiList() {
-    return _defaultRadioCheckBox('checkbox', false, false, true, false, false);
-}
-
-function selectMultiHTMLList() {
-    return _defaultRadioCheckBox('checkbox', false, false, true, true, false);
-}
-
-function selectMultiButton() {
-    return _checkBoxRadioButtonToggle('checkbox', false, false, true, false, false);
-}
-
-function selectMultiHTMLButton() {
-    return _checkBoxRadioButtonToggle('checkbox', false, false, true, true, false);
-}
-
-function selectMultiButtonGroup() {
-    return _checkBoxRadioButtonGroup('checkbox', false, false, true, false, false);
-}
-
-function selectMultiHTMLButtonGroup() {
-    return _checkBoxRadioButtonGroup('checkbox', false, false, true, true, false);
-}
-
-function selectNullList() {
-    return _defaultRadioCheckBox('radio', false, true, false, false, false);
-}
-
-function selectNullValueList() {
-    return _defaultRadioCheckBox('radio', false, true, false, false, true);
-}
-
-function selectNullHTMLList() {
-    return _defaultRadioCheckBox('radio', false, true, false, true, false);
-}
-
-function selectNullHTMLValueList() {
-    return _defaultRadioCheckBox('radio', false, true, false, true, true);
-}
-
-function selectNullButton() {
-    return _checkBoxRadioButtonToggle('radio', false, true, false, false, false);
-}
-
-function selectNullValueButton() {
-    return _checkBoxRadioButtonToggle('radio', false, true, false, false, true);
-}
-
-function selectNullHTMLButton() {
-    return _checkBoxRadioButtonToggle('radio', false, true, false, true, false);
-}
-
-function selectNullHTMLValueButton() {
-    return _checkBoxRadioButtonToggle('radio', false, true, false, true, true);
-}
-
-function selectNullButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', false, true, false, false, false);
-}
-
-function selectNullValueButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', false, true, false, false, true);
-}
-
-function selectNullHTMLButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', false, true, false, true, false);
-}
-
-function selectNullHTMLValueButtonGroup() {
-    return _checkBoxRadioButtonGroup('radio', false, true, false, true, true);
-}
-
-function _defaultRadioCheckBox(type, shouldBeSelected, hasName, multi, html, changeValue) {
-    return _option(type, false, ['form-check'], ['form-check-input'], ['form-check-label', 'option-item'], shouldBeSelected, hasName, multi, html, changeValue);
-}
-
-function _checkBoxRadioButtonToggle(type, shouldBeSelected, hasName, multi, html, changeValue) {
-    return _option(type, false, null, ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi, html, changeValue);
-}
-
-function _checkBoxRadioButtonGroup(type, shouldBeSelected, hasName, multi, html, changeValue) {
-    return _option(type, true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], shouldBeSelected, hasName, multi, html, changeValue);
+// todo --- backward compatibility. option() should be removed in future releases ---
+function option() {
+    return selectButton({ multi: false, notNull: false, html: false, changeValue: false });
 }
 
 function _wrapElementDiv(element, wrap) {
@@ -431,7 +330,12 @@ function _isEditing(element, controlElement) {
 }
 
 // buttons / radios / selects
-function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBeSelected, hasName, multi, html, changeValue) {
+function _option(selection, isGroup, divClasses, inputClasses, labelClasses) {
+    selection = _selection(selection);
+    let multi = selection.multi, html = selection.html, changeValue = selection.changeValue;
+    let type = multi ? 'checkbox' : 'radio';
+    let shouldBeSelected = selection.notNull;
+    let hasName = !multi;
     let isButton = isGroup || divClasses == null;
 
     function _getRandomId() {
@@ -605,7 +509,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
 
                     _setGroupListReadonly(input, controller, input.object);
                 } else {
-                    _setGroupReadonly(input, extraValue != null ? extraValue.readonly : null);
+                    _setReadonly(input, extraValue != null ? extraValue.readonly : null);
 
                     // fixes the problem of always setting the focus on the first select option in the grid cell
                     if(list[i].selected)
@@ -640,52 +544,13 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, shouldBe
     }
 }
 
-// todo --- backward compatibility. option() should be removed in future releases ---
-function option() {
-    return selectNullButton();
-}
-
-function selectNullDropdown() {
-    return _selectDropdown(false, false);
-}
-
-function selectNullValueDropdown() {
-    return _selectDropdown(false, true);
-}
-
 function selectDropdown() {
-    return _selectDropdown(true, false);
+    let selection = _selection(arguments[0]);
+    return selection.multi || selection.html ? _selectPicker(selection) : _selectDropdown(selection);
 }
 
-function selectValueDropdown() {
-    return _selectDropdown(true, true);
-}
-
-function selectMultiDropdown() {
-    return _selectPicker(true, false, false, false);
-}
-
-function selectNullHTMLDropdown() {
-    return _selectPicker(false, true, false, false);
-}
-
-function selectNullHTMLValueDropdown() {
-    return _selectPicker(false, true, false, true);
-}
-
-function selectHTMLDropdown() {
-    return _selectPicker(false, true, true, false);
-}
-
-function selectHTMLValueDropdown() {
-    return _selectPicker(false, true, true, true);
-}
-
-function selectMultiHTMLDropdown() {
-    return _selectPicker(true, true, false, false);
-}
-
-function _selectPicker(multi, html, shouldBeSelected, changeValue) {
+function _selectPicker(selection) {
+    let multi = selection.multi, html = selection.html, shouldBeSelected = selection.notNull, changeValue = selection.changeValue;
     if (lsfUtils.useBootstrap()) { //check if bootstrap loaded
         function formatState (state) {
             if (!html) {
@@ -807,7 +672,8 @@ function _selectPicker(multi, html, shouldBeSelected, changeValue) {
     }
 }
 
-function _selectDropdown(shouldBeSelected, changeValue) {
+function _selectDropdown(selection) {
+    let shouldBeSelected = selection.notNull, changeValue = selection.changeValue;
     return _dropDown({},
         (element) => {
             let select = element.select;
@@ -884,7 +750,7 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
             lsfUtils.setFocusElement(element, mainElement);
             if(!isList) {
                 lsfUtils.setReadonlyFnc(element, (readonly) => {
-                    _setSelectReadonly(mainElement, readonly);
+                    _setReadonly(mainElement, readonly);
                 });
             }
 
@@ -1037,16 +903,9 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
 
 // input in radio group / option in select
 function _setGroupListReadonly(element, controller, object) {
-    _setGroupReadonly(element, controller.isPropertyReadOnly('selected', object));
+    _setReadonly(element, controller.isPropertyReadOnly('selected', object));
 }
-function _setGroupReadonly(element, readonly) {
-    _setReadonly(element, readonly);
-}
-// select
-function _setSelectReadonly(element, readonly) {
-    _setReadonly(element, readonly);
-}
-//
+// input in radio group / option in select / select
 function _setReadonly(element, readonly) {
     // select, option, input supports disabled
     setDisabledNative(element, readonly != null && readonly);

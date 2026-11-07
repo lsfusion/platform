@@ -13,10 +13,11 @@ function UiSelectPlaced(props) {
 
 // a render function given in CUSTOM with SELECT: it draws the selection, given the options as the platform's element is
 // - its value the list [{name, objects, selected}] -, a button an option, pressed while picked, and picks as that
-// element does
-window.uiSelectFn = function () {
+// element does; the root keeps the kind it was given for the test
+window.uiSelectFn = function (selection) {
     return {
         render: function (element) {
+            element.setAttribute('data-ui-select-kind', JSON.stringify(selection));
         },
         update: function (element, controller, value) {
             element.textContent = '';

@@ -10,8 +10,8 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.JSValueConverter;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.GSelect;
 import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
 import lsfusion.interop.action.ServerResponse;
 
 public class CustomCellRenderer extends CellRenderer {
@@ -19,8 +19,21 @@ public class CustomCellRenderer extends CellRenderer {
 
     public CustomCellRenderer(GPropertyDraw property, String customRenderFunction) {
         super(property);
-        this.customRenderer = CustomReplaceCellEditor.getCustomFunction(customRenderFunction);
+        this.customRenderer = create(GwtClientUtils.getGlobalField(customRenderFunction), property.select);
     }
+
+    // a render function of a selection - the platform's element of it (select.js), or one given in CUSTOM - is given the
+    // selection's parameters
+    private static native JavaScriptObject create(JavaScriptObject renderFunction, GSelect select)/*-{
+        if (select == null)
+            return renderFunction();
+        return renderFunction({
+            multi: select.@lsfusion.gwt.client.form.property.GSelect::multi,
+            notNull: select.@lsfusion.gwt.client.form.property.GSelect::notNull,
+            html: select.@lsfusion.gwt.client.form.property.GSelect::html,
+            changeValue: select.@lsfusion.gwt.client.form.property.GSelect::changeValue
+        });
+    }-*/;
 
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {

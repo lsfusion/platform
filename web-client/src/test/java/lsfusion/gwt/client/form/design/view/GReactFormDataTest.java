@@ -1897,7 +1897,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // (GFormController.executePropertyEventAction, batch)
     public void testAChangeAndABatchReturnTheFormsPromiseOfTheirRequest() {
         Fixture f = new Fixture(r -> {
-            r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, ", "));
+            r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, false, ", "));
             r.price.asyncExecMap = new HashMap<>(); // its change asks for nothing in advance: exec() runs it
         });
         f.apply(cell(f.tags, GGroupObjectValue.EMPTY, TAG_OPTIONS));
@@ -3341,7 +3341,7 @@ public class GReactFormDataTest extends GWTTestCase {
     }
 
     public void testASelectionGivesItsOptionsAndTheValuePicked() {
-        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, null)));
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, false, null)));
         f.apply(cell(f.status, GGroupObjectValue.EMPTY, STATUS_OPTIONS));
         JavaScriptObject status = field(f.node(), "status");
         JavaScriptObject select = options(status);
@@ -3366,7 +3366,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // ... of one value the view of the option picked, the first where several are: an explicit change taking the option's
     // view picks every option of that view
     public void testOneValueIsTheViewOfTheFirstOptionPicked() {
-        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, true, null)));
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, true, null)));
         f.apply(cell(f.status, GGroupObjectValue.EMPTY, "[{\"name\": \"Done\", \"objects\": {\"obj2\": 583}, \"selected\": true},"
                 + " {\"name\": \"Done\", \"objects\": {\"obj2\": 584}, \"selected\": true}]"));
         assertEquals("Done", text(field(f.node(), "status"), "value"));
@@ -3376,7 +3376,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // element shows them, and its type says so
     public void testASelectionIsGivenItsViewsAsText() {
         Fixture f = new Fixture(r -> {
-            r.status = r.selection(27, "status", false, new GSelect(false, false, false, null));
+            r.status = r.selection(27, "status", false, new GSelect(false, false, false, false, null));
             r.status.valueType = GDateType.instance;
         });
         f.apply(cell(f.status, GGroupObjectValue.EMPTY, "[{\"name\": \"2026-01-02\", \"objects\": {\"obj2\": 581}, \"selected\": true},"
@@ -3394,7 +3394,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // ... of several values: the options checked, and their values, in the list's order, joined by the separator its
     // select says too - the property's own value, of a GROUP CONCAT of them -, null with none checked
     public void testASelectionOfSeveralValuesHasItsOptionsCheckedJoined() {
-        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, ", ")));
+        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, false, ", ")));
         f.apply(cell(f.tags, GGroupObjectValue.EMPTY, TAG_OPTIONS.replace("\"obj2\": 577}", "\"obj2\": 577}, \"selected\": true")));
         JavaScriptObject tags = field(f.node(), "tags");
         assertTrue(flag(field(tags, "select"), "multi"));
@@ -3414,7 +3414,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // ... their value given back as the view is given it - the values joined by the separator -: the options it names
     // checked from now on, the others unchecked; none for null or an empty value
     public void testSeveralValuesAreChangedByTheirValue() {
-        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, ", ")));
+        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, false, ", ")));
         f.apply(cell(f.tags, GGroupObjectValue.EMPTY, TAG_OPTIONS));
         JavaScriptObject member = member(f.sa, "items", "tags");
         callChange(member, "blue, green");
@@ -3432,7 +3432,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // ... but not split where it splits more ways than one - a view with the separator in it, or one that joins with it at
     // its edge: the parts could name other options - the array names them
     public void testSeveralValuesWithTheSeparatorInAViewAreNotSplit() {
-        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, ", ")));
+        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, false, ", ")));
         f.apply(cell(f.tags, GGroupObjectValue.EMPTY, "[{\"name\": \"red, blue\", \"objects\": {\"obj2\": 1}},"
                 + " {\"name\": \"red\", \"objects\": {\"obj2\": 2}}, {\"name\": \"blue\", \"objects\": {\"obj2\": 3}}]"));
         JavaScriptObject member = member(f.sa, "items", "tags");
@@ -3441,7 +3441,7 @@ public class GReactFormDataTest extends GWTTestCase {
         callChange(member, parse("[\"red, blue\"]"));
         assertEquals("{\"property\":\"selected\",\"objects\":{\"obj2\":1},\"value\":true}", json(f.sent.get(0)));
         // 'a|' and 'b' joined by '||' are 'a|||b' - and so are 'a' and '|b'
-        Fixture g = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, "||")));
+        Fixture g = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, false, "||")));
         g.apply(cell(g.tags, GGroupObjectValue.EMPTY, "[{\"name\": \"a|\", \"objects\": {\"obj2\": 1}}, {\"name\": \"b\", \"objects\": {\"obj2\": 2}},"
                 + " {\"name\": \"a\", \"objects\": {\"obj2\": 3}}, {\"name\": \"|b\", \"objects\": {\"obj2\": 4}}]"));
         assertRefusal("the views of the options of 'tags' do not split back", refusedChange(member(g.sa, "items", "tags"), "a|||b"));
@@ -3453,7 +3453,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // a pick is the change of the cell the platform's element sends - the option by its object, picked or no longer -,
     // sent as it is, the cell showing the options with it picked meanwhile; an option named by its value or by itself
     public void testAPickIsTheChangeThePlatformsElementSends() {
-        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, null)));
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, false, null)));
         f.apply(cell(f.status, GGroupObjectValue.EMPTY, STATUS_OPTIONS));
         JavaScriptObject member = member(f.sa, "items", "status");
         f.edits.clear();
@@ -3476,7 +3476,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // view: picked, the change made of its objects, the cell showing it picked, it alone; the option picked already
     // changes nothing, and objects alone, which name no option, are refused
     public void testAnOptionIsPickedByItsKey() {
-        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, null)));
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, false, null)));
         f.apply(cell(f.status, GGroupObjectValue.EMPTY, STATUS_OPTIONS));
         JavaScriptObject member = member(f.sa, "items", "status"), select = options(field(f.node(), "status"));
         assertFalse(own(at(select, 1), "objects"));
@@ -3497,7 +3497,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // ... of several values, an option alone is checked or unchecked - one change, in no batch -: the opposite of what the
     // cell shows now, a pick not answered yet included, and not of what the view was given, which may be behind it
     public void testAnOptionOfSeveralValuesIsToggledAgainstTheCell() {
-        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, ", ")));
+        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, false, ", ")));
         f.apply(cell(f.tags, GGroupObjectValue.EMPTY, TAG_OPTIONS));
         JavaScriptObject member = member(f.sa, "items", "tags"), select = options(field(f.node(), "tags"));
         JavaScriptObject green = at(select, 1);
@@ -3522,7 +3522,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // ... shown at once: what the cell is shown as meanwhile is the options with the pick - the form puts it on the
     // cell (GFormController.setLoadingValueAt) -, the value picked with them
     public void testAPickIsShownAtOnce() {
-        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, null)));
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, false, null)));
         f.apply(cell(f.status, GGroupObjectValue.EMPTY, STATUS_OPTIONS));
         callChange(member(f.sa, "items", "status"), "Lost");
         f.controller(f.status).setLoadingValueAt(f.status, GGroupObjectValue.EMPTY, f.shownAs.get(0));
@@ -3540,7 +3540,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // an option is named by one value only: several options of a value are named by themselves; and one that has to
     // have a value is not cleared
     public void testAPickNamesOneOption() {
-        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, true, false, null)));
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, true, false, false, null)));
         f.apply(cell(f.status, GGroupObjectValue.EMPTY, STATUS_OPTIONS.replace("Lost", "Done")));
         JavaScriptObject member = member(f.sa, "items", "status");
         assertTrue(flag(field(field(f.node(), "status"), "select"), "notNull"));
@@ -3554,7 +3554,7 @@ public class GReactFormDataTest extends GWTTestCase {
 
     // several values: the options checked from now on, a pick each in one batch - the checks before the unchecks
     public void testSeveralValuesArePickedInOneBatch() {
-        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, ", ")));
+        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, false, ", ")));
         f.apply(cell(f.tags, GGroupObjectValue.EMPTY, TAG_OPTIONS));
         JavaScriptObject member = member(f.sa, "items", "tags");
         f.edits.clear();
@@ -3579,7 +3579,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // an option of a selection over a group by several objects is those objects: keyed by them all, the JSON of their
     // ids, and named by that key - two options sharing one of their objects are two options
     public void testAnOptionOfSeveralObjectsIsKeyedByThemAll() {
-        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, ", ")));
+        Fixture f = new Fixture(r -> r.tags = r.selection(28, "tags", false, new GSelect(true, false, false, false, ", ")));
         f.apply(cell(f.tags, GGroupObjectValue.EMPTY, "[{\"name\": \"a\", \"objects\": {\"obj2\": 1, \"obj3\": 5}},"
                 + " {\"name\": \"b\", \"objects\": {\"obj2\": 2, \"obj3\": 5}, \"selected\": true}]"));
         JavaScriptObject select = options(field(f.node(), "tags"));
@@ -3592,7 +3592,7 @@ public class GReactFormDataTest extends GWTTestCase {
 
     // a column's options are its cell's, each row's own, and a pick names the row as any change of a column does
     public void testAColumnSelectionIsEachRows() {
-        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", true, new GSelect(false, false, false, null)));
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", true, new GSelect(false, false, false, false, null)));
         GFormChanges changes = cell(f.status, f.one, STATUS_OPTIONS);
         put(changes, f.status, f.two, STATUS_OPTIONS.replace(", \"selected\": true", ""));
         f.apply(changes);
@@ -3606,7 +3606,7 @@ public class GReactFormDataTest extends GWTTestCase {
 
     // ... and with no current row, a call naming no row is refused: there is no cell to pick in
     public void testAColumnSelectionWithNoCurrentRowNamesTheRow() {
-        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", true, new GSelect(false, false, false, null)));
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", true, new GSelect(false, false, false, false, null)));
         f.apply(cell(f.status, f.one, STATUS_OPTIONS));
         f.controller(f.group).changeCurrentKey(null);
         assertRefusal("'items' has no current row", refusedChange(member(f.sa, "items", "status"), "Done"));
@@ -3615,7 +3615,7 @@ public class GReactFormDataTest extends GWTTestCase {
 
     // ... and a cell that holds no options: none is named, and clearing sends nothing
     public void testASelectionWithNoOptionsPicksNone() {
-        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, null)));
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, false, null)));
         f.apply(cell(f.status, GGroupObjectValue.EMPTY, null));
         JavaScriptObject member = member(f.sa, "items", "status");
         assertEquals(0, length(options(field(f.node(), "status"))));
@@ -3628,7 +3628,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // change, with no value, sent as it is -, not a pick
     public void testExecOfASelectionIsNoPick() {
         Fixture f = new Fixture(r -> {
-            r.status = r.selection(27, "status", false, new GSelect(false, false, false, null));
+            r.status = r.selection(27, "status", false, new GSelect(false, false, false, false, null));
             r.status.asyncExecMap = new HashMap<>(); // its change - the pick - asks for nothing in advance
         });
         f.apply(cell(f.status, GGroupObjectValue.EMPTY, STATUS_OPTIONS));
@@ -3641,7 +3641,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // where an explicit change takes the option's view - an INPUT with a list -, a pick sends that view as text, as the
     // platform's element does (an option with no view: an empty one, not the null that clears), and clearing sends none
     public void testAPickOfAnInputSendsTheOptionsView() {
-        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, true, null)));
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, true, null)));
         f.apply(cell(f.status, GGroupObjectValue.EMPTY, STATUS_OPTIONS.replace("{\"name\": \"Lost\", ", "{")));
         JavaScriptObject member = member(f.sa, "items", "status");
         callChange(member, "Done");
@@ -3656,7 +3656,7 @@ public class GReactFormDataTest extends GWTTestCase {
     // changes nothing - the others are no uncheck that would clear the value -, and a pick sends the view the cell has
     // for the option named, not one the call carries
     public void testAnInputsOptionPickedAgainSendsNothing() {
-        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, true, null)));
+        Fixture f = new Fixture(r -> r.status = r.selection(27, "status", false, new GSelect(false, false, false, true, null)));
         f.apply(cell(f.status, GGroupObjectValue.EMPTY, "[{\"name\": \"Done\", \"objects\": {\"obj2\": 583}, \"selected\": true},"
                 + " {\"name\": \"Done\", \"objects\": {\"obj2\": 584}, \"selected\": true}, {\"name\": \"Lost\", \"objects\": {\"obj2\": 585}}]"));
         JavaScriptObject member = member(f.sa, "items", "status");

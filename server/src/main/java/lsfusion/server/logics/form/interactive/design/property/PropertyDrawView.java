@@ -783,13 +783,14 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         pool.writeBoolean(outStream, isCustomNeedReadonly(pool.context));
         pool.writeBoolean(outStream, isCustomNeedDefaultValue(pool.context));
 
-        // the selection, as a React view that draws it needs it said (GSelect) - the platform's own element reads it off
-        // its function's name, with the element type, which a view does not need
+        // the selection (GSelect), as a React view that draws it needs it said, and as its render function is given it -
+        // the platform's own element, named by the element type, which a view does not need, or one given in CUSTOM
         PropertyDrawEntity.Select select = entity.getSelectProperty(pool.context);
         outStream.writeBoolean(select != null);
         if(select != null) {
             outStream.writeBoolean(select.type.equals("Multi"));
             outStream.writeBoolean(select.type.isEmpty());
+            outStream.writeBoolean(select.html);
             outStream.writeBoolean(select.changeValue);
             pool.writeString(outStream, select.separator);
         }
