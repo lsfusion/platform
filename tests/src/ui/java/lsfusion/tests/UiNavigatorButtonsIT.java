@@ -11,9 +11,9 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import static org.junit.Assert.assertEquals;
 
 // the platform's buttons a React component places in a navigator window (src/ui/buttons: UiNavigatorButtons.lsf,
-// UiNavigatorButtons.js): System.root and System.toolbar are drawn by one component, which places their NOCUSTOM buttons
-// in one flat row, whatever their depth. A window is on every page of its application, so the class runs against a test
-// server of its own, on the suite's web client
+// UiNavigatorButtons.js): System.logo, System.root, System.system and System.toolbar are drawn by one component, which
+// places their NOCUSTOM buttons in one flat row, whatever their depth. A window is on every page of its application, so
+// the class runs against a test server of its own, on the suite's web client
 public class UiNavigatorButtonsIT extends UiTest {
 
     private static final String DATABASE = "lsfusion_test_ui_buttons_" + ProcessHandle.current().pid();
@@ -80,8 +80,27 @@ public class UiNavigatorButtonsIT extends UiTest {
         }
     }
 
+    // the standard strip's own layout - its items aligned to the start with the vertical navbar, the logo's icon as tall
+    // as the horizontal strip - is not given to a window the component draws, and is to one the platform draws
+    @Test
+    public void theServerGivesTheWindowsNoStripLayoutClasses() {
+        placed("uiNbClasses").click();
+        Locator form = form("UiNavigatorButtons.uiNbClasses");
+        assertThat(value(form, "logoWindowClass")).not().containsText("navbar-auto-icon-font-size");
+        assertThat(value(form, "uiNbStandardLogoClasses")).containsText("navbar-auto-icon-font-size");
+        assertThat(value(form, "uiNbVerticalClasses")).not().containsText("navbar-force-align-start");
+        for (String window : new String[] {"Logo", "Root", "System"})
+            assertThat(value(form, "uiNbStandardVertical" + window + "Classes")).containsText("navbar-force-align-start");
+    }
+
     private Locator placed(String name) {
         return page.locator(".ui-nb-place > [lsfusion-container='UiNavigatorButtons." + name + "']");
+    }
+
+    // the value a panel property of a form shows
+    private static Locator value(Locator form, String property) {
+        String name = "[lsfusion-container='PROPERTY(" + property + "())']";
+        return form.locator(".panel-renderer-value" + name + ", " + name + " .panel-renderer-value");
     }
 
     private Locator placedButtons(String window) {

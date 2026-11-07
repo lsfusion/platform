@@ -109,10 +109,13 @@ public abstract class UiTest {
 
     // an application of a class's own, for what the suite's cannot hold - a page drawn otherwise as a whole: a test
     // server beside the suite's, with its own database and the modules of the root given, on the same web client, which
-    // a page asks for it by its rmi port (?port=). The class stops it, and the database is dropped then
-    protected static Process startServer(String database, int[] ports, String root) throws Exception {
+    // a page asks for it by its rmi port (?port=). The class stops it, and the database is dropped then. `settings` are
+    // the server's settings beyond the suite's (user.navbar=vertical)
+    protected static Process startServer(String database, int[] ports, String root, String... settings) throws Exception {
         Path log = UI.resolve(database + ".log");
-        Process server = TestServer.start(database, ports, log, root, SERVER_SETTINGS);
+        String[] all = Arrays.copyOf(SERVER_SETTINGS, SERVER_SETTINGS.length + settings.length);
+        System.arraycopy(settings, 0, all, SERVER_SETTINGS.length, settings.length);
+        Process server = TestServer.start(database, ports, log, root, all);
         try {
             TestServer.waitStarted(server, log);
         } catch (Throwable t) { // the class never gets the process to stop, so its database would stay

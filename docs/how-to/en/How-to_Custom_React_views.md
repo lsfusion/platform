@@ -856,6 +856,8 @@ A component can also be given to a window that already exists, the standard tool
 EXTEND WINDOW System.toolbar CUSTOM 'AppMenu';
 ```
 
+The window is then not given the classes with which the standard toolbar lays its strip out: with the vertical navbar, `System.logo`, `System.root` and `System.system` do not align their items to the start, and `System.logo` does not size its icon to the height of the horizontal strip — the component's own markup keeps the layout it gives it.
+
 `props.data` is the window's own elements, keyed by [canonical name](../paradigm/Naming.md#canonicalname) — canonical names contain dots, so they are map keys rather than fields:
 
 | Field | Meaning |

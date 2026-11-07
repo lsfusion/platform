@@ -1,4 +1,4 @@
-// both windows place their platform-drawn entries depth-first in one flat row
+// every window it draws places its platform-drawn entries depth-first in one flat row
 window.UiNavigatorButtons = function (props) {
     var e = React.createElement, Platform = window.lsfusion.Platform, data = props.data, places = [];
     function visit(name) {
@@ -8,6 +8,8 @@ window.UiNavigatorButtons = function (props) {
         entry.children.forEach(visit);
     }
     data.root.forEach(visit);
+    // and a menu's own .navbar-nav, aligned its own way, which the vertical navbar's strip would align to the start
+    places.push(e('div', { key: 'own', className: 'navbar-nav ui-nb-own', style: { alignItems: 'center' } }));
     return e('div', { className: 'ui-nb-row',
         style: { display: 'flex', alignItems: 'center', gap: '8px', height: '100%' } }, places);
 };

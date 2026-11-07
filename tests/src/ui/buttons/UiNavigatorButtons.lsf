@@ -2,9 +2,12 @@ MODULE UiNavigatorButtons;
 
 REQUIRE SystemEvents;
 
-// UiNavigatorButtonsIT's application, on a test server of its own: System.root and System.toolbar are drawn by one
-// React component (UiNavigatorButtons.js), which places their NOCUSTOM buttons in one flat row, whatever their depth
+// UiNavigatorButtonsIT's application, on a test server of its own (UiNavigatorButtonsVerticalIT's too, with the navbar
+// vertical): System.logo, System.root, System.system and System.toolbar are drawn by one React component
+// (UiNavigatorButtons.js), which places their NOCUSTOM buttons in one flat row, whatever their depth
+EXTEND WINDOW System.logo CUSTOM 'UiNavigatorButtons';
 EXTEND WINDOW System.root CUSTOM 'UiNavigatorButtons';
+EXTEND WINDOW System.system CUSTOM 'UiNavigatorButtons';
 EXTEND WINDOW System.toolbar CUSTOM 'UiNavigatorButtons';
 
 uiNbText 'Text' = DATA LOCAL STRING[50] ();
@@ -18,7 +21,39 @@ FORM uiNbToolbarForm 'Toolbar form'
     PROPERTIES() uiNbToolbarText
 ;
 
+// the classes of the logo, root and system windows, which the component draws: as the horizontal navbar gives them, and as
+// the vertical one would - and each as it would be with no component drawing the window (the control). Read in a session
+// that is never applied, as the navbar takes a reload to change
+uiNbStandardLogoClasses = DATA LOCAL STRING ();
+uiNbVerticalClasses = DATA LOCAL STRING ();
+uiNbStandardVerticalLogoClasses = DATA LOCAL STRING ();
+uiNbStandardVerticalRootClasses = DATA LOCAL STRING ();
+uiNbStandardVerticalSystemClasses = DATA LOCAL STRING ();
+uiNbReadClasses () {
+    NEWSESSION NESTED (uiNbStandardLogoClasses, uiNbVerticalClasses, uiNbStandardVerticalLogoClasses,
+                       uiNbStandardVerticalRootClasses, uiNbStandardVerticalSystemClasses) {
+        designEnvNavbar(currentDesignEnv()) <- Navbar.vertical;
+        uiNbVerticalClasses() <- CONCAT ' ', logoWindowClass(), rootWindowClass(), systemWindowClass();
+        windowComponent(STRING[100] window) <- NULL WHERE windowComponent(window);
+        uiNbStandardVerticalLogoClasses() <- logoWindowClass();
+        uiNbStandardVerticalRootClasses() <- rootWindowClass();
+        uiNbStandardVerticalSystemClasses() <- systemWindowClass();
+        designEnvNavbar(currentDesignEnv()) <- Navbar.horizontal;
+        uiNbStandardLogoClasses() <- logoWindowClass();
+    }
+}
+
+FORM uiNbClasses 'Window classes'
+    PROPERTIES() READONLY logoWindowClass, uiNbStandardLogoClasses, uiNbVerticalClasses, uiNbStandardVerticalLogoClasses,
+                          uiNbStandardVerticalRootClasses, uiNbStandardVerticalSystemClasses
+    EVENTS ON INIT uiNbReadClasses()
+;
+
 NAVIGATOR {
+    // System.system's button of the pin mode, which the tests switch, and the classes' form - placed by the component
+    SystemEvents.toggleNavigatorPinMode NOCUSTOM;
+    NEW uiNbClasses NOCUSTOM WINDOW system PARENT;
+
     // the navigator selects System.root's first folder at the start, so System.toolbar draws its subtree with no click:
     // NOCUSTOM buttons of levels 1-3 there. The second folder's WINDOW is System.root itself, so its subtree stays there
     NEW FOLDER uiNbSection 'Section' WINDOW toolbar FIRST {
