@@ -53,16 +53,217 @@ DESIGN uiSelectPicked {
     NEW board FIRST { custom = 'UiSelectPicker'; MOVE BOX(o); }
 }
 
+// the platform's own element of a selection (select.js) in each of its kinds the server picks: the element - a list of
+// radio buttons or check boxes, buttons standing apart, a button group, a drop-down list, an input looking the options
+// up by the text typed -, the selection - of one value that has to be there, of one value or none, of several values -,
+// the views of the options - text or HTML -, and a pick of one value given to the property as the option or, where the
+// property's change is an explicit INPUT of a list, to that INPUT as the option's view. A task is the selections' owner:
+// its phase, which it has to have, its status and its tags, each also with the options viewed as HTML
+uiSelectStatusHtml 'Status' (UiSelectStatus s) = HTMLTEXT('<b>' + uiSelectStatusName(s) + '</b>');
+uiSelectTagHtml 'Tag' (UiSelectTag t) = HTMLTEXT('<i>' + uiSelectTagName(t) + '</i>');
+
+CLASS UiSelectTask 'Task';
+uiSelectTaskNumber 'Number' = DATA STRING[50] (UiSelectTask);
+uiSelectTask (STRING[50] number) = GROUP AGGR UiSelectTask t BY uiSelectTaskNumber(t);
+uiSelectTaskShown = DATA BOOLEAN (UiSelectTask); // the tasks of the test that seeded last: the forms show only them
+uiSelectTaskPhaseOf = DATA UiSelectStatus (UiSelectTask) NONULL;
+uiSelectTaskPhase 'Phase' (UiSelectTask t) = uiSelectStatusName(uiSelectTaskPhaseOf(t));
+uiSelectTaskHtmlPhase 'Phase' (UiSelectTask t) = uiSelectStatusHtml(uiSelectTaskPhaseOf(t));
+uiSelectTaskStatusOf = DATA UiSelectStatus (UiSelectTask);
+uiSelectTaskStatus 'Status' (UiSelectTask t) = uiSelectStatusName(uiSelectTaskStatusOf(t));
+uiSelectTaskHtmlStatus 'Status' (UiSelectTask t) = uiSelectStatusHtml(uiSelectTaskStatusOf(t));
+uiSelectTaskLocked = DATA BOOLEAN (UiSelectTask);
+uiSelectTaskIn 'In' = DATA BOOLEAN (UiSelectTask, UiSelectTag);
+uiSelectTaskTags 'Tags' (UiSelectTask t) = GROUP CONCAT uiSelectTagName(UiSelectTag g) IF uiSelectTaskIn(t, g), ', ' ORDER uiSelectTagName(g), g;
+uiSelectTaskHtmlTags 'Tags' (UiSelectTask t) = GROUP CONCAT uiSelectTagHtml(UiSelectTag g) IF uiSelectTaskIn(t, g), ', ' ORDER uiSelectTagName(g), g;
+
+// the explicit changes a pick of one value is given to as the option's view, which the INPUT takes the option by
+uiSelectChangePhase (UiSelectTask t) { INPUT s = uiSelectTaskPhaseOf(t) LIST uiSelectStatusName(s) DO uiSelectTaskPhaseOf(t) <- s; }
+uiSelectChangeHtmlPhase (UiSelectTask t) { INPUT s = uiSelectTaskPhaseOf(t) LIST uiSelectStatusHtml(s) DO uiSelectTaskPhaseOf(t) <- s; }
+uiSelectChangeStatus (UiSelectTask t) { INPUT s = uiSelectTaskStatusOf(t) LIST uiSelectStatusName(s) DO uiSelectTaskStatusOf(t) <- s; }
+uiSelectChangeHtmlStatus (UiSelectTask t) { INPUT s = uiSelectTaskStatusOf(t) LIST uiSelectStatusHtml(s) DO uiSelectTaskStatusOf(t) <- s; }
+
+// a change of the server's own, never saved - an option renamed, one deleted, one added -: of the statuses New renamed
+// Fresh, Lost deleted, Late added and the task's phase, its status none; of the tags red renamed crimson, blue deleted,
+// black added and the task's tags black and green
+uiSelectShift (UiSelectTask t) {
+    uiSelectStatusName(UiSelectStatus s) <- 'Fresh' WHERE uiSelectStatusName(s) = 'New';
+    DELETE UiSelectStatus s WHERE uiSelectStatusName(s) = 'Lost';
+    NEW late = UiSelectStatus {
+        uiSelectStatusName(late) <- 'Late';
+        uiSelectTaskPhaseOf(t) <- late;
+    }
+    uiSelectTaskStatusOf(t) <- NULL;
+    uiSelectTagName(UiSelectTag g) <- 'crimson' WHERE uiSelectTagName(g) = 'red';
+    DELETE UiSelectTag g WHERE uiSelectTagName(g) = 'blue';
+    NEW black = UiSelectTag { uiSelectTagName(black) <- 'black'; }
+    uiSelectTaskIn(t, UiSelectTag g) <- TRUE IF (uiSelectTagName(g) = 'black' OR uiSelectTagName(g) = 'green');
+}
+// ... and the phase none, which it has to have: unsaved, as the form shows it
+uiSelectDropPhase (UiSelectTask t) {
+    uiSelectTaskPhaseOf(t) <- NULL;
+}
+
+// the options grown by two, then shrunk by two - the one picked and another -, unsaved in the form's session
+uiSelectGrow () {
+    NEW s = UiSelectStatus { uiSelectStatusName(s) <- 'Ready'; }
+    NEW s = UiSelectStatus { uiSelectStatusName(s) <- 'Wait'; }
+    NEW g = UiSelectTag { uiSelectTagName(g) <- 'amber'; }
+    NEW g = UiSelectTag { uiSelectTagName(g) <- 'violet'; }
+}
+uiSelectShrink () {
+    DELETE UiSelectStatus s WHERE uiSelectStatusName(s) = 'Ready' OR uiSelectStatusName(s) = 'Lost';
+    DELETE UiSelectTag g WHERE uiSelectTagName(g) = 'amber' OR uiSelectTagName(g) = 'blue';
+}
+
+// one form of each element, its type given: in its panel every selection of the task the element draws, a pick of one
+// value given to the property or to an explicit INPUT, the options text or HTML
+META uiSelectElementForm(form, caption, type)
+    FORM form caption
+        OBJECTS t = UiSelectTask PANEL
+        PROPERTIES(t) phase 'Phase' = uiSelectTaskPhase SELECT type,
+                      phaseValue 'Phase, to the INPUT' = uiSelectTaskPhase SELECT type ON CHANGE uiSelectChangePhase(t),
+                      phaseHtml 'Phase, HTML' = uiSelectTaskHtmlPhase SELECT type,
+                      phaseHtmlValue 'Phase, HTML, to the INPUT' = uiSelectTaskHtmlPhase SELECT type ON CHANGE uiSelectChangeHtmlPhase(t),
+                      status 'Status' = uiSelectTaskStatus SELECT type,
+                      statusValue 'Status, to the INPUT' = uiSelectTaskStatus SELECT type ON CHANGE uiSelectChangeStatus(t),
+                      statusHtml 'Status, HTML' = uiSelectTaskHtmlStatus SELECT type,
+                      statusHtmlValue 'Status, HTML, to the INPUT' = uiSelectTaskHtmlStatus SELECT type ON CHANGE uiSelectChangeHtmlStatus(t),
+                      tags 'Tags' = uiSelectTaskTags SELECT type,
+                      tagsHtml 'Tags, HTML' = uiSelectTaskHtmlTags SELECT type,
+                      shift 'Shift' = uiSelectShift, dropPhase 'Drop the phase' = uiSelectDropPhase
+        PROPERTIES() grow 'Grow' = uiSelectGrow, shrink 'Shrink' = uiSelectShrink
+        FILTERS uiSelectTaskShown(t)
+    ;
+END
+
+@uiSelectElementForm(uiSelectList, 'List', 'list');
+@uiSelectElementForm(uiSelectButton, 'Button', 'button');
+@uiSelectElementForm(uiSelectButtonGroup, 'Button group', 'buttonGroup');
+@uiSelectElementForm(uiSelectDropdown, 'Dropdown', 'dropdown');
+
+// the input, of several values only: the options looked up by the text typed, the ones picked shown
+FORM uiSelectInput 'Input'
+    OBJECTS t = UiSelectTask PANEL
+    PROPERTIES(t) tags 'Tags' = uiSelectTaskTags SELECT 'input', tagsHtml 'Tags, HTML' = uiSelectTaskHtmlTags SELECT 'input',
+                  shift 'Shift' = uiSelectShift
+    PROPERTIES() grow 'Grow' = uiSelectGrow, shrink 'Shrink' = uiSelectShrink
+    FILTERS uiSelectTaskShown(t)
+;
+
+// each element in a column of a table, a cell of each row
+FORM uiSelectGrid 'Grid'
+    OBJECTS t = UiSelectTask
+    PROPERTIES(t) READONLY number 'Number' = uiSelectTaskNumber
+    PROPERTIES(t) list 'List' = uiSelectTaskStatus SELECT 'list', button 'Button' = uiSelectTaskStatus SELECT 'button',
+                  buttonGroup 'Button group' = uiSelectTaskStatus SELECT 'buttonGroup', dropdown 'Dropdown' = uiSelectTaskStatus SELECT 'dropdown',
+                  tagsDropdown 'Tags, dropdown' = uiSelectTaskTags SELECT 'dropdown', tagsInput 'Tags, input' = uiSelectTaskTags SELECT 'input',
+                  phase 'Phase' = uiSelectTaskPhase SELECT 'list', statusHtml 'Status, HTML' = uiSelectTaskHtmlStatus SELECT 'dropdown',
+                  statusValue 'Status, to the INPUT' = uiSelectTaskStatus SELECT 'button' ON CHANGE uiSelectChangeStatus(t),
+                  tagsList 'Tags, list' = uiSelectTaskTags SELECT 'list', tagsButton 'Tags, buttons' = uiSelectTaskTags SELECT 'button'
+    FILTERS uiSelectTaskShown(t)
+    ORDERS number
+;
+
+// HTML in each kind of element in a table, a native drop-down of a value that has to be there, and an explicit INPUT
+// only drawn: a pick through the INPUT is lost in a table
+FORM uiSelectHtmlGrid 'HTML grid'
+    OBJECTS t = UiSelectTask
+    PROPERTIES(t) READONLY number 'Number' = uiSelectTaskNumber
+    PROPERTIES(t) listHtml 'List, HTML' = uiSelectTaskHtmlStatus SELECT 'list',
+                  buttonHtml 'Buttons, HTML' = uiSelectTaskHtmlStatus SELECT 'button',
+                  buttonGroupHtml 'Button group, HTML' = uiSelectTaskHtmlStatus SELECT 'buttonGroup',
+                  statusHtml 'Dropdown, HTML' = uiSelectTaskHtmlStatus SELECT 'dropdown',
+                  phase 'Phase' = uiSelectTaskPhase SELECT 'dropdown',
+                  statusHtmlValue 'Status, HTML, to the INPUT' = uiSelectTaskHtmlStatus SELECT 'button' ON CHANGE uiSelectChangeHtmlStatus(t),
+                  tagsHtmlDropdown 'Tags, HTML, dropdown' = uiSelectTaskHtmlTags SELECT 'dropdown',
+                  tagsHtmlInput 'Tags, HTML, input' = uiSelectTaskHtmlTags SELECT 'input'
+    FILTERS uiSelectTaskShown(t)
+    ORDERS number
+;
+
+// each element read-only - shown as such, not changed - and disabled
+FORM uiSelectReadonly 'Read-only'
+    OBJECTS t = UiSelectTask PANEL
+    PROPERTIES(t) READONLY list 'List' = uiSelectTaskStatus SELECT 'list', button 'Button' = uiSelectTaskStatus SELECT 'button',
+                           buttonGroup 'Button group' = uiSelectTaskStatus SELECT 'buttonGroup',
+                           dropdown 'Dropdown' = uiSelectTaskStatus SELECT 'dropdown', statusHtml 'Status, HTML' = uiSelectTaskHtmlStatus SELECT 'dropdown',
+                           tagsDropdown 'Tags, dropdown' = uiSelectTaskTags SELECT 'dropdown',
+                           tagsInput 'Tags, input' = uiSelectTaskTags SELECT 'input'
+    PROPERTIES(t) DISABLE disabledList 'List, disabled' = uiSelectTaskStatus SELECT 'list',
+                          disabledDropdown 'Dropdown, disabled' = uiSelectTaskStatus SELECT 'dropdown',
+                          disabledTagsInput 'Tags, input, disabled' = uiSelectTaskTags SELECT 'input'
+    FILTERS uiSelectTaskShown(t)
+;
+
+// HTML and explicit INPUT changes read-only, of each element
+FORM uiSelectReadonlyKinds 'Read-only kinds'
+    OBJECTS t = UiSelectTask PANEL
+    PROPERTIES(t) READONLY listHtml 'List, HTML' = uiSelectTaskHtmlStatus SELECT 'list',
+                           buttonHtml 'Buttons, HTML' = uiSelectTaskHtmlStatus SELECT 'button',
+                           buttonGroupHtml 'Button group, HTML' = uiSelectTaskHtmlStatus SELECT 'buttonGroup',
+                           listValue 'List, to the INPUT' = uiSelectTaskStatus SELECT 'list' ON CHANGE uiSelectChangeStatus(t),
+                           buttonValue 'Buttons, to the INPUT' = uiSelectTaskStatus SELECT 'button' ON CHANGE uiSelectChangeStatus(t),
+                           buttonGroupValue 'Button group, to the INPUT' = uiSelectTaskStatus SELECT 'buttonGroup' ON CHANGE uiSelectChangeStatus(t),
+                           statusValue 'Dropdown, to the INPUT' = uiSelectTaskStatus SELECT 'dropdown' ON CHANGE uiSelectChangeStatus(t),
+                           statusHtmlValue 'Dropdown, HTML, to the INPUT' = uiSelectTaskHtmlStatus SELECT 'dropdown' ON CHANGE uiSelectChangeHtmlStatus(t),
+                           tagsHtmlDropdown 'Tags, HTML, dropdown' = uiSelectTaskHtmlTags SELECT 'dropdown',
+                           tagsHtmlInput 'Tags, HTML, input' = uiSelectTaskHtmlTags SELECT 'input'
+    FILTERS uiSelectTaskShown(t)
+;
+
+// the same element starts read-only and becomes writable when the task's flag is dropped
+uiSelectUnlock (UiSelectTask t) { uiSelectTaskLocked(t) <- NULL; }
+FORM uiSelectReadonlyIf 'Read-only if'
+    OBJECTS t = UiSelectTask PANEL
+    PROPERTIES(t) READONLYIF uiSelectTaskLocked(t)
+                  statusHtmlValue 'Status, HTML, to the INPUT' = uiSelectTaskHtmlStatus SELECT 'buttonGroup' ON CHANGE uiSelectChangeHtmlStatus(t)
+    PROPERTIES(t) unlock 'Unlock' = uiSelectUnlock
+    FILTERS uiSelectTaskShown(t)
+;
+
+// the platform's element drawing the rows of a group, the group's render function named by it: the rows its options,
+// `name` their view, `selected` whether one is picked, which a pick changes - as the interpreter's script types do
+// (utils/Eval.lsf, a button group) and erp's modes (`option`, the old name of buttons of one value or none); and the
+// input a GROUP CONCAT drawn as its text is changed in, the form of its change (IntegrationFormEntity)
+uiSelectTaskIs (UiSelectStatus s, UiSelectTask t) = uiSelectTaskStatusOf(t) = s;
+
+FORM uiSelectRows 'Rows'
+    OBJECTS t = UiSelectTask PANEL
+    PROPERTIES(t) tagsText 'Tags, as text' = uiSelectTaskTags NOSELECT
+    OBJECTS groupStatus = UiSelectStatus CUSTOM 'selectButtonGroup'
+    PROPERTIES name = uiSelectStatusName(groupStatus), selected = uiSelectTaskIs(groupStatus, t)
+    OBJECTS optionStatus = UiSelectStatus CUSTOM 'option'
+    PROPERTIES optionName = uiSelectStatusName(optionStatus) EXTID 'name', optionSelected = uiSelectTaskIs(optionStatus, t) EXTID 'selected'
+    OBJECTS listStatus = UiSelectStatus CUSTOM 'selectList'
+    PROPERTIES listName = uiSelectStatusName(listStatus) EXTID 'name', listSelected = uiSelectTaskIs(listStatus, t) EXTID 'selected'
+    OBJECTS buttonStatus = UiSelectStatus CUSTOM 'selectButton'
+    PROPERTIES buttonName = uiSelectStatusName(buttonStatus) EXTID 'name', buttonSelected = uiSelectTaskIs(buttonStatus, t) EXTID 'selected'
+    OBJECTS dropdownStatus = UiSelectStatus CUSTOM 'selectDropdown'
+    PROPERTIES dropdownName = uiSelectStatusName(dropdownStatus) EXTID 'name', dropdownSelected = uiSelectTaskIs(dropdownStatus, t) EXTID 'selected'
+    FILTERS uiSelectTaskShown(t)
+;
+
 NAVIGATOR {
     NEW FOLDER uiSelect 'UI select' WINDOW toolbar {
         NEW uiSelectPlaced;
         NEW uiSelectPicked;
+        NEW uiSelectList;
+        NEW uiSelectButton;
+        NEW uiSelectButtonGroup;
+        NEW uiSelectDropdown;
+        NEW uiSelectInput;
+        NEW uiSelectGrid;
+        NEW uiSelectHtmlGrid;
+        NEW uiSelectReadonly;
+        NEW uiSelectReadonlyKinds;
+        NEW uiSelectReadonlyIf;
+        NEW uiSelectRows;
     }
 }
 
-// the statuses New, Done, Lost and the tags red, green, blue, kept; two orders shown from now on, the first New and
-// red, the second with no status and no tag
-uiSelectSeed (STRING[50] first, STRING[50] second) {
+// the statuses New, Done, Lost and the tags red, green, blue, kept
+uiSelectSeedOptions () {
     IF NOT (GROUP SUM 1 IF UiSelectStatus s IS UiSelectStatus) THEN {
         NEW s = UiSelectStatus { uiSelectStatusName(s) <- 'New'; }
         NEW s = UiSelectStatus { uiSelectStatusName(s) <- 'Done'; }
@@ -71,6 +272,11 @@ uiSelectSeed (STRING[50] first, STRING[50] second) {
         NEW t = UiSelectTag { uiSelectTagName(t) <- 'green'; }
         NEW t = UiSelectTag { uiSelectTagName(t) <- 'blue'; }
     }
+}
+
+// the options; two orders shown from now on, the first New and red, the second with no status and no tag
+uiSelectSeed (STRING[50] first, STRING[50] second) {
+    uiSelectSeedOptions();
     uiSelectShown(UiSelectOrder o) <- NULL;
     NEW o = UiSelectOrder {
         uiSelectNumber(o) <- first;
@@ -93,4 +299,46 @@ uiSelectCheckStatus (STRING[50] number, STRING[30] expected) {
 uiSelectCheckTags (STRING[50] number, STRING expected) {
     assertEquals(uiSelectTags(uiSelectOrder(number)), expected, CONCAT ' ', 'the tags of', number, 'are',
                  (OVERRIDE uiSelectTags(uiSelectOrder(number)), 'none'), 'not', expected);
+}
+
+// a task shown from now on - the forms show only the tasks of the test that seeded last -, of the phase New, the status
+// New and the tag red
+uiSelectNewTask (STRING[50] number) {
+    NEW t = UiSelectTask {
+        uiSelectTaskNumber(t) <- number;
+        uiSelectTaskShown(t) <- TRUE;
+        uiSelectTaskLocked(t) <- TRUE;
+        uiSelectTaskPhaseOf(t) <- uiSelectStatus('New');
+        uiSelectTaskStatusOf(t) <- uiSelectStatus('New');
+        uiSelectTaskIn(t, UiSelectTag g) <- TRUE WHERE uiSelectTagName(g) = 'red';
+    }
+}
+
+// the options; one task shown from now on
+uiSelectSeedTask (STRING[50] number) {
+    uiSelectSeedOptions();
+    uiSelectTaskShown(UiSelectTask t) <- NULL;
+    uiSelectNewTask(number);
+    APPLY;
+}
+
+// the options; two tasks shown from now on, the second of the phase Done, no status and no tag
+uiSelectSeedTasks (STRING[50] first, STRING[50] second) {
+    uiSelectSeedOptions();
+    uiSelectTaskShown(UiSelectTask t) <- NULL;
+    uiSelectNewTask(first);
+    uiSelectNewTask(second);
+    uiSelectTaskPhaseOf(UiSelectTask t) <- uiSelectStatus('Done') WHERE uiSelectTaskNumber(t) = second;
+    uiSelectTaskStatusOf(UiSelectTask t) <- NULL WHERE uiSelectTaskNumber(t) = second;
+    uiSelectTaskIn(UiSelectTask t, UiSelectTag g) <- NULL WHERE uiSelectTaskNumber(t) = second;
+    APPLY;
+}
+
+// what a task has, as uiSelectCheckTask compares it: its phase, its status and its tags, 'none' for NULL
+uiSelectTaskHas (UiSelectTask t) = CONCAT ' / ', (OVERRIDE uiSelectTaskPhase(t), 'none'), (OVERRIDE uiSelectTaskStatus(t), 'none'),
+                                                (OVERRIDE uiSelectTaskTags(t), 'none');
+
+uiSelectCheckTask (STRING[50] number, STRING expected) {
+    assertEquals(uiSelectTaskHas(uiSelectTask(number)), expected, CONCAT ' ', 'the task', number, 'has',
+                 (OVERRIDE uiSelectTaskHas(uiSelectTask(number)), 'nothing'), 'not', expected);
 }

@@ -75,11 +75,14 @@ readShownColumns INTERNAL 'lsfusion.tests.ReadShownColumnsAction' ();
 
 // what the open form the action runs in sends its client for a property, by its name in the form, as of the last
 // readSent() of it: the value of its cell for the form's current objects - where the form builds a selection for the
-// property, the list of its options, as JSON -, and the function it tells the client to draw the property by - a render
-// function given in CUSTOM, the platform's element of the property's selection (select<type><element>), or none
+// property, the list of its options, as JSON -, the function it tells the client to draw the property by - a render
+// function given in CUSTOM, the platform's element of the property's selection (select<type><element>), or none -, and
+// of a selection the text its value of several values joins the options by and its parameters - the words multi,
+// notNull, html, changeValue of the ones it has, none for none
 sentInForm = DATA LOCAL TEXT (STRING);
 renderInForm = DATA LOCAL STRING (STRING);
 separatorInForm = DATA LOCAL STRING (STRING);
+selectInForm = DATA LOCAL STRING (STRING);
 readSent INTERNAL 'lsfusion.tests.ReadSentAction' (STRING);
 
 // who draws a property of a form, by its name in the form, under the React views of its design - `react`, a React view

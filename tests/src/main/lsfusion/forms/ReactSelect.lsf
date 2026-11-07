@@ -246,3 +246,119 @@ testRsAllOptionsForAReactView 'A React view is given all the options of a select
         };
     }
 }
+
+// the platform's own element of a selection in each of its kinds the server picks, and what the server tells the client
+// to draw it by: the element SELECT names - a list, buttons, a button group, a drop-down list, an input -, the selection
+// - of one value that has to be there (a task's phase), of one value or none (its status), of several values (its tags)
+// -, the options viewed as text or as HTML, a pick of one value given to the property or to its explicit INPUT as the
+// option's view (Value). The platform's element is its render function (select.js), named by all of them
+rsStatusHtml 'Status' (RsStatus s) = HTMLTEXT('<b>' + rsName(s) + '</b>');
+rsTagHtml 'Tag' (RsTag t) = HTMLTEXT('<i>' + rsTagName(t) + '</i>');
+
+CLASS RsTask 'Task';
+rsTaskPhaseOf = DATA RsStatus (RsTask) NONULL;
+rsTaskPhase 'Phase' (RsTask t) = rsName(rsTaskPhaseOf(t));
+rsTaskHtmlPhase 'Phase' (RsTask t) = rsStatusHtml(rsTaskPhaseOf(t));
+rsTaskStatusOf = DATA RsStatus (RsTask);
+rsTaskStatus 'Status' (RsTask t) = rsName(rsTaskStatusOf(t));
+rsTaskHtmlStatus 'Status' (RsTask t) = rsStatusHtml(rsTaskStatusOf(t));
+rsTaskIn 'In' = DATA BOOLEAN (RsTask, RsTag);
+rsTaskTags 'Tags' (RsTask t) = GROUP CONCAT rsTagName(RsTag g) IF rsTaskIn(t, g), ', ' ORDER rsTagName(g), g;
+rsTaskHtmlTags 'Tags' (RsTask t) = GROUP CONCAT rsTagHtml(RsTag g) IF rsTaskIn(t, g), ', ' ORDER rsTagName(g), g;
+
+rsChangePhase (RsTask t) { INPUT s = rsTaskPhaseOf(t) LIST rsName(s) DO rsTaskPhaseOf(t) <- s; }
+rsChangeHtmlPhase (RsTask t) { INPUT s = rsTaskPhaseOf(t) LIST rsStatusHtml(s) DO rsTaskPhaseOf(t) <- s; }
+rsChangeStatus (RsTask t) { INPUT s = rsTaskStatusOf(t) LIST rsName(s) DO rsTaskStatusOf(t) <- s; }
+rsChangeHtmlStatus (RsTask t) { INPUT s = rsTaskStatusOf(t) LIST rsStatusHtml(s) DO rsTaskStatusOf(t) <- s; }
+
+META rsElementForm(form, type)
+    FORM form
+        OBJECTS t = RsTask PANEL
+        PROPERTIES(t) phase = rsTaskPhase SELECT type, phaseValue = rsTaskPhase SELECT type ON CHANGE rsChangePhase(t),
+                      phaseHtml = rsTaskHtmlPhase SELECT type, phaseHtmlValue = rsTaskHtmlPhase SELECT type ON CHANGE rsChangeHtmlPhase(t),
+                      status = rsTaskStatus SELECT type, statusValue = rsTaskStatus SELECT type ON CHANGE rsChangeStatus(t),
+                      statusHtml = rsTaskHtmlStatus SELECT type, statusHtmlValue = rsTaskHtmlStatus SELECT type ON CHANGE rsChangeHtmlStatus(t),
+                      tags = rsTaskTags SELECT type, tagsHtml = rsTaskHtmlTags SELECT type
+    ;
+END
+
+@rsElementForm(rsList, 'list');
+@rsElementForm(rsButton, 'button');
+@rsElementForm(rsButtonGroup, 'buttonGroup');
+@rsElementForm(rsDropdown, 'dropdown');
+
+// ... an input only of several values
+FORM rsInput
+    OBJECTS t = RsTask PANEL
+    PROPERTIES(t) tags = rsTaskTags SELECT 'input', tagsHtml = rsTaskHtmlTags SELECT 'input'
+;
+
+// what the open form the action runs in tells its client to draw a property by, and the parameters of the property's
+// selection, failing unless they are `expected` and `parameters`
+rsAssertDrawnBy (STRING property, STRING expected, STRING parameters) {
+    readSent(property);
+    assertEquals(renderInForm(property), expected, CONCAT '', property, ' is drawn by ', (OVERRIDE renderInForm(property), 'nothing'),
+                 ', not by ', expected);
+    assertEquals(selectInForm(property), parameters, CONCAT '', property, ' has a selection of ', (OVERRIDE selectInForm(property), 'nothing'),
+                 ', not of ', parameters);
+}
+
+testRsElementOfEachKind 'The element of the platform of each kind of a selection is drawn by its render function' () {
+    rsSeedStatuses();
+    rsSeedTags();
+    NEW t = RsTask {
+        rsTaskPhaseOf(t) <- GROUP MAX RsStatus s IF rsName(s) = 'New';
+        SHOW rsList OBJECTS t = t NOWAIT {
+            rsAssertDrawnBy('phase', 'selectList', 'notNull');
+            rsAssertDrawnBy('phaseValue', 'selectValueList', 'notNull changeValue');
+            rsAssertDrawnBy('phaseHtml', 'selectHTMLList', 'notNull html');
+            rsAssertDrawnBy('phaseHtmlValue', 'selectHTMLValueList', 'notNull html changeValue');
+            rsAssertDrawnBy('status', 'selectNullList', 'none');
+            rsAssertDrawnBy('statusValue', 'selectNullValueList', 'changeValue');
+            rsAssertDrawnBy('statusHtml', 'selectNullHTMLList', 'html');
+            rsAssertDrawnBy('statusHtmlValue', 'selectNullHTMLValueList', 'html changeValue');
+            rsAssertDrawnBy('tags', 'selectMultiList', 'multi');
+            rsAssertDrawnBy('tagsHtml', 'selectMultiHTMLList', 'multi html');
+        };
+        SHOW rsButton OBJECTS t = t NOWAIT {
+            rsAssertDrawnBy('phase', 'selectButton', 'notNull');
+            rsAssertDrawnBy('phaseValue', 'selectValueButton', 'notNull changeValue');
+            rsAssertDrawnBy('phaseHtml', 'selectHTMLButton', 'notNull html');
+            rsAssertDrawnBy('phaseHtmlValue', 'selectHTMLValueButton', 'notNull html changeValue');
+            rsAssertDrawnBy('status', 'selectNullButton', 'none');
+            rsAssertDrawnBy('statusValue', 'selectNullValueButton', 'changeValue');
+            rsAssertDrawnBy('statusHtml', 'selectNullHTMLButton', 'html');
+            rsAssertDrawnBy('statusHtmlValue', 'selectNullHTMLValueButton', 'html changeValue');
+            rsAssertDrawnBy('tags', 'selectMultiButton', 'multi');
+            rsAssertDrawnBy('tagsHtml', 'selectMultiHTMLButton', 'multi html');
+        };
+        SHOW rsButtonGroup OBJECTS t = t NOWAIT {
+            rsAssertDrawnBy('phase', 'selectButtonGroup', 'notNull');
+            rsAssertDrawnBy('phaseValue', 'selectValueButtonGroup', 'notNull changeValue');
+            rsAssertDrawnBy('phaseHtml', 'selectHTMLButtonGroup', 'notNull html');
+            rsAssertDrawnBy('phaseHtmlValue', 'selectHTMLValueButtonGroup', 'notNull html changeValue');
+            rsAssertDrawnBy('status', 'selectNullButtonGroup', 'none');
+            rsAssertDrawnBy('statusValue', 'selectNullValueButtonGroup', 'changeValue');
+            rsAssertDrawnBy('statusHtml', 'selectNullHTMLButtonGroup', 'html');
+            rsAssertDrawnBy('statusHtmlValue', 'selectNullHTMLValueButtonGroup', 'html changeValue');
+            rsAssertDrawnBy('tags', 'selectMultiButtonGroup', 'multi');
+            rsAssertDrawnBy('tagsHtml', 'selectMultiHTMLButtonGroup', 'multi html');
+        };
+        SHOW rsDropdown OBJECTS t = t NOWAIT {
+            rsAssertDrawnBy('phase', 'selectDropdown', 'notNull');
+            rsAssertDrawnBy('phaseValue', 'selectValueDropdown', 'notNull changeValue');
+            rsAssertDrawnBy('phaseHtml', 'selectHTMLDropdown', 'notNull html');
+            rsAssertDrawnBy('phaseHtmlValue', 'selectHTMLValueDropdown', 'notNull html changeValue');
+            rsAssertDrawnBy('status', 'selectNullDropdown', 'none');
+            rsAssertDrawnBy('statusValue', 'selectNullValueDropdown', 'changeValue');
+            rsAssertDrawnBy('statusHtml', 'selectNullHTMLDropdown', 'html');
+            rsAssertDrawnBy('statusHtmlValue', 'selectNullHTMLValueDropdown', 'html changeValue');
+            rsAssertDrawnBy('tags', 'selectMultiDropdown', 'multi');
+            rsAssertDrawnBy('tagsHtml', 'selectMultiHTMLDropdown', 'multi html');
+        };
+        SHOW rsInput OBJECTS t = t NOWAIT {
+            rsAssertDrawnBy('tags', 'selectMultiInput', 'multi');
+            rsAssertDrawnBy('tagsHtml', 'selectMultiHTMLInput', 'multi html');
+        };
+    }
+}
