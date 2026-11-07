@@ -293,6 +293,20 @@ FORM rsInput
     PROPERTIES(t) tags = rsTaskTags SELECT 'input', tagsHtml = rsTaskHtmlTags SELECT 'input'
 ;
 
+// a React view overrides the element type the property declares as its default: it draws the selection from all its
+// options, even where that type is an input and the selection is of one value
+rsInputDefaultPhase (RsTask t) = rsName(rsTaskPhaseOf(t)) SELECT 'input';
+rsInputDefaultStatus (RsTask t) = rsName(rsTaskStatusOf(t)) SELECT 'input';
+
+FORM rsReactInput
+    OBJECTS t = RsTask PANEL
+    PROPERTIES(t) phase = rsInputDefaultPhase, status = rsInputDefaultStatus
+;
+
+DESIGN rsReactInput {
+    NEW board FIRST { custom = 'RsBoard'; MOVE BOX(t); }
+}
+
 // what the open form the action runs in tells its client to draw a property by, and the parameters of the property's
 // selection, failing unless they are `expected` and `parameters`
 rsAssertDrawnBy (STRING property, STRING expected, STRING parameters) {
@@ -359,6 +373,50 @@ testRsElementOfEachKind 'The element of the platform of each kind of a selection
         SHOW rsInput OBJECTS t = t NOWAIT {
             rsAssertDrawnBy('tags', 'selectMultiInput', 'multi');
             rsAssertDrawnBy('tagsHtml', 'selectMultiHTMLInput', 'multi html');
+        };
+    }
+}
+
+// what the script fails with is in messageCaughtException()
+rsEval (TEXT script) {
+    TRY {
+        EVAL script;
+    } CATCH {
+    }
+}
+
+// SELECT 'input' draws a selection of several values only: one of one value is refused as its form is created - a
+// form of the logics' as the server starts, one of EVAL by EVAL -, naming the property, instead of being sent to a
+// render function that either does not exist or draws it as several values
+testRsInputOfOneValueIsRefused 'An input of one value is refused, naming the property' () {
+    rsEval('FORM f OBJECTS t = RsTask PANEL PROPERTIES(t) phase = rsTaskPhase SELECT \'input\'; run() \{ \}');
+    assertNotNull(messageCaughtException(), 'SELECT input of a value that has to be there was not refused');
+    assertTrue(messageCaughtException() LIKE '%SELECT \'input\' of \'phase\' draws a selection of several values only%',
+               'SELECT input of a value that has to be there failed with ' + messageCaughtException());
+    rsEval('FORM f OBJECTS t = RsTask PANEL PROPERTIES(t) status = rsTaskStatus SELECT \'input\'; run() \{ \}');
+    assertNotNull(messageCaughtException(), 'SELECT input of a value or none was not refused');
+    assertTrue(messageCaughtException() LIKE '%SELECT \'input\' of \'status\' draws a selection of several values only%',
+               'SELECT input of a value or none failed with ' + messageCaughtException());
+    // ... a property declaring it, drawn by a render function given in CUSTOM, is taken: the function draws the selection
+    messageCaughtException() <- NULL;
+    rsEval('FORM f OBJECTS t = RsTask PANEL PROPERTIES(t) status = rsInputDefaultStatus CUSTOM \'rsStatusButtons\'; run() \{ \}');
+    assertNull(messageCaughtException(), 'SELECT input of one value drawn by a render function was refused: ' + messageCaughtException());
+}
+
+testRsInputDefaultForAReactView 'A React view overrides the input a selection of one value declares' () {
+    rsSeedStatuses();
+    NEW t = RsTask {
+        rsTaskPhaseOf(t) <- GROUP MAX RsStatus s IF rsName(s) = 'New';
+        rsTaskStatusOf(t) <- rsTaskPhaseOf(t);
+        SHOW rsReactInput OBJECTS t = t NOWAIT {
+            readSent('phase');
+            assertEquals(selectInForm('phase'), 'notNull', 'a required value lost its selection');
+            assertTrue(isSubstring(sentInForm('phase'), '"Done"'), CONCAT '', 'a React view was sent ',
+                       (OVERRIDE sentInForm('phase'), 'nothing'), ', not all the options of the required value');
+            readSent('status');
+            assertEquals(selectInForm('status'), 'none', 'an optional value lost its selection');
+            assertTrue(isSubstring(sentInForm('status'), '"Done"'), CONCAT '', 'a React view was sent ',
+                       (OVERRIDE sentInForm('status'), 'nothing'), ', not all the options of the optional value');
         };
     }
 }

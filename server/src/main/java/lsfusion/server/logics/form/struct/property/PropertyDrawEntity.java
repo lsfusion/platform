@@ -1222,6 +1222,12 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
                 }
 
                 if(selectType != null) {
+                    // the platform's input draws a selection of several values only (a render function or a React view,
+                    // forcing no filter, draws any) - refused as the form is created, the forms of the logics as the server starts
+                    if(Boolean.TRUE.equals(forceFilter) && getCustom() == null && !selectType.equals("Multi"))
+                        throw new IllegalStateException(context.entity.getCreationPath() + " form '" + context.entity.getSID()
+                                + "': SELECT 'input' of '" + getSID() + "' draws a selection of several values only");
+
                     if(elementType == null) {
                         //hasFooter() check is needed to avoid automatically using custom components in the FOOTER
                         if ((!isReadOnly(context) && !hasFooter(context.entity)) || forceSelect) { // we don't have to check hasChangeAction, since canBeChanged is checked in getSelectProperty
