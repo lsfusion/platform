@@ -617,6 +617,42 @@ public class UiSelectIT extends UiTest {
         }
     }
 
+    // a server answer while excel's list stays open used to leave multiple-select's options and its picked views as
+    // they were: the skipped refresh must run once the list closes, and the next pick must use the added option
+    @Test
+    public void excelCatchesUpWithAnUpdateWhileItsListWasOpen() throws Exception {
+        String task = seedTask();
+        try {
+            exec("UiSelect.uiSelectExcel");
+            page.reload();
+            page.locator("[lsfusion-container='System.root']").waitFor();
+            Locator form = open("UiSelect.uiSelect", "UiSelect.uiSelectOpenDropdown");
+            excelPicked(form, new String[] {"tags"}, "red");
+            Locator field = property(form, "tags").locator(".ms-choice");
+            field.click();
+            assertThat(excelOptions()).hasText(TAG_VIEWS);
+            excelOption("green").click();
+            assertThat(property(form, "tags").locator("select option")).hasText(new String[] {"amber", "blue", "lime", "red"});
+            assertThat(property(form, "tagsText").locator(".panel-renderer-value")).hasText("lime, red");
+            assertThat(page.locator(".ms-drop:visible")).hasCount(1); // the update arrived with the list still open
+            field.click();
+            excelPicked(form, new String[] {"tags"}, "lime, red");
+            field.click();
+            assertThat(excelOptions()).hasText(new String[] {"amber", "blue", "lime", "red"});
+            for (String tag : new String[] {"lime", "red"})
+                assertThat(excelOption(tag).locator("input")).isChecked();
+            excelOption("amber").click();
+            assertThat(property(form, "tagsText").locator(".panel-renderer-value")).hasText("amber, lime, red");
+            field.click();
+            excelPicked(form, new String[] {"tags"}, "amber, lime, red");
+            cancel(form);
+            close(form);
+            check("UiSelect.uiSelectCheckTask", task, "New / New / red");
+        } finally {
+            exec("UiSelect.uiSelectDefaultTheme");
+        }
+    }
+
     // each element in a column of a table, a cell in each row: the row's selection, which a pick in the cell changes -
     // whether the row was the current one or not. The keys: the grid's arrows go from cell to cell into the options of
     // one, where shift with an arrow picks the next option and the grid stays in its row, an arrow alone moves it; in

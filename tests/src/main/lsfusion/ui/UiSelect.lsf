@@ -248,6 +248,19 @@ FORM uiSelectRows 'Rows'
 uiSelectExcel () { serverTheme() <- Theme.excel; APPLY; }
 uiSelectDefaultTheme () { serverTheme() <- NULL; APPLY; }
 
+// a pick answered while multiple-select's list is open: the picked green renamed lime, one more option added, unsaved
+uiSelectChangeOpenOptions () {
+    uiSelectTagName(UiSelectTag g) <- 'lime' WHERE uiSelectTagName(g) = 'green';
+    IF NOT (GROUP SUM 1 IF uiSelectTagName(UiSelectTag g) = 'amber') THEN
+        NEW g = UiSelectTag { uiSelectTagName(g) <- 'amber'; }
+}
+FORM uiSelectOpenDropdown 'Open dropdown'
+    OBJECTS t = UiSelectTask PANEL
+    PROPERTIES(t) tags 'Tags' = uiSelectTaskTags SELECT 'dropdown' ON CHANGE AFTER uiSelectChangeOpenOptions()
+    PROPERTIES(t) READONLY tagsText 'Tags, as text' = uiSelectTaskTags NOSELECT
+    FILTERS uiSelectTaskShown(t)
+;
+
 NAVIGATOR {
     NEW FOLDER uiSelect 'UI select' WINDOW toolbar {
         NEW uiSelectPlaced;
@@ -263,6 +276,7 @@ NAVIGATOR {
         NEW uiSelectReadonlyKinds;
         NEW uiSelectReadonlyIf;
         NEW uiSelectRows;
+        NEW uiSelectOpenDropdown;
     }
 }
 

@@ -788,6 +788,8 @@ function _selectPicker(multi, html, shouldBeSelected, changeValue) {
                     onClose: function () {
                         element.silent = false;// Because "refresh" is called after every update, which removes the dropdown
                         _setIsEditing(element, select, false);
+                        // draw the updates skipped while the list was open
+                        selectElement.multipleSelect('refresh');
                     }
                 });
                 lsfUtils.setOnFocusOut(element, function() {
