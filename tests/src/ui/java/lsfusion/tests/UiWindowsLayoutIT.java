@@ -35,6 +35,27 @@ public class UiWindowsLayoutIT extends UiTest {
         }
     }
 
+    // UiNavigatorButtonsIT's control: System.root drawn by the standard toolbar shows the captions of an unpinned
+    // navigator only on hover while a form is open
+    @Test
+    public void anUnpinnedRootShowsItsCaptionsOnlyOnHover() {
+        String mode = pinMode();
+        try {
+            pinMode(UNPINNED);
+            Locator root = page.locator("[lsfusion-container='System.root']");
+            assertThat(open("UiWindowsLayout.uiWindowsLayout", "UiWindowsLayout.uiWindowsLayoutReset")).isVisible();
+            navigatorSettled(root);
+            Locator button = root.locator("[lsfusion-container='UiWindowsLayout.uiWindowsLayout']");
+            assertEquals(true, button.evaluate("button => !!button.closest('.navbar-text-on-hover')"));
+            caption(button, false);
+
+            root.hover();
+            caption(button, true);
+        } finally {
+            pinMode(mode);
+        }
+    }
+
     // the sizes are stored when the page is left in a browser that does not fire unload: Chrome stops firing it for a
     // growing share of its users and, from version 158, for all of them, so a panel collapsed by its splitter came back
     // at its default size on every login (#1945). The Permissions-Policy header turns unload off in the Chrome of any version

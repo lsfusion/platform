@@ -397,6 +397,27 @@ public abstract class UiTest {
         return page.locator("[lsfusion-container='SystemEvents.toggleNavigatorPinMode']");
     }
 
+    // until a navigator window is drawn as it is when nothing happens to it: the classes a selection gives it for a
+    // moment gone, and the CSS transitions of its captions - which hide or show them on hover - over
+    protected void navigatorSettled(Locator window) {
+        assertThat(window).not().containsClass("was-selected-recently");
+        assertThat(window).not().containsClass("parent-was-selected-recently");
+        page.waitForFunction("() => document.getAnimations().length === 0");
+    }
+
+    // until a navigator button's caption is shown, or hidden: its text's own box has a width and its color is not the
+    // transparent one hiding gives it. The button itself keeps its padding, so its own box says nothing
+    protected void caption(Locator button, boolean visible) {
+        assertThat(button).isVisible();
+        assertFalse("no caption in " + button, button.textContent().trim().isEmpty());
+        page.waitForCondition(() -> visible == Boolean.TRUE.equals(button.evaluate("button => {"
+                + " const walker = document.createTreeWalker(button, NodeFilter.SHOW_TEXT); let node;"
+                + " while (node = walker.nextNode()) if (node.nodeValue.trim()) {"
+                + " const caption = node.parentElement, color = getComputedStyle(caption).color;"
+                + " return caption.getBoundingClientRect().width > 0 && color !== 'rgba(0, 0, 0, 0)' && color !== 'transparent';"
+                + " } return false; }")));
+    }
+
     // until the grids have asked for their page sizes and got the answers: a grid measured asks the server for the rows its
     // place has room for a second later, and every answer to its form measures the form again (GFormLayout.update) - so
     // what a test changes after this is measured only by what the change itself sets off

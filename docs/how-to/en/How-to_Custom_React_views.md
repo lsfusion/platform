@@ -885,7 +885,7 @@ Only the desktop web client draws the component. The mobile web client and the d
 
 #### The standard button {#standard-button}
 
-An element the component does not want to draw itself is placed with `<Platform name/>` — the tag that places a design child on a form, where `name` is the element's canonical name. The platform puts its own button inside, with its icon, caption, tooltip and click behavior. The node itself is left as the component rendered it, without the marks a form's host is given.
+An element the component does not want to draw itself is placed with `<Platform name/>` — the tag that places a design child on a form, where `name` is the element's canonical name. The platform puts its own button inside, with its icon, caption, tooltip and click behavior, but not with what the standard toolbar's layout adds to it: its caption is not hidden until the mouse is over the window, as in an unpinned navigator. Where the button goes is up to the component. The node itself is left as the component rendered it, without the marks a form's host is given.
 
 ```jsx
 const { Platform } = window.lsfusion;

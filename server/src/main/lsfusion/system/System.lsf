@@ -469,6 +469,9 @@ logicsCaption '{system.logics.caption}' = DATA STRING[100]();
 topModule '{system.logics.top.module}' = DATA STRING[100]();
 // the React component that lays the navigator's windows out (NAVIGATOR CUSTOM), written at start
 navigatorCustom 'NAVIGATOR CUSTOM' = DATA STRING[100]();
+// the React component that draws a window (WINDOW ... CUSTOM 'Component'), by the window's canonical name, written at
+// start for every window - NULL for one drawn otherwise
+windowComponent 'WINDOW CUSTOM' = DATA STRING[100] (STRING[100]);
 displayName = OVERRIDE dataDisplayName(), logicsCaption(), topModule();
 
 logicsLogo = DATA IMAGEFILE ();

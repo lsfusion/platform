@@ -1,0 +1,44 @@
+MODULE UiNavigatorButtons;
+
+REQUIRE SystemEvents;
+
+// UiNavigatorButtonsIT's application, on a test server of its own: System.root and System.toolbar are drawn by one
+// React component (UiNavigatorButtons.js), which places their NOCUSTOM buttons in one flat row, whatever their depth
+EXTEND WINDOW System.root CUSTOM 'UiNavigatorButtons';
+EXTEND WINDOW System.toolbar CUSTOM 'UiNavigatorButtons';
+
+uiNbText 'Text' = DATA LOCAL STRING[50] ();
+uiNbToolbarText 'Text' = DATA LOCAL STRING[50] ();
+
+FORM uiNbForm 'Root form'
+    PROPERTIES() uiNbText
+;
+
+FORM uiNbToolbarForm 'Toolbar form'
+    PROPERTIES() uiNbToolbarText
+;
+
+NAVIGATOR {
+    // the navigator selects System.root's first folder at the start, so System.toolbar draws its subtree with no click:
+    // NOCUSTOM buttons of levels 1-3 there. The second folder's WINDOW is System.root itself, so its subtree stays there
+    NEW FOLDER uiNbSection 'Section' WINDOW toolbar FIRST {
+        NEW FOLDER uiNbZero 'Zero' {
+            NEW FOLDER uiNbOne 'One' NOCUSTOM {
+                NEW FOLDER uiNbTwo 'Two' NOCUSTOM {
+                    NEW uiNbToolbarForm NOCUSTOM;
+                }
+            }
+        }
+    }
+    NEW FOLDER uiNbMenu 'Menu' WINDOW root {
+        NEW FOLDER uiNbMenuOne 'Menu one' NOCUSTOM {
+            NEW FOLDER uiNbMenuTwo 'Menu two' NOCUSTOM {
+                NEW uiNbForm NOCUSTOM;
+            }
+        }
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiNavigatorButtons.js') <- 1;
+}
