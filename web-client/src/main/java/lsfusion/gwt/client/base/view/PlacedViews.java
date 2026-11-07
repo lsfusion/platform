@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 
 import java.util.ArrayList;
+import java.util.List;
 
 // the bookkeeping behind <Platform name/>: a component renders a host node, and the platform moves its own view into
 // it. A form container's platform-drawn children, a navigator window's buttons, the forms window's forms, the log
@@ -71,8 +72,10 @@ public class PlacedViews<K> {
     private final NativeHashMap<K, Element> filled = new NativeHashMap<>(); // where one actually sits
     // a resize names its host, not its key: looking it up must not walk hundreds of row placements
     private final NativeHashMap<Element, K> hostKeys = new NativeHashMap<>();
-    // the hosts that asked for a key another host already had
-    private final RefusedHosts<K> refused = new RefusedHosts<>();
+    // hosts that asked for a key another host already had, in order: the eldest asks first. React renders the same
+    // <Platform> until its props change, so a refused host is never offered again; remember it to take over when the
+    // host that won goes away
+    private final NativeHashMap<K, List<Element>> refused = new NativeHashMap<>();
     // watches the size of the hosts in `hosts`. Made with the first of them: an owner whose component places nothing
     // needs none
     private JavaScriptObject resizes;
@@ -117,7 +120,12 @@ public class PlacedViews<K> {
 
         Element asked = hosts.get(key);
         if (asked != null && asked != host) {
-            refused.add(key, host);
+            List<Element> waiting = refused.get(key);
+            if (waiting == null) {
+                waiting = new ArrayList<>();
+                refused.put(key, waiting);
+            }
+            waiting.add(host);
             reportDuplicate(key, host);
             return false;
         }
@@ -135,7 +143,7 @@ public class PlacedViews<K> {
         if (ours) // the component took the host away, so nothing waits for it any more
             removeHost(key);
         else
-            refused.forget(key, host);
+            forget(key, host);
 
         if (filled.get(key) == host) {
             filled.remove(key);
@@ -146,9 +154,36 @@ public class PlacedViews<K> {
         // the view is back in the park by now, so a host that was refused while this one held the key can take it -
         // and takes it whether or not this host ever got the view, since either way the key is free
         if (ours)
-            refused.takeOver(key, next -> mount(key, next));
+            takeOver(key);
 
         return ours;
+    }
+
+    // a host that asked and was refused, and that the component has now taken away: it is not waiting any more
+    private void forget(K key, Element host) {
+        List<Element> asked = refused.get(key);
+        if (asked != null && asked.remove(host) && asked.isEmpty())
+            refused.remove(key);
+    }
+
+    // the host that held the key is gone: the eldest host that asked for it meanwhile takes it, if it is still in the
+    // document - a component that removed both in one render leaves nothing to take over, and a host React has thrown
+    // away is not one of ours to fill
+    private void takeOver(K key) {
+        List<Element> asked = refused.get(key);
+        if (asked == null)
+            return;
+
+        while (!asked.isEmpty()) {
+            Element next = asked.remove(0);
+            if (GwtClientUtils.isInDocument(next)) {
+                GwtClientUtils.clearCustomViewError(next); // it has been holding "already placed by another <Platform>"
+                mount(key, next);
+                break;
+            }
+        }
+        if (asked.isEmpty())
+            refused.remove(key);
     }
 
     // a compound key prints the name the <Platform> used, even though its equality names a row and a property
