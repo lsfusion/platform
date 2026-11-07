@@ -61,6 +61,7 @@ public class PlacedViews {
 
     private final Views views;
 
+    // a host comes and goes only through addHost / removeHost, which watch its size while it is here
     private final NativeStringMap<Element> hosts = new NativeStringMap<>();  // where a view was asked for, moved or not
     private final NativeStringMap<Element> filled = new NativeStringMap<>(); // where one actually sits
     // the hosts that asked for a name another host already had. React renders the same <Platform> until its own props
@@ -89,8 +90,7 @@ public class PlacedViews {
             return false;
         }
 
-        hosts.put(name, host);
-        observe(host);
+        addHost(name, host);
         tryPlace(name, host);
         return true;
     }
@@ -100,10 +100,9 @@ public class PlacedViews {
     // has stopped asking just as surely as one that was holding the view
     public boolean unmount(String name, Element host) {
         boolean ours = hosts.get(name) == host;
-        if (ours) { // the component took the host away, so nothing waits for it any more
-            hosts.remove(name);
-            unobserve(host);
-        } else
+        if (ours) // the component took the host away, so nothing waits for it any more
+            removeHost(name);
+        else
             forget(name, host);
 
         if (filled.get(name) == host) {
@@ -189,8 +188,7 @@ public class PlacedViews {
 
     // the whole tree this belonged to is gone: every host and every placement with it
     public void reset() {
-        hosts.foreachValue(this::unobserve);
-        hosts.clear();
+        hosts.foreachKey(this::removeHost);
         filled.clear();
         refused.clear();
     }
@@ -201,11 +199,8 @@ public class PlacedViews {
     // come back, and its host must not be reused by whatever takes its name next
     public void viewRemoved(String name, boolean mayReturn) {
         filled.remove(name);
-        if (!mayReturn) {
-            Element host = hosts.remove(name);
-            if (host != null)
-                unobserve(host);
-        }
+        if (!mayReturn)
+            removeHost(name);
     }
 
     // a host changed size - what the browser says after the layout: the view in it, if one is, is told
@@ -214,6 +209,17 @@ public class PlacedViews {
             if (filledHost == host)
                 views.resized(name);
         });
+    }
+
+    private void addHost(String name, Element host) {
+        hosts.put(name, host);
+        observe(host);
+    }
+
+    private void removeHost(String name) {
+        Element host = hosts.remove(name);
+        if (host != null)
+            unobserve(host);
     }
 
     private native void observe(Element host)/*-{
