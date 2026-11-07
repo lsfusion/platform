@@ -926,6 +926,9 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
 
                         } else {
                             option = select.children[index + offset];
+                            // select2 keeps what it read of an option: the one changed here would be shown as it was
+                            if (isBootstrap)
+                                $.fn.select2.amd.require('select2/utils').RemoveData(option);
                         }
 
                         option.object = object;

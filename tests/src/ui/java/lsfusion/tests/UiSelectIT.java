@@ -294,12 +294,15 @@ public class UiSelectIT extends UiTest {
         save(form);
         check("UiSelect.uiSelectCheckTask", task, "Done / Lost / blue, green");
 
+        // the server's own change: an option renamed, one deleted, one added - an option the update changes in place shown
+        // as changed, also by select2, which keeps what it read of an option (the list of several values as text showed it
+        // as it was)
         propertyButton(form, "shift").click();
         for (String name : NATIVE)
             assertThat(property(form, name).locator("select option")).hasText(Stream.concat(Stream.of(""), Arrays.stream(SHIFTED_STATUS_VIEWS)).toArray(String[]::new));
         dropdownPicked(form, PHASES, "Late");
         dropdownPicked(form, STATUSES, "");
-        choices(form, new String[] {"tagsHtml"}, "black", "green");
+        choices(form, TAGS, "black", "green");
         cancel(form);
         close(form);
     }
