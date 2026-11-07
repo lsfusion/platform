@@ -531,6 +531,9 @@ META defineLinkDialog (object)
     } ASON CHANGE object;
 END
 
+// whether a React component lays the navigator's windows out (NAVIGATOR CUSTOM). The parser gives it TRUE
+hasNavigatorCustom 'NAVIGATOR CUSTOM' = ABSTRACT VALUE BOOLEAN();
+
 logoWindowClass = ABSTRACT VALUE STRING();
 rootWindowClass = ABSTRACT VALUE STRING();
 systemWindowClass = ABSTRACT VALUE STRING();

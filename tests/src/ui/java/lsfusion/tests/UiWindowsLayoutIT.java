@@ -8,11 +8,18 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 // the layout of the navigator's windows: their sizes, which the client keeps in the browser's local storage when the page
 // is left, and Service's reset of the layout (UiWindowsLayout.lsf)
 public class UiWindowsLayoutIT extends UiTest {
+
+    // an unpinned toolbar is laid out by the standard layout's popup rules
+    @Test
+    public void anUnpinnedToolbarKeepsItsPopupClass() {
+        assertThat(page.locator("[lsfusion-container='System.toolbar']")).containsClass("navbar-popup-over-selected-hover");
+    }
 
     // the sizes are stored when the page is left in a browser that does not fire unload: Chrome stops firing it for a
     // growing share of its users and, from version 158, for all of them, so a panel collapsed by its splitter came back

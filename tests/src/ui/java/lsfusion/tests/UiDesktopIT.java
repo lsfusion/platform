@@ -46,12 +46,24 @@ public class UiDesktopIT extends UiTest {
         assertThat(place("System.toolbar").locator("[lsfusion-container='UiDesktop.uiDesktopFirst']")).isVisible();
         assertThat(page.locator(".split-vert, .split-horz")).hasCount(0);
 
-        // ... and fills it - the toolbar and the log too, with the class of their pin mode on them: unpinned, the
-        // standard layout collapses them and pops them out over the windows beside them
+        // ... and fills it - the pin modes are the standard layout's way of laying the navigator and the log out,
+        // so a window the component lays out is not given their classes
         for (String window : new String[] {"System.toolbar", "System.log"}) {
             Locator view = place(window).locator(":scope > *");
-            assertThat(view).containsClass("navbar-popup-over-selected-hover");
+            assertThat(view).not().containsClass("navbar-popup-over-selected-hover");
             assertEquals(window, box(place(window)), box(view));
+        }
+        assertThat(place("System.log").locator(":scope > *")).not().containsClass("navbar-always-hide-unpinned");
+    }
+
+    // the server omits the pin-mode classes because the component lays the windows out
+    @Test
+    public void theServerGivesTheWindowsNoPinModeClasses() {
+        Locator form = open("UiDesktop.uiDesktopSection", "UiDesktop.uiDesktopClasses");
+        for (String property : new String[] {"toolbarWindowClass", "logsWindowClass"}) {
+            String name = "[lsfusion-container='PROPERTY(" + property + "())']";
+            assertThat(form.locator(".panel-renderer-value" + name + ", " + name + " .panel-renderer-value"))
+                    .hasText("bg-body-secondary");
         }
     }
 

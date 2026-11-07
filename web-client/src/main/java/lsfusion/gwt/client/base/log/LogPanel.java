@@ -8,8 +8,8 @@ import lsfusion.gwt.client.navigator.view.NavigatorPanel;
 // everything else about a message (what it is made of, when it is shown) stays where it was, in GLog and its caller.
 //
 // It is the log window's view itself, and not something holding one: the window is the navbar both panels draw inside,
-// its own classes are written into that navbar as the pin mode changes, and the panel is never swapped out from under
-// WindowsController. So there is nothing here for a getView() to return but `this`
+// its own classes are written into that navbar as the pin mode changes in the standard layout, and the panel is never
+// swapped out from under WindowsController. So there is nothing here for a getView() to return but `this`
 public abstract class LogPanel extends NavigatorPanel {
 
     protected LogPanel() {

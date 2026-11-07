@@ -22,6 +22,10 @@ FORM uiDesktopSecond 'Desktop second'
     PROPERTIES() uiDesktopText
 ;
 
+FORM uiDesktopClasses 'Desktop classes'
+    PROPERTIES() READONLY toolbarWindowClass, logsWindowClass
+;
+
 uiDesktopSecondIntoAside 'Second into aside' () { SHOW uiDesktopSecond WINDOW uiDesktopAside NOWAIT; }
 
 NAVIGATOR {
@@ -31,6 +35,7 @@ NAVIGATOR {
     NEW FOLDER uiDesktopSection 'Desktop section' WINDOW toolbar FIRST {
         NEW uiDesktopFirst;
         NEW uiDesktopSecondIntoAside;
+        NEW uiDesktopClasses;
     }
     NEW FOLDER uiDesktopOther 'Desktop other' WINDOW uiDesktopMenu AFTER uiDesktopSection {
         NEW uiDesktopSecond;
