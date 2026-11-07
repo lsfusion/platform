@@ -474,6 +474,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
     @Override
     protected void finalizeChanges() {
+        super.finalizeChanges();
+
         beforeAspects = getBeforeAspects();
         afterAspects = getAfterAspects();
         events = ((MMap<BaseEvent, SessionEnvEvent>)events).immutable();

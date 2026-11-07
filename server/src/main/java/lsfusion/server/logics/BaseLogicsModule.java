@@ -1386,8 +1386,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
             }
 
             Action formProperty = drillDownFormProperty.action;
-            property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
-            property.setEventAction(formProperty.getSID(), formProperty.getImplement(property.getReflectionOrderInterfaces()));
+            property.setContextMenuAction(formProperty.getSID(), formProperty.caption, Version.last());
+            property.setEventAction(formProperty.getSID(), formProperty.getImplement(property.getReflectionOrderInterfaces()), Version.last());
         }
     }
 

@@ -574,8 +574,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             ActionMapImplement<?, P> logAction = property.getLogFormAction();
 
             //добавляем в контекстное меню пункт для показа формы
-            property.setContextMenuAction(property.getSID(), logAction.action.caption);
-            property.setEventAction(property.getSID(), logAction);
+            property.setContextMenuAction(property.getSID(), logAction.action.caption, Version.last());
+            property.setEventAction(property.getSID(), logAction, Version.last());
         }
     }
 
@@ -595,8 +595,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             
             Action setupPolicyAction = setupPolicyLA.action;
             LM.makeActionPublic(setupPolicyLA, setupPolicyActionName);
-            property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption);
-            property.setEventAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement());
+            property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption, Version.last());
+            property.setEventAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement(), Version.last());
         }
     }
 

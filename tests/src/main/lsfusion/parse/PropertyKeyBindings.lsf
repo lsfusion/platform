@@ -2,17 +2,19 @@ MODULE PropertyKeyBindings;
 
 REQUIRE TestUtils;
 
-// a property keeps the keys actions are bound to it by (ASON KEYPRESS). Modules that do not require each other are
-// parsed at once, each in a thread of its own, so two of them that bind actions to keys of one property put them into
-// its bindings at once: they went into a plain map, created by the first binding, and bindings were lost
+// a property keeps the actions statements bind to it (ASON CHANGE, ASON KEYPRESS, ASON CONTEXTMENU). Modules that do not
+// require each other are parsed at once, so of two of them giving one property a change action, or an action of one key,
+// the property kept the one written last, and it had their context menu items in the order written, so the parse
+// threads' timing : the module later in the module order wins now, and the menu goes in the module order, as when the
+// modules were parsed one after the other - an item bound again staying as it was bound first, as on a form
 
-pkName = DATA LOCAL STRING ();
 pkAction () { MESSAGE 'pk'; }
+pkLaterAction () { MESSAGE 'pk later'; }
 
-pkFailure = DATA LOCAL STRING ();
-pkBindAtOnce INTERNAL 'lsfusion.tests.BindPropertyKeysAtOnceAction' ();
+pkOrderFailure = DATA LOCAL STRING ();
+pkBindInModuleOrder INTERNAL 'lsfusion.tests.BindPropertyInModuleOrderAction' ();
 
-testPropertyKeysBoundAtOnce 'A key bound to a property waits for another binding to it' () {
-    pkBindAtOnce();
-    assertNull(pkFailure(), pkFailure());
+testPropertyBoundInModuleOrder 'Of two modules giving a property actions the later one in the module order wins' () {
+    pkBindInModuleOrder();
+    assertNull(pkOrderFailure(), pkOrderFailure());
 }

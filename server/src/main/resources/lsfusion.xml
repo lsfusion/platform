@@ -505,6 +505,7 @@
                 <!-- должно быть после всего, что может поменять editAction, contextMenu, etc.-->
                 <ref bean="finishLogInitTask"/>
                 <ref bean="setupDrillDownTask"/>
+                <ref bean="setupResetFileTask"/>
                 <ref bean="setupPropertyPolicyFormsTask"/>
                 <ref bean="setupActionPolicyFormsTask"/>
                 <ref bean="initIndicesTask"/> <!-- hideOlds -> STAT calculation -> getIndices cache  -->

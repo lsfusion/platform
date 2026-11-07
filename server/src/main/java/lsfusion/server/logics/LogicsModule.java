@@ -1926,8 +1926,8 @@ public abstract class LogicsModule {
             LP lp = new LP(property);
             LA<?> resetFormProperty = addSetupResetAProp(lp);
             Action formProperty = resetFormProperty.action;
-            property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
-            property.setEventAction(formProperty.getSID(), resetFormProperty.getImplement(lp.listInterfaces));
+            property.setContextMenuAction(formProperty.getSID(), formProperty.caption, Version.last());
+            property.setEventAction(formProperty.getSID(), resetFormProperty.getImplement(lp.listInterfaces), Version.last());
         }
     }
 

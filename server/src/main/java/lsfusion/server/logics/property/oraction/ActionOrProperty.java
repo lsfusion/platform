@@ -3,15 +3,9 @@ package lsfusion.server.logics.property.oraction;
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.implementations.simple.EmptyOrderMap;
-import lsfusion.base.col.implementations.simple.EmptyRevMap;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.MOrderMap;
 import lsfusion.base.comb.ListPermutations;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.InputBindingEvent;
@@ -22,8 +16,10 @@ import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.ResourceUtils;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.base.version.NFLazy;
+import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFMap;
+import lsfusion.server.base.version.interfaces.NFOrderMap;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -235,8 +231,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         this.interfaces = interfaces.getSet();
         this.orderInterfaces = interfaces;
 
-        setContextMenuAction(GROUP_CHANGE, new ContextMenuBinding(LocalizedString.create("{logics.property.groupchange}"), this::showGroupChange));
-        setContextMenuAction(ServerResponse.EDIT_OBJECT, LocalizedString.create("{logics.property.editobject}"));
+        setContextMenuAction(GROUP_CHANGE, new ContextMenuBinding(LocalizedString.create("{logics.property.groupchange}"), this::showGroupChange), Version.global());
+        setContextMenuAction(ServerResponse.EDIT_OBJECT, LocalizedString.create("{logics.property.editobject}"), Version.global());
 
 //        notFinalized.put(this, ExceptionUtils.getStackTrace());
     }
@@ -340,60 +336,51 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         }
     }
 
-    private Object keyBindings;
-    private Object contextMenuBindings;
-    private Object eventActions;
+    // what statements of modules bind to the property (ASON, ON), beside the items it is made with and the ones the start's
+    // tasks add. Modules that do not require each other are parsed at once, so the bindings are NF, as a form's property's
+    // are (PropertyDrawEntity), and go by the module order, not by the parse threads' timing : of two modules binding one
+    // key or one event the later one wins, and an item bound to the context menu again stays as it was bound first - its
+    // caption and its place -, as on a form. The items the property is made with go before every module's
+    // (Version.global()), the ones the start's tasks add after them (Version.last())
+    private final NFMap<KeyStroke, String> keyBindings = NFFact.map();
+    private final NFOrderMap<String, ContextMenuBinding> contextMenuBindings = NFFact.orderMap();
+    private final NFMap<String, ActionMapImplement<?, T>> eventActions = NFFact.map();
 
-    // as the two below : modules that do not require each other are parsed at once, and two of them can bind keys to
-    // one property (ASON KEYPRESS)
-    @NFLazy
-    public void setKeyAction(KeyStroke ks, String actionSID) {
-        if (keyBindings == null) {
-            keyBindings = MapFact.mMap(MapFact.override());
-        }
-        ((MMap<KeyStroke, String>)keyBindings).add(ks, actionSID);
+    public void setKeyAction(KeyStroke ks, String actionSID, Version version) {
+        keyBindings.add(ks, actionSID, version);
     }
 
     public ImMap<KeyStroke, String> getKeyBindings() {
-        return (ImMap<KeyStroke, String>)(keyBindings == null ? MapFact.EMPTY() : keyBindings);
+        return keyBindings.getMap();
     }
 
-    public void setContextMenuAction(String actionSID, LocalizedString caption) {
-        setContextMenuAction(actionSID, null, caption);
+    public void setContextMenuAction(String actionSID, LocalizedString caption, Version version) {
+        setContextMenuAction(actionSID, null, caption, version);
     }
 
-    public void setContextMenuAction(String actionSID, LA contextMenuAction, LocalizedString caption) {
-        setContextMenuAction(actionSID, new ContextMenuBinding(caption, contextMenuAction, null));
+    public void setContextMenuAction(String actionSID, LA contextMenuAction, LocalizedString caption, Version version) {
+        setContextMenuAction(actionSID, new ContextMenuBinding(caption, contextMenuAction, null), version);
     }
 
-    @NFLazy
-    public void setContextMenuAction(String actionSID, ContextMenuBinding contextMenuBinding) {
-        if (contextMenuBindings == null || contextMenuBindings instanceof EmptyOrderMap) {
-            contextMenuBindings = MapFact.mOrderMap(MapFact.override());
-        }
-        ((MOrderMap<String, ContextMenuBinding>)contextMenuBindings).add(actionSID, contextMenuBinding);
+    public void setContextMenuAction(String actionSID, ContextMenuBinding contextMenuBinding, Version version) {
+        contextMenuBindings.add(actionSID, contextMenuBinding, version);
     }
 
     public ImOrderMap<String, ContextMenuBinding> getContextMenuBindings() {
-        return (ImOrderMap<String, ContextMenuBinding>)(contextMenuBindings == null ? MapFact.EMPTYORDER() : contextMenuBindings);
+        return contextMenuBindings.getListMap();
     }
 
-    @NFLazy
-    public void setEventAction(String eventActionSID, ActionMapImplement<?, T> eventActionImplement) {
+    public void setEventAction(String eventActionSID, ActionMapImplement<?, T> eventActionImplement, Version version) {
         if(eventActionSID.equals(CHANGE_WYS)) { // CHANGE_WYS, temp check
             startLog("WARNING! CHANGE_WYS is deprecated, use LIST clause in INPUT / DIALOG operator instead " + this);
             return;
         }
 
-        if (eventActions == null || eventActions instanceof EmptyRevMap) {
-            eventActions = MapFact.mMap(MapFact.override());
-        }
-        ((MMap<String, ActionMapImplement<?, T>>) eventActions).add(eventActionSID, eventActionImplement);
+        eventActions.add(eventActionSID, eventActionImplement, version);
     }
 
-    @LongMutable
     private ImMap<String, ActionMapImplement<?, T>> getEventActions() {
-        return (ImMap<String, ActionMapImplement<?, T>>)(eventActions == null ? MapFact.EMPTY() : eventActions);
+        return eventActions.getMap();
     }
 
     // actually protected (friend of PropertyMapImplement)
@@ -498,9 +485,9 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     private boolean finalizedChanges;
 
     protected void finalizeChanges() {
-        eventActions = eventActions == null ? MapFact.EMPTY() : ((MMap) eventActions).immutable();
-        keyBindings = keyBindings == null ? MapFact.EMPTY() : ((MMap)keyBindings).immutable();
-        contextMenuBindings = contextMenuBindings == null ? MapFact.EMPTYORDER() : ((MOrderMap)contextMenuBindings).immutableOrder();
+        eventActions.finalizeChanges();
+        keyBindings.finalizeChanges();
+        contextMenuBindings.finalizeChanges();
     }
 
     public void finalizeAroundInit() {

@@ -1328,6 +1328,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addSettingsToAction(LA action, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature, ActionSettings as) throws ScriptingErrorLog.SemanticErrorException {
+        Version version = getVersion();
         checks.checkDuplicateAction(name, signature);
 
         addSettingsToActionOrProperty(action, name, caption, params, signature, as);
@@ -1339,16 +1340,16 @@ public class ScriptingLogicsModule extends LogicsModule {
             LAP<?, ?> mainProperty = findLAPByActionOrPropertyUsage((ActionOrPropertyUsage) editEvent.action);
             String actionSID = action.action.getSID();
             if (editEvent.isContextMenu()) {
-                mainProperty.getActionOrProperty().setContextMenuAction(actionSID, action, FormPropertyOptions.getContextMenuCaption(editEvent.contextMenuCaption, action.action));
-                action.setAsEventActionFor(actionSID, mainProperty);
+                mainProperty.getActionOrProperty().setContextMenuAction(actionSID, action, FormPropertyOptions.getContextMenuCaption(editEvent.contextMenuCaption, action.action), version);
+                action.setAsEventActionFor(actionSID, mainProperty, version);
             } else if (editEvent.isKeyPress()) {
-                mainProperty.getActionOrProperty().setKeyAction(editEvent.keyPress, actionSID);
-                action.setAsEventActionFor(actionSID, mainProperty);
+                mainProperty.getActionOrProperty().setKeyAction(editEvent.keyPress, actionSID, version);
+                action.setAsEventActionFor(actionSID, mainProperty, version);
             } else {
                 if(editEvent.before != null) {
                     throw new UnsupportedOperationException("ASON CHANGE BEFORE|AFTER is not supported");
                 }
-                action.setAsEventActionFor(editEvent.actionType, mainProperty);
+                action.setAsEventActionFor(editEvent.actionType, mainProperty, version);
             }
         }
         if(as.askConfirm != null)
@@ -1568,27 +1569,29 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         List<Object> params = getParamsPlainList(Collections.singletonList(action));
         ImList<ActionMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LAP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
-        property.getActionOrProperty().setEventAction(actionType, actionImplements.get(0));
+        property.getActionOrProperty().setEventAction(actionType, actionImplements.get(0), getVersion());
     }
 
     public void setScriptedContextMenuAction(LAP property, LAWithParams action, LocalizedString contextMenuCaption) {
+        Version version = getVersion();
         List<Object> params = getParamsPlainList(Collections.singletonList(action));
         ImList<ActionMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LAP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
         ActionMapImplement<?, PropertyInterface> actionImplement = actionImplements.get(0);
 
         String actionSID = actionImplement.action.getSID();
-        property.getActionOrProperty().setContextMenuAction(actionSID, FormPropertyOptions.getContextMenuCaption(contextMenuCaption, actionImplement.action));
-        property.getActionOrProperty().setEventAction(actionSID, actionImplement);
+        property.getActionOrProperty().setContextMenuAction(actionSID, null, FormPropertyOptions.getContextMenuCaption(contextMenuCaption, actionImplement.action), version);
+        property.getActionOrProperty().setEventAction(actionSID, actionImplement, version);
     }
 
     public void setScriptedKeyPressAction(LAP property, LAWithParams action, KeyStroke keyPress) {
+        Version version = getVersion();
         List<Object> params = getParamsPlainList(Collections.singletonList(action));
         ImList<ActionMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LAP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
         ActionMapImplement<?, PropertyInterface> actionImplement = actionImplements.get(0);
 
         String actionSID = actionImplement.action.getSID();
-        property.getActionOrProperty().setKeyAction(keyPress, actionSID);
-        property.getActionOrProperty().setEventAction(actionSID, actionImplement);
+        property.getActionOrProperty().setKeyAction(keyPress, actionSID, version);
+        property.getActionOrProperty().setEventAction(actionSID, actionImplement, version);
     }
 
     public List<ResolveClassSet> getParamClasses(NamedPropertyUsage usage) throws ScriptingErrorLog.SemanticErrorException {
