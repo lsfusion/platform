@@ -699,8 +699,8 @@ WHEN FORMS design CHANGED (size()) DO {
     saveCurrentSize(TRUE);
 }
 
-textOnHoverClass() = IF isWebDesktop() AND NOT navigatorPinMode() THEN ' navbar-text-on-hover' ELSE '';
-verticalTextOnHoverClass() = IF isWebDesktop() AND verticalNavbar() AND NOT navigatorPinMode() THEN ' navbar-text-on-hover' ELSE '';
+textOnHoverClass() = IF isWebDesktop() AND NOT navigatorPinMode() AND NOT navigatorCustom() THEN ' navbar-text-on-hover' ELSE '';
+verticalTextOnHoverClass() = IF isWebDesktop() AND verticalNavbar() AND NOT navigatorPinMode() AND NOT navigatorCustom() THEN ' navbar-text-on-hover' ELSE '';
 
 navigatorPinModeClass() += IF isWebMobile() THEN 'navbar-hidden' ELSE NULL;
 logoActionClass() += 'navbar-icon-large' + (IF isWebMobile() AND NOT useBootstrap() THEN ' navbar-hidden' ELSE '');
@@ -713,8 +713,8 @@ systemWindowClass() += 'bg-dark-subtle' + (IF isWebDesktop() THEN ' navbar-icon-
     (IF isWebDesktop() AND NOT verticalNavbar() THEN ' navbar-text-hidden' ELSE '') +
     (IF isWebDesktop() AND verticalNavbar() THEN ' navbar-force-align-start' ELSE '');
 formsWindowClass() += 'bg-body-tertiary' + (IF isWebMobile() OR dontShowCloseButtonOnInactiveTab() THEN ' dont-show-close-button' ELSE '');
-// the pin modes are how the standard layout lays the toolbar and the log out, which a NAVIGATOR CUSTOM component
-// does instead
+// the pin modes' classes - popping out over the form and captions on hover - belong to the standard layout, which a
+// NAVIGATOR CUSTOM component replaces
 toolbarWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigatorPinMode() == TTRUE AND NOT navigatorCustom() THEN ' navbar-popup-over-selected-hover' ELSE '');
 logsWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT logsPinMode() AND NOT navigatorCustom() THEN ' navbar-popup-over-selected-hover navbar-always-hide-unpinned' ELSE '');
 

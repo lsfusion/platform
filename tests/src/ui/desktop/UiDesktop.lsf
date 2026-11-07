@@ -22,8 +22,24 @@ FORM uiDesktopSecond 'Desktop second'
     PROPERTIES() uiDesktopText
 ;
 
+// the classes of the logo and system windows - the ones the vertical navbar gives the captions on hover too - as they
+// would be with the navbar vertical, and as they would be without NAVIGATOR CUSTOM besides: read in a session that is
+// never applied, as the navbar takes a reload to change
+uiDesktopVerticalClasses = DATA LOCAL STRING ();
+uiDesktopVerticalStandardClasses = DATA LOCAL STRING ();
+uiDesktopReadVertical () {
+    NEWSESSION NESTED (uiDesktopVerticalClasses, uiDesktopVerticalStandardClasses) {
+        designEnvNavbar(currentDesignEnv()) <- Navbar.vertical;
+        uiDesktopVerticalClasses() <- CONCAT ' ', logoWindowClass(), systemWindowClass();
+        navigatorCustom() <- NULL;
+        uiDesktopVerticalStandardClasses() <- CONCAT ' ', logoWindowClass(), systemWindowClass();
+    }
+}
+
 FORM uiDesktopClasses 'Desktop classes'
-    PROPERTIES() READONLY toolbarWindowClass, logsWindowClass
+    PROPERTIES() READONLY logoWindowClass, rootWindowClass, systemWindowClass, toolbarWindowClass, logsWindowClass,
+                          uiDesktopVerticalClasses, uiDesktopVerticalStandardClasses
+    EVENTS ON INIT uiDesktopReadVertical()
 ;
 
 uiDesktopSecondIntoAside 'Second into aside' () { SHOW uiDesktopSecond WINDOW uiDesktopAside NOWAIT; }

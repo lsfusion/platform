@@ -373,6 +373,30 @@ public abstract class UiTest {
         answered(0, () -> { });
     }
 
+    // the navigator's pin modes, as its pin button in System.system says them - the server's default is the navbar pinned
+    protected static final String NAVBAR_PINNED = "Pin navbar", UNPINNED = "Unpin all";
+
+    // the pin mode now. It is kept for the design environment, past the test, so a test that switches it switches it back
+    protected String pinMode() {
+        return pinButton().textContent().trim();
+    }
+
+    // switches the pin mode round until its button says `mode`. A press is over once the button says the next mode: the
+    // server's answer gives the windows their classes before it draws the navigator again
+    protected void pinMode(String mode) {
+        Locator pin = pinButton();
+        for (int i = 0; i < 3 && !pinMode().equals(mode); i++) {
+            String before = pinMode();
+            pin.click();
+            page.waitForCondition(() -> !before.equals(pinMode()));
+        }
+        assertThat(pin).hasText(mode);
+    }
+
+    private Locator pinButton() {
+        return page.locator("[lsfusion-container='SystemEvents.toggleNavigatorPinMode']");
+    }
+
     // until the grids have asked for their page sizes and got the answers: a grid measured asks the server for the rows its
     // place has room for a second later, and every answer to its form measures the form again (GFormLayout.update) - so
     // what a test changes after this is measured only by what the change itself sets off

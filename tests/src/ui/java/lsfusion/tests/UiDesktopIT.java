@@ -56,14 +56,24 @@ public class UiDesktopIT extends UiTest {
         assertThat(place("System.log").locator(":scope > *")).not().containsClass("navbar-always-hide-unpinned");
     }
 
-    // the server omits the pin-mode classes because the component lays the windows out
+    // the server gives the windows none of the pin modes' classes - the toolbar's and the log's popping out, the top
+    // strip's captions on hover -, the component laying the windows out. Asked with the navigator unpinned (the server's
+    // default pins the bar), and switched back after
     @Test
     public void theServerGivesTheWindowsNoPinModeClasses() {
-        Locator form = open("UiDesktop.uiDesktopSection", "UiDesktop.uiDesktopClasses");
-        for (String property : new String[] {"toolbarWindowClass", "logsWindowClass"}) {
-            String name = "[lsfusion-container='PROPERTY(" + property + "())']";
-            assertThat(form.locator(".panel-renderer-value" + name + ", " + name + " .panel-renderer-value"))
-                    .hasText("bg-body-secondary");
+        String mode = pinMode();
+        try {
+            pinMode(UNPINNED);
+            Locator form = open("UiDesktop.uiDesktopSection", "UiDesktop.uiDesktopClasses");
+            for (String property : new String[] {"toolbarWindowClass", "logsWindowClass"})
+                assertThat(value(form, property)).hasText("bg-body-secondary");
+            for (String property : new String[] {"logoWindowClass", "rootWindowClass", "systemWindowClass"})
+                assertThat(value(form, property)).not().containsText("navbar-text-on-hover");
+            // the vertical navbar's: none either, while without the component the logo and system windows have it
+            assertThat(value(form, "uiDesktopVerticalClasses")).not().containsText("navbar-text-on-hover");
+            assertThat(value(form, "uiDesktopVerticalStandardClasses")).containsText("navbar-text-on-hover");
+        } finally {
+            pinMode(mode);
         }
     }
 
@@ -136,6 +146,12 @@ public class UiDesktopIT extends UiTest {
     public void aWrongNameIsSaidInThePage() {
         page.evaluate("() => window.uiDesktop.show('wrong')");
         assertThat(page.locator(".ui-desktop-wrong .lsf-view-error")).containsText("'UiDesktop.nope' is not a window");
+    }
+
+    // the value a panel property of a form shows
+    private static Locator value(Locator form, String property) {
+        String name = "[lsfusion-container='PROPERTY(" + property + "())']";
+        return form.locator(".panel-renderer-value" + name + ", " + name + " .panel-renderer-value");
     }
 
     // the place the component gave a window: the host <Platform> rendered, marked with the window's name

@@ -21,6 +21,20 @@ public class UiWindowsLayoutIT extends UiTest {
         assertThat(page.locator("[lsfusion-container='System.toolbar']")).containsClass("navbar-popup-over-selected-hover");
     }
 
+    // with the navigator unpinned (the server's default pins the bar) System.root shows its captions only on hover; it is
+    // alone with the class in the horizontal strip, so BaseImage leaves it on the window's own view rather than lifting it
+    // to the FlexPanel of logo, root and system
+    @Test
+    public void anUnpinnedRootKeepsItsTextOnHoverClass() {
+        String mode = pinMode();
+        try {
+            pinMode(UNPINNED);
+            assertThat(page.locator("[lsfusion-container='System.root']")).containsClass("navbar-text-on-hover");
+        } finally {
+            pinMode(mode);
+        }
+    }
+
     // the sizes are stored when the page is left in a browser that does not fire unload: Chrome stops firing it for a
     // growing share of its users and, from version 158, for all of them, so a panel collapsed by its splitter came back
     // at its default size on every login (#1945). The Permissions-Policy header turns unload off in the Chrome of any version
