@@ -32,7 +32,10 @@ public class ReactLogPanel extends LogPanel {
 
     private final RecentlyEventClassHandler recentlySelected;
 
-    private final Park park = new Park(panel); // where a message's markup waits while nothing places it
+    // where a message's markup lives while nothing places it. It has to stay in the document and stay a logical child
+    // of the panel, or GWT would detach the widget; the node itself must be OUTSIDE the panel, because React clears
+    // its own root
+    private final Park park = new Park(panel);
 
     private final NativeStringMap<Widget> messages = new NativeStringMap<>();
 
@@ -87,7 +90,7 @@ public class ReactLogPanel extends LogPanel {
         String name = "message" + messageCounter++; // prefixed, so it cannot match a form's name by accident
 
         messages.put(name, message);
-        park.add(message); // parked until the component says where it goes
+        park.add(message); // a logical child of the panel, parked in the DOM until the component says where it goes
         // the errorLogMessage / successLogMessage class the standard panel writes onto the markup is not written here:
         // it is that panel's own styling of its own list, and the component styles its list from `failed`. The classes
         // the message was BUILT with (alert, alert-info / alert-danger) are part of the markup and come along with it

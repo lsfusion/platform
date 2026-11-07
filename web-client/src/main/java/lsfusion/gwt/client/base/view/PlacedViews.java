@@ -7,17 +7,19 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 // the bookkeeping behind <Platform name/>: a component renders a host node, and the platform moves its own view into
-// it. A form container's platform-drawn children, a navigator window's buttons, the forms window's forms, the log
-// window's messages, the navigator's windows and a group's per-row renderers differ only in what keys a view and what
-// moving costs.
+// it. Six owners do this - a form container's platform-drawn children, a navigator window's buttons, the forms
+// window's forms, the log window's messages, the navigator's windows and a group's per-row renderers - and they differ
+// only in what a key means and what moving costs.
 // Everything else is the same every time, and getting it slightly different in each copy is what this exists to stop:
 //
 //   - a host asked for a view that does not exist YET is remembered, not refused: React renders a host once and never
 //     offers the same ref again, so giving up would leave the place empty for good
-//   - the FIRST host of a key keeps it, so a second cannot be left silently empty
+//   - the FIRST host of a name keeps it, so a second cannot be left silently empty
 //   - a placement that can never work says so in the host itself, not only in the console
 //   - cleanup is the exact inverse of mount, so React's mount->cleanup->mount cannot strand a view
 //   - a host the component resizes is said to the owner: GWT hears nothing of a size CSS gives, and a view that measures
@@ -42,20 +44,20 @@ public class PlacedViews<K> {
         }
     }
 
-    // what only the owner knows: whether a key names anything, how to move the view, where it waits, and where the
+    // what only the owner knows: whether a name names anything, how to move the view, where it waits, and where the
     // entry of a name is in what the owner projects
     public interface Views<K> {
-        // null if the key is fine
-        Problem problem(K key);
+        // null if the name is fine
+        Problem problem(K name);
 
         // move the platform's view into the host. false when there is nothing to move YET - the host keeps waiting
-        boolean place(K key, Element host);
+        boolean place(K name, Element host);
 
         // take the view back out of wherever it is
-        void park(K key);
+        void park(K name);
 
         // the host the view is in changed size: the view measures itself again, as when a split's border is dragged
-        default void resized(K key) {
+        default void resized(K name) {
         }
 
         // the entry the name keys in the data the owner projects, which hides the host while it says `hidden`
@@ -72,10 +74,10 @@ public class PlacedViews<K> {
     private final NativeHashMap<K, Element> filled = new NativeHashMap<>(); // where one actually sits
     // a resize names its host, not its key: looking it up must not walk hundreds of row placements
     private final NativeHashMap<Element, K> hostKeys = new NativeHashMap<>();
-    // hosts that asked for a key another host already had, in order: the eldest asks first. React renders the same
-    // <Platform> until its props change, so a refused host is never offered again; remember it to take over when the
-    // host that won goes away
-    private final NativeHashMap<K, List<Element>> refused = new NativeHashMap<>();
+    // the hosts that asked for a name another host already had. React renders the same <Platform> until its own props
+    // change, so a host refused here is never offered again - and a component that stops rendering the one that WON
+    // would leave the view parked with a place for it still on the screen. Kept in order: the eldest asks first
+    private final Map<K, List<Element>> refused = new HashMap<>();
     // watches the size of the hosts in `hosts`. Made with the first of them: an owner whose component places nothing
     // needs none
     private JavaScriptObject resizes;
@@ -111,66 +113,54 @@ public class PlacedViews<K> {
         };
     }
 
-    public boolean mount(K key, Element host) {
-        Problem problem = views.problem(key);
+    public boolean mount(K name, Element host) {
+        Problem problem = views.problem(name);
         if (problem != null) {
             problem.show(host);
             return false;
         }
 
-        Element asked = hosts.get(key);
+        Element asked = hosts.get(name);
         if (asked != null && asked != host) {
-            List<Element> waiting = refused.get(key);
-            if (waiting == null) {
-                waiting = new ArrayList<>();
-                refused.put(key, waiting);
-            }
-            waiting.add(host);
-            reportDuplicate(key, host);
+            refused.computeIfAbsent(name, key -> new ArrayList<>()).add(host);
+            reportDuplicate(name.toString(), host);
             return false;
         }
 
-        addHost(key, host);
-        tryPlace(key, host);
+        addHost(name, host);
+        tryPlace(name, host);
         return true;
     }
 
     // true when this host was OURS - the one mount accepted - whether or not it ever got a view. That is the pair of
     // mount's own answer, and it is what an owner needs: a host that was still waiting when the component took it away
     // has stopped asking just as surely as one that was holding the view
-    public boolean unmount(K key, Element host) {
-        boolean ours = hosts.get(key) == host;
+    public boolean unmount(K name, Element host) {
+        boolean ours = hosts.get(name) == host;
         if (ours) // the component took the host away, so nothing waits for it any more
-            removeHost(key);
+            removeHost(name);
         else
-            forget(key, host);
+            forget(name, host);
 
-        if (filled.get(key) == host) {
-            filled.remove(key);
-            views.park(key);
+        if (filled.get(name) == host) {
+            filled.remove(name);
+            views.park(name);
         } else
             GwtClientUtils.clearCustomViewError(host); // a host that never got a view may be holding the diagnostic instead
 
-        // the view is back in the park by now, so a host that was refused while this one held the key can take it -
-        // and takes it whether or not this host ever got the view, since either way the key is free
+        // the view is back in the park by now, so a host that was refused while this one held the name can take it -
+        // and takes it whether or not this host ever got the view, since either way the name is free
         if (ours)
-            takeOver(key);
+            takeOver(name);
 
         return ours;
     }
 
-    // a host that asked and was refused, and that the component has now taken away: it is not waiting any more
-    private void forget(K key, Element host) {
-        List<Element> asked = refused.get(key);
-        if (asked != null && asked.remove(host) && asked.isEmpty())
-            refused.remove(key);
-    }
-
-    // the host that held the key is gone: the eldest host that asked for it meanwhile takes it, if it is still in the
+    // the host that had the name is gone. The eldest host that asked for it meanwhile takes it, if it is still in the
     // document - a component that removed both in one render leaves nothing to take over, and a host React has thrown
     // away is not one of ours to fill
-    private void takeOver(K key) {
-        List<Element> asked = refused.get(key);
+    private void takeOver(K name) {
+        List<Element> asked = refused.get(name);
         if (asked == null)
             return;
 
@@ -178,24 +168,32 @@ public class PlacedViews<K> {
             Element next = asked.remove(0);
             if (GwtClientUtils.isInDocument(next)) {
                 GwtClientUtils.clearCustomViewError(next); // it has been holding "already placed by another <Platform>"
-                mount(key, next);
+                mount(name, next);
                 break;
             }
         }
         if (asked.isEmpty())
-            refused.remove(key);
+            refused.remove(name);
     }
 
-    // a compound key prints the name the <Platform> used, even though its equality names a row and a property
-    private static void reportDuplicate(Object key, Element host) {
-        GwtClientUtils.showCustomViewError(host, "'" + key + "' is already placed by another <Platform>");
-        GwtClientUtils.logCustomViewError("'" + key + "' is placed by more than one <Platform>; the first keeps it");
+    // a host that asked and was refused, and that the component has now taken away: it is not waiting any more
+    private void forget(K name, Element host) {
+        List<Element> asked = refused.get(name);
+        if (asked != null && asked.remove(host) && asked.isEmpty())
+            refused.remove(name);
+    }
+
+
+    // the diagnostic keeps the name JSX used, even when placement is keyed by a row and a property
+    private static void reportDuplicate(String name, Element host) {
+        GwtClientUtils.showCustomViewError(host, "'" + name + "' is already placed by another <Platform>");
+        GwtClientUtils.logCustomViewError("'" + name + "' is placed by more than one <Platform>; the first keeps it");
     }
 
     // whether a host holds this name - with the view in it, or waiting for it: what the owner tells the server is
     // placed
-    public boolean isHeld(K key) {
-        return hosts.get(key) != null;
+    public boolean isHeld(K name) {
+        return hosts.get(name) != null;
     }
 
     // whatever exists now goes into the host that has been waiting for it
@@ -213,11 +211,11 @@ public class PlacedViews<K> {
     // the template form: the view REPLACED the <Platform:name> element instead of being put inside a host, so there is
     // no host to remember and no cleanup to run - the place is consumed and only comes back when the template is
     // redrawn. It is recorded here all the same, so that parkAll below sees every placement, however it was made
-    public boolean consumePlace(K key) {
-        if (filled.get(key) != null) // already placed, by either protocol - the first one keeps it
+    public boolean consumePlace(K name) {
+        if (filled.get(name) != null) // already placed, by either protocol - the first one keeps it
             return false;
 
-        filled.put(key, PLACE_CONSUMED);
+        filled.put(name, PLACE_CONSUMED);
         return true;
     }
 
@@ -240,14 +238,14 @@ public class PlacedViews<K> {
         refused.clear();
     }
 
-    // the view this key stood for is no longer placed. `mayReturn` says whether the HOST is kept waiting for it -
+    // the view this name stood for is no longer placed. `mayReturn` says whether the HOST is kept waiting for it -
     // an element the selection took out of the window, or a child a SHOWIF dropped, comes back, and React never
     // re-offers an unchanged ref, so forgetting the host would leave the place empty for good. A closed form does not
     // come back, and its host must not be reused by whatever takes its name next
-    public void viewRemoved(K key, boolean mayReturn) {
-        filled.remove(key);
+    public void viewRemoved(K name, boolean mayReturn) {
+        filled.remove(name);
         if (!mayReturn)
-            removeHost(key);
+            removeHost(name);
     }
 
     // a host changed size - what the browser says after the layout: the view in it, if one is, is told
@@ -257,14 +255,14 @@ public class PlacedViews<K> {
             views.resized(key);
     }
 
-    private void addHost(K key, Element host) {
-        hosts.put(key, host);
-        hostKeys.put(host, key);
+    private void addHost(K name, Element host) {
+        hosts.put(name, host);
+        hostKeys.put(host, name);
         observe(host);
     }
 
-    private void removeHost(K key) {
-        Element host = hosts.remove(key);
+    private void removeHost(K name) {
+        Element host = hosts.remove(name);
         if (host != null) {
             hostKeys.remove(host);
             unobserve(host);
@@ -288,11 +286,11 @@ public class PlacedViews<K> {
         this.@lsfusion.gwt.client.base.view.PlacedViews::resizes.unobserve(host);
     }-*/;
 
-    private void tryPlace(K key, Element host) {
-        if (filled.get(key) != null) // already sitting there
+    private void tryPlace(K name, Element host) {
+        if (filled.get(name) != null) // already sitting there
             return;
 
-        if (views.place(key, host))
-            filled.put(key, host);
+        if (views.place(name, host))
+            filled.put(name, host);
     }
 }

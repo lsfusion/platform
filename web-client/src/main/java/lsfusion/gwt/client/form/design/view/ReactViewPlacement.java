@@ -105,6 +105,7 @@ abstract class ReactViewPlacement implements ReactRoot.Placement {
 
         @Override
         void mount(Element host) {
+            // the property, not the name JSX used: the ledger of who holds which row is the property's own
             formController.getRowsPanelController(property).place(name, rowKey, property, host);
         }
 

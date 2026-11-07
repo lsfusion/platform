@@ -774,9 +774,8 @@ public class UiFormsWindowIT extends UiTest {
 
     // the component's full screen and the platform's key for it (ALT+F11) undo each other, either way round: in full
     // screen the page draws System.forms alone - no navigator, no other window, the board neither: hidden, its
-    // component kept with the forms all the same and full screen off, which is System.forms' -, and once it is over
-    // the board is drawn again, its component holding the forms as they were and full screen off. Nothing the board is
-    // given changes on the way, so it is given nothing new: what it holds is what it was given before
+    // component kept and given the forms all the same, with full screen off, which is System.forms' -, and once it is
+    // over the board is drawn again, its component given the forms as they were and full screen off
     @Test
     public void aComponentsFullScreenAndTheKeyUndoEachOther() throws Exception {
         Locator launcher = launcher(), board = window("board");

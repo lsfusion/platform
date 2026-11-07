@@ -32,12 +32,15 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
     // where React draws its group's rows (FormView.isPlatformDrawn)
     private final GReactFormData.Rows rows;
 
-    // the renderer itself lives in the property's controller. Its host can arrive before or after it, and keeps
-    // waiting through a SHOWIF drop, just as a form container's host waits for its child
+    // the element React gave for each (row, property), and where that property's renderer for that row is put. The
+    // renderer itself is NOT kept here - the property's own controller is the record of it - and the two arrive in
+    // either order: React can render a row before its renderer exists, and a renderer can exist before React renders
+    // anything. The mirror of the form panel's columnPanels: keyed by the axis this controller draws on.
     private final PlacedViews<RowProperty> placed = new PlacedViews<>(new PlacedViews.Views<RowProperty>() {
         @Override
         public PlacedViews.Problem problem(RowProperty key) {
-            // React renders before renderers are reconciled: a row already gone can still have a renderer
+            // the group's rows decide, and not whether a renderer happens to still exist: React renders before the
+            // renderers are reconciled, so a row already gone can still have the one that is about to be destroyed
             if (!getRendererKeys().contains(key.row))
                 return new PlacedViews.Problem("the row given to '" + key.property.sID + "' is not in the group any more",
                         "the row given to '" + key.property.sID + "' is not one of the group's rows any"
@@ -59,7 +62,7 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
         @Override
         public void park(RowProperty key) {
             ComponentViewWidget view = getView(key.row, key.property);
-            if (view != null) // scrolling a row out of view parks its renderer, never destroys it
+            if (view != null) // back to waiting, NOT destroyed: React unmounts a row merely by scrolling it out of view
                 view.appendTo(getParkElement());
         }
 

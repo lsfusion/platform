@@ -26,7 +26,11 @@ public class NavigatorButtons {
     private final GNavigatorWindow window;
     private final GINavigatorController navigatorController;
     private final ResizableComplexPanel panel;
-    private final Park park; // where a button waits until the template or the component places it
+
+    // where a button lives while nothing places it. It has to stay in the document and stay a logical child of the
+    // window's panel, or GWT would detach the widget and destroy its tooltip; the node itself must be OUTSIDE the
+    // panel, because both drawing paths overwrite the panel's content (React clears its root, a template its innerHTML)
+    private final Park park;
 
     private final NativeStringMap<NavigatorImageButton> buttons = new NativeStringMap<>();
     // what is wrong with a name, if anything. `requirePlatformDrawn` is the difference between the two surfaces: a
@@ -87,6 +91,7 @@ public class NavigatorButtons {
         this.window = window;
         this.navigatorController = navigatorController;
         this.panel = panel;
+
         this.park = new Park(panel);
     }
 
@@ -107,7 +112,7 @@ public class NavigatorButtons {
         if (button == null) {
             button = new NavigatorImageButton(element, window.hasVerticalTextPosition(), level, active, navigatorController::activate);
             buttons.put(element.canonicalName, button);
-            park.add(button);
+            park.add(button); // a logical child of the panel, parked in the DOM
         } else
             button.change(element, level, active); // caption / image / class / hide are written into the element in
                                                    // place, and the level or the active state may have changed too

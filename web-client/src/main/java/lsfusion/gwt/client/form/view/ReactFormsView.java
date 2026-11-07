@@ -36,8 +36,9 @@ public class ReactFormsView implements FormsView {
     private final FormsController formsController;
     private final FormsView.SelectionHandler selection;
 
-    // where a form's view waits while nothing places it: display:none is what stops the form's schedulers, exactly as
-    // an unselected tab does
+    // where a form's view lives while nothing places it. It has to stay in the document and stay a logical child of
+    // the panel, or GWT would detach the widget; the node itself must be OUTSIDE the panel, because React clears its
+    // own root. display:none is what stops the form's schedulers, exactly as an unselected tab does
     private final Park park = new Park(panel);
 
     private final PlacedViews<String> placed = new PlacedViews<>(new PlacedViews.Views<String>() {
@@ -94,7 +95,7 @@ public class ReactFormsView implements FormsView {
         root = new ReactRoot(custom, createController(), PlacedViews.placement(placed, new ReactRoot.MarkedHost()));
         // no form is open yet, and that is a state the component draws - a start page, say - so the window starts
         // from it, shaped as every later snapshot is, instead of waiting for the first form to be drawn at all
-        root.updateRebuiltData(buildData());
+        root.updateData(buildData());
 
         GwtClientUtils.addClassName(panel, "forms-container");
 
@@ -108,7 +109,7 @@ public class ReactFormsView implements FormsView {
 
     @Override
     public void formAdded(FormDockable dockable, Integer index) {
-        // parked until the component says where it goes
+        // a logical child of the panel, parked in the DOM until the component says where it goes
         byName.put(dockable.formName, dockable);
         park.add(dockable.getContentWidget());
 

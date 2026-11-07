@@ -34,7 +34,10 @@ public final class ReactWindowLayout extends WindowLayout {
     // the canonical name <Platform> places it by
     private final NativeStringMap<SimpleWindowElement> byName = new NativeStringMap<>();
 
-    private final Park park = new Park(panel); // where a window's view waits while nothing places it
+    // where a window's view lives while nothing places it. It has to stay in the document and stay a logical child of
+    // the panel, or GWT would detach the widget; the node itself must be OUTSIDE the panel, because React clears its
+    // own root. display:none, as a background tab is
+    private final Park park = new Park(panel);
 
     private final PlacedViews<String> placed = new PlacedViews<>(new PlacedViews.Views<String>() {
         @Override
@@ -79,6 +82,7 @@ public final class ReactWindowLayout extends WindowLayout {
         // window's host holds the window's view, which the layout fills it with by its marks. Nothing about the
         // arrangement is the platform's to do, so the controller has nothing on it
         root = new ReactRoot(custom, JavaScriptObject.createObject(), PlacedViews.placement(placed, new ReactRoot.MarkedHost()));
+
         root.mountWhileAttached(panel);
     }
 
@@ -87,7 +91,7 @@ public final class ReactWindowLayout extends WindowLayout {
         byName.foreachValue(window -> {
             window.initializeView(controller); // registered, so its visibility reaches this layout
 
-            park.add(window.getView()); // parked until the component says where it goes
+            park.add(window.getView()); // a logical child of the panel, parked in the DOM until the component says where it goes
 
             // shown as the standard layout shows it to begin with, so the declared visibility that follows changes nothing
             addEntry(data, window.window.canonicalName, window.window.caption, !window.window.visible, window.window.vertical);
