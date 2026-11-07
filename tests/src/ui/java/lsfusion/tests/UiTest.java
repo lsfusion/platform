@@ -376,8 +376,9 @@ public abstract class UiTest {
         answered(0, () -> { });
     }
 
-    // the navigator's pin modes, as its pin button in System.system says them - the server's default is the navbar pinned
-    protected static final String NAVBAR_PINNED = "Pin navbar", UNPINNED = "Unpin all";
+    // the navigator's pin modes, as its pin button in System.system says them - the server's default is the navbar pinned.
+    // Pinned entirely, System.toolbar stays out while a form is open, so a test can open a second form from it
+    protected static final String NAVBAR_PINNED = "Pin navbar", UNPINNED = "Unpin all", ALL_PINNED = "Pin all";
 
     // the pin mode now. It is kept for the design environment, past the test, so a test that switches it switches it back
     protected String pinMode() {

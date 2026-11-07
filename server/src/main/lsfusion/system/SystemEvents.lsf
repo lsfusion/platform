@@ -715,7 +715,9 @@ logoWindowClass() += 'bg-dark-subtle' + verticalTextOnHoverClass('System.logo') 
 rootWindowClass() += 'bg-dark-subtle navbar-icon-large' + textOnHoverClass('System.root') + forceAlignStartClass('System.root');
 systemWindowClass() += 'bg-dark-subtle' + (IF isWebDesktop() THEN ' navbar-icon-large' ELSE '') + verticalTextOnHoverClass('System.system') +
     (IF isWebDesktop() AND NOT verticalNavbar() THEN ' navbar-text-hidden' ELSE '') + forceAlignStartClass('System.system');
-formsWindowClass() += 'bg-body-tertiary' + (IF isWebMobile() OR dontShowCloseButtonOnInactiveTab() THEN ' dont-show-close-button' ELSE '');
+// hiding the close button of an inactive tab is how the standard tabs draw it, which a React component that draws
+// System.forms replaces; the mobile web client draws the standard tabs whatever the window's CUSTOM
+formsWindowClass() += 'bg-body-tertiary' + (IF isWebMobile() OR (dontShowCloseButtonOnInactiveTab() AND NOT customWindow('System.forms')) THEN ' dont-show-close-button' ELSE '');
 // the pin modes' classes - popping out over the form and captions on hover - belong to the standard layout, which a
 // NAVIGATOR CUSTOM component replaces
 toolbarWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigatorPinMode() == TTRUE AND NOT customNavigator() THEN ' navbar-popup-over-selected-hover' ELSE '');

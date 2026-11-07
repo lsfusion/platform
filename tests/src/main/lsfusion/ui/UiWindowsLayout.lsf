@@ -4,14 +4,39 @@ REQUIRE SystemEvents, Service;
 
 // the navigator UiWindowsLayoutIT works on in the browser: a section whose item System.system draws - while it is the
 // section selected, System.toolbar has nothing to draw -, and the form there, with the button of Service's reset of the
-// windows' layout
+// windows' layout; and a section of System.toolbar with a form a React view draws and the user's setting that hides an
+// inactive tab's close button, turned on and off
 
 FORM uiWindowsLayoutReset 'Reset the layout'
     PROPERTIES() resetWindowsLayout
 ;
 
+// a React view of a form's content does not replace System.forms: the standard tabs still own their close buttons
+FORM uiWindowsLayoutReact 'React layout tab';
+DESIGN uiWindowsLayoutReact {
+    NEW content FIRST { custom = 'UiWindowsLayout'; }
+}
+
+uiWindowsLayoutHideInactiveClose 'Hide inactive close buttons' () {
+    dontShowCloseButtonOnInactiveTab(currentDesignEnv()) <- TRUE;
+    APPLY;
+}
+uiWindowsLayoutShowInactiveClose 'Show inactive close buttons' () {
+    dontShowCloseButtonOnInactiveTab(currentDesignEnv()) <- NULL;
+    APPLY;
+}
+
 NAVIGATOR {
     NEW FOLDER uiWindowsLayout 'UI windows layout' WINDOW system {
         NEW uiWindowsLayoutReset;
     }
+    NEW FOLDER uiWindowsLayoutTabs 'UI forms tabs' WINDOW toolbar {
+        NEW uiWindowsLayoutReact;
+        NEW uiWindowsLayoutHideInactiveClose;
+        NEW uiWindowsLayoutShowInactiveClose;
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiWindowsLayout.js') <- 1;
 }

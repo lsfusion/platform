@@ -1,0 +1,50 @@
+MODULE UiFormsTabs;
+
+REQUIRE SystemEvents;
+
+// UiFormsTabsIT's application, on a test server of its own: System.forms is drawn by a React component
+// (UiFormsTabs.js) whose tabs reuse the standard tabs' class names, close buttons included
+EXTEND WINDOW System.forms CUSTOM 'UiFormsTabs';
+
+uiFormsTabsText 'Text' = DATA LOCAL STRING[50] ();
+
+FORM uiFormsTabsFirst 'Tabs first'
+    PROPERTIES() uiFormsTabsText
+;
+
+FORM uiFormsTabsSecond 'Tabs second'
+    PROPERTIES() uiFormsTabsText
+;
+
+uiFormsTabsHideInactiveClose 'Hide inactive close buttons' () {
+    dontShowCloseButtonOnInactiveTab(currentDesignEnv()) <- TRUE;
+    APPLY;
+}
+
+// what the server would give the mobile web client: the session is never applied, so the real connection stays a
+// desktop web client. The standard layout's class is UiWindowsLayoutIT's control
+uiFormsTabsMobileClass = DATA LOCAL STRING ();
+uiFormsTabsReadClasses () {
+    NEWSESSION NESTED (uiFormsTabsMobileClass) {
+        clientType(currentConnection()) <- ClientType.webMobile;
+        uiFormsTabsMobileClass() <- formsWindowClass();
+    }
+}
+
+FORM uiFormsTabsClasses 'Tabs classes'
+    PROPERTIES() READONLY formsWindowClass, uiFormsTabsMobileClass
+    EVENTS ON INIT uiFormsTabsReadClasses()
+;
+
+NAVIGATOR {
+    NEW FOLDER uiFormsTabs 'Forms tabs' WINDOW toolbar FIRST {
+        NEW uiFormsTabsFirst;
+        NEW uiFormsTabsSecond;
+        NEW uiFormsTabsClasses;
+        NEW uiFormsTabsHideInactiveClose;
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiFormsTabs.js') <- 1;
+}

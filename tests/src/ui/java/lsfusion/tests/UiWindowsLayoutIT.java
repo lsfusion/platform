@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -14,6 +15,39 @@ import static org.junit.Assert.assertEquals;
 // the layout of the navigator's windows: their sizes, which the client keeps in the browser's local storage when the page
 // is left, and Service's reset of the layout (UiWindowsLayout.lsf)
 public class UiWindowsLayoutIT extends UiTest {
+
+    // UiFormsTabsIT's control: the standard tabs hide an inactive tab's close button with the user's setting on - of a
+    // form a React view draws too -, by the class the window is given. The setting is the suite's user's, so it is
+    // turned off again whatever happens
+    @Test
+    public void theStandardTabsHideAnInactiveTabsCloseButton() {
+        trackRequests();
+        String mode = pinMode();
+        try {
+            pinMode(ALL_PINNED);
+            page.waitForResponse(response -> carries(response.request().postData(), "ExecuteNavigatorAction"),
+                    () -> open("UiWindowsLayout.uiWindowsLayoutTabs", "UiWindowsLayout.uiWindowsLayoutHideInactiveClose")).finished();
+            settled();
+            Locator react = open("UiWindowsLayout.uiWindowsLayoutTabs", "UiWindowsLayout.uiWindowsLayoutReact");
+            assertThat(react.locator(".ui-windows-layout-react")).isVisible();
+            assertThat(open("UiWindowsLayout.uiWindowsLayout", "UiWindowsLayout.uiWindowsLayoutReset")).isVisible();
+            settled();
+
+            Locator inactive = page.locator(".tab-bar .nav-item")
+                    .filter(new Locator.FilterOptions().setHasText(Pattern.compile("^React layout tab$")));
+            assertThat(inactive).not().containsClass("active");
+            assertThat(inactive.locator(".tab-close-button")).hasCSS("display", "none");
+            assertThat(page.locator(".dont-show-close-button")).hasCount(1);
+        } finally {
+            try {
+                page.waitForResponse(response -> carries(response.request().postData(), "ExecuteNavigatorAction"),
+                        () -> open("UiWindowsLayout.uiWindowsLayoutTabs", "UiWindowsLayout.uiWindowsLayoutShowInactiveClose")).finished();
+                settled();
+            } finally {
+                pinMode(mode);
+            }
+        }
+    }
 
     // an unpinned toolbar is laid out by the standard layout's popup rules
     @Test
