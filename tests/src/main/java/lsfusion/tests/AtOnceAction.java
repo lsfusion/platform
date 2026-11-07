@@ -26,10 +26,9 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-// two threads of the server doing one thing at once, as two modules parsed at once do to a form both extend. What the
-// thing writes to is swapped for one that goes through a Hold, which holds the first thread inside until the second one
-// either is inside too - the two at once, which the thing does not survive - or waits for the monitor the two are to be
-// made under; then both go on
+// two threads of the server doing one thing at once, as two modules parsed at once do to a form both extend. The first
+// call is held inside a Hold, or the test holds the monitor itself : the second call has to be checked while the
+// first one is still there, so the test sees whether it goes through or waits for the monitor; then both go on
 public abstract class AtOnceAction extends InternalAction {
 
     public AtOnceAction(ScriptingLogicsModule LM, ValueClass... classes) {
@@ -185,6 +184,41 @@ public abstract class AtOnceAction extends InternalAction {
                 if (waiting != null)
                     return waiting;
                 return waited ? null : "the thread neither waited for the monitor nor was done in 30 seconds";
+            } finally {
+                threads.shutdownNow();
+                threads.awaitTermination(1, TimeUnit.MINUTES);
+            }
+        } catch (InterruptedException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    // null when a thread doing `call` goes through while the test holds the monitor; else `waited` if it was not done in
+    // ten seconds, or what it failed with. The monitor is let go before the call is waited for, so a call waiting for it
+    // can end too; the thread is stopped when this returns
+    protected static String runWithoutWaiting(ExecutionContext<ClassPropertyInterface> context, Object monitor, String waited,
+                                              Runnable call) {
+        ExecutorService threads = ExecutorFactory.createNewThreadService((ExecutionContext) context, 1, false);
+        try {
+            try {
+                CountDownLatch ended = new CountDownLatch(1);
+                Future<?> done;
+                boolean wentThrough;
+                synchronized (monitor) {
+                    done = threads.submit(() -> {
+                        try {
+                            call.run();
+                        } finally {
+                            ended.countDown();
+                        }
+                    });
+                    wentThrough = ended.await(10, TimeUnit.SECONDS);
+                }
+
+                String failure = failure("the thread", done);
+                if (failure != null)
+                    return failure;
+                return wentThrough ? null : waited;
             } finally {
                 threads.shutdownNow();
                 threads.awaitTermination(1, TimeUnit.MINUTES);

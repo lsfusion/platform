@@ -1,0 +1,23 @@
+MODULE SimpleGroups;
+
+REQUIRE TestUtils;
+
+// the parse registers every action and property it makes into the private group, a simple one, from every thread at once,
+// and the start registers the actions of dialog, policy and drill-down forms into simple groups while other tasks read
+// the whole set. A registration takes no lock : with one, the parse threads queued on it. A read goes on beside a
+// registration, and a registration finishes while the monitor of the group's children is held; afterwards, the group
+// lists the property
+
+sgFailure = DATA LOCAL STRING ();
+sgReadWhileRegistered INTERNAL 'lsfusion.tests.ReadSimpleGroupWhileRegisteredAction' ();
+sgRegisterAtOnce INTERNAL 'lsfusion.tests.RegisterIntoSimpleGroupAtOnceAction' ();
+
+testSimpleGroupReadWhileRegistered 'A simple group read while a property is registered into it goes on and lists the property afterwards' () {
+    sgReadWhileRegistered();
+    assertNull(sgFailure(), sgFailure());
+}
+
+testSimpleGroupRegisteredAtOnce 'A property registered into a simple group does not wait for the monitor of its children' () {
+    sgRegisterAtOnce();
+    assertNull(sgFailure(), sgFailure());
+}

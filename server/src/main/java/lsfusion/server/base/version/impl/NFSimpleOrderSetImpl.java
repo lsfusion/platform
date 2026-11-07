@@ -1,6 +1,5 @@
 package lsfusion.server.base.version.impl;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -13,11 +12,15 @@ import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFSet;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Predicate;
 
 public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
 
-    private final List<T> list = Collections.synchronizedList(new ArrayList<>());
+    // the children of a simple group - the private one gets every action and property the parse makes, from every parse
+    // thread at once -, so an add takes no lock : the parse threads queued on the lock of a synchronized list. In the order
+    // of the adds, as that list; an iteration sees what was added before it began, and maybe what is added meanwhile
+    private final ConcurrentLinkedDeque<T> list = new ConcurrentLinkedDeque<>();
 
     public NFSimpleOrderSetImpl(ImList<T> startList) {
         list.addAll(startList.toJavaList());
@@ -33,24 +36,9 @@ public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
     }
 
     boolean iterated;
-    private final Iterable<T> it = () -> new Iterator<T>() {
-        private int i;
-
-        public boolean hasNext() {
-            return i<list.size();
-        }
-
-        public T next() {
-            return list.get(i++);
-        }
-
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }; 
     public Iterable<T> getIt() {
         iterated = true;
-        return it;
+        return Collections.unmodifiableCollection(list);
     }
 
     public void add(T element, Version version) {
@@ -117,12 +105,12 @@ public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
 
     public void remove(T element, Version version) {
         assert !iterated;
-        list.remove(element);
+        list.removeLastOccurrence(element); // from the end : what leaves - a property declared IN a group - was added just before
     }
 
     public void removeAll(Predicate<T> filter, Version version) {
         assert false;
-        BaseUtils.removeList(list, filter);
+        list.removeIf(filter);
     }
 
     public ImList<T> getList() {
@@ -142,7 +130,7 @@ public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
     }
 
     public ImOrderSet<T> getOrderSet() {
-        return SetFact.fromJavaOrderSet(list);
+        return SetFact.fromJavaOrderSet(new ArrayList<>(list)); // one pass : the deque's size is counted, and it can grow meanwhile
     }
 
     @Override
