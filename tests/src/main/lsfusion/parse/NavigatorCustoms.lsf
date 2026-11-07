@@ -1,0 +1,14 @@
+MODULE NavigatorCustoms;
+
+REQUIRE TestUtils;
+
+// two modules that do not require each other can give NAVIGATOR CUSTOM while parsed at once. The later one in the module
+// order must win even when the earlier one's statement is written last
+
+ncFailure = DATA LOCAL STRING ();
+ncSetInModuleOrder INTERNAL 'lsfusion.tests.SetNavigatorCustomInModuleOrderAction' ();
+
+testNavigatorCustomInModuleOrder 'Of two modules giving NAVIGATOR CUSTOM the later one in the module order wins' () {
+    ncSetInModuleOrder();
+    assertNull(ncFailure(), ncFailure());
+}

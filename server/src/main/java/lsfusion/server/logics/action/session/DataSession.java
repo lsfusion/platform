@@ -711,7 +711,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         try {
             updateChanges = SetFact.singleton(property);
 
-            if(neededProps!=null && property.isStored() && property.event==null) { // если транзакция, нет change event'а, singleApply'им
+            if(neededProps!=null && property.isStored() && property.getEvent()==null) { // если транзакция, нет change event'а, singleApply'им
                 assert isInTransaction();
     
                 changeTable = splitApplySingleStored("cpimpl", (ApplyStoredEvent) property.getApplyEvent(), property.readFixChangeTable("cpimpl", sql, change, baseClass, getQueryEnv()), ThreadLocalContext.getBusinessLogics());

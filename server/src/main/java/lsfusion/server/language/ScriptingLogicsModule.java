@@ -5816,10 +5816,11 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         AbstractWindow window;
         if (forms) {
-            window = new FormsWindow(elementCanonicalName(name), caption, single, closeDelay);
+            Version version = getVersion();
+            window = new FormsWindow(elementCanonicalName(name), caption, single, closeDelay, version);
             if (custom) {
                 checks.checkComponentOnlyCustom("window", name, options.custom, options.customProperty != null);
-                window.setCustom(options.custom);
+                window.setCustom(options.custom, version);
             }
         } else {
             checks.checkNativeWindowCustom(name, custom);
@@ -5845,12 +5846,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkFormsWindow(window, name, "EXTEND WINDOW " + name + " FORMS");
 
         FormsWindow formsWindow = (FormsWindow) window;
-        if (single != null)
-            formsWindow.single = single;
-        if (closeDelay != null)
-            formsWindow.closeDelay = closeDelay;
-
-        checks.checkFormsClose(formsWindow.single, closeDelay);
+        Version version = getVersion();
+        formsWindow.setFormsKind(single, closeDelay, version);
+        // as the modules this one requires left the window : one that does not require this one may turn it over too,
+        // and the window is final only once every module has run
+        checks.checkFormsClose(formsWindow.isNFSingleForm(version), closeDelay);
     }
 
     // the renderer of an ALREADY declared window - so the elements keep their window, and the navigator keeps its
@@ -5872,16 +5872,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkNativeWindowCustom(name, !(window instanceof FormsWindow) && window != baseLM.baseWindows.log);
         checks.checkComponentOnlyCustom("window", name, custom, customProperty != null);
 
-        window.setCustom(custom);
+        window.setCustom(custom, getVersion());
     }
 
     // NAVIGATOR CUSTOM: the React component that lays the navigator's windows out instead of the standard layout. Like
     // a FORMS window's and log's, it can only be a component - it is drawn from the windows, and those exist only on the
-    // client - and, as there, a later statement replaces an earlier one
+    // client. Of two modules giving NAVIGATOR CUSTOM the later in the module order wins; of one module's statements
+    // the later one wins
     public void setNavigatorCustom(String custom, LPWithParams customProperty) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkComponentOnlyCustom("navigator", "NAVIGATOR", custom, customProperty != null);
 
-        baseLM.navigatorCustom = custom;
+        baseLM.setNavigatorCustom(custom, getVersion());
     }
 
     // the one place a NAVIGATOR window is told what draws it, whichever statement said so - as the grammar has one
@@ -5890,14 +5891,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkWindowCustom(name, custom);
 
         // a literal beside a property is the pair the rest of the design uses (elementClass / propertyElementClass):
-        // the literal is the markup the window starts with, the property recomputes it. Checked against the WINDOW and
-        // not against one statement, since the two can come from two modules - and against THIS statement too, since
-        // one statement can carry both. Only one combination is not a pair: a React component draws the window itself
-        // and would never be handed a computed template. Each half is written by the statement that brought it, so a
-        // statement carrying both keeps both, and a literal that is already there is what the window is drawn from
-        // until the property computes its first value
+        // the literal is the markup the window starts with, the property recomputes it. Only one combination is not a
+        // pair: a React component draws the window itself and would never be handed a computed template - refused here
+        // when one statement carries both, and in the final window, once every module has run, when the two come from
+        // two statements, of two modules maybe (CheckWindowsTask). Each half is written by the statement that brought
+        // it, so a statement carrying both keeps both, and a literal is what the window is drawn from until the property
+        // computes its first value
         String reactComponent = window.setCustoms(custom != null ? resolveWindowTemplate(name, custom) : null,
-                                                  customProperty != null ? customProperty.getLP().property : null);
+                                                  customProperty != null ? customProperty.getLP().property : null, getVersion());
         if (reactComponent != null)
             errLog.emitWindowCustomReactPropertyError(parser, name, reactComponent);
     }
@@ -5997,6 +5998,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private NavigatorElement createNavigatorElement(String name, LocalizedString caption, DebugInfo.DebugPoint point, LA<?> action, FormEntity form) {
+        Version version = getVersion();
         String canonicalName = elementCanonicalName(name);
 
         Supplier<LocalizedString> defaultCaption;
@@ -6005,7 +6007,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (form != null) {
             newElement = createNavigatorForm(form, canonicalName);
             defaultCaption = form::getCaption;
-            defaultImage = form.view.mainContainer.getNFImage(getVersion());
+            defaultImage = form.view.mainContainer.getNFImage(version);
         } else if (action != null) {
             newElement = createNavigatorAction(action, canonicalName);
             defaultCaption = () -> action.action.caption;
@@ -6019,7 +6021,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(caption != null)
             defaultCaption = () -> caption;
 
-        newElement.caption = defaultCaption;
+        newElement.setCaption(defaultCaption, version);
         newElement.defaultImage = defaultImage;
 
         newElement.setDebugPoint(point);
@@ -6040,7 +6042,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setupNavigatorElement(NavigatorElement element, LocalizedString caption, NavigatorElement parentElement, NavigatorElementOptions options, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
         if (caption != null) {
-            element.caption = () -> caption;
+            element.setCaption(() -> caption, getVersion());
         }
 
         applyNavigatorElementOptions(element, parentElement, options, isEditOperation);
@@ -6053,7 +6055,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         setNavigatorElementHeader(element, options.headerProperty != null ? options.headerProperty.getLP().property : null);
         setNavigatorElementShowIf(element, options.showIfProperty != null ? options.showIfProperty.getLP().property : null);
         if (options.custom != null)
-            element.custom = options.custom;
+            element.setCustom(options.custom, getVersion());
         setNavigatorElementChangeKey(element, options.changeKey, options.showChangeKey);
         setNavigatorElementChangeMouse(element, options.changeMouse, options.showChangeMouse);
 
@@ -6076,7 +6078,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             AbstractWindow window = findWindow(windowName);
 
             if (window instanceof NavigatorWindow) {
-                element.setWindow((NavigatorWindow) window, parentWindow);
+                element.setWindow((NavigatorWindow) window, parentWindow, getVersion());
             } else {
                 errLog.emitAddToSystemWindowError(parser, element.getName(), windowName);
             }
@@ -6112,42 +6114,44 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (imageOption == null) return;
         assert imageOption.imageLP == null || imageOption.imagePath == null;
 
+        Version version = getVersion();
         if (!imageOption.hasImage) {
-            element.setImage(AppServerImage.NULL, null);
+            element.setImage(AppServerImage.NULL, null, version);
         } else if (imageOption.imageLP != null) {
-            element.setImage(AppServerImage.AUTO, imageOption.imageLP.getLP().property);
+            element.setImage(AppServerImage.AUTO, imageOption.imageLP.getLP().property, version);
         } else if (imageOption.imagePath != null) {
-            element.setImage(imageOption.imagePath, null);
+            element.setImage(imageOption.imagePath, null, version);
         } else {
-            element.setImage(AppServerImage.AUTO, null);
+            element.setImage(AppServerImage.AUTO, null, version);
         }
     }
 
     public void setNavigatorElementClass(NavigatorElement element, Property elementClassProperty, String elementClass) {
+        Version version = getVersion();
         if(elementClassProperty != null)
-            element.setPropertyElementClass(elementClassProperty);
+            element.setPropertyElementClass(elementClassProperty, version);
         if (elementClass != null)
-            element.setElementClass(elementClass);
+            element.setElementClass(elementClass, version);
     }
 
     public void setNavigatorElementHeader(NavigatorElement element, Property headerProperty) {
         if (headerProperty != null)
-            element.setHeaderProperty(headerProperty);
+            element.setHeaderProperty(headerProperty, getVersion());
     }
 
     public void setNavigatorElementShowIf(NavigatorElement element, Property showIfProperty) {
         if (showIfProperty != null)
-            element.setShowIfProperty(showIfProperty);
+            element.setShowIfProperty(showIfProperty, getVersion());
     }
 
     public void setNavigatorElementChangeKey(NavigatorElement element, String changeKey, boolean showChangeKey) {
         if (changeKey != null)
-            element.setChangeKey(changeKey, showChangeKey);
+            element.setChangeKey(changeKey, showChangeKey, getVersion());
     }
 
     public void setNavigatorElementChangeMouse(NavigatorElement element, String changeMouse, boolean showChangeMouse) {
         if (changeMouse != null)
-            element.setChangeMouse(changeMouse, showChangeMouse);
+            element.setChangeMouse(changeMouse, showChangeMouse, getVersion());
     }
 
     public void propertyDefinitionCreated(LP<?> property, DebugInfo.DebugPoint point) {

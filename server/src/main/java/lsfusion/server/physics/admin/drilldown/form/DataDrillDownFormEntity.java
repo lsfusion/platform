@@ -26,11 +26,11 @@ public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyIn
     protected void setupDrillDownForm() {
         implPropertyDraw = addPropertyDraw(property, interfaceObjects);
 
-        PropertyMapImplement<PropertyInterface, ClassPropertyInterface> where = (PropertyMapImplement<PropertyInterface, ClassPropertyInterface>) property.event.where; //h
+        PropertyMapImplement<PropertyInterface, ClassPropertyInterface> where = (PropertyMapImplement<PropertyInterface, ClassPropertyInterface>) property.getEvent().where; //h
         ImRevMap<PropertyInterface, ClassPropertyInterface> whereMapping = where.mapping;
         wherePropertyDraw = addPropertyDraw(where.property, whereMapping.join(interfaceObjects));
 
-        PropertyMapImplement<PropertyInterface, ClassPropertyInterface> writeFrom = (PropertyMapImplement<PropertyInterface, ClassPropertyInterface>) property.event.writeFrom; //g
+        PropertyMapImplement<PropertyInterface, ClassPropertyInterface> writeFrom = (PropertyMapImplement<PropertyInterface, ClassPropertyInterface>) property.getEvent().writeFrom; //g
         ImRevMap<PropertyInterface, ClassPropertyInterface> writeFromMapping = writeFrom.mapping;
         writeFromPropertyDraw = addPropertyDraw(writeFrom.property, writeFromMapping.join(interfaceObjects));
     }

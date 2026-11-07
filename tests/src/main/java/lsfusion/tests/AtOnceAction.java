@@ -3,6 +3,8 @@ package lsfusion.tests;
 import com.google.common.base.Throwables;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
 import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -190,6 +192,16 @@ public abstract class AtOnceAction extends InternalAction {
         } catch (InterruptedException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    // two modules that do not require each other - the given one and another -, the one earlier in the module order
+    // first : the start parses such modules at once, so which of them writes a setting they share first is the parse
+    // threads' timing, and what the setting keeps has to come from the later one whichever wrote first
+    protected static LogicsModule[] independentModules(BusinessLogics BL, LogicsModule module) {
+        for (LogicsModule other : BL.getLogicModules())
+            if (!other.visible.contains(module.getVersion()) && !module.visible.contains(other.getVersion()))
+                return other.order < module.order ? new LogicsModule[]{other, module} : new LogicsModule[]{module, other};
+        throw new IllegalStateException("every module requires " + module.getName() + " or is required by it");
     }
 
     private static boolean poll(BooleanSupplier check) throws InterruptedException {

@@ -1765,14 +1765,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public ImSet<Property> getDataChangeEvents() {
         ImSet<DataProperty> result = getDataChangeEvents(getOrderActionOrProperties()); // in theory all data properties with event should be in this method
         assert result.remove(getDataChangeEvents(getPropertyList(ApplyFilter.NO))).filterFn(element -> !(element instanceof SessionDataProperty)).isEmpty();
-        return result.mapSetValues(property -> property.event.getWhere());
+        return result.mapSetValues(property -> property.getEvent().getWhere());
     }
 
     private static ImSet<DataProperty> getDataChangeEvents(ImOrderSet<ActionOrProperty> propertyList) {
         MSet<DataProperty> mResult = SetFact.mSetMax(propertyList.size());
         for (int i = 0, size = propertyList.size(); i<size; i++) {
             ActionOrProperty property = propertyList.get(i);
-            if (property instanceof DataProperty && ((DataProperty) property).event != null)
+            if (property instanceof DataProperty && ((DataProperty) property).getEvent() != null)
                 mResult.add((DataProperty) property);
         }
         return mResult.immutable();
@@ -1934,12 +1934,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private static ImSet<Property> getCheckConstrainedProperties(ImOrderSet<ActionOrProperty> propertyList) {
-        return BaseUtils.immutableCast(propertyList.getSet().filterFn(property -> property instanceof Property && ((Property) property).checkChange != Property.CheckType.CHECK_NO));
+        return BaseUtils.immutableCast(propertyList.getSet().filterFn(property -> property instanceof Property && ((Property) property).getCheckChange() != Property.CheckType.CHECK_NO));
     }
 
     public ImSet<Property> getCheckConstrainedProperties(Property<?> changingProp) {
-        return BaseUtils.immutableCast(getCheckConstrainedProperties().filterFn(property -> property.checkChange == Property.CheckType.CHECK_ALL ||
-                property.checkChange == Property.CheckType.CHECK_SOME && property.checkProperties.contains(changingProp)));
+        return BaseUtils.immutableCast(getCheckConstrainedProperties().filterFn(property -> property.getCheckChange() == Property.CheckType.CHECK_ALL ||
+                property.getCheckChange() == Property.CheckType.CHECK_SOME && property.getCheckProperties().contains(changingProp)));
     }
 
     public List<LogicsModule> getLogicModules() {

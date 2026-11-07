@@ -187,7 +187,7 @@ public class MapCacheAspect {
 
     public <K extends PropertyInterface> ImSet<Property> getUsedChanges(Property<K> property, StructChanges implement, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
-        if(!(property instanceof AggregateProperty) && !(property instanceof DataProperty && ((DataProperty) property).event!=null)) // если не Function или DataProperty с derived, то нету рекурсии и эффективнее просто вы
+        if(!(property instanceof AggregateProperty) && !(property instanceof DataProperty && ((DataProperty) property).getEvent()!=null)) // если не Function или DataProperty с derived, то нету рекурсии и эффективнее просто вы
             return (ImSet<Property>) thisJoinPoint.proceed();
 
         final boolean checkCaches = checkCaches();

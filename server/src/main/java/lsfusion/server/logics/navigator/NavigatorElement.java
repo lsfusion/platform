@@ -10,7 +10,6 @@ import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
-import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
@@ -48,33 +47,37 @@ public abstract class NavigatorElement {
 
     public abstract String getDefaultIcon();
 
-    public NavigatorWindow window = null;
-    public boolean parentWindow;
-
     private final int ID;
 
-    // need supplier to have relevant form captions
-    public Property headerProperty;
-    public Property showIfProperty;
+    // the options below are set by statements of modules (NAVIGATOR { element ... }), each by the version of its module :
+    // modules that do not require each other are parsed at once, and of two of them setting one option of an element the
+    // module later in the module order wins, as when they were parsed one after the other. The pairs a statement sets
+    // together come so from one statement
+    private final NFProperty<NavigatorWindow> window = NFFact.property();
+    private final NFProperty<Boolean> parentWindow = NFFact.property();
+
+    private final NFProperty<Property> headerProperty = NFFact.property();
+    private final NFProperty<Property> showIfProperty = NFFact.property();
 
     // what draws the element, null where it is not said: Custom.NOCUSTOM, the platform's standard button, not a custom
     // view's drawing - so a window a React component draws places the button with <Platform name/> instead of drawing
     // the element, which is then not projected, the same way a form's component with `custom = NULL` is not. In any
     // other window the platform draws every element anyway
-    public String custom;
-    public Supplier<LocalizedString> caption;
+    private final NFProperty<String> custom = NFFact.property();
+    // need supplier to have relevant form captions
+    private final NFProperty<Supplier<LocalizedString>> caption = NFFact.property();
 
-    public Property propertyImage;
-    public AppServerImage.Reader image;
-    public AppServerImage.Reader defaultImage;
+    private final NFProperty<Property> propertyImage = NFFact.property();
+    private final NFProperty<AppServerImage.Reader> image = NFFact.property();
+    public AppServerImage.Reader defaultImage; // the element's own module's, set as it is made
 
-    public Property propertyElementClass;
-    public String elementClass;
+    private final NFProperty<Property> propertyElementClass = NFFact.property();
+    private final NFProperty<String> elementClass = NFFact.property();
 
-    public InputBindingEvent changeKey;
-    public Boolean showChangeKey;
-    public InputBindingEvent changeMouse;
-    public Boolean showChangeMouse;
+    private final NFProperty<InputBindingEvent> changeKey = NFFact.property();
+    private final NFProperty<Boolean> showChangeKey = NFFact.property();
+    private final NFProperty<InputBindingEvent> changeMouse = NFFact.property();
+    private final NFProperty<Boolean> showChangeMouse = NFFact.property();
 
     private final String canonicalName;
     private DebugInfo.DebugPoint debugPoint;
@@ -94,13 +97,14 @@ public abstract class NavigatorElement {
     }
 
     public String getCaption() {
-        return ThreadLocalContext.localize(caption.get()); // can not be null, see createNavigatorElement (forms and actions always have name)
+        return ThreadLocalContext.localize(caption.get().get()); // can not be null, see createNavigatorElement (forms and actions always have name)
 //        return LocalizedString.create(CanonicalNameUtils.getName(getCanonicalName()));
     }
 
     public AppServerImage getImage(ConnectionContext context) {
-        if(this.image != null)
-            return this.image.get(context);
+        AppServerImage.Reader image = this.image.get();
+        if(image != null)
+            return image.get(context);
 
         if(defaultImage != null)
             return defaultImage.get(context);
@@ -109,7 +113,7 @@ public abstract class NavigatorElement {
     }
 
     public AppServerImage getDefaultImage(String name, float rankingThreshold, boolean useDefaultIcon, ConnectionContext context) {
-        return AppServerImage.createDefaultImage(rankingThreshold, name, AppServerImage.Style.NAVIGATORELEMENT, AppServerImage.getAutoName(() -> caption.get(), this::getName), defaultContext -> useDefaultIcon ? AppServerImage.createNavigatorImage(getDefaultIcon(), NavigatorElement.this).get(defaultContext) : null, context);
+        return AppServerImage.createDefaultImage(rankingThreshold, name, AppServerImage.Style.NAVIGATORELEMENT, AppServerImage.getAutoName(() -> caption.get().get(), this::getName), defaultContext -> useDefaultIcon ? AppServerImage.createNavigatorImage(getDefaultIcon(), NavigatorElement.this).get(defaultContext) : null, context);
     }
 
     private AppServerImage getDefaultImage(ConnectionContext context) {
@@ -242,18 +246,46 @@ public abstract class NavigatorElement {
     // the window this element itself is drawn in - WINDOW names the window of the CHILDREN, so it is the nearest
     // ancestor's, unless PARENT put the element into its own. GNavigatorElement.getDrawWindow is the client's copy
     public NavigatorWindow getDrawWindow() {
-        if (parentWindow)
-            return window;
+        if (isParentWindow())
+            return getWindow();
 
         NavigatorElement parent = getParent();
         if (parent == null)
             return null;
-        return parent.window != null ? parent.window : parent.getDrawWindow();
+        return parent.getWindow() != null ? parent.getWindow() : parent.getDrawWindow();
     }
 
     // A folder placed directly in the top NAVIGATOR (System.root, a horizontal toolbar) must specify a WINDOW for its children
     public boolean isTopFolderWithoutWindow() {
-        return !isLeafElement() && isParentRoot() && window == null;
+        return !isLeafElement() && isParentRoot() && getWindow() == null;
+    }
+
+    public NavigatorWindow getWindow() {
+        return window.get();
+    }
+
+    public boolean isParentWindow() {
+        return nvl(parentWindow.get(), false);
+    }
+
+    public Property getHeaderProperty() {
+        return headerProperty.get();
+    }
+
+    public Property getShowIfProperty() {
+        return showIfProperty.get();
+    }
+
+    public String getCustom() {
+        return custom.get();
+    }
+
+    public Property getPropertyImage() {
+        return propertyImage.get();
+    }
+
+    public Property getPropertyElementClass() {
+        return propertyElementClass.get();
     }
 
     public abstract boolean isLeafElement();
@@ -262,58 +294,66 @@ public abstract class NavigatorElement {
 
     public abstract AsyncExec getAsyncExec(ConnectionContext context);
 
-    // the pairs below are written together : modules that do not require each other are parsed at once, and two of them
-    // can set one element up (NAVIGATOR { element WINDOW ... IMAGE ... })
-    @NFLazy
-    public void setWindow(NavigatorWindow window, boolean parentWindow) {
-        this.window = window;
-        this.parentWindow = parentWindow;
+    public void setCaption(Supplier<LocalizedString> caption, Version version) {
+        this.caption.set(caption, version);
+    }
+
+    public void setWindow(NavigatorWindow window, boolean parentWindow, Version version) {
+        this.window.set(window, version);
+        this.parentWindow.set(parentWindow, version);
     }
 
     // a path (AppServerImage.AUTO, NULL or a file), and the property computing the image, if any
-    @NFLazy
-    public void setImage(String imagePath, Property imageProperty) {
-        this.propertyImage = imageProperty;
-        this.image = AppServerImage.createNavigatorImage(imagePath, this);
+    public void setImage(String imagePath, Property imageProperty, Version version) {
+        this.propertyImage.set(imageProperty, version);
+        this.image.set(AppServerImage.createNavigatorImage(imagePath, this), version);
     }
 
-    public void setPropertyElementClass(Property elementClassProperty) {
-        this.propertyElementClass = elementClassProperty;
+    public void setPropertyElementClass(Property elementClassProperty, Version version) {
+        this.propertyElementClass.set(elementClassProperty, version);
     }
 
-    public void setElementClass(String elementClass) {
-        this.elementClass = elementClass;
+    public void setElementClass(String elementClass, Version version) {
+        this.elementClass.set(elementClass, version);
     }
 
-    public void setHeaderProperty(Property headerProperty) {
-        this.headerProperty = headerProperty;
+    public void setHeaderProperty(Property headerProperty, Version version) {
+        this.headerProperty.set(headerProperty, version);
     }
 
-    public void setShowIfProperty(Property showIfProperty) {
-        this.showIfProperty = showIfProperty;
+    public void setShowIfProperty(Property showIfProperty, Version version) {
+        this.showIfProperty.set(showIfProperty, version);
     }
 
-    @NFLazy
-    public void setChangeKey(String code, boolean showChangeKey) {
-        this.changeKey = KeyStrokeConverter.parseInputBindingEvent(code, false);
-        this.showChangeKey = showChangeKey;
+    public void setCustom(String custom, Version version) {
+        this.custom.set(custom, version);
     }
 
-    @NFLazy
-    public void setChangeMouse(String code, boolean showChangeMouse) {
-        this.changeMouse = KeyStrokeConverter.parseInputBindingEvent(code, true);
-        this.showChangeMouse = showChangeMouse;
+    public void setChangeKey(String code, boolean showChangeKey, Version version) {
+        this.changeKey.set(KeyStrokeConverter.parseInputBindingEvent(code, false), version);
+        this.showChangeKey.set(showChangeKey, version);
+    }
+
+    public void setChangeMouse(String code, boolean showChangeMouse, Version version) {
+        this.changeMouse.set(KeyStrokeConverter.parseInputBindingEvent(code, true), version);
+        this.showChangeMouse.set(showChangeMouse, version);
     }
 
     public void finalizeAroundInit(BaseLogicsModule LM) {
         parent.finalizeChanges();
         children.finalizeChanges();
+        for (NFProperty<?> option : Arrays.asList(window, parentWindow, headerProperty, showIfProperty, custom, caption, propertyImage,
+                image, propertyElementClass, elementClass, changeKey, showChangeKey, changeMouse, showChangeMouse))
+            option.finalizeChanges();
     }
 
     @Override
+    // the caption read as it is, not finalized : an element can be printed while the modules are still parsed - in a
+    // message, a debugger -, and a final read then would refuse a later module's caption
     public String toString() {
         String result = getCanonicalName();
-        String caption = getCaption();
+        Supplier<LocalizedString> captionSupplier = this.caption.getNF(Version.current(), true);
+        String caption = captionSupplier != null ? ThreadLocalContext.localize(captionSupplier.get()) : null;
         if (caption != null) {
             result += " '" + caption + "'";
         }
@@ -339,20 +379,21 @@ public abstract class NavigatorElement {
         SerializationUtil.writeString(outStream, getPath());
 
         outStream.writeUTF(getCaption());
-        SerializationUtil.writeString(outStream, elementClass);
+        SerializationUtil.writeString(outStream, elementClass.get());
         outStream.writeBoolean(hasChildren());
+        NavigatorWindow window = getWindow();
         String windowCanonicalName = window != null ? window.getCanonicalName() : null;
         SerializationUtil.writeString(outStream, windowCanonicalName);
         if(windowCanonicalName != null) {
-            outStream.writeBoolean(parentWindow);
+            outStream.writeBoolean(isParentWindow());
         }
 
-        BaseUtils.writeObject(outStream, changeKey);
-        outStream.writeBoolean(nvl(showChangeKey, true));
-        BaseUtils.writeObject(outStream, changeMouse);
-        outStream.writeBoolean(nvl(showChangeMouse, true));
+        BaseUtils.writeObject(outStream, changeKey.get());
+        outStream.writeBoolean(nvl(showChangeKey.get(), true));
+        BaseUtils.writeObject(outStream, changeMouse.get());
+        outStream.writeBoolean(nvl(showChangeMouse.get(), true));
 
-        outStream.writeBoolean(custom != null);
+        outStream.writeBoolean(getCustom() != null);
 
         AppServerImage.serialize(getImage(context), outStream);
 

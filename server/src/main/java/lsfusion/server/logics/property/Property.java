@@ -21,7 +21,10 @@ import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.controller.thread.ThreadUtils;
+import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
+import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.caches.AbstractOuterContext;
@@ -875,14 +878,22 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public enum CheckType { CHECK_NO, CHECK_ALL, CHECK_SOME }
-    public CheckType checkChange = CheckType.CHECK_NO;
-    public ImSet<Property<?>> checkProperties = null;
-    // the two of one constraint go together : modules that do not require each other are parsed at once, and two of them
-    // can put constraints on one property
-    @NFLazy
-    public void setCheckChange(CheckType checkChange, ImSet<Property<?>> checkProperties) {
-        this.checkChange = checkChange;
-        this.checkProperties = checkProperties;
+    // the two of one constraint go together, NF at its module's version : modules that do not require each other are
+    // parsed at once, and of two putting constraints on one property the later in the module order decides what is checked.
+    // The NF property is made with this property; writes take only the NF property's monitor.
+    private final NFProperty<Pair<CheckType, ImSet<Property<?>>>> checkChange = NFFact.property();
+    public void setCheckChange(CheckType type, ImSet<Property<?>> properties, Version version) {
+        checkChange.set(new Pair<>(type, properties), version);
+    }
+
+    public CheckType getCheckChange() {
+        Pair<CheckType, ImSet<Property<?>>> check = checkChange.get();
+        return check == null ? CheckType.CHECK_NO : check.first;
+    }
+
+    public ImSet<Property<?>> getCheckProperties() {
+        Pair<CheckType, ImSet<Property<?>>> check = checkChange.get();
+        return check == null ? null : check.second;
     }
 
     public <O extends ObjectSelector> ImSet<ContextFilterEntity<?, T, O>> getCheckFilters(O object) {
@@ -1731,7 +1742,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         ChangeEvent<T> event = new ChangeEvent<>(this, valueImplement, whereImplement);
         // запишем в DataProperty
         for(DataProperty dataProperty : getChangeProps())
-            dataProperty.setEvent(event);
+            dataProperty.setEvent(event, lm.getVersion());
     }
 
     public void setNotNull(ImMap<T, DataObject> values, ExecutionEnvironment env, ExecutionStack stack, boolean notNull, boolean check) throws SQLException, SQLHandledException {

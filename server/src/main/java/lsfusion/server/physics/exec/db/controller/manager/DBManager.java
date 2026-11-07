@@ -2210,7 +2210,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         String navbar = businessLogics.navbar;
         LM.logicsCaption.change(isRedundantString(logicsCaption) ? null : logicsCaption, session);
         LM.topModule.change(isRedundantString(topModule) ? null : topModule, session);
-        LM.customNavigator.change(LM.navigatorCustom, session);
+        LM.customNavigator.change(LM.getNavigatorCustom(), session);
         // every window's, NULL too - a CUSTOM changed from a component to a template, or taken out, clears it
         for (AbstractWindow window : businessLogics.getWindows())
             LM.customWindow.change(window.isReact() ? window.getCustom() : null, session, new DataObject(window.getCanonicalName(), StringClass.getv(100)));

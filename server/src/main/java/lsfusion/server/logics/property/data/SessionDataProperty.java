@@ -74,7 +74,7 @@ public class SessionDataProperty extends DataProperty {
 
     @Override
     public ImSet<Property> calculateUsedChanges(StructChanges propChanges) {
-        if(event == null) // optimization, if there are no events we don't need classes either
+        if(getEvent() == null) // optimization, if there are no events we don't need classes either
             return SetFact.EMPTY();
         return super.calculateUsedChanges(propChanges);
     }

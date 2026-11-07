@@ -10,7 +10,10 @@ import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
+import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
@@ -74,14 +77,24 @@ public abstract class DataProperty extends AbstractDataProperty {
         return new ClassWhere<>(MapFact.addExcl(IsClassProperty.getMapClasses(interfaces), "value", value), true);
     }
 
-    public ChangeEvent<?> event = null;
-    // modules that do not require each other are parsed at once, and two of them can give one property events (WHEN) :
-    // the check and the write go together
+    // NF at the version of the module that gave it (WHEN) : modules that do not require each other are parsed at once,
+    // and of two of them giving one property events the one later in the module order wins. Made by the first event, not
+    // with the property : whether a data property has an event is asked of every one (MapCacheAspect.getUsedChanges,
+    // SessionDataProperty.calculateUsedChanges), and such a read before a later module's WHEN would freeze an NF property
+    // made with it; without an event there is nothing to freeze
+    private NFProperty<ChangeEvent<?>> event;
+    // the lazy creation, check and write go together; the check counts every module's event, a required module's or not
     @NFLazy
-    public void setEvent(ChangeEvent<?> event) {
-        if(Settings.get().isCheckUniqueEvent() && this.event != null)
+    public void setEvent(ChangeEvent<?> event, Version version) {
+        if(this.event == null)
+            this.event = NFFact.property();
+        if(Settings.get().isCheckUniqueEvent() && this.event.getNF(Version.current()) != null)
             throw new RuntimeException(ThreadLocalContext.localize(LocalizedString.createFormatted("{logics.property.already.has.event}", this)));
-        this.event = event;
+        this.event.set(event, version);
+    }
+
+    public ChangeEvent<?> getEvent() {
+        return event == null ? null : event.get();
     }
 
     protected boolean useSimpleIncrement() {
@@ -183,12 +196,14 @@ public abstract class DataProperty extends AbstractDataProperty {
             for (ClassPropertyInterface remove : interfaces)
                 result = result.merge(remove.interfaceClass.getProperty().getRemoveUsedChanges(propChanges));
         }
+        ChangeEvent<?> event = getEvent();
         if (event != null)
             result = result.merge(event.getUsedDataChanges(propChanges));
         return result;
     }
 
     protected boolean calculateHasPreread(StructChanges structChanges) {
+        ChangeEvent<?> event = getEvent();
         if (event != null)
             return event.hasPreread(structChanges);
         return false;
@@ -220,6 +235,7 @@ public abstract class DataProperty extends AbstractDataProperty {
         PropertyChange<ClassPropertyInterface> result = null;
 
         PropertyChange<ClassPropertyInterface> eventChange = null; // до непосредственно вычисления, для хинтов
+        ChangeEvent<?> event = getEvent();
         if(event != null)
             eventChange = ((ChangeEvent<ClassPropertyInterface>)event).getDataChanges(changes, event.isData() ? joinValues : MapFact.EMPTY()).get(this);
 
@@ -256,6 +272,7 @@ public abstract class DataProperty extends AbstractDataProperty {
     @Override
     protected void fillDepends(MSet<Property> depends, boolean events) { // для Action'а связь считается слабой
         if(events) {
+            ChangeEvent<?> event = getEvent();
             if (event != null)
                 depends.addAll(event.getDepends());
             depends.addAll(getDroppedDepends());
@@ -318,7 +335,7 @@ public abstract class DataProperty extends AbstractDataProperty {
 
     @Override
     public boolean supportsDrillDown() {
-        return event != null;
+        return getEvent() != null;
     }
 
     @Override

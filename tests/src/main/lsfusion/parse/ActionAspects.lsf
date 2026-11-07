@@ -5,15 +5,17 @@ REQUIRE TestUtils;
 // an action keeps the actions BEFORE and AFTER give it. Modules that do not require each other are parsed at once, each
 // in a thread of its own, so two of them that add BEFORE or AFTER to one action added to its lists at once: they were
 // plain arrays, which two adds at once corrupt - an aspect could be lost, or the start fail with an
-// ArrayIndexOutOfBoundsException
+// ArrayIndexOutOfBoundsException. And the aspects ran in the order they were added, so the parse threads' timing : they
+// run in the module order now, in NF lists at their modules' versions, as when the modules were parsed one after the
+// other. The lists are created eagerly and take their own monitors on add, with no lock of the action
 
-aaDo () { MESSAGE 'aa do'; }
-aaAspect () { MESSAGE 'aa aspect'; }
+aaEarlier () { MESSAGE 'aa earlier'; }
+aaLater () { MESSAGE 'aa later'; }
 
-aaFailure = DATA LOCAL STRING ();
-aaAddAtOnce INTERNAL 'lsfusion.tests.AddActionAspectsAtOnceAction' ();
+aaOrderFailure = DATA LOCAL STRING ();
+aaAddInModuleOrder INTERNAL 'lsfusion.tests.AddActionAspectsInModuleOrderAction' ();
 
-testActionAspectsAddedAtOnce 'BEFORE and AFTER added to an action wait for another one added to it' () {
-    aaAddAtOnce();
-    assertNull(aaFailure(), aaFailure());
+testActionAspectsInModuleOrder 'BEFORE and AFTER of two modules run in the module order' () {
+    aaAddInModuleOrder();
+    assertNull(aaOrderFailure(), aaOrderFailure());
 }

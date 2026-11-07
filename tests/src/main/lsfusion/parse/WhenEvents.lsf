@@ -5,11 +5,17 @@ REQUIRE TestUtils;
 // a property written by an event of its own (p <- v WHEN c) keeps that event in its data properties, one each, which with
 // checkUniqueEvent a second event of a property is refused for. Modules that do not require each other are parsed at
 // once, each in a thread of its own, so two of them giving one property events wrote them at once, and both could pass
-// that check (a lab start of eight such modules had all eight in the write at once)
+// that check (a lab start of eight such modules had all eight in the write at once). And which of the two events the
+// property kept was the one written last, so the parse threads' timing : it is the one of the module later in the module
+// order now, NF at its module's version, as when the modules were parsed one after the other. The NF property is created
+// lazily, and its creation, the check and the write hold the property's monitor. The lock test writes to a property made
+// at runtime : a started one's event is final
 
 weFlag = DATA BOOLEAN ();
 weData = DATA STRING ();
 weData() <- 'we' WHEN weFlag();
+weDataLater = DATA STRING ();
+weDataLater() <- 'we later' WHEN weFlag();
 
 weFailure = DATA LOCAL STRING ();
 weSetAtOnce INTERNAL 'lsfusion.tests.SetWhenEventsAtOnceAction' ();
@@ -17,4 +23,12 @@ weSetAtOnce INTERNAL 'lsfusion.tests.SetWhenEventsAtOnceAction' ();
 testWhenEventsSetAtOnce 'An event written to a property waits for another one written to it' () {
     weSetAtOnce();
     assertNull(weFailure(), weFailure());
+}
+
+weOrderFailure = DATA LOCAL STRING ();
+weSetInModuleOrder INTERNAL 'lsfusion.tests.SetWhenEventsInModuleOrderAction' ();
+
+testWhenEventsInModuleOrder 'Of two modules giving a property events the later one in the module order wins' () {
+    weSetInModuleOrder();
+    assertNull(weOrderFailure(), weOrderFailure());
 }

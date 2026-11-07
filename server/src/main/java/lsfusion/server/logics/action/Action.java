@@ -4,7 +4,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -14,7 +13,10 @@ import lsfusion.base.lambda.set.SFunctionSet;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
+import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
@@ -448,30 +450,32 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return getSessionEnv(SystemEvent.APPLY)==SessionEnvEvent.ALWAYS && resolve != null;
     }
 
-    private Object beforeAspects = ListFact.mCol();
-    // modules that do not require each other are parsed at once, and two of them can add BEFORE / AFTER to one action
-    @NFLazy
-    public void addBeforeAspect(ActionMapImplement<?, P> action) {
-        ((MCol<ActionMapImplement<?, P>>)beforeAspects).add(action);
+    // modules parsed at once can add BEFORE / AFTER to one action. The NF lists are created eagerly so adds take only
+    // the lists' own monitors, with no lock of the action. They order the adds by their modules' versions, one module's
+    // in the order of its statements, and are replaced with final ImCols in finalizeChanges
+    private Object beforeAspects = NFFact.list();
+    public void addBeforeAspect(ActionMapImplement<?, P> action, Version version) {
+        ((NFList<ActionMapImplement<?, P>>)beforeAspects).add(action, version);
     }
     @LongMutable
     public ImCol<ActionMapImplement<?, P>> getBeforeAspects() {
-        return (ImCol<ActionMapImplement<?,P>>)beforeAspects;
+        return beforeAspects instanceof NFList ?
+                ((NFList<ActionMapImplement<?, P>>)beforeAspects).getList().getCol() : (ImCol<ActionMapImplement<?, P>>)beforeAspects;
     }
-    private Object afterAspects = ListFact.mCol();
-    @NFLazy // see addBeforeAspect
-    public void addAfterAspect(ActionMapImplement<?, P> action) {
-        ((MCol<ActionMapImplement<?, P>>)afterAspects).add(action);
+    private Object afterAspects = NFFact.list();
+    public void addAfterAspect(ActionMapImplement<?, P> action, Version version) {
+        ((NFList<ActionMapImplement<?, P>>)afterAspects).add(action, version);
     }
     @LongMutable
     public ImCol<ActionMapImplement<?, P>> getAfterAspects() {
-        return (ImCol<ActionMapImplement<?,P>>)afterAspects;
+        return afterAspects instanceof NFList ?
+                ((NFList<ActionMapImplement<?, P>>)afterAspects).getList().getCol() : (ImCol<ActionMapImplement<?, P>>)afterAspects;
     }
 
     @Override
     protected void finalizeChanges() {
-        beforeAspects = ((MCol<ActionMapImplement<?, P>>)beforeAspects).immutableCol();
-        afterAspects = ((MCol<ActionMapImplement<?, P>>)afterAspects).immutableCol();
+        beforeAspects = getBeforeAspects();
+        afterAspects = getAfterAspects();
         events = ((MMap<BaseEvent, SessionEnvEvent>)events).immutable();
     }
 

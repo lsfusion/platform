@@ -2276,7 +2276,7 @@ public abstract class LogicsModule {
         Property<?> property = lp.property;
         Property<?> messageProperty = messageLP.property;
 
-        property.setCheckChange(type, checkProps);
+        property.setCheckChange(type, checkProps, getVersion());
 
         assert type != Property.CheckType.CHECK_SOME || checkProps != null;
 
@@ -2379,10 +2379,11 @@ public abstract class LogicsModule {
     }
 
     public <P extends PropertyInterface, T extends PropertyInterface> void addAspectEvent(Action<P> action, ActionMapImplement<T, P> aspect, boolean before) {
+        Version version = getVersion();
         if(before)
-            action.addBeforeAspect(aspect);
+            action.addBeforeAspect(aspect, version);
         else
-            action.addAfterAspect(aspect);
+            action.addAfterAspect(aspect, version);
     }
 
     protected <L extends PropertyInterface, T extends PropertyInterface, K extends PropertyInterface> void addFollows(final LP<T> first, ImList<PropertyFollowsDebug> resolves, ImList<LP> optResConds, Event event, LP<L> second, ConstraintData constraintData, final Integer... mapping) {

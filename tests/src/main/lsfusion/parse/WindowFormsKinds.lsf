@@ -1,0 +1,18 @@
+MODULE WindowFormsKinds;
+
+REQUIRE TestUtils;
+
+// a FORMS window keeps how it draws the forms opened into it (EXTEND WINDOW ... FORMS) : one at a time or as tabs, and
+// when a displaced form is closed, CLOSE only allowed on a window drawing one at a time. Modules that do not require each
+// other are parsed at once, each in a thread of its own, so of two of them extending one window the one written last
+// won, and the CLOSE check saw the other one's TABBED or did not - a lab start of such modules failed in one of three
+// starts. The module later in the module order wins now, as when they were parsed one after the other, and a statement
+// is checked against the window as the modules its module requires left it
+
+fkFailure = DATA LOCAL STRING ();
+fkSetInModuleOrder INTERNAL 'lsfusion.tests.SetWindowFormsKindsInModuleOrderAction' ();
+
+testWindowFormsKindsInModuleOrder 'Of two modules extending a FORMS window the later one in the module order wins' () {
+    fkSetInModuleOrder();
+    assertNull(fkFailure(), fkFailure());
+}

@@ -578,7 +578,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             for (AbstractWindow window : formsWindows)
                 window.serialize(dataStream);
 
-            SerializationUtil.writeString(dataStream, businessLogics.LM.navigatorCustom);
+            SerializationUtil.writeString(dataStream, businessLogics.LM.getNavigatorCustom());
 
             Map<NavigatorScheduler, LA> navigatorSchedulers = businessLogics.LM.navigatorSchedulers;
             dataStream.writeInt(navigatorSchedulers.size());
@@ -680,14 +680,14 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     private ImSet<PropertyNavigator> getPropertyNavigators() {
         MExclSet<PropertyNavigator> mResult = SetFact.mExclSet();
         for(NavigatorElement navigatorElement : getNavigatorTreeObjects().keyIt()) {
-            if(navigatorElement.propertyImage != null)
-                mResult.exclAdd(new ImageElementNavigator(navigatorElement.propertyImage, navigatorElement));
-            if(navigatorElement.headerProperty != null)
-                mResult.exclAdd(new CaptionElementNavigator(navigatorElement.headerProperty, navigatorElement));
-            if(navigatorElement.showIfProperty != null)
-                mResult.exclAdd(new ShowIfElementNavigator(navigatorElement.showIfProperty, navigatorElement));
-            if(navigatorElement.propertyElementClass != null)
-                mResult.exclAdd(new ClassElementNavigator(navigatorElement.propertyElementClass, navigatorElement));
+            if(navigatorElement.getPropertyImage() != null)
+                mResult.exclAdd(new ImageElementNavigator(navigatorElement.getPropertyImage(), navigatorElement));
+            if(navigatorElement.getHeaderProperty() != null)
+                mResult.exclAdd(new CaptionElementNavigator(navigatorElement.getHeaderProperty(), navigatorElement));
+            if(navigatorElement.getShowIfProperty() != null)
+                mResult.exclAdd(new ShowIfElementNavigator(navigatorElement.getShowIfProperty(), navigatorElement));
+            if(navigatorElement.getPropertyElementClass() != null)
+                mResult.exclAdd(new ClassElementNavigator(navigatorElement.getPropertyElementClass(), navigatorElement));
         }
         for(AbstractWindow window : getWindows()) {
             if(window.propertyElementClass != null)

@@ -6,14 +6,17 @@ REQUIRE TestUtils;
 // property computing it, with a placeholder for a literal a property comes without. Modules that do not require each
 // other are parsed at once, each in a thread of its own, so two of them giving one window its halves wrote them at once :
 // a lab start of such modules lost the literal to the placeholder, and the check that a React component is not given a
-// property could be passed the same way
+// property could be passed the same way. And which of two statements a half kept was the one written last, so the parse
+// threads' timing : the halves are NF at the module's version now, so the later module's win, as when the modules were
+// parsed one after the other. The NF writes take no lock of the window, the placeholder is read, not written, and the
+// React component and the property are checked in the final window once every module has run
 
 wcCustom () = '<div>wc</div>';
 
-wcFailure = DATA LOCAL STRING ();
-wcSetAtOnce INTERNAL 'lsfusion.tests.SetWindowCustomsAtOnceAction' ();
+wcOrderFailure = DATA LOCAL STRING ();
+wcSetInModuleOrder INTERNAL 'lsfusion.tests.SetWindowCustomsInModuleOrderAction' ();
 
-testWindowCustomsSetAtOnce 'The halves of the CUSTOM of a window wait for another statement giving them' () {
-    wcSetAtOnce();
-    assertNull(wcFailure(), wcFailure());
+testWindowCustomsInModuleOrder 'Of two modules giving a window its CUSTOM the later one in the module order wins' () {
+    wcSetInModuleOrder();
+    assertNull(wcOrderFailure(), wcOrderFailure());
 }

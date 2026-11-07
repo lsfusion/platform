@@ -5,15 +5,19 @@ REQUIRE TestUtils;
 // a property a constraint is put on (CONSTRAINT p(a) ...) keeps which changes are checked against it : a type and, for
 // CHECKED BY, the properties. Modules that do not require each other are parsed at once, each in a thread of its own,
 // so two of them that put constraints on one property of another module wrote the two at once, and the type of one
-// could be left with the properties of the other - CHECKED BY with none, which failed the start
+// could be left with the properties of the other - CHECKED BY with none, which failed the start. And which of the two
+// constraints decided was the one written last, so the parse threads' timing : it is the one of the module later in the
+// module order now, the pair NF at its module's version, as when the modules were parsed one after the other. The NF
+// property is made with the property; writing the check takes only the NF property's monitor, without locking the property.
+// The module-order test writes to a property made at runtime : a started one's checks are final
 
 ccName = DATA LOCAL STRING ();
 ccNegative () = ccName() == 'negative';
 
-ccFailure = DATA LOCAL STRING ();
-ccCheckAtOnce INTERNAL 'lsfusion.tests.SetConstraintChecksAtOnceAction' ();
+ccOrderFailure = DATA LOCAL STRING ();
+ccCheckInModuleOrder INTERNAL 'lsfusion.tests.SetConstraintChecksInModuleOrderAction' ();
 
-testConstraintChecksSetAtOnce 'What a constraint checks a property against waits for another constraint on it' () {
-    ccCheckAtOnce();
-    assertNull(ccFailure(), ccFailure());
+testConstraintChecksInModuleOrder 'Of two modules putting constraints on a property the later one in the module order decides what is checked' () {
+    ccCheckInModuleOrder();
+    assertNull(ccOrderFailure(), ccOrderFailure());
 }

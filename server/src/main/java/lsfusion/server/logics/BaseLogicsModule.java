@@ -23,6 +23,7 @@ import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
@@ -593,7 +594,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         // navigator elements (before parsing because root is used there)
         root = new NavigatorFolder("System.root");
-        root.caption = () -> LocalizedString.NONAME;
+        root.setCaption(() -> LocalizedString.NONAME, getVersion());
         addNavigatorElement(root);
 
         super.initMainLogic();
@@ -841,8 +842,18 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         navigatorSchedulers.put(scheduler, action);
     }
 
-    // NAVIGATOR CUSTOM: the React component that lays the windows out instead of the standard layout, if any
-    public String navigatorCustom;
+    // NAVIGATOR CUSTOM: the React component that lays the windows out instead of the standard layout, if any. NF at
+    // the version of the module giving it : modules that do not require each other are parsed at once, and of two
+    // giving the navigator its CUSTOM the later in the module order wins
+    private final NFProperty<String> navigatorCustom = NFFact.property();
+
+    public void setNavigatorCustom(String custom, Version version) {
+        navigatorCustom.set(custom, version);
+    }
+
+    public String getNavigatorCustom() {
+        return navigatorCustom.get();
+    }
 
     private void initNavigators() throws ScriptingErrorLog.SemanticErrorException {
 
@@ -854,7 +865,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         baseWindows.root = (NavigatorWindow) findWindow("root");
         baseWindows.root.autoSize = true;
-        root.window = baseWindows.root;
+        root.setWindow(baseWindows.root, false, getVersion());
 
         baseWindows.system = (NavigatorWindow) findWindow("system");
         baseWindows.system.autoSize = true;
