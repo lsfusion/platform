@@ -21,6 +21,12 @@ public abstract class ParkedNavigatorView extends GAbstractNavigatorView {
         super(window, panel);
 
         this.panel = panel;
-        this.buttons = new NavigatorButtons(window, navigatorController, panel);
+        this.buttons = new NavigatorButtons(this, window, navigatorController, panel);
+    }
+
+    // the level a button handed out is drawn at: its depth in the window's tree, the standard toolbar's indent, which a
+    // template keeps
+    int buttonLevel(int level) {
+        return level;
     }
 }

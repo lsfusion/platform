@@ -10,6 +10,7 @@ import lsfusion.gwt.client.form.object.table.tree.view.GTreeTableTreeTest;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManagerTest;
 import lsfusion.gwt.client.form.view.ReactFormsViewTest;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcherTest;
+import lsfusion.gwt.client.navigator.view.NavigatorButtonsTest;
 import lsfusion.gwt.client.navigator.window.view.ReactWindowLayoutTest;
 
 // the client's GWT tests, run as one suite: GWT compiles a module once per JVM, with the test classes it knows of at
@@ -29,6 +30,7 @@ public class GClientTestSuite {
         suite.addTestSuite(NativeLinkedSIDMapTest.class);
         suite.addTestSuite(ReactWindowLayoutTest.class);
         suite.addTestSuite(ReactFormsViewTest.class);
+        suite.addTestSuite(NavigatorButtonsTest.class);
         return suite;
     }
 }

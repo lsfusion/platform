@@ -56,6 +56,22 @@ public class UiWindowsLayoutIT extends UiTest {
         }
     }
 
+    // UiNavigatorButtonsIT's control: the standard toolbar indents its tree by depth - Administration's sections are
+    // drawn there, their items a level deeper
+    @Test
+    public void theToolbarIndentsTheLevelsOfItsTree() {
+        trackRequests();
+        page.locator("[lsfusion-container='System.system'] [lsfusion-container='System.administration']").click();
+        settled();
+        Locator toolbar = page.locator("[lsfusion-container='System.toolbar']");
+        Locator application = toolbar.locator("[lsfusion-container='System.application']");
+        assertThat(application).containsClass("nav-link-horz-0");
+        assertThat(application).hasCSS("margin-left", "0px");
+        Locator options = toolbar.locator("[lsfusion-container='System.options']");
+        assertThat(options).containsClass("nav-link-horz-1");
+        assertThat(options).hasCSS("margin-left", "16px");
+    }
+
     // the sizes are stored when the page is left in a browser that does not fire unload: Chrome stops firing it for a
     // growing share of its users and, from version 158, for all of them, so a panel collapsed by its splitter came back
     // at its default size on every login (#1945). The Permissions-Policy header turns unload off in the Chrome of any version

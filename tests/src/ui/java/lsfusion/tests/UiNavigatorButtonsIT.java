@@ -5,6 +5,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.regex.Pattern;
+
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -56,6 +58,28 @@ public class UiNavigatorButtonsIT extends UiTest {
         }
     }
 
+    // the depth is the standard toolbar's tree indent, and the component lays its buttons out itself: a placed button is
+    // drawn at no level - the toolbar's would be indented 1-3rem, the root's (text under the icon) carry the class of
+    // their depth -, as it is built, as a refresh changes it (a folder selected) and once the pin mode is switched
+    @Test
+    public void aPlacedButtonHasNoLevelIndent() {
+        trackRequests();
+        noIndent();
+
+        placed("uiNbOne").click();
+        settled();
+        assertThat(placed("uiNbOne")).containsClass("active");
+        noIndent();
+
+        String mode = pinMode();
+        try {
+            pinMode(UNPINNED);
+            noIndent();
+        } finally {
+            pinMode(mode);
+        }
+    }
+
     private Locator placed(String name) {
         return page.locator(".ui-nb-place > [lsfusion-container='UiNavigatorButtons." + name + "']");
     }
@@ -74,6 +98,18 @@ public class UiNavigatorButtonsIT extends UiTest {
         for (Locator button : buttons.all()) {
             caption(button, true);
             assertEquals(false, button.evaluate("button => !!button.closest('.navbar-text-on-hover')"));
+        }
+    }
+
+    private void noIndent() {
+        for (String window : new String[]{"System.toolbar", "System.root"}) {
+            Locator buttons = placedButtons(window);
+            assertThat(buttons).hasCount(3);
+            for (Locator button : buttons.all()) {
+                assertThat(button).hasCSS("margin-left", "0px");
+                assertThat(button).containsClass(window.equals("System.root") ? "nav-link-vert-0" : "nav-link-horz-0");
+                assertThat(button).not().hasClass(Pattern.compile("\\bnav-link-(horz|vert)-[1-9][0-9]*\\b"));
+            }
         }
     }
 }

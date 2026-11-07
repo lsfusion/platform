@@ -31,6 +31,13 @@ public class ReactNavigatorView extends ParkedNavigatorView {
         root.mountWhileAttached(panel);
     }
 
+    // the depth is the standard toolbar's tree indent, while a component lays its buttons out itself - in a row, in a tree
+    // of its own: where a placed button goes, and how deep it looks, is the component's
+    @Override
+    int buttonLevel(int level) {
+        return 0;
+    }
+
     @Override
     public void refresh(LinkedHashSet<GNavigatorElement> elements, GNavigatorElement selected) {
         buttons.refresh(elements, selected); // so that <Platform name/> has a standard button to place

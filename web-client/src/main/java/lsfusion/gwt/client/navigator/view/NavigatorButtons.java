@@ -23,6 +23,7 @@ import java.util.List;
 // tooltip, classes and click behaviour, instead of reproducing them.
 public class NavigatorButtons {
 
+    private final ParkedNavigatorView owner;
     private final GNavigatorWindow window;
     private final GINavigatorController navigatorController;
     private final ResizableComplexPanel panel;
@@ -87,7 +88,8 @@ public class NavigatorButtons {
     // window is gone from the navigator, so handing its button out would activate an element the window no longer draws
     private final List<String> drawnNames = new ArrayList<>();
 
-    public NavigatorButtons(GNavigatorWindow window, GINavigatorController navigatorController, ResizableComplexPanel panel) {
+    public NavigatorButtons(ParkedNavigatorView owner, GNavigatorWindow window, GINavigatorController navigatorController, ResizableComplexPanel panel) {
+        this.owner = owner;
         this.window = window;
         this.navigatorController = navigatorController;
         this.panel = panel;
@@ -95,12 +97,12 @@ public class NavigatorButtons {
         this.park = new Park(panel);
     }
 
-    // the same walk the standard panel makes, so a placed button carries the level class it would carry there
+    // the same walk the standard panel makes, each button at the level its owner draws it at (buttonLevel)
     public void refresh(LinkedHashSet<GNavigatorElement> elements, GNavigatorElement selected) {
         drawnNames.clear();
         GAbstractNavigatorView.forEachDrawn(window, elements, (element, level) -> {
             drawnNames.add(element.canonicalName);
-            ensureButton(element, level, window.isActive(element, selected));
+            ensureButton(element, owner.buttonLevel(level), window.isActive(element, selected));
         });
 
         removeGone();

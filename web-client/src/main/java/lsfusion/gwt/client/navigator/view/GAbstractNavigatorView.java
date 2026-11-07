@@ -49,7 +49,7 @@ public abstract class GAbstractNavigatorView {
     }
 
     // which elements of the bucket this window draws, in which order, and at what depth - asked once here, because a
-    // custom window hands out the standard buttons and they must sit at the level the standard panel would give them.
+    // custom window hands out the standard buttons, and a template places them at the level the standard panel gives them.
     // A hidden element is skipped and not descended into either, so a child of a hidden folder is not drawn on its own
     static void forEachDrawn(GNavigatorWindow window, LinkedHashSet<GNavigatorElement> elements, BiConsumer<GNavigatorElement, Integer> drawn) {
         for (GNavigatorElement element : elements)
