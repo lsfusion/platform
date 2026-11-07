@@ -33,6 +33,7 @@ public class ReactFormsView implements FormsView {
 
     private final ResizableComplexPanel panel = new ResizableComplexPanel();
     private final ReactRoot root;
+    private JavaScriptObject lastData; // the projection last built, so an unchanged entry can keep its reference
     private final FormsController formsController;
     private final FormsView.SelectionHandler selection;
 
@@ -152,7 +153,7 @@ public class ReactFormsView implements FormsView {
 
     @Override
     public void formsChanged() {
-        root.updateRebuiltData(buildData());
+        root.updateData(buildData());
     }
 
     private JavaScriptObject buildData() {
@@ -174,7 +175,7 @@ public class ReactFormsView implements FormsView {
             addEntry(data, dockable.formName, dockable.getCanonicalName(), caption, image,
                     i == selected, form == null, dockable.hasBlockingForm());
         }
-        return data;
+        return lastData = ReactRoot.reuse(lastData, data);
     }
 
     // called back from the component's controller. The focus entering a form is heard by the window instead - once,

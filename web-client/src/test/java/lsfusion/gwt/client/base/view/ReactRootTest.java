@@ -58,39 +58,30 @@ public class ReactRootTest extends GWTTestCase {
     }-*/;
 
     // a projection its owner builds anew each time - the navigator window's, the forms window's - is shared with the
-    // snapshot pushed last: an entry that did not change is the very object pushed before, and so is the array of
-    // names that orders them, while an entry that changed is the new build; a push that changed nothing at all is the
+    // snapshot built last: an entry that did not change is the very object built before, and so is the array of
+    // names that orders them, while an entry that changed is the new build; a build that changed nothing at all is the
     // snapshot already there
     public void testARebuiltSnapshotKeepsWhatDidNotChange() {
-        ReactRoot root = new ReactRoot("NoSuchComponent", JavaScriptObject.createObject(), new NoPlacement());
-        root.updateRebuiltData(built("b"));
-        JavaScriptObject first = snapshotOf(root);
+        JavaScriptObject first = ReactRoot.reuse(null, built("b"));
 
-        root.updateRebuiltData(built("B"));
-        JavaScriptObject second = snapshotOf(root);
+        JavaScriptObject second = ReactRoot.reuse(first, built("B"));
         assertNotSame(first, second);
         assertSame(entry(first, "a"), entry(second, "a"));
         assertNotSame(entry(first, "b"), entry(second, "b"));
         assertEquals("B", text(entry(second, "b"), "caption"));
         assertSame(JsniTestSupport.field(first, "order"), JsniTestSupport.field(second, "order"));
 
-        root.updateRebuiltData(built("B"));
-        assertSame(second, snapshotOf(root));
+        assertSame(second, ReactRoot.reuse(second, built("B")));
     }
 
     // ... and a build whose keys are other ones, or an array of another length, is new even where every value it
     // carries is one the last snapshot has: a key with no value, a hole in an array
     public void testARebuiltSnapshotOfOtherKeysIsNew() {
-        ReactRoot root = new ReactRoot("NoSuchComponent", JavaScriptObject.createObject(), new NoPlacement());
-        root.updateRebuiltData(keyed("a"));
-        JavaScriptObject a = snapshotOf(root);
-        root.updateRebuiltData(keyed("b"));
-        assertNotSame(a, snapshotOf(root));
+        JavaScriptObject a = keyed("a");
+        assertNotSame(a, ReactRoot.reuse(a, keyed("b")));
 
-        root.updateRebuiltData(names(1));
-        JavaScriptObject one = snapshotOf(root);
-        root.updateRebuiltData(names(2));
-        assertNotSame(one, snapshotOf(root));
+        JavaScriptObject one = names(1);
+        assertNotSame(one, ReactRoot.reuse(one, names(2)));
     }
 
     private static native JavaScriptObject keyed(String key) /*-{
@@ -111,9 +102,6 @@ public class ReactRootTest extends GWTTestCase {
                                               b: { name: 'b', caption: caption, children: [] } } };
     }-*/;
     private static native JavaScriptObject entry(JavaScriptObject data, String name) /*-{ return data.byName[name]; }-*/;
-    private static native JavaScriptObject snapshotOf(ReactRoot root) /*-{
-        return root.@lsfusion.gwt.client.base.view.ReactRoot::store.getSnapshot();
-    }-*/;
 
     // each listener told writes down its name and the snapshot it reads then; the list keeps the first one's
     // unsubscribe

@@ -15,6 +15,7 @@ import java.util.LinkedHashSet;
 public class ReactNavigatorView extends ParkedNavigatorView {
 
     private final ReactRoot root;
+    private JavaScriptObject lastData; // the projection last built, so an unchanged entry can keep its reference
 
     public ReactNavigatorView(GNavigatorWindow window, GINavigatorController navigatorController) {
         super(window, navigatorController);
@@ -33,7 +34,7 @@ public class ReactNavigatorView extends ParkedNavigatorView {
     @Override
     public void refresh(LinkedHashSet<GNavigatorElement> elements, GNavigatorElement selected) {
         buttons.refresh(elements, selected); // so that <Platform name/> has a standard button to place
-        root.updateRebuiltData(buildData(elements, selected));
+        root.updateData(buildData(elements, selected));
     }
 
     // the projection is built from the BUCKET, not from the element tree: a child that crossed into another window, or
@@ -52,7 +53,7 @@ public class ReactNavigatorView extends ParkedNavigatorView {
             if (!elements.contains(element.parent)) // the same root elements the standard view draws, children hang off them
                 addRoot(data, element.canonicalName);
         }
-        return data;
+        return lastData = ReactRoot.reuse(lastData, data);
     }
 
     private native JavaScriptObject createData()/*-{

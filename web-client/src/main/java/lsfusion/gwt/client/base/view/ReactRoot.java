@@ -178,18 +178,15 @@ public class ReactRoot {
             notifyStore();
     }
 
-    // ... of a projection its owner builds anew each time - the navigator window's, the forms window's: structural
-    // sharing with the snapshot pushed last, the guarantee every projection gives. Whatever did not change keeps its
-    // reference, so a component memoized on an entry that did not change does not re-render, and a push that changed
-    // nothing at all is the very same snapshot, which is then skipped
-    public void updateRebuiltData(JavaScriptObject data) {
-        updateData(reuse(lastData, data));
-    }
-
+    // structural sharing for an owner that builds its projection anew each time - the navigator window, the forms
+    // window - and keeps the snapshot it built last. Whatever did not change keeps its reference, so a component
+    // memoized on an entry that did not change does not re-render, and a push that changed nothing at all is the very
+    // same snapshot, which is then skipped. The form views' projection (GReactFormData) shares row by row itself and is
+    // no tree (a row is in `list` and in `byKey`), so it never goes through this pass.
     // over the OWN keys, at every level, so a field an owner adds to its entries cannot be forgotten here - and
     // forgetting one fails silently, by handing back the previous value for ever. `next` is a new build nobody has
     // seen yet, so what did not change is put into it in place
-    private static native JavaScriptObject reuse(JavaScriptObject prev, JavaScriptObject next)/*-{
+    public static native JavaScriptObject reuse(JavaScriptObject prev, JavaScriptObject next)/*-{
         var reuse = function (prev, next) {
             if (prev === next || prev === null || next === null || typeof prev !== 'object' || typeof next !== 'object'
                     || Array.isArray(prev) !== Array.isArray(next))
