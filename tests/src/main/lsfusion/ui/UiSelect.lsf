@@ -1,6 +1,6 @@
 MODULE UiSelect;
 
-REQUIRE TestUtils;
+REQUIRE TestUtils, SystemEvents;
 
 // the forms UiSelectIT works on in the browser - a property's selection, its options read all at once, under a React
 // view (web/init/uiSelect.jsx) - and the actions it seeds and checks its orders with
@@ -243,6 +243,10 @@ FORM uiSelectRows 'Rows'
     PROPERTIES dropdownName = uiSelectStatusName(dropdownStatus) EXTID 'name', dropdownSelected = uiSelectTaskIs(dropdownStatus, t) EXTID 'selected'
     FILTERS uiSelectTaskShown(t)
 ;
+
+// excel uses multiple-select in place of select2; the page reads the theme when it loads
+uiSelectExcel () { serverTheme() <- Theme.excel; APPLY; }
+uiSelectDefaultTheme () { serverTheme() <- NULL; APPLY; }
 
 NAVIGATOR {
     NEW FOLDER uiSelect 'UI select' WINDOW toolbar {

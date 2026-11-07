@@ -511,6 +511,112 @@ public class UiSelectIT extends UiTest {
         }
     }
 
+    // excel's drop-down lists: the native one of one value as text, multiple-select's of HTML and several values,
+    // drawn with the picks, a pick or a toggle kept on the server, a change of the server's own shown by each kind
+    @Test
+    public void dropdownsInExcel() throws Exception {
+        String task = seedTask();
+        try {
+            exec("UiSelect.uiSelectExcel");
+            page.reload();
+            page.locator("[lsfusion-container='System.root']").waitFor();
+            Locator form = open("UiSelect.uiSelect", "UiSelect.uiSelectDropdown");
+            dropdownPicked(form, NATIVE, "New");
+            excelPicked(form, PICKED, "New");
+            excelPicked(form, TAGS, "red");
+            for (String name : PICKED)
+                assertThat(property(form, name).locator(".ms-choice > span b")).hasText("New");
+            assertThat(property(form, "tagsHtml").locator(".ms-choice > span i")).hasText("red");
+            for (String name : names(PICKED, TAGS)) {
+                assertThat(property(form, name).locator(".ms-parent")).hasCount(1);
+                property(form, name).locator(".ms-choice").click();
+                if (isHtml(name))
+                    assertThat(excelOptions().locator(isTags(name) ? "i" : "b")).hasText(views(name));
+                else
+                    assertThat(excelOptions()).hasText(views(name));
+                property(form, name).locator(".ms-choice").click();
+            }
+            for (String name : NATIVE)
+                dropdownPick(form, name, "Done");
+            for (int i = 0; i < PICKED.length; i++) { // each pick another option: the one given to the INPUT too
+                String view = i % 2 == 0 ? "Lost" : "New";
+                property(form, PICKED[i]).locator(".ms-choice").click();
+                excelOption(view).click();
+                excelPicked(form, PICKED[i].startsWith("phase") ? new String[] {"phaseHtml", "phaseHtmlValue"}
+                        : new String[] {"statusHtml", "statusHtmlValue"}, view);
+            }
+            dropdownPicked(form, NATIVE, "New");
+            for (String name : TAGS) {
+                property(form, name).locator(".ms-choice").click();
+                excelOption(name.equals("tags") ? "green" : "red").click();
+                property(form, name).locator(".ms-choice").click();
+                excelPicked(form, TAGS, name.equals("tags") ? "green, red" : "green");
+            }
+            save(form);
+            check("UiSelect.uiSelectCheckTask", task, "New / New / green");
+
+            propertyButton(form, "shift").click();
+            dropdownPicked(form, new String[] {"phase", "phaseValue"}, "Late");
+            dropdownPicked(form, new String[] {"status", "statusValue"}, "");
+            excelPicked(form, new String[] {"phaseHtml", "phaseHtmlValue"}, "Late");
+            excelPicked(form, new String[] {"statusHtml", "statusHtmlValue"}, "");
+            excelPicked(form, TAGS, "black, green");
+            for (String name : names(PICKED, TAGS)) {
+                property(form, name).locator(".ms-choice").click();
+                String[] views = isTags(name) ? SHIFTED_TAG_VIEWS : SHIFTED_STATUS_VIEWS;
+                assertThat(isHtml(name) ? excelOptions().locator(isTags(name) ? "i" : "b") : excelOptions()).hasText(views);
+                property(form, name).locator(".ms-choice").click();
+            }
+            cancel(form);
+            close(form);
+        } finally {
+            exec("UiSelect.uiSelectDefaultTheme");
+        }
+    }
+
+    // excel's lists, buttons and input: each element draws text and HTML, a pick of one value and a toggle of several
+    // values - a looked-up option in the input - shown by the other elements and kept on the server
+    @Test
+    public void listsButtonsAndInputInExcel() throws Exception {
+        try {
+            exec("UiSelect.uiSelectExcel");
+            page.reload();
+            page.locator("[lsfusion-container='System.root']").waitFor();
+            for (String element : new String[] {"List", "Button", "ButtonGroup", "Input"}) {
+                String task = seedTask();
+                Locator form = open("UiSelect.uiSelect", "UiSelect.uiSelect" + element);
+                if (element.equals("Input")) {
+                    items(form, TAGS, "red");
+                    assertThat(property(form, "tagsHtml").locator(".selectize-input .item i")).hasText("red");
+                    property(form, "tagsHtml").locator(".selectize-input input").click();
+                    assertThat(lookedUp().locator("i")).hasText(new String[] {"green", "blue"});
+                    lookedUp().filter(new Locator.FilterOptions().setHasText(exact("green"))).click();
+                    items(form, TAGS, "red", "green");
+                    save(form);
+                    check("UiSelect.uiSelectCheckTask", task, "New / New / green, red");
+                } else {
+                    for (String name : names(PHASES, STATUSES, TAGS))
+                        drawn(property(form, name), element.equals("List") ? "list" : element.equals("Button") ? "button" : "buttonGroup",
+                                isHtml(name), views(name), isTags(name));
+                    shownBy(form, PHASES, "New");
+                    shownBy(form, STATUSES, "New");
+                    shownBy(form, TAGS, "red");
+                    pick(form, "phaseHtmlValue", "Done");
+                    shownBy(form, PHASES, "Done");
+                    pick(form, "statusHtml", "Lost");
+                    shownBy(form, STATUSES, "Lost");
+                    pick(form, "tagsHtml", "green");
+                    shownBy(form, TAGS, "red", "green");
+                    save(form);
+                    check("UiSelect.uiSelectCheckTask", task, "Done / Lost / green, red");
+                }
+                close(form);
+            }
+        } finally {
+            exec("UiSelect.uiSelectDefaultTheme");
+        }
+    }
+
     // each element in a column of a table, a cell in each row: the row's selection, which a pick in the cell changes -
     // whether the row was the current one or not. The keys: the grid's arrows go from cell to cell into the options of
     // one, where shift with an arrow picks the next option and the grid stays in its row, an arrow alone moves it; in
@@ -998,6 +1104,21 @@ public class UiSelectIT extends UiTest {
 
     private Locator resultOption(String view) {
         return resultOptions().filter(new Locator.FilterOptions().setHasText(exact(view)));
+    }
+
+    // multiple-select's field in excel, and the options of its open list, appended to the body
+    private static void excelPicked(Locator form, String[] names, String view) {
+        for (String name : names)
+            assertThat(property(form, name).locator(".ms-choice > span")).hasText(view);
+    }
+
+    private Locator excelOptions() {
+        return page.locator(".ms-drop:visible li label");
+    }
+
+    // ... the one of the view, its label holding the text with the space around it
+    private Locator excelOption(String view) {
+        return excelOptions().filter(new Locator.FilterOptions().setHasText(Pattern.compile("^\\s*" + escaped(view) + "\\s*$")));
     }
 
     // the options picked an input shows in each input of the same selection - an item each, with its cross

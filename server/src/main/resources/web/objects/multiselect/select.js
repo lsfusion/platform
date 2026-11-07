@@ -791,7 +791,9 @@ function _selectPicker(multi, html, shouldBeSelected, changeValue) {
                     }
                 });
                 lsfUtils.setOnFocusOut(element, function() {
-                    selectElement.multipleSelect('close');
+                    // close() moves the focused dropdown; its blur must not close it again.
+                    if (selectElement.multipleSelect('getOptions').isOpen)
+                        selectElement.multipleSelect('close');
                 });
                 select.addEventListener('keypress', function (e) {
                     if (e.keyCode === 32)
