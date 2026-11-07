@@ -31,7 +31,7 @@ uiDesktopReadVertical () {
     NEWSESSION NESTED (uiDesktopVerticalClasses, uiDesktopVerticalStandardClasses) {
         designEnvNavbar(currentDesignEnv()) <- Navbar.vertical;
         uiDesktopVerticalClasses() <- CONCAT ' ', logoWindowClass(), systemWindowClass();
-        navigatorCustom() <- NULL;
+        customNavigator() <- NULL;
         uiDesktopVerticalStandardClasses() <- CONCAT ' ', logoWindowClass(), systemWindowClass();
     }
 }

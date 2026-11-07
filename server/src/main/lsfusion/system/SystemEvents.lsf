@@ -701,25 +701,25 @@ WHEN FORMS design CHANGED (size()) DO {
 
 // captions shown only on hover are how the standard toolbar draws an unpinned navigator's windows, which a React
 // component that draws the window does instead
-textOnHoverClass(STRING[100] window) = IF isWebDesktop() AND NOT navigatorPinMode() AND NOT navigatorCustom() AND NOT windowComponent(window) THEN ' navbar-text-on-hover' ELSE '';
-verticalTextOnHoverClass(STRING[100] window) = IF isWebDesktop() AND verticalNavbar() AND NOT navigatorPinMode() AND NOT navigatorCustom() AND NOT windowComponent(window) THEN ' navbar-text-on-hover' ELSE '';
+textOnHoverClass(STRING[100] window) = IF isWebDesktop() AND NOT navigatorPinMode() AND NOT customNavigator() AND NOT customWindow(window) THEN ' navbar-text-on-hover' ELSE '';
+verticalTextOnHoverClass(STRING[100] window) = IF isWebDesktop() AND verticalNavbar() AND NOT navigatorPinMode() AND NOT customNavigator() AND NOT customWindow(window) THEN ' navbar-text-on-hover' ELSE '';
 // and so is how it lays the strip out - the items aligned to the start with the vertical navbar, the logo's icon as tall as
 // the horizontal strip
-forceAlignStartClass(STRING[100] window) = IF isWebDesktop() AND verticalNavbar() AND NOT windowComponent(window) THEN ' navbar-force-align-start' ELSE '';
+forceAlignStartClass(STRING[100] window) = IF isWebDesktop() AND verticalNavbar() AND NOT customWindow(window) THEN ' navbar-force-align-start' ELSE '';
 
 navigatorPinModeClass() += IF isWebMobile() THEN 'navbar-hidden' ELSE NULL;
 logoActionClass() += 'navbar-icon-large' + (IF isWebMobile() AND NOT useBootstrap() THEN ' navbar-hidden' ELSE '');
 logoHeader() += IF isWebMobile() OR verticalNavbar() THEN displayName() ELSE NULL;
 logoWindowClass() += 'bg-dark-subtle' + verticalTextOnHoverClass('System.logo') + forceAlignStartClass('System.logo') +
-        (IF isWebDesktop() AND NOT verticalNavbar() AND NOT windowComponent('System.logo') THEN ' navbar-auto-icon-font-size' ELSE '');
+        (IF isWebDesktop() AND NOT verticalNavbar() AND NOT customWindow('System.logo') THEN ' navbar-auto-icon-font-size' ELSE '');
 rootWindowClass() += 'bg-dark-subtle navbar-icon-large' + textOnHoverClass('System.root') + forceAlignStartClass('System.root');
 systemWindowClass() += 'bg-dark-subtle' + (IF isWebDesktop() THEN ' navbar-icon-large' ELSE '') + verticalTextOnHoverClass('System.system') +
     (IF isWebDesktop() AND NOT verticalNavbar() THEN ' navbar-text-hidden' ELSE '') + forceAlignStartClass('System.system');
 formsWindowClass() += 'bg-body-tertiary' + (IF isWebMobile() OR dontShowCloseButtonOnInactiveTab() THEN ' dont-show-close-button' ELSE '');
 // the pin modes' classes - popping out over the form and captions on hover - belong to the standard layout, which a
 // NAVIGATOR CUSTOM component replaces
-toolbarWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigatorPinMode() == TTRUE AND NOT navigatorCustom() THEN ' navbar-popup-over-selected-hover' ELSE '');
-logsWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT logsPinMode() AND NOT navigatorCustom() THEN ' navbar-popup-over-selected-hover navbar-always-hide-unpinned' ELSE '');
+toolbarWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigatorPinMode() == TTRUE AND NOT customNavigator() THEN ' navbar-popup-over-selected-hover' ELSE '');
+logsWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT logsPinMode() AND NOT customNavigator() THEN ' navbar-popup-over-selected-hover navbar-always-hide-unpinned' ELSE '');
 
 user '{system.events.user.session}' = DATA User (Session);
 nameUser '{system.events.user.session}' (Session session) = name(user(session)) IN id;

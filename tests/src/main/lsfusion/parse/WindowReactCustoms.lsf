@@ -2,7 +2,7 @@ MODULE WindowReactCustoms;
 
 REQUIRE TestUtils, SystemEvents;
 
-// System.windowComponent: the React component that draws a window, which the server writes for every window at start - as
+// System.customWindow: the React component that draws a window, which the server writes for every window at start - as
 // the window is after the statements that give it CUSTOM, NULL for one drawn otherwise. The windows are the test's own,
 // and the suite's browser application loads every module, so they are hidden - in strips of System.forms' area, as
 // UiFormsWindow's are - and the component given to them, WrcNothing (WindowReactCustoms.js), draws nothing
@@ -18,11 +18,11 @@ WINDOW wrcForms FORMS POSITION(20, 13, 80, 1) HIDETITLE CUSTOM 'WrcNothing';
 HIDE WINDOW wrcForms;
 
 // a template given after a component takes the component back, and a component given after a template is written
-testWindowComponent 'The server writes the component of every window at start, NULL for one drawn otherwise' () {
-    assertNull(windowComponent('WindowReactCustoms.wrcReplaced'), 'wrcReplaced: a template replaced the component');
-    assertEquals(windowComponent('WindowReactCustoms.wrcBack'), 'WrcNothing', 'wrcBack: a component replaced the template');
-    assertEquals(windowComponent('WindowReactCustoms.wrcForms'), 'WrcNothing', 'wrcForms: a component draws the FORMS window');
-    assertNull(windowComponent('System.root'), 'System.root: no CUSTOM was given');
+testCustomWindow 'The server writes the component of every window at start, NULL for one drawn otherwise' () {
+    assertNull(customWindow('WindowReactCustoms.wrcReplaced'), 'wrcReplaced: a template replaced the component');
+    assertEquals(customWindow('WindowReactCustoms.wrcBack'), 'WrcNothing', 'wrcBack: a component replaced the template');
+    assertEquals(customWindow('WindowReactCustoms.wrcForms'), 'WrcNothing', 'wrcForms: a component draws the FORMS window');
+    assertNull(customWindow('System.root'), 'System.root: no CUSTOM was given');
 }
 
 onWebClientInit() + {

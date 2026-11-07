@@ -282,8 +282,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public LP logicsCaption;
     public LP topModule;
-    public LP navigatorCustomProperty;
-    public LP windowComponent;
+    public LP customNavigator;
+    public LP customWindow;
 
     public ConcreteCustomClass listViewType;
     public LP count;
@@ -692,8 +692,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         logicsCaption = findProperty("logicsCaption[]");
         topModule = findProperty("topModule[]");
-        navigatorCustomProperty = findProperty("navigatorCustom[]");
-        windowComponent = findProperty("windowComponent[STRING[100]]");
+        customNavigator = findProperty("customNavigator[]");
+        customWindow = findProperty("customWindow[STRING[100]]");
 
         fillingIDs = findProperty("fillingIDs[]");
 

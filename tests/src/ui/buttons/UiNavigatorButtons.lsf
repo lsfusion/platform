@@ -34,7 +34,7 @@ uiNbReadClasses () {
                        uiNbStandardVerticalRootClasses, uiNbStandardVerticalSystemClasses) {
         designEnvNavbar(currentDesignEnv()) <- Navbar.vertical;
         uiNbVerticalClasses() <- CONCAT ' ', logoWindowClass(), rootWindowClass(), systemWindowClass();
-        windowComponent(STRING[100] window) <- NULL WHERE windowComponent(window);
+        customWindow(STRING[100] window) <- NULL WHERE customWindow(window);
         uiNbStandardVerticalLogoClasses() <- logoWindowClass();
         uiNbStandardVerticalRootClasses() <- rootWindowClass();
         uiNbStandardVerticalSystemClasses() <- systemWindowClass();
