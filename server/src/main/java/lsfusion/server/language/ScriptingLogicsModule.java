@@ -5882,8 +5882,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkComponentOnlyCustom("navigator", "NAVIGATOR", custom, customProperty != null);
 
         baseLM.navigatorCustom = custom;
-        addImplementationToAbstractProp("System.hasNavigatorCustom", findProperty("System.hasNavigatorCustom[]"),
-                Collections.emptyList(), false, Collections.singletonList(baseLM.vtrue));
     }
 
     // the one place a NAVIGATOR window is told what draws it, whichever statement said so - as the grammar has one

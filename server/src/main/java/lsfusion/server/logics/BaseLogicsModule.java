@@ -282,6 +282,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public LP logicsCaption;
     public LP topModule;
+    public LP navigatorCustomProperty;
 
     public ConcreteCustomClass listViewType;
     public LP count;
@@ -690,6 +691,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         logicsCaption = findProperty("logicsCaption[]");
         topModule = findProperty("topModule[]");
+        navigatorCustomProperty = findProperty("navigatorCustom[]");
 
         fillingIDs = findProperty("fillingIDs[]");
 

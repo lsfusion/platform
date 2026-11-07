@@ -715,8 +715,8 @@ systemWindowClass() += 'bg-dark-subtle' + (IF isWebDesktop() THEN ' navbar-icon-
 formsWindowClass() += 'bg-body-tertiary' + (IF isWebMobile() OR dontShowCloseButtonOnInactiveTab() THEN ' dont-show-close-button' ELSE '');
 // the pin modes are how the standard layout lays the toolbar and the log out, which a NAVIGATOR CUSTOM component
 // does instead
-toolbarWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigatorPinMode() == TTRUE AND NOT hasNavigatorCustom() THEN ' navbar-popup-over-selected-hover' ELSE '');
-logsWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT logsPinMode() AND NOT hasNavigatorCustom() THEN ' navbar-popup-over-selected-hover navbar-always-hide-unpinned' ELSE '');
+toolbarWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigatorPinMode() == TTRUE AND NOT navigatorCustom() THEN ' navbar-popup-over-selected-hover' ELSE '');
+logsWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT logsPinMode() AND NOT navigatorCustom() THEN ' navbar-popup-over-selected-hover navbar-always-hide-unpinned' ELSE '');
 
 user '{system.events.user.session}' = DATA User (Session);
 nameUser '{system.events.user.session}' (Session session) = name(user(session)) IN id;

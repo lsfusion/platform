@@ -467,6 +467,8 @@ logicsName = OVERRIDE dataLogicsName(), 'default';
 dataDisplayName '{system.logics.display.name}' = DATA STRING[100]();
 logicsCaption '{system.logics.caption}' = DATA STRING[100]();
 topModule '{system.logics.top.module}' = DATA STRING[100]();
+// the React component that lays the navigator's windows out (NAVIGATOR CUSTOM), written at start
+navigatorCustom 'NAVIGATOR CUSTOM' = DATA STRING[100]();
 displayName = OVERRIDE dataDisplayName(), logicsCaption(), topModule();
 
 logicsLogo = DATA IMAGEFILE ();
@@ -530,9 +532,6 @@ META defineLinkDialog (object)
         }
     } ASON CHANGE object;
 END
-
-// whether a React component lays the navigator's windows out (NAVIGATOR CUSTOM). The parser gives it TRUE
-hasNavigatorCustom 'NAVIGATOR CUSTOM' = ABSTRACT VALUE BOOLEAN();
 
 logoWindowClass = ABSTRACT VALUE STRING();
 rootWindowClass = ABSTRACT VALUE STRING();

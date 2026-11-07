@@ -2209,6 +2209,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         String navbar = businessLogics.navbar;
         LM.logicsCaption.change(isRedundantString(logicsCaption) ? null : logicsCaption, session);
         LM.topModule.change(isRedundantString(topModule) ? null : topModule, session);
+        LM.navigatorCustomProperty.change(LM.navigatorCustom, session);
         systemEventsLM.serverTheme.change(isRedundantString(theme) ? NullValue.instance : systemEventsLM.theme.getDataObject(theme), session);
         systemEventsLM.serverSize.change(isRedundantString(size) ? NullValue.instance : systemEventsLM.size.getDataObject(size), session);
         systemEventsLM.serverNavbar.change(isRedundantString(navbar) ? NullValue.instance : systemEventsLM.navbar.getDataObject(navbar), session);
