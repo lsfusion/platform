@@ -72,8 +72,6 @@ public class PlacedViews<K> {
     // a host comes and goes only through addHost / removeHost, which watch its size while it is here
     private final NativeHashMap<K, Element> hosts = new NativeHashMap<>();  // where a view was asked for, moved or not
     private final NativeHashMap<K, Element> filled = new NativeHashMap<>(); // where one actually sits
-    // a resize names its host, not its key: looking it up must not walk hundreds of row placements
-    private final NativeHashMap<Element, K> hostKeys = new NativeHashMap<>();
     // the hosts that asked for a name another host already had. React renders the same <Platform> until its own props
     // change, so a host refused here is never offered again - and a component that stops rendering the one that WON
     // would leave the view parked with a place for it still on the screen. Kept in order: the eldest asks first
@@ -250,23 +248,21 @@ public class PlacedViews<K> {
 
     // a host changed size - what the browser says after the layout: the view in it, if one is, is told
     private void resized(Element host) {
-        K key = hostKeys.get(host);
-        if (key != null && filled.get(key) == host)
-            views.resized(key);
+        filled.foreachEntry((name, filledHost) -> {
+            if (filledHost == host)
+                views.resized(name);
+        });
     }
 
     private void addHost(K name, Element host) {
         hosts.put(name, host);
-        hostKeys.put(host, name);
         observe(host);
     }
 
     private void removeHost(K name) {
         Element host = hosts.remove(name);
-        if (host != null) {
-            hostKeys.remove(host);
+        if (host != null)
             unobserve(host);
-        }
     }
 
     private native void observe(Element host)/*-{
