@@ -36,7 +36,7 @@ public class ReactLogPanel extends LogPanel {
 
     private final NativeStringMap<Widget> messages = new NativeStringMap<>();
 
-    private final PlacedViews placed = new PlacedViews(new PlacedViews.Views() {
+    private final PlacedViews<String> placed = new PlacedViews<>(new PlacedViews.Views<String>() {
         @Override
         public PlacedViews.Problem problem(String name) {
             return messages.get(name) != null ? null : new PlacedViews.Problem("'" + name + "' is not a logged message",
@@ -71,7 +71,7 @@ public class ReactLogPanel extends LogPanel {
 
         // the crossing BACK to the platform: the component renders the host node, we move the message's markup in. A
         // message's host is left as the component rendered it
-        root = new ReactRoot(custom, createController(), placed.placement(new ReactRoot.PlainHost()));
+        root = new ReactRoot(custom, createController(), PlacedViews.placement(placed, new ReactRoot.PlainHost()));
         // nothing is logged yet, and that is a state the component draws, so the window starts from it - shaped as
         // every later snapshot is, so the first render already reads data.messages - instead of waiting for the first
         // message

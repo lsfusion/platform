@@ -36,7 +36,7 @@ public final class ReactWindowLayout extends WindowLayout {
 
     private final Park park = new Park(panel); // where a window's view waits while nothing places it
 
-    private final PlacedViews placed = new PlacedViews(new PlacedViews.Views() {
+    private final PlacedViews<String> placed = new PlacedViews<>(new PlacedViews.Views<String>() {
         @Override
         public PlacedViews.Problem problem(String name) {
             return byName.get(name) != null ? null : new PlacedViews.Problem("'" + name + "' is not a window",
@@ -78,7 +78,7 @@ public final class ReactWindowLayout extends WindowLayout {
         // the crossing BACK to the platform: the component renders the host node, we move the window's own view in. A
         // window's host holds the window's view, which the layout fills it with by its marks. Nothing about the
         // arrangement is the platform's to do, so the controller has nothing on it
-        root = new ReactRoot(custom, JavaScriptObject.createObject(), placed.placement(new ReactRoot.MarkedHost()));
+        root = new ReactRoot(custom, JavaScriptObject.createObject(), PlacedViews.placement(placed, new ReactRoot.MarkedHost()));
         root.mountWhileAttached(panel);
     }
 

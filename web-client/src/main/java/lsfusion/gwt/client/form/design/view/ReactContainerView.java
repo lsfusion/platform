@@ -39,7 +39,7 @@ public class ReactContainerView extends ParkedContainerView {
 
     // name -> the host claimed for it (the first one wins). The child's view is mounted there once it exists, so
     // the host outlives a SHOWIF drop/rebuild of the view: whether the view exists now is indexOfPlatformView(sid) >= 0
-    private final PlacedViews placed = new PlacedViews(new PlacedViews.Views() {
+    private final PlacedViews<String> placed = new PlacedViews<>(new PlacedViews.Views<String>() {
         @Override
         public PlacedViews.Problem problem(String sid) {
             GComponent component = placeable.get(sid);

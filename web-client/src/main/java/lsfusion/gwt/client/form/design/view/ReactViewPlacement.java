@@ -105,9 +105,7 @@ abstract class ReactViewPlacement implements ReactRoot.Placement {
 
         @Override
         void mount(Element host) {
-            // the property, not the name JSX used: the ledger of who holds which row is the property's own
-            if (formController.getRowsPanelController(property).place(rowKey, property, host) != null)
-                PlacedViews.reportDuplicate(name, host); // another <Platform> already placed this property for this row
+            formController.getRowsPanelController(property).place(name, rowKey, property, host);
         }
 
         @Override

@@ -40,7 +40,7 @@ public class ReactFormsView implements FormsView {
     // an unselected tab does
     private final Park park = new Park(panel);
 
-    private final PlacedViews placed = new PlacedViews(new PlacedViews.Views() {
+    private final PlacedViews<String> placed = new PlacedViews<>(new PlacedViews.Views<String>() {
         @Override
         public PlacedViews.Problem problem(String name) {
             return byName.get(name) != null ? null : new PlacedViews.Problem("'" + name + "' is not an open form",
@@ -91,7 +91,7 @@ public class ReactFormsView implements FormsView {
 
         // the crossing BACK to the platform: the component renders the host node, we move the form's own view in. A form's
         // host holds the form's view, which the layout fills it with by its marks
-        root = new ReactRoot(custom, createController(), placed.placement(new ReactRoot.MarkedHost()));
+        root = new ReactRoot(custom, createController(), PlacedViews.placement(placed, new ReactRoot.MarkedHost()));
         // no form is open yet, and that is a state the component draws - a start page, say - so the window starts
         // from it, shaped as every later snapshot is, instead of waiting for the first form to be drawn at all
         root.updateRebuiltData(buildData());

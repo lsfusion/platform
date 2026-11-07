@@ -2,21 +2,18 @@ package lsfusion.gwt.client.form.object.panel.controller;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.RefusedHosts;
+import lsfusion.gwt.client.base.view.PlacedViews;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.design.view.GReactFormData;
+import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 // a panel controller whose keys are ROWS: it draws a group's platform-drawn GRID properties once per row of that group
 // - the form's GPlatformFormPanelController draws the PANEL ones -, and the group's CUSTOM REACT view places each
@@ -35,11 +32,74 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
     // where React draws its group's rows (FormView.isPlatformDrawn)
     private final GReactFormData.Rows rows;
 
-    // the element React gave for each (row, property), and where that property's renderer for that row is put. The
-    // renderer itself is NOT kept here - the property's own controller is the record of it - and the two arrive in
-    // either order: React can render a row before its renderer exists, and a renderer can exist before React renders
-    // anything. The mirror of the form panel's columnPanels: keyed by the axis this controller draws on.
-    private final NativeHashMap<GGroupObjectValue, Map<String, Element>> rowHosts = new NativeHashMap<>();
+    // the renderer itself lives in the property's controller. Its host can arrive before or after it, and keeps
+    // waiting through a SHOWIF drop, just as a form container's host waits for its child
+    private final PlacedViews<RowProperty> placed = new PlacedViews<>(new PlacedViews.Views<RowProperty>() {
+        @Override
+        public PlacedViews.Problem problem(RowProperty key) {
+            // React renders before renderers are reconciled: a row already gone can still have a renderer
+            if (!getRendererKeys().contains(key.row))
+                return new PlacedViews.Problem("the row given to '" + key.property.sID + "' is not in the group any more",
+                        "the row given to '" + key.property.sID + "' is not one of the group's rows any"
+                                + " more, so nothing will ever be placed there");
+            return null;
+        }
+
+        @Override
+        public boolean place(RowProperty key, Element host) {
+            ComponentViewWidget view = getView(key.row, key.property);
+            if (view == null)
+                return false;
+
+            view.appendTo(host);
+            GwtClientUtils.clearCustomViewError(host);
+            return true;
+        }
+
+        @Override
+        public void park(RowProperty key) {
+            ComponentViewWidget view = getView(key.row, key.property);
+            if (view != null) // scrolling a row out of view parks its renderer, never destroys it
+                view.appendTo(getParkElement());
+        }
+
+        // the showing widget, which every kind of renderer view has - an inline one (a caption beside the value) has no
+        // single widget
+        @Override
+        public void resized(RowProperty key) {
+            FlexTabbedPanel.scheduleOnResize(getView(key.row, key.property).getShowingWidget());
+        }
+    });
+
+    // JSX can name the same property differently: the diagnostic keeps that spelling, while ownership depends only
+    // on the row and the property
+    private static final class RowProperty {
+        final GGroupObjectValue row;
+        final GPropertyDraw property;
+        final String name;
+
+        RowProperty(GGroupObjectValue row, GPropertyDraw property, String name) {
+            this.row = row;
+            this.property = property;
+            this.name = name;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return other instanceof RowProperty && row.equals(((RowProperty) other).row)
+                    && property.equals(((RowProperty) other).property);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * row.hashCode() + property.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
 
     public GPlatformRowsPanelController(GFormController formController, GGroupObject group, GReactFormData.Rows rows) {
         super(formController);
@@ -89,15 +149,12 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
         // while its element waits there until React shows the row - the same park the platform-drawn children use
         view.attachTo(formController.getFormLayout().attachContainer, getParkElement());
 
-        Element host = getHost(rendererKey, property.sID);
-        if (host != null) {
-            view.appendTo(host);
-            GwtClientUtils.clearCustomViewError(host); // a host that was told its row is gone, and whose row came back
-        }
+        placed.retryPending(new RowProperty(rendererKey, property, property.sID));
     }
 
     @Override
     public void removeRenderer(GGroupObjectValue rendererKey, GPropertyDraw property, ComponentViewWidget view) {
+        placed.viewRemoved(new RowProperty(rendererKey, property, property.sID), true);
         view.remove(formController.getFormLayout().attachContainer);
     }
 
@@ -136,60 +193,13 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
 
     // ---- hosts, registered by the react view as it renders rows ----
 
-    // returns the host that already had this renderer, if any: a second live host for one property AND one row is an
-    // author error (two <Platform> naming the same pair), never a legitimate move, so the FIRST one keeps it - and the
-    // second is remembered, since a component that later stops rendering the first would otherwise leave the editor
-    // waiting with a place for it still on the screen
-    public Element place(GGroupObjectValue rowKey, GPropertyDraw property, Element host) {
-        Map<String, Element> propertyHosts = getPropertyHosts(rowKey);
-        Element current = propertyHosts.get(property.sID);
-        if (current != null && current != host) {
-            refusedHosts.add(new Pair<>(rowKey, property.sID), host);
-            return current;
-        }
-
-        // the group's rows decide, and not whether a renderer happens to still exist: React renders before the
-        // renderers are reconciled, so a row already gone can still have the one that is about to be destroyed
-        if (!getRendererKeys().contains(rowKey)) {
-            GwtClientUtils.showCustomViewError(host, "the row given to '" + property.sID + "' is not in the group any more");
-            GwtClientUtils.logCustomViewError("the row given to '" + property.sID + "' is not one of the group's rows any"
-                    + " more, so nothing will ever be placed there");
-            return null;
-        }
-
-        propertyHosts.put(property.sID, host);
-
-        ComponentViewWidget view = getView(rowKey, property);
-        if (view != null) { // otherwise the host waits: the renderer arrives with the next update
-            view.appendTo(host);
-            GwtClientUtils.clearCustomViewError(host);
-        }
-        return null;
+    public boolean place(String name, GGroupObjectValue rowKey, GPropertyDraw property, Element host) {
+        return placed.mount(new RowProperty(rowKey, property, name), host);
     }
 
     public void unplace(GGroupObjectValue rowKey, GPropertyDraw property, Element host) {
-        Map<String, Element> propertyHosts = rowHosts.get(rowKey);
-        // a stale unplace, from a host that lost the row - or one that was refused and is now gone, and a host the
-        // component has taken away is not one waiting for anything
-        if (propertyHosts == null || propertyHosts.get(property.sID) != host) {
-            refusedHosts.forget(new Pair<>(rowKey, property.sID), host);
-            return;
-        }
-
-        propertyHosts.remove(property.sID);
-        if (propertyHosts.isEmpty())
-            rowHosts.remove(rowKey);
-
-        ComponentViewWidget view = getView(rowKey, property);
-        if (view != null) // back to waiting, NOT destroyed: React unmounts a row merely by scrolling it out of view
-            view.appendTo(getParkElement());
-
-        // ...and only then to a place that asked for it while this one held it
-        refusedHosts.takeOver(new Pair<>(rowKey, property.sID), next -> place(rowKey, property, next));
+        placed.unmount(new RowProperty(rowKey, property, property.sID), host);
     }
-
-    // the hosts that asked for a renderer another host already had, by its row and its property
-    private final RefusedHosts<Pair<GGroupObjectValue, String>> refusedHosts = new RefusedHosts<>();
 
     // ---- data ----
 
@@ -219,20 +229,6 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
 
     private Element getParkElement() {
         return formController.getFormLayout().attachContainer.getElement();
-    }
-
-    private Map<String, Element> getPropertyHosts(GGroupObjectValue rowKey) {
-        Map<String, Element> propertyHosts = rowHosts.get(rowKey);
-        if (propertyHosts == null) {
-            propertyHosts = new HashMap<>();
-            rowHosts.put(rowKey, propertyHosts);
-        }
-        return propertyHosts;
-    }
-
-    private Element getHost(GGroupObjectValue rowKey, String propertySID) {
-        Map<String, Element> propertyHosts = rowHosts.get(rowKey);
-        return propertyHosts != null ? propertyHosts.get(propertySID) : null;
     }
 
     // the widget of the renderer this property draws for this row, from the property's own controller - the single

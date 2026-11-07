@@ -8,11 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-// the hosts that asked for a view another host already had, by what the view is placed by - a name (PlacedViews), a
-// row and a property (a per-row renderer, GPlatformRowsPanelController). React renders the same <Platform> until its
-// own props change, so a host refused is never offered again on its own - and a component that stops rendering the
-// one that WON would leave the view parked with a place for it still on the screen. Kept in order: the eldest asks
-// first
+// the hosts that asked for a view another host already had, by the owner's key in PlacedViews - a name, or a row and
+// a property. React renders the same <Platform> until its own props change, so a host refused is never offered again
+// on its own - and a component that stops rendering the one that WON would leave the view parked with a place for it
+// still on the screen. Kept in order: the eldest asks first
 public class RefusedHosts<K> {
 
     private final NativeHashMap<K, List<Element>> hosts = new NativeHashMap<>();

@@ -19,6 +19,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
@@ -30,6 +31,7 @@ import lsfusion.gwt.client.action.GRequestUserInputAction;
 import lsfusion.gwt.client.action.GProcessFormChangesAction;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 import lsfusion.gwt.client.base.GAsync;
+import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.NumberResult;
@@ -39,7 +41,7 @@ import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.base.view.PlacedViews;
+import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.GInputType;
@@ -82,6 +84,8 @@ import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GReactFormData;
+import lsfusion.gwt.client.form.design.view.CaptionWidget;
+import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.event.GBindingEnv;
 import lsfusion.gwt.client.form.event.GBindingEvent;
 import lsfusion.gwt.client.form.event.GInputBindingEvent;
@@ -111,6 +115,7 @@ import lsfusion.gwt.client.form.property.GExtraPropReader;
 import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.GLoadingReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.panel.view.PropertyPanelRenderer;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import lsfusion.gwt.client.form.property.GRowSelectReader;
 import lsfusion.gwt.client.form.property.GShowIfReader;
@@ -187,6 +192,7 @@ public class GFormControllerTest extends GWTTestCase {
 
     @Override protected void gwtSetUp() {
         JsniTestSupport.installMapDelete();
+        JsniTestSupport.installResizeObserver();
         JsniTestSupport.installPageSetup();
         installPageHelpers();
     }
@@ -2137,8 +2143,8 @@ public class GFormControllerTest extends GWTTestCase {
         RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo);
         try {
             assertFalse(press(controller, hostOne.getElement(), 113)); // the editors wait in the park: none is shown
-            controller.getRowsPanelController(rows.qty).place(rows.one, rows.qty, hostOne.getElement());
-            controller.getRowsPanelController(rows.qty).place(rows.two, rows.qty, hostTwo.getElement());
+            controller.getRowsPanelController(rows.qty).place("i.qty", rows.one, rows.qty, hostOne.getElement());
+            controller.getRowsPanelController(rows.qty).place("i.qty", rows.two, rows.qty, hostTwo.getElement());
 
             assertTrue(press(controller, hostTwo.getElement(), 113));
             assertTrue(pressed(hostOne.getElement())); // the current row's, wherever the key is pressed
@@ -2161,8 +2167,8 @@ public class GFormControllerTest extends GWTTestCase {
         FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel();
         RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo);
         try {
-            controller.getRowsPanelController(rows.qty).place(rows.one, rows.qty, hostOne.getElement());
-            controller.getRowsPanelController(rows.qty).place(rows.two, rows.qty, hostTwo.getElement());
+            controller.getRowsPanelController(rows.qty).place("i.qty", rows.one, rows.qty, hostOne.getElement());
+            controller.getRowsPanelController(rows.qty).place("i.qty", rows.two, rows.qty, hostTwo.getElement());
 
             assertTrue(doubleClick(controller, hostTwo.getElement()));
             assertTrue(pressed(hostOne.getElement())); // the current row's, wherever the cell double clicked is
@@ -2182,7 +2188,7 @@ public class GFormControllerTest extends GWTTestCase {
         FlowPanel host = new FlowPanel();
         RootPanel.get().add(host);
         try {
-            controller.getRowsPanelController(rows.qty).place(rows.one, rows.qty, host.getElement());
+            controller.getRowsPanelController(rows.qty).place("i.qty", rows.one, rows.qty, host.getElement());
             assertFalse(press(controller, host.getElement(), 117)); // F6, none yet
             GFormChanges changes = new GFormChanges();
             NativeHashMap<GGroupObjectValue, PValue> keys = new NativeHashMap<>();
@@ -2204,7 +2210,7 @@ public class GFormControllerTest extends GWTTestCase {
         FlowPanel host = new FlowPanel();
         RootPanel.get().add(host);
         try {
-            controller.getRowsPanelController(rows.qty).place(rows.one, rows.qty, host.getElement());
+            controller.getRowsPanelController(rows.qty).place("i.qty", rows.one, rows.qty, host.getElement());
             assertTrue(doubleClick(controller, host.getElement())); // the design's own
             changeMouse(controller, rows.qty, null);
             assertFalse(doubleClick(controller, host.getElement()));
@@ -2223,7 +2229,7 @@ public class GFormControllerTest extends GWTTestCase {
         FlowPanel host = new FlowPanel();
         RootPanel.get().add(host);
         try {
-            controller.getRowsPanelController(rows.qty).place(rows.one, rows.qty, host.getElement());
+            controller.getRowsPanelController(rows.qty).place("i.qty", rows.one, rows.qty, host.getElement());
             assertFalse(doubleClick(controller, host.getElement())); // none yet
             changeMouse(controller, rows.qty, new GInputBindingEvent(new GMouseInputEvent(GMouseInputEvent.DBLCLK), ANY));
             assertTrue(doubleClick(controller, host.getElement()));
@@ -2248,8 +2254,8 @@ public class GFormControllerTest extends GWTTestCase {
             FlowPanel earlierHost = new FlowPanel(), laterHost = new FlowPanel();
             RootPanel.get().add(earlierHost); RootPanel.get().add(laterHost);
             try {
-                controller.getRowsPanelController(rows.qty).place(rows.one, rows.qty, earlierHost.getElement());
-                controller.getRowsPanelController(later).place(rows.one, later, laterHost.getElement());
+                controller.getRowsPanelController(rows.qty).place("i.qty", rows.one, rows.qty, earlierHost.getElement());
+                controller.getRowsPanelController(later).place("i." + later.integrationSID, rows.one, later, laterHost.getElement());
                 changeMouse(controller, laterSentFirst ? later : rows.qty, dblclk);
                 changeMouse(controller, laterSentFirst ? rows.qty : later, dblclk);
                 assertTrue(doubleClick(controller, earlierHost.getElement()));
@@ -2271,7 +2277,7 @@ public class GFormControllerTest extends GWTTestCase {
         FlowPanel host = new FlowPanel();
         RootPanel.get().add(host);
         try {
-            controller.getRowsPanelController(rows.qty).place(rows.one, rows.qty, host.getElement());
+            controller.getRowsPanelController(rows.qty).place("i.qty", rows.one, rows.qty, host.getElement());
             changeMouse(controller, rows.qty, new GInputBindingEvent(new GMouseInputEvent(GMouseInputEvent.DBLCLK), ANY));
             changeKey(controller, rows.qty, new GInputBindingEvent(new GKeyInputEvent(new GKeyStroke(117)), ANY)); // F6
             assertTrue(doubleClick(controller, host.getElement()));
@@ -2321,8 +2327,8 @@ public class GFormControllerTest extends GWTTestCase {
             FlowPanel earlierHost = new FlowPanel(), laterHost = new FlowPanel();
             RootPanel.get().add(earlierHost); RootPanel.get().add(laterHost);
             try {
-                controller.getRowsPanelController(rows.qty).place(rows.one, rows.qty, earlierHost.getElement());
-                controller.getRowsPanelController(later).place(rows.one, later, laterHost.getElement());
+                controller.getRowsPanelController(rows.qty).place("i.qty", rows.one, rows.qty, earlierHost.getElement());
+                controller.getRowsPanelController(later).place("i." + later.integrationSID, rows.one, later, laterHost.getElement());
                 assertTrue(press(controller, earlierHost.getElement(), 113));
                 assertTrue(pressed(laterHost.getElement()));
                 assertFalse(pressed(earlierHost.getElement()));
@@ -2331,6 +2337,91 @@ public class GFormControllerTest extends GWTTestCase {
             }
         }
     }
+    // a row host can change size without the form resizing: only the renderer in that host must measure again
+    public void testResizingARowHostResizesOnlyItsRenderer() {
+        JsniTestSupport.installResizeObserver();
+        RowsForm rows = new RowsForm();
+        NativeHashMap<GGroupObjectValue, RowResizePanel> counters = new NativeHashMap<>();
+        GPropertyDraw property = rows.perRow(column(rows.form, 23, "resized", rows.group, new GPropertyDraw() {
+            @Override
+            public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller,
+                                                     GGroupObjectValue columnKey, GGroupObjectValue rowKey,
+                                                     lsfusion.gwt.client.base.Result<CaptionWidget> captionContainer) {
+                return new PropertyPanelRenderer(form, controller, this, columnKey, rowKey, captionContainer) {
+                    private final RowResizePanel panel = new RowResizePanel();
+                    private final ComponentViewWidget view = new SizedWidget(panel).view;
+                    {
+                        panel.add(super.getComponentViewWidget().getSingleWidget().widget);
+                        counters.put(rowKey, panel);
+                    }
+                    @Override
+                    public ComponentViewWidget getComponentViewWidget() {
+                        return view;
+                    }
+                };
+            }
+        }), new GInputBindingEvent(null, ANY));
+        rows.deliver(property);
+        GFormController controller = rows.controller();
+        GPlatformRowsPanelController panel = controller.getRowsPanelController(property);
+        FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel();
+        RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo);
+        panel.place("i." + property.integrationSID, rows.one, property, hostOne.getElement());
+        panel.place("i." + property.integrationSID, rows.two, property, hostTwo.getElement());
+        assertTrue(hostOne.getElement().isOrHasChild(counters.get(rows.one).getElement()));
+        assertTrue(hostTwo.getElement().isOrHasChild(counters.get(rows.two).getElement()));
+
+        delayTestFinish(5000);
+        Scheduler.get().scheduleDeferred(() -> {
+            int beforeOne = counters.get(rows.one).resizes, beforeTwo = counters.get(rows.two).resizes;
+            JsniTestSupport.resize(hostOne.getElement());
+            Scheduler.get().scheduleDeferred(() -> {
+                try {
+                    assertTrue("resizing the first row's host reaches its renderer", counters.get(rows.one).resizes > beforeOne);
+                    assertEquals("resizing one row leaves the other renderer alone", beforeTwo, counters.get(rows.two).resizes);
+                    finishTest();
+                } finally {
+                    panel.unplace(rows.one, property, hostOne.getElement());
+                    panel.unplace(rows.two, property, hostTwo.getElement());
+                    RootPanel.get().remove(hostOne); RootPanel.get().remove(hostTwo);
+                }
+            });
+        });
+    }
+    private static final class RowResizePanel extends FlowPanel implements RequiresResize {
+        int resizes;
+        @Override
+        public void onResize() {
+            resizes++;
+        }
+    }
+
+    // a row gone makes a host invalid even while its first host waits; the invalid one must never take over
+    public void testASecondHostOfARowGoneIsNotQueued() {
+        RowsForm rows = new RowsForm();
+        GFormController controller = rows.controller();
+        GPlatformRowsPanelController panel = controller.getRowsPanelController(rows.qty);
+        FlowPanel first = new FlowPanel(), second = new FlowPanel();
+        RootPanel.get().add(first); RootPanel.get().add(second);
+        try {
+            assertTrue(panel.place("i.qty", rows.one, rows.qty, first.getElement()));
+            rows.keys(controller, rows.two);
+            assertFalse(panel.place("i.qty", rows.one, rows.qty, second.getElement()));
+            assertEquals("lsFusion: the row given to 'qty' is not in the group any more", second.getElement().getInnerText());
+
+            rows.keys(controller, rows.one, rows.two);
+            rows.values(controller, rows.one, rows.two);
+            Element element = assertRowRenderer(controller, rows, rows.one, first, 1);
+            panel.unplace(rows.one, rows.qty, first.getElement());
+            assertFalse(second.getElement().isOrHasChild(element));
+            assertTrue(controller.getFormLayout().attachContainer.getElement().isOrHasChild(element));
+            panel.unplace(rows.one, rows.qty, second.getElement());
+            assertEquals("", second.getElement().getInnerText());
+        } finally {
+            RootPanel.get().remove(first); RootPanel.get().remove(second);
+        }
+    }
+
     // a host registered before the property arrives waits for its row's renderer, and receives that row's value
     public void testARowHostPlacedBeforeItsRendererReceivesItsOwnValue() {
         RowsForm rows = new RowsForm();
@@ -2340,8 +2431,8 @@ public class GFormControllerTest extends GWTTestCase {
         FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel();
         RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo);
         try {
-            assertNull(panel.place(rows.one, rows.qty, hostOne.getElement()));
-            assertNull(panel.place(rows.two, rows.qty, hostTwo.getElement()));
+            assertTrue(panel.place("i.qty", rows.one, rows.qty, hostOne.getElement()));
+            assertTrue(panel.place("i.qty", rows.two, rows.qty, hostTwo.getElement()));
             assertEquals(0, hostOne.getElement().getChildCount());
             assertEquals(0, hostTwo.getElement().getChildCount());
             assertNull(rowRenderer(panel, rows.qty, rows.one));
@@ -2368,8 +2459,8 @@ public class GFormControllerTest extends GWTTestCase {
         FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel();
         RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo);
         try {
-            assertNull(panel.place(rows.two, rows.qty, hostTwo.getElement()));
-            assertNull(panel.place(rows.one, rows.qty, hostOne.getElement()));
+            assertTrue(panel.place("i.qty", rows.two, rows.qty, hostTwo.getElement()));
+            assertTrue(panel.place("i.qty", rows.one, rows.qty, hostOne.getElement()));
             assertSame(oneElement, assertRowRenderer(controller, rows, rows.one, hostOne, 1));
             assertSame(twoElement, assertRowRenderer(controller, rows, rows.two, hostTwo, 2));
             assertFalse(park.isOrHasChild(oneElement));
@@ -2392,14 +2483,15 @@ public class GFormControllerTest extends GWTTestCase {
         for (FlowPanel host : hosts)
             RootPanel.get().add(host);
         try {
-            assertNull(panel.place(rows.one, rows.qty, first.getElement()));
+            assertTrue(panel.place("i.qty", rows.one, rows.qty, first.getElement()));
             for (FlowPanel host : new FlowPanel[] {withdrawn, removed, next, last}) {
-                assertSame(first.getElement(), panel.place(rows.one, rows.qty, host.getElement()));
-                PlacedViews.reportDuplicate("i.qty", host.getElement()); // as the view's placement does
+                assertFalse(panel.place("i.uiCustomViewQuantity", rows.one, rows.qty, host.getElement()));
+                assertEquals("lsFusion: 'i.uiCustomViewQuantity' is already placed by another <Platform>", host.getElement().getInnerText());
             }
             Element one = assertRowRenderer(controller, rows, rows.one, first, 1);
 
             panel.unplace(rows.one, rows.qty, withdrawn.getElement());
+            assertEquals("", withdrawn.getElement().getInnerText());
             RootPanel.get().remove(removed);
             panel.unplace(rows.one, rows.qty, first.getElement());
             assertSame(one, assertRowRenderer(controller, rows, rows.one, next, 1));
@@ -2430,8 +2522,8 @@ public class GFormControllerTest extends GWTTestCase {
         FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel();
         RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo);
         try {
-            panel.place(rows.one, rows.qty, hostOne.getElement());
-            panel.place(rows.two, rows.qty, hostTwo.getElement());
+            panel.place("i.qty", rows.one, rows.qty, hostOne.getElement());
+            panel.place("i.qty", rows.two, rows.qty, hostTwo.getElement());
             Element one = assertRowRenderer(controller, rows, rows.one, hostOne, 1);
             Element two = assertRowRenderer(controller, rows, rows.two, hostTwo, 2);
             rowValue(rowRenderer(panel, rows.qty, rows.two)).changeProperty(PValue.getPValue(7), null);
@@ -2470,7 +2562,7 @@ public class GFormControllerTest extends GWTTestCase {
         FlowPanel host = new FlowPanel();
         RootPanel.get().add(host);
         try {
-            panel.place(rows.one, rows.qty, host.getElement());
+            panel.place("i.qty", rows.one, rows.qty, host.getElement());
             ActionOrPropertyPanelValue value = rowValue(rowRenderer(panel, rows.qty, rows.one));
             ArrayList<Long> requests = new ArrayList<>();
             int[] cancelled = {0};
@@ -2509,8 +2601,8 @@ public class GFormControllerTest extends GWTTestCase {
             FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel(), hostThree = new FlowPanel();
             RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo); RootPanel.get().add(hostThree);
             try {
-                panel.place(rows.one, rows.qty, hostOne.getElement());
-                panel.place(rows.two, rows.qty, hostTwo.getElement());
+                panel.place("i.qty", rows.one, rows.qty, hostOne.getElement());
+                panel.place("i.qty", rows.two, rows.qty, hostTwo.getElement());
                 Element one = assertRowRenderer(controller, rows, rows.one, hostOne, 1);
                 Element two = assertRowRenderer(controller, rows, rows.two, hostTwo, 2);
                 if (hostFirst) {
@@ -2518,12 +2610,12 @@ public class GFormControllerTest extends GWTTestCase {
                     reactData(controller).change(() -> {
                         rows.keys(controller, rows.one, rows.two, rows.three);
                         assertNull(rowRenderer(panel, rows.qty, rows.three));
-                        assertNull(panel.place(rows.three, rows.qty, hostThree.getElement()));
+                        assertTrue(panel.place("i.qty", rows.three, rows.qty, hostThree.getElement()));
                     });
                 } else {
                     rows.keys(controller, rows.one, rows.two, rows.three);
                     assertTrue(controller.getFormLayout().attachContainer.getElement().isOrHasChild(rowValue(rowRenderer(panel, rows.qty, rows.three)).getElement()));
-                    panel.place(rows.three, rows.qty, hostThree.getElement());
+                    panel.place("i.qty", rows.three, rows.qty, hostThree.getElement());
                 }
                 rows.values(controller, rows.one, rows.two, rows.three);
                 Element three = assertRowRenderer(controller, rows, rows.three, hostThree, 3);
@@ -2536,7 +2628,7 @@ public class GFormControllerTest extends GWTTestCase {
                 assertNull(rowRenderer(panel, rows.qty, rows.two));
                 assertSame(one, assertRowRenderer(controller, rows, rows.one, hostOne, 1));
                 assertSame(three, assertRowRenderer(controller, rows, rows.three, hostThree, 3));
-                assertNull(panel.place(rows.two, rows.qty, hostTwo.getElement()));
+                assertFalse(panel.place("i.qty", rows.two, rows.qty, hostTwo.getElement()));
                 assertTrue(hostTwo.getElement().getInnerText().contains("is not in the group any more"));
                 assertFalse(hostTwo.getElement().isOrHasChild(two));
             } finally {
@@ -2552,8 +2644,8 @@ public class GFormControllerTest extends GWTTestCase {
         FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel(), hostThree = new FlowPanel(), hostFour = new FlowPanel();
         RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo); RootPanel.get().add(hostThree); RootPanel.get().add(hostFour);
         try {
-            panel.place(rows.one, rows.qty, hostOne.getElement());
-            panel.place(rows.two, rows.qty, hostTwo.getElement());
+            panel.place("i.qty", rows.one, rows.qty, hostOne.getElement());
+            panel.place("i.qty", rows.two, rows.qty, hostTwo.getElement());
             Element one = assertRowRenderer(controller, rows, rows.one, hostOne, 1);
             Element two = assertRowRenderer(controller, rows, rows.two, hostTwo, 2);
             rows.keys(controller, rows.three, rows.four);
@@ -2564,8 +2656,8 @@ public class GFormControllerTest extends GWTTestCase {
             assertNull(two.getParentElement());
             assertNull(rowRenderer(panel, rows.qty, rows.one));
             assertNull(rowRenderer(panel, rows.qty, rows.two));
-            panel.place(rows.three, rows.qty, hostThree.getElement());
-            panel.place(rows.four, rows.qty, hostFour.getElement());
+            panel.place("i.qty", rows.three, rows.qty, hostThree.getElement());
+            panel.place("i.qty", rows.four, rows.qty, hostFour.getElement());
             Element three = assertRowRenderer(controller, rows, rows.three, hostThree, 3);
             Element four = assertRowRenderer(controller, rows, rows.four, hostFour, 4);
             assertNotSame(one, three); assertNotSame(two, three);
@@ -2583,14 +2675,14 @@ public class GFormControllerTest extends GWTTestCase {
         FlowPanel first = new FlowPanel(), next = new FlowPanel();
         RootPanel.get().add(first); RootPanel.get().add(next);
         try {
-            panel.place(rows.one, rows.qty, first.getElement());
+            panel.place("i.qty", rows.one, rows.qty, first.getElement());
             Element element = assertRowRenderer(controller, rows, rows.one, first, 1);
             PanelRenderer renderer = rowRenderer(panel, rows.qty, rows.one);
             panel.unplace(rows.one, rows.qty, first.getElement());
             assertEquals(0, first.getElement().getChildCount());
             assertTrue(controller.getFormLayout().attachContainer.getElement().isOrHasChild(element));
             assertSame(renderer, rowRenderer(panel, rows.qty, rows.one));
-            panel.place(rows.one, rows.qty, next.getElement());
+            panel.place("i.qty", rows.one, rows.qty, next.getElement());
             assertSame(element, assertRowRenderer(controller, rows, rows.one, next, 1));
             assertSame(renderer, rowRenderer(panel, rows.qty, rows.one));
         } finally {
@@ -2605,11 +2697,11 @@ public class GFormControllerTest extends GWTTestCase {
         FlowPanel first = new FlowPanel(), second = new FlowPanel();
         RootPanel.get().add(first); RootPanel.get().add(second);
         try {
-            panel.place(rows.one, rows.qty, first.getElement());
+            panel.place("i.qty", rows.one, rows.qty, first.getElement());
             Element element = assertRowRenderer(controller, rows, rows.one, first, 1);
-            assertSame(first.getElement(), panel.place(rows.one, rows.qty, second.getElement()));
+            assertFalse(panel.place("i.qty", rows.one, rows.qty, second.getElement()));
             assertSame(element, assertRowRenderer(controller, rows, rows.one, first, 1));
-            assertEquals(0, second.getElement().getChildCount());
+            assertEquals("lsFusion: 'i.qty' is already placed by another <Platform>", second.getElement().getInnerText());
             assertTrue(Document.get().getBody().isOrHasChild(second.getElement()));
             panel.unplace(rows.one, rows.qty, first.getElement());
             assertEquals(0, first.getElement().getChildCount());
@@ -2626,8 +2718,8 @@ public class GFormControllerTest extends GWTTestCase {
         FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel();
         RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo);
         try {
-            panel.place(rows.one, rows.qty, hostOne.getElement());
-            panel.place(rows.two, rows.qty, hostTwo.getElement());
+            panel.place("i.qty", rows.one, rows.qty, hostOne.getElement());
+            panel.place("i.qty", rows.two, rows.qty, hostTwo.getElement());
             assertRowRenderer(controller, rows, rows.one, hostOne, 1);
             assertRowRenderer(controller, rows, rows.two, hostTwo, 2);
             rows.showIf(controller, false);
@@ -2650,8 +2742,8 @@ public class GFormControllerTest extends GWTTestCase {
         FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel();
         RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo);
         try {
-            panel.place(rows.one, rows.qty, hostOne.getElement());
-            panel.place(rows.two, rows.qty, hostTwo.getElement());
+            panel.place("i.qty", rows.one, rows.qty, hostOne.getElement());
+            panel.place("i.qty", rows.two, rows.qty, hostTwo.getElement());
             Element one = assertRowRenderer(controller, rows, rows.one, hostOne, 1);
             Element two = assertRowRenderer(controller, rows, rows.two, hostTwo, 2);
             GFormChanges dropped = new GFormChanges();
@@ -2693,15 +2785,15 @@ public class GFormControllerTest extends GWTTestCase {
         FlowPanel hostOne = new FlowPanel(), hostTwo = new FlowPanel(), hostThree = new FlowPanel();
         RootPanel.get().add(hostOne); RootPanel.get().add(hostTwo); RootPanel.get().add(hostThree);
         try {
-            panel.place(rows.one, rows.qty, hostOne.getElement());
-            panel.place(rows.two, rows.qty, hostTwo.getElement());
+            panel.place("i.qty", rows.one, rows.qty, hostOne.getElement());
+            panel.place("i.qty", rows.two, rows.qty, hostTwo.getElement());
             Element one = assertRowRenderer(controller, rows, rows.one, hostOne, 1);
             Element two = assertRowRenderer(controller, rows, rows.two, hostTwo, 2);
             reactData(controller).change(() -> controller.getGroupController(rows.group).modifyGroupObject(rows.three, true, 0));
             PanelRenderer added = rowRenderer(panel, rows.qty, rows.three);
             assertNotNull(added);
             assertTrue(controller.getFormLayout().attachContainer.getElement().isOrHasChild(rowValue(added).getElement()));
-            panel.place(rows.three, rows.qty, hostThree.getElement());
+            panel.place("i.qty", rows.three, rows.qty, hostThree.getElement());
             assertTrue(hostThree.getElement().isOrHasChild(rowValue(added).getElement()));
             assertNull(rowValue(added).getValue()); // the server has sent no value for the optimistic row
             assertEquals(rows.three, panel.getFocusKey(new ArrayList<>(Arrays.asList(rows.one, rows.two, rows.three))));
@@ -5249,7 +5341,9 @@ public class GFormControllerTest extends GWTTestCase {
     }
 
     private static GPropertyDraw column(GForm form, int id, String name, GGroupObject group) {
-        GPropertyDraw property = new GPropertyDraw();
+        return column(form, id, name, group, new GPropertyDraw());
+    }
+    private static GPropertyDraw column(GForm form, int id, String name, GGroupObject group, GPropertyDraw property) {
         property.ID = id; property.nativeSID = "p" + id; property.sID = name; property.integrationSID = name;
         property.propertyFormName = name; property.groupObject = group; property.isList = true;
         property.valueType = GIntegerType.instance; property.valueWidth = 80; property.valueHeight = 20;

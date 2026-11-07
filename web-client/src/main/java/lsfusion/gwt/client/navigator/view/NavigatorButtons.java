@@ -50,7 +50,7 @@ public class NavigatorButtons {
         return null;
     }
 
-    private final PlacedViews placed = new PlacedViews(new PlacedViews.Views() {
+    private final PlacedViews<String> placed = new PlacedViews<>(new PlacedViews.Views<String>() {
         @Override
         public PlacedViews.Problem problem(String canonicalName) {
             return NavigatorButtons.this.problem(canonicalName, true);
@@ -169,7 +169,7 @@ public class NavigatorButtons {
     // the component's half of the crossing: it renders the node, we fill it - the node a button goes into is left as the
     // component rendered it
     public ReactRoot.Placement placement() {
-        return placed.placement(new ReactRoot.PlainHost());
+        return PlacedViews.placement(placed, new ReactRoot.PlainHost());
     }
 
     // the names of the current bucket, in the order the standard panel draws them
