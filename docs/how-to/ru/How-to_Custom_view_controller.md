@@ -15,9 +15,9 @@ title: 'How-to: API контроллера пользовательского п
 | --- | --- | --- | --- |
 | [React-представление](How-to_Custom_React_views.md) | `DESIGN c { custom = 'Name'; }` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` |
 | [Окно навигатора](How-to_Custom_React_views.md#navigator-window) | `EXTEND WINDOW System.toolbar CUSTOM 'Name';` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` — [контроллер навигатора](#navigator-controller) |
-| [Окно форм](How-to_Custom_React_views.md#forms-window) | `EXTEND WINDOW System.forms CUSTOM 'Name';` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` — `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen` |
-| [Окно сообщений](How-to_Custom_React_views.md#log-window) | `EXTEND WINDOW System.log CUSTOM 'Name';` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` — `togglePin` |
-| [Расположение окон](How-to_Custom_React_views.md#window-layout) | `NAVIGATOR CUSTOM 'Name';` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` — пустой |
+| [Окно форм](How-to_Custom_React_views.md#forms-window) | `EXTEND WINDOW System.forms CUSTOM 'Name';` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` — методы [контроллера навигатора](#navigator-controller) и `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen` |
+| [Окно сообщений](How-to_Custom_React_views.md#log-window) | `EXTEND WINDOW System.log CUSTOM 'Name';` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` — методы [контроллера навигатора](#navigator-controller) и `togglePin` |
+| [Расположение окон](How-to_Custom_React_views.md#window-layout) | `NAVIGATOR CUSTOM 'Name';` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` — [контроллер навигатора](#navigator-controller) |
 | [CUSTOM группа объектов](How-to_Custom_components_objects.md) | `OBJECTS g = Cls CUSTOM 'name'` | колбэки `render` / `update` | `controller.form` |
 | [CUSTOM ячейка свойства](How-to_Custom_components_properties.md) | `PROPERTIES p CUSTOM 'name'` | колбэки `render` / `update` | `controller.form` |
 
@@ -322,6 +322,8 @@ function Note({ controller }) {
 Действие [`INTERNAL CLIENT`](../language/INTERNAL_operator.md), помещённое в [`NAVIGATOR`](../language/NAVIGATOR_statement.md), тоже получает контроллер, но навигаторный: формы здесь нет, поэтому нет и перечисленных выше методов формы. Есть четыре серверных вызова — `exec`, `eval`, `evalAction`, `change`, — которые выполняются в собственной сессии навигатора, новой на каждый вызов и никогда не применяемой, поэтому сделанное здесь `change` не сохраняется. И есть `activate`:
 
 - `activate(canonicalName[, event])` — делает то же, что нажатие на этот элемент навигатора: выбирает папку либо выполняет действие, открывая его форму так же оптимистично. `canonicalName` — [каноническое имя](../language/IDs.md) элемента. `event` — событие нажатия, React-овское или браузерное, и при вызове из кода, у которого события нет, его можно не передавать.
+
+Компоненты React [окна навигатора](How-to_Custom_React_views.md#navigator-window), [окна форм](How-to_Custom_React_views.md#forms-window), [окна сообщений](How-to_Custom_React_views.md#log-window) и [расположения окон](How-to_Custom_React_views.md#window-layout) получают все пять методов прямо в `props.controller`. Окно форм и окно сообщений также сохраняют собственные операции с окном.
 
 Активация несуществующего элемента или скрытого `SHOWIF` — собственным или папки над ним — бросает исключение. О завершении выполненного действия не сообщается, как не сообщает о нём и нажатие.
 

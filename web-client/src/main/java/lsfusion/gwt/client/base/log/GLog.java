@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.base.log;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.EscapeUtils;
@@ -20,8 +21,8 @@ public final class GLog {
     // Not in the mobile layout though: a component draws a window in the desktop web layout only, which is the rule for
     // every window - a navigator window's component is already never drawn there, since the mobile navigator view draws
     // that window instead - and the mobile layout has no log window at all to draw
-    public static Widget createLogPanel(GAbstractWindow window, Runnable togglePinMode) {
-        logPanel = window.react && !MainFrame.mobile ? new ReactLogPanel(window.custom, togglePinMode) : new GLogPanel(togglePinMode);
+    public static Widget createLogPanel(GAbstractWindow window, JavaScriptObject navigatorController, Runnable togglePinMode) {
+        logPanel = window.react && !MainFrame.mobile ? new ReactLogPanel(window.custom, navigatorController, togglePinMode) : new GLogPanel(togglePinMode);
         return logPanel;
     }
 

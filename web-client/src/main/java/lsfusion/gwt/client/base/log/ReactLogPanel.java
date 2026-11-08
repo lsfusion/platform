@@ -66,12 +66,12 @@ public class ReactLogPanel extends LogPanel {
     // the projection, kept between messages because it is built by adding to the previous one - see addMessage
     private JavaScriptObject data = createData();
 
-    public ReactLogPanel(String custom, Runnable togglePinMode) {
+    public ReactLogPanel(String custom, JavaScriptObject navigatorController, Runnable togglePinMode) {
         this.togglePinMode = togglePinMode;
 
         // the crossing BACK to the platform: the component renders the host node, we move the message's markup in. A
         // message's host is left as the component rendered it
-        root = new ReactRoot(custom, createController(), PlacedViews.placement(placed, new ReactRoot.PlainHost()));
+        root = new ReactRoot(custom, createController(navigatorController), PlacedViews.placement(placed, new ReactRoot.PlainHost()));
         // nothing is logged yet, and that is a state the component draws, so the window starts from it - shaped as
         // every later snapshot is, so the first render already reads data.messages - instead of waiting for the first
         // message
@@ -99,17 +99,21 @@ public class ReactLogPanel extends LogPanel {
             recentlySelected.onEvent(); // the same reveal the standard panel does, and it is the WINDOW being revealed
     }
 
-    // what the component gets as props.controller: the one thing only the platform can do to the log. Pinning is a
-    // server action - it is the display environment's setting, shared with the desktop client - so the component
-    // cannot run it itself, and it is not told the current mode either, because the client is not: an unpinned window
-    // is unpinned by a class the server computes into the window, and there is no boolean anywhere to project
-    private native JavaScriptObject createController()/*-{
+    // what the component gets beside the navigator's calls: the one thing only the platform can do to the log. Pinning
+    // is a server action - it is the display environment's setting, shared with the desktop client - so the component
+    // asks the platform to change it. It is not told the current mode either, because the client is not: an unpinned
+    // window is unpinned by a class the server computes into the window, and there is no boolean anywhere to project
+    private native JavaScriptObject createController(JavaScriptObject navigatorController)/*-{
         var logPanel = this;
-        return {
+        var controller = {
             togglePin: function() {
                 logPanel.@lsfusion.gwt.client.base.log.ReactLogPanel::togglePin()();
             }
         };
+        Object.keys(navigatorController).forEach(function (name) {
+            controller[name] = navigatorController[name];
+        });
+        return controller;
     }-*/;
 
     public void togglePin() {

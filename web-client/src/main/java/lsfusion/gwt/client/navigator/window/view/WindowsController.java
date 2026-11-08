@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.navigator.window.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.RequiresResize;
@@ -59,9 +60,9 @@ public abstract class WindowsController {
     }
 
     // custom: NAVIGATOR CUSTOM, the React component that lays the windows out instead of the standard splits and tabs
-    public void initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow, String custom) {
+    public void initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow, String custom, JavaScriptObject navigatorController) {
         if (custom != null)
-            rootElement = new ReactWindowLayout(this, custom, allWindows, formsWindow);
+            rootElement = new ReactWindowLayout(this, custom, navigatorController, allWindows, formsWindow);
         else {
             WindowNode rootNode = new WindowNode(0, 0, 100, 100);
             rootNode.isFlex = true;

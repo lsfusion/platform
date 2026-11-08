@@ -566,7 +566,7 @@ public class MainFrame implements EntryPoint {
         formsWindowLink.link = formsWindow;
         formsController.initWindow(formsWindow);
         Map<GAbstractWindow, Widget> commonWindows = new LinkedHashMap<>();
-        commonWindows.put(result.log, GLog.createLogPanel(result.log,
+        commonWindows.put(result.log, GLog.createLogPanel(result.log, navigatorController.getController(),
                 () -> formsController.executeAction("SystemEvents.toggleLogsPinMode[]", null)));
         // the application's own windows that hold forms - System.forms is the layout's centre and is placed on its
         // own, the rest are laid out where their POSITION puts them, like the log window. Not on the mobile layout,
@@ -618,7 +618,7 @@ public class MainFrame implements EntryPoint {
             allWindows.addAll(navigatorWindows);
             allWindows.addAll(commonWindows.keySet());
 
-            windowsController.initializeWindows(allWindows, formsWindow, result.custom);
+            windowsController.initializeWindows(allWindows, formsWindow, result.custom, navigatorController.getController());
         }
 
         formsController.initRoot();

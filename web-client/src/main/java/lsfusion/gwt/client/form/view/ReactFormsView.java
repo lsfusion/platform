@@ -93,7 +93,7 @@ public class ReactFormsView implements FormsView {
 
         // the crossing BACK to the platform: the component renders the host node, we move the form's own view in. A form's
         // host holds the form's view, which the layout fills it with by its marks
-        root = new ReactRoot(custom, createController(), PlacedViews.placement(placed, new ReactRoot.MarkedHost()));
+        root = new ReactRoot(custom, createController(formsController.getNavigatorController().getController()), PlacedViews.placement(placed, new ReactRoot.MarkedHost()));
         // no form is open yet, and that is a state the component draws - a start page, say - so the window starts
         // from it, shaped as every later snapshot is, instead of waiting for the first form to be drawn at all
         root.updateData(buildData());
@@ -227,12 +227,12 @@ public class ReactFormsView implements FormsView {
         formsWindow.closeAllForms();
     }
 
-    // what the component gets as props.controller: what only the platform can do to an open form, and what only it can
-    // do to the window - the operations the standard tab strip carries in its own toolbar and tab menu, which a
+    // what the component gets beside the navigator's calls: what only the platform can do to an open form and to the
+    // window - the operations the standard tab strip carries in its own toolbar and tab menu, which a
     // component-drawn window does not show
-    private native JavaScriptObject createController()/*-{
+    private native JavaScriptObject createController(JavaScriptObject navigatorController)/*-{
         var formsView = this;
-        return {
+        var controller = {
             select: function(name) {
                 formsView.@lsfusion.gwt.client.form.view.ReactFormsView::selectForm(Ljava/lang/String;)(name);
             },
@@ -249,6 +249,10 @@ public class ReactFormsView implements FormsView {
                 formsView.@lsfusion.gwt.client.form.view.ReactFormsView::toggleFullScreen()();
             }
         };
+        Object.keys(navigatorController).forEach(function (name) {
+            controller[name] = navigatorController[name];
+        });
+        return controller;
     }-*/;
 
     private JavaScriptObject buildEditModes() {

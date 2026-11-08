@@ -835,9 +835,9 @@ The actions run on the server, so the tab is selected when the answer comes, not
 | --- | --- | --- | --- | --- | --- | --- |
 | [A form's container](#placing) / [component](#component-views) | A container's child (design SID or property path), or a per-row renderer (property path and `row`) | Yes, while a known view is absent | `lsf-platform`, `data-lsf-sid` | The child's or an ancestor container's `SHOWIF`. Not used per row | Yes, per-row renderers too | Its projection's [members and `form`](How-to_Custom_view_controller.md) |
 | [A navigator window](#navigator-window) | Canonical name of a `NOCUSTOM` element of this window | Yes, while this window does not draw the element | None | The element's `SHOWIF` | No | The [navigator controller](How-to_Custom_view_controller.md#navigator-controller) |
-| [The forms window](#forms-window) | An open form's `name` | No, even a loading form already has a view | `lsf-platform`, `data-lsf-sid` | No entry `hidden` | Yes | `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen` |
-| [The log window](#log-window) | A logged message's `name` | No | None | No entry `hidden` | No | `togglePin` |
-| [The window layout](#window-layout) | A window's canonical name | No | `lsf-platform`, `data-lsf-sid` | `data.byName[name].hidden`: `HIDE WINDOW`, or an empty navigator window without its own component, except `System.root` | Yes | Empty |
+| [The forms window](#forms-window) | An open form's `name` | No, even a loading form already has a view | `lsf-platform`, `data-lsf-sid` | No entry `hidden` | Yes | The [navigator controller](How-to_Custom_view_controller.md#navigator-controller)'s methods plus `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen` |
+| [The log window](#log-window) | A logged message's `name` | No | None | No entry `hidden` | No | The [navigator controller](How-to_Custom_view_controller.md#navigator-controller)'s methods plus `togglePin` |
+| [The window layout](#window-layout) | A window's canonical name | No | `lsf-platform`, `data-lsf-sid` | `data.byName[name].hidden`: `HIDE WINDOW`, or an empty navigator window without its own component, except `System.root` | Yes | The [navigator controller](How-to_Custom_view_controller.md#navigator-controller) |
 
 ### A navigator window {#navigator-window}
 
@@ -1000,7 +1000,7 @@ and each edit mode in `editModes` carries what the mode button shows it with:
 | `name` | Its own name — the one `setEditMode` takes, and the one `editMode` is compared with |
 | `caption`, `image` | The mode's caption and icon. Drawn with [`<Caption value={m.caption}/>`](#caption) and [`<Image value={m.image}/>`](#image) |
 
-`props.controller` does what only the platform can do to an open form: `select(name)` makes it the current one, the way clicking its tab does, and `close(name)` asks it to close, the way its close button does. Closing is a request — a form with unsaved changes asks the user first and may stay open — so a form leaves `open` when it is actually closed, not when `close` is called.
+`props.controller` has the [navigator controller](How-to_Custom_view_controller.md#navigator-controller) methods — `exec`, `eval`, `evalAction`, `change`, `activate` — for calls in the navigator's session. It also does what only the platform can do to an open form: `select(name)` makes it the current one, the way clicking its tab does, and `close(name)` asks it to close, the way its close button does. Closing is a request — a form with unsaved changes asks the user first and may stay open — so a form leaves `open` when it is actually closed, not when `close` is called.
 
 `select` and `close` refuse a name no open form has, `close` refuses a blocked form, and `setEditMode` refuses a mode not in `editModes`. The call throws an `Error` with the reason in its `message`.
 
@@ -1184,7 +1184,7 @@ and each message carries:
 
 A message is markup, so what the projection carries is only what the standard panel writes itself beside that markup. The name is the platform's own: two messages can carry the same text, caption and second, so nothing about a message identifies it.
 
-`props.controller` does the one thing only the platform can do to the log: `togglePin()` toggles the window's pin mode, the way the platform's pin button does. Pinning is a setting of the display environment, shared with the desktop client, so the component cannot do it itself. It is not told the current mode either, since the client is not — an unpinned window is unpinned by a class the server computes into the window.
+`props.controller` has the [navigator controller](How-to_Custom_view_controller.md#navigator-controller) methods — `exec`, `eval`, `evalAction`, `change`, `activate` — for calls in the navigator's session. It also does the one thing only the platform can do to the log: `togglePin()` toggles the window's pin mode, the way the platform's pin button does. Pinning is a setting of the display environment, shared with the desktop client, so the component asks the platform to change it. It is not told the current mode either, since the client is not — an unpinned window is unpinned by a class the server computes into the window.
 
 A message the component places nowhere is still logged and still in the projection: nothing drops one, exactly as the standard panel keeps every message it printed. So a component that shows only the last message, or only the failed ones, loses nothing — an earlier message placed again is shown as it was. There is no clearing and no dismissing, in the projection or in the controller, because the platform has none.
 
@@ -1251,7 +1251,7 @@ Each entry in `byName` has:
 | `hidden` | Whether the standard layout would not show the window now: `HIDE WINDOW` hides it, or it is a navigator window with nothing to draw - the selected folder has no elements for it -, other than `System.root` and a window its own component draws. While the entry says so, `<Platform>` hides the place. The component reads it to fold its own markup around the place, as `showMenu` does above |
 | `vertical` | Whether the window draws its buttons in a column. The "Navbar: Vertical" design setting turns `System.logo`, `System.root` and `System.system` so, whoever lays them out |
 
-`props.controller` is empty: the windows are drawn and changed by the platform, and nothing about their arrangement is the platform's.
+`props.controller` has the [navigator controller](How-to_Custom_view_controller.md#navigator-controller) methods — `exec`, `eval`, `evalAction`, `change`, `activate` — for calls in the navigator's session. The windows are drawn and changed by the platform, and nothing about their arrangement is the platform's.
 
 A window the component places nowhere is not shown, and lives on: its navigator buttons are refreshed, a form opened into it is open - hidden, as a background tab is -, its messages are logged. Placed later, it is shown as it is then. So a component that places only the windows it knows hides a window another module adds. A component meant to take any window places the rest by `data.windows`.
 

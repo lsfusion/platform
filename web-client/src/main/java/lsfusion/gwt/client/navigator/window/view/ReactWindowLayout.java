@@ -74,7 +74,7 @@ public final class ReactWindowLayout extends WindowLayout {
     // state of the arrangement is the platform's
     private JavaScriptObject data = createData();
 
-    public ReactWindowLayout(WindowsController controller, String custom, List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
+    public ReactWindowLayout(WindowsController controller, String custom, JavaScriptObject navigatorController, List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
         List<GAbstractWindow> navigatorWindows = new ArrayList<>(allWindows);
         navigatorWindows.add(formsWindow);
         for (GAbstractWindow window : navigatorWindows) {
@@ -85,8 +85,8 @@ public final class ReactWindowLayout extends WindowLayout {
 
         // the crossing BACK to the platform: the component renders the host node, we move the window's own view in. A
         // window's host holds the window's view, which the layout fills it with by its marks. Nothing about the
-        // arrangement is the platform's to do, so the controller has nothing on it
-        root = new ReactRoot(custom, JavaScriptObject.createObject(), PlacedViews.placement(placed, new ReactRoot.MarkedHost()));
+        // arrangement is the platform's to do, so the controller only carries the navigator's calls
+        root = new ReactRoot(custom, GwtClientUtils.copyObject(navigatorController), PlacedViews.placement(placed, new ReactRoot.MarkedHost()));
 
         root.mountWhileAttached(panel);
     }

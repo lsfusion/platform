@@ -37,6 +37,7 @@ public class ReactWindowLayoutTest extends GWTTestCase {
     private final Map<GAbstractWindow, View> views = new HashMap<>();
     private WindowsController controller;
     private ReactWindowLayout element;
+    private JavaScriptObject navigatorController;
 
     @Override
     protected void gwtSetUp() {
@@ -54,7 +55,8 @@ public class ReactWindowLayoutTest extends GWTTestCase {
                 return views.get(window);
             }
         };
-        controller.initializeWindows(Arrays.asList(root, toolbar, log), forms, "AppLayout");
+        navigatorController = JsniTestSupport.navigatorController();
+        controller.initializeWindows(Arrays.asList(root, toolbar, log), forms, "AppLayout", navigatorController);
         element = (ReactWindowLayout) controller.rootElement;
     }
 
@@ -70,6 +72,11 @@ public class ReactWindowLayoutTest extends GWTTestCase {
         window.visible = visible;
         views.put(window, new View());
         return window;
+    }
+
+    // laying out windows gives the component the same navigator calls as a window's own component
+    public void testControllerHasNavigatorMethods() {
+        JsniTestSupport.assertNavigatorController(navigatorController, controller(element));
     }
 
     // every window of the navigator is named in declared order and has an entry in byName - System.forms too, which
@@ -194,6 +201,9 @@ public class ReactWindowLayoutTest extends GWTTestCase {
 
     private static native JavaScriptObject data(ReactWindowLayout element) /*-{
         return element.@lsfusion.gwt.client.navigator.window.view.ReactWindowLayout::root.@lsfusion.gwt.client.base.view.ReactRoot::store.getSnapshot();
+    }-*/;
+    private static native JavaScriptObject controller(ReactWindowLayout element) /*-{
+        return element.@lsfusion.gwt.client.navigator.window.view.ReactWindowLayout::root.@lsfusion.gwt.client.base.view.ReactRoot::context.controller;
     }-*/;
     private static native void mount(ReactWindowLayout element, String name, Element host) /*-{
         element.@lsfusion.gwt.client.navigator.window.view.ReactWindowLayout::root.@lsfusion.gwt.client.base.view.ReactRoot::context.view.mount(name, host);

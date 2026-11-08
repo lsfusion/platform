@@ -4,6 +4,8 @@ import com.google.gwt.core.client.JavaScriptObject;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
+import static junit.framework.Assert.*;
+
 // what the page gives the client and a GWT test, which runs without the page, has to give it itself - and what the
 // client's GWT tests read and call its JS objects with
 public final class JsniTestSupport {
@@ -74,6 +76,34 @@ public final class JsniTestSupport {
     // a call of a controller's method - a member's, the form's -, given what the test gives
     public static native Object call(JavaScriptObject object, String method, Object... args) /*-{
         return object[method].apply(object, args);
+    }-*/;
+    // a window's controller keeps the navigator's own methods, without wrappers or inherited / hidden properties
+    public static native JavaScriptObject navigatorController() /*-{
+        var controller = Object.create({ inherited: function () {} });
+        Object.defineProperty(controller, 'hidden', { value: function () {} });
+        Object.defineProperty(controller, 'calls', { value: [] });
+        ['exec', 'eval', 'evalAction', 'change', 'activate'].forEach(function (name) {
+            controller[name] = function () {
+                controller.calls.push({ method: name, args: Array.prototype.slice.call(arguments) });
+                return controller.calls;
+            };
+        });
+        return controller;
+    }-*/;
+    public static void assertNavigatorController(JavaScriptObject navigator, JavaScriptObject controller) {
+        assertNotSame(navigator, controller);
+        for (String method : new String[] {"exec", "eval", "evalAction", "change", "activate"}) {
+            assertTrue(method + " must be an own method", own(controller, method));
+            assertSame(method + " must not be wrapped", field(navigator, method), field(controller, method));
+            assertSame(field(navigator, "calls"), call(controller, method, "Test.action", "value"));
+            assertEquals("{\"method\":\"" + method + "\",\"args\":[\"Test.action\",\"value\"]}", lastNavigatorCall(navigator));
+        }
+        assertNull(field(controller, "inherited"));
+        assertNull(field(controller, "hidden"));
+        assertNull(field(controller, "calls"));
+    }
+    private static native String lastNavigatorCall(JavaScriptObject navigator) /*-{
+        return JSON.stringify(navigator.calls[navigator.calls.length - 1]);
     }-*/;
     // the objects handle a view has of a row it does not draw - a lookup's (getValues)
     public static JavaScriptObject objects(GGroupObjectValue key) {

@@ -19,11 +19,14 @@ import lsfusion.gwt.client.form.controller.EditMode;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.FormsWindowController;
 import lsfusion.gwt.client.form.controller.GFormControllerTest;
+import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.MainFrame;
 import net.customware.gwt.dispatch.shared.Result;
+
+import java.util.Map;
 
 // the forms window a React component draws (WINDOW ... CUSTOM): what it is given of the open forms, and a form placed in
 // a host. No React draws anything here, HtmlUnit has none: the root is never mounted, the snapshots are read from the
@@ -34,6 +37,7 @@ public class ReactFormsViewTest extends GWTTestCase {
     private FormsController formsController;
     private FormsWindowController formsWindow;
     private ReactFormsView view;
+    private JavaScriptObject navigatorController;
 
     @Override
     protected void gwtSetUp() {
@@ -49,12 +53,50 @@ public class ReactFormsViewTest extends GWTTestCase {
             public long asyncDispatch(ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) { return -1; }
             public GNavigatorActionDispatcher getDispatcher() { return null; }
         };
+        GNavigatorController navigator = new GNavigatorController(formsController) {
+            @Override public void updateVisibility(Map<GAbstractWindow, Boolean> visibleWindows) { }
+        };
+        navigatorController = JsniTestSupport.navigatorController();
+        navigator.setController(navigatorController);
+        formsController.setNavigatorController(navigator);
         GAbstractWindow window = new GAbstractWindow();
         window.canonicalName = "System.forms";
         window.react = true;
         window.custom = "NoSuchComponent";
         formsWindow = new FormsWindowController(formsController, window, true, null);
         view = (ReactFormsView) formsView(formsWindow);
+    }
+
+    // every window component can call the navigator's session beside its own operations
+    public void testFormsControllerHasNavigatorMethods() {
+        JavaScriptObject controller = controller(view);
+        JsniTestSupport.assertNavigatorController(navigatorController, controller);
+        for (String method : new String[] {"select", "close", "closeAll", "setEditMode", "toggleFullScreen"}) {
+            assertTrue(method, JsniTestSupport.own(controller, method));
+            assertFalse(method, JsniTestSupport.own(navigatorController, method));
+        }
+    }
+
+    public void testLogControllerHasNavigatorMethods() {
+        LogPanel previous = logPanel();
+        boolean mobile = MainFrame.mobile;
+        int[] toggled = {0};
+        try {
+            MainFrame.mobile = false;
+            GAbstractWindow window = new GAbstractWindow();
+            window.react = true;
+            window.custom = "NoSuchComponent";
+            ReactLogPanel panel = (ReactLogPanel) GLog.createLogPanel(window, navigatorController, () -> toggled[0]++);
+            JavaScriptObject controller = logController(panel);
+            JsniTestSupport.assertNavigatorController(navigatorController, controller);
+            assertTrue(JsniTestSupport.own(controller, "togglePin"));
+            assertFalse(JsniTestSupport.own(navigatorController, "togglePin"));
+            JsniTestSupport.call(controller, "togglePin");
+            assertEquals(1, toggled[0]);
+        } finally {
+            restoreLogPanel(previous);
+            MainFrame.mobile = mobile;
+        }
     }
 
     // a window HIDE WINDOW has taken away still builds its component, as the navigator and forms windows do
@@ -68,7 +110,7 @@ public class ReactFormsViewTest extends GWTTestCase {
             window.react = true;
             window.custom = "NoSuchComponent";
             window.visible = false;
-            Widget panel = GLog.createLogPanel(window, () -> {});
+            Widget panel = GLog.createLogPanel(window, navigatorController, () -> {});
             assertTrue("a hidden log window must use ReactLogPanel, got " + panel.getClass().getName(),
                     panel instanceof ReactLogPanel);
         } finally {
@@ -246,6 +288,9 @@ public class ReactFormsViewTest extends GWTTestCase {
     }-*/;
     private static native JavaScriptObject controller(ReactFormsView view) /*-{
         return view.@lsfusion.gwt.client.form.view.ReactFormsView::root.@lsfusion.gwt.client.base.view.ReactRoot::context.controller;
+    }-*/;
+    private static native JavaScriptObject logController(ReactLogPanel panel) /*-{
+        return panel.@lsfusion.gwt.client.base.log.ReactLogPanel::root.@lsfusion.gwt.client.base.view.ReactRoot::context.controller;
     }-*/;
     private static native String refusalOf(JavaScriptObject controller, String method, String name) /*-{
         try {

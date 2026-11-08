@@ -15,9 +15,9 @@ That is the name a view has, everywhere: `props.data` is keyed by it and every c
 | --- | --- | --- | --- |
 | [React view](How-to_Custom_React_views.md) | `DESIGN c { custom = 'Name'; }` | a component taking `props` (`data`, `controller`) | `props.controller` |
 | [Navigator window](How-to_Custom_React_views.md#navigator-window) | `EXTEND WINDOW System.toolbar CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — the [navigator controller](#navigator-controller) |
-| [Forms window](How-to_Custom_React_views.md#forms-window) | `EXTEND WINDOW System.forms CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen` |
-| [Log window](How-to_Custom_React_views.md#log-window) | `EXTEND WINDOW System.log CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — `togglePin` |
-| [Window layout](How-to_Custom_React_views.md#window-layout) | `NAVIGATOR CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — empty |
+| [Forms window](How-to_Custom_React_views.md#forms-window) | `EXTEND WINDOW System.forms CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — the [navigator controller](#navigator-controller)'s methods plus `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen` |
+| [Log window](How-to_Custom_React_views.md#log-window) | `EXTEND WINDOW System.log CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — the [navigator controller](#navigator-controller)'s methods plus `togglePin` |
+| [Window layout](How-to_Custom_React_views.md#window-layout) | `NAVIGATOR CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — the [navigator controller](#navigator-controller) |
 | [CUSTOM object group](How-to_Custom_components_objects.md) | `OBJECTS g = Cls CUSTOM 'name'` | `render` / `update` callbacks | `controller.form` |
 | [CUSTOM property cell](How-to_Custom_components_properties.md) | `PROPERTIES p CUSTOM 'name'` | `render` / `update` callbacks | `controller.form` |
 
@@ -322,6 +322,8 @@ A single key the view needs regardless of the editing state — a shortcut of it
 An [`INTERNAL CLIENT`](../language/INTERNAL_operator.md) action placed in [`NAVIGATOR`](../language/NAVIGATOR_statement.md) receives a controller as well, but a navigator one: there is no form, so it has none of the form methods above. It has the four server calls — `exec`, `eval`, `evalAction`, `change` — which run in the navigator's own session, a new one per call that is never applied, so a `change` made here is not kept. And it has `activate`:
 
 - `activate(canonicalName[, event])` — does what clicking that navigator element does: selects the folder, or runs the action, opening its form the same optimistic way. `canonicalName` is the element's [canonical name](../language/IDs.md). `event` is the event of the click, React's own or the browser's, and can be omitted when activating from code that has none.
+
+The React components of a [navigator window](How-to_Custom_React_views.md#navigator-window), the [forms window](How-to_Custom_React_views.md#forms-window), the [log window](How-to_Custom_React_views.md#log-window) and the [window layout](How-to_Custom_React_views.md#window-layout) get all five methods directly on `props.controller`. The forms window and the log also keep their own window operations.
 
 Activating an element that does not exist, or one hidden by a `SHOWIF` — its own or that of a folder above it — throws. Running an action reports no completion, just as a click does not.
 
