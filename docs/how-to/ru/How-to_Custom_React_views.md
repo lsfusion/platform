@@ -837,7 +837,7 @@ DESIGN order {
 | [Окно навигатора](#navigator-window) | Каноническое имя элемента этого окна с `NOCUSTOM` | Да, пока окно не рисует элемент | Нет | `SHOWIF` элемента | Нет | [Контроллер навигатора](How-to_Custom_view_controller.md#navigator-controller) |
 | [Окно форм](#forms-window) | `name` открытой формы | Нет, даже у ещё загружаемой формы представление уже есть | `lsf-platform`, `data-lsf-sid` | В записи нет `hidden` | Да | Методы [контроллера навигатора](How-to_Custom_view_controller.md#navigator-controller) и `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen` |
 | [Окно сообщений](#log-window) | `name` выведенного сообщения | Нет | Нет | В записи нет `hidden` | Нет | Методы [контроллера навигатора](How-to_Custom_view_controller.md#navigator-controller) и `togglePin` |
-| [Расположение окон](#window-layout) | Каноническое имя окна | Нет | `lsf-platform`, `data-lsf-sid` | `data.byName[name].hidden`: `HIDE WINDOW` либо пустое окно навигатора без собственного компонента, кроме `System.root` | Да | [Контроллер навигатора](How-to_Custom_view_controller.md#navigator-controller) |
+| [Расположение окон](#window-layout) | Каноническое имя окна | Нет | `lsf-platform`, `data-lsf-sid` | `data.byName[name].hidden`: `HIDE WINDOW` либо пустое окно навигатора без `CUSTOM`, кроме `System.root` | Да | [Контроллер навигатора](How-to_Custom_view_controller.md#navigator-controller) |
 
 ### Окно навигатора {#navigator-window}
 
@@ -1252,7 +1252,7 @@ export function AppLayout({ data }) {
 | --- | --- |
 | `name` | Собственное каноническое имя, чтобы компонент, которому передали только запись, всё равно мог поместить окно |
 | `caption` | Заголовок окна — тот, который стандартное расположение пишет на вкладке окон с общим местом. У окна, объявленного без заголовка, как системные окна, это его имя |
-| `hidden` | Не показало бы окно сейчас стандартное расположение: окно скрыто `HIDE WINDOW` или это окно навигатора, которому нечего рисовать, — у выбранной папки нет для него элементов, — кроме `System.root` и окна, которое рисует собственный компонент. Пока запись это говорит, `<Platform>` скрывает место. Компонент читает поле, чтобы свернуть свою разметку вокруг места, как `showMenu` выше |
+| `hidden` | Не показало бы окно сейчас стандартное расположение: окно скрыто `HIDE WINDOW` или это окно навигатора, которому нечего рисовать, — у выбранной папки нет для него элементов, — кроме `System.root` и окна с `CUSTOM`. Пока запись это говорит, `<Platform>` скрывает место. Компонент читает поле, чтобы свернуть свою разметку вокруг места, как `showMenu` выше |
 | `vertical` | Рисует ли окно свои кнопки столбиком. Настройка дизайна «Панель навигации: Вертикальная» делает такими `System.logo`, `System.root` и `System.system`, кто бы их ни располагал |
 
 `props.controller` содержит методы [контроллера навигатора](How-to_Custom_view_controller.md#navigator-controller) — `exec`, `eval`, `evalAction`, `change`, `activate` — для вызовов в сессии навигатора. Окна рисует и меняет платформа, а в их расположении нет ничего платформенного.

@@ -837,7 +837,7 @@ The actions run on the server, so the tab is selected when the answer comes, not
 | [A navigator window](#navigator-window) | Canonical name of a `NOCUSTOM` element of this window | Yes, while this window does not draw the element | None | The element's `SHOWIF` | No | The [navigator controller](How-to_Custom_view_controller.md#navigator-controller) |
 | [The forms window](#forms-window) | An open form's `name` | No, even a loading form already has a view | `lsf-platform`, `data-lsf-sid` | No entry `hidden` | Yes | The [navigator controller](How-to_Custom_view_controller.md#navigator-controller)'s methods plus `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen` |
 | [The log window](#log-window) | A logged message's `name` | No | None | No entry `hidden` | No | The [navigator controller](How-to_Custom_view_controller.md#navigator-controller)'s methods plus `togglePin` |
-| [The window layout](#window-layout) | A window's canonical name | No | `lsf-platform`, `data-lsf-sid` | `data.byName[name].hidden`: `HIDE WINDOW`, or an empty navigator window without its own component, except `System.root` | Yes | The [navigator controller](How-to_Custom_view_controller.md#navigator-controller) |
+| [The window layout](#window-layout) | A window's canonical name | No | `lsf-platform`, `data-lsf-sid` | `data.byName[name].hidden`: `HIDE WINDOW`, or an empty navigator window without a `CUSTOM`, except `System.root` | Yes | The [navigator controller](How-to_Custom_view_controller.md#navigator-controller) |
 
 ### A navigator window {#navigator-window}
 
@@ -1252,7 +1252,7 @@ Each entry in `byName` has:
 | --- | --- |
 | `name` | Its own canonical name, so a component that was handed the entry alone can still place the window |
 | `caption` | Its caption - the one the standard layout writes on the tab of windows that share a place. A window declared without a caption, as the system windows are, has its name |
-| `hidden` | Whether the standard layout would not show the window now: `HIDE WINDOW` hides it, or it is a navigator window with nothing to draw - the selected folder has no elements for it -, other than `System.root` and a window its own component draws. While the entry says so, `<Platform>` hides the place. The component reads it to fold its own markup around the place, as `showMenu` does above |
+| `hidden` | Whether the standard layout would not show the window now: `HIDE WINDOW` hides it, or it is a navigator window with nothing to draw - the selected folder has no elements for it -, other than `System.root` and a window with a `CUSTOM`. While the entry says so, `<Platform>` hides the place. The component reads it to fold its own markup around the place, as `showMenu` does above |
 | `vertical` | Whether the window draws its buttons in a column. The "Navbar: Vertical" design setting turns `System.logo`, `System.root` and `System.system` so, whoever lays them out |
 
 `props.controller` has the [navigator controller](How-to_Custom_view_controller.md#navigator-controller) methods — `exec`, `eval`, `evalAction`, `change`, `activate` — for calls in the navigator's session. The windows are drawn and changed by the platform, and nothing about their arrangement is the platform's.
