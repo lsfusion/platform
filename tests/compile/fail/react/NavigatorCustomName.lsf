@@ -1,0 +1,6 @@
+MODULE NavigatorCustomName;
+
+REQUIRE System;
+
+// a misspelled component name must say which spelling is accepted, as for a form component or a navigator window
+NAVIGATOR CUSTOM 'lowercase';

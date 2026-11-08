@@ -1,0 +1,1 @@
+CUSTOM of navigator 'NAVIGATOR' must be a React component name (an uppercase letter followed by letters, digits, '_' or '$'): what it draws exists only while the application runs, so there is nothing for a template or a computed value to name

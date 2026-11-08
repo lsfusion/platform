@@ -358,7 +358,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitComponentOnlyCustomError(ScriptParser parser, String what, String name) throws SemanticErrorException {
-        emitSimpleError(parser, format("CUSTOM of %s '%s' must be a React component name: what it draws - the forms open in a window, the messages logged in it, the navigator's windows - exists only while the application runs, so there is nothing for a template or a computed value to name", what, name));
+        emitSimpleError(parser, format("CUSTOM of %s '%s' must be a React component name (an uppercase letter followed by letters, digits, '_' or '$'): what it draws exists only while the application runs, so there is nothing for a template or a computed value to name", what, name));
     }
 
     public void emitWindowCustomReactPropertyError(ScriptParser parser, String name, String custom) throws SemanticErrorException {
