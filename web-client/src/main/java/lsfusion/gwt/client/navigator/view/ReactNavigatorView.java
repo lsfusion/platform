@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.navigator.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
@@ -19,8 +18,6 @@ public class ReactNavigatorView extends ParkedNavigatorView {
 
     public ReactNavigatorView(GNavigatorWindow window, GINavigatorController navigatorController) {
         super(window, navigatorController);
-
-        GwtClientUtils.addClassName(panel, "panel-react");
 
         // the crossing BACK to the platform: the component renders the host node, we fill it with the standard button
         root = new ReactRoot(window.custom, navigatorController.getController(), buttons.placement());

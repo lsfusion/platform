@@ -119,7 +119,6 @@ public class ReactContainerView extends ParkedContainerView {
                     scheduleReconcile();
             }
         });
-        GwtClientUtils.addClassName(panel, "panel-react");
         panel.addAttachHandler(event -> {
             if (event.isAttached()) {
                 // drawn now: a tree mounted again settles what it places too, even when that is nothing

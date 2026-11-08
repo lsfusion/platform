@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.junit.client.GWTTestCase;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -9,8 +10,8 @@ import com.google.gwt.user.client.ui.RootPanel;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 
-// the store a ReactRoot hands its component's hooks, with no React drawing anything: the root is never mounted, so the
-// first push, which would draw the component, draws nothing, and every later one only tells the store's subscribers.
+// the store a ReactRoot hands its component's hooks, with no React drawing anything: the first push, which would draw
+// the component, draws nothing while the root is not mounted, and every later one only tells the store's subscribers.
 // And what a root dresses a host in, by the kind of host its owner places into (ReactRoot.Host), and that a host it
 // hides hides what is in it
 public class ReactRootTest extends GWTTestCase {
@@ -23,6 +24,35 @@ public class ReactRootTest extends GWTTestCase {
         public void unmount(String name, Element host, JavaScriptObject row) { fail("nothing is placed"); }
         public ReactRoot.Host getHost() { return new ReactRoot.PlainHost(); }
     }
+
+    // every root marks the element it draws in, including one whose owner does not mark its panel
+    public void testARootMarksTheElementItDrawsIn() {
+        ReactRoot root = new ReactRoot("Component", JavaScriptObject.createObject(), new NoPlacement());
+        Element element = Document.get().createDivElement();
+        element.addClassName("panel");
+        JavaScriptObject restore = installRootFactory();
+        try {
+            root.mount(element, false);
+            assertTrue(element.hasClassName("panel-react"));
+            assertTrue(element.hasClassName("panel"));
+        } finally {
+            root.unmount();
+            GwtClientUtils.call(restore);
+        }
+    }
+
+    // only the root is created: no data is pushed, so nothing asks React to draw a component
+    private static native JavaScriptObject installRootFactory() /*-{
+        var react = $wnd.React, reactDOM = $wnd.ReactDOM, lsfusion = $wnd.lsfusion;
+        $wnd.React = {};
+        $wnd.ReactDOM = { createRoot: function () { return { unmount: function () {} }; } };
+        $wnd.lsfusion = { __installReactHooks: function () {}, custom: { get: function () { return function () {}; } } };
+        return function () {
+            $wnd.React = react;
+            $wnd.ReactDOM = reactDOM;
+            $wnd.lsfusion = lsfusion;
+        };
+    }-*/;
 
     // #46: a listener that throws - a view's bucketOf, a selector - is its own error, logged where it is thrown, and
     // the listeners after it are told all the same, each reading the new snapshot. The first push tells no one, being

@@ -2,7 +2,6 @@ package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.PlacedViews;
 import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
@@ -36,7 +35,6 @@ public class ReactBaseComponentView {
                                 + component.getCustom() + "'; MOVE " + component.sID + "; }"));
             }
         });
-        GwtClientUtils.addClassName(panel, "panel-react");
         panel.addAttachHandler(event -> {
             if (event.isAttached())
                 root.mount(panel.getElement(), formController.isSizeFixedOnShow());

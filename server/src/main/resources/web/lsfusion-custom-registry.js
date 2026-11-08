@@ -148,9 +148,9 @@
         // navigator window. pass `row` for a platform-drawn grid property: the name is the property's, as a panel one's
         // is - o.qty - and the row says which of its per-row renderers, so the same name legitimately has one host per
         // row. Pass the row object out of the projected data (or its `objects`) - a key string cannot be resolved back
-        // to a row. What a host is dressed in is the root's (its view's `host`, ReactRoot.Host): a form container's and
-        // the forms window's are marked as holding one of the platform's views - the lsf-platform class the layout
-        // styles a host by, and data-lsf-sid a stylesheet addresses it by -, merged with the className the component
+        // to a row. What a host is dressed in is the root's (its view's `host`, ReactRoot.Host): a form container's, the
+        // forms window's and the window layout's are marked as holding one of the platform's views - the lsf-platform class
+        // the layout styles a host by, and data-lsf-sid a stylesheet addresses it by -, merged with the className the component
         // gives it; the navigator's and the log's are left as the component rendered them. Props of the host's OWN, not
         // something written into the DOM behind React's back: a className is React's, and the render that changes it
         // rewrites the whole class attribute, which took every mark written there with it. So the component hands its
@@ -159,8 +159,9 @@
         // above it - the host is `hidden` too, and stays: a child no host places is not read, SHOWIF and all, so it
         // would never come back. The root's view says which entry a name keys: a component's descriptor under that
         // name; a form container's platform-drawn panel property's under its integration name, on its group's node; a
-        // navigator window's NOCUSTOM element's under its canonical name in byName - hidden by its SHOWIF. Not a row's
-        // host: what hides a per-row renderer is its column
+        // navigator window's NOCUSTOM element's under its canonical name in byName - hidden by its SHOWIF; the window
+        // layout's window entry at the top level under its canonical name - hidden by HIDE WINDOW or nothing to draw.
+        // Not a row's host: what hides a per-row renderer is its column
         var unsubscribed = function () { return function () {}; }; // a root with no store: nothing is ever hidden
         ns.usePlatform = function (name, options) {
             var context = React.useContext(Ctx);

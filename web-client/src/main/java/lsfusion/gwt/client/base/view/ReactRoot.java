@@ -45,9 +45,9 @@ public class ReactRoot {
         void unmount(String name, Element host, JavaScriptObject row);
 
         // what its hosts are dressed in, besides the ref and `hidden` the hook gives each (usePlatform): the kind of
-        // host it places into - a form container and the forms window put a view into theirs, which the layout fills
-        // them with by their marks (MarkedHost); the navigator and the log windows leave theirs as the component
-        // rendered them (PlainHost)
+        // host it places into - a form container, the forms window and the window layout put a view into theirs, which
+        // the layout fills them with by their marks (MarkedHost); the navigator and the log windows leave theirs as
+        // the component rendered them (PlainHost)
         Host getHost();
 
         // the entry a placed name keys in the owner's `data` - what hides its host while it says `hidden`
@@ -118,7 +118,7 @@ public class ReactRoot {
     // cleanup would undo it, through the owner: the view goes back to where it waits instead of living on in a node
     // that has left the page, and the name is free for a place that IS in it. One check for every surface, since every
     // one of them draws through this root - the form container and its per-row editors, the navigator window, the
-    // forms window and the log
+    // forms window, the log and the window layout
     private void checkPlaced(String name, Element host, JavaScriptObject row) {
         if (GwtClientUtils.isInDocument(host))
             return;
@@ -131,9 +131,9 @@ public class ReactRoot {
     // the root is created as soon as there is a place for it, but the component is drawn only once there is data too -
     // and says whether it drew now. `sync`: commit that first render inside this call instead of in a later task. Only
     // an owner whose window is MEASURED when it is shown needs it - a -3 main container is fixed to whatever can be
-    // measured then, and an asynchronous commit leaves it measuring an empty host. The navigator, the forms window and
-    // the log are never measured and stay asynchronous. Later updates always go through the store, asynchronously,
-    // either way
+    // measured then, and an asynchronous commit leaves it measuring an empty host. The navigator, the forms window,
+    // the log and the window layout are never measured and stay asynchronous. Later updates always go through the
+    // store, asynchronously, either way
     public boolean mount(Element element, boolean sync) {
         if (createRoot(element) && lastData != null) {
             render(sync);
@@ -240,6 +240,8 @@ public class ReactRoot {
         // A compiled bundle's preamble already ran this before its own body, but a hand-written global gets no preamble
         $wnd.lsfusion.__installReactHooks();
         this.@ReactRoot::root = $wnd.ReactDOM.createRoot(element);
+        // marks an element a React component draws in
+        element.classList.add('panel-react');
         this.@ReactRoot::context.element = element;
         return true;
     }-*/;
@@ -300,10 +302,6 @@ public class ReactRoot {
         else
             root.render(element);
     }-*/;
-
-
-
-
 
     public native void unmount()/*-{
         var root = this.@ReactRoot::root;

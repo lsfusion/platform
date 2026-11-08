@@ -3,7 +3,6 @@ package lsfusion.gwt.client.base.log;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.Park;
 import lsfusion.gwt.client.base.view.PlacedViews;
@@ -69,8 +68,6 @@ public class ReactLogPanel extends LogPanel {
 
     public ReactLogPanel(String custom, Runnable togglePinMode) {
         this.togglePinMode = togglePinMode;
-
-        GwtClientUtils.addClassName(panel, "panel-react");
 
         // the crossing BACK to the platform: the component renders the host node, we move the message's markup in. A
         // message's host is left as the component rendered it
