@@ -202,6 +202,7 @@ FORM uiSelectReadonly 'Read-only'
                            tagsInput 'Tags, input' = uiSelectTaskTags SELECT 'input'
     PROPERTIES(t) DISABLE disabledList 'List, disabled' = uiSelectTaskStatus SELECT 'list',
                           disabledDropdown 'Dropdown, disabled' = uiSelectTaskStatus SELECT 'dropdown',
+                          disabledTagsDropdown 'Tags, dropdown, disabled' = uiSelectTaskTags SELECT 'dropdown',
                           disabledTagsInput 'Tags, input, disabled' = uiSelectTaskTags SELECT 'input'
     FILTERS uiSelectTaskShown(t)
 ;
@@ -222,12 +223,13 @@ FORM uiSelectReadonlyKinds 'Read-only kinds'
     FILTERS uiSelectTaskShown(t)
 ;
 
-// the same element starts read-only and becomes writable when the task's flag is dropped
+// the same elements start read-only and become writable when the task's flag is dropped
 uiSelectUnlock (UiSelectTask t) { uiSelectTaskLocked(t) <- NULL; }
 FORM uiSelectReadonlyIf 'Read-only if'
     OBJECTS t = UiSelectTask PANEL
     PROPERTIES(t) READONLYIF uiSelectTaskLocked(t)
-                  statusHtmlValue 'Status, HTML, to the INPUT' = uiSelectTaskHtmlStatus SELECT 'buttonGroup' ON CHANGE uiSelectChangeHtmlStatus(t)
+                  statusHtmlValue 'Status, HTML, to the INPUT' = uiSelectTaskHtmlStatus SELECT 'buttonGroup' ON CHANGE uiSelectChangeHtmlStatus(t),
+                  tagsDropdown 'Tags, dropdown' = uiSelectTaskTags SELECT 'dropdown'
     PROPERTIES(t) unlock 'Unlock' = uiSelectUnlock
     FILTERS uiSelectTaskShown(t)
 ;

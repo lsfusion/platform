@@ -602,6 +602,27 @@ public class UiSelectIT extends UiTest {
         }
     }
 
+    // excel's drop-down lists of multiple-select - of HTML views, of several values - read-only or disabled open no list
+    // (a read-only one did, showing a pick the server did not take)
+    @Test
+    public void readOnlyDropdownsInExcel() throws Exception {
+        String task = seedTask();
+        try {
+            exec("UiSelect.uiSelectExcel");
+            page.reload();
+            page.locator("[lsfusion-container='System.root']").waitFor();
+            Locator form = open("UiSelect.uiSelect", "UiSelect.uiSelectReadonly");
+            for (String name : new String[] {"statusHtml", "tagsDropdown", "disabledTagsDropdown"})
+                opensNoList(property(form, name));
+            excelPicked(form, new String[] {"statusHtml"}, "New");
+            excelPicked(form, new String[] {"tagsDropdown", "disabledTagsDropdown"}, "red");
+            unchangedTask(form, task);
+            close(form);
+        } finally {
+            exec("UiSelect.uiSelectDefaultTheme");
+        }
+    }
+
     // excel's lists, buttons and input: each element draws text and HTML, a pick of one value and a toggle of several
     // values - a looked-up option in the input - shown by the other elements and kept on the server
     @Test
@@ -832,8 +853,8 @@ public class UiSelectIT extends UiTest {
     }
 
     // an element read-only: drawn so - the options marked, not disabled -, attempts to pick, drop and type changing
-    // nothing on the server, of every element kind; disabled: its controls disabled. The read-only select2 list of
-    // several values opens and takes a pick locally, so only the server's value is checked
+    // nothing on the server, of every element kind; disabled: its controls disabled. select2's drop-down list, read-only
+    // or disabled, opens no list (it did, taking a pick the server did not)
     @Test
     public void readOnly() throws Exception {
         String task = seedTask();
@@ -856,15 +877,12 @@ public class UiSelectIT extends UiTest {
         property(form, "dropdown").locator("select").selectOption(new SelectOption().setLabel("Done"));
         press(property(form, "dropdown").locator("select"), "ArrowDown");
         unchangedTask(form, task);
-        assertThat(property(form, "statusHtml").locator(".select2-selection")).hasClass(Pattern.compile("\\bis-readonly\\b"));
-        dropdownPick(form, "statusHtml", "Done");
-        unchangedTask(form, task);
-        assertThat(property(form, "tagsDropdown").locator(".select2-selection")).hasClass(Pattern.compile("\\bis-readonly\\b"));
-        Locator field = property(form, "tagsDropdown").locator(".select2-selection");
-        field.click();
-        resultOption("green").click();
-        resultOption("red").click(); // a drop of the picked option, in the open list
-        field.click();
+        for (String name : new String[] {"statusHtml", "tagsDropdown"}) {
+            assertThat(property(form, name).locator(".select2-selection")).hasClass(Pattern.compile("\\bis-readonly\\b"));
+            opensNoList(property(form, name));
+        }
+        assertThat(property(form, "statusHtml").locator(".select2-selection__rendered b")).hasText("New");
+        choices(form, new String[] {"tagsDropdown"}, "red");
         unchangedTask(form, task);
         assertThat(property(form, "tagsInput").locator(".selectize-input")).hasClass(Pattern.compile("\\blocked\\b"));
         property(form, "tagsInput").locator(".item a.remove").click();
@@ -879,13 +897,14 @@ public class UiSelectIT extends UiTest {
             assertThat(disabled.nth(i)).isDisabled();
         text(property(form, "disabledList"), "Done").click(new Locator.ClickOptions().setForce(true));
         assertThat(property(form, "disabledDropdown").locator("select")).isDisabled();
+        opensNoList(property(form, "disabledTagsDropdown"));
         assertThat(property(form, "disabledTagsInput").locator(".selectize-input")).hasClass(Pattern.compile("\\bdisabled\\b"));
         unchangedTask(form, task);
         close(form); // with nothing changed: no question about saving
     }
 
     // HTML and explicit INPUT kinds read-only: their controls stay enabled, but a click, a toggle, a drop or a typed
-    // lookup leaves the server's task unchanged, including the HTML multi lists and the input
+    // lookup leaves the server's task unchanged, including the HTML multi lists and the input; select2's open no list
     @Test
     public void htmlAndValueSelectionsStayReadOnly() throws Exception {
         String task = seedTask();
@@ -906,16 +925,10 @@ public class UiSelectIT extends UiTest {
         assertThat(property(form, "statusValue").locator("select")).hasClass(Pattern.compile("\\bis-readonly\\b"));
         dropdownPick(form, "statusValue", "Done");
         unchangedTask(form, task);
-        assertThat(property(form, "statusHtmlValue").locator(".select2-selection")).hasClass(Pattern.compile("\\bis-readonly\\b"));
-        dropdownPick(form, "statusHtmlValue", "Done");
-        unchangedTask(form, task);
-        assertThat(property(form, "tagsHtmlDropdown").locator(".select2-selection")).hasClass(Pattern.compile("\\bis-readonly\\b"));
-        Locator field = property(form, "tagsHtmlDropdown").locator(".select2-selection");
-        field.click();
-        assertThat(resultOptions().locator("i")).hasText(TAG_VIEWS);
-        resultOption("green").click();
-        resultOption("red").click();
-        field.click();
+        for (String name : new String[] {"statusHtmlValue", "tagsHtmlDropdown"}) {
+            assertThat(property(form, name).locator(".select2-selection")).hasClass(Pattern.compile("\\bis-readonly\\b"));
+            opensNoList(property(form, name));
+        }
         unchangedTask(form, task);
         assertThat(property(form, "tagsHtmlInput").locator(".selectize-input")).hasClass(Pattern.compile("\\blocked\\b"));
         assertThat(property(form, "tagsHtmlInput").locator(".selectize-input .item i")).hasText("red");
@@ -929,17 +942,19 @@ public class UiSelectIT extends UiTest {
     }
 
     // READONLYIF follows the task's flag: a pick changes nothing while it is set, then the same HTML element with an
-    // explicit INPUT becomes writable when the flag is dropped and the server keeps its pick
+    // explicit INPUT becomes writable when the flag is dropped and the server keeps its pick; select2's list opens only
+    // then
     @Test
     public void aSelectionBecomesWritable() throws Exception {
         String task = seedTask();
         Locator form = open("UiSelect.uiSelect", "UiSelect.uiSelectReadonlyIf");
         trackRequests();
-        Locator element = property(form, "statusHtmlValue").locator(".panel-renderer-value"), inputs = element.locator("input");
+        Locator element = property(form, "statusHtmlValue"), inputs = element.locator("input");
         drawn(element, "buttonGroup", true, STATUS_VIEWS, false);
         for (int i = 0; i < 3; i++)
             assertThat(inputs.nth(i)).hasClass(Pattern.compile("\\bis-readonly\\b"));
         text(element, "Lost").click();
+        opensNoList(property(form, "tagsDropdown"));
         unchangedTask(form, task);
         propertyButton(form, "unlock").click();
         for (int i = 0; i < 3; i++) {
@@ -948,8 +963,10 @@ public class UiSelectIT extends UiTest {
         }
         text(element, "Done").click();
         shown(element, STATUS_VIEWS, "Done");
+        dropdownPick(form, "tagsDropdown", "green");
+        choices(form, new String[] {"tagsDropdown"}, "green", "red");
         save(form);
-        check("UiSelect.uiSelectCheckTask", task, "New / Done / red");
+        check("UiSelect.uiSelectCheckTask", task, "New / Done / green, red");
         close(form);
     }
 
@@ -1153,6 +1170,18 @@ public class UiSelectIT extends UiTest {
                 assertThat(resultOptions()).hasCount(0);
             }
         }
+    }
+
+    // the field of select2 or excel's multiple-select read-only or disabled: neither the keys that open its list - Space,
+    // Enter - nor a click on it open it
+    private void opensNoList(Locator property) {
+        Locator field = property.locator(".select2-selection, .ms-choice"), options = resultOptions().or(excelOptions());
+        for (String key : new String[] {"Space", "Enter"}) {
+            press(field, key);
+            assertThat(options).hasCount(0);
+        }
+        field.click();
+        assertThat(options).hasCount(0);
     }
 
     // the options select2 shows picked in each drop-down list of several values, in their order

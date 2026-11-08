@@ -752,8 +752,16 @@ function _dropDown(selectAttributes, render, multi, shouldBeSelected, html, isBo
             lsfUtils.setFocusElement(element, mainElement);
             if(!isList) {
                 lsfUtils.setReadonlyFnc(element, (readonly) => {
+                    element.readonly = readonly;
                     _setReadonly(mainElement, readonly);
                 });
+            }
+            if (picker) { // read-only or disabled: no list - _setReadonly keeps only a native element from opening
+                let instance = $(select).data(isBootstrap ? 'select2' : 'multipleSelect'), open = instance.open;
+                instance.open = function () {
+                    if (element.readonly == null)
+                        open.apply(this, arguments);
+                };
             }
 
             // the open dropdown has no search field, so a typed char has nowhere to go but the grid, which would start its quick filter (closing the dropdown)
