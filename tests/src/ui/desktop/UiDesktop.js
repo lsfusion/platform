@@ -19,7 +19,7 @@ window.UiDesktop = function (props) {
     function place(name, className, style) {
         return e(Platform, { name: name, className: className, style: style });
     }
-    return e('div', { className: 'ui-desktop', 'data-toolbar-hidden': String(data['System.toolbar'].hidden),
+    return e('div', { className: 'ui-desktop', 'data-toolbar-hidden': String(data.byName['System.toolbar'].hidden),
                       style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         e('div', { className: 'ui-desktop-top', style: { display: 'flex', height: '48px' } },
             place('System.logo', 'ui-desktop-logo'),

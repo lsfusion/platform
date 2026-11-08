@@ -160,7 +160,7 @@
         // would never come back. The root's view says which entry a name keys: a component's descriptor under that
         // name; a form container's platform-drawn panel property's under its integration name, on its group's node; a
         // navigator window's NOCUSTOM element's under its canonical name in byName - hidden by its SHOWIF; the window
-        // layout's window entry at the top level under its canonical name - hidden by HIDE WINDOW or nothing to draw.
+        // layout's window entry under its canonical name in byName - hidden by HIDE WINDOW or nothing to draw.
         // Not a row's host: what hides a per-row renderer is its column
         var unsubscribed = function () { return function () {}; }; // a root with no store: nothing is ever hidden
         ns.usePlatform = function (name, options) {

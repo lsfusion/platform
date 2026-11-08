@@ -63,11 +63,16 @@ public final class ReactWindowLayout extends WindowLayout {
         public void resized(String name) {
             FlexTabbedPanel.scheduleOnResize(byName.get(name).getView());
         }
+
+        @Override
+        public JavaScriptObject entryOf(JavaScriptObject data, String name) {
+            return GwtClientUtils.getOwnField(GwtClientUtils.getOwnField(data, "byName"), name);
+        }
     });
 
-    // the projection: an entry per window under its canonical name, and nothing else - no state of the arrangement is
-    // the platform's
-    private JavaScriptObject data = JavaScriptObject.createObject();
+    // the projection: the windows in declared order and an entry per window under its canonical name in byName - no
+    // state of the arrangement is the platform's
+    private JavaScriptObject data = createData();
 
     public ReactWindowLayout(WindowsController controller, String custom, List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
         List<GAbstractWindow> navigatorWindows = new ArrayList<>(allWindows);
@@ -127,24 +132,29 @@ public final class ReactWindowLayout extends WindowLayout {
         return panel;
     }
 
+    private static native JavaScriptObject createData()/*-{
+        return { windows: [], byName: {} };
+    }-*/;
+
     // `name` is on the entry itself, so an entry passed around alone still knows its window, as on the entries of the
     // other windows' projections. `vertical`: the window draws its buttons in a column - its own orientation, and the
     // vertical navbar setting turns logo / root / system so whoever lays them out
     private static native void addEntry(JavaScriptObject data, String name, String caption, boolean hidden, boolean vertical)/*-{
-        data[name] = { name: name, caption: caption, hidden: hidden, vertical: vertical };
+        data.windows.push(name);
+        data.byName[name] = { name: name, caption: caption, hidden: hidden, vertical: vertical };
     }-*/;
 
     // structural sharing, the guarantee every projection gives: a copy in which only this window's entry is new, so an
     // entry that did not change keeps its reference - and the same snapshot when nothing changed at all
     private static native JavaScriptObject withHidden(JavaScriptObject data, String name, boolean hidden)/*-{
-        var entry = data[name];
+        var entry = data.byName[name];
         if (entry.hidden === hidden)
             return data;
 
         var changed = @lsfusion.gwt.client.base.GwtClientUtils::copyObject(Lcom/google/gwt/core/client/JavaScriptObject;)(entry);
         changed.hidden = hidden;
-        var next = @lsfusion.gwt.client.base.GwtClientUtils::copyObject(Lcom/google/gwt/core/client/JavaScriptObject;)(data);
+        var next = @lsfusion.gwt.client.base.GwtClientUtils::copyObject(Lcom/google/gwt/core/client/JavaScriptObject;)(data.byName);
         next[name] = changed;
-        return next;
+        return { windows: data.windows, byName: next };
     }-*/;
 }

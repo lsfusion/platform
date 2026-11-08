@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.navigator.window.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -71,20 +72,24 @@ public class ReactWindowLayoutTest extends GWTTestCase {
         return window;
     }
 
-    // every window of the navigator is an entry under its canonical name - System.forms too, which the standard layout
-    // puts in its centre on its own -, and HIDE WINDOW hides one from the start
+    // every window of the navigator is named in declared order and has an entry in byName - System.forms too, which
+    // the standard layout puts in its centre on its own -, and HIDE WINDOW hides one from the start
     public void testEveryWindowIsAnEntryUnderItsName() {
         JavaScriptObject data = data(element);
-        assertEquals("System.forms,System.log,System.root,System.toolbar", keys(data));
+        assertEquals("byName,windows", keys(data));
+        JsArrayString windows = JsniTestSupport.field(data, "windows").cast();
+        assertEquals("System.root,System.toolbar,System.log,System.forms", windows.join(","));
+        JavaScriptObject entries = JsniTestSupport.field(data, "byName");
+        assertEquals("System.forms,System.log,System.root,System.toolbar", keys(entries));
 
-        JavaScriptObject entry = JsniTestSupport.field(data, "System.toolbar");
+        JavaScriptObject entry = JsniTestSupport.field(entries, "System.toolbar");
         assertEquals("System.toolbar", string(entry, "name"));
         assertEquals("toolbar", string(entry, "caption"));
         assertFalse(bool(entry, "hidden"));
         assertTrue(bool(entry, "vertical"));
 
-        assertTrue(bool(JsniTestSupport.field(data, "System.log"), "hidden"));
-        assertFalse(bool(JsniTestSupport.field(data, "System.root"), "vertical"));
+        assertTrue(bool(JsniTestSupport.field(entries, "System.log"), "hidden"));
+        assertFalse(bool(JsniTestSupport.field(entries, "System.root"), "vertical"));
     }
 
     // a navigator window with nothing to draw is hidden as data, in a snapshot where only its entry is new; an update
@@ -98,12 +103,38 @@ public class ReactWindowLayoutTest extends GWTTestCase {
 
         JavaScriptObject after = data(element);
         assertNotSame(before, after);
-        assertTrue(bool(JsniTestSupport.field(after, "System.toolbar"), "hidden"));
-        assertSame(JsniTestSupport.field(before, "System.root"), JsniTestSupport.field(after, "System.root"));
-        assertSame(JsniTestSupport.field(before, "System.forms"), JsniTestSupport.field(after, "System.forms"));
+        assertSame(JsniTestSupport.field(before, "windows"), JsniTestSupport.field(after, "windows"));
+        JavaScriptObject beforeEntries = JsniTestSupport.field(before, "byName");
+        JavaScriptObject afterEntries = JsniTestSupport.field(after, "byName");
+        assertNotSame(beforeEntries, afterEntries);
+        assertNotSame(JsniTestSupport.field(beforeEntries, "System.toolbar"), JsniTestSupport.field(afterEntries, "System.toolbar"));
+        assertFalse(bool(JsniTestSupport.field(beforeEntries, "System.toolbar"), "hidden"));
+        assertTrue(bool(JsniTestSupport.field(afterEntries, "System.toolbar"), "hidden"));
+        assertSame(JsniTestSupport.field(beforeEntries, "System.root"), JsniTestSupport.field(afterEntries, "System.root"));
+        assertSame(JsniTestSupport.field(beforeEntries, "System.log"), JsniTestSupport.field(afterEntries, "System.log"));
+        assertSame(JsniTestSupport.field(beforeEntries, "System.forms"), JsniTestSupport.field(afterEntries, "System.forms"));
 
         controller.updateVisibility(visibility);
         assertSame(after, data(element));
+    }
+
+    // <Platform> hides a window's place through the entry the root's view returns, so that entry must come from byName
+    public void testAHiddenWindowIsFoundInByName() {
+        JavaScriptObject data = data(element);
+        JavaScriptObject entries = JsniTestSupport.field(data, "byName");
+        assertNotNull(entries);
+        assertSame(JsniTestSupport.field(entries, "System.log"), entryOf(element, data, "System.log"));
+        assertTrue(bool(entryOf(element, data, "System.log"), "hidden"));
+        assertFalse(bool(entryOf(element, data, "System.toolbar"), "hidden"));
+
+        Map<GAbstractWindow, Boolean> visibility = new HashMap<>();
+        visibility.put(toolbar, false);
+        controller.updateVisibility(visibility);
+        assertTrue(bool(entryOf(element, data(element), "System.toolbar"), "hidden"));
+
+        visibility.put(toolbar, true);
+        controller.updateVisibility(visibility);
+        assertFalse(bool(entryOf(element, data(element), "System.toolbar"), "hidden"));
     }
 
     // a window placed goes into its host and fills it, and taken away it goes back to wait in the park - in the
@@ -169,6 +200,9 @@ public class ReactWindowLayoutTest extends GWTTestCase {
     }-*/;
     private static native void unmount(ReactWindowLayout element, String name, Element host) /*-{
         element.@lsfusion.gwt.client.navigator.window.view.ReactWindowLayout::root.@lsfusion.gwt.client.base.view.ReactRoot::context.view.unmount(name, host);
+    }-*/;
+    private static native JavaScriptObject entryOf(ReactWindowLayout element, JavaScriptObject data, String name) /*-{
+        return element.@lsfusion.gwt.client.navigator.window.view.ReactWindowLayout::root.@lsfusion.gwt.client.base.view.ReactRoot::context.view.entryOf(data, name);
     }-*/;
     private static native String keys(JavaScriptObject data) /*-{ return Object.keys(data).sort().join(','); }-*/;
     private static native String string(JavaScriptObject object, String name) /*-{ return object[name]; }-*/;

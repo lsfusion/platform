@@ -837,7 +837,7 @@ The actions run on the server, so the tab is selected when the answer comes, not
 | [A navigator window](#navigator-window) | Canonical name of a `NOCUSTOM` element of this window | Yes, while this window does not draw the element | None | The element's `SHOWIF` | No | The [navigator controller](How-to_Custom_view_controller.md#navigator-controller) |
 | [The forms window](#forms-window) | An open form's `name` | No, even a loading form already has a view | `lsf-platform`, `data-lsf-sid` | No entry `hidden` | Yes | `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen` |
 | [The log window](#log-window) | A logged message's `name` | No | None | No entry `hidden` | No | `togglePin` |
-| [The window layout](#window-layout) | A window's canonical name | No | `lsf-platform`, `data-lsf-sid` | `HIDE WINDOW`, or an empty navigator window without its own component, except `System.root` | Yes | Empty |
+| [The window layout](#window-layout) | A window's canonical name | No | `lsf-platform`, `data-lsf-sid` | `data.byName[name].hidden`: `HIDE WINDOW`, or an empty navigator window without its own component, except `System.root` | Yes | Empty |
 
 ### A navigator window {#navigator-window}
 
@@ -1206,7 +1206,7 @@ const { Platform } = window.lsfusion;
 function AppLayout({ data }) {
     const [menu, setMenu] = React.useState(true);
     // the menu's column is there while the user has not folded it and the platform has something to show in it
-    const showMenu = menu && !data['System.toolbar'].hidden;
+    const showMenu = menu && !data.byName['System.toolbar'].hidden;
     return <div className={showMenu ? 'app' : 'app app-no-menu'}>
         <header className="app-top">
             <Platform name="System.logo"/>
@@ -1216,7 +1216,7 @@ function AppLayout({ data }) {
         </header>
         {showMenu && <aside className="app-menu"><Platform name="System.toolbar"/></aside>}
         <main className="app-work"><Platform name="System.forms"/></main>
-        {!data['System.log'].hidden && <footer className="app-log"><Platform name="System.log"/></footer>}
+        {!data.byName['System.log'].hidden && <footer className="app-log"><Platform name="System.log"/></footer>}
     </div>;
 }
 ```
@@ -1235,7 +1235,14 @@ The component never draws a window: it renders a place for each window it wants 
 
 Three mistakes are reported in the page: a name no window has, a second `<Platform>` for the same window, and a `<Platform>` given a `row` even though a window is placed whole.
 
-`props.data` holds an entry for each window - every window, `System.forms` included - under its canonical name, `data['System.toolbar']`:
+`props.data` describes every window, `System.forms` included:
+
+| Field | Meaning |
+| --- | --- |
+| `windows` | Array of the windows' canonical names in declared order, with `System.forms` last |
+| `byName` | Entries under the windows' canonical names, such as `data.byName['System.toolbar']` |
+
+Each entry in `byName` has:
 
 | Field | Meaning |
 | --- | --- |
@@ -1246,7 +1253,7 @@ Three mistakes are reported in the page: a name no window has, a second `<Platfo
 
 `props.controller` is empty: the windows are drawn and changed by the platform, and nothing about their arrangement is the platform's.
 
-A window the component places nowhere is not shown, and lives on: its navigator buttons are refreshed, a form opened into it is open - hidden, as a background tab is -, its messages are logged. Placed later, it is shown as it is then. So a component that places only the windows it knows hides a window another module adds. A component meant to take any window places the rest by the keys of `data`.
+A window the component places nowhere is not shown, and lives on: its navigator buttons are refreshed, a form opened into it is open - hidden, as a background tab is -, its messages are logged. Placed later, it is shown as it is then. So a component that places only the windows it knows hides a window another module adds. A component meant to take any window places the rest by `data.windows`.
 
 What the standard layout does with its own panels is not done under a component: the user dragging the border between windows and the sizes kept between sessions, the tabs of windows that share a place, the vertical navbar turning the top strip into a column, the unpinned navigator and log popping out over the form. The pin modes are the standard layout's way of laying the navigator and the log out, so a window the component lays out is not given the classes that collapse it and pop it out over the form or show the top strip's captions only on hover: pinning there changes no layout. The full screen (`ALT+F11`) is as without a component: `System.forms` is drawn alone over the page, and the component is hidden meanwhile - still mounted, its state kept. It is not told of the full screen: `fullScreen` is projected to the [component](#forms-window) of `System.forms` alone. [`Service.resetWindowsLayout`](../paradigm/System_Service.md) leaves the full screen and puts back the windows' declared visibility, and it does not reach sizes the component keeps itself.
 
