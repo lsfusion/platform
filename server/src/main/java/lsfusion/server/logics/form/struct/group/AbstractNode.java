@@ -37,6 +37,10 @@ public abstract class AbstractNode extends ImmutableObject {
     }
     
     public void finalizeAroundInit() {
+        finalizeParent();
+    }
+
+    public void finalizeParent() {
         if(parent != null)
             parent.finalizeChanges();
     }

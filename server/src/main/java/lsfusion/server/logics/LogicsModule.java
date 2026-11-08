@@ -483,6 +483,10 @@ public abstract class LogicsModule {
         } else if (baseLM.privateGroup != null) {
             baseLM.privateGroup.add(group, version);
         }
+        // nothing gives a group another parent, so the one it gets here is final at once : the parse reads a group's parent
+        // from every thread - each registration into the private group drops the caches of its parents, each property a form
+        // draws finds the container of its group -, and the final value of an NF is read (allowRead) without its monitor
+        group.finalizeParent();
         group.system = !toCreateContainer;
         addGroup(group);
         return group;
