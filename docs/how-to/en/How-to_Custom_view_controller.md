@@ -21,6 +21,8 @@ That is the name a view has, everywhere: `props.data` is keyed by it and every c
 | [CUSTOM object group](How-to_Custom_components_objects.md) | `OBJECTS g = Cls CUSTOM 'name'` | `render` / `update` callbacks | `controller.form` |
 | [CUSTOM property cell](How-to_Custom_components_properties.md) | `PROPERTIES p CUSTOM 'name'` | `render` / `update` callbacks | `controller.form` |
 
+In a form's React view, requests through controller members or `controller.form` return `Promise`s. The window operations `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen`, `togglePin` and `activate` return nothing.
+
 A **React view** renders an entire custom container, so the `controller` in its `props` is that container's own controller — its members below are called on it directly, and the form's controller is its `form`, `props.controller.form`.
 
 A **CUSTOM object group** and a **CUSTOM property cell** are rendered by classic `render(element, controller)` / `update(element, controller, ...)` callbacks — `update` also receives the group's `list` of rows, or the cell's `value`. The `controller` they receive is a *local* controller scoped to that one group or cell: it adds the helpers those views need — value, current-row and styling getters and `diff` / `clearDiff` for an object group, the `change` edit event for a property cell — documented in [Custom components (objects)](How-to_Custom_components_objects.md) and [Custom components (properties)](How-to_Custom_components_properties.md). The local controller exposes the form controller as `controller.form`, so the form-level methods below are reached through it:
@@ -319,13 +321,13 @@ A single key the view needs regardless of the editing state — a shortcut of it
 
 ### The navigator controller {#navigator-controller}
 
-An [`INTERNAL CLIENT`](../language/INTERNAL_operator.md) action placed in [`NAVIGATOR`](../language/NAVIGATOR_statement.md) receives a controller as well, but a navigator one: there is no form, so it has none of the form methods above. It has the four server calls — `exec`, `eval`, `evalAction`, `change` — which run in the navigator's own session, a new one per call that is never applied, so a `change` made here is not kept. And it has `activate`:
+An [`INTERNAL CLIENT`](../language/INTERNAL_operator.md) action placed in [`NAVIGATOR`](../language/NAVIGATOR_statement.md) receives a controller as well, but a navigator one: there is no form, so it has none of the form methods above. It has the four server calls — `exec`, `eval`, `evalAction`, `change` — which run in the navigator's own session, a new one per call that is never applied, so a `change` made here is not kept. Each returns a `Promise`. And it has `activate`:
 
 - `activate(canonicalName[, event])` — does what clicking that navigator element does: selects the folder, or runs the action, opening its form the same optimistic way. `canonicalName` is the element's [canonical name](../language/IDs.md). `event` is the event of the click, React's own or the browser's, and can be omitted when activating from code that has none.
 
 The React components of a [navigator window](How-to_Custom_React_views.md#navigator-window), the [forms window](How-to_Custom_React_views.md#forms-window), the [log window](How-to_Custom_React_views.md#log-window) and the [window layout](How-to_Custom_React_views.md#window-layout) get all five methods directly on `props.controller`. The forms window and the log also keep their own window operations.
 
-Activating an element that does not exist, or one hidden by a `SHOWIF` — its own or that of a folder above it — throws. Running an action reports no completion, just as a click does not.
+Activating an element that does not exist, or one hidden by a `SHOWIF` — its own or that of a folder above it — throws. `activate` returns nothing and reports no completion, just as a click does not.
 
 ```js
 window.openMonthlyReport = function (controller) {
