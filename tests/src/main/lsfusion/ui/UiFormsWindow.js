@@ -11,6 +11,7 @@
 window.UiFormsWindowBoard = function (props) {
     var e = React.createElement, data = props.data, controller = props.controller;
     var placing = React.useState('all'), place = placing[0];
+    var refusal = React.useState('');
     window.uiFormsWindowBoard = { data: data, controller: controller, place: placing[1] };
     if (data.open.length === 0)
         return null;
@@ -26,7 +27,7 @@ window.UiFormsWindowBoard = function (props) {
         : place === 'second' ? [host('second', current)]
         : [host('none', 'form-none')];
 
-    return e('div', { className: 'ui-forms-window-board-view' },
+    return e('div', { className: 'ui-forms-window-board-view', 'data-close-refusal': refusal[0] },
         e('div', { className: 'ui-forms-window-board-strip' },
             data.open.map(function (name) {
                 var entry = data.byName[name];
@@ -34,7 +35,14 @@ window.UiFormsWindowBoard = function (props) {
                                    className: 'ui-forms-window-board-tab' + (entry.selected ? ' ui-forms-window-board-selected' : '')
                                               + (entry.blocked ? ' ui-forms-window-board-blocked' : '') },
                     e('button', { className: 'ui-forms-window-board-select', onClick: function () { controller.select(name); } }, entry.caption),
-                    e('button', { className: 'ui-forms-window-board-close', onClick: function () { controller.close(name); } }, 'x'));
+                    e('button', { className: 'ui-forms-window-board-close', onClick: function () {
+                        try {
+                            controller.close(name);
+                            refusal[1]('');
+                        } catch (error) {
+                            refusal[1](error.message);
+                        }
+                    } }, 'x'));
             }),
             e('button', { className: 'ui-forms-window-board-close-all', onClick: function () { controller.closeAll(); } }, 'Close all')),
         e('div', { className: 'ui-forms-window-board-modes' },

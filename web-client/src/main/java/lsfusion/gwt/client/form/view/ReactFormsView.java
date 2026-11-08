@@ -185,8 +185,7 @@ public class ReactFormsView implements FormsView {
         FormDockable dockable = byName.get(name);
         if (dockable == null) { // a name no open form has - a typo, or one kept after the form closed. Without this the
             // index would be -1, and making "no form" current would blur the one the user is in and leave nothing current
-            GwtClientUtils.logCustomViewError("'" + name + "' is not an open form, so it cannot be made the current one");
-            return;
+            throw GwtClientUtils.refusal("'" + name + "' is not an open form, so it cannot be made the current one");
         }
 
         // the window's answer to "make this the current one", not this view's: the form asked for may be the one
@@ -197,19 +196,15 @@ public class ReactFormsView implements FormsView {
 
     public void closeForm(String name) {
         FormDockable dockable = byName.get(name);
-        if (dockable == null) { // the same answer select gives: a name no open form has is the component's mistake
-            GwtClientUtils.logCustomViewError("'" + name + "' is not an open form, so it cannot be closed");
-            return;
-        }
+        if (dockable == null)
+            throw GwtClientUtils.refusal("'" + name + "' is not an open form, so it cannot be closed");
 
         // a form with another one opened on top of it cannot be closed - the tab strip says that by disabling the
         // close button, and the projection says it with `blocked`. Only the button is guarded there, though, and this
         // goes straight to the form, so without this the contract would hold only for a component that reads the flag
-        if (dockable.hasBlockingForm()) {
-            GwtClientUtils.logCustomViewError("form '" + name + "' is blocked by a form opened from it and cannot be closed"
+        if (dockable.hasBlockingForm())
+            throw GwtClientUtils.refusal("form '" + name + "' is blocked by a form opened from it and cannot be closed"
                     + "; the entry's `blocked` says so before it is tried");
-            return;
-        }
 
         dockable.closePressed(); // a request: the form leaves the projection when it is actually hidden
     }
@@ -221,7 +216,7 @@ public class ReactFormsView implements FormsView {
                 return;
             }
 
-        GwtClientUtils.logCustomViewError("'" + mode + "' is not an edit mode; `editModes` in the projection has the ones there are");
+        throw GwtClientUtils.refusal("'" + mode + "' is not an edit mode; `editModes` in the projection has the ones there are");
     }
 
     public void toggleFullScreen() {

@@ -654,7 +654,6 @@ public class UiFormsWindowIT extends UiTest {
     // refused, as the standard tab disables its close button, until the child is closed
     @Test
     public void aFormBlockedByItsChildIsNotClosed() throws Exception {
-        List<String> console = console();
         Locator launcher = launcher(), board = window("board");
         action(launcher, "uiFormsWindowFirstIntoBoard").click();
         Locator first = in(board, "uiFormsWindowFirst");
@@ -665,7 +664,8 @@ public class UiFormsWindowIT extends UiTest {
         assertThat(opener).hasClass(Pattern.compile("ui-forms-window-board-blocked"));
 
         opener.locator(".ui-forms-window-board-close").click();
-        waitFor(console, "is blocked by a form opened from it and cannot be closed");
+        assertThat(board.locator(".ui-forms-window-board-view")).hasAttribute("data-close-refusal",
+                Pattern.compile("is blocked by a form opened from it and cannot be closed"));
         close(child);
         assertThat(first).isVisible(); // the close refused did not close it
         assertThat(opener).not().hasClass(Pattern.compile("ui-forms-window-board-blocked"));
@@ -1018,13 +1018,6 @@ public class UiFormsWindowIT extends UiTest {
         }
     }
 
-    // what the page logs from now on
-    private List<String> console() {
-        List<String> messages = new ArrayList<>();
-        page.onConsoleMessage(message -> messages.add(message.text()));
-        return messages;
-    }
-
     // until that many requests of the kind are sent, failing with how many were
     private void waitForSent(List<String> requests, int count) {
         long deadline = System.currentTimeMillis() + 10_000;
@@ -1035,12 +1028,4 @@ public class UiFormsWindowIT extends UiTest {
         }
     }
 
-    private void waitFor(List<String> console, String text) {
-        long deadline = System.currentTimeMillis() + 10_000;
-        while (console.stream().noneMatch(message -> message.contains(text))) {
-            if (System.currentTimeMillis() > deadline)
-                throw new AssertionError("the page never logged '" + text + "', it logged " + console);
-            page.waitForTimeout(100);
-        }
-    }
 }

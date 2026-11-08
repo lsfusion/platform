@@ -986,6 +986,8 @@ and each edit mode in `editModes` carries what the mode button shows it with:
 
 `props.controller` does what only the platform can do to an open form: `select(name)` makes it the current one, the way clicking its tab does, and `close(name)` asks it to close, the way its close button does. Closing is a request — a form with unsaved changes asks the user first and may stay open — so a form leaves `open` when it is actually closed, not when `close` is called.
 
+`select` and `close` refuse a name no open form has, `close` refuses a blocked form, and `setEditMode` refuses a mode not in `editModes`. The call throws an `Error` with the reason in its `message`.
+
 A form the component places nowhere stays **open and hidden**, which is what a background tab already is: the standard strip only hides the forms it does not show. So a component that places only the current form gives an application without tabs, where every form opened so far is still there, and placing one again shows it as it was left. A form is closed only through `close(name)` or `closeAll()`, or the way it is closed without a component view.
 
 In a forms window drawn by a React component, form shortcuts act on the current form even if the component places it nowhere. The component should therefore place the current form.

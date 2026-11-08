@@ -12,6 +12,7 @@ import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestAction;
+import lsfusion.gwt.client.form.controller.EditMode;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.FormsWindowController;
 import lsfusion.gwt.client.form.controller.GFormControllerTest;
@@ -117,6 +118,43 @@ public class ReactFormsViewTest extends GWTTestCase {
         assertSame(last, content.getParentElement());
     }
 
+    // a refused call reaches the component as an Error with the reason alone, so it can catch and show that reason
+    public void testControllerRefusesSelectingAFormThatIsNotOpen() {
+        assertEquals("'nope' is not an open form, so it cannot be made the current one",
+                refusalOf(controller(view), "select", "nope"));
+    }
+
+    public void testControllerRefusesClosingAFormThatIsNotOpen() {
+        assertEquals("'nope' is not an open form, so it cannot be closed",
+                refusalOf(controller(view), "close", "nope"));
+    }
+
+    public void testControllerRefusesClosingAFormBlockedByItsChild() {
+        FormDockable form = open("First"), child = open("Child");
+        form.setBlockingForm(child);
+        view.formsChanged();
+        assertEquals("form '" + form.formName + "' is blocked by a form opened from it and cannot be closed"
+                        + "; the entry's `blocked` says so before it is tried",
+                refusalOf(controller(view), "close", form.formName));
+        assertTrue(formsWindow.getForms().contains(form));
+    }
+
+    public void testControllerRefusesAnUnknownEditMode() {
+        assertEquals("'nope' is not an edit mode; `editModes` in the projection has the ones there are",
+                refusalOf(controller(view), "setEditMode", "nope"));
+    }
+
+    public void testControllerChoosesAKnownEditMode() {
+        int previous = FormsController.getEditModeIndex();
+        EditMode mode = previous == EditMode.DIALOG.getIndex() ? EditMode.DEFAULT : EditMode.DIALOG;
+        try {
+            JsniTestSupport.call(controller(view), "setEditMode", mode.name());
+            assertEquals(mode.getIndex(), FormsController.getEditModeIndex());
+        } finally {
+            formsController.setEditMode(EditMode.getMode(previous));
+        }
+    }
+
     // a form the window is waiting for - an async open's placeholder, so with the caption its open asked for -, put in
     // as FormsWindowController puts it, and the window told
     private FormDockable open(String caption) {
@@ -143,6 +181,19 @@ public class ReactFormsViewTest extends GWTTestCase {
     }-*/;
     private static native JavaScriptObject data(ReactFormsView view) /*-{
         return view.@lsfusion.gwt.client.form.view.ReactFormsView::root.@lsfusion.gwt.client.base.view.ReactRoot::store.getSnapshot();
+    }-*/;
+    private static native JavaScriptObject controller(ReactFormsView view) /*-{
+        return view.@lsfusion.gwt.client.form.view.ReactFormsView::root.@lsfusion.gwt.client.base.view.ReactRoot::context.controller;
+    }-*/;
+    private static native String refusalOf(JavaScriptObject controller, String method, String name) /*-{
+        try {
+            controller[method](name);
+        } catch (error) {
+            if (error instanceof Error)
+                return error.message;
+            throw error;
+        }
+        return null;
     }-*/;
     private static native void mount(ReactFormsView view, String name, Element host) /*-{
         view.@lsfusion.gwt.client.form.view.ReactFormsView::root.@lsfusion.gwt.client.base.view.ReactRoot::context.view.mount(name, host);
