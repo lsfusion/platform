@@ -248,7 +248,7 @@ public class UiSelectIT extends UiTest {
     // clear the value - hidden where the value has to be there -; as HTML and of several values select2's, its list opened
     // by a click on it. A pick of one value, given to the property or to its INPUT, of one value or none the empty option
     // clearing it; of several values a toggle in the list it opens, which a pick leaves open and a click on the list's
-    // field closes
+    // field closes, as Escape does after a click in the list
     @Test
     public void aDropdownOfEachKind() throws Exception {
         String task = seedTask();
@@ -299,8 +299,13 @@ public class UiSelectIT extends UiTest {
         property(form, "tagsHtml").locator(".select2-selection").click();
         resultOption("red").click(); // picked: no longer
         choices(form, TAGS, "blue", "green");
-        property(form, "tagsHtml").locator(".select2-selection").click();
+        // the keys after a click in the list go on in it, Escape closing it, not the form: the field has the focus back
+        // (the click moved it into the list, outside the element - Escape went to the form, which asked to close)
+        press("ArrowUp"); // from red, the option clicked
+        assertThat(resultOption("green")).hasClass(Pattern.compile("\\bselect2-results__option--highlighted\\b"));
+        press("Escape");
         assertThat(resultOptions()).hasCount(0);
+        assertThat(dialog("close the form")).hasCount(0);
         save(form);
         check("UiSelect.uiSelectCheckTask", task, "Lost / Lost / blue, green");
 
@@ -360,7 +365,7 @@ public class UiSelectIT extends UiTest {
     }
 
     // the keys in select2's list of several values, as text and HTML: Space opens it, up moves to the previous option,
-    // Enter toggles it and leaves the list open; a click on the field closes it, and the server keeps both picks
+    // Enter toggles it and leaves the list open, Escape closes it; the server keeps both picks
     @Test
     public void aDropdownOfSeveralValuesByTheKeys() throws Exception {
         String task = seedTask();
@@ -377,7 +382,7 @@ public class UiSelectIT extends UiTest {
             String[] picked = name.equals("tags") ? new String[] {"green", "red"} : TAG_VIEWS;
             choices(form, TAGS, picked);
             assertThat(resultOptions()).hasText(TAG_VIEWS); // the pick leaves the list open
-            field.click(); // Escape after a pick goes to the form, a bug of its own
+            press("Escape");
             assertThat(resultOptions()).hasCount(0);
             save(form);
             check("UiSelect.uiSelectCheckTask", task, "New / New / " + String.join(", ", picked));

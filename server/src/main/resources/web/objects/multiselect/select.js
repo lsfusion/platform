@@ -569,9 +569,11 @@ function _selectPicker(selection) {
 
         function changeProperty(e, element, value) {
             let object = e.params.data.element.object;
-            if (multi)
+            if (multi) {
                 element.controller.changeProperty('selected', object, value);
-            else
+                // the click in the list, which stays open, took the focus there, where select2 takes no keys (the form did)
+                $(element.select).data('select2').$selection[0].focus();
+            } else
                 _changeSingleDropdownProperty(object, element, changeValue)
         }
 
