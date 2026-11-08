@@ -47,7 +47,7 @@ export function OrderBoard(props) {
 
 The component is first drawn with the first projection of its container, once the form's first data has arrived, and never before it: `props.data` has the shape described below from the very first render, so nothing in it needs a guard against a projection that has not arrived yet.
 
-`props.data` is the form projection — its own for each `CUSTOM REACT` container, holding only what that container draws or places, so a second React container on the form gets a separate one, and a [controller](How-to_Custom_view_controller.md) of its own with it.
+`props.data` is the form projection — its own for each React custom container, holding only what that container draws or places, so a second React container on the form gets a separate one, and a [controller](How-to_Custom_view_controller.md) of its own with it.
 
 A view reads only its own container's parts, and changes them through its controller's members; what another container draws, or the platform, it changes through the form's controller, by names ([across containers](How-to_Custom_view_controller.md#across-containers)). What containers share is the form itself — its current objects, sortings, filters and session — so a filter or a current object changed in one container shows in another, as it does in the standard client. A page built of such containers is in [A page of several containers](#several-containers).
 
@@ -68,7 +68,7 @@ Every property, group and container the projection carries is an object in `data
 A group in `PANEL` view has only its panel properties and its filter groups: no rows, sortings, user filters,
 filter controls or toolbar — the platform shows none of them for it either.
 
-A component's place is found by walking up from its container: a `CUSTOM REACT` container is the answer, and a container with a view of its own — `custom = NULL`, or a custom of its own — ends the walk, since that view draws everything under it. Whether the component itself has one decides only which entry it has there — its content, or the [entry that labels it](#placing) — never where. A view that draws the rows — the grid is inside the custom container, and neither it nor a container between them has a view of its own, so React renders them from `data` rather than the platform — gets `props.data.<g>` = `{ list, byKey, keys, options, orders, properties }` for that group object SID `g` — a group of a tree has no `orders`: the [tree](#trees)'s sortings are its own node's —, where `list` is the array of rows in display order, `byKey` maps a row's key string to the same row object, and `keys` is the array of those key strings in the same order. `byKey` is keyed by application data, so it is built with NO prototype: a row whose key is the string `__proto__` is an ordinary entry in it, and `byKey.hasOwnProperty` and the other `Object.prototype` methods are not there to call — read it as `byKey[k]`, and test with `k in byKey` or `Object.keys(byKey)`. Wherever the view draws the rows, `list`, `byKey` and `keys` are all present: they are empty while the group has no rows — before its first rows arrive, say — so the view reads `props.data.<g>.list` directly without guarding a missing field. A grid (or a tree) the form hides with `SHOWIF` says so in [its own entry](#display-options), `data['GRID(g)'].hidden` — a tree's is `data['GRID(TREE t)']`, one for all its groups —, and its rows stay as the server last sent them, as the platform's own grid keeps them — the server may stop refreshing them while the grid is hidden — so draw them only while the grid is not hidden. Where it does not, the node has none of them, and no `options` or `orders` (the group's sortings, the order those rows are drawn in) either: there are no rows here for them to be about, and a panel property of the group may take one of those names. A group in `PANEL` view draws its rows nowhere — the server sends it none, only its current object —, so its node is such a one wherever its grid is, the container its grid is in included: its panel properties, and no `change(row)`. A group **no part of which** the view draws is absent from `props.data` altogether (`props.data.<g>` is `undefined`): a container merely standing beside a platform-drawn grid gets nothing, and neither does one that only frames it (`MOVE GRID(g) { custom = NULL; }` — there the platform draws the rows, so the container gets the [entry that labels what it places](#placing) and no rows; one that holds `FILTERS(g)` as well gets the group's [user filters](#filters)). Asking [`<List>`](#rendering-rows) for rows that are not there is a mistake in the view, and it throws: the view shows the reason in its place and in the console. A group's panel properties are members of the group node in the container each property itself sits in, keyed by integration SID. The top level of `props.data` is the node of the empty group (the form level): each property of the empty group is a member of `props.data` directly, under its integration SID. A list property's column attributes are a member of the group too, at `data.<g>.<prop>` — one entry per column — while its per-row value and cell attributes live on each row. Actions React draws are projected the same way as properties — an action drawn on a group is a field of each row (a list action) or of the group node (a panel action), an object of its attributes like a property, so `controller.<group>.<action>.exec(row)` runs it (a panel action's `.exec()` takes no row). Its `value` field is there too but carries nothing. An action the platform draws has only its entry, and the platform's button runs it. `options` is the group's own [display options](#display-options); `properties` names every PROPERTY entry this node carries, shown or not, in the form's order — not everything on the node, which also holds what the projection itself defines (`list`, `byKey`, `keys`, `options`, `orders`) and is known by name rather than discovered. The number of rows is `list.length`. Each row carries:
+A component's place is found by walking up from its container: a React custom container is the answer, and a container with a view of its own — `custom = NULL`, or a custom of its own — ends the walk, since that view draws everything under it. Whether the component itself has one decides only which entry it has there — its content, or the [entry that labels it](#placing) — never where. A view that draws the rows — the grid is inside the custom container, and neither it nor a container between them has a view of its own, so React renders them from `data` rather than the platform — gets `props.data.<g>` = `{ list, byKey, keys, options, orders, properties }` for that group object SID `g` — a group of a tree has no `orders`: the [tree](#trees)'s sortings are its own node's —, where `list` is the array of rows in display order, `byKey` maps a row's key string to the same row object, and `keys` is the array of those key strings in the same order. `byKey` is keyed by application data, so it is built with NO prototype: a row whose key is the string `__proto__` is an ordinary entry in it, and `byKey.hasOwnProperty` and the other `Object.prototype` methods are not there to call — read it as `byKey[k]`, and test with `k in byKey` or `Object.keys(byKey)`. Wherever the view draws the rows, `list`, `byKey` and `keys` are all present: they are empty while the group has no rows — before its first rows arrive, say — so the view reads `props.data.<g>.list` directly without guarding a missing field. A grid (or a tree) the form hides with `SHOWIF` says so in [its own entry](#display-options), `data['GRID(g)'].hidden` — a tree's is `data['GRID(TREE t)']`, one for all its groups —, and its rows stay as the server last sent them, as the platform's own grid keeps them — the server may stop refreshing them while the grid is hidden — so draw them only while the grid is not hidden. Where it does not, the node has none of them, and no `options` or `orders` (the group's sortings, the order those rows are drawn in) either: there are no rows here for them to be about, and a panel property of the group may take one of those names. A group in `PANEL` view draws its rows nowhere — the server sends it none, only its current object —, so its node is such a one wherever its grid is, the container its grid is in included: its panel properties, and no `change(row)`. A group **no part of which** the view draws is absent from `props.data` altogether (`props.data.<g>` is `undefined`): a container merely standing beside a platform-drawn grid gets nothing, and neither does one that only frames it (`MOVE GRID(g) { custom = NULL; }` — there the platform draws the rows, so the container gets the [entry that labels what it places](#placing) and no rows; one that holds `FILTERS(g)` as well gets the group's [user filters](#filters)). Asking [`<List>`](#rendering-rows) for rows that are not there is a mistake in the view, and it throws: the view shows the reason in its place and in the console. A group's panel properties are members of the group node in the container each property itself sits in, keyed by integration SID. The top level of `props.data` is the node of the empty group (the form level): each property of the empty group is a member of `props.data` directly, under its integration SID. A list property's column attributes are a member of the group too, at `data.<g>.<prop>` — one entry per column — while its per-row value and cell attributes live on each row. Actions React draws are projected the same way as properties — an action drawn on a group is a field of each row (a list action) or of the group node (a panel action), an object of its attributes like a property, so `controller.<group>.<action>.exec(row)` runs it (a panel action's `.exec()` takes no row). Its `value` field is there too but carries nothing. An action the platform draws has only its entry, and the platform's button runs it. `options` is the group's own [display options](#display-options); `properties` names every PROPERTY entry this node carries, shown or not, in the form's order — not everything on the node, which also holds what the projection itself defines (`list`, `byKey`, `keys`, `options`, `orders`) and is known by name rather than discovered. The number of rows is `list.length`. Each row carries:
 
 | Field | Meaning |
 | --- | --- |
@@ -455,11 +455,11 @@ The entry holds `caption`, `image` - a property's `comment` too - and, while the
 
 A property is named by its integration SID, table or panel, its entry and its place alike. Its entry sits on its group's node, where the entry of a property React draws would be, and a `<Platform>` names a panel one the way that entry is reached: `<Platform name="o.note"/>` for `data.o.note`, `<Platform name="note"/>` for the empty group's `data.note`; it hides the host while that entry says `hidden`. A table one's per-row renderer is named the same way, `<Platform name="o.quantity" row={row}/>` for its column entry `data.o.quantity`, and the row says which renderer: it has to be a row of that group — a tree's row of a group below passes, narrowed to the path down to the group, as a group's `change(row)` takes it —, and the column entry does not hide the host. A container or any other component is named by its design identifier, `<Platform name="BOX(o)"/>` and `data['BOX(o)']`. So the name a component places a child by is the path it reads the child's entry by.
 
-Every component the view draws, other than a property it carries — a container, one declared with `NEW` and a generated one (`PANEL(o)`, `TOOLBAR(o)`, …) alike, a grid (`GRID(o)`) or a tree (`GRID(TREE t)`), a toolbar (`TOOLBARSYSTEM(o)`) — and every component the platform draws that it places, other than a property, gets such an entry, `data['<component SID>'] = { caption, image, hidden }`, at the top level of this view's `data` — except what is inside a container the platform draws, which it draws whole and the component never looks into. The `CUSTOM REACT` container itself has no entry in its own `data`: nothing there draws its caption and image — the platform draws them around the container, or, for one another React view places, that view does, from its entry there. An entry's `hidden` follows `SHOWIF` — the component's own, or a container's above it — and not whether the view shows the component: a tab the view does not show keeps its caption, and has no `hidden`. While a placed component's entry has it, `<Platform>` and `usePlatform` hide the host that places it — the host gets `hidden`, and stays: the component is still placed, so it goes on being read and comes back with its `SHOWIF`. Being part of the projected `data`, a dynamic caption or image re-renders the component like any other data change.
+Every component the view draws, other than a property it carries — a container, one declared with `NEW` and a generated one (`PANEL(o)`, `TOOLBAR(o)`, …) alike, a grid (`GRID(o)`) or a tree (`GRID(TREE t)`), a toolbar (`TOOLBARSYSTEM(o)`) — and every component the platform draws that it places, other than a property, gets such an entry, `data['<component SID>'] = { caption, image, hidden }`, at the top level of this view's `data` — except what is inside a container the platform draws, which it draws whole and the component never looks into. The React custom container itself has no entry in its own `data`: nothing there draws its caption and image — the platform draws them around the container, or, for one another React view places, that view does, from its entry there. An entry's `hidden` follows `SHOWIF` — the component's own, or a container's above it — and not whether the view shows the component: a tab the view does not show keeps its caption, and has no `hidden`. While a placed component's entry has it, `<Platform>` and `usePlatform` hide the host that places it — the host gets `hidden`, and stays: the component is still placed, so it goes on being read and comes back with its `SHOWIF`. Being part of the projected `data`, a dynamic caption or image re-renders the component like any other data change.
 
-A `CUSTOM REACT` container obeys its own `SHOWIF` as any other component does: the platform hides its box. Inside what React draws, `tabbed`, `collapsed`, `popup` and `activated` do nothing: React lays that content out, and there is no tab strip or collapse header to apply them to — the view has each container's entry instead, and shows what it wants. A scripted `ACTIVATE TAB`, `COLLAPSE` or `EXPAND` on a component there is an error, as on a child the platform draws: its visibility is the view's.
+A React custom container obeys its own `SHOWIF` as any other component does: the platform hides its box. Inside what React draws, `tabbed`, `collapsed`, `popup` and `activated` do nothing: React lays that content out, and there is no tab strip or collapse header to apply them to — the view has each container's entry instead, and shows what it wants. A scripted `ACTIVATE TAB`, `COLLAPSE` or `EXPAND` on a component there is an error, as on a child the platform draws: its visibility is the view's.
 
-[`SHOW ... IN`](../language/SHOW_operator.md) cannot open a form inside a `CUSTOM REACT` container or a container the React view draws inside it: the view cannot draw the form added there, so the server refuses the opening. Give the destination container `custom = NULL` and place it with `<Platform>` so that the platform draws the container and the form inside it.
+[`SHOW ... IN`](../language/SHOW_operator.md) cannot open a form inside a React custom container or a container the React view draws inside it: the view cannot draw the form added there, so the server refuses the opening. Give the destination container `custom = NULL` and place it with `<Platform>` so that the platform draws the container and the form inside it.
 
 `Platform`, `usePlatform`, `useShown`, `Caption` and `Image` are runtime globals, like `List`, so bind them to local names before the examples below work: `const { Platform, usePlatform, useShown, Caption, Image } = window.lsfusion;`.
 
@@ -479,7 +479,7 @@ export function Board(props) {
 
 ### Placing a child the platform draws {#placing}
 
-A child the platform draws need not be a direct child of the container: it may sit inside the containers the view draws itself, however deep — the [record](../paradigm/Form_design.md#record) of a table the view draws, what a design puts into `GRID(<group>)`, included —, and the `CUSTOM REACT` container above it places it by its name all the same — so a design groups such pieces the way the view draws them, a page or a section each. Inside a container the platform draws nothing is placed separately: the platform draws that container whole, with whatever is inside it — unless a `CUSTOM REACT` container inside it places a component, as it places its own.
+A child the platform draws need not be a direct child of the container: it may sit inside the containers the view draws itself, however deep — the [record](../paradigm/Form_design.md#record) of a table the view draws, what a design puts into `GRID(<group>)`, included —, and the React custom container above it places it by its name all the same — so a design groups such pieces the way the view draws them, a page or a section each. Inside a container the platform draws nothing is placed separately: the platform draws that container whole, with whatever is inside it — unless a React custom container inside it places a component, as it places its own.
 
 Such a child's view is moved into a *host*: a DOM node React owns and never renders children into. React places the view relative to a node it owns, and it must keep owning it to go on rendering the surrounding tree. Which node that is, is the only difference between the two ways to place a child:
 
@@ -550,7 +550,7 @@ These rules bound the placement:
 - A component inside the container that the platform builds a view of without its being given `custom = NULL` — a [filter group](#filter-groups) that filters by no object, moved in — is shown by nobody, and the console says so once, with the fix. A component whose [part](#the-component) a view draws — a group's or a tree's filter box, filter controls or toolbar, or a group's filter group — is not such a component: the view gets that part.
 - The host has to reach the page. A host that is still outside the document once the render that created it is over gives the child up: the view goes back to waiting, a `<Platform>` with the same name that IS in the page gets it, and the console says which name was given up. A host a portal appends in an effect is in the page by then and is placed as usual.
 - The node `<Platform>` renders holds the lsFusion view, so it must stay empty: give it a class or a style, never children.
-- `custom = NULL` is the platform's standard view wherever it is given: outside a `CUSTOM REACT` container, or inside a container the platform draws whole, the component is drawn where it stands, with that view.
+- `custom = NULL` is the platform's standard view wherever it is given: outside a React custom container, or inside a container the platform draws whole, the component is drawn where it stands, with that view.
 
 A placement that cannot work says so in the host itself, not only in the console: a name that names nothing inside the container (nor in a container it draws itself), a component the view draws itself, a second host for the same child, a name given a `row` that names no grid property the platform draws per row of a group this view draws, a `row` of another group, and a `row` that is not a row each render their message into the host, in an element of the class `lsf-view-error`. The host's own class stays as the component gave it.
 
@@ -609,7 +609,7 @@ What the author gets and what stays theirs:
 - A renderer exists for every row the group is currently showing, whether the component renders that row or not. A row scrolled out of view keeps its editor. Only a row leaving that set loses it.
 - Its key (`CHANGEKEY`) is one for all the rows, as a grid column's is: pressed anywhere in the form, it opens the editor in the current row, while that row's editor is placed — the editor of a row the component does not render takes no key.
 
-Where no `CUSTOM REACT` container draws the group's rows, `NOCUSTOM` is simply the standard view: the platform's grid draws the property, without a custom render or editing function. A grid property grouped in columns is refused, with the property named, where a React view draws its rows: a per-row editor cannot address a row-and-column cell.
+Where no React custom container draws the group's rows, `NOCUSTOM` is simply the standard view: the platform's grid draws the property, without a custom render or editing function. A grid property grouped in columns is refused, with the property named, where a React view draws its rows: a per-row editor cannot address a row-and-column cell.
 
 ### A selection {#select}
 
@@ -855,11 +855,13 @@ NAVIGATOR {
 ```
 
 ```jsx
-function AppMenu({ data, controller }) {
+const { Caption } = window.lsfusion;
+
+export function AppMenu({ data, controller }) {
     return <nav>{data.root.map(name => {
         const e = data.byName[name];
         return <button key={name} className={e.selected ? 'on' : ''}
-                       onClick={ev => controller.activate(name, ev.nativeEvent)}>{e.caption}</button>;
+                       onClick={ev => controller.activate(name, ev)}><Caption value={e.caption}/></button>;
     })}</nav>;
 }
 ```
@@ -884,7 +886,7 @@ and each element carries:
 | Field | Meaning |
 | --- | --- |
 | `name` | Its own canonical name, so a component that was handed the entry alone can still address the element |
-| `caption`, `elementClass` | Its caption and CSS class, the current ones — a `HEADER` or `CLASS` expression is applied as it changes |
+| `caption`, `elementClass` | Its caption and CSS class, the current ones — a `HEADER` or `CLASS` expression is applied as it changes. The caption is drawn with [`<Caption value={e.caption}/>`](#caption) |
 | `image` | Its icon, drawn with `<Image value={e.image}/>` — see [below](#image) — or `null` |
 | `folder` | Whether it is a folder rather than an action |
 | `hidden` | Whether `SHOWIF` currently hides it. Unlike the standard toolbar, which simply omits such an element, the projection keeps it, so the component decides how to treat it |
@@ -904,13 +906,13 @@ Only the desktop web client draws the component. The mobile web client and the d
 An element the component does not want to draw itself is placed with `<Platform name/>` — the tag that places a design child on a form, where `name` is the element's canonical name. The platform puts its own button inside, with its icon, caption, tooltip and click behavior, but not with what the standard toolbar's layout adds to it: its caption is not hidden until the mouse is over the window, as in an unpinned navigator, and it has no indent for its depth. Where the button goes, and how deep it looks, is up to the component. The [node itself](#custom-placement) is left as the component rendered it, without the marks a form's host is given.
 
 ```jsx
-const { Platform } = window.lsfusion;
+const { Platform, Caption } = window.lsfusion;
 
-function AppMenu({ data, controller }) {
+export function AppMenu({ data, controller }) {
     return <nav>
         <Platform name="Sale.sales" className="menu-main"/>
         {data.root.filter(name => name !== 'Sale.sales').map(name =>
-            <button key={name} onClick={ev => controller.activate(name, ev)}>{data.byName[name].caption}</button>)}
+            <button key={name} onClick={ev => controller.activate(name, ev)}><Caption value={data.byName[name].caption}/></button>)}
     </nav>;
 }
 ```
@@ -953,7 +955,7 @@ EXTEND WINDOW System.forms CUSTOM 'FormsBoard';
 ```jsx
 const { Platform, Caption } = window.lsfusion;
 
-function FormsBoard({ data, controller }) {
+export function FormsBoard({ data, controller }) {
     const current = data.open.find(name => data.byName[name].selected);
     return <div className="board">
         <div className="board-bar">{data.open.map(name => {
@@ -1148,15 +1150,15 @@ EXTEND WINDOW System.log CUSTOM 'MessageLog';
 ```
 
 ```jsx
-const { Platform } = window.lsfusion;
+const { Platform, Caption } = window.lsfusion;
 
-function MessageLog({ data, controller }) {
+export function MessageLog({ data, controller }) {
     return <div className="log">
         <a className="log-pin" onClick={() => controller.togglePin()}>pin</a>
         {data.messages.map(name => {
             const m = data.byName[name];
             return <div key={name} className={m.failed ? 'log-failed' : 'log-ok'}>
-                <div className="log-line">{new Date(m.time).toLocaleTimeString()} {m.caption}</div>
+                <div className="log-line">{new Date(m.time).toLocaleTimeString()} <Caption value={m.caption}/></div>
                 <Platform name={name}/>
             </div>;
         })}
@@ -1205,7 +1207,7 @@ NAVIGATOR CUSTOM 'AppLayout';
 ```jsx
 const { Platform } = window.lsfusion;
 
-function AppLayout({ data }) {
+export function AppLayout({ data }) {
     const [menu, setMenu] = React.useState(true);
     // the menu's column is there while the user has not folded it and the platform has something to show in it
     const showMenu = menu && !data.byName['System.toolbar'].hidden;

@@ -15,7 +15,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import java.util.ArrayList;
 import java.util.List;
 
-// CUSTOM REACT 'fn': a React component (window[fn], fn = the container's custom) draws this container's subtree
+// custom = 'Name': a React component (window[Name], Name = the container's custom) draws this container's subtree
 // from the form's projection - its props { data, controller } (GReactFormData), which the window.lsfusion hooks read
 // too - except the platform-drawn components it places, the ones with a view of their own (`custom = NULL`, NOCUSTOM, a
 // custom of their own): those keep their GWT view, and the component places each with <Platform name/>, a
