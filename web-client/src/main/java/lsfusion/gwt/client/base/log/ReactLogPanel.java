@@ -105,15 +105,11 @@ public class ReactLogPanel extends LogPanel {
     // window is unpinned by a class the server computes into the window, and there is no boolean anywhere to project
     private native JavaScriptObject createController(JavaScriptObject navigatorController)/*-{
         var logPanel = this;
-        var controller = {
+        return @lsfusion.gwt.client.form.controller.GController::extendController(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;)(navigatorController, {
             togglePin: function() {
                 logPanel.@lsfusion.gwt.client.base.log.ReactLogPanel::togglePin()();
             }
-        };
-        Object.keys(navigatorController).forEach(function (name) {
-            controller[name] = navigatorController[name];
         });
-        return controller;
     }-*/;
 
     public void togglePin() {

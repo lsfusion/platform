@@ -23,12 +23,15 @@ public abstract class GController {
     // GControllerResult/ExceptionAction (carrying the same requestIndex) resolves/rejects it.
     private final JavaScriptObject controllerCallbacks = JavaScriptObject.createObject();
 
+    public final JavaScriptObject extendController(JavaScriptObject contextController) {
+        return extendController(controller, contextController);
+    }
+
     // a context builds its own controller out of what it adds and what every context can do, taking the latter from
     // here rather than listing it, so that a method added above reaches every context on its own. The result must keep
     // them as OWN enumerable properties - application code spreads and enumerates the controller - hence a copy of
     // Object.keys rather than inheritance or a for-in (which would also copy a polluted Object.prototype)
-    public final native JavaScriptObject extendController(JavaScriptObject contextController) /*-{
-        var base = this.@GController::controller;
+    public static native JavaScriptObject extendController(JavaScriptObject base, JavaScriptObject contextController) /*-{
         Object.keys(base).forEach(function (name) {
             contextController[name] = base[name];
         });

@@ -9,6 +9,7 @@ import lsfusion.gwt.client.base.view.Park;
 import lsfusion.gwt.client.base.view.PlacedViews;
 import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
+import lsfusion.gwt.client.form.controller.GController;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 
@@ -86,7 +87,7 @@ public final class ReactWindowLayout extends WindowLayout {
         // the crossing BACK to the platform: the component renders the host node, we move the window's own view in. A
         // window's host holds the window's view, which the layout fills it with by its marks. Nothing about the
         // arrangement is the platform's to do, so the controller only carries the navigator's calls
-        root = new ReactRoot(custom, GwtClientUtils.copyObject(navigatorController), PlacedViews.placement(placed, new ReactRoot.MarkedHost()));
+        root = new ReactRoot(custom, GController.extendController(navigatorController, JavaScriptObject.createObject()), PlacedViews.placement(placed, new ReactRoot.MarkedHost()));
 
         root.mountWhileAttached(panel);
     }

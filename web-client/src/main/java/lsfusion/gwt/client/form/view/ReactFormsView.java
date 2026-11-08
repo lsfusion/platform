@@ -227,12 +227,10 @@ public class ReactFormsView implements FormsView {
         formsWindow.closeAllForms();
     }
 
-    // what the component gets beside the navigator's calls: what only the platform can do to an open form and to the
-    // window - the operations the standard tab strip carries in its own toolbar and tab menu, which a
-    // component-drawn window does not show
+    // the component has no standard tab strip, so it gets its toolbar and tab menu operations beside the navigator's
     private native JavaScriptObject createController(JavaScriptObject navigatorController)/*-{
         var formsView = this;
-        var controller = {
+        return @lsfusion.gwt.client.form.controller.GController::extendController(Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;)(navigatorController, {
             select: function(name) {
                 formsView.@lsfusion.gwt.client.form.view.ReactFormsView::selectForm(Ljava/lang/String;)(name);
             },
@@ -248,11 +246,7 @@ public class ReactFormsView implements FormsView {
             toggleFullScreen: function() {
                 formsView.@lsfusion.gwt.client.form.view.ReactFormsView::toggleFullScreen()();
             }
-        };
-        Object.keys(navigatorController).forEach(function (name) {
-            controller[name] = navigatorController[name];
         });
-        return controller;
     }-*/;
 
     private JavaScriptObject buildEditModes() {
