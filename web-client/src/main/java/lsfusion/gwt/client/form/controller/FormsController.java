@@ -216,7 +216,7 @@ public abstract class FormsController {
                                    Supplier<Boolean> checkOpenForm, Supplier<Boolean> checkHideForm) {
         if (asyncFormController.onServerInvocationOpenResponse()) {
             if (checkOpenForm.get()) {
-                asyncFormController.removeAsyncForm().queryHide(CancelReason.HIDE);
+                hideAsyncForm(asyncFormController.removeAsyncForm());
             }
         }
         if (asyncFormController.onServerInvocationCloseResponse()) {
@@ -490,7 +490,7 @@ public abstract class FormsController {
         // if form is async opened with different type - close it
         GWindowFormType windowType = showFormType.getWindowType();
         if(asyncOpened && !formContainer.isOfType(windowType, syncType) && !formContainer.isAsyncHidden()) {
-            formContainer.hide(CancelReason.HIDE);
+            hideAsyncForm(formContainer);
             asyncOpened = false;
         }
 
@@ -632,6 +632,14 @@ public abstract class FormsController {
         formContainers.add(formContainer);
 
         return formContainer;
+    }
+
+    // the placeholder of an open no form is going to arrive in: the answer brought none, or one of another window or sync
+    // type, which gets a container of its own. A container leaves formContainers as its form is hidden, and no form will
+    // ever be hidden in this one
+    private void hideAsyncForm(FormContainer formContainer) {
+        formContainer.queryHide(CancelReason.HIDE);
+        removeFormContainer(formContainer);
     }
 
     public GPushAsyncActivate reuseOpenForm(GAsyncOpenForm openForm, NativeEvent editEvent) {

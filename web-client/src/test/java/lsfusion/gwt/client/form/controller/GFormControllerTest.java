@@ -3512,7 +3512,7 @@ public class GFormControllerTest extends GWTTestCase {
     }
 
     // a form with nothing in its main container yet, which lays its children out in one line from the start
-    private static GForm form(String sID) {
+    static GForm form(String sID) {
         GForm form = new GForm();
         form.sID = sID;
         form.mainContainer = new GContainer();

@@ -72,6 +72,7 @@
                         <exclude>lsfusion/gwt/client/navigator/window/view/ReactWindowLayoutTest.java</exclude>
                         <exclude>lsfusion/gwt/client/form/view/ReactFormsViewTest.java</exclude>
                         <exclude>lsfusion/gwt/client/navigator/view/NavigatorButtonsTest.java</exclude>
+                        <exclude>lsfusion/gwt/client/form/controller/FormsControllerTest.java</exclude>
                     </excludes>
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.build.testSourceDirectory}</additionalClasspathElement>

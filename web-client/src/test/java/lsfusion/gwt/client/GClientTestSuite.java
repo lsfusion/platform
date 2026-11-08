@@ -4,6 +4,7 @@ import com.google.gwt.junit.tools.GWTTestSuite;
 import junit.framework.Test;
 import lsfusion.gwt.client.base.jsni.NativeLinkedSIDMapTest;
 import lsfusion.gwt.client.base.view.ReactRootTest;
+import lsfusion.gwt.client.form.controller.FormsControllerTest;
 import lsfusion.gwt.client.form.controller.GFormControllerTest;
 import lsfusion.gwt.client.form.design.view.GReactFormDataTest;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTableTreeTest;
@@ -31,6 +32,7 @@ public class GClientTestSuite {
         suite.addTestSuite(ReactWindowLayoutTest.class);
         suite.addTestSuite(ReactFormsViewTest.class);
         suite.addTestSuite(NavigatorButtonsTest.class);
+        suite.addTestSuite(FormsControllerTest.class);
         return suite;
     }
 }
