@@ -1243,7 +1243,7 @@ Three mistakes are reported in the page: a name no window has, a second `<Platfo
 
 | Field | Meaning |
 | --- | --- |
-| `windows` | Array of the windows' canonical names in declared order, with `System.forms` last |
+| `windows` | Array of the windows' canonical names: navigator windows, `System.log`, application `FORMS` windows, then `System.forms`. Navigator and application `FORMS` windows follow declaration order within each module and module initialization order between modules |
 | `byName` | Entries under the windows' canonical names, such as `data.byName['System.toolbar']` |
 
 Each entry in `byName` has:

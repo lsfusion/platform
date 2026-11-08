@@ -10,6 +10,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +45,8 @@ public class NavigatorData {
     public static NavigatorData deserializeListClientNavigatorElementWithChildren(byte[] state) throws IOException {
         DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(state));
 
-        Map<String, ClientNavigatorWindow> windows = new HashMap<>();
+        // the web client's layout component sees these windows in the order the server writes them
+        Map<String, ClientNavigatorWindow> windows = new LinkedHashMap<>();
         int windowsCount = inStream.readInt();
         for (int i = 0; i < windowsCount; i++) {
             ClientNavigatorWindow window = new ClientNavigatorWindow(inStream);
