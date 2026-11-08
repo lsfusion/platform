@@ -580,9 +580,9 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
             SerializationUtil.writeString(dataStream, businessLogics.LM.getNavigatorCustom());
 
-            Map<NavigatorScheduler, LA> navigatorSchedulers = businessLogics.LM.navigatorSchedulers;
+            ImSet<NavigatorScheduler> navigatorSchedulers = businessLogics.LM.getNavigatorSchedulers().keys();
             dataStream.writeInt(navigatorSchedulers.size());
-            for(NavigatorScheduler navigatorScheduler : navigatorSchedulers.keySet()) {
+            for(NavigatorScheduler navigatorScheduler : navigatorSchedulers) {
                 navigatorScheduler.serialize(dataStream);
             }
 
@@ -645,8 +645,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     @Override
     public ServerResponse executeNavigatorSchedulerAction(long requestIndex, long lastReceivedRequestIndex, NavigatorScheduler navigatorScheduler) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            try (DataSession session = createSession()) {
-                businessLogics.LM.navigatorSchedulers.get(navigatorScheduler).execute(session, getStack());
+            // every action scheduled with this period, in a session of its own, as a period of its own would run it
+            for (LA action : businessLogics.LM.getNavigatorSchedulers().get(navigatorScheduler)) {
+                try (DataSession session = createSession()) {
+                    action.execute(session, getStack());
+                }
             }
         });
     }

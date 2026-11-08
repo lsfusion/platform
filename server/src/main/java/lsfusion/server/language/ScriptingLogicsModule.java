@@ -6089,7 +6089,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addNavigatorScheduler(LA action, NavigatorScheduler scheduler) throws ScriptingErrorLog.SemanticErrorException {
-        baseLM.putNavigatorScheduler(scheduler, action);
+        baseLM.addNavigatorScheduler(scheduler, action, getVersion());
     }
 
     public static class ImageOption {

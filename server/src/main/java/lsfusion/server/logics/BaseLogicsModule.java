@@ -7,6 +7,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -23,6 +24,7 @@ import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -834,12 +836,17 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public NavigatorElement logs;
     public NavigatorElement system;
 
-    public Map<NavigatorScheduler, LA> navigatorSchedulers = new HashMap<>();
-    // a plain map every module's NAVIGATOR { SCHEDULE ... } puts into, and modules that do not require each other are
-    // parsed at once
-    @NFLazy
-    public void putNavigatorScheduler(NavigatorScheduler scheduler, LA action) {
-        navigatorSchedulers.put(scheduler, action);
+    // NAVIGATOR { SCHEDULE ... }: the actions scheduled for the navigator, several of one period (and FIXED) among them.
+    // NF at the version of the module scheduling : modules that do not require each other are parsed at once, and the
+    // actions of one period run in the module order
+    private final NFList<Pair<NavigatorScheduler, LA>> navigatorSchedulers = NFFact.list();
+
+    public void addNavigatorScheduler(NavigatorScheduler scheduler, LA action, Version version) {
+        navigatorSchedulers.add(new Pair<>(scheduler, action), version);
+    }
+
+    public ImMap<NavigatorScheduler, ImList<LA>> getNavigatorSchedulers() {
+        return navigatorSchedulers.getList().groupList(scheduled -> scheduled.first).mapValues(scheduled -> scheduled.mapListValues(pair -> pair.second));
     }
 
     // NAVIGATOR CUSTOM: the React component that lays the windows out instead of the standard layout, if any. NF at

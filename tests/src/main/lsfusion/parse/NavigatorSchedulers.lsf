@@ -2,16 +2,19 @@ MODULE NavigatorSchedulers;
 
 REQUIRE TestUtils;
 
-// the actions NAVIGATOR { SCHEDULE ... } schedules for the navigator are kept in one map of the base module's.
-// Modules that do not require each other are parsed at once, each in a thread of its own, so any two of them that
-// schedule an action put it into that map at once: it was a plain HashMap, which two puts at once corrupt
+// the navigator runs the actions NAVIGATOR { SCHEDULE ... } schedules, several of one period (and FIXED) one after the
+// other. They were kept in a map by the period, so of two schedules of one period only the one put later was run - of
+// two modules as of one. And modules that do not require each other are parsed at once, each in a thread of its own :
+// the actions of one period run in the module order now, in an NF list at their modules' versions, as when the modules
+// were parsed one after the other
 
-nsTick () { MESSAGE 'ns tick'; }
+nsEarlier () { MESSAGE 'ns earlier'; }
+nsLater () { MESSAGE 'ns later'; }
 
 nsFailure = DATA LOCAL STRING ();
-nsScheduleAtOnce INTERNAL 'lsfusion.tests.AddNavigatorSchedulersAtOnceAction' ();
+nsScheduleInModuleOrder INTERNAL 'lsfusion.tests.AddNavigatorSchedulersInModuleOrderAction' ();
 
-testNavigatorSchedulersAddedAtOnce 'An action scheduled for the navigator waits for another one scheduled' () {
-    nsScheduleAtOnce();
+testNavigatorSchedulersInModuleOrder 'The actions two modules schedule with one period both run, in the module order' () {
+    nsScheduleInModuleOrder();
     assertNull(nsFailure(), nsFailure());
 }

@@ -96,7 +96,7 @@ The `CUSTOM` option gives the [windows](../paradigm/Navigator_design.md) a React
 
 - `SCHEDULE PERIOD intPeriod [FIXED] actionOperator`
 
-    Creates a scheduler that executes an action every `intPeriod` seconds. `FIXED` indicates that the period to the next action is counted from the start of the current action. By default, the period is counted from the end of the current action.
+    Creates a scheduler that executes an action every `intPeriod` seconds. `FIXED` indicates that the period to the next action is counted from the start of the current action. By default, the period is counted from the end of the current action. Schedulers with the same period and `FIXED` execute their actions together: one after another, each in a session of its own, in the order the modules declaring them are [initialized](../paradigm/Projects.md) in (within one module, in the order of its statements).
 
     - `actionOperator`
 
