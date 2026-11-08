@@ -14,6 +14,10 @@ That is the name a view has, everywhere: `props.data` is keyed by it and every c
 | view | declared | JavaScript entry point | its controller is |
 | --- | --- | --- | --- |
 | [React view](How-to_Custom_React_views.md) | `DESIGN c { custom = 'Name'; }` | a component taking `props` (`data`, `controller`) | `props.controller` |
+| [Navigator window](How-to_Custom_React_views.md#navigator-window) | `EXTEND WINDOW System.toolbar CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — the [navigator controller](#navigator-controller) |
+| [Forms window](How-to_Custom_React_views.md#forms-window) | `EXTEND WINDOW System.forms CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen` |
+| [Log window](How-to_Custom_React_views.md#log-window) | `EXTEND WINDOW System.log CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — `togglePin` |
+| [Window layout](How-to_Custom_React_views.md#window-layout) | `NAVIGATOR CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — empty |
 | [CUSTOM object group](How-to_Custom_components_objects.md) | `OBJECTS g = Cls CUSTOM 'name'` | `render` / `update` callbacks | `controller.form` |
 | [CUSTOM property cell](How-to_Custom_components_properties.md) | `PROPERTIES p CUSTOM 'name'` | `render` / `update` callbacks | `controller.form` |
 

@@ -14,6 +14,10 @@ title: 'How-to: API контроллера пользовательского п
 | представление | объявление | точка входа JavaScript | его контроллер — это |
 | --- | --- | --- | --- |
 | [React-представление](How-to_Custom_React_views.md) | `DESIGN c { custom = 'Name'; }` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` |
+| [Окно навигатора](How-to_Custom_React_views.md#navigator-window) | `EXTEND WINDOW System.toolbar CUSTOM 'Name';` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` — [контроллер навигатора](#navigator-controller) |
+| [Окно форм](How-to_Custom_React_views.md#forms-window) | `EXTEND WINDOW System.forms CUSTOM 'Name';` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` — `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen` |
+| [Окно сообщений](How-to_Custom_React_views.md#log-window) | `EXTEND WINDOW System.log CUSTOM 'Name';` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` — `togglePin` |
+| [Расположение окон](How-to_Custom_React_views.md#window-layout) | `NAVIGATOR CUSTOM 'Name';` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` — пустой |
 | [CUSTOM группа объектов](How-to_Custom_components_objects.md) | `OBJECTS g = Cls CUSTOM 'name'` | колбэки `render` / `update` | `controller.form` |
 | [CUSTOM ячейка свойства](How-to_Custom_components_properties.md) | `PROPERTIES p CUSTOM 'name'` | колбэки `render` / `update` | `controller.form` |
 
