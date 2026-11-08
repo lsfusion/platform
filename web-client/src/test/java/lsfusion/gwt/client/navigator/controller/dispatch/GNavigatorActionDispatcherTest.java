@@ -33,7 +33,7 @@ public class GNavigatorActionDispatcherTest extends GWTTestCase {
         folder = element(new GNavigatorFolder(), "Test.admin", root);
         users = element(new GNavigatorAction(), "Test.users", folder);
         navigator.setRoot(root);
-        new GNavigatorActionDispatcher(null, null, navigator); // gives the navigator its controller
+        new GNavigatorActionDispatcher(null, navigator); // gives the navigator its controller
     }
     private static GNavigatorElement element(GNavigatorElement element, String canonicalName, GNavigatorElement parent) {
         element.canonicalName = canonicalName;

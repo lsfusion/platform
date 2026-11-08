@@ -19,7 +19,6 @@ import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
-import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.interop.action.ServerResponse;
 
 public class GFormActionDispatcher extends GwtActionDispatcher {
@@ -99,12 +98,6 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     @Override
     public void execute(GProcessFormChangesAction action) {
         form.applyRemoteChanges(action.formChanges);
-    }
-
-    @Override
-    public void execute(GProcessNavigatorChangesAction action) {
-        FormsController formsController = form.getFormsController();
-        MainFrame.applyNavigatorChanges(action.navigatorChanges, formsController.getNavigatorController(), formsController.getWindowsController());
     }
 
     @Override

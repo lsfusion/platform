@@ -390,7 +390,7 @@ public class MainFrame implements EntryPoint {
         navigatorControllerLink.link = navigatorController;
         formsController.setNavigatorController(navigatorController);
 
-        actionDispatcherLink.link = new GNavigatorActionDispatcher(windowsController, formsController, navigatorController);
+        actionDispatcherLink.link = new GNavigatorActionDispatcher(formsController, navigatorController);
 
         initializeWindows(result, formsController, windowsController, navigatorController, formsWindowLink, commonWindowsLink);
 

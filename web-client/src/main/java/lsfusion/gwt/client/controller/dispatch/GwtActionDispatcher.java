@@ -724,8 +724,14 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }
     }
 
-    // the page's forms and windows are its forms controller's, which a form's action reaches as the navigator's does: what
-    // an action does to them is done here, for both
+    // the page's navigator, windows and forms are its forms controller's, which a form's action reaches as the navigator's
+    // does: what an action does to them is done here, for both
+    @Override
+    public void execute(GProcessNavigatorChangesAction action) {
+        FormsController formsController = getFormsController();
+        MainFrame.applyNavigatorChanges(action.navigatorChanges, formsController.getNavigatorController(), formsController.getWindowsController());
+    }
+
     @Override
     public void execute(GActivateFormAction action) {
         getFormsController().activateForm(action.formCanonicalName, action.formId, action.windowCanonicalName);

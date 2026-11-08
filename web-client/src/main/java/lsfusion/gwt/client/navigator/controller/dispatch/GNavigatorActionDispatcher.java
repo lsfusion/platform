@@ -21,7 +21,6 @@ import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
-import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.io.Serializable;
@@ -29,7 +28,6 @@ import java.util.ArrayList;
 
 public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     
-    private final WindowsController windowsController;
     private final FormsController formsController;
     private final GNavigatorController navigatorController;
 
@@ -59,8 +57,7 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
         }
     };
 
-    public GNavigatorActionDispatcher(WindowsController windowsController, FormsController formsController, GNavigatorController navigatorController) {
-        this.windowsController = windowsController;
+    public GNavigatorActionDispatcher(FormsController formsController, GNavigatorController navigatorController) {
         this.formsController = formsController;
         this.navigatorController = navigatorController;
         // a custom navigator view hands this to its component; field initializers have all run by now, so it is ready
@@ -90,11 +87,6 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     @Override
     protected FormsController.OpenContext getOpenContext(GFormAction action) {
         return new FormsController.OpenContext(null, null, null, null);
-    }
-
-    @Override
-    public void execute(GProcessNavigatorChangesAction action) {
-        MainFrame.applyNavigatorChanges(action.navigatorChanges, navigatorController, windowsController);
     }
 
     @Override
