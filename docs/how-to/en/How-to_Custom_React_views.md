@@ -909,7 +909,7 @@ NAVIGATOR {
 }
 ```
 
-A `NOCUSTOM` element no `<Platform>` names is not shown, as on a form. Four mistakes are reported in the page: a name no navigator element has, a name that is not `NOCUSTOM`, which the component is expected to draw from the projection instead, a name of an element another window draws, and a name a second `<Platform>` places again. A name the window merely does not draw right now — an element `SHOWIF` hides, one gated out because its parent is not selected — is not a mistake and is not reported: the place waits, and is filled as soon as the window draws that element. Meanwhile the place of an element `SHOWIF` hides is hidden, as its entry's `hidden` says, and the place of one gated out, which has no entry, stays empty. Which window draws an element is not such a case: waiting for a button another window owns would wait for good.
+A `NOCUSTOM` element no `<Platform>` names is not shown, as on a form. Five mistakes are reported in the page: a name no navigator element has, a name that is not `NOCUSTOM`, which the component is expected to draw from the projection instead, a name of an element another window draws, a name a second `<Platform>` places again, and a `<Platform>` given a `row` even though a button is placed whole. A name the window merely does not draw right now — an element `SHOWIF` hides, one gated out because its parent is not selected — is not a mistake and is not reported: the place waits, and is filled as soon as the window draws that element. Meanwhile the place of an element `SHOWIF` hides is hidden, as its entry's `hidden` says, and the place of one gated out, which has no entry, stays empty. Which window draws an element is not such a case: waiting for a button another window owns would wait for good.
 
 A menu that is mostly standard is written this way as one `<Platform>` for each element the platform draws, and markup only for the elements the component draws itself.
 
@@ -954,7 +954,7 @@ function FormsBoard({ data, controller }) {
 }
 ```
 
-The component never draws a form: it renders a place for the form it wants shown, and the platform moves that form's own view into it. `<Platform name/>` is that place, and `name` is the name the projection gives the form. It places the form's view the same way it places a [design child](#placing) and a [navigator element](#standard-button), and the same mistakes are reported in the page. Like a design child's host, the place carries the marks — the class `lsf-platform` and `data-lsf-sid` with the form's name — and the form's view fills it.
+The component never draws a form: it renders a place for the form it wants shown, and the platform moves that form's own view into it. `<Platform name/>` is that place, and `name` is the name the projection gives the form. It places the form's view the same way it places a [design child](#placing) and a [navigator element](#standard-button), and the same mistakes are reported in the page, including a `row` given to a `<Platform>` that places the form whole. Like a design child's host, the place carries the marks — the class `lsf-platform` and `data-lsf-sid` with the form's name — and the form's view fills it.
 
 `props.data` is the open forms and the state of the window itself. The component is drawn as soon as the window is, before any form opens — `open` is then empty — so what it shows while nothing is open is its own to draw:
 
@@ -1146,7 +1146,7 @@ function MessageLog({ data, controller }) {
 }
 ```
 
-The component never draws a message: a message is markup the platform built — the text with its icon, or the table an action reported beside it — so the component renders a place for each message it wants shown, and the platform moves that markup in. `<Platform name/>` is that place, and `name` is the name the projection gives the message. It places the message's markup the same way it places a [design child](#placing), a [navigator element](#standard-button) and an [open form](#forms-window).
+The component never draws a message: a message is markup the platform built — the text with its icon, or the table an action reported beside it — so the component renders a place for each message it wants shown, and the platform moves that markup in. `<Platform name/>` is that place, and `name` is the name the projection gives the message. It places the message's markup the same way it places a [design child](#placing), a [navigator element](#standard-button) and an [open form](#forms-window). A message is placed whole, so giving its `<Platform>` a `row` reports a mistake in the page.
 
 `props.data` is the logged messages, and the component is drawn before the first one arrives, with `messages` empty:
 
@@ -1213,7 +1213,7 @@ function AppLayout({ data }) {
 .app-work > .lsf-platform, .app-log > .lsf-platform { flex: 1; }
 ```
 
-The component never draws a window: it renders a place for each window it wants shown, and the platform moves that window's own view in, drawn as without the component - a navigator window's buttons, or what the window's own [component](#navigator-window) draws, the forms open in a `FORMS` window, the messages of `System.log`. `<Platform name/>` is that place, and `name` is the window's [canonical name](../paradigm/Naming.md#canonicalname). It places the window the same way it places a [design child](#placing) and an [open form](#forms-window), with the same marks on the place and the same mistakes reported in the page: the window's view fills the place, and the component sizes the place. A window whose place changes size is told so, as when a border of the standard layout is dragged, so a table, a pivot table's chart or a map in a form measures itself again.
+The component never draws a window: it renders a place for each window it wants shown, and the platform moves that window's own view in, drawn as without the component - a navigator window's buttons, or what the window's own [component](#navigator-window) draws, the forms open in a `FORMS` window, the messages of `System.log`. `<Platform name/>` is that place, and `name` is the window's [canonical name](../paradigm/Naming.md#canonicalname). It places the window the same way it places a [design child](#placing) and an [open form](#forms-window), with the same marks on the place and the same mistakes reported in the page: the window's view fills the place, and the component sizes the place. A window is placed whole, so giving its `<Platform>` a `row` reports a mistake in the page. A window whose place changes size is told so, as when a border of the standard layout is dragged, so a table, a pivot table's chart or a map in a form measures itself again.
 
 `props.data` holds an entry for each window - every window, `System.forms` included - under its canonical name, `data['System.toolbar']`:
 

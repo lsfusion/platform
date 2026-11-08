@@ -84,15 +84,47 @@ public class ReactFormsViewTest extends GWTTestCase {
     public void testAFormIsPlacedInItsHostAndParkedAgain() {
         FormDockable form = open("First");
         Element content = form.getContentWidget().getElement(), host = host();
-        mount(view, form.formName, host);
+        mount(view, form.formName, host, null);
         assertSame(host, content.getParentElement());
         assertTrue(content.hasClassName("fill-parent-flex"));
 
-        unmount(view, form.formName, host);
+        unmount(view, form.formName, host, null);
         Element park = content.getParentElement();
         assertNotSame(host, park);
         assertEquals(Style.Display.NONE.getCssName(), park.getStyle().getDisplay());
         assertSame(view.getView(), form.getContentWidget().getParent());
+    }
+
+    // a form has one view, so a row cannot place it: the mistake belongs to the host alone, and its cleanup must not
+    // take a form away from a host that asked for it whole
+    public void testAFormRefusesAPlaceWithARow() {
+        FormDockable form = open("First");
+        Element content = form.getContentWidget().getElement(), park = content.getParentElement();
+        Element refused = host(), accepted = host();
+        JavaScriptObject row = JavaScriptObject.createObject();
+
+        mount(view, form.formName, refused, row);
+        assertSame(park, content.getParentElement());
+        assertEquals(1, refused.getChildCount());
+        assertTrue(refused.getFirstChildElement().hasClassName("lsf-view-error"));
+        assertEquals("lsFusion: '" + form.formName + "' takes no row", refused.getInnerText());
+
+        unmount(view, form.formName, refused, row);
+        assertEquals(0, refused.getChildCount());
+        assertSame(park, content.getParentElement());
+        mount(view, form.formName, accepted, null);
+        assertSame(accepted, content.getParentElement());
+
+        mount(view, form.formName, refused, row);
+        assertTrue(refused.getFirstChildElement().hasClassName("lsf-view-error"));
+        assertEquals("lsFusion: '" + form.formName + "' takes no row", refused.getInnerText());
+        assertSame(accepted, content.getParentElement());
+        unmount(view, form.formName, refused, row);
+        assertEquals(0, refused.getChildCount());
+        assertSame(accepted, content.getParentElement());
+
+        unmount(view, form.formName, accepted, null);
+        assertSame(park, content.getParentElement());
     }
 
     // a second place of a form says the first keeps it, and once the component takes the first away the eldest place
@@ -103,18 +135,18 @@ public class ReactFormsViewTest extends GWTTestCase {
         Element content = form.getContentWidget().getElement();
         Element first = host(), withdrawn = host(), removed = host(), next = host(), last = host();
         for (Element host : new Element[] {first, withdrawn, removed, next, last})
-            mount(view, form.formName, host);
+            mount(view, form.formName, host, null);
         assertSame(first, content.getParentElement());
         assertTrue(next.getInnerText(), next.getInnerText().contains("already placed by another <Platform>"));
 
-        unmount(view, form.formName, withdrawn);
+        unmount(view, form.formName, withdrawn, null);
         removed.removeFromParent();
-        unmount(view, form.formName, first);
+        unmount(view, form.formName, first, null);
         assertSame(next, content.getParentElement());
         assertFalse(next.getInnerText(), next.getInnerText().contains("already placed"));
         assertTrue(last.getInnerText(), last.getInnerText().contains("already placed by another <Platform>"));
 
-        unmount(view, form.formName, next);
+        unmount(view, form.formName, next, null);
         assertSame(last, content.getParentElement());
     }
 
@@ -195,11 +227,11 @@ public class ReactFormsViewTest extends GWTTestCase {
         }
         return null;
     }-*/;
-    private static native void mount(ReactFormsView view, String name, Element host) /*-{
-        view.@lsfusion.gwt.client.form.view.ReactFormsView::root.@lsfusion.gwt.client.base.view.ReactRoot::context.view.mount(name, host);
+    private static native void mount(ReactFormsView view, String name, Element host, JavaScriptObject row) /*-{
+        view.@lsfusion.gwt.client.form.view.ReactFormsView::root.@lsfusion.gwt.client.base.view.ReactRoot::context.view.mount(name, host, row);
     }-*/;
-    private static native void unmount(ReactFormsView view, String name, Element host) /*-{
-        view.@lsfusion.gwt.client.form.view.ReactFormsView::root.@lsfusion.gwt.client.base.view.ReactRoot::context.view.unmount(name, host);
+    private static native void unmount(ReactFormsView view, String name, Element host, JavaScriptObject row) /*-{
+        view.@lsfusion.gwt.client.form.view.ReactFormsView::root.@lsfusion.gwt.client.base.view.ReactRoot::context.view.unmount(name, host, row);
     }-*/;
     private static native String caption(JavaScriptObject entry) /*-{ return entry.caption; }-*/;
 }

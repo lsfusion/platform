@@ -91,12 +91,19 @@ public class PlacedViews<K> {
         return new ReactRoot.Placement() {
             @Override
             public void mount(String name, Element host, JavaScriptObject row) {
-                placed.mount(name, host);
+                if (row != null)
+                    new Problem("'" + name + "' takes no row",
+                            "'" + name + "' is placed whole: its <Platform> is given no row").show(host);
+                else
+                    placed.mount(name, host);
             }
 
             @Override
             public void unmount(String name, Element host, JavaScriptObject row) {
-                placed.unmount(name, host);
+                if (row != null)
+                    GwtClientUtils.clearCustomViewError(host);
+                else
+                    placed.unmount(name, host);
             }
 
             @Override
