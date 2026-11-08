@@ -82,7 +82,11 @@ For property, it is possible to define its event handlers for the whole logics a
 
 <a className="lsdoc-anchor" id="keyboard"/>
 
-You can also specify a keyboard shortcut for each property, pressing which triggers the property's `CHANGE` event. If several properties on the form correspond to one key combination, the event will be triggered only for the property whose component is closest to the current active component in the component hierarchy.
+You can also specify a keyboard shortcut for each property, pressing which triggers the property's `CHANGE` event.
+
+In the web client, the eligible binding with the highest priority is chosen. Default priorities follow the order fixed when the form opens: filters of filter groups first, then properties in form order, including initially hidden ones. A later binding gets a higher priority. Hiding and showing a property again does not change it. The explicit or default priority is increased by 1000 if the property's object group matches that of the currently active component.
+
+In the web client, the keyboard shortcut and mouse binding of a property displayed in a panel and grouped into columns invoke the property's event handler for the first column. If a display condition hides that column, neither binding works, even if other columns are visible.
 
 ### Default handlers {#default}
 

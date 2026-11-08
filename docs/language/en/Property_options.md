@@ -261,7 +261,7 @@ Property annotation. Begins with `@@`. The following annotations are supported:
     
               - `priority = priorityValue`
                   Priority, an integer value. If multiple properties meet the CHANGEKEY conditions, the one with the higher priority will be executed.
-                  If the priority is not set, it is equal to the sequential number of the property in the form. Additionally, in any case, 1000 is added to the priority value if the object group matches.
+                  If the priority is not set, the web client uses [the binding order fixed when the form opens](../paradigm/Form_events.md#keyboard). In the desktop client, an omitted or zero priority is replaced by the number of bindings already registered for the same keyboard shortcut. Additionally, in any case, 1000 is added to the priority value if the object group matches.
     
               - `preview = previewValue`
                   All events are checked for execution twice: first with isPreview = true, then with isPreview = false. Supported `previewValue` values:
