@@ -8,6 +8,9 @@ import com.google.gwt.junit.client.GWTTestCase;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.jsni.JsniTestSupport;
+import lsfusion.gwt.client.base.log.GLog;
+import lsfusion.gwt.client.base.log.LogPanel;
+import lsfusion.gwt.client.base.log.ReactLogPanel;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorAction;
@@ -19,6 +22,7 @@ import lsfusion.gwt.client.form.controller.GFormControllerTest;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
+import lsfusion.gwt.client.view.MainFrame;
 import net.customware.gwt.dispatch.shared.Result;
 
 // the forms window a React component draws (WINDOW ... CUSTOM): what it is given of the open forms, and a form placed in
@@ -51,6 +55,26 @@ public class ReactFormsViewTest extends GWTTestCase {
         window.custom = "NoSuchComponent";
         formsWindow = new FormsWindowController(formsController, window, true, null);
         view = (ReactFormsView) formsView(formsWindow);
+    }
+
+    // a window HIDE WINDOW has taken away still builds its component, as the navigator and forms windows do
+    public void testAHiddenLogWindowStillBuildsItsComponent() {
+        LogPanel previous = logPanel();
+        boolean mobile = MainFrame.mobile;
+        try {
+            MainFrame.mobile = false;
+            GAbstractWindow window = new GAbstractWindow();
+            window.canonicalName = "System.log";
+            window.react = true;
+            window.custom = "NoSuchComponent";
+            window.visible = false;
+            Widget panel = GLog.createLogPanel(window, () -> {});
+            assertTrue("a hidden log window must use ReactLogPanel, got " + panel.getClass().getName(),
+                    panel instanceof ReactLogPanel);
+        } finally {
+            restoreLogPanel(previous);
+            MainFrame.mobile = mobile;
+        }
     }
 
     // what changed is drawn again, and only that: an entry of a form that did not change is the very object pushed
@@ -208,6 +232,12 @@ public class ReactFormsViewTest extends GWTTestCase {
         return JsniTestSupport.field(JsniTestSupport.field(data, "byName"), dockable.formName);
     }
 
+    private static native LogPanel logPanel() /*-{
+        return @lsfusion.gwt.client.base.log.GLog::logPanel;
+    }-*/;
+    private static native void restoreLogPanel(LogPanel panel) /*-{
+        @lsfusion.gwt.client.base.log.GLog::logPanel = panel;
+    }-*/;
     private static native FormsView formsView(FormsWindowController formsWindow) /*-{
         return formsWindow.@lsfusion.gwt.client.form.controller.FormsWindowController::formsView;
     }-*/;

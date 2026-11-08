@@ -13,7 +13,6 @@ import java.util.ArrayList;
 
 public final class GLog {
     private static LogPanel logPanel;
-    public static boolean isLogPanelVisible;
 
     // the one place the log window's view is chosen, and the only place that knows the window: WINDOW log CUSTOM names
     // a React component, and then that component draws the window instead of the standard panel. The standard panel is
@@ -22,15 +21,7 @@ public final class GLog {
     // every window - a navigator window's component is already never drawn there, since the mobile navigator view draws
     // that window instead - and the mobile layout has no log window at all to draw
     public static Widget createLogPanel(GAbstractWindow window, Runnable togglePinMode) {
-        // ...and not for a window HIDE WINDOW has taken away: it is never shown, so a component drawn into it would
-        // never be seen, and the messages it collects would be unreachable. Said once, because an application that
-        // hides the window and gives it a component has asked for two things that cancel each other out
-        if (window.react && !window.visible)
-            GwtClientUtils.logCustomViewError("'" + window.custom + "' is not drawn: the window '" + window.canonicalName
-                    + "' is hidden, so nothing it draws would be seen");
-
-        logPanel = window.react && window.visible && !MainFrame.mobile ? new ReactLogPanel(window.custom, togglePinMode) : new GLogPanel(togglePinMode);
-        isLogPanelVisible = window.visible;
+        logPanel = window.react && !MainFrame.mobile ? new ReactLogPanel(window.custom, togglePinMode) : new GLogPanel(togglePinMode);
         return logPanel;
     }
 
