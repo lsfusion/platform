@@ -377,6 +377,8 @@ In the current platform implementation, `=` is required before an expression or 
 
     Specifying the property to be used in [default handlers](../paradigm/Form_events.md#default) for quick filtering.
 
+    In the web client, the property named by `formPropertyName` must have the same display group as the property being added or, if the latter is displayed in a tree, a display group from that tree. A condition on a property from another group or without a display group is not sent to the server, even if the user filter component shows its editor.
+
     - `formPropertyName`
 
         [Property name/actions on the form](#name).
