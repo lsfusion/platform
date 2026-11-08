@@ -22,7 +22,7 @@ public class UiDesktopIT extends UiTest {
     public static void startDesktopServer() throws Exception {
         int[] ports = TestServer.freePorts(4);
         rmiPort = ports[1];
-        server = startServer(DATABASE, ports, "src/ui/desktop");
+        server = startServer(DATABASE, ports, TestServer.BASE.resolve("src/ui/desktop"));
     }
 
     @AfterClass

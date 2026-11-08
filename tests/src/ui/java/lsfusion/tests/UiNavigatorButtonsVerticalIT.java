@@ -19,7 +19,7 @@ public class UiNavigatorButtonsVerticalIT extends UiTest {
     public static void startButtonsServer() throws Exception {
         int[] ports = TestServer.freePorts(4);
         rmiPort = ports[1];
-        server = startServer(DATABASE, ports, "src/ui/buttons", "user.navbar=vertical");
+        server = startServer(DATABASE, ports, TestServer.BASE.resolve("src/ui/buttons"), "user.navbar=vertical");
     }
 
     @AfterClass

@@ -77,7 +77,7 @@ public class LsfCompileTest {
 
     private static Future<Integer> compile(String name, String includePaths) {
         return SERVERS.submit(() -> {
-            Process server = TestServer.start(TestServer.classPath("compile"), log(name), JVM_OPTIONS,
+            Process server = TestServer.start(TestServer.classPath(BASE.resolve("compile")), log(name), JVM_OPTIONS,
                     "settings.dryRun=true", "logics.includePaths=" + includePaths);
             if (!server.waitFor(10, TimeUnit.MINUTES)) { // a compiler that loops would hold the build until someone stops it
                 server.destroyForcibly();

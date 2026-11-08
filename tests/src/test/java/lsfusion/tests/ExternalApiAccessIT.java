@@ -32,7 +32,7 @@ public class ExternalApiAccessIT {
         int[] ports = TestServer.freePorts(4);
         httpPort = ports[0];
         Path log = BASE.resolve("target/server-api.log");
-        server = TestServer.start(DATABASE, ports, log,
+        server = TestServer.start(DATABASE, ports, log, BASE.resolve("target/classes"),
                 "settings.enableAPI=1",
                 "lsfusion.server.devmode=false"); // which would set enableAPI to 2 whatever is given
         TestServer.waitStarted(server, log);

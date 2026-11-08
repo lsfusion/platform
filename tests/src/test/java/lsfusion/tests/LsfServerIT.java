@@ -100,7 +100,7 @@ public class LsfServerIT {
         int[] ports = TestServer.freePorts(4);
         httpPort = ports[0];
         Path log = BASE.resolve("target/server.log");
-        server = TestServer.start(DATABASE, ports, log, "target/classes",
+        server = TestServer.start(DATABASE, ports, log, BASE.resolve("target/classes"),
                 "settings.enableAPI=2", // anonymous, so a test action needs no user
                 "settings.openFormsWithoutClient=true"); // so that a test can SHOW a form, see above
         System.out.println("lsFusion test server: database " + DATABASE + ", http port " + httpPort + ", log " + log);

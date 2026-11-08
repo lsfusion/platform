@@ -111,7 +111,7 @@ public abstract class UiTest {
     // server beside the suite's, with its own database and the modules of the root given, on the same web client, which
     // a page asks for it by its rmi port (?port=). The class stops it, and the database is dropped then. `settings` are
     // the server's settings beyond the suite's (user.navbar=vertical)
-    protected static Process startServer(String database, int[] ports, String root, String... settings) throws Exception {
+    protected static Process startServer(String database, int[] ports, Path root, String... settings) throws Exception {
         Path log = UI.resolve(database + ".log");
         String[] all = Arrays.copyOf(SERVER_SETTINGS, SERVER_SETTINGS.length + settings.length);
         System.arraycopy(settings, 0, all, SERVER_SETTINGS.length, settings.length);
@@ -141,7 +141,7 @@ public abstract class UiTest {
         httpPort = ports[0];
         webPort = ports[4];
         Path serverLog = UI.resolve("server.log");
-        server = TestServer.start(DATABASE, ports, serverLog, "target/classes", SERVER_SETTINGS);
+        server = TestServer.start(DATABASE, ports, serverLog, BASE.resolve("target/classes"), SERVER_SETTINGS);
 
         Path webLog = UI.resolve(WEB_CONTAINER + ".log");
         List<String> command = new ArrayList<>(Arrays.asList(Paths.get(System.getProperty("java.home"), "bin", "java").toString(),

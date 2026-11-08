@@ -31,16 +31,17 @@ class TestServer {
 
     // what maven resolved for this module (written by dependency:build-classpath), plus the roots holding the
     // .lsf under test - which of those the server sees is exactly what the two runners differ in
-    static String classPath(String... roots) throws IOException {
+    static String classPath(Path... roots) throws IOException {
         StringBuilder classPath = new StringBuilder(read(BASE.resolve("target/server-classpath.txt")));
-        for (String root : roots)
-            classPath.append(File.pathSeparatorChar).append(BASE.resolve(root));
+        for (Path root : roots)
+            classPath.append(File.pathSeparatorChar).append(root);
         return classPath.toString();
     }
 
     // the test logics on a database of its own and on the given ports - http, rmi, websocket, debugger - all of them
-    // free ones, as whoever runs this usually has a server of their own up. `root` holds the logics' modules
-    static Process start(String database, int[] ports, Path log, String root, String... settings) throws IOException {
+    // free ones, as whoever runs this usually has a server of their own up. `root` holds the logics' modules - a Path,
+    // so that no setting after it can be taken for it
+    static Process start(String database, int[] ports, Path log, Path root, String... settings) throws IOException {
         List<String> properties = new ArrayList<>(Arrays.asList(
                 "db.name=" + database, "db.server=" + DB_SERVER, "db.user=" + DB_USER, "db.password=" + DB_PASSWORD,
                 "http.port=" + ports[0], "rmi.port=" + ports[1], "webSocket.port=" + ports[2], "debugger.port=" + ports[3]));
