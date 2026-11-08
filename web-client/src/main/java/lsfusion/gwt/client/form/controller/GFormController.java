@@ -4008,8 +4008,4 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
             handler.consume();
         }
     }
-
-    public void resetWindowsLayout() {
-        formsController.resetWindowsLayout();
-    }
 }

@@ -40,3 +40,19 @@ NAVIGATOR {
 onWebClientInit() + {
     onWebClientInit('UiWindowsLayout.js') <- 1;
 }
+
+// a section whose items System.toolbar draws - with the navigator pinned entirely, a window beside the forms with a
+// border the user drags -: an element of the navigator running Service's reset of the windows' layout, which
+// uiWindowsLayoutReset runs by a button, and a form with the button of Security's maximizing of the forms, which the
+// navigator runs as the client starts
+
+FORM uiWindowsLayoutMaximize 'Maximize the forms'
+    PROPERTIES() maximizeForm
+;
+
+NAVIGATOR {
+    NEW FOLDER uiWindowsLayoutActions 'UI windows layout actions' WINDOW toolbar {
+        NEW ACTION uiWindowsLayoutResetFromNavigator 'Reset the layout' = resetWindowsLayout;
+        NEW uiWindowsLayoutMaximize;
+    }
+}

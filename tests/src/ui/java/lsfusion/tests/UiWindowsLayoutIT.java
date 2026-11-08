@@ -2,7 +2,9 @@ package lsfusion.tests;
 
 import com.microsoft.playwright.APIResponse;
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Mouse;
 import com.microsoft.playwright.Route;
+import com.microsoft.playwright.options.BoundingBox;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -11,6 +13,7 @@ import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 // the layout of the navigator's windows: their sizes, which the client keeps in the browser's local storage when the page
 // is left, and Service's reset of the layout (UiWindowsLayout.lsf)
@@ -127,6 +130,49 @@ public class UiWindowsLayoutIT extends UiTest {
         assertEquals(true, page.evaluate("() => Object.keys(localStorage).some(key => key.endsWith('_System.log'))"));
     }
 
+    // the reset run by an element of the navigator - not by a form's button, which runs it as well - puts back the declared
+    // size of a window the user dragged: here System.toolbar's width, the navigator pinned entirely, which makes the toolbar
+    // a window beside the forms. The pin mode is kept for the design environment, so it is switched back whatever happens
+    @Test
+    public void aResetFromTheNavigatorPutsBackTheDeclaredSize() {
+        String mode = pinMode();
+        try {
+            pinMode(ALL_PINNED);
+            page.locator("[lsfusion-container='UiWindowsLayout.uiWindowsLayoutActions']").click();
+            Locator toolbar = page.locator("[lsfusion-container='System.toolbar']");
+            Locator reset = toolbar.locator("[lsfusion-container='UiWindowsLayout.uiWindowsLayoutResetFromNavigator']");
+            assertThat(reset).isVisible();
+            int declared = width(toolbar);
+
+            // the toolbar's border to the forms, below its items
+            BoundingBox box = toolbar.boundingBox();
+            double x = box.x + box.width - 2, y = box.y + box.height - 20;
+            page.mouse().move(x, y);
+            page.mouse().down();
+            page.mouse().move(x + 120, y, new Mouse.MoveOptions().setSteps(6));
+            page.mouse().up();
+            int dragged = width(toolbar);
+            assertTrue("the toolbar dragged from " + declared + " px to " + dragged, dragged > declared + 60);
+
+            page.waitForResponse(response -> carries(response.request().postData(), "ExecuteNavigatorAction"), reset::click).finished();
+            assertThat(toolbar).hasJSProperty("offsetWidth", declared);
+        } finally {
+            pinMode(mode);
+        }
+    }
+
+    // a form's button maximizes the forms, as the navigator does as the client starts: the page draws System.forms alone
+    @Test
+    public void aFormsButtonMaximizesTheForms() {
+        Locator navigator = page.locator("[lsfusion-container='System.root']");
+        Locator form = open("UiWindowsLayout.uiWindowsLayoutActions", "UiWindowsLayout.uiWindowsLayoutMaximize");
+        assertThat(navigator).isVisible();
+
+        action(form, "maximizeForm").click();
+        assertThat(navigator).isHidden();
+        assertThat(form).isVisible();
+    }
+
     // the reset puts back the visibility the windows are declared with, and the navigator's rule over it, as the desktop
     // client does: a navigator window with nothing to draw stays hidden - here System.toolbar, while the section
     // selected has its item drawn by System.system -, not shown empty until the navigator's next update
@@ -148,5 +194,9 @@ public class UiWindowsLayoutIT extends UiTest {
     // is still shown
     private static boolean shown(Locator window) {
         return !"none".equals(window.evaluate("element => element.style.display"));
+    }
+
+    private static int width(Locator element) {
+        return ((Number) element.evaluate("element => element.offsetWidth")).intValue();
     }
 }

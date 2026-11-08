@@ -724,16 +724,22 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }
     }
 
+    // the page's forms and windows are its forms controller's, which a form's action reaches as the navigator's does: what
+    // an action does to them is done here, for both
     @Override
     public void execute(GActivateFormAction action) {
+        getFormsController().activateForm(action.formCanonicalName, action.formId, action.windowCanonicalName);
     }
 
     @Override
     public void execute(GMaximizeFormAction action) {
+        if (!MainFrame.mobile)
+            getFormsController().setFullScreenMode(true);
     }
 
     @Override
     public void execute(GCloseFormAction action) {
+        getFormsController().closeForms(action.formId, action.formCanonicalName, action.windowCanonicalName);
     }
 
     @Override
@@ -743,6 +749,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GResetWindowsLayoutAction action) {
+        if (!MainFrame.mobile)
+            getFormsController().resetWindowsLayout();
     }
 
     protected abstract JavaScriptObject getController();

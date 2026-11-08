@@ -116,18 +116,6 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
         formsController.onServerInvocationFailed(getAsyncFormController(exceptionResult.requestIndex));
     }
 
-    @Override
-    public void execute(final GActivateFormAction action) {
-        formsController.activateForm(action.formCanonicalName, action.formId, action.windowCanonicalName);
-    }
-
-    @Override
-    public void execute(final GMaximizeFormAction action) {
-        if (!MainFrame.mobile) {
-            formsController.setFullScreenMode(true);
-        }
-    }
-
     // the shared exec/eval/change plus activate, which is not on the base GController since a form has no navigator
     // elements to activate
     private final JavaScriptObject controller = initController();
@@ -178,10 +166,5 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     @Override
     protected PopupOwner getPopupOwner() {
         return PopupOwner.GLOBAL;
-    }
-
-    @Override
-    public void execute(final GCloseFormAction action) {
-        formsController.closeForms(action.formId, action.formCanonicalName, action.windowCanonicalName);
     }
 }
