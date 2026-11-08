@@ -511,6 +511,16 @@ public abstract class UiTest {
         page.route("**/main/dispatch", held::add);
     }
 
+    // ... only the requests of an action, the others going through
+    protected void hold(String action) {
+        page.route("**/main/dispatch", route -> {
+            if (carries(route.request().postData(), action))
+                held.add(route);
+            else
+                route.resume();
+        });
+    }
+
     protected void release() {
         page.unroute("**/main/dispatch");
         for (Route route : held)

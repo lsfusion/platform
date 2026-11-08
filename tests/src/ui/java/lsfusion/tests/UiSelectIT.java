@@ -974,8 +974,9 @@ public class UiSelectIT extends UiTest {
     // a list, buttons, a button group, a drop-down list, and buttons of one value or none by their old name, option -:
     // the rows its options, a pick changing their `selected`;
     // and the input a selection of several values drawn as its text is changed in, the form of its change, embedded in
-    // place of the text with the options picked, closed once the focus leaves it. Its list is left out: opened by a click
-    // that form's input loads the options and shows no list - a bug of its own
+    // place of the text with the options picked, closed once the focus leaves it. The event that opens the form is the
+    // input's - a click opens its list, as a click on it does (it opened only when the options came before the picks -
+    // and a form opened ahead of its answer got no event at all).
     @Test
     public void overTheRowsOfAGroup() throws Exception {
         String task = seedTask();
@@ -1017,15 +1018,25 @@ public class UiSelectIT extends UiTest {
 
         Locator text = property(form, "tagsText");
         assertThat(text).hasText(Pattern.compile("red"));
+        // the form's answer comes once its place is shown, which gave the form no event (the open made ahead of the answer);
+        // the options come after the picks, the order that opened no list
+        hold("ExecuteEventAction");
         text.locator(".panel-renderer-value").first().click(); // a panel property changes on one click: a second would open its form again
+        page.locator(".form-embedded").waitFor();
+        release();
+        hold("GetPriorityAsyncValues");
         items(page.locator("body"), "red");
+        release();
+        assertThat(lookedUp()).hasText(new String[] {"green", "blue"});
+        lookedUp().filter(new Locator.FilterOptions().setHasText(exact("green"))).click();
+        items(page.locator("body"), "red", "green");
         page.locator(".selectize-input .item").filter(new Locator.FilterOptions().setHasText("red")).locator("a.remove").click();
-        items(page.locator("body"));
+        items(page.locator("body"), "green");
         form.getByText("Status", new Locator.GetByTextOptions().setExact(true)).first().click(); // the focus leaves it
         assertThat(page.locator(".selectize-control")).hasCount(0);
-        assertThat(text).not().hasText(Pattern.compile("red"));
+        assertThat(text.locator(".panel-renderer-value")).hasText("green");
         save(form);
-        check("UiSelect.uiSelectCheckTask", task, "New / Done / none");
+        check("UiSelect.uiSelectCheckTask", task, "New / Done / green");
         close(form);
     }
 

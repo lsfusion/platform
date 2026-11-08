@@ -2122,7 +2122,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler,
                 activated != null ? activated : pushAsyncResult, eventSource, requestIndex -> {
             if (activated == null)
-                formsController.asyncOpenForm(getAsyncFormController(requestIndex), asyncOpenForm, editEvent, editContext, execContext, this);
+                formsController.asyncOpenForm(getAsyncFormController(requestIndex), asyncOpenForm, handler != null ? handler.event : null, editContext, execContext, this);
         }, onExec);
     }
 

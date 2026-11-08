@@ -92,7 +92,8 @@ function selectInput() {
     }
 
     return {
-        render: function (element, controller) {
+        // editEvent: the event the form drawing a group's rows was opened with (GCustom.onRender), a click or a char typed
+        render: function (element, controller, editEvent) {
             let isList = controller.isList();
 
             let selectizeElement = _wrapElementDiv(element, !isList); // it seems that selectize uses parent (because it creates sibling) so for custom cell renderer we need extra div
@@ -152,8 +153,9 @@ function selectInput() {
                     _setIsEditing(element, this.$control[0], false);
                     if (this._scrollReposition) { document.removeEventListener('scroll', this._scrollReposition, true); this._scrollReposition = null; }
                 },
+                // the change form opened by the user's click or key on the property's text (the edit event) opens its list on focus
                 openOnFocus: function () {
-                    return !lsfUtils.isSuppressOnFocusChange(element);
+                    return editEvent != null || !lsfUtils.isSuppressOnFocusChange(element);
                 },
                 respect_word_boundaries: false, // undocumented feature. But for some reason it includes support for searching by Cyrillic characters
                 preload: 'focus',

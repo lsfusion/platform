@@ -2815,7 +2815,7 @@
       var events = silent ? [] : ['change'];
 
       debounce_events(this, events, function() {
-        var $item, $option, $options;
+        var $item, $option;
         var self = this;
         var inputMode = self.settings.mode;
         var i, active, value_next, wasFull;
@@ -2839,20 +2839,19 @@
         }
 
         if (self.isSetup) {
-          $options = self.$dropdown_content.find('[data-selectable]');
-
           // update menu / remove the option (if this is not one item being added as part of series)
           if (!self.isPending) {
             $option = self.getOption(value);
             value_next = self.getAdjacentOption($option, 1).attr('data-value');
-            self.refreshOptions(self.isFocused && inputMode !== 'single');
+            // PATCHED: form updates must preserve the dropdown's open state, including after Escape or suppressed focus.
+            self.refreshOptions(self.isOpen && inputMode !== 'single');
             if (value_next) {
               self.setActiveOption(self.getOption(value_next));
             }
           }
 
-          // hide the menu if the maximum number of items have been selected or no options are left
-          if (!$options.length || self.isFull()) {
+          // PATCHED: keep an empty dropdown open, as refreshOptions does; its options may still be loading.
+          if (self.isFull()) {
             self.close();
           } else if (!self.isPending) {
             self.positionDropdown();
