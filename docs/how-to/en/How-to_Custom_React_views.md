@@ -988,6 +988,8 @@ and each edit mode in `editModes` carries what the mode button shows it with:
 
 A form the component places nowhere stays **open and hidden**, which is what a background tab already is: the standard strip only hides the forms it does not show. So a component that places only the current form gives an application without tabs, where every form opened so far is still there, and placing one again shows it as it was left. A form is closed only through `close(name)` or `closeAll()`, or the way it is closed without a component view.
 
+In a forms window drawn by a React component, form shortcuts act on the current form even if the component places it nowhere. The component should therefore place the current form.
+
 The platform's own toolbar — edit mode, full screen, the mobile menu — is System.forms', in its standard tab strip, so a component that draws System.forms does not show it, and no other window has it. What the toolbar does, a component of any forms window does through the controller: `setEditMode(name)` chooses the edit mode, one for the whole page, the way the mode button does, where `name` is the name of a mode in `editModes`, and `toggleFullScreen()` expands System.forms to the full screen and brings it back, the way the full screen button and ALT+F11 do. The full screen is System.forms' whichever window's component asks for it: the page draws System.forms alone then, without the navigator and the other windows, so the window of another component is not drawn, and that component never sees `fullScreen` as `true`. What the standard tab's context menu offers is here too: `closeAll()` asks every open form to close, starting from the last one in that order. Closing each of them is a request as well, so a form that did not close stays open and the rest are closed. The chosen mode and the full screen are state the platform holds itself, which is why it projects them: a mode chosen by the component and a full screen entered with ALT+F11 are both seen the same way, in `props.data`. The mobile menu is not something a component needs: on the mobile web client the platform draws the forms window.
 
 Hiding the close button of an inactive tab is how the standard strip follows the user's setting *Do not show close button on inactive tab* (`dontShowCloseButtonOnInactiveTab`), so `System.forms` drawn by a component is not given the class that hides it, `dont-show-close-button`: the class would hide the close buttons the component draws with the standard tabs' class names too. Whether its tabs show a close button is the component's to decide. The mobile web client, which draws the standard strip, keeps the class.
@@ -1292,6 +1294,8 @@ platform's own tree turns its expander glyph at the click. A node is closed at o
 until the answer takes them away, so a view that draws a node's children only under an `expanded` node, as below, hides
 them at once. Only a node with children opens: one whose `hasChildren` is false stays closed, as it does in the
 platform's tree. It is live state as well.
+
+If an expand or collapse request fails without updating the rows, `expanded` keeps the requested state until the server sends rows for the node's group or the immediately following group in the tree in response to that request or a later one.
 
 `loading` is `true` while the node's children are being loaded: a view asked to open it, and the rows of the answer
 have not arrived — as a cell's `loading` says a change of it waits for its answer. Closing a node loads nothing, and
