@@ -16,7 +16,6 @@ import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterControlsView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
-import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainersView;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.admin.Settings;
@@ -40,11 +39,9 @@ public abstract class GridPropertyView<This extends GridPropertyView<This, AddPa
         return filters.getIt();
     }
 
-    public FilterView addFilter(IDGenerator idGenerator, PropertyDrawView property, Version version) {
-        FilterView filter = new FilterView(idGenerator, property);
+    public void addFilter(FilterView filter, Version version) {
         filters.add(filter, version);
         filtersContainer.add(filter, version);
-        return filter;
     }
 
     public DefaultFormView.ContainerSet containers;

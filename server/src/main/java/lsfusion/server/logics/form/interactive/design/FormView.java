@@ -163,12 +163,19 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     }
 
     // a property's FILTER, a component the design names (FilterView.getSID), as any other. Modules that do not require
-    // each other are parsed at once, and two of them can give one property a filter
+    // each other are parsed at once, and two of them can give one property a filter : the component is made once, and
+    // every module giving it places it at its version, unless the design as the module's requirements left it has it
+    // already - so where it stands follows the module order, not which of the two is parsed first
     @NFLazy
     public void addFilter(PropertyDrawEntity filterProperty, Version version) {
         PropertyDrawView propertyDrawView = get(filterProperty);
-        if (propertyDrawView.filter == null)
-            addComponentToMapping(getDrawComponent(filterProperty.getNFToDraw(entity, version)).addFilter(genID(), propertyDrawView, version), version);
+        FilterView filter = propertyDrawView.filter;
+        if (filter == null)
+            filter = new FilterView(genID(), propertyDrawView);
+        else if (components.containsNF(filter, version))
+            return;
+        getDrawComponent(filterProperty.getNFToDraw(entity, version)).addFilter(filter, version);
+        addComponentToMapping(filter, version);
     }
 
     public void addPivotColumn(ImList<PropertyDrawEntityOrPivotColumn> column, Version version) {

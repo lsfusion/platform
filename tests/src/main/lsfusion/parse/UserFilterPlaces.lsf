@@ -1,0 +1,22 @@
+MODULE UserFilterPlaces;
+
+REQUIRE TestUtils;
+
+// a property of a form gets one component for its user filter (FILTERS ... USER, FILTER in its options, USERFILTERS),
+// however many modules give it one, and modules that do not require each other are parsed at once, each in a thread of
+// its own. The one parsed first made the component, at its version, so where it stood in the FILTERS box - before or
+// after the filters the other module gives - was the parse threads' timing. Now each module that does not see the
+// property given a filter already places it at its version, so where it stands follows the module order; a module that
+// requires one giving the filter leaves it where that one's design put it, as before
+
+CLASS UfpItem 'Item';
+ufpName 'Name' = DATA STRING (UfpItem);
+ufpCode 'Code' = DATA STRING (UfpItem);
+
+ufpFailure = DATA LOCAL STRING ();
+ufpPlaceInModuleOrder INTERNAL 'lsfusion.tests.PlaceUserFiltersInModuleOrderAction' ();
+
+testUserFilterPlacedInModuleOrder 'The filter two modules give one property stands where the module order puts it' () {
+    ufpPlaceInModuleOrder();
+    assertNull(ufpFailure(), ufpFailure());
+}
