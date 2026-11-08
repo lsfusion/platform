@@ -186,14 +186,11 @@ public class ObjectMapping {
         return (T) objectsMap.get(object);
     }
     public <T extends ServerIdentityObject<T, AP>, AP extends ServerIdentityObject<AP, ?>> T getIdentity(T object) {
-
-//        synchronized by object mapping (form for getAdd)
-        T result = (T) objectsMap.get(object);
-        if(result != null)
-            return result;
-
+        // the lookup too on the form's monitor : the map is a plain one, and a copy is put into it by its constructor
+        // (ServerIdentityObject), before it is made - a lookup off the monitor could read the map in the middle of a write
+        // or get a copy half made
         synchronized (addForm) {
-            result = (T) objectsMap.get(object);
+            T result = (T) objectsMap.get(object);
             if(result != null)
                 return result;
 

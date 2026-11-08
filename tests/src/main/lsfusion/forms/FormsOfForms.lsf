@@ -33,6 +33,16 @@ testFormsOfFormsReadAtOnce 'A form built from another one is read at a module ve
     assertNull(ffReadFailure(), ffReadFailure());
 }
 
+// and asked by two threads at once for one thing it maps of the other form : the second got the copy the first was making
+// half made, looking it up in the mapping without the form's monitor
+ffMapFailure = DATA LOCAL STRING ();
+ffMapAtOnce INTERNAL 'lsfusion.tests.MapFormsOfFormsAtOnceAction' ();
+
+testFormsOfFormsMappedAtOnce 'Two threads asking a form built from another one for one thing get it made' () {
+    ffMapAtOnce();
+    assertNull(ffMapFailure(), ffMapFailure());
+}
+
 // ON INIT that runs something on the client asynchronously ends with waiting for it
 ffLoad () { INTERNAL CLIENT 'ffLoad.js'; }
 FORM ffLoading 'Loading'
