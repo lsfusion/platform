@@ -1,9 +1,12 @@
 package lsfusion.server.base.version.impl;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.base.version.Version;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -32,11 +35,16 @@ public abstract class NFChangeImpl<CH, F> extends NFImpl<TreeMap<Version, MList<
         void proceed(CH change, CH nextChange);
     }
     
+    // a read at a version notes on the monitor what it would run and runs that off it : a copy among the changes maps
+    // through the form's monitor (ObjectMapping.getIdentity), which a FORMS statement holds as it writes this collection
     protected void proceedChanges(ChangeProcessor<CH> processor, Version version) {
         if(version != Version.last()) {
+            List<Pair<CH, CH>> changes = new ArrayList<>();
             synchronized (this) {
-                syncProceedChanges(processor, version);
+                syncProceedChanges((change, nextChange) -> changes.add(new Pair<>(change, nextChange)), version);
             }
+            for(Pair<CH, CH> change : changes)
+                proceed(processor, change.first, change.second);
         } else
             syncProceedChanges(processor, version);
     }

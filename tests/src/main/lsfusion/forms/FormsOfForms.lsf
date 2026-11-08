@@ -23,6 +23,16 @@ testFormsOfFormsFinalizedAtOnce 'A form built from a form built from another one
     assertNull(ffFailure(), ffFailure());
 }
 
+// and read during the parse at a module's version beside a FORMS statement extending it : the read held the form's
+// components while it waited for the form, which the statement holds as it writes them
+ffReadFailure = DATA LOCAL STRING ();
+ffReadAtOnce INTERNAL 'lsfusion.tests.ReadFormsOfFormsAtOnceAction' ();
+
+testFormsOfFormsReadAtOnce 'A form built from another one is read at a module version beside a FORMS extending it' () {
+    ffReadAtOnce();
+    assertNull(ffReadFailure(), ffReadFailure());
+}
+
 // ON INIT that runs something on the client asynchronously ends with waiting for it
 ffLoad () { INTERNAL CLIENT 'ffLoad.js'; }
 FORM ffLoading 'Loading'

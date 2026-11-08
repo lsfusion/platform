@@ -69,7 +69,7 @@ public class FinalizeFormsOfFormsAction extends AtOnceAction {
     }
 
     // FORMS addForm in form, as the parse does it
-    private static void addForm(FormEntity form, FormEntity addForm, Version version) {
+    static void addForm(FormEntity form, FormEntity addForm, Version version) {
         ObjectMapping mapping = new ObjectMapping(form, addForm, null, null, null, null, null, false, version);
         ((DefaultFormView) mapping.get(addForm.view)).addForm(addForm.view, mapping, version);
     }
