@@ -11,7 +11,7 @@ window.UiRpjMembers = function (props) {
     var refusal = React.useState(''), refused = refusal[0], setRefused = refusal[1];
     if (!window.uiRpjMember)
         window.uiRpjMember = controller.i.price; // the member as the view first got it
-    var label = data.uiRpjLabel, current = rows.filter(function (row) { return row.isCurrent; })[0];
+    var label = data.uiRpjLabel, current = rows.filter(function (row) { return row.current; })[0];
     var value = function (entry) { return 'value' in entry ? String(entry.value) : 'no value'; };
     var change = function (price) {
         try {

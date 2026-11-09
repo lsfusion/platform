@@ -404,7 +404,7 @@ public class UiReactBatchIT extends UiTest {
         return view("window.uiRbViews && window.uiRbViews." + name,
                 " const row = name => data.i.list.find(r => r.name.value === name);"
                 + " const names = () => data.i.list.map(r => r.name.value).join();"
-                + " const current = () => (data.i.list.find(r => r.isCurrent) || {name: {value: null}}).name.value;");
+                + " const current = () => (data.i.list.find(r => r.current) || {name: {value: null}}).name.value;");
     }
 
     // the classic view's rows, a row by its name

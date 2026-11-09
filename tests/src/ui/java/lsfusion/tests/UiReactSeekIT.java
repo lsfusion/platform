@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
 public class UiReactSeekIT extends UiTest {
 
     private final View cards = view("window.uiReactSeek",
-            " const list = data && data.i ? data.i.list : [], cur = list.find(r => r.isCurrent),"
+            " const list = data && data.i ? data.i.list : [], cur = list.find(r => r.current),"
             + " seeks = view ? view.seeks : [];"
             + " const sc = document.querySelector('[lsfusion-form=\"UiReactSeek.uiReactSeekCards\"] .ui-react-seek-scroller'),"
             + " ce = sc && sc.querySelector('.ui-react-seek-current');"

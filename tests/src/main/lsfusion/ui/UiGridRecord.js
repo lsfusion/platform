@@ -35,7 +35,7 @@ window.UiGridRecordBoard = function (props) {
     };
     return e('div', null,
         data.j.list.map(function (row) {
-            return e('div', {key: row.key, className: 'ui-grid-record-row' + (row.isCurrent ? ' ui-grid-record-current' : ''),
+            return e('div', {key: row.key, className: 'ui-grid-record-row' + (row.current ? ' ui-grid-record-current' : ''),
                 onClick: function () { controller.j.change(row); }}, row.uiGridRecordName.value);
         }),
         e('div', {className: 'ui-grid-record-placed-caption'}, data.recordPlaced.caption),

@@ -10,7 +10,7 @@
     // the rows as cards, a click making a row the current one
     function cards(group, controller, content) {
         return group.list.map(function (row) {
-            return e('div', {key: row.key, className: 'ui-keys-card' + (row.isCurrent ? ' ui-keys-current' : ''),
+            return e('div', {key: row.key, className: 'ui-keys-card' + (row.current ? ' ui-keys-current' : ''),
                     onClick: function () { controller.i.change(row); }},
                 e('span', null, row.uiKeysName.value), content && content(row));
         });

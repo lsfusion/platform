@@ -38,21 +38,21 @@ public class UiToolbarTreeIT extends UiTest {
         view.drawn().call("controller.c.collapseAll()");
         view.waitFor("opened() === '' && items() === ''");
         view.drawn().call("controller.c.change(data.c.list[1])");
-        view.waitFor("data.c.list[1].isCurrent");
+        view.waitFor("data.c.list[1].current");
         button(toolbar, "Expand current object").click();
         view.waitFor("opened() === '" + names[4] + "' && items() === '" + names[5] + "' && loaded()");
         view.drawn().call("controller.i.change(data.i.list[0])");
-        view.waitFor("data.i.list[0].isCurrent");
+        view.waitFor("data.i.list[0].current");
         button(toolbar, "Expand current object").click();
         settled();
         assertEquals(names[4] + "/" + names[5], view.drawn().eval("opened() + '/' + items()"));
 
         view.drawn().call("controller.c.change(data.c.list[0])");
-        view.waitFor("data.c.list[0].isCurrent");
+        view.waitFor("data.c.list[0].current");
         button(toolbar, "Expand whole tree").click();
         view.waitFor("opened() === '" + names[0] + "," + names[4] + "' && items() === '" + all + "' && loaded()");
         view.drawn().call("controller.i.change(data.i.list[1])");
-        view.waitFor("data.i.list[1].isCurrent");
+        view.waitFor("data.i.list[1].current");
         button(toolbar, "Show filter controls").click();
         Locator conditions = form.locator(".filter:visible"), editor = conditions.locator("input");
         assertThat(conditions).hasCount(1);
@@ -86,14 +86,14 @@ public class UiToolbarTreeIT extends UiTest {
         view.drawn().call("controller.c.collapseAll()");
         view.waitFor("opened() === '' && items() === ''");
         view.drawn().call("controller.c.change(data.c.list[1])");
-        view.waitFor("data.c.list[1].isCurrent");
+        view.waitFor("data.c.list[1].current");
         view.drawn().call("controller.cats.expandCurrent()");
         view.waitFor("opened() === '" + names[4] + "' && items() === '" + names[5] + "' && loaded()");
 
         view.drawn().call("controller.c.collapseAll()");
         view.waitFor("opened() === '' && items() === ''");
         view.drawn().call("controller.c.change(data.c.list[0])");
-        view.waitFor("data.c.list[0].isCurrent");
+        view.waitFor("data.c.list[0].current");
         view.drawn().call("controller.cats.expandCurrent()");
         view.waitFor("opened() === '" + names[0] + "' && items() === '" + names[2] + "," + names[3] + "' && loaded()");
         view.drawn().call("controller.cats.addFilter()");

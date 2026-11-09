@@ -577,7 +577,7 @@ console.log('useSeekOnScroll');
         const root = rootOf();
         for (let k = 1; k <= 5; k++) {
             rowNodes.push(node(root.rowsIn));
-            rows.push({ key: String(k), isCurrent: k === 1 });
+            rows.push({ key: String(k), current: k === 1 });
         }
         makeReact.__ctxValue = root.context;
         const controller = { change: (row) => seeks.push(row.key) };
@@ -599,8 +599,8 @@ console.log('useSeekOnScroll');
     };
     // a click elsewhere makes the last row current, and it is below what the scroller shows
     const currentBelow = (view) => {
-        view.rows[0] = { key: '1', isCurrent: false };
-        view.rows[4] = { key: '5', isCurrent: true };
+        view.rows[0] = { key: '1', current: false };
+        view.rows[4] = { key: '5', current: true };
         view.rowNodes[4].rect = { top: 150, bottom: 160 };
         view.draw();
     };
@@ -721,7 +721,7 @@ console.log('useSeekOnScroll');
             const seekRef = render(hook, () => w.lsfusion.useSeekOnScroll(controller));
             const next = new Map();
             for (let n = from; n <= to; n++)
-                next.set(n, seekRef({ key: String(n), isCurrent: n === current }));
+                next.set(n, seekRef({ key: String(n), current: n === current }));
             refs.forEach((ref, n) => { if (!next.has(n)) ref(null); });
             laid = [...next.keys()].map(rowOf);
             next.forEach((ref, n) => { if (!refs.has(n)) ref(rowOf(n)); });

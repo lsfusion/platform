@@ -1311,6 +1311,7 @@ public class GReactFormDataTest extends GWTTestCase {
     private static native boolean noValue(JavaScriptObject entry) /*-{ return entry.value == null; }-*/;
     private static native String text(JavaScriptObject object, String name) /*-{ return object[name]; }-*/;
     private static native boolean flag(JavaScriptObject object, String name) /*-{ return !!object[name]; }-*/;
+    private static native boolean booleanField(JavaScriptObject object, String name, boolean expected) /*-{ return object[name] === expected; }-*/;
     private static native int length(JavaScriptObject array) /*-{ return array.length; }-*/;
     private static native boolean bare(JavaScriptObject object) /*-{ return Object.getPrototypeOf(object) === null; }-*/;
     private static native boolean plain(JavaScriptObject object) /*-{ return Object.getPrototypeOf(object) === Object.prototype; }-*/;
@@ -1478,14 +1479,14 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject panel = field(field(f.snapshots[1], "items"), "panel");
         f.controller(f.group).changeCurrentKey(null); // no current row: the rows say so...
         f.projection.flush();
-        assertFalse(flag(f.row("1"), "isCurrent"));
+        assertFalse(flag(f.row("1"), "current"));
         assertSame(panel, field(field(f.snapshots[1], "items"), "panel")); // ... and a panel property stays, value and
         assertTrue(hasMember(f.sb, "items", "panel"));                     // member: the server reads it for the
         assertEquals(1, f.publications[1]);                                // current object itself
         assertEquals(1, f.publications[2]);
         f.controller(f.group).changeCurrentKey(f.two);
         f.projection.flush();
-        assertTrue(flag(f.row("2"), "isCurrent"));
+        assertTrue(flag(f.row("2"), "current"));
         assertEquals(30.0, value(field(f.snapshots[1], "items"), "panel"), 0.0);
         assertEquals(1, f.publications[1]);
     }
@@ -1576,8 +1577,8 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals(5.0, value(f.row("3"), "quantity"), 0.0);
         assertEquals(15.0, value(f.row("1"), "price"), 0.0);
         assertEquals(10.0, value(oldOne, "price"), 0.0);
-        assertTrue(flag(f.row("3"), "isCurrent"));
-        assertFalse(flag(f.row("1"), "isCurrent"));
+        assertTrue(flag(f.row("3"), "current"));
+        assertFalse(flag(f.row("1"), "current"));
         assertEquals(2, f.publications[0]);
         assertEquals(1, f.publications[2]);
     }
@@ -1600,10 +1601,21 @@ public class GReactFormDataTest extends GWTTestCase {
         assertSame(price, field(f.row("1"), "price"));
         assertNull(field(row, "selected"));
         assertTrue(flag(f.row("1"), "selected"));
+        // A row's current boolean and its range selection flag change independently.
+        f.controller(f.group).updateCurrentKey(f.two);
+        f.projection.flush();
+        assertTrue(booleanField(f.row("1"), "current", false));
+        assertTrue(flag(f.row("1"), "selected"));
+        assertTrue(booleanField(f.row("2"), "current", true));
+        assertFalse(own(f.row("2"), "selected"));
+        assertFalse(own(f.row("1"), "isCurrent"));
+        assertFalse(own(f.row("2"), "isCurrent"));
         GFormChanges unselected = new GFormChanges();
         put(unselected, f.group.rowSelectReader, f.one, null);
         f.apply(unselected);
-        assertNull(field(f.row("1"), "selected"));
+        assertFalse(own(f.row("1"), "selected"));
+        assertTrue(booleanField(f.row("1"), "current", false));
+        assertTrue(booleanField(f.row("2"), "current", true));
         JavaScriptObject node = f.node();
         GFormChanges boxCaption = new GFormChanges();
         put(boxCaption, f.box.captionReader, GGroupObjectValue.EMPTY, "Updated");
@@ -1792,7 +1804,7 @@ public class GReactFormDataTest extends GWTTestCase {
         grid.updateCurrentKey(f.two);
         f.projection.flush();
         assertEquals("2,1", join(field(f.node(), "keys")));
-        assertTrue(flag(f.row("2"), "isCurrent"));
+        assertTrue(flag(f.row("2"), "current"));
         assertSame(f.two, grid.getSelectedKey());
         assertEquals(0, grid.getRow(f.two));
         GFormChanges delta = new GFormChanges(); put(delta, f.outerPanel, GGroupObjectValue.EMPTY, 5); f.apply(delta);
@@ -2541,7 +2553,7 @@ public class GReactFormDataTest extends GWTTestCase {
         JavaScriptObject note = field(f.node(), "note");
         f.controller(f.group).changeCurrentKey(f.two);
         f.projection.flush();
-        assertTrue(flag(f.row("2"), "isCurrent"));
+        assertTrue(flag(f.row("2"), "current"));
         assertSame(note, field(f.node(), "note")); // the selection moved in the rows, and the panel entry stayed
     }
 
@@ -3807,7 +3819,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertNull(field(field(f.sb.controller, "items"), "filters"));
         f.controller(f.group).updateCurrentKey(f.two); // an unrelated change: the node is new, the array is not
         f.projection.flush();
-        assertTrue(flag(f.row("2"), "isCurrent"));
+        assertTrue(flag(f.row("2"), "current"));
         assertSame(filters, field(f.node(), "filters"));
 
         // a condition's value is its filter type's: a property named `image` draws its own value as an image, not this
@@ -4360,19 +4372,19 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals(PValue.getPValue(2), tree.getSelectedValue(columns[0], GGroupObjectValue.EMPTY));
         assertEquals(PValue.getPValue(270), tree.getSelectedValue(columns[1], GGroupObjectValue.EMPTY));
         f.projection.flush();
-        assertTrue(flag(f.row(f.cat, f.c2), "isCurrent"));
-        assertFalse(flag(f.row(f.cat, f.c1), "isCurrent"));
-        assertTrue(flag(f.row(f.item, f.i27), "isCurrent"));
+        assertTrue(flag(f.row(f.cat, f.c2), "current"));
+        assertFalse(flag(f.row(f.cat, f.c1), "current"));
+        assertTrue(flag(f.row(f.item, f.i27), "current"));
         GFormChanges answer = new GFormChanges(); // the server reporting an item under the first category: its alone
         answer.objects.put(f.item, f.i15);
         f.apply(answer);
         assertEquals(PValue.getPValue(1), tree.getSelectedValue(columns[0], GGroupObjectValue.EMPTY));
-        assertTrue(flag(f.row(f.cat, f.c1), "isCurrent"));
-        assertFalse(flag(f.row(f.cat, f.c2), "isCurrent"));
+        assertTrue(flag(f.row(f.cat, f.c1), "current"));
+        assertFalse(flag(f.row(f.cat, f.c2), "current"));
     }
 
     // ... and leaves the groups below it on no row, as the server has them - it drops their objects when a row above
-    // is chosen, and reports nothing for them -: no row of theirs says `isCurrent`, and a column of theirs has no
+    // is chosen, and reports nothing for them -: no row of theirs says `current`, and a column of theirs has no
     // current value to start a condition with, until a row is chosen there again - by the view, or by the server
     public void testARowMadeCurrentLeavesTheGroupsBelowOnNoRow() {
         GPropertyDraw[] columns = new GPropertyDraw[1];
@@ -4386,16 +4398,16 @@ public class GReactFormDataTest extends GWTTestCase {
         f.controllers.groups.get(f.cat).changeCurrentKey(f.c2); // the view's choice of a category
         assertNull(tree.getSelectedValue(columns[0], GGroupObjectValue.EMPTY)); // no item is current now
         f.projection.flush();
-        assertTrue(flag(f.row(f.cat, f.c2), "isCurrent"));
-        assertFalse(flag(f.row(f.item, f.i15), "isCurrent"));
+        assertTrue(flag(f.row(f.cat, f.c2), "current"));
+        assertFalse(flag(f.row(f.item, f.i15), "current"));
         GFormChanges answer = new GFormChanges(); // the server reporting an item under it
         answer.objects.put(f.item, f.i27);
         f.apply(answer);
-        assertTrue(flag(f.row(f.item, f.i27), "isCurrent"));
+        assertTrue(flag(f.row(f.item, f.i27), "current"));
         answer = new GFormChanges(); // ... and then a category: the item's group on no row again
         answer.objects.put(f.cat, f.c1);
         f.apply(answer);
-        assertFalse(flag(f.row(f.item, f.i27), "isCurrent"));
+        assertFalse(flag(f.row(f.item, f.i27), "current"));
         assertNull(tree.getSelectedValue(columns[0], GGroupObjectValue.EMPTY));
     }
 
@@ -4556,7 +4568,7 @@ public class GReactFormDataTest extends GWTTestCase {
         });
         assertEquals(Arrays.asList("batch", "current cat 2", "expand current cat 2", "sent"), f.verbs.asked);
         assertEquals(publications + 1, f.publications); // once, when it ended
-        assertTrue(flag(f.row(f.cat, f.c2), "isCurrent"));
+        assertTrue(flag(f.row(f.cat, f.c2), "current"));
         assertTrue(flag(f.row(f.cat, f.c2), "expanded")); // shown opened at once
         assertTrue(flag(f.row(f.cat, f.c2), "loading"));
         assertTrue(sameField(field(f.data, "t"), "current", f.row(f.cat, f.c2), "key")); // the tree's current row

@@ -12,7 +12,7 @@ function UiRreEditors(props) {
             <button onClick={() => { controller.i.filters.change([]); }}>Drop filter</button>
             <button onClick={() => { controller.i.orders.change([{property: 'qty', desc: true}]); }}>Qty descending</button>
         </div>
-        {data.i.list.map(row => <div key={row.key} className="ui-rre-row" data-current={String(!!row.isCurrent)}
+        {data.i.list.map(row => <div key={row.key} className="ui-rre-row" data-current={String(!!row.current)}
                                    style={{display: 'flex', alignItems: 'center', gap: 12, minHeight: 36}}>
             <span className="ui-rre-name">{row.name.value}</span>
             <span className="ui-rre-projected">{row.qtyShown.value}</span>

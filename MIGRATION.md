@@ -218,6 +218,14 @@ column that has an index, read while the session holds unsaved changes of that c
 dedicated setting; `settings.noOrderTopSplit=true` disables the order splitting itself and with it
 this estimate, restoring the previous behaviour.
 
+### React rows use `current` instead of `isCurrent`
+
+React row objects now expose `current` (`true` or `false`) instead of `isCurrent`, with no
+compatibility alias. Update published custom JavaScript that reads `row.isCurrent` to read
+`row.current`. `current` is now reserved for projected row properties. Rename any property
+alias or `EXTID` that uses it. `row.selected` remains the independent range selection flag
+(`true` or absent). The tree-level `current` key is unchanged.
+
 ### A window's `CUSTOM` accepts more, a `DESIGN` container's is checked, and the client must match
 
 A React component can now draw the window the forms open in and the window the messages

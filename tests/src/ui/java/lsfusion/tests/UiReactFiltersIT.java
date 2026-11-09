@@ -267,7 +267,7 @@ public class UiReactFiltersIT extends UiTest {
         assertEquals("true,false", view.drawn().eval("[data.i.filterProperties.every(p => p.compares.length > 0 && !!p.defaultCompare), 'compares' in data.i.name].join()"));
 
         view.drawn().call("window.uiRflListsDrawn = 0; controller.i.change(data.i.list[1])");
-        view.waitFor("data.i.list[1].isCurrent");
+        view.waitFor("data.i.list[1].current");
         assertEquals("2", view.drawn().answer("controller.i.getCount()")); // the answer to the change has come before the count's
         assertEquals("0", view.drawn().eval("window.uiRflListsDrawn"));
 

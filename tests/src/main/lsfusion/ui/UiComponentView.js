@@ -13,7 +13,7 @@
         var Platform = window.lsfusion.Platform, controller = props.controller;
         publish('grid', props);
         return e('div', {className: 'ui-cv-grid'}, props.data.i.list.map(function (row) {
-            return e('div', {key: row.key, className: 'ui-cv-grid-row' + (row.isCurrent ? ' ui-cv-current' : '')},
+            return e('div', {key: row.key, className: 'ui-cv-grid-row' + (row.current ? ' ui-cv-current' : '')},
                 e('span', {className: 'ui-cv-name', onClick: function () { controller.i.change(row); }}, row.name.value),
                 e(Platform, {name: 'i.price', row: row, className: 'ui-cv-price'}));
         }));

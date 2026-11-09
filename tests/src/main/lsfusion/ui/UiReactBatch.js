@@ -14,7 +14,7 @@
         publish('board', props);
         return e('div', {className: 'ui-rb-board'},
             e('table', null, e('tbody', null, props.data.i.list.map(function (row) {
-                return e('tr', {key: row.key, className: 'ui-rb-row' + (row.isCurrent ? ' ui-rb-current' : '')},
+                return e('tr', {key: row.key, className: 'ui-rb-row' + (row.current ? ' ui-rb-current' : '')},
                     e('td', {className: 'ui-rb-name'}, row.name.value),
                     e('td', {className: 'ui-rb-note'}, row.note.value),
                     e('td', {className: 'ui-rb-qty'}, e(Platform, {name: 'i.qty', row: row})),

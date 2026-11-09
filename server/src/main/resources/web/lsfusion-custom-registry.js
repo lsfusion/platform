@@ -464,7 +464,7 @@
             };
             var currentEntry = function () { // the current row's element, from the freshest row objects
                 var found = null;
-                t.rows.forEach(function (row, el) { if (row.isCurrent && el.isConnected) found = { el: el, row: row }; });
+                t.rows.forEach(function (row, el) { if (row.current && el.isConnected) found = { el: el, row: row }; });
                 return found;
             };
 

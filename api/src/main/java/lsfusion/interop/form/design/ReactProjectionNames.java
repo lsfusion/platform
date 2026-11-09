@@ -14,7 +14,7 @@ public class ReactProjectionNames {
     public static final String NODE_OWN = "properties,change";
     // the rows' part of a group (RowsPart), a tree's group's too, where the rows are drawn: on the node, and on a row
     public static final String GRID_PART = "list,byKey,keys,options";
-    public static final String GRID_ROW = "key,isCurrent,objects,background,foreground,selected";
+    public static final String GRID_ROW = "key,current,objects,background,foreground,selected";
     // ... and of a group of a tree (TreeRowsPart): its node verbs - not the tree's own part (TreeTablePart), which
     // carries no property -: on the node, and on a row
     public static final String TREE_PART = "expand,collapse,toggle,expandAll,collapseAll";

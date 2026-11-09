@@ -286,13 +286,13 @@ public class GGroupObjectValue implements Serializable {
 
     // ===== row identity: a platform-built row JS object (react-projected AND classic CUSTOM) carries its internal
     // GGroupObjectValue in an ENUMERABLE `objects` field — the same public field name CustomCellRenderer already uses, so
-    // every CUSTOM surface (group rows + cell renderer) resolves rows uniformly. It joins `key`/`isCurrent` as a reserved
-    // row-field name: an app property/column SID `objects` would be overwritten here, exactly as one named `key`/`isCurrent`
+    // every CUSTOM surface (group rows + cell renderer) resolves rows uniformly. It joins `key`/`current` as a reserved
+    // row-field name: an app property/column SID `objects` would be overwritten here, exactly as one named `key`/`current`
     // already is. Enumerable so a spread {...row} clone keeps it (a clone resolves as a row, like the original) and so it
     // travels through JSON/Object.assign with the row. It is identity, not content, so the classic list diff EXCLUDES it
     // via getObjectsField()=="objects" (no false-change). Survives list rebuilds (travels WITH the row); plain re-assign on
     // react's row reuse. =====
-    public static final String ROW_OBJECTS = "objects"; // the public handle field name (matches CustomCellRenderer; reserved alongside `key`/`isCurrent`)
+    public static final String ROW_OBJECTS = "objects"; // the public handle field name (matches CustomCellRenderer; reserved alongside `key`/`current`)
     public static void setRowObjects(JavaScriptObject row, GGroupObjectValue handle) {
         setField(row, ROW_OBJECTS, handle);
     }

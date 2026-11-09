@@ -1858,7 +1858,7 @@ public class GReactFormData {
         }
         // a row's own attributes: whether it is the current one, and what the group's readers say of it
         void fillRowAttributes(JavaScriptObject row, GGroupObjectValue key) {
-            setField(row, "isCurrent", key.equals(currentKey));
+            setField(row, "current", key.equals(currentKey));
             for (GPropertyReader reader : rowReaders)
                 replaceAttribute(row, reader, values.get(reader, key));
         }

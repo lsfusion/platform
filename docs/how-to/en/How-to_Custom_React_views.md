@@ -73,7 +73,7 @@ A component's place is found by walking up from its container: a React custom co
 | Field | Meaning |
 | --- | --- |
 | `key` | A stable public id for the row — use it as the React key |
-| `isCurrent` | Whether the row is the current (selected) one |
+| `current` | Whether the row is the current one in its group (`true` or `false`) |
 | `<integrationSID>` | Each list property, an object `{ value, ...cell attributes }` keyed by the property's integration SID — read its value as `.value` |
 | `objects` | An opaque row handle the controller uses to address the row |
 | `background`, `foreground`, `selected` | The row's own [display options](#display-options): its background and text colors and whether it is selected |
@@ -169,7 +169,7 @@ Drawn for the group instead (`PROPERTIES() filteredCount DRAW o PANEL`), the pro
 function Row(props) {
     const r = props.row;
     return (
-        <div className={r.isCurrent ? "order order-current" : "order"}>
+        <div className={r.current ? "order order-current" : "order"}>
             <span>{r.number.value}</span>
             <span>{r.sum.value}</span>
         </div>
@@ -183,7 +183,7 @@ The reservation follows what a row or a node carries:
 
 | Where | Reserved |
 | --- | --- |
-| A row | `key`, `isCurrent`, `objects`, `background`, `foreground`, `selected` — on a row of a [tree](#trees) also `parent`, `hasChildren`, `expanded`, `loading` |
+| A row | `key`, `current`, `objects`, `background`, `foreground`, `selected` — on a row of a [tree](#trees) also `parent`, `hasChildren`, `expanded`, `loading` |
 | A group's node, wherever it is | `properties`, `change` |
 | A group's node where its rows are drawn | `list`, `byKey`, `keys`, `options`, and `orders` of a group not in a tree — on a group of a tree `expand`, `collapse`, `toggle`, `expandAll`, `collapseAll` |
 | The node of a group in `LIST` view where `FILTERS(<group>)` is | `filters`, `filterProperties` |
@@ -261,7 +261,7 @@ An option the platform computed nothing for is absent — a property with no `BA
 | `defaultValue` | The value editing starts with | string |
 | `select` | What a [selection](#select) adds — its options and how it selects. It is on the cell of a table property, and on the entry itself of a panel or empty-group one | object |
 
-Of these, `caption`, `image`, `footer`, `comment`, `tooltip` and `defaultValue` are the column's own attributes, on the column node `data.<g>.<prop>` — one per column, beside `type`. The rest (`background`, `foreground`, `readOnly`, `disabled`, `placeholder`, `pattern`, `regexp`, `regexpMessage`, `valueTooltip`, `options`, `select`, `loading`) are cell attributes, on each row's cell `data.<g>.list[i].<prop>` next to its `value`. The row itself carries `background` and `foreground` — the colors of the row as a whole — and `selected`, which is `true` when the row is selected — directly, not inside any property entry.
+Of these, `caption`, `image`, `footer`, `comment`, `tooltip` and `defaultValue` are the column's own attributes, on the column node `data.<g>.<prop>` — one per column, beside `type`. The rest (`background`, `foreground`, `readOnly`, `disabled`, `placeholder`, `pattern`, `regexp`, `regexpMessage`, `valueTooltip`, `options`, `select`, `loading`) are cell attributes, on each row's cell `data.<g>.list[i].<prop>` next to its `value`. The row itself carries `background` and `foreground` — the colors of the row as a whole — and `selected`, which is `true` while the row belongs to the selected range and absent otherwise — directly, not inside any property entry.
 
 ```jsx
 function Row(props) {
@@ -1296,7 +1296,7 @@ where it sits in the hierarchy:
 
 ```js
 {
-    key, isCurrent, objects, ...cells,
+    key, current, objects, ...cells,
     parent,       // the key of the row it hangs under
     hasChildren,  // whether it has children, loaded or not
     expanded,     // whether it is open
@@ -1338,9 +1338,9 @@ Rows arrive as the tree is opened — past the roots, a group of a tree returns 
 currently expanded, which is why, before anything is opened, its lower groups project an empty list.
 
 A row of a group below carries the path above it, so a row made current — through `change(row)`, or by the server —
-makes the rows on that path current in their groups as well: `isCurrent` follows the path up, as the platform's tree
-selects one node. The groups below it are left on no row — the server drops their current objects when a row above is
-chosen, and reports nothing for them —, so no row of theirs says `isCurrent` until a row is chosen there again.
+makes the rows on that path current in their groups as well. `current` follows the path up, as the platform's tree
+selects one node. The groups below it have no current row — the server clears their current objects when a row above is
+chosen. Every row in those groups has `current` set to `false` until a row is chosen there again.
 
 `controller.<g>.expand(row)` / `.collapse(row)` / `.toggle(row)` open and close one node: a node is a row of a group, so
 they are the group's. Each takes a row (the row, its `objects` handle, or its key) and returns the `Promise` of its request: the row's
@@ -2114,7 +2114,7 @@ export function ItemCards({data, controller}) {
     const items = data.i;
     return <div className="cards">
         {items.list.map(row =>
-            <div key={row.key} className={row.isCurrent ? 'current' : ''} onClick={() => controller.i.change(row)}>
+            <div key={row.key} className={row.current ? 'current' : ''} onClick={() => controller.i.change(row)}>
                 {row.name.value}
             </div>)}
     </div>;

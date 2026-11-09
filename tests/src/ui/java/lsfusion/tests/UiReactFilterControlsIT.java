@@ -124,7 +124,7 @@ public class UiReactFilterControlsIT extends UiTest {
         assertEquals("true,false,false", view.drawn().eval("[['addFilter', 'applyFilters', 'resetFilters'].every(m => m in controller.i), data.i.filtersManual,"
                 + " data.i.filtersPending].join()"));
         assertEquals("resolved", view.drawn().eval("controller.i.change(data.i.list[1]).then(() => 'resolved')")); // the Promise of its request
-        view.waitFor("data.i.list[1].isCurrent");
+        view.waitFor("data.i.list[1].current");
         view.drawn().call("controller.i.addFilter()");
         view.waitFor("conditions() === 'name = " + items[1] + "'");
         assertThat(rows(form)).hasText(new String[] {items[1]});
@@ -170,7 +170,7 @@ public class UiReactFilterControlsIT extends UiTest {
         assertEquals("false,false,false", view.drawn().eval("['filters' in data.i, 'filters' in controller.i, 'addFilter' in controller.i].join()"));
         assertThat(box.locator("button[title='Add filter']")).hasCount(1);
         view.drawn().call("controller.i.change(data.i.list[1])");
-        view.waitFor("data.i.list[1].isCurrent");
+        view.waitFor("data.i.list[1].current");
         view.drawn().call("controller.i.filterControlsVisible.change(true)");
         assertThat(box).isVisible();
         assertThat(button(box, "Add filter")).isVisible();

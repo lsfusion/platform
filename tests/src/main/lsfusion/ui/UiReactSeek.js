@@ -12,7 +12,7 @@
         return e('div', {className: 'ui-react-seek-scroller', style: {height: '200px', overflowY: 'auto'}},
             data.i.list.map(function (row) {
                 return e('div', {key: row.key, ref: seekRef(row), 'data-number': row.number.value,
-                    className: 'ui-react-seek-row' + (row.isCurrent ? ' ui-react-seek-current' : ''),
+                    className: 'ui-react-seek-row' + (row.current ? ' ui-react-seek-current' : ''),
                     style: {height: '20px', lineHeight: '20px'}}, String(row.number.value));
             }));
     };

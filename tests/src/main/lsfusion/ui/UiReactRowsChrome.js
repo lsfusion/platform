@@ -7,7 +7,7 @@
     function rows(props) {
         var node = props.data.i;
         return node.list.map(function (row) {
-            return e('div', {key: row.key, className: 'ui-rrc-row' + (row.isCurrent ? ' ui-rrc-current' : ''),
+            return e('div', {key: row.key, className: 'ui-rrc-row' + (row.current ? ' ui-rrc-current' : ''),
                 onClick: function () { props.controller.i.change(row); }}, row.name.value);
         });
     }

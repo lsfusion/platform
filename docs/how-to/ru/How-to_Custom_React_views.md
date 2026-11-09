@@ -73,7 +73,7 @@ export function OrderBoard(props) {
 | Поле | Значение |
 | --- | --- |
 | `key` | Стабильный публичный идентификатор строки — используется как ключ React |
-| `isCurrent` | Является ли строка текущей (выделенной) |
+| `current` | Является ли строка текущей в своей группе (`true` или `false`) |
 | `<integrationSID>` | Каждое списочное свойство — объект `{ value, ...атрибуты ячейки }` по интеграционному SID этого свойства; значение читается как `.value` |
 | `objects` | Непрозрачный дескриптор строки, по которому контроллер адресует строку |
 | `background`, `foreground`, `selected` | Собственные [опции отображения](#display-options) строки: её цвета фона и текста и признак выделения |
@@ -169,7 +169,7 @@ const { o, filteredCount } = props.data;
 function Row(props) {
     const r = props.row;
     return (
-        <div className={r.isCurrent ? "order order-current" : "order"}>
+        <div className={r.current ? "order order-current" : "order"}>
             <span>{r.number.value}</span>
             <span>{r.sum.value}</span>
         </div>
@@ -183,7 +183,7 @@ function Row(props) {
 
 | Где | Что зарезервировано |
 | --- | --- |
-| Строка | `key`, `isCurrent`, `objects`, `background`, `foreground`, `selected` — у строки [дерева](#trees) ещё и `parent`, `hasChildren`, `expanded`, `loading` |
+| Строка | `key`, `current`, `objects`, `background`, `foreground`, `selected` — у строки [дерева](#trees) ещё и `parent`, `hasChildren`, `expanded`, `loading` |
 | Узел группы, где бы он ни был | `properties`, `change` |
 | Узел группы там, где рисуются её строки | `list`, `byKey`, `keys`, `options`, а у группы вне дерева и `orders` — у группы дерева `expand`, `collapse`, `toggle`, `expandAll`, `collapseAll` |
 | Узел группы в виде `LIST` там, где стоит `FILTERS(<group>)` | `filters`, `filterProperties` |
@@ -261,7 +261,7 @@ const cell = row.sum;                        // { value, background, readOnly, .
 | `defaultValue` | Значение, с которого начинается редактирование | строка |
 | `select` | То, что добавляет [выбор](#select), — его варианты и способ выбора. Лежит в ячейке свойства таблицы и в самой записи панельного свойства или свойства пустой группы | объект |
 
-Из них `caption`, `image`, `footer`, `comment`, `tooltip` и `defaultValue` — собственные атрибуты колонки, в узле колонки `data.<g>.<prop>` (по одной на колонку), рядом с `type`. Остальные (`background`, `foreground`, `readOnly`, `disabled`, `placeholder`, `pattern`, `regexp`, `regexpMessage`, `valueTooltip`, `options`, `select`, `loading`) — атрибуты ячейки, в ячейке каждой строки `data.<g>.list[i].<prop>` рядом с её `value`. Сама строка содержит `background` и `foreground` — цвета строки целиком — и `selected`, равное `true`, когда строка выделена, — прямо на строке, а не внутри какой-либо записи свойства.
+Из них `caption`, `image`, `footer`, `comment`, `tooltip` и `defaultValue` — собственные атрибуты колонки, в узле колонки `data.<g>.<prop>` (по одной на колонку), рядом с `type`. Остальные (`background`, `foreground`, `readOnly`, `disabled`, `placeholder`, `pattern`, `regexp`, `regexpMessage`, `valueTooltip`, `options`, `select`, `loading`) — атрибуты ячейки, в ячейке каждой строки `data.<g>.list[i].<prop>` рядом с её `value`. Сама строка содержит `background` и `foreground` — цвета строки целиком — и `selected`, равное `true`, пока строка входит в выделенный диапазон, и отсутствующее иначе, — прямо на строке, а не внутри какой-либо записи свойства.
 
 ```jsx
 function Row(props) {
@@ -1296,7 +1296,7 @@ const { Caption } = window.lsfusion;
 
 ```js
 {
-    key, isCurrent, objects, ...ячейки,
+    key, current, objects, ...ячейки,
     parent,       // ключ строки, под которой она висит
     hasChildren,  // есть ли у неё дети, загружены они или нет
     expanded,     // раскрыта ли она
@@ -1338,10 +1338,9 @@ const { Caption } = window.lsfusion;
 пока ничего не раскрыто, нижние группы проецируются пустым списком.
 
 Строка нижней группы несёт путь над собой, поэтому строка, ставшая текущей — через `change(row)` или по сообщению
-сервера, — делает текущими в их группах и строки на этом пути: `isCurrent` следует по пути вверх, как дерево платформы
+сервера, — делает текущими в их группах и строки на этом пути. `current` следует по пути вверх, как дерево платформы
 выделяет один узел. Группы под ней остаются без текущей строки — сервер сбрасывает их текущие объекты, когда выбрана
-строка выше, и ничего о них не сообщает, — поэтому ни одна их строка не говорит `isCurrent`, пока там снова не выберут
-строку.
+строка выше. У каждой строки этих групп `current` равно `false`, пока там снова не выберут строку.
 
 `controller.<g>.expand(row)` / `.collapse(row)` / `.toggle(row)` открывают и закрывают один узел: узел — это строка
 группы, поэтому они групповые. Каждый принимает строку (саму строку, её `objects` или её ключ) и возвращает `Promise` своего запроса:
@@ -2123,7 +2122,7 @@ export function ItemCards({data, controller}) {
     const items = data.i;
     return <div className="cards">
         {items.list.map(row =>
-            <div key={row.key} className={row.isCurrent ? 'current' : ''} onClick={() => controller.i.change(row)}>
+            <div key={row.key} className={row.current ? 'current' : ''} onClick={() => controller.i.change(row)}>
                 {row.name.value}
             </div>)}
     </div>;

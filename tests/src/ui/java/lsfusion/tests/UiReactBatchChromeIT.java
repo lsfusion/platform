@@ -132,7 +132,7 @@ public class UiReactBatchChromeIT extends UiTest {
         Locator form = open(FOLDER, "UiReactBatchChrome.uiRbcTreeBox");
         view.waitFor("data.c.list.length === 3");
         view.drawn().call("controller.c.change(data.c.list[2])");
-        view.waitFor("data.c.list[2].isCurrent");
+        view.waitFor("data.c.list[2].current");
         view.drawn().call("controller.batch(() => { controller.c.change(data.c.list[0]); controller.cats.expandCurrent(); })");
         view.waitFor("opened() === '" + names[0] + "' && rows() === '" + names[2] + "," + names[3] + "' && loaded()");
         view.drawn().call("controller.batch(() => controller.cats.addFilter())");
