@@ -25,11 +25,6 @@ public class WriteClientAction extends ExecuteClientAction {
         this(new NamedFileData(new RawFileData(file)), path, false, true);
     }
 
-    @Deprecated
-    public WriteClientAction(RawFileData file, String path, String extension, boolean append, boolean isDialog) {
-        this(new NamedFileData(new FileData(file, extension)), path, append, isDialog);
-    }
-
     public WriteClientAction(NamedFileData file, String path, boolean append, boolean isDialog) {
         this.file = file;
         this.path = path;
