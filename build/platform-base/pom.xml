@@ -53,7 +53,6 @@
         <blocking.map.version>1.0-patched</blocking.map.version>
         <antlr.version>3.5.2</antlr.version>
         <jna.version>5.4.0</jna.version>
-        <stax.version>1.2.0</stax.version>
         <shef.version>0.5</shef.version>
         <twelvemonkeys.imageio.version>3.12.0</twelvemonkeys.imageio.version>
         <sejda.imageio.version>0.1.6</sejda.imageio.version>
@@ -344,11 +343,6 @@
                 <groupId>net.java.dev.jna</groupId>
                 <artifactId>jna</artifactId>
                 <version>${jna.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>stax</groupId>
-                <artifactId>stax</artifactId>
-                <version>${stax.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.atlanticbb</groupId>
