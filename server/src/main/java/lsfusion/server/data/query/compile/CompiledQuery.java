@@ -1330,7 +1330,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 if (hasLimit)
                     useGroupLastOpt = 2;
                 else {
-                    boolean isLastOpt = Settings.get().getUseGroupLastOpt() != 0; // если хоть одна не оптимизируется то и остальные тоже не оптимизируем (все равно "бежать по всем" для одного из значений)
+                    boolean isLastOpt = Settings.get().getUseGroupLastOpt() != 0 && !queries.isEmpty(); // если хоть одна не оптимизируется то и остальные тоже не оптимизируем (все равно "бежать по всем" для одного из значений)
                     for (GroupExpr.Query query : queries.valueIt())
                         isLastOpt = isLastOpt && query.isLastOpt(needValues.contains(query)); // или можно применять last opt или не нужно значение
 
@@ -1349,6 +1349,9 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 Where exprWhere = Where.FALSE();
                 for (GroupExpr.Query query : queries.valueIt())
                     exprWhere = exprWhere.or(query.getWhere());
+                if (queries.isEmpty()) // an inner join, the expressions of which went to another select (getQuerySelect does not find it, for example, when the twins of the join have another whole where), keeps the rows of its where instead of an empty select with untyped keys (its where is in twins, unlike the whole where, and is not stricter than the whole where, so no row the expressions need is lost)
+                    // when this where does not bind all the keys of the grouping (TRUE or only the order where, e.g. MAX or ANY), the subquery fails as an incorrect operation (hanging keys)
+                    exprWhere = innerJoin.getGroupWhere();
                 Where groupWhere = exprWhere.and(Expr.getWhere(group));
                 Result<SQLQuery> empty = new Result<>();
                 groupWhere = pushWhere(groupWhere, keys, empty, pushGroupWhere, pushPrefix(debugInfoWriter, "PUSH", innerJoin));
@@ -2050,14 +2053,32 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             return join;
         }
         private QuerySelect getQuerySelect(QueryJoin exprJoin, Result<QueryExpr.Query> translatedQuery) {
-            QuerySelect select = null;
-            // группировка query / кэгирование
-            for (int i = 0, size = queries.size(); i < size; i++) {
-                MapTranslate translator;
-                if ((translator = exprJoin.mapInnerIdentity(queries.getKey(i), false)) != null) {
-                    select = queries.getValue(i);
+            QuerySelect select = getExistingQuerySelect(exprJoin, translatedQuery);
+
+            // the join of an expression can be one of the inner joins (from whereJoins) with joins built under different statistics (isInner is not enough here, since it is also true for joins that only follow from the inner ones), then the expression goes to the select of that inner join, otherwise that select gets no expressions and compiles to an empty select with untyped keys
+            if(select == null && exprJoin instanceof GroupJoin) {
+                GroupJoin compileJoin = ((GroupJoin) exprJoin).getCompileJoin();
+                GroupJoin mapJoin = null;
+                MapTranslate mapTranslator = null;
+                for (InnerJoin innerJoin : getInnerJoins().it()) {
+                    if (!(innerJoin instanceof GroupJoin) || BaseUtils.hashEquals(innerJoin, exprJoin))
+                        continue;
+                    MapTranslate translator = compileJoin.mapInnerIdentity(((GroupJoin) innerJoin).getCompileJoin(), false);
+                    if (translator != null) {
+                        boolean hasSelect = getExistingQuerySelect((GroupJoin) innerJoin, null) != null; // the inner join that already has a select goes first, so that all such joins get one select
+                        if (mapJoin == null || hasSelect) {
+                            mapJoin = (GroupJoin) innerJoin;
+                            mapTranslator = translator;
+                        }
+                        if (hasSelect)
+                            break;
+                    }
+                }
+                if (mapJoin != null) {
                     if(translatedQuery != null)
-                        translatedQuery.set((QueryExpr.Query<?>)translatedQuery.result.translateOuter(translator));
+                        translatedQuery.set((QueryExpr.Query<?>)translatedQuery.result.translateOuter(mapTranslator));
+                    exprJoin = mapJoin;
+                    select = getExistingQuerySelect(exprJoin, translatedQuery);
                 }
             }
 
@@ -2074,6 +2095,19 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 queries.exclAdd(exprJoin, select);
             }
             usedJoin(select);
+            return select;
+        }
+        private QuerySelect getExistingQuerySelect(QueryJoin exprJoin, Result<QueryExpr.Query> translatedQuery) {
+            QuerySelect select = null;
+            // группировка query / кэгирование
+            for (int i = 0, size = queries.size(); i < size; i++) {
+                MapTranslate translator;
+                if ((translator = exprJoin.mapInnerIdentity(queries.getKey(i), false)) != null) {
+                    select = queries.getValue(i);
+                    if(translatedQuery != null)
+                        translatedQuery.set((QueryExpr.Query<?>)translatedQuery.result.translateOuter(translator));
+                }
+            }
             return select;
         }
     }

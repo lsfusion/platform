@@ -688,7 +688,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query, GroupJoi
         }
 
         return new GroupJoin(innerKeys, getInner().getInnerValues(), getInner().getInnerKeyTypes(),
-                getInner().getInnerFollows(), groupWhere, groupWhereJoins, group, limitOrders);
+                getInner().getInnerFollows(), groupWhere, queryWhere, groupWhereJoins, group, limitOrders);
     }
 }
 

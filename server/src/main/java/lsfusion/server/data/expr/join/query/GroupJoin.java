@@ -22,8 +22,8 @@ import lsfusion.server.data.where.Where;
 
 public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, GroupJoin.QueryOuterContext> {
 
-    public GroupJoin(ImSet<KeyExpr> keys, ImSet<Value> values, ImMap<KeyExpr, Type> keyTypes, InnerExprFollows<Expr> innerFollows, Where where, GroupExprWhereJoins<Expr> groupJoins, ImMap<Expr, BaseExpr> group, ImOrderSet<Expr> limitOrders) {
-        super(keys,values,new Query(innerFollows, where, keyTypes, groupJoins, limitOrders),group);
+    public GroupJoin(ImSet<KeyExpr> keys, ImSet<Value> values, ImMap<KeyExpr, Type> keyTypes, InnerExprFollows<Expr> innerFollows, Where where, Where queryWhere, GroupExprWhereJoins<Expr> groupJoins, ImMap<Expr, BaseExpr> group, ImOrderSet<Expr> limitOrders) {
+        super(keys,values,new Query(innerFollows, where, queryWhere, keyTypes, groupJoins, limitOrders),group);
     }
 
     public static class QueryOuterContext extends QueryJoin.QueryOuterContext<Expr, GroupJoin.Query, GroupJoin, GroupJoin.QueryOuterContext> {
@@ -46,13 +46,15 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
 
     public static class Query extends QueryJoin.Query<Expr, Query> {
         private final Where where;
+        private final Where queryWhere; // the whole where of the grouping, joins are built from it (for some types where is only a part of it), neither in twins nor in hash, so that groupings are merged as before
         private final ImOrderSet<Expr> orders;
         private final ImMap<KeyExpr, Type> keyTypes;
         private final GroupExprWhereJoins<Expr> joins;// чтобы не сливало группировки со всем разными join'ами
 
-        public Query(InnerExprFollows<Expr> follows, Where where, ImMap<KeyExpr, Type> keyTypes, GroupExprWhereJoins<Expr> joins, ImOrderSet<Expr> limitOrders) {
+        public Query(InnerExprFollows<Expr> follows, Where where, Where queryWhere, ImMap<KeyExpr, Type> keyTypes, GroupExprWhereJoins<Expr> joins, ImOrderSet<Expr> limitOrders) {
             super(follows);
             this.where = where;
+            this.queryWhere = queryWhere;
             this.orders = limitOrders;
             this.keyTypes = keyTypes;
             this.joins = joins;
@@ -62,6 +64,7 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
         public Query(Query query, MapTranslate translator) {
             super(query, translator);
             where = query.where.translateOuter(translator);
+            queryWhere = query.queryWhere.translateOuter(translator);
             orders = translator.translate(query.orders);
             keyTypes = translator.translateExprKeys(query.keyTypes);
             joins = query.joins.translateOuter(translator);
@@ -83,7 +86,7 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
         }
 
         public ImSet<OuterContext> calculateOuterDepends() {
-            return super.calculateOuterDepends().merge(keyTypes.keys()).merge(where).merge(joins).merge(orders.getSet());
+            return super.calculateOuterDepends().merge(keyTypes.keys()).merge(where).merge(queryWhere).merge(joins).merge(orders.getSet());
         }
     }
 
@@ -103,5 +106,15 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
                 return Stat.ALOT;
             return keyType.getTypeStat(forJoin);
         }, type, pushStatKeys, group.keys(), query.orders);
+    }
+
+    public Where getGroupWhere() {
+        return query.where;
+    }
+
+    // joins are built from the whole where of the grouping under the current statistics and only shape the statistics (see getPushedStatKeys), so group joins with the same whole where that differ only in joins (the same GROUP whose joins were built under different statistics) compile to the same subquery
+    @IdentityLazy
+    public GroupJoin getCompileJoin() {
+        return new GroupJoin(keys, values, new Query(query.follows, query.queryWhere, query.queryWhere, query.keyTypes, GroupExprWhereJoins.EMPTY(), query.orders), group);
     }
 }
