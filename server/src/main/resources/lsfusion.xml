@@ -128,6 +128,7 @@
                 <entry key="tempTablesCountThreshold" value="${settings.tempTablesCountThreshold:}"/>
                 <entry key="queryRowCountOptDivider" value="${settings.queryRowCountOptDivider:}"/>
                 <entry key="queryLengthLimit" value="${settings.queryLengthLimit:}"/>
+                <entry key="maxInlineStringLength" value="${settings.maxInlineStringLength:}"/>
                 <entry key="remoteLogTime" value="${settings.remoteLogTime:}"/>
                 <entry key="explainThreshold" value="${settings.explainThreshold:}"/>
                 <entry key="explainJavaStack" value="${settings.explainJavaStack:}"/>

@@ -1416,6 +1416,18 @@ public class Settings implements Cloneable {
         this.enableHacks = enableHacks;
     }
     
+    // a longer string goes as a parameter: an inlined value is copied into the statement once per use, and the driver
+    // and the server parse every copy
+    private int maxInlineStringLength = 1000;
+
+    public int getMaxInlineStringLength() {
+        return maxInlineStringLength;
+    }
+
+    public void setMaxInlineStringLength(int maxInlineStringLength) {
+        this.maxInlineStringLength = maxInlineStringLength;
+    }
+
     private int logLevelJDBC = 0;
 
     public int getLogLevelJDBC() {

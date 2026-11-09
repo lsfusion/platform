@@ -105,7 +105,7 @@ public abstract class AStringClass extends TextBasedClass<String> {
 
         assert value instanceof String;
         String string = value.toString();
-        return !string.contains("'") && !string.contains("\\") && !string.contains(String.valueOf(SQLSession.paramPrefix));
+        return string.length() <= Settings.get().getMaxInlineStringLength() && !string.contains("'") && !string.contains("\\") && !string.contains(String.valueOf(SQLSession.paramPrefix));
     }
 
     public static String getDBString(Object value) {
