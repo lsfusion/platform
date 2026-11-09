@@ -839,20 +839,25 @@ public class GFormControllerTest extends GWTTestCase {
         });
     }
 
-    // A classic view's view filters are the Promise of their request: pending till its answer; with no filter - a
-    // property not among the view's columns - no request, resolved at once; in a batch the batch's; on a closed form
-    // refused before they run.
+    // A classic view's view filters are the Promise of their request: pending till its answer; an unknown column
+    // cancels through requestPromise, resolved at once; in a batch the batch's; on a closed form refused before they run.
     public void testViewFiltersAreThePromiseOfTheirRequest() {
         AskServer asks = asks();
         GFormController controller = asks.controller;
+        GGroupObject group = asks.form.group;
         ArrayList<GPropertyFilter> filters = new ArrayList<>(Collections.singletonList(asks.form.condition(asks.form.quantity, PValue.getPValue(2), GCompare.EQUALS)));
         ArrayList<String> settled = new ArrayList<>();
-        then(controller.setViewFilters(filters, 1000), answer -> settled.add("filtered"), error -> fail(error));
-        then(controller.setViewFilters(new ArrayList<>(), 1000), answer -> settled.add("none"), error -> fail(error));
+        then(controller.changeViewFilters(group, filters, 1000, () -> {}), answer -> settled.add("filtered"), error -> fail(error));
+        then(controller.requestPromise(ExecCallback::onCancel), answer -> settled.add("none"), error -> fail(error));
         assertEquals(1, asks.actions.size());
         assertTrue(asks.actions.get(0) instanceof SetViewFilters);
+        assertEquals(group.ID, ((SetViewFilters) asks.actions.get(0)).groupObjectID);
+        assertEquals(Integer.valueOf(1000), ((SetViewFilters) asks.actions.get(0)).pageSize);
         JavaScriptObject[] inBatch = new JavaScriptObject[1];
-        JavaScriptObject batch = controller.batch(() -> inBatch[0] = controller.setViewFilters(filters, 1000));
+        JavaScriptObject batch = controller.batch(() -> {
+            inBatch[0] = controller.changeViewFilters(group, filters, 1000, () -> {});
+            assertSame(inBatch[0], controller.requestPromise(ExecCallback::onCancel));
+        });
         assertSame(batch, inBatch[0]);
         assertEquals(2, asks.actions.size());
         assertTrue(asks.actions.get(1) instanceof ExecuteBatch);
@@ -863,11 +868,54 @@ public class GFormControllerTest extends GWTTestCase {
         }, () -> {
             assertEquals(Arrays.asList("none", "filtered"), settled);
             closeForm(controller);
-            then(controller.setViewFilters(filters, 1000), answer -> fail("resolved"), error -> {
+            then(controller.changeViewFilters(group, filters, 1000, () -> {}), answer -> fail("resolved"), error -> {
                 assertEquals("Form is closed", error);
                 assertEquals(2, asks.actions.size());
                 finishTest();
             });
+        });
+    }
+
+    // #1675: an empty view set addresses its group, independently of user filters, and never resizes React's page.
+    public void testTargetedEmptyViewFiltersKeepTheirGroupAndNoPageSize() {
+        AskServer asks = asks();
+        GGroupObject group = asks.form.group;
+        boolean[] changed = {false};
+        JavaScriptObject promise = asks.controller.changeViewFilters(group, new ArrayList<>(), null, () -> {
+            assertTrue(asks.actions.isEmpty());
+            changed[0] = true;
+        });
+        assertTrue(changed[0]);
+        assertEquals(1, asks.actions.size());
+        SetViewFilters request = (SetViewFilters) asks.actions.get(0);
+        assertEquals(group.ID, request.groupObjectID);
+        assertTrue(request.filters.isEmpty());
+        assertNull(request.pageSize);
+        ArrayList<String> settled = new ArrayList<>();
+        then(promise, answer -> settled.add("cleared"), error -> fail(error));
+        delayTestFinish(5000);
+        inTurn(() -> {
+            assertTrue(settled.isEmpty());
+            asks.answer(0, false);
+        }, () -> {
+            assertEquals(Collections.singletonList("cleared"), settled);
+            finishTest();
+        });
+    }
+
+    // #1675: a rejected own-filter call leaves the requested state untouched, just as a rejected user edit does.
+    public void testClosedViewFiltersLeaveTheOwnersStateUntouched() {
+        AskServer asks = asks();
+        closeForm(asks.controller);
+        boolean[] changed = {false};
+        JavaScriptObject promise = asks.controller.changeViewFilters(asks.form.group, new ArrayList<>(), null, () -> changed[0] = true);
+        assertFalse(changed[0]);
+        delayTestFinish(5000);
+        then(promise, answer -> fail("resolved"), error -> {
+            assertEquals("Form is closed", error);
+            assertFalse(changed[0]);
+            assertTrue(asks.actions.isEmpty());
+            finishTest();
         });
     }
 

@@ -330,6 +330,7 @@ public class GReactFormDataTest extends GWTTestCase {
                 placements++;
                 return component.getReactPlace();
             }, verbs = new GReactFormData.Verbs() { // the form, as far as a member asks it: what it is handed is kept
+                public JavaScriptObject changeViewFilters(GGroupObject group, List<GPropertyFilter> conditions, Integer pageSize, Runnable change) { assertNull(pageSize); change.run(); return null; }
                 public JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key) { chosen = key; edits.add("current " + key.toKeyString()); return batching ? batchPromise : requestPromise; }
                 public JavaScriptObject changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue) {
                     changed = key;
@@ -630,6 +631,7 @@ public class GReactFormDataTest extends GWTTestCase {
 
         // as the form does: the request numbered and sent, the group's controller told of the current object at once
         // (GFormController.changeGroupObject) - published by the member's call that asked it
+        public JavaScriptObject changeViewFilters(GGroupObject group, List<GPropertyFilter> conditions, Integer pageSize, Runnable change) { assertNull(pageSize); change.run(); return null; }
         public JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key) {
             ask("current " + group.getSID() + " " + key.toKeyString());
             controllers.groups.get(group).changeCurrentKey(key);
@@ -5916,7 +5918,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(own(rows.node(), "options") && own(row, "background") && own(row, "foreground") && own(row, "selected"));
         String columns = join(field(rows.node(), "properties"));
         assertNodeReserved("the rows", rows.node(), field(rows.sa.controller, "items"), columns,
-                ReactProjectionNames.NODE_OWN, ReactProjectionNames.GRID_PART, ReactProjectionNames.ORDERS_PART);
+                ReactProjectionNames.NODE_OWN, ReactProjectionNames.GRID_PART, ReactProjectionNames.GRID_VIEW_FILTER_PART, ReactProjectionNames.ORDERS_PART);
         assertReserved("a row", row, columns, ReactProjectionNames.GRID_ROW);
         // ... and the controller of the container they are in: its own names - the form's controller and its batch -,
         // beside the group's and the properties'
@@ -6355,6 +6357,13 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("export 10", f.toolbarCalls.get(2));
         call(form, "getCount", "items");
         assertEquals("count items", f.toolbarCalls.get(3));
+    }
+
+    // #1675: a known group whose rows the platform draws must get the owner refusal, without looking up a null React scope.
+    public void testTheFormsControllerRefusesViewFiltersWithoutReactRows() {
+        Fixture f = new Fixture(Fixture::rowsByThePlatform);
+        assertEquals("controller.form.changeViewFilters('items'): requires a flat LIST group drawn by React",
+                refusedWith(field(f.sb.controller, "form"), "changeViewFilters", "items", parse("[]")));
     }
 
     // ... and a name that names nothing the call reaches is refused, saying why - unknown, of another kind, no string -,

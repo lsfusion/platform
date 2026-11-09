@@ -122,6 +122,16 @@ A custom view normally reads state from `props.data` and changes it through the 
 
 Editing the form goes through the ordinary edit channel and is not gated. The server calls are (see [Calling the server](How-to_Custom_components_objects.md#calling-the-server)). The edited row is addressed by a handle, while any other object — an FK value or an action parameter — is passed as its numeric id (an lsFusion object cannot be passed from JS).
 
+#### Own view filters {#view-filters}
+
+These operations require a flat LIST group whose rows React draws. Other owners are refused.
+
+| Member | Form twin | Result |
+| --- | --- | --- |
+| `i.viewFilters.change(conditions)` | `form.changeViewFilters('i', conditions)` | `Promise` after setting the view's own filters |
+
+`viewFilters` is separate from user filters (`filters`, `FILTERS(i)`, `FILTER`) and combines with user, regular and fixed filters by AND. Its array uses the same `{property, compare, value, negation, or}` condition shape as user filters, but every condition is AND: `or: true` is refused. `[]` clears only this group's own view set. `data.i.viewFilters` records the requested conditions; this is not a server filter catalog. No runtime page-size API is exposed. View-filter changes can join `batch`. A failed request does not restore requested filter state automatically.
+
 #### Changing the current object and property values
 
 `controller.<group>.change(row)` sets the current object of that group. It is there only in the container that draws the group's rows — another container sets it through the form's controller, `controller.form.changeObject('<group>', row)` ([across containers](#across-containers)) —, and the `row` is a data row of the group, a raw `objects` handle, or the key the projection gave it (see [the identity rules](#row-identity-contract) below).

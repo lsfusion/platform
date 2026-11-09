@@ -521,6 +521,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
             reserved = ArrayUtils.addAll(reserved, GRID_PART_NAMES);
             if (group.isInTree())
                 reserved = ArrayUtils.addAll(reserved, TREE_PART_NAMES);
+            else
+                reserved = ArrayUtils.addAll(reserved, GRID_VIEW_FILTER_PART_NAMES);
         }
         // ... and where FILTERs of its properties are drawn, their parts under one name, a tree group's too
         if (getFilterComponents(group).stream().anyMatch(filter -> filterScope(filter) == scope))
@@ -1175,6 +1177,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // member hangs on the group's -, so a part that writes on the node has one array to update, not two. First the
     // rows' part of a group (GReactFormData.RowsPart), a tree's group's too, where the rows are drawn
     private static final String[] GRID_PART_NAMES = reserved(ReactProjectionNames.GRID_PART);
+    private static final String[] GRID_VIEW_FILTER_PART_NAMES = reserved(ReactProjectionNames.GRID_VIEW_FILTER_PART);
     private static final String[] GRID_ROW_NAMES = reserved(ReactProjectionNames.GRID_ROW, PROTO);
     // ... and of a group of a tree (GReactFormData.TreeRowsPart): its node verbs, and where each row hangs - not the
     // tree's own part (TreeTablePart), which carries no property. A group outside a tree states none of it, and a

@@ -20,6 +20,22 @@ public class BatchRequestTest {
         assertNamed(new BatchRequest.Unsupported("GetAsyncValues"), "BatchRequest.Unsupported[", "name=GetAsyncValues");
     }
 
+    // #1675: an empty view set retains its destination and an omitted page size through the RMI wire.
+    @Test
+    public void testEmptyViewFiltersKeepTheirTarget() throws Exception {
+        BatchRequest.SetViewFilters request = new BatchRequest.SetViewFilters(42, new byte[0][], null);
+        java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+        try (java.io.ObjectOutputStream out = new java.io.ObjectOutputStream(bytes)) {
+            out.writeObject(request);
+        }
+        try (java.io.ObjectInputStream in = new java.io.ObjectInputStream(new java.io.ByteArrayInputStream(bytes.toByteArray()))) {
+            BatchRequest.SetViewFilters restored = (BatchRequest.SetViewFilters) in.readObject();
+            org.junit.Assert.assertEquals(42, restored.groupObjectID);
+            org.junit.Assert.assertEquals(0, restored.filters.length);
+            org.junit.Assert.assertNull(restored.pageSize);
+        }
+    }
+
     private static void assertNamed(BatchRequest request, String... arguments) {
         String named = request.toString();
         for (String argument : arguments)

@@ -38,7 +38,6 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.form.property.JSValueConverter.convertToJSValue;
 import static lsfusion.gwt.client.form.property.JSValueConverter.fromObject;
@@ -529,7 +528,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         Column startColumn = getColumn(startProperty);
         Column endColumn = endProperty != null ? getColumn(endProperty) : startColumn;
         if(startColumn == null || endColumn == null) // a property not among the view's columns: no filter, no request
-            return form.setViewFilters(new ArrayList<>(), pageSize);
+            return form.requestPromise(ExecCallback::onCancel);
 
         boolean isDateTimeFilter = !(startColumn.property.getCellType() instanceof GDateType);
         PValue leftBorder = isDateTimeFilter ? GDateTimeType.instance.fromJsDate(start) : GDateType.instance.fromJsDate(start);
@@ -542,13 +541,13 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     protected JavaScriptObject setBooleanViewFilter(String property, int pageSize) {
         Column column = getColumn(property);
         if(column == null)
-            return form.setViewFilters(new ArrayList<>(), pageSize);
+            return form.requestPromise(ExecCallback::onCancel);
         return setViewFilters(pageSize, new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, PValue.getPValue(true), GCompare.EQUALS));
     }
 
     // ... the Promise of their request
     private JavaScriptObject setViewFilters(int pageSize, GPropertyFilter... filters) {
-        JavaScriptObject promise = form.setViewFilters(Arrays.stream(filters).collect(Collectors.toCollection(ArrayList::new)), pageSize);
+        JavaScriptObject promise = form.changeViewFilters(grid.groupObject, Arrays.asList(filters), pageSize, () -> {});
         setPageSize(pageSize);
         return promise;
     }

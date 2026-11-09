@@ -216,10 +216,12 @@ public abstract class BatchRequest implements Serializable {
     }
 
     public static final class SetViewFilters extends BatchRequest {
+        public final int groupObjectID;
         public final byte[][] filters;
-        public final int pageSize;
+        public final Integer pageSize;
 
-        public SetViewFilters(byte[][] filters, int pageSize) {
+        public SetViewFilters(int groupObjectID, byte[][] filters, Integer pageSize) {
+            this.groupObjectID = groupObjectID;
             this.filters = filters;
             this.pageSize = pageSize;
         }

@@ -6,11 +6,13 @@ import java.util.ArrayList;
 
 public class SetViewFilters extends FormRequestCountingAction<ServerResponseResult> {
     public ArrayList<GPropertyFilterDTO> filters;
-    public int pageSize;
+    public int groupObjectID;
+    public Integer pageSize;
 
     public SetViewFilters() {}
 
-    public SetViewFilters(ArrayList<GPropertyFilterDTO> filters, int pageSize) {
+    public SetViewFilters(int groupObjectID, ArrayList<GPropertyFilterDTO> filters, Integer pageSize) {
+        this.groupObjectID = groupObjectID;
         this.filters = filters;
         this.pageSize = pageSize;
     }

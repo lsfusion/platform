@@ -724,16 +724,16 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     @Override
     public void setViewFilters(ExecutionStack stack, BatchRequest.SetViewFilters request) throws IOException, SQLException, SQLHandledException {
         Set<FilterInstance> filtersInstances = new HashSet<>();
-        GroupObjectInstance applyObject = null;
+        GroupObjectInstance applyObject = form.getGroupObjectInstance(request.groupObjectID);
         for (byte[] state : request.filters) {
             FilterInstance filter = UserFilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form).filter;
-            applyObject = filter.getApplyObject();
+            if (filter.getApplyObject() != applyObject)
+                throw new IllegalArgumentException("View filter belongs to another group");
             filtersInstances.add(filter);
         }
-        if (applyObject != null) {
-            applyObject.setViewFilters(filtersInstances);
+        applyObject.setViewFilters(filtersInstances);
+        if (request.pageSize != null)
             applyObject.setPageSize(request.pageSize);
-        }
     }
 
     public String getCanonicalName() {

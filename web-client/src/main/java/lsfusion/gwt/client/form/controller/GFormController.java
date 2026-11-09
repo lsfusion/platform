@@ -2495,13 +2495,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         return requestIndex;
     }
 
-    // a classic view's view filters and its page size: the Promise of their request, none with no filter
-    public JavaScriptObject setViewFilters(ArrayList<GPropertyFilter> conditions, int pageSize) {
+    @Override
+    public JavaScriptObject changeViewFilters(GGroupObject group, List<GPropertyFilter> conditions, Integer pageSize, Runnable change) {
         return requestPromise(call -> {
-            if (conditions.isEmpty())
-                call.onCancel();
-            else
-                call.onSuccess(asyncResponseDispatch(new SetViewFilters(conditions.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(ArrayList::new)), pageSize)));
+            change.run();
+            call.onSuccess(asyncResponseDispatch(new SetViewFilters(group.ID, GPropertyFilter.getFilterDTOs(conditions), pageSize)));
         });
     }
 

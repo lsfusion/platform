@@ -186,6 +186,7 @@ The reservation follows what a row or a node carries:
 | A row | `key`, `current`, `objects`, `background`, `foreground`, `selected` — on a row of a [tree](#trees) also `parent`, `hasChildren`, `expanded`, `loading` |
 | A group's node, wherever it is | `properties`, `change` |
 | A group's node where its rows are drawn | `list`, `byKey`, `keys`, `options`, and `orders` of a group not in a tree — on a group of a tree `expand`, `collapse`, `toggle`, `expandAll`, `collapseAll` |
+| A flat LIST group whose rows React draws | `viewFilters` |
 | The node of a group in `LIST` view where `FILTERS(<group>)` is | `filters`, `filterProperties` |
 | The node of a group in `LIST` view where `FILTERCONTROLS(<group>)` is | The names of the [filter controls](#filter-controls): `addFilter`, `applyFilters`, `resetFilters`, `filtersPending`, `filtersManual` |
 | The node of a group in `LIST` view where `TOOLBARSYSTEM(<group>)` is, unless the design hides it (`visible = FALSE`) | The names of all the [toolbar](#toolbar)'s buttons, whatever the design's `show…` flags say: `manual`, `updatePending`, `update`, `filterControlsVisible`, `listView`, `listViews`, `getCount`, `getSum`, `export` |
@@ -677,6 +678,15 @@ A pick is sent as the platform's own element sends it, one option at a time, pic
 The options are read and sent as a value is: when the form is opened, and again whenever what they depend on changes — their views, which objects they are, what is picked — or the current object or the rows do; each time the cell's options come whole. Where the platform's own element is given only the options picked and looks the others up by the text typed — over many options —, a view is still given all of them.
 
 The platform also builds a [selection element](../paradigm/Interactive_view.md#select) by itself, for a link with a unique view or a selection of several values; a property a React component draws gets none of that: its entry has options only where a selection is given — `SELECT` in the form or in the property's declaration. The design's `select` always names an element of the platform's, so it goes with `custom = NULL`. With `NOCUSTOM` — `PROPERTIES(o) nameStatus SELECT 'buttonGroup' NOCUSTOM` — the platform draws its own element of the selection, and the component places it with `<Platform name/>` like any [child the platform draws](#placing), per row in the rows it draws.
+
+### Own view filters {#view-filters}
+
+For a flat LIST group drawn by React, use the member or its named form twin to set the view’s own AND conditions. They intersect user, regular and fixed filters; `[]` clears only this group’s view set. See the [controller API](How-to_Custom_view_controller.md#view-filters).
+
+```js
+await controller.i.viewFilters.change([{property: 'number', compare: '>=', value: 400}]);
+await controller.form.changeViewFilters('i', []);
+```
 
 ### Extending a container with placed children
 

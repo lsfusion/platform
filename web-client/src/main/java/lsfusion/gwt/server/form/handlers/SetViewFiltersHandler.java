@@ -13,6 +13,6 @@ public class SetViewFiltersHandler extends BatchRequestHandler<SetViewFilters> {
 
     @Override
     public BatchRequest getBatchRequest(SetViewFilters action) {
-        return new BatchRequest.SetViewFilters(SetUserFiltersHandler.serializeFilters(action.filters), action.pageSize);
+        return new BatchRequest.SetViewFilters(action.groupObjectID, SetUserFiltersHandler.serializeFilters(action.filters), action.pageSize);
     }
 }
