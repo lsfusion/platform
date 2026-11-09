@@ -594,11 +594,6 @@ public class ReportGenerator {
         removeZeroWidthElements(design);
     }
 
-    @Deprecated
-    public static File exportToXlsx(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
-        return exportToFile(generationData, FormPrintType.XLSX, null, null, false, null);
-    }
-
     private void removeZeroWidthElements(JasperDesign design) {
         for (JRBand band : design.getAllBands()) {
             if (band instanceof JRDesignBand) {
