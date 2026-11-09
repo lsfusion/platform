@@ -163,7 +163,6 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     }
 
     public void synchronizeNavigatorElements() {
-        runWithStartLog(this::migrateNavigatorElements, "Migrating navigator elements");
         runWithStartLog(()-> synchronizeNavigatorElements(reflectionLM.navigatorFolder, false, reflectionLM.isNavigatorFolder),
                 "Synchronizing navigator elements properties");
         runWithStartLog(() -> synchronizeNavigatorElements(reflectionLM.navigatorAction, true, reflectionLM.isNavigatorAction),
@@ -241,54 +240,6 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         }
     }
 
-    private void migrateNavigatorElements() {
-        Map<String, String> nameChanges = dbManager.getNavigatorElementNameChanges();
-
-        Set<String> existingElements = new HashSet<>();
-        for (NavigatorElement element : businessLogics.getNavigatorElements()) {
-            existingElements.add(element.getCanonicalName());
-        }
-
-        Map<String, String> liveChanges = new LinkedHashMap<>();
-        nameChanges.forEach((oldCN, newCN) -> {
-            if (existingElements.contains(newCN)) {
-                liveChanges.put(oldCN, newCN);
-            } else {
-                startLogWarn("Navigator element " + oldCN + " was not migrated to " + newCN + " (target not defined)");
-            }
-        });
-
-        if (liveChanges.isEmpty()) {
-            return;
-        }
-
-        ImportField oldNavigatorElementCNField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
-        ImportField newNavigatorElementCNField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
-
-        ImportKey<?> keyNE = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementCanonicalName.getMapping(oldNavigatorElementCNField));
-        keyNE.skipKey = true;
-
-        try {
-            List<List<Object>> data = new ArrayList<>();
-            for (Map.Entry<String, String> entry : liveChanges.entrySet()) {
-                data.add(Arrays.asList(entry.getKey(), entry.getValue()));
-            }
-
-            List<ImportProperty<?>> properties = new ArrayList<>();
-            properties.add(new ImportProperty(newNavigatorElementCNField, reflectionLM.canonicalNameNavigatorElement.getMapping(keyNE)));
-
-            ImportTable table = new ImportTable(asList(oldNavigatorElementCNField, newNavigatorElementCNField), data);
-
-            try (DataSession session = createSyncSession()) {
-                IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyNE), properties);
-                service.synchronize(false, false);
-                apply(session);
-            }
-        } catch (Exception e) {
-            Throwables.propagate(e);
-        }
-    }
-    
     public void synchronizeForms() {
         runWithStartLog(() -> {
             ImportField nameField = new ImportField(reflectionLM.formCanonicalNameClass);
@@ -391,47 +342,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         return parentInfo;
     }
 
-    private void migratePropertyDraws() {
-        runWithStartLog(() -> {
-            Map<String, String> nameChanges = dbManager.getPropertyDrawNamesChanges();
-
-            ImportField oldPropertyDrawSIDField = new ImportField(reflectionLM.propertyDrawSIDClass);
-            ImportField oldFormCanonicalNameField = new ImportField(reflectionLM.formCanonicalNameClass);
-            ImportField newPropertyDrawSIDField = new ImportField(reflectionLM.propertyDrawSIDClass);
-            ImportField newFormCanonicalNameField = new ImportField(reflectionLM.formCanonicalNameClass);
-
-            ImportKey<?> keyForm = new ImportKey(reflectionLM.form, reflectionLM.formByCanonicalName.getMapping(newFormCanonicalNameField));
-            ImportKey<?> keyProperty = new ImportKey(reflectionLM.propertyDraw, reflectionLM.propertyDrawByFormNameAndPropertyDrawSid.getMapping(oldFormCanonicalNameField, oldPropertyDrawSIDField));
-
-            try {
-                List<List<Object>> data = new ArrayList<>();
-                for (String oldName : nameChanges.keySet()) {
-                    String newName = nameChanges.get(oldName);
-                    String oldFormName = oldName.substring(0, oldName.lastIndexOf('.'));
-                    String newFormName = newName.substring(0, newName.lastIndexOf('.'));
-                    data.add(Arrays.asList(oldName.substring(oldFormName.length() + 1), oldFormName, newName.substring(newFormName.length() + 1), newFormName));
-                }
-
-                List<ImportProperty<?>> properties = new ArrayList<>();
-                properties.add(new ImportProperty(newPropertyDrawSIDField, reflectionLM.sidPropertyDraw.getMapping(keyProperty)));
-                properties.add(new ImportProperty(newFormCanonicalNameField, reflectionLM.formPropertyDraw.getMapping(keyProperty), LM.object(reflectionLM.form).getMapping(keyForm)));
-
-                ImportTable table = new ImportTable(asList(oldPropertyDrawSIDField, oldFormCanonicalNameField, newPropertyDrawSIDField, newFormCanonicalNameField), data);
-
-                try (DataSession session = createSyncSession()) {
-                    IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyProperty), properties);
-                    service.synchronize(false, false);
-                    apply(session);
-                }
-            } catch (Exception e) {
-                Throwables.propagate(e);
-            }
-        }, "Migrating property draws");
-    }
-    
     public void synchronizePropertyDraws() {
-        migratePropertyDraws();
-
         runWithStartLog(() -> {
             List<List<Object>> dataPropertyDraws = new ArrayList<>();
             for (FormEntity formElement : businessLogics.getFormEntities()) {

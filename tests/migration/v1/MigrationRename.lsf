@@ -1,0 +1,56 @@
+MODULE MigrationRename;
+
+REQUIRE Reflection, Security, TestUtils;
+
+// the logics before the renames of v2: properties on forms, a form and navigator folders, each with a setting kept
+// in the reflection's records, given by migrationSeed
+
+CLASS Item;
+name = DATA STRING (Item);
+code = DATA STRING (Item);
+
+FORM items
+    OBJECTS i = Item
+    PROPERTIES(i) name
+;
+
+FORM codes
+    OBJECTS i = Item
+    PROPERTIES(i) code
+;
+
+FORM pairs
+    OBJECTS i = Item
+    PROPERTIES(i) name, code
+;
+
+NAVIGATOR {
+    NEW FOLDER migrationFolder 'Migration' WINDOW toolbar;
+    NEW FOLDER mergedFolder 'Merged' WINDOW toolbar;
+    NEW FOLDER occupiedFolder 'Occupied' WINDOW toolbar;
+    NEW FOLDER keptFolder 'Kept' WINDOW toolbar;
+}
+
+migrationSeed() {
+    assertNotNull(propertyDrawByFormNameAndPropertyDrawSid('MigrationRename.items', 'name(i)'), 'no record of items.name(i)');
+    assertNotNull(propertyDrawByFormNameAndPropertyDrawSid('MigrationRename.codes', 'code(i)'), 'no record of codes.code(i)');
+    assertNotNull(propertyDrawByFormNameAndPropertyDrawSid('MigrationRename.pairs', 'name(i)'), 'no record of pairs.name(i)');
+    assertNotNull(propertyDrawByFormNameAndPropertyDrawSid('MigrationRename.pairs', 'code(i)'), 'no record of pairs.code(i)');
+    assertNotNull(navigatorElementCanonicalName('MigrationRename.migrationFolder'), 'no record of migrationFolder');
+    assertNotNull(navigatorElementCanonicalName('MigrationRename.mergedFolder'), 'no record of mergedFolder');
+    assertNotNull(navigatorElementCanonicalName('MigrationRename.occupiedFolder'), 'no record of occupiedFolder');
+    assertNotNull(navigatorElementCanonicalName('MigrationRename.keptFolder'), 'no record of keptFolder');
+
+    columnCaption(propertyDrawByFormNameAndPropertyDrawSid('MigrationRename.items', 'name(i)')) <- 'kept';
+    columnCaption(propertyDrawByFormNameAndPropertyDrawSid('MigrationRename.codes', 'code(i)')) <- 'kept';
+    columnCaption(propertyDrawByFormNameAndPropertyDrawSid('MigrationRename.pairs', 'name(i)')) <- 'own';
+    columnCaption(propertyDrawByFormNameAndPropertyDrawSid('MigrationRename.pairs', 'code(i)')) <- 'merged';
+    NEW r = UserRole {
+        sid(r) <- 'migrationRename';
+        defaultNumber(r, navigatorElementCanonicalName('MigrationRename.migrationFolder')) <- 7;
+        defaultNumber(r, navigatorElementCanonicalName('MigrationRename.mergedFolder')) <- 8;
+        defaultNumber(r, navigatorElementCanonicalName('MigrationRename.occupiedFolder')) <- 9;
+        defaultNumber(r, navigatorElementCanonicalName('MigrationRename.keptFolder')) <- 10;
+    }
+    APPLY;
+}

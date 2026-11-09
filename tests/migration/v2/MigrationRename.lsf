@@ -1,0 +1,48 @@
+MODULE MigrationRename;
+
+REQUIRE Reflection, Security, TestUtils;
+
+// the logics of v1 after the renames its migration.script names: items.name(i) gets an explicit name, codes becomes
+// codeList, migrationFolder becomes renamedFolder. pairs.code(i) and mergedFolder are renamed into the names
+// pairs.name(i) and occupiedFolder already have, and take them: the records that had them are dropped. goneFolder,
+// renamed into keptFolder, has no record, and keptFolder keeps its own. migrationCheck asserts which settings are kept
+
+CLASS Item;
+name = DATA STRING (Item);
+code = DATA STRING (Item);
+
+FORM items
+    OBJECTS i = Item
+    PROPERTIES(i) title = name
+;
+
+FORM codeList
+    OBJECTS i = Item
+    PROPERTIES(i) code
+;
+
+FORM pairs
+    OBJECTS i = Item
+    PROPERTIES(i) name
+;
+
+NAVIGATOR {
+    NEW FOLDER renamedFolder 'Migration' WINDOW toolbar;
+    NEW FOLDER occupiedFolder 'Occupied' WINDOW toolbar;
+    NEW FOLDER keptFolder 'Kept' WINDOW toolbar;
+}
+
+migrationCheck() {
+    assertEquals(columnCaption(propertyDrawByFormNameAndPropertyDrawSid('MigrationRename.items', 'title')), 'kept',
+                 'the column caption of items.name(i) is not kept for items.title');
+    assertEquals(columnCaption(propertyDrawByFormNameAndPropertyDrawSid('MigrationRename.codeList', 'code(i)')), 'kept',
+                 'the column caption of codes.code(i) is not kept for codeList.code(i)');
+    assertEquals(defaultNumber(userRoleSID('migrationRename'), navigatorElementCanonicalName('MigrationRename.renamedFolder')), 7,
+                 'the number of migrationFolder for the role is not kept for renamedFolder');
+    assertEquals(columnCaption(propertyDrawByFormNameAndPropertyDrawSid('MigrationRename.pairs', 'name(i)')), 'merged',
+                 'the column caption of pairs.code(i) is not kept for pairs.name(i)');
+    assertEquals(defaultNumber(userRoleSID('migrationRename'), navigatorElementCanonicalName('MigrationRename.occupiedFolder')), 8,
+                 'the number of mergedFolder for the role is not kept for occupiedFolder');
+    assertEquals(defaultNumber(userRoleSID('migrationRename'), navigatorElementCanonicalName('MigrationRename.keptFolder')), 10,
+                 'the number of keptFolder for the role is not its own');
+}

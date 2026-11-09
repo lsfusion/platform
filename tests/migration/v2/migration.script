@@ -1,0 +1,8 @@
+V0.1 {
+    FORM PROPERTY MigrationRename.items.name(i) -> MigrationRename.items.title
+    FORM PROPERTY MigrationRename.codes.code(i) -> MigrationRename.codeList.code(i)
+    FORM PROPERTY MigrationRename.pairs.code(i) -> MigrationRename.pairs.name(i)
+    NAVIGATOR MigrationRename.migrationFolder -> MigrationRename.renamedFolder
+    NAVIGATOR MigrationRename.mergedFolder -> MigrationRename.occupiedFolder
+    NAVIGATOR MigrationRename.goneFolder -> MigrationRename.keptFolder
+}

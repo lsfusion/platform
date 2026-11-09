@@ -56,6 +56,7 @@ import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.connection.ExConnection;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
+import lsfusion.server.data.sql.lambda.SQLFunction;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.table.*;
@@ -96,6 +97,8 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.form.interactive.property.PropertyAsync;
 import lsfusion.server.logics.form.stat.LimitOffset;
+import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.property.AggregateProperty;
@@ -156,13 +159,12 @@ import static lsfusion.server.base.ResourceUtils.getRevision;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.directLI;
 import static lsfusion.server.physics.admin.log.ServerLoggers.*;
+import static org.apache.commons.lang3.StringUtils.substringAfterLast;
+import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
 
 public class DBManager extends LogicsManager implements InitializingBean {
     public static final Logger systemLogger = ServerLoggers.systemLogger;
     public static final Logger serviceLogger = ServerLoggers.serviceLogger;
-
-    private Map<String, String> finalPropertyDrawNameChanges = new HashMap<>();
-    private Map<String, String> finalNavigatorElementNameChanges = new HashMap<>();
 
     private DataAdapter adapter;
 
@@ -1831,6 +1833,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     migrateReflectionProperties(session, oldDBStructure);
                     apply(session);
 
+                    if(!isFirstStart) {
+                        migratePropertyDraws(session, oldDBStructure);
+                        migrateNavigatorElements(session, oldDBStructure);
+                    }
+
 
                         startLog("Recalculating materializations");
                         Set<Long> oldClassIDs = new HashSet<>();
@@ -2299,6 +2306,109 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    private void migratePropertyDraws(DataSession session, OldDBStructure oldDBStructure) throws SQLException, SQLHandledException {
+        Map<String, String> renames = new LinkedHashMap<>(migrationManager.getPropertyDrawNameChangesAfter(oldDBStructure.migrationVersion));
+
+        Set<String> forms = new HashSet<>();
+        for (FormEntity form : businessLogics.getFormEntities())
+            forms.add(form.getCanonicalName());
+        skipRenames(renames, newName -> !forms.contains(getFormCanonicalName(newName)), "Form property", "form not defined");
+
+        if (!renames.isEmpty()) {
+            dropRecordsWithNewNames(session, renames, name -> reflectionLM.propertyDrawByFormNameAndPropertyDrawSid.readClasses(session,
+                    new DataObject(getFormCanonicalName(name), reflectionLM.formCanonicalNameClass), new DataObject(getPropertyDrawSID(name), reflectionLM.propertyDrawSIDClass)));
+            renamePropertyDraws(session, renames);
+        }
+    }
+
+    private static String getFormCanonicalName(String propertyDrawName) {
+        return substringBeforeLast(propertyDrawName, ".");
+    }
+
+    private static String getPropertyDrawSID(String propertyDrawName) {
+        return substringAfterLast(propertyDrawName, ".");
+    }
+
+    private void renamePropertyDraws(DataSession session, Map<String, String> renames) throws SQLException, SQLHandledException {
+        startLog("Migrating property draws");
+        ImportField oldPropertyDrawSIDField = new ImportField(reflectionLM.propertyDrawSIDClass);
+        ImportField oldFormCanonicalNameField = new ImportField(reflectionLM.formCanonicalNameClass);
+        ImportField newPropertyDrawSIDField = new ImportField(reflectionLM.propertyDrawSIDClass);
+        ImportField newFormCanonicalNameField = new ImportField(reflectionLM.formCanonicalNameClass);
+
+        ImportKey<?> keyForm = new ImportKey(reflectionLM.form, reflectionLM.formByCanonicalName.getMapping(newFormCanonicalNameField));
+        ImportKey<?> keyProperty = new ImportKey(reflectionLM.propertyDraw, reflectionLM.propertyDrawByFormNameAndPropertyDrawSid.getMapping(oldFormCanonicalNameField, oldPropertyDrawSIDField));
+        keyProperty.skipKey = true; // a property with no record under its old name has nothing to carry over, the synchronization creates its record
+
+        List<List<Object>> data = new ArrayList<>();
+        renames.forEach((oldName, newName) -> data.add(Arrays.asList(getPropertyDrawSID(oldName), getFormCanonicalName(oldName),
+                getPropertyDrawSID(newName), getFormCanonicalName(newName))));
+
+        List<ImportProperty<?>> properties = new ArrayList<>();
+        properties.add(new ImportProperty(newPropertyDrawSIDField, reflectionLM.sidPropertyDraw.getMapping(keyProperty)));
+        properties.add(new ImportProperty(newFormCanonicalNameField, reflectionLM.formPropertyDraw.getMapping(keyProperty), LM.object(reflectionLM.form).getMapping(keyForm)));
+        // a form renamed since the last synchronization has no record yet: it is created here, under the name the synchronization looks it up by
+        properties.add(new ImportProperty(newFormCanonicalNameField, reflectionLM.formCanonicalName.getMapping(keyForm)));
+
+        ImportTable table = new ImportTable(asList(oldPropertyDrawSIDField, oldFormCanonicalNameField, newPropertyDrawSIDField, newFormCanonicalNameField), data);
+        new IntegrationService(session, table, asList(keyForm, keyProperty), properties).synchronize(false, false);
+        apply(session);
+    }
+
+    private void migrateNavigatorElements(DataSession session, OldDBStructure oldDBStructure) throws SQLException, SQLHandledException {
+        Map<String, String> renames = new LinkedHashMap<>(migrationManager.getNavigatorCNChangesAfter(oldDBStructure.migrationVersion));
+
+        Set<String> elements = new HashSet<>();
+        for (NavigatorElement element : businessLogics.getNavigatorElements())
+            elements.add(element.getCanonicalName());
+        skipRenames(renames, newName -> !elements.contains(newName), "Navigator element", "target not defined");
+
+        if (!renames.isEmpty()) {
+            dropRecordsWithNewNames(session, renames, name -> reflectionLM.navigatorElementCanonicalName.readClasses(session,
+                    new DataObject(name, reflectionLM.navigatorElementCanonicalNameClass)));
+            renameNavigatorElements(session, renames);
+        }
+    }
+
+    private void renameNavigatorElements(DataSession session, Map<String, String> renames) throws SQLException, SQLHandledException {
+        startLog("Migrating navigator elements");
+        ImportField oldNavigatorElementCNField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
+        ImportField newNavigatorElementCNField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
+
+        ImportKey<?> keyNE = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementCanonicalName.getMapping(oldNavigatorElementCNField));
+        keyNE.skipKey = true;
+
+        List<List<Object>> data = new ArrayList<>();
+        renames.forEach((oldName, newName) -> data.add(Arrays.asList(oldName, newName)));
+
+        List<ImportProperty<?>> properties = new ArrayList<>();
+        properties.add(new ImportProperty(newNavigatorElementCNField, reflectionLM.canonicalNameNavigatorElement.getMapping(keyNE)));
+
+        ImportTable table = new ImportTable(asList(oldNavigatorElementCNField, newNavigatorElementCNField), data);
+        new IntegrationService(session, table, Collections.singletonList(keyNE), properties).synchronize(false, false);
+        apply(session);
+    }
+
+    private static void skipRenames(Map<String, String> renames, Predicate<String> skippedName, String element, String reason) {
+        renames.entrySet().removeIf(rename -> {
+            boolean skipped = skippedName.test(rename.getValue());
+            if (skipped)
+                startLogWarn(element + " " + rename.getKey() + " was not migrated to " + rename.getValue() + " (" + reason + ")");
+            return skipped;
+        });
+    }
+
+    // the rename wins over the record that has its new name, unless that record is renamed itself
+    private static void dropRecordsWithNewNames(DataSession session, Map<String, String> renames, SQLFunction<String, ObjectValue> readRecord) throws SQLException, SQLHandledException {
+        for (Map.Entry<String, String> rename : renames.entrySet()) {
+            if (renames.containsKey(rename.getValue()) || !(readRecord.apply(rename.getKey()) instanceof DataObject))
+                continue;
+            ObjectValue record = readRecord.apply(rename.getValue());
+            if (record instanceof DataObject)
+                session.changeClass((DataObject) record, null);
+        }
+    }
+
     public static <P extends PropertyInterface> Where getIncorrectWhere(ImplementTable table, PropertyField field, BaseClass baseClass, final ImRevMap<KeyField, KeyExpr> mapKeys, Result<Expr> resultExpr) {
         Expr fieldExpr = baseClass.getInconsistentTable(table).join(mapKeys).getExpr(field);
         resultExpr.set(fieldExpr);
@@ -2752,9 +2862,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
     // Не разбирается с индексами. Было решено, что сохранять индексы необязательно.
     private void alterDBStructure(SQLSession sql, OldDBStructure oldData, NewDBStructure newData) throws SQLException {
         startLog("Applying migration script (" + oldData.migrationVersion + " -> " + newData.migrationVersion + ")");
-        // Сохраним изменения имен свойств на форме и элементов навигатора для reflectionManager
-        finalPropertyDrawNameChanges = migrationManager.getPropertyDrawNameChangesAfter(oldData.migrationVersion);
-        finalNavigatorElementNameChanges = migrationManager.getNavigatorCNChangesAfter(oldData.migrationVersion);
 
         // Обязательно до renameMigratingProperties, потому что в storedPropertyCNChanges добавляются изменения для log-свойств 
         addLogPropertiesToMigration(oldData, newData.migrationVersion);
@@ -2772,14 +2879,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         // переименовываем классы из скрипта миграции
         renameMigratingClasses(oldData);
-    }
-
-    public Map<String, String> getPropertyDrawNamesChanges() {
-        return finalPropertyDrawNameChanges;
-    } 
-    
-    public Map<String, String> getNavigatorElementNameChanges() {
-        return finalNavigatorElementNameChanges;
     }
 
     @NFLazy

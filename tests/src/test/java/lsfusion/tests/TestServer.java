@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -42,11 +43,15 @@ class TestServer {
     // free ones, as whoever runs this usually has a server of their own up. `root` holds the logics' modules - a Path,
     // so that no setting after it can be taken for it
     static Process start(String database, int[] ports, Path log, Path root, String... settings) throws IOException {
+        return start(database, ports, log, Collections.singletonList(root), settings);
+    }
+
+    static Process start(String database, int[] ports, Path log, List<Path> roots, String... settings) throws IOException {
         List<String> properties = new ArrayList<>(Arrays.asList(
                 "db.name=" + database, "db.server=" + DB_SERVER, "db.user=" + DB_USER, "db.password=" + DB_PASSWORD,
                 "http.port=" + ports[0], "rmi.port=" + ports[1], "webSocket.port=" + ports[2], "debugger.port=" + ports[3]));
         properties.addAll(Arrays.asList(settings));
-        return start(classPath(root), log, Collections.emptyList(), properties.toArray(new String[0]));
+        return start(classPath(roots.toArray(new Path[0])), log, Collections.emptyList(), properties.toArray(new String[0]));
     }
 
     interface Check {
@@ -67,9 +72,16 @@ class TestServer {
     }
 
     static void stop(Process server, String database) throws Exception {
+        kill(server);
+        dropDatabase(database);
+    }
+
+    static void kill(Process server) throws InterruptedException {
         server.destroyForcibly(); // not destroy() : a server a test left deadlocked would never finish an orderly shutdown
         server.waitFor();
+    }
 
+    static void dropDatabase(String database) throws SQLException {
         if (Boolean.getBoolean("lsf.keepDb")) {
             System.out.println("kept the test database " + database);
             return;
