@@ -78,6 +78,7 @@ public class ClientTypeSerializer {
         if (type == DataType.JSONTEXT) return ClientJSONTextClass.instance;
         if (type == DataType.XML) return ClientXMLClass.instance;
         if (type == DataType.TSVECTOR) return ClientTSVectorClass.instance;
+        if (type == DataType.TSQUERY) return ClientTSQueryClass.instance;
         if (type == DataType.HTMLSTRING) return ClientHTMLStringClass.instance;
 
         if (type == DataType.PDF) return new ClientPDFClass(inStream.readBoolean(), inStream.readBoolean());

@@ -321,6 +321,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         return GTSVectorType.instance;
     }
 
+    @Converter(from = ClientTSQueryClass.class)
+    public GTSQueryType convertTSQueryClass(ClientTSQueryClass clientTSQueryClass) {
+        return GTSQueryType.instance;
+    }
+
     @Converter(from = ClientHTMLStringClass.class)
     public GHTMLStringType convertHTMLStringClass(ClientHTMLStringClass clientHTMLStringClass) {
         return GHTMLStringType.instance;

@@ -16,7 +16,7 @@ import java.sql.*;
 public class TSQueryClass extends DataClass<String> implements DBType {
 
     private TSQueryClass() {
-        super(LocalizedString.create("{classes.tsvector}"));
+        super(LocalizedString.create("{classes.tsquery}"));
     }
 
     public final static TSQueryClass instance = new TSQueryClass();
