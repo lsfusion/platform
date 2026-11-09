@@ -4,19 +4,9 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.PValue;
-import lsfusion.gwt.client.form.property.cell.classes.view.TextCellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
-import java.text.ParseException;
-
-public class GTSVectorType extends GDataType {
+public class GTSVectorType extends GTextSearchType {
     public static GTSVectorType instance = new GTSVectorType();
-
-    @Override
-    public CellRenderer createCellRenderer(GPropertyDraw property) {
-        return new TextCellRenderer(property);
-    }
 
     @Override
     public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean globalCaptionIsDrawn) {
@@ -26,11 +16,6 @@ public class GTSVectorType extends GDataType {
     @Override
     public int getDefaultCharHeight() {
         return 4;
-    }
-
-    @Override
-    public PValue parseString(String s, String pattern) throws ParseException {
-        throw new ParseException("TSVector class doesn't support conversion from string", 0);
     }
 
     @Override

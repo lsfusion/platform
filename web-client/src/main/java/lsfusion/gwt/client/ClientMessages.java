@@ -151,6 +151,7 @@ public interface ClientMessages extends Messages {
     String typeJSONCaption();
     String typeJSONTextCaption();
     String typeTSVectorCaption();
+    String typeTSQueryCaption();
     String typeCustomDynamicFormatFileCaption();
     String typeCustomStaticFormatFileCaption();
     String typeDateCaption();
