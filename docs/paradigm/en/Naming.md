@@ -24,7 +24,7 @@ Elements of the system must be named so that the system does not contain any two
 
 ### Canonical names {#canonicalname}
 
-For some elements of the system, string *canonical names* are determined and are unique among all elements of the given type within the system. For most system elements (user-defined classes, property groups, navigator elements, windows, tables) the canonical name is equivalent to the *full name* of that element of the system, which looks as follows:
+For some elements of the system, string *canonical names* are determined and are unique among all elements of the given type within the system. For most system elements (user-defined classes, property groups, forms, navigator elements, windows, tables) the canonical name is equivalent to the *full name* of that element of the system, which looks as follows:
 
 ```
 <namespace name>.<System element name>
