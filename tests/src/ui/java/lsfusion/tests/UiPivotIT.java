@@ -19,8 +19,9 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-// a group's pivot in the web client: what a group in manual update holds back once it is back from its pivot, and the
-// pivot of a group whose design hides the XLS export button, and a pivot switched on before a row change is answered
+// a group's pivot in the web client: what a group in manual update holds back once it is back from its pivot, the pivot
+// of a group whose design hides the XLS export button, a pivot switched on before a row change is answered, and a
+// PIVOT LAST quantity
 public class UiPivotIT extends UiTest {
 
     private static final String RENDER_ERROR = "An error occurred rendering the PivotTable results.";
@@ -129,6 +130,48 @@ public class UiPivotIT extends UiTest {
         assertThat(cellOf(pivot, "600")).hasCount(1);
         assertThat(form.getByText(RENDER_ERROR)).hasCount(0);
         assertThat(form.locator("button[title='Export']")).hasCount(0);
+        assertEquals("the errors the page logged", "", String.join("\n", errors));
+        close(form);
+    }
+
+    // a group opened as its pivot with a PIVOT LAST quantity is drawn with the quantity of the item last by name, 300,
+    // not the sum: the pivot failed with a TypeError on its first drawing, while its group is pending, which has no
+    // values of the order yet, then on the names of the order taken as numbers, the quantity's class, and on the
+    // order's system column, which has no property to format its value with (#1968)
+    @Test
+    public void aPivotWithALastMeasureIsDrawn() throws Exception {
+        lastMeasureIs("UiPivot.uiPivotLast", "300");
+    }
+
+    // a PIVOT LAST quantity by a number takes the row of the greatest one, 10, not of the greatest text, 9: the order's
+    // values are converted by their own class, without which a boxed Integer is compared in javascript as its text
+    // (#1968). The three rows fit a page, so the server does not group them and the client picks the last row itself,
+    // which is what this holds
+    @Test
+    public void aLastMeasureByANumberTakesTheGreatest() throws Exception {
+        lastMeasureIs("UiPivot.uiPivotLastRank", "200");
+    }
+
+    // ... and by a date-time, the latest, not the one of the greatest text, which begins with the day of the week
+    // (#1968)
+    @Test
+    public void aLastMeasureByADateTimeTakesTheLatest() throws Exception {
+        lastMeasureIs("UiPivot.uiPivotLastDateTime", "200");
+    }
+
+    // the pivot of the form shows the count of the three items, 3, and the quantity of the item last in the order, and no
+    // other quantity
+    private void lastMeasureIs(String formName, String quantity) throws Exception {
+        seed();
+        List<String> errors = consoleErrors();
+        Locator form = open("UiPivot.uiPivot", formName);
+        Locator pivot = form.locator(".subtotalouterdiv");
+        assertThat(cellOf(pivot, "3")).hasCount(1);
+        assertThat(cellOf(pivot, quantity)).hasCount(1);
+        for (String other : new String[]{"100", "200", "300", "600"})
+            if (!other.equals(quantity))
+                assertThat(cellOf(pivot, other)).hasCount(0);
+        assertThat(form.getByText(RENDER_ERROR)).hasCount(0);
         assertEquals("the errors the page logged", "", String.join("\n", errors));
         close(form);
     }

@@ -4,8 +4,9 @@ REQUIRE System, SystemEvents;
 
 // the forms UiPivotIT works on in the browser - a group's pivot: a group in manual update switched to its pivot and
 // back to its table before an update there, on the platform's toolbar and on the toolbar a React view draws
-// (UiPivot.js), the pivot of a group whose design hides the XLS export button, and a pivot switched on before a row
-// change is answered -, and the action it seeds the items with
+// (UiPivot.js), the pivot of a group whose design hides the XLS export button, a pivot switched on before a row
+// change is answered, and pivots with a PIVOT LAST quantity by a name, a number and a date-time -, and the action it
+// seeds the items with
 
 CLASS UiPivotItem 'Item';
 uiPivotName 'Name' = DATA STRING[50] (UiPivotItem);
@@ -92,6 +93,34 @@ FORM uiPivotExport 'Export shown'
     ORDERS uiPivotName(i)
 ;
 
+// a group opened as its pivot with a quantity taken from the last row by name, not summed: the quantity of the item
+// last by name
+FORM uiPivotLast 'PIVOT LAST'
+    OBJECTS i = UiPivotItem PIVOT
+    PROPERTIES(i) READONLY uiPivotName, uiPivotQuantity PIVOT LAST (uiPivotName(i))
+    FILTERS uiPivotShown(i)
+;
+
+// the items' ranks and date-times, last for the item of 200: 9, 10 and 8, whose greatest text, 9, is not the greatest
+// number, and three days whose date-times as text begin with the day of the week - Friday, Sunday and Thursday
+uiPivotRank (UiPivotItem i) = CASE WHEN uiPivotQuantity(i) == 100 THEN 9 WHEN uiPivotQuantity(i) == 200 THEN 10 ELSE 8;
+uiPivotDateTime (UiPivotItem i) = CASE WHEN uiPivotQuantity(i) == 100 THEN 2026_01_09_10:00
+                                       WHEN uiPivotQuantity(i) == 200 THEN 2026_02_01_10:00 ELSE 2026_01_22_10:00;
+
+// ... the quantity taken from the last row by the rank
+FORM uiPivotLastRank 'PIVOT LAST by a number'
+    OBJECTS i = UiPivotItem PIVOT
+    PROPERTIES(i) READONLY uiPivotName, uiPivotQuantity PIVOT LAST (uiPivotRank(i))
+    FILTERS uiPivotShown(i)
+;
+
+// ... and by the date-time
+FORM uiPivotLastDateTime 'PIVOT LAST by a date-time'
+    OBJECTS i = UiPivotItem PIVOT
+    PROPERTIES(i) READONLY uiPivotName, uiPivotQuantity PIVOT LAST (uiPivotDateTime(i))
+    FILTERS uiPivotShown(i)
+;
+
 onWebClientInit() + {
     onWebClientInit('UiPivot.js') <- 1;
 }
@@ -104,6 +133,9 @@ NAVIGATOR {
         NEW uiPivotExportHidden;
         NEW uiPivotExportHiddenPivot;
         NEW uiPivotExport;
+        NEW uiPivotLast;
+        NEW uiPivotLastRank;
+        NEW uiPivotLastDateTime;
     }
 }
 

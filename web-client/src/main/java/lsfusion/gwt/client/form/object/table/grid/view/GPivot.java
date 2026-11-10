@@ -36,6 +36,11 @@ import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
+import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
+import lsfusion.gwt.client.form.property.cell.classes.GNumericDTO;
+import lsfusion.gwt.client.form.property.cell.classes.GTimeDTO;
+import lsfusion.gwt.client.form.property.cell.classes.GZDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
@@ -161,8 +166,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
 
                 pushValue(rowValues, propValues, fullKey, renderType, renderer, patternValues);
+                // until the pivot's first change of the group mode its group is pending: the server sends the property but
+                // holds its readers back, those of a PIVOT LAST order among them, so the first drawing has no values of
+                // the order yet
                 for (NativeHashMap<GGroupObjectValue, PValue> propLastAggr : propLastAggrs) {
-                    pushValue(rowValues, propLastAggr, fullKey, renderType, renderer, patternValues);
+                    PValue lastValue = propLastAggr != null ? propLastAggr.get(fullKey) : null;
+                    rowValues.push(lastValue != null ? fromObject(getLastOrderValue(lastValue)) : null);
                 }
             }
         }
@@ -250,6 +259,26 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     private native void jsPut(JavaScriptObject obj, String key, String value) /*-{
         obj[key] = value;
     }-*/;
+
+    // a value of a PIVOT LAST order is of the order's class, not of the property's, and is only compared with the others,
+    // in checkLastValue, by javascript's < and >: a number or a date goes as a javascript number, since a boxed Integer or
+    // Long, a numeric or a date would be compared as its text - 10 before 9
+    private static Object getLastOrderValue(PValue value) {
+        Object object = PValue.getPivotValue(null, value);
+        if (object instanceof Number)
+            return ((Number) object).doubleValue();
+        if (object instanceof GNumericDTO)
+            return ((GNumericDTO) object).value;
+        if (object instanceof GDateDTO)
+            return ((GDateDTO) object).toJsDate().getTime();
+        if (object instanceof GDateTimeDTO)
+            return ((GDateTimeDTO) object).toJsDate().getTime();
+        if (object instanceof GTimeDTO)
+            return ((GTimeDTO) object).toJsDate().getTime();
+        if (object instanceof GZDateTimeDTO)
+            return (double) ((GZDateTimeDTO) object).instant;
+        return object;
+    }
 
     private void pushValue(JsArrayMixed rowValues, NativeHashMap<GGroupObjectValue, PValue> propValues, GGroupObjectValue fullKey, GType renderType, CellRenderer cellRenderer, NativeHashMap<GGroupObjectValue, PValue> patterns) {
         PValue value = propValues.get(fullKey);
@@ -1101,12 +1130,13 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     public String formatValue(String columnName, JavaScriptObject value, boolean nullString) {
+        Column column;
         if (value == null) {
             return nullString ? "null" : null;
-        } else if (columnName.equals(COLUMN)) {
+        } else if (columnName.equals(COLUMN) || (column = columnMap.get(columnName)) == null) { // a PIVOT LAST order has a system column of its own, with no property
             return value.toString();
         } else {
-            GPropertyDraw property = columnMap.get(columnName).property;
+            GPropertyDraw property = column.property;
             return property.getCellRenderer(RendererType.PIVOT).format(getPValue(property, value), RendererType.PIVOT, null);
         }
     }
