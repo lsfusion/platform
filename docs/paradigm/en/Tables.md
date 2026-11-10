@@ -23,6 +23,8 @@ For each table created in the platform, a corresponding table is created in the 
 
 The naming policy is defined using the [`db.namingPolicy`](Launch_parameters.md#namingpolicy) startup parameter.
 
+The database may not distinguish letter case in table names, so table names must differ in more than letter case — otherwise the server reports an error at startup. If two tables whose names differ only in letter case are already in the database, the server leaves them as they are and logs a warning, but does not allow removing or renaming one of them: in the database they may be one table.
+
 ### Field naming {#name}
 
 The values of each property are always stored exactly in one field, which name, depending on the selected naming policy, is defined as follows:

@@ -1725,6 +1725,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             MigrationVersion newMigrationVersion = migrationManager.getCurrentMigrationVersion(oldDBStructure.migrationVersion);
             NewDBStructure newDBStructure = new NewDBStructure(newMigrationVersion, sql);
+            newDBStructure.checkTableNamesIgnoringCase(oldDBStructure);
 
             // DROP / RENAME indices
             Set<IndexData<Field>> existingIndexes = new HashSet<>();
@@ -3480,6 +3481,99 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     }
                 }
             }
+        }
+
+        public void checkTableNamesIgnoringCase(OldDBStructure oldData) {
+            Map<String, String> renames = oldData.isEmpty() ? Collections.emptyMap() : getTableRenames(oldData, this);
+            checkExistingTableNames(oldData, renames);
+            checkNewTableNames(oldData, renames);
+        }
+
+        private void checkExistingTableNames(OldDBStructure oldData, Map<String, String> renames) {
+            Stream<String> databaseNames = oldData.getTables().stream().map(DBTable::getName);
+            for (Set<String> names : groupIgnoringCase(databaseNames).values()) {
+                if (names.size() == 1)
+                    continue;
+
+                List<String> kept = new ArrayList<>(), renamed = new ArrayList<>(), dropped = new ArrayList<>();
+                for (String name : names) {
+                    String renamedName = renames.getOrDefault(name, name);
+                    if (getTable(renamedName) == null)
+                        dropped.add(name);
+                    else if (renamedName.equalsIgnoreCase(name))
+                        kept.add(name);
+                    else
+                        renamed.add(name);
+                }
+
+                if (kept.size() == names.size())
+                    startLogWarn(String.format("Tables '%s' have names that differ only in letter case, " +
+                            "so the database may store them as one table", String.join("' and '", names)));
+                else if (dropped.size() < names.size()) {
+                    String name = !renamed.isEmpty() ? renamed.get(0) : dropped.get(0);
+                    String other = !kept.isEmpty() ? kept.get(0)
+                            : names.stream().filter(n -> !n.equals(name)).findFirst().get();
+                    throw new DuplicateRelationNameException(
+                            getExistingTableNameMessage(name, renames.get(name), other));
+                }
+            }
+        }
+
+        private String getExistingTableNameMessage(String name, String renamedName, String other) {
+            if (renamedName != null)
+                return String.format("Table '%1$s' is to be renamed to '%2$s', but its name differs from the name " +
+                        "of table '%3$s' only in letter case, so the database may store them as one table and " +
+                        "would rename table '%3$s' with it. In this case you can leave table '%1$s' as it is, " +
+                        "without the rename", name, renamedName, other);
+            return String.format("Table '%1$s' is to be dropped, but its name differs from the name of table " +
+                    "'%2$s' only in letter case, so the database may store them as one table and would drop table " +
+                    "'%2$s' with it. In this case you can leave table '%1$s' in the logic as it is", name, other);
+        }
+
+        private void checkNewTableNames(OldDBStructure oldData, Map<String, String> renames) {
+            Set<String> renamedOldNames = new HashSet<>();
+            Set<String> newNames = new TreeSet<>();
+            for (DBTable table : oldData.getTables()) {
+                String name = table.getName(), renamedName = renames.getOrDefault(name, name);
+                renamedOldNames.add(renamedName);
+                if (!renamedName.equalsIgnoreCase(name))
+                    newNames.add(renamedName);
+            }
+            for (DBTable table : getTables())
+                if (!renamedOldNames.contains(table.getName()))
+                    newNames.add(table.getName());
+
+            Stream<String> allNames = Stream.concat(renamedOldNames.stream(),
+                    getTables().stream().map(DBTable::getName));
+            Map<String, TreeSet<String>> names = groupIgnoringCase(allNames);
+            for (String name : newNames)
+                for (String other : names.get(name))
+                    if (!other.equals(name))
+                        throw new DuplicateRelationNameException(
+                                getNewTableNameMessage(oldData, name, other, renamedOldNames.contains(other)));
+        }
+
+        private String getNewTableNameMessage(OldDBStructure oldData, String name, String other,
+                                              boolean otherInDatabase) {
+            String message = String.format("Tables '%s' and '%s' have names that differ only in letter case, " +
+                    "and the database may not distinguish them", name, other);
+            if (!otherInDatabase)
+                return message + ". In this case you can rename one of the tables";
+
+            message += String.format(": table '%s' is already in the database", other);
+            String renamedFrom = getTable(other) == null ? oldData.getTable(other).getCanonicalName() : null;
+            String renamedTo = getTable(name).getCanonicalName();
+            if (renamedFrom != null && renamedTo != null)
+                return message + String.format(". If table '%1$s' was renamed to '%2$s', add the rename to the " +
+                        "migration script: TABLE %1$s -> %2$s. Otherwise you can rename table '%3$s'",
+                        renamedFrom, renamedTo, name);
+            return message + String.format(". In this case you can rename table '%s'", name);
+        }
+
+        private Map<String, TreeSet<String>> groupIgnoringCase(Stream<String> names) {
+            Map<String, TreeSet<String>> groups = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            names.forEach(name -> groups.computeIfAbsent(name, n -> new TreeSet<>()).add(name));
+            return groups;
         }
 
         public void write(DataOutputStream outDB) throws IOException {

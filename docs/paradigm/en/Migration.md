@@ -64,6 +64,8 @@ When renaming a [static object](Static_objects.md), an `OBJECT` change is used, 
 
 When renaming a [table](Tables.md) and/or when moving it to another namespace, the canonical name of this table changes. In this case, after creating a table with a new name, the system automatically moves all the records from the table with the old name in a separate request. However, if you add a `TABLE` change to the migration file, specifying the old and new canonical table names, a query will be executed to rename the old table, which will be significantly faster.
 
+If the name of a table changes only in letter case, the `TABLE` change is required: the database may not distinguish such names, so without it the server reports an error at startup.
+
 ### Changing the name of a navigator element
 
 When renaming a [navigator element](Navigator.md) and/or when moving it to another namespace, the canonical name of this element changes. In order to preserve the security policy settings associated with this element, add a `NAVIGATOR` change to the migration file, specifying the old and new canonical names of the navigator element. 
