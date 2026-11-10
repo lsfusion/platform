@@ -498,7 +498,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
     }
 
     public GLastReader convertLastReader(ClientPropertyDraw.LastReader reader) {
-        return reader == null ? null : new GLastReader(reader.getID(), reader.index, reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+        return reader == null ? null : new GLastReader(reader.getID(), reader.index, reader.getGroupObject() != null ? reader.getGroupObject().ID : -1, typeConverter.convertOrCast(reader.type));
     }
 
     public GGridElementClassReader convertGridElementClassReader(ClientPropertyDraw.GridElementClassReader reader) {

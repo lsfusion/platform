@@ -744,7 +744,14 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
 
         Object aggrFunc = entity.getAggrFunc();
         pool.writeString(outStream, aggrFunc != null ? aggrFunc.toString() : null);
-        outStream.writeInt(entity.getLastAggrColumns().size());
+        ImList<PropertyObjectEntity> lastAggrColumns = entity.getLastAggrColumns();
+        outStream.writeInt(lastAggrColumns.size());
+        for (PropertyObjectEntity<?> lastAggrColumn : lastAggrColumns) {
+            Type lastAggrType = lastAggrColumn.getType();
+            outStream.writeBoolean(lastAggrType != null);
+            if (lastAggrType != null)
+                TypeSerializer.serializeType(outStream, lastAggrType);
+        }
         outStream.writeBoolean(entity.isLastAggrDesc());
 
         PropertyDrawEntity quickFilterProperty = entity.getQuickFilterProperty();

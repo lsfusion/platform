@@ -36,11 +36,6 @@ import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
-import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
-import lsfusion.gwt.client.form.property.cell.classes.GNumericDTO;
-import lsfusion.gwt.client.form.property.cell.classes.GTimeDTO;
-import lsfusion.gwt.client.form.property.cell.classes.GZDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
@@ -57,6 +52,7 @@ import static java.lang.Integer.decode;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEmpty;
 import static lsfusion.gwt.client.base.view.ColorUtils.*;
 import static lsfusion.gwt.client.view.StyleDefaults.*;
+import static lsfusion.gwt.client.form.property.JSValueConverter.convertToJSValue;
 import static lsfusion.gwt.client.form.property.JSValueConverter.fromObject;
 import static lsfusion.gwt.client.form.property.JSValueConverter.fromString;
 
@@ -166,12 +162,12 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
 
                 pushValue(rowValues, propValues, fullKey, renderType, renderer, patternValues);
-                // until the pivot's first change of the group mode its group is pending: the server sends the property but
-                // holds its readers back, those of a PIVOT LAST order among them, so the first drawing has no values of
-                // the order yet
-                for (NativeHashMap<GGroupObjectValue, PValue> propLastAggr : propLastAggrs) {
+                // until the group mode first changes the group is pending, and the order has no values yet; they go by
+                // the order's type, since checkLastValue compares them by < and >, which would take 10 before 9 as text
+                for (int j = 0; j < propLastAggrs.size(); j++) {
+                    NativeHashMap<GGroupObjectValue, PValue> propLastAggr = propLastAggrs.get(j);
                     PValue lastValue = propLastAggr != null ? propLastAggr.get(fullKey) : null;
-                    rowValues.push(lastValue != null ? fromObject(getLastOrderValue(lastValue)) : null);
+                    rowValues.push(lastValue != null ? convertToJSValue(property.lastReaders.get(j).type, null, false, lastValue) : null);
                 }
             }
         }
@@ -259,26 +255,6 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     private native void jsPut(JavaScriptObject obj, String key, String value) /*-{
         obj[key] = value;
     }-*/;
-
-    // a value of a PIVOT LAST order is of the order's class, not of the property's, and is only compared with the others,
-    // in checkLastValue, by javascript's < and >: a number or a date goes as a javascript number, since a boxed Integer or
-    // Long, a numeric or a date would be compared as its text - 10 before 9
-    private static Object getLastOrderValue(PValue value) {
-        Object object = PValue.getPivotValue(null, value);
-        if (object instanceof Number)
-            return ((Number) object).doubleValue();
-        if (object instanceof GNumericDTO)
-            return ((GNumericDTO) object).value;
-        if (object instanceof GDateDTO)
-            return ((GDateDTO) object).toJsDate().getTime();
-        if (object instanceof GDateTimeDTO)
-            return ((GDateTimeDTO) object).toJsDate().getTime();
-        if (object instanceof GTimeDTO)
-            return ((GTimeDTO) object).toJsDate().getTime();
-        if (object instanceof GZDateTimeDTO)
-            return (double) ((GZDateTimeDTO) object).instant;
-        return object;
-    }
 
     private void pushValue(JsArrayMixed rowValues, NativeHashMap<GGroupObjectValue, PValue> propValues, GGroupObjectValue fullKey, GType renderType, CellRenderer cellRenderer, NativeHashMap<GGroupObjectValue, PValue> patterns) {
         PValue value = propValues.get(fullKey);

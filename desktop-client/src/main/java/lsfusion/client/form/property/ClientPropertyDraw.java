@@ -706,7 +706,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         aggrFunc = pool.readString(inStream);
         int size = inStream.readInt();
         for (int i = 0; i < size; i++)
-            lastReaders.add(new LastReader(i));
+            lastReaders.add(new LastReader(i, inStream.readBoolean() ? ClientTypeSerializer.deserializeClientType(inStream) : null));
         lastAggrDesc = inStream.readBoolean();
 
         quickFilterProperty = pool.deserializeObject(inStream);
@@ -1015,9 +1015,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public class LastReader implements ClientPropertyReader {
 
         public final int index;
+        public final ClientType type; // of the order, not of the property
 
-        public LastReader(int index) {
+        public LastReader(int index, ClientType type) {
             this.index = index;
+            this.type = type;
         }
 
         public ClientGroupObject getGroupObject() {
