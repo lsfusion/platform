@@ -2879,11 +2879,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             readProperties.exclAdd(propertyReader, columnGroupGrids);
     }
 
-    @Deprecated
-    public FormData getFormData(int orderTop) throws SQLException, SQLHandledException {
-        return getFormData(getProperties(), getGroups(), new LimitOffset(orderTop));
-    }
-
     public ImSet<PropertyDrawInstance<?>> getProperties() {
         return properties.toOrderSet().getSet().filterFn(property -> property.isProperty(context));
     }
