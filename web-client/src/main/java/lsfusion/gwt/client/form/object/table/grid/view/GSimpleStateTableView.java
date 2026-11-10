@@ -528,7 +528,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         Column startColumn = getColumn(startProperty);
         Column endColumn = endProperty != null ? getColumn(endProperty) : startColumn;
         if(startColumn == null || endColumn == null) // a property not among the view's columns: no filter, no request
-            return form.requestPromise(ExecCallback::onCancel);
+            return form.noRequestPromise();
 
         boolean isDateTimeFilter = !(startColumn.property.getCellType() instanceof GDateType);
         PValue leftBorder = isDateTimeFilter ? GDateTimeType.instance.fromJsDate(start) : GDateType.instance.fromJsDate(start);
@@ -541,7 +541,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     protected JavaScriptObject setBooleanViewFilter(String property, int pageSize) {
         Column column = getColumn(property);
         if(column == null)
-            return form.requestPromise(ExecCallback::onCancel);
+            return form.noRequestPromise();
         return setViewFilters(pageSize, new GPropertyFilter(new GFilter(column.property), grid.groupObject, column.columnKey, PValue.getPValue(true), GCompare.EQUALS));
     }
 

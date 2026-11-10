@@ -536,6 +536,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         call.accept(callback);
         return callback.get().promise;
     }
+    public JavaScriptObject noRequestPromise() {
+        return requestPromise(ExecCallback::onCancel);
+    }
     // ... told at once - the request made: the Promise kept under its index, the one kept there already shared (a
     // request in flight another call waits for); none to make: resolved; failing to make it: rejected with the reason
     // -, or later, the Promise returned taking the request. In a batch it is the batch's, which the batch's request

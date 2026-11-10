@@ -848,7 +848,7 @@ public class GFormControllerTest extends GWTTestCase {
         ArrayList<GPropertyFilter> filters = new ArrayList<>(Collections.singletonList(asks.form.condition(asks.form.quantity, PValue.getPValue(2), GCompare.EQUALS)));
         ArrayList<String> settled = new ArrayList<>();
         then(controller.changeViewFilters(group, filters, 1000, () -> {}), answer -> settled.add("filtered"), error -> fail(error));
-        then(controller.requestPromise(ExecCallback::onCancel), answer -> settled.add("none"), error -> fail(error));
+        then(controller.noRequestPromise(), answer -> settled.add("none"), error -> fail(error));
         assertEquals(1, asks.actions.size());
         assertTrue(asks.actions.get(0) instanceof SetViewFilters);
         assertEquals(group.ID, ((SetViewFilters) asks.actions.get(0)).groupObjectID);
@@ -856,7 +856,7 @@ public class GFormControllerTest extends GWTTestCase {
         JavaScriptObject[] inBatch = new JavaScriptObject[1];
         JavaScriptObject batch = controller.batch(() -> {
             inBatch[0] = controller.changeViewFilters(group, filters, 1000, () -> {});
-            assertSame(inBatch[0], controller.requestPromise(ExecCallback::onCancel));
+            assertSame(inBatch[0], controller.noRequestPromise());
         });
         assertSame(batch, inBatch[0]);
         assertEquals(2, asks.actions.size());
