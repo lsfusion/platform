@@ -1,0 +1,9 @@
+MODULE TableNameCase;
+
+REQUIRE System;
+
+// the database may not distinguish table names that differ only in letter case, so the start has to stop (#1974)
+CLASS Item;
+CLASS Sku;
+TABLE fooBar (Item);
+TABLE foobar (Sku);
