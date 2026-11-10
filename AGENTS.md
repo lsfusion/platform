@@ -157,11 +157,13 @@ logs are in `tests/target/ui`, and a failed test leaves a screenshot, the page a
 steps through the test action by action: drop the zip onto https://trace.playwright.dev, which opens it in the
 browser.
 
-On GitHub Actions, `.github/workflows/ui-tests.yml` runs the browser tests in Tomcat on weekday mornings and by hand
-(Actions → Browser tests → Run workflow, with the classes as `-Dit.test` takes them). It builds only the tests
-module of its branch, against the latest snapshots of the war and the server of the branch's version: a change to
-the server or the client is tested there once deployed, one to the tests at once. A run's page lists the failed
-tests with what they failed with; its `ui-tests` artifact holds the logs and what a failed test left.
+On GitHub Actions, `.github/workflows/ui-tests.yml` runs the browser tests in Tomcat, started by Jenkins (its
+`browserTests` job; `browserTestsCheck` tells Slack of a failed run) and by hand (Actions → Browser tests → Run
+workflow, with the classes as `-Dit.test` takes them). It builds only the tests module, against the latest snapshots
+of the war and the server of the branch's version. Started by Jenkins, the tests are of the commit those snapshots
+were deployed from; by hand they are the branch's last, so a change to the server or the client is tested there
+once deployed, one to the tests at once. A run's page lists the failed tests with what they failed with; its `ui-tests` artifact
+holds the logs and what a failed test left.
 
 The web client under Playwright has habits of its own, which the helpers of `UiTest` keep to. A locator looks
 inside the form's root, `[lsfusion-form=<Module.form>]`: a hidden tab keeps its DOM, with the same names in it. A

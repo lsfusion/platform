@@ -1,15 +1,17 @@
 name: Browser tests
 
-# The web client's browser tests (tests/src/ui), on weekday mornings and by hand rather than in every deploy. Only the
-# tests module is built: the war and the server are the latest snapshots on repo.lsfusion.org
+# The web client's browser tests (tests/src/ui), started by Jenkins (its browserTests job) and by hand rather than in
+# every deploy. Only the tests module is built: the war and the server are the latest snapshots on repo.lsfusion.org.
+# Jenkins rather than a schedule here: GitHub starts a scheduled run hours late or not at all, and Jenkins knows the
+# commit those snapshots were deployed from
 on:
-  schedule:
-    - cron: '17 6 * * 1-5' # 09:17 in Minsk, before the day's deploys; off the hour, which GitHub delays the most
   workflow_dispatch:
     inputs:
       tests:
         description: Test classes, as -Dit.test takes them
         default: Ui*IT
+      commit:
+        description: Commit to take the tests from, the branch's last by default
 
 permissions:
   contents: read
@@ -23,6 +25,8 @@ jobs:
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.commit }}
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -45,7 +49,7 @@ jobs:
           snapshot() { curl -fsS $repo/$1/$version/maven-metadata.xml | sed -n 's|.*<value>\(.*\)</value>.*|\1|p' | head -1; }
           war=$(snapshot web-client)
           curl -fsS -o "$RUNNER_TEMP/web-client.war" $repo/web-client/$version/web-client-$war.war
-          echo "Snapshots: web client $war, server $(snapshot server)" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "Tests $(git rev-parse --short HEAD), snapshots: web client $war, server $(snapshot server)" | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Run the browser tests
         # bf: the dependency tree's poms in parallel, as a cold cache fetches every one through repo.lsfusion.org;
         # tomcat: the web container the client is shipped in
