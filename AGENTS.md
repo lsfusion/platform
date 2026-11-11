@@ -98,8 +98,7 @@ A check must produce **evidence**: a saved screenshot, a DOM assertion (expected
 
 `build/base` skips tests platform-wide (`maven.test.skip`), and `tests/` — an ordinary lsFusion logics that is
 never deployed — is the module that turns them back on. The unit tests of the other modules stay off in a local
-build and run when asked for with `-Dmaven.test.skip=false`, as Jenkins asks for them: a failing one stops the
-deploy, so run those of a module you change. Where a new test goes:
+build and run when asked for with `-Dmaven.test.skip=false`, as Jenkins asks for them. Where a new test goes:
 
 - **unit** — plain JUnit in the module's own `src/test/java`, for what needs no server. The web client's GWT tests (`GWTTestCase`) are unit tests too: web-client's surefire configuration runs them compiled to JavaScript in HtmlUnit. The custom-view registry's own JS has a node test, run by hand: `node server/src/test/js/lsfusion-custom-registry-test.js`;
 - **syntax** — `tests/compile/ok/<theme>/X.lsf` has to compile, `tests/compile/fail/<theme>/X.lsf` has to fail with every non-blank line of its `X.expected` somewhere in the output. Run with `dryRun`, which compiles the logic and exits before touching the database: all of `ok` in one run, one run per `fail` module (`LsfCompileTest`, surefire);
@@ -107,17 +106,28 @@ deploy, so run those of a module you change. Where a new test goes:
 - **server behaviour** — an action named `test*`, without parameters, at the top level of a module under `tests/src/main/lsfusion/<theme>/` (`LsfServerIT`, failsafe). Nothing is registered: modules come off the classpath, and every top-level name beginning with `test` is taken for a test and called, so a helper in a test module goes by another name. Each is called through the external HTTP `/exec`, so it runs in a session of its own and its changes are dropped afterwards — a test that needs them kept has to `APPLY`, and what it applies stays in the database for the tests after it. Assertions live in `TestUtils.lsf` and end in `fail(message)`, which is what the report shows. `/exec` has no client: the runner starts the server with `openFormsWithoutClient`, with which `SHOW ... NOWAIT` opens the form - its `ON INIT` and the `SHOW`'s init block run -, reads it once, as a client gets its first changes - the events that reading fires run (`ON ORDER`, `ON FILTER`, ...) -, and closes it right away, so that is where a test runs the operators of an open form (`ORDER`, `FILTER`, ...); a `SHOW` that waits for the form still fails. All the test modules are one logics, and a script `EVAL` runs sees every one of them: a name two modules declare is ambiguous there, so a test module prefixes its names;
 - **browser** — for what only the web client shows: a class `Ui<Theme>IT extends UiTest` in `tests/src/ui/java/lsfusion/tests/`, with the forms and actions it works on in `tests/src/main/lsfusion/ui/Ui<Theme>.lsf` (failsafe, the `ui` profile). `UiTest` starts a server of its own, the web client's war in a web container and a browser driven by Playwright, once for all the browser tests of a run, and opens `/main` for each test in a browser context of its own. The test opens its form through the navigator (`open`), finds what it works on with `form`, `cell` and `row`, types with `edit`, and calls the module's actions through `/exec`: `exec` seeds its data, `check` runs an assertion, retried for 10 s, since the server gets what the browser sent a moment after the click. The module prefixes its names and begins none with `test`, which `LsfServerIT` would call as a test; its forms sit in a navigator folder of its own, each under an element named as the form. A test seeds its data in the test method, under names no other attempt has (`System.nanoTime()`): what a failed attempt saved stays in the database for the rerun.
 
+Locally, run the tests a change adds or changes and no others. A fix's test is written and run before the fix, to
+see it fail: after the fix, that takes undoing it and rebuilding. For a change to the platform's own `.lsf` modules
+(`server/src/main/lsfusion/`) that has no behaviour test of its own, run one, any: no build compiles those modules,
+and the server a behaviour test starts compiles all of them. The rest is Jenkins': each deploy runs every test but
+the browser ones, which GitHub Actions runs after it. Run more only for one of these reasons: what you are asked to
+run; a test the deploy reported failing, to reproduce it; the whole `verify`, once before committing, for a change to
+query compilation and planning, apply or locking, or to the harness in `tests/src/test/java`: such a change can fail
+any test, and a failed deploy holds up every deploy after it until the fix lands.
+
 ```
 mvn -pl tests -am test                        # the compile corpus only
 mvn -pl tests -am verify                      # and the start anyway and the behaviour tests, which need postgres
-mvn -pl tests -am verify -Dlsf.tests=forms/*  # one directory of the behaviour tests
 mvn -pl tests -am verify -DskipITs            # skip them, e.g. in a full build without a database
 mvn -pl tests -am verify -Pui                 # and the browser tests, see below
+# only the behaviour tests -Dlsf.tests names, and a failed one is not run again;
+# -Dlsf.tests is a glob of <theme>/<Module>.<action>: a whole name one test, forms/* a theme
+mvn -pl tests -am verify -Dlsf.tests=<theme>/<Module>.<action> -Dit.test=LsfServerIT -Dtest=none -Dsurefire.failIfNoSpecifiedTests=false -Dfailsafe.rerunFailingTestsCount=0
 ```
 
-`-am` puts the server of the working tree into the run. Without it the tests get whichever `lsfusion-server`
-snapshot is newest — your last `install`, or one Jenkins has deployed since — rather than the server change under
-test. A run takes one to a few minutes, most of it building and starting the server, which is longer than some
+`-am` puts the server of the working tree into the run, and a change to `tests/` alone needs it too: without it the
+tests get whichever `lsfusion-server` snapshot is newest — an `install` from any working tree on the machine, or one
+Jenkins has deployed since. A run, even of one test, builds and starts a server, which can take longer than some
 agent shells let a command run by default (Claude Code's stops one after two minutes): give it a longer timeout.
 After a test class or a test module is deleted or renamed, run `mvn -pl tests clean`: failsafe runs every class
 left in `target/test-classes`, and the server loads every module left in `target/classes`.
