@@ -195,6 +195,37 @@ DESIGN uiCustomViewPlacedProperties {
     }
 }
 
+// a React container that places what the platform draws with React components: a table whose quantities a
+// component draws, a group a component draws the rows of, and a container with a component of its own, which places
+// the count the platform draws with a component
+FORM uiCustomViewEmbedded 'Embedded components'
+    OBJECTS i = UiCustomViewItem
+    PROPERTIES(i) READONLY uiCustomViewName
+    PROPERTIES(i) uiCustomViewQuantity CUSTOM 'UiCustomViewReactCell'
+    FILTERS uiCustomViewShown(i)
+    ORDERS uiCustomViewName(i)
+
+    OBJECTS c = UiCustomViewItem CUSTOM 'UiCustomViewCards' OPTIONS uiCustomViewCardsOptions()
+    PROPERTIES(c) READONLY uiCustomViewName
+    PROPERTIES(c) uiCustomViewQuantity
+    FILTERS uiCustomViewShown(c)
+    ORDERS uiCustomViewName(c)
+
+    PROPERTIES() uiCustomViewCount CUSTOM 'UiCustomViewReactCell'
+;
+
+DESIGN uiCustomViewEmbedded {
+    NEW outer FIRST {
+        custom = 'UiCustomViewEmbeddedOuter';
+        MOVE GRID(i) { custom = NULL; }
+        MOVE GRID(c);
+        NEW inner {
+            custom = 'UiCustomViewEmbeddedInner';
+            MOVE PROPERTY(uiCustomViewCount());
+        }
+    }
+}
+
 // a group whose CUSTOM is a classic render function named as a component is (UiCustomViewClassicGroup); its first
 // property has a background and is hidden by the toggle
 FORM uiCustomViewClassicGroup 'Classic group'
@@ -229,6 +260,7 @@ NAVIGATOR {
         NEW uiCustomViewClient;
         NEW uiCustomViewCell;
         NEW uiCustomViewPlacedProperties;
+        NEW uiCustomViewEmbedded;
         NEW uiCustomViewReactGroup;
         NEW uiCustomViewPlacedGroup;
         NEW uiCustomViewClassicGroup;

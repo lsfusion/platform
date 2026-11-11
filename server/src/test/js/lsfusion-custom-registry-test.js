@@ -70,8 +70,9 @@ function makeReact() {
                 s.cleanup = fn();
             });
         },
-        useLayoutEffect: () => {},
-        useState: (v) => [v, () => {}],
+        useLayoutEffect(fn, deps) { this.useEffect(fn, deps); }, // differs only in when React runs it
+        // kept in the instance, and set by its setter: what the next render of the instance reads
+        useState: (v) => slot(() => { const state = [v, next => { state[0] = next; }]; return state; }),
         Fragment: 'Fragment',
     };
 }
@@ -841,16 +842,88 @@ console.log('React cell attachment');
     disconnect();
     connect();
     flush();
-    check('moving a connected cell keeps its mounted view', mounts === 1 && unmounts === 0);
+    check('a moved cell is asked where it is drawn again, and is not unmounted', mounts === 2 && unmounts === 0);
 
     disconnect();
     connect();
     disconnect();
     flush();
-    check('multiple moves ending in removal unmount once', mounts === 1 && unmounts === 1);
+    check('multiple moves ending in removal unmount once', mounts === 3 && unmounts === 1);
 
     connect();
-    check('reconnecting after removal mounts again', mounts === 2 && unmounts === 1);
+    check('reconnecting after removal mounts again', mounts === 4 && unmounts === 1);
+}
+
+// ---- what a host embeds ------------------------------------------------------------------------------------------
+console.log('embedding');
+{
+    const w = load();
+    let flushed = 0;
+    w.ReactDOM = {
+        createPortal: (view, element, key) => ({ portal: true, view, element, key }),
+        flushSync: fn => { flushed++; fn(); },
+    };
+    let seen;
+    makeReact.__ctxValue = { view: { entryOf, host, embeds: true,
+        mount: (name, host) => { seen = host.lsfEmbedder; },
+        unmount: (name, host) => { host.lsfEmbedder.remove(cell); },
+    } };
+    const hostOf = instance(), node = { tag: 'host' }, cell = { tag: 'cell' }, other = { tag: 'other' };
+    let props = render(hostOf, () => w.lsfusion.usePlatform('GRID(i)'));
+    check('a host that embeds nothing has no children', props.children === undefined);
+    props.ref(node);
+    check('the host says what embeds before the platform moves anything in', seen && seen === node.lsfEmbedder);
+
+    const embedder = node.lsfEmbedder;
+    embedder.add(cell, 'the cell view');
+    embedder.add(other, 'another view');
+    props = render(hostOf, () => w.lsfusion.usePlatform('GRID(i)'));
+    check('what the host embeds is drawn as its portals, one a node, each into its own',
+        props.children.length === 2 && props.children[0].portal && props.children[0].element === cell
+            && props.children[0].view === 'the cell view' && props.children[1].element === other
+            && props.children[0].key !== props.children[1].key && flushed === 0, JSON.stringify(props.children));
+    check('the same embedder at every render', render(hostOf, () => w.lsfusion.usePlatform('GRID(i)').ref) === props.ref
+        && node.lsfEmbedder === embedder);
+    check('Platform draws them as the children of its div',
+        w.lsfusion.Platform({ name: 'x' }).props.children === undefined
+            && render(hostOf, () => w.lsfusion.Platform({ name: 'GRID(i)' })).props.children.length === 2);
+
+    embedder.remove(other);
+    check('a view that leaves is taken down at once', flushed === 1
+        && render(hostOf, () => w.lsfusion.usePlatform('GRID(i)')).children.length === 1);
+    embedder.remove(other);
+    check('...once', flushed === 1);
+
+    props.ref(null); // the view's unmount double takes the cell out, as the platform parking it does
+    check("a view that leaves in a host's ref waits for the commit to end", flushed === 1
+        && render(hostOf, () => w.lsfusion.usePlatform('GRID(i)')).children === undefined);
+
+    // a root whose hosts embed nothing - the forms window's, a navigator window's
+    makeReact.__ctxValue = { view: { entryOf, host, mount: () => {}, unmount: () => {} } };
+    const plain = { tag: 'plain' };
+    const plainProps = w.lsfusion.usePlatform('form1');
+    plainProps.ref(plain);
+    check('a host of a root that does not embed is not marked', plain.lsfEmbedder === undefined
+        && plainProps.children === undefined);
+}
+
+// ---- a tree says when it is there and when it goes ---------------------------------------------------------------
+console.log('drawn and gone');
+{
+    const w = load(), said = [];
+    makeReact.__ctxValue = { store: { subscribe: () => () => {}, getSnapshot: () => ({}) },
+        view: { drawn: () => said.push('drawn'), gone: () => said.push('gone') } };
+
+    const root = instance();
+    render(root, () => w.lsfusion.__root({ name: 'Board', component: () => null, controller: {} }));
+    check('nothing is said while the tree is being rendered', said.length === 0);
+    flushEffects();
+    check('the owner is told once the tree is there', said.join() === 'drawn');
+    render(root, () => w.lsfusion.__root({ name: 'Board', component: () => null, controller: {} }));
+    flushEffects();
+    check('...once', said.join() === 'drawn');
+    unmount(root);
+    check('...and as it goes', said.join() === 'drawn,gone');
 }
 
 // ---- installing the hooks --------------------------------------------------------------------------------------

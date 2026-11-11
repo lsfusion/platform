@@ -35,12 +35,7 @@ public class ReactBaseComponentView {
                                 + component.getCustom() + "'; MOVE " + component.sID + "; }"));
             }
         });
-        panel.addAttachHandler(event -> {
-            if (event.isAttached())
-                root.mount(panel.getElement(), formController.isSizeFixedOnShow());
-            else
-                root.unmount();
-        });
+        formController.getFormLayout().mountReactView(root, panel, panel.getElement());
     }
 
     public Widget getView() {

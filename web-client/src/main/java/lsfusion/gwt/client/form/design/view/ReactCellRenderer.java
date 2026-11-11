@@ -22,8 +22,10 @@ import static lsfusion.gwt.client.base.GwtClientUtils.*;
 // platform draws the property - a cell of its grid, its value on a panel: what CustomCellRenderer is to a classic
 // render function. The component draws the one cell from `data` - the cell's value and what it is drawn with, as the
 // entry of a property a view draws has them (GReactFormData) - and changes it through `controller`, the property's
-// member of that cell (GReactFormData.PropertyMember). It is mounted with the cell and stays so while a grid hands the
-// cell another row: its data changes, and its controller answers for the row the cell shows when it is called
+// member of that cell (GReactFormData.PropertyMember). It is mounted with the cell - where a React view places the
+// cell, or the grid it is in, while that place holds it, as a part of that view's tree (ReactRoot.settle) - and stays
+// so while a grid hands the cell another row: its data changes, and its controller answers for the row the cell shows
+// when it is called
 public final class ReactCellRenderer extends CellRenderer {
     private static final String CELL_VIEW = "reactCellView";
     private static final ReactRoot.Placement NO_PLACEMENT = ReactRoot.noPlacement("A property's component");
@@ -171,7 +173,7 @@ public final class ReactCellRenderer extends CellRenderer {
     // it leaves it, since no cell is told when its row or its column goes (lsfusion-custom-registry.js)
     private static native Element createHost(ReactRoot root) /*-{
         var host = $wnd.lsfusion.__createReactCellHost(
-            $entry(function () { root.@lsfusion.gwt.client.base.view.ReactRoot::mount(Lcom/google/gwt/dom/client/Element;Z)(host, false); }),
+            $entry(function () { root.@lsfusion.gwt.client.base.view.ReactRoot::settle(Lcom/google/gwt/dom/client/Element;Z)(host, false); }),
             $entry(function () { root.@lsfusion.gwt.client.base.view.ReactRoot::unmount()(); })
         );
         return host;

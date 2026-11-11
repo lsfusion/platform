@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.design.view;
 
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -48,6 +49,35 @@ public class GFormLayout extends SizedFlexPanel {
     private final ArrayList<DefaultFocusReceiver> defaultFocusReceivers = new ArrayList<>();
 
     public final ResizableComplexPanel attachContainer;
+    // where what a React view or a template places waits for its place (ParkedContainerView): a node of its own in the
+    // attach container, since a React component that waits there is not drawn until a place takes it, while one in
+    // what else the attach container keeps - the content of a popup - is, as anywhere in the form (ReactRoot.setPark)
+    public final Element park = Document.get().createDivElement();
+
+    // the React views of the form that are drawn now - the view of a react container, of another component, of a
+    // group's CUSTOM: each is drawn while its widget is attached, where its node is (ReactRoot.settle), and that is
+    // asked again as a view of the form's is moved between the park and a place, since it may be in the moved view.
+    // A cell is no widget and says for itself that it was moved (ReactCellRenderer)
+    private final ArrayList<ReactRoot> reactViews = new ArrayList<>();
+
+    public void mountReactView(ReactRoot root, Widget widget, Element element) {
+        widget.addAttachHandler(event -> {
+            if (event.isAttached()) {
+                reactViews.add(root);
+                root.settle(element, form.isSizeFixedOnShow());
+            } else {
+                reactViews.remove(root);
+                root.unmount();
+            }
+        });
+    }
+
+    // ... over a copy: a component taken down as it is asked may, in its cleanup, have the form attach or detach a view
+    public void viewMoved() {
+        for (ReactRoot root : new ArrayList<>(reactViews))
+            if (reactViews.contains(root))
+                root.settle();
+    }
 
     public GFormLayout(GFormController iform, GContainer mainContainer) {
         super(true);
@@ -58,6 +88,8 @@ public class GFormLayout extends SizedFlexPanel {
 
         attachContainer = new ResizableComplexPanel();
         attachContainer.setVisible(false);
+        attachContainer.getElement().appendChild(park);
+        ReactRoot.setPark(getElement(), park);
         addContainers(mainContainer);
 
         Widget view = getMainView();

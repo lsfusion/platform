@@ -477,7 +477,7 @@ Such a child's view is moved into a *host*: a DOM node React owns and never rend
 <section {...usePlatform('BOX(o)', { className: 'board-panel' })}/>
 ```
 
-`<Platform>` is the shorter one. `usePlatform(name, { className, row })` is for an element the component renders anyway — a panel, a card, a grid cell — so the view goes straight into it: it returns the props that make that element a host, the ref that moves the view in, the host's marks and, while the child's entry says so, `hidden`. Spread them onto the element, and give its class to `usePlatform` rather than to the element: a `className` written after the spread replaces the one the marks are merged into.
+`<Platform>` is the shorter one. `usePlatform(name, { className, row })` is for an element the component renders anyway — a panel, a card, a grid cell — so the view goes straight into it: it returns the props that make that element a host, the ref that moves the view in, the host's marks and, while the child's entry says so, `hidden` — and, as `children`, the [React components in the placed child](#embedded). Spread them onto the element, and give its class to `usePlatform` rather than to the element: a `className` written after the spread replaces the one the marks are merged into.
 
 Everything else is the same for both. The host carries the class `lsf-platform` and the attribute `data-lsf-sid` with the child's name, whoever created it: `<Platform>` and `usePlatform` render them as props of their own, merged with the class the component gives the host, so a class that changes between renders keeps them. Every host is styled so that the view fills it, whatever the child is, so the component sizes the host and the view follows:
 
@@ -2333,7 +2333,7 @@ FORM items
 
 The component of a property draws one cell: a cell of the table, or the value of the property on a panel. `data` describes that cell — its `value`, `readOnly`, `disabled`, `loading`, `background`, `foreground`, `placeholder`, `defaultValue`, `valueTooltip` and `options`, and the `type` and `askConfirm` of the property, with the meaning they have in [the entry of a property a view draws](#display-options). `controller` is the property's [member](How-to_Custom_view_controller.md) for that cell — `change(value)`, `exec()` and `getValues(query, {mode, count})`, each returning the `Promise` of its request — with the form's controller as `controller.form`. A call takes no row: in a table it changes the row of the cell, whichever row is current, and on a panel the current object of the form. The component changes the value by these calls only: a click on the cell or typing in it does not start the platform's editing of the cell. Whether the cell may be changed is checked by the server, as for a classic render function, so a change of a read-only cell is not made.
 
-A table reuses the element of a cell for another row when its rows are sorted or scrolled. The component stays mounted then and keeps its state: it receives the `data` of the other row, and its `controller`, which stays the same object, changes the row the cell shows at the moment of the call — after an `await` too. A view that draws the rows itself places such a property as any other property the platform draws, with [`<Platform name row/>`](#live-editor).
+A table reuses the element of a cell for another row when its rows are sorted or scrolled. The component stays mounted then and keeps its state: it receives the `data` of the other row, and its `controller`, which stays the same object, changes the row the cell shows at the moment of the call — after an `await` too. A view that draws the rows itself places such a property as any other property the platform draws, with [`<Platform name row/>`](#live-editor), and the component is drawn [in that view's tree](#embedded).
 
 The component of a group draws the rows of the group where the platform's table would, as one of the view types the toolbar switches:
 
@@ -2359,3 +2359,29 @@ window.lsfusion.custom.register('ItemCards', ItemCards, 'reactView');
 ```
 
 The component is given what the `update` of a classic render function is given ([How-to: Custom Components (objects)](How-to_Custom_components_objects.md)): the rows as `data.list`, each holding the values of its properties under their names, the `OPTIONS` of the group as `data.options`, and the same `controller`. Inside a container a React view draws, the grid of such a group is drawn by the platform, and the view places it with `<Platform name="GRID(i)"/>`.
+
+### A React component inside a React view {#embedded}
+
+A child the platform draws can itself be drawn by a React component: a property or a group whose `CUSTOM` is a [component](#form-custom), a table that has such a property, a container or [another component](#component-views) with a `custom` of its own. When a view of the form places such a child with [`<Platform>`](#placing) — whole, or its cell in a [row](#live-editor) —, the component is drawn in the React tree of that view, where the `<Platform>` stands, and not in a React root of its own:
+
+```jsx
+const Theme = React.createContext('light');
+
+function Board() {
+    return <Theme.Provider value="dark">
+        <Platform name="GRID(i)"/> {/* a table of the platform's, its quantity drawn by Quantity */}
+    </Theme.Provider>;
+}
+
+function Quantity({data}) {
+    const theme = React.useContext(Theme); // 'dark' in every cell of the table Board places
+    return <span className={theme}>{data.value}</span>;
+}
+```
+
+- A context the view provides around the `<Platform>` reaches the component, however many components the placed child holds — a table has one in every row. `props.data` and `props.controller`, and so `useData` and `useController` inside the component, remain the component's own.
+- An event in the component bubbles through the React handlers of the elements around the `<Platform>`. The handlers of the component, and then those handlers of the view, run before the platform handles the event in the cell — selecting the row, handling a key —, so `stopPropagation()` in any of them keeps the event from the platform, and in the component from the view's handlers too.
+- A component that throws while it draws shows its message in its own place, and the view around it stays. A component that suspends shows the fallback of the nearest `Suspense` above it, which, unless the component has one of its own, is one of the view's, around the whole placed child.
+- The component is mounted while its place is: when the view stops rendering the `<Platform>`, gives it another name, or a `Suspense` around it shows its fallback, the component is unmounted and loses its state, and it is mounted anew when the child is placed again. A child no `<Platform>` places is not drawn.
+
+Where no view of the form places it — in a table or on a panel the platform lays out — the component is drawn in a React root of its own, one for each cell, and no context reaches it. A form in the [forms window](#forms-window) and a window in the [window layout](#window-layout) keep their own roots too: an open form that no `<Platform>` shows stays open, and its components keep their state. So does a form shown inside another form, in a container or in a cell that a view of that form places — a component is drawn in the tree of a view of its own form only —, and what a form shows outside its place: the content of a popup container, a record of a table.

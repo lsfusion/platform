@@ -79,7 +79,9 @@ public class ReactContainerView extends ParkedContainerView {
     // that led to it (reconcilePlaced). The children it was told are hidden - a child the server was told nothing about
     // is shown, the server's default
     private final NativeSIDMap<GComponent, Boolean> reportedHidden = new NativeSIDMap<>();
-    // a pending reconcile of an older generation is dropped: the root was unmounted since
+    // whether the component's tree is there (ReactRoot.Placement.drawn / gone): only then is there anything to tell
+    private boolean drawn;
+    // a pending reconcile of an older generation is dropped: the tree was taken down since
     private int reconcileGeneration;
     private boolean reconcilePending;
 
@@ -118,15 +120,27 @@ public class ReactContainerView extends ParkedContainerView {
                 if (drawnShown.put(component, shown) != shown)
                     scheduleReconcile();
             }
+
+            // drawn now: a tree mounted again settles what it places too, even when that is nothing
+            @Override
+            public void drawn() {
+                drawn = true;
+                scheduleReconcile();
+            }
+
+            // the tree is going, and React runs its hosts' ref cleanups next, which park every mounted child and
+            // drop its host: taking the old tree down is not a view hiding anything, so nothing they ask to be told
+            // is, nor any reconcile asked for so far. Nothing is parked here: a development React takes a tree down
+            // and draws it again where it is, running no ref in between (StrictMode), and what it placed stays placed.
+            // What the server was told stays known: a view mounted again reports only what changed
+            @Override
+            public void gone() {
+                drawn = false;
+                reconcileGeneration++;
+                reconcilePending = false;
+            }
         });
-        panel.addAttachHandler(event -> {
-            if (event.isAttached()) {
-                // drawn now: a tree mounted again settles what it places too, even when that is nothing
-                if (root.mount(panel.getElement(), formController.isSizeFixedOnShow()))
-                    scheduleReconcile();
-            } else
-                unmount();
-        });
+        formController.getFormLayout().mountReactView(root, panel, panel.getElement());
     }
 
     // what is under the container whose React place it is: the design is fixed, so this is taken once. Not a grid
@@ -205,13 +219,13 @@ public class ReactContainerView extends ParkedContainerView {
     // after every publication and after a mount that draws, so the first draw settles it too even when it renders no
     // <Platform> at all
     private void scheduleReconcile() {
-        if (reconcilePending)
+        if (!drawn || reconcilePending)
             return;
         reconcilePending = true;
         int generation = reconcileGeneration;
         GwtClientUtils.afterNextPaint(() -> {
-            if (generation != reconcileGeneration) // the root was unmounted since: the form is closing, or re-mounting
-                return;
+            if (generation != reconcileGeneration) // the tree was taken down since: the form is closing, or the view
+                return;                            // is not placed - a tree drawn again asks anew
             reconcilePending = false;
             reconcilePlaced();
         });
@@ -231,6 +245,7 @@ public class ReactContainerView extends ParkedContainerView {
     private void attachView(int index, Element host) {
         ComponentViewWidget childView = getChildView(index);
         childView.appendTo(host);
+        formController.getFormLayout().viewMoved();
         // a platform-drawn child is one self-contained view (a property is forced non-inline in PropertyPanelRenderer,
         // so it is a single widget, not inline value/comment siblings) — getSingleWidget is that view. It fills the
         // host as a native SizedFlexPanel child does: fill-parent-flex on the view, and on the host the flex column its
@@ -255,15 +270,5 @@ public class ReactContainerView extends ParkedContainerView {
     public void updateData(JavaScriptObject data) {
         root.updateData(data);
         scheduleReconcile(); // what the view places may change with what it is given
-    }
-
-    private void unmount() {
-        root.unmount(); // runs the hosts' ref cleanups, which park every mounted child and drop it from `hosts`
-        // ... and drops every reconcile asked for so far, the ones those cleanups asked for included: taking the old
-        // tree down is not a view hiding anything
-        reconcileGeneration++;
-        reconcilePending = false;
-        placed.reset(); // any host left waiting (its view dropped by SHOWIF) belongs to the old tree; drop it too
-        // what the server was told stays known: a view mounted again reports only what changed
     }
 }

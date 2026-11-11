@@ -81,6 +81,7 @@ public class TemplateContainerView extends ParkedContainerView {
     // shown
     private void placeChild(int index) {
         getChildView(index).replace(panel, children.get(index).sID);
+        formController.getFormLayout().viewMoved();
     }
 
     // a place naming nothing this container has. A literal template is read when the form is built and such a name is

@@ -5,7 +5,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 
-// the React root drawing an application component, with the store its descendants subscribe to. `host` is NOT this:
+// the React root drawing an application component, with the store its descendants subscribe to - or, where a React
+// view of a form places the component, what draws it in that view's tree instead (settle). `host` is NOT this:
 // a host is the node <Platform name/> renders and the platform moves a view into, which is why this is a root. Everything here is about
 // React and nothing about what is being drawn, so every window and container that a component draws shares it, and they
 // differ only in the controller and the placement they hand it and the data they push.
@@ -19,7 +20,10 @@ public class ReactRoot {
     // that wrote its own could drift from them without anything saying so
     private final JavaScriptObject context;
     private JavaScriptObject component; // resolved once, so React sees the same component type on every render
+    // where the component is drawn, between mount and unmount: a React root of its own, or the embedder of the host
+    // whose view draws it in its tree (settle)
     private JavaScriptObject root;
+    private JavaScriptObject embedder;
     // null until the owner's first push. The component is drawn from that push and never before it: every shape the
     // projection promises is there from the first draw, so a component reads it without guarding a missing snapshot -
     // and a snapshot made up here to draw from would have none of them. So an owner whose EMPTY state means something
@@ -62,6 +66,22 @@ public class ReactRoot {
         default void show(String name, boolean shown) {
             GwtClientUtils.logCustomViewError("useShown('" + name + "') does nothing here: only the view of a form's"
                     + " container draws containers of its own to show or hide");
+        }
+
+        // whether a React component the platform draws inside what a host holds is drawn in this root's tree, as a
+        // part of the view that places it, rather than in a root of its own (settle). A form's view: what it does not
+        // place it does not show, and the server does not read - there is nothing of it to keep while it has no
+        // place. An open form or a window stays what it is while no place shows it, with what its components hold,
+        // so the forms window, the window layout and a navigator window embed nothing
+        default boolean embeds() {
+            return false;
+        }
+
+        // the component's tree is there, and it is gone - told by React as it commits either, whichever tree the
+        // component is drawn in: one a view embeds goes as its host does, by no call of the owner's
+        default void drawn() {
+        }
+        default void gone() {
         }
     }
 
@@ -114,6 +134,13 @@ public class ReactRoot {
     // view does may reach above it - everything there belongs to the platform or to another view
     private static native JavaScriptObject createContext(JavaScriptObject store, JavaScriptObject controller, Placement placement, Host host, ReactRoot root)/*-{
         return { store: store, controller: controller, element: null, view: {
+            embeds: placement.@lsfusion.gwt.client.base.view.ReactRoot.Placement::embeds()(),
+            drawn: function() {
+                placement.@lsfusion.gwt.client.base.view.ReactRoot.Placement::drawn()();
+            },
+            gone: function() {
+                placement.@lsfusion.gwt.client.base.view.ReactRoot.Placement::gone()();
+            },
             mount: function(name, host, row) {
                 placement.@lsfusion.gwt.client.base.view.ReactRoot.Placement::mount(Ljava/lang/String;Lcom/google/gwt/dom/client/Element;Lcom/google/gwt/core/client/JavaScriptObject;)(name, host, row || null);
             },
@@ -151,26 +178,72 @@ public class ReactRoot {
         placement.unmount(name, host, row);
     }
 
-    // the root is created as soon as there is a place for it, but the component is drawn only once there is data too -
-    // and says whether it drew now. `sync`: commit that first render inside this call instead of in a later task. Only
-    // an owner whose window is MEASURED when it is shown needs it - a -3 main container is fixed to whatever can be
-    // measured then, and an asynchronous commit leaves it measuring an empty host. The navigator, the forms window,
-    // the log and the window layout are never measured and stay asynchronous. Later updates always go through the
-    // store, asynchronously, either way
-    public boolean mount(Element element, boolean sync) {
-        if (createRoot(element) && lastData != null) {
+    // WHERE the component is drawn is where its node is, asked as it is mounted and each time the platform moves
+    // the view the node is in: inside a host that embeds what it holds - a <Platform> of a form's view - in the tree of that
+    // view, as a portal of the host into this node (lsfusion-custom-registry.js, makeEmbedder), and taken out of it as
+    // the node leaves the host; in a form's park, where what no host holds waits unseen, nowhere; anywhere else in a
+    // React root of its own. A root it keeps wherever its node goes next: React clears the node of a root whenever it
+    // renders that root with nothing in it - an unmounted one too, if anything was told to it while it was taken
+    // down -, so the node of a root is never handed to another tree.
+    // The place is taken as soon as there is one, but the component is drawn only once there is data too. `sync`:
+    // commit that first render of a root inside this call instead of in a later task. Only an owner whose window is
+    // MEASURED when it is shown needs it - a -3 main container is fixed to whatever can be measured then, and an
+    // asynchronous commit leaves it measuring an empty host; what a host embeds is drawn as the commit that placed it
+    // ends, within the same call of the view around it. The navigator, the forms window, the log and the window
+    // layout are never measured and stay asynchronous. Later updates always go through the store, asynchronously,
+    // either way
+    public void settle(Element element, boolean sync) {
+        JavaScriptObject place = getEmbedder(element);
+        if (root != null || place != null && place == embedder)
+            return;
+
+        unmount();
+        if (!prepare(element))
+            return;
+        if (place == null)
+            root = createRoot(element);
+        else
+            embedder = place;
+        if (lastData != null)
             render(sync);
-            return true;
-        }
-        return false;
     }
+
+    // the embedder the nearest node above that says one says, null where none does - and where what says is the
+    // form, which says none
+    private static native JavaScriptObject getEmbedder(Element element)/*-{
+        for (var node = element.parentNode; node; node = node.parentNode)
+            if (node.lsfEmbedder !== undefined)
+                return node.lsfEmbedder;
+        return null;
+    }-*/;
+
+    // a form's node and its park in it (GFormLayout): what waits in the park for a place is not shown, so a component
+    // is not drawn there. The form itself says no embedder: a component is drawn in the tree of a view of its own
+    // form only, and whatever holds the form - a container or a cell of another form that a view of that form
+    // places - what no view of its own places is drawn in a root, when it is first mounted and when it is made later
+    public static native void setPark(Element form, Element park)/*-{
+        form.lsfEmbedder = null;
+        park.lsfEmbedder = { add: function() {}, remove: function() {} };
+    }-*/;
+
+    // ... asked again, for a component of a form's, as the platform moves one of the form's views from the park into
+    // a place, or back (GFormLayout.viewMoved) - with no `sync`: a host moves the view in while React is committing,
+    // and what is measured as it is shown is drawn as it is attached
+    public void settle() {
+        Element element = getElement();
+        if (element != null)
+            settle(element, false);
+    }
+    private native Element getElement()/*-{
+        return this.@ReactRoot::context.element;
+    }-*/;
 
     // drawn in the panel while it is attached: mounted as it is attached, unmounted as it is detached - for an owner
     // that is never measured, so the first render stays asynchronous
     public void mountWhileAttached(Widget panel) {
         panel.addAttachHandler(event -> {
             if (event.isAttached())
-                mount(panel.getElement(), false);
+                settle(panel.getElement(), false);
             else
                 unmount();
         });
@@ -262,7 +335,11 @@ public class ReactRoot {
         return GwtClientUtils.getGlobalField(componentName, "reactView", true);
     }
 
-    private native boolean createRoot(Element element)/*-{
+    private static native JavaScriptObject createRoot(Element element)/*-{
+        return $wnd.ReactDOM.createRoot(element);
+    }-*/;
+
+    private native boolean prepare(Element element)/*-{
         var name = this.@ReactRoot::componentName;
         if (!$wnd.React || !$wnd.ReactDOM) {
             this.@ReactRoot::cannotDraw(Lcom/google/gwt/dom/client/Element;Ljava/lang/String;Ljava/lang/String;)(element,
@@ -291,7 +368,6 @@ public class ReactRoot {
         // window.React: an app may override React with a before-system resource after the registry but before mount.
         // A compiled bundle's preamble already ran this before its own body, but a hand-written global gets no preamble
         $wnd.lsfusion.__installReactHooks();
-        this.@ReactRoot::root = $wnd.ReactDOM.createRoot(element);
         // marks an element a React component draws in
         element.classList.add('panel-react');
         this.@ReactRoot::context.element = element;
@@ -330,14 +406,15 @@ public class ReactRoot {
         this.@ReactRoot::store._notify();
     }-*/;
 
-    // rendered ONCE per mount, when the root is there and so is the first snapshot: what is mounted is the platform's
+    // rendered ONCE per mount, when the place is there and so is the first snapshot: what is mounted is the platform's
     // own root, which subscribes to the store and hands the projection down as props.data, so every later change is one
     // notification and one React pass. The boundary sits inside that root and around the application's component - a
     // component that throws while drawing leaves the reason in the window instead of tearing the root down and leaving
-    // it blank
+    // it blank. The same element whichever tree it is drawn in: embedded, the component still reads its own store and
+    // controller, and its error stays its own
     private native void render(boolean sync)/*-{
-        var root = this.@ReactRoot::root;
-        if (!root) return;
+        var root = this.@ReactRoot::root, embedder = this.@ReactRoot::embedder;
+        if (!root && !embedder) return;
         var React = $wnd.React;
         var context = this.@ReactRoot::context;
         var element = React.createElement($wnd.lsfusion.__context.Provider, { value: context },
@@ -349,17 +426,23 @@ public class ReactRoot {
         // commit the initial render before the window measures its content. It is legal here because a root is mounted
         // from a GWT attach handler, never from inside another root's render or effect (placing a platform-drawn child
         // is a DOM move, not an attach) - React would otherwise warn and silently fall back to an asynchronous commit
-        if (sync && $wnd.ReactDOM.flushSync)
+        if (embedder)
+            embedder.add(context.element, element);
+        else if (sync && $wnd.ReactDOM.flushSync)
             $wnd.ReactDOM.flushSync(function() { root.render(element); });
         else
             root.render(element);
     }-*/;
 
     public native void unmount()/*-{
-        var root = this.@ReactRoot::root;
+        var root = this.@ReactRoot::root, embedder = this.@ReactRoot::embedder;
         if (root) {
             root.unmount();
             this.@ReactRoot::root = null;
+        }
+        if (embedder) {
+            embedder.remove(this.@ReactRoot::context.element);
+            this.@ReactRoot::embedder = null;
         }
     }-*/;
 }

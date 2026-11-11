@@ -48,7 +48,9 @@
     // (ReactCellRenderer): mounted as it comes into the page and unmounted as it leaves it - a custom element, since
     // nothing tells a cell that its row or its column is gone: a grid takes them out of the DOM, and a cell is no
     // widget. A node that is only moved - a <Platform> placing the cell's view, a grid putting its rows in another
-    // order - is taken out and put back at once, so it is unmounted only if it is still out once that is over
+    // order - is taken out and put back at once, so it is unmounted only if it is still out once that is over; put
+    // back, it is asked where it is drawn again, a place of a view's or the park being where it may be now
+    // (ReactRoot.settle)
     ns.__createReactCellHost = function (mount, unmount) {
         var tag = 'lsfusion-react-cell';
         if (!window.customElements.get(tag)) {
@@ -56,10 +58,8 @@
             CellHost.prototype = Object.create(HTMLElement.prototype);
             CellHost.prototype.constructor = CellHost;
             CellHost.prototype.connectedCallback = function () {
-                if (this.pendingUnmount)
-                    this.pendingUnmount = false;
-                else
-                    this.mountView();
+                this.pendingUnmount = false;
+                this.mountView();
             };
             CellHost.prototype.disconnectedCallback = function () {
                 var host = this;
@@ -83,7 +83,7 @@
 
 // CUSTOM REACT hooks + <List>, on the same window.lsfusion namespace. DEFINED here (this script loads before any
 // compiled bundle), but INSTALLED lazily — by each compiled bundle's preamble (esbuild banner -> __installReactHooks)
-// right before the bundle body runs, and by ReactRoot.createRoot at mount for a hand-written global that gets
+// right before the bundle body runs, and by ReactRoot.prepare at mount for a hand-written global that gets
 // no preamble. That ordering is what lets a bundle alias a helper at module TOP — `const List = window.lsfusion.List;`
 // — and still bind to the FINAL window.React: an app may override React at a less-negative before-system order (after
 // this script but before the bundles / the form), so we must NOT capture React eagerly here. Idempotent; the first
@@ -136,7 +136,7 @@
             return React.useSyncExternalStore(store.subscribe, function () { return select(store.getSnapshot()); });
         };
         ns.useController = function () { return React.useContext(Ctx).controller; };
-        // the platform's OWN root, mounted once. It READS the projection out of the store instead of having it pushed
+        // the platform's OWN root component, mounted once. It READS the projection out of the store instead of having it pushed
         // by a second root.render, and that is what makes a change one React pass: the notification queues this root
         // together with every selector subscriber, and React renders them in one go - whereas a root.render scheduled
         // beside the notification is a second pass it cannot coalesce, the two being on different lanes.
@@ -145,6 +145,14 @@
         // the same data, so a component that throws still leaves its reason in the window
         var Root = function (props) {
             var data = ns.useData();
+            // the owner is told when the tree is there and when it goes, by React, which alone knows: a tree drawn in
+            // another view's (ReactRoot.settle) goes when that view takes its place away. A layout effect: its
+            // cleanup runs before the cleanups of what the tree holds - the hosts' refs
+            var view = React.useContext(Ctx).view;
+            React.useLayoutEffect(function () {
+                view.drawn();
+                return view.gone;
+            }, [view]);
             return React.createElement(ns.__boundary, { name: props.name, data: data },
                 React.createElement(props.component, { data: data, controller: props.controller }));
         };
@@ -178,8 +186,9 @@
         // the crossing BACK to the platform. <Platform name/> marks where a DESIGN child with a view of its own goes -
         // `custom = NULL`, NOCUSTOM, or a custom of its own:
         // the platform MOVES that child's real GWT view into the host node on mount and back to its park node on
-        // cleanup. The host renders NO React children, ever: the moment React owns a child of that node it can wipe the
-        // foreign GWT DOM. Cleanup is the exact inverse of mount, so StrictMode's mount->cleanup->mount cannot stack
+        // cleanup. The host renders NO React children into its node, ever: the moment React owns a child of that node it
+        // can wipe the foreign GWT DOM - what it embeds (below) are portals, drawn in nodes of the platform's. Cleanup
+        // is the exact inverse of mount, so StrictMode's mount->cleanup->mount cannot stack
         // duplicates. The GWT view stays logically attached throughout, so no onUnload/onLoad fires.
         // usePlatform(name[, { row, className }]) -> the props of a host, to spread onto an element the component
         // ALREADY renders, so no placeholder node exists at all: the ref that mounts the platform-drawn child into it,
@@ -204,6 +213,42 @@
         // layout's window entry under its canonical name in byName - hidden by HIDE WINDOW or nothing to draw.
         // Not a row's host: what hides a per-row renderer is its column
         var unsubscribed = function () { return function () {}; }; // a root with no store: nothing is ever hidden
+        // WHAT A HOST EMBEDS: the React components the platform draws inside the view the host holds - the cell of a
+        // property's CUSTOM, the rows of a group's, the view of a react container or of another component -, each a
+        // portal of the host into the node the platform keeps for it, in place of a React root of its own
+        // (ReactRoot.settle). They are the host's `children` as React sees them, and none is a child of the host's
+        // node, which stays the platform's. The embedder is what such a node finds above it (lsfEmbedder), to be
+        // drawn by and to leave; however many find one: a grid placed whole has a cell in every row.
+        // A portal's events are React's as they reach the portal's node, which is inside the platform's view, so a
+        // handler of the component runs before the platform's own handling of the cell around it, as it does in a
+        // root of its own.
+        // While React is committing - it runs a host's ref, which is where the platform moves a view in or out -
+        // what leaves a host is taken out of the tree as that commit ends, and cannot be any sooner; at any other
+        // time at once, so that what the platform does next - closing the form, drawing in the node again - finds
+        // the component gone
+        var committing = 0;
+        var makeEmbedder = function (setPortals) {
+            var portals = new Map(), made = 0;
+            var changed = function () {
+                var drawn = [];
+                portals.forEach(function (portal) { drawn.push(portal); });
+                setPortals(drawn);
+            };
+            return {
+                add: function (element, view) {
+                    portals.set(element, window.ReactDOM.createPortal(view, element, 'embedded' + made++));
+                    changed();
+                },
+                remove: function (element) {
+                    if (!portals['delete'](element))
+                        return;
+                    if (committing)
+                        changed();
+                    else
+                        window.ReactDOM.flushSync(changed);
+                }
+            };
+        };
         ns.usePlatform = function (name, options) {
             var context = React.useContext(Ctx);
             // a <Platform> only means anything under the root the platform mounted: a component rendering one into a
@@ -215,6 +260,9 @@
             var className = options ? options.className : undefined;
             var held = React.useRef(null); // the ref callback is handed null on detach, so the host is remembered here
             var heldRow = React.useRef(null); // and the row with it, since unmounting has to name the same renderer
+            // what the host embeds, where the root's hosts embed at all - a form view's (ReactRoot.Placement.embeds)
+            var portals = React.useState(EMPTY), embedding = React.useRef(null);
+            var embedder = embedding.current || (embedding.current = view && view.embeds ? makeEmbedder(portals[1]) : null);
             // a name is what a <Platform> IS, and the platform has the same words for a template place without one -
             // without this the name arrives as the string "undefined" and is reported as something that is not a form.
             // Said from INSIDE the callback, and after the hooks above, because the count of hooks a component calls
@@ -238,9 +286,19 @@
                     if (host) window.console.error("lsFusion custom view: a <Platform> has no name, so nothing will ever be placed in it");
                     return;
                 }
-                if (held.current) { view.unmount(named, held.current, heldRow.current); held.current = null; heldRow.current = null; }
+                // what the platform moves in or out in these calls finds its place by the node above it, at once
+                committing++;
+                try {
+                    if (held.current) { view.unmount(named, held.current, heldRow.current); held.current = null; heldRow.current = null; }
+                    if (host) {
+                        if (embedder)
+                            host.lsfEmbedder = embedder;
+                        view.mount(named, host, row); held.current = host; heldRow.current = row;
+                    }
+                } finally {
+                    committing--;
+                }
                 if (host) {
-                    view.mount(named, host, row); held.current = host; heldRow.current = row;
                     // whether this host is in the page can only be told after the commit: React hands the ref while it
                     // renders, and a portal's container is appended by an effect, which runs later. Two frames, because
                     // effects run before the first paint of that commit - anything appended there is in by the second -
@@ -262,6 +320,8 @@
             host.ref = ref;
             if (hidden)
                 host.hidden = true;
+            if (portals[0].length)
+                host.children = portals[0];
             return host;
         };
         // <Platform name row className style/> is usePlatform on a <div> of its own: the same props, the same dress

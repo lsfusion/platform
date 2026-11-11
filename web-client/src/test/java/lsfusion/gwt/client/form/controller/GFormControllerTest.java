@@ -2122,6 +2122,39 @@ public class GFormControllerTest extends GWTTestCase {
         assertTrue(controller.needConfirm());
     }
 
+    // a tree React takes down and draws again where it is - a development React's strict effects, which run no host's
+    // ref in between - keeps what it placed: told that its tree is gone and that it is drawn, a container's view
+    // parks nothing and forgets no host. It is the host's own cleanup that gives the view up
+    public void testAReactTreeDrawnAgainWhereItIsKeepsWhatItPlaced() {
+        GForm form = form("strict");
+        GContainer board = container(2, "board", form.mainContainer), inner = container(3, "inner", board);
+        board.custom = "Board"; board.react = true; // NEW board { custom = 'Board'; NEW inner { custom = NULL; } }
+        inner.platformDrawn = true;
+        form.initialFormChanges = GFormChangesTest.noChanges();
+        GFormController controller = new GFormController(null, null, formContainer(), form, false, "strict", 0, null);
+        JavaScriptObject placement = placement(controller.getFormLayout().getContainerView(board));
+        Element host = Document.get().createDivElement();
+        try {
+            place(placement, "inner", host);
+            assertEquals(1, host.getChildCount());
+            takeDown(placement);
+            drawAgain(placement);
+            assertEquals(1, host.getChildCount());
+            unplace(placement, "inner", host);
+            assertEquals(0, host.getChildCount());
+        } finally {
+            takeDown(placement); // ... and with it what the tree drawn again asked to tell the server, which is not there
+        }
+    }
+    // what a React container's view hands its component's tree to place with and to be told by (ReactRoot's context)
+    private static native JavaScriptObject placement(Object view) /*-{
+        return view.@lsfusion.gwt.client.form.design.view.ReactContainerView::root.@lsfusion.gwt.client.base.view.ReactRoot::context.view;
+    }-*/;
+    private static native void place(JavaScriptObject placement, String name, Element host) /*-{ placement.mount(name, host); }-*/;
+    private static native void unplace(JavaScriptObject placement, String name, Element host) /*-{ placement.unmount(name, host); }-*/;
+    private static native void takeDown(JavaScriptObject placement) /*-{ placement.gone(); }-*/;
+    private static native void drawAgain(JavaScriptObject placement) /*-{ placement.drawn(); }-*/;
+
     // the form waiting for the server, on its Refresh button React draws - the property that shows it, drawAsync -, as
     // on the platform's button of it: the button's entry says `loading` from the moment an asynchronous request of the
     // form's has waited the dispatcher's timeout - one answered sooner shows nothing -, until its answer comes; a view

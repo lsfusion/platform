@@ -136,12 +136,24 @@ window.UiCustomViewCell = function () {
     };
 };
 
+// a context of the application's own, which a view provides to what it draws: what a component the platform draws
+// reads of it says whose tree it is drawn in - 'none' in a root of its own
+window.UiCustomViewTheme = React.createContext('none');
+
 // the React component a property's CUSTOM names, registered as one: a button that shows the cell's value and adds 10
 // to it through the controller it was first given. It tells its instances apart, and says whether that controller is
-// still the one it is given and whether its props are what the hooks give - and hands its controller over as it is
-// unmounted
+// still the one it is given and whether its props are what the hooks give, and the theme around it - and hands its
+// controller over as it is unmounted. While the test says so (window.uiCustomViewStops, the event's type) it stops
+// a mouse press or a key press in it, counting them in window.uiCustomViewStopped
 lsfusion.custom.register('UiCustomViewReactCell', function ({data, controller}) {
     const {createElement: h, useEffect, useState} = React;
+    const theme = React.useContext(window.UiCustomViewTheme);
+    const stop = event => {
+        if (window.uiCustomViewStops === event.type) {
+            window.uiCustomViewStopped = (window.uiCustomViewStopped || 0) + 1;
+            event.stopPropagation();
+        }
+    };
     const [instance] = useState(() => window.uiCustomViewCellInstances = (window.uiCustomViewCellInstances || 0) + 1);
     const [initialController] = useState(() => controller);
     const currentController = lsfusion.useController();
@@ -155,6 +167,9 @@ lsfusion.custom.register('UiCustomViewReactCell', function ({data, controller}) 
         'data-instance': instance,
         'data-stable-controller': String(controller === initialController),
         'data-matching-context': String(controller === currentController && data === currentData),
+        'data-theme': theme,
+        onMouseDown: stop,
+        onKeyDown: stop,
         disabled: data.readOnly || data.disabled,
         onClick: () => initialController.change((data.value || 0) + 10)
     }, String(data.value));
@@ -164,7 +179,8 @@ lsfusion.custom.register('UiCustomViewReactCell', function ({data, controller}) 
 // current and adds 10 to its quantity through the classic controller of a custom view, under the title its OPTIONS give
 lsfusion.custom.register('UiCustomViewCards', function ({data, controller}) {
     const h = React.createElement;
-    return h('div', {className: 'ui-custom-cards'}, data.options && data.options.title,
+    return h('div', {className: 'ui-custom-cards', 'data-theme': React.useContext(window.UiCustomViewTheme)},
+        data.options && data.options.title,
         data.list.map(row => h('div', {
             key: controller.getObjectsString(row),
             className: 'ui-custom-card',
@@ -192,12 +208,39 @@ lsfusion.custom.register('UiCustomViewPlacedGrid', function ({data, controller})
             h(lsfusion.Platform, {name: 'i.standardQuantity', row: row, className: 'ui-custom-standard-cell'}))));
 }, 'reactView');
 
-// ... and the container around it: the grid, and the quantity of the current item
+// ... and the container around it: the grid, and the quantity of the current item, under its theme
 window.UiCustomViewPlacedOuter = function () {
     const h = React.createElement;
-    return h(React.Fragment, null,
+    return h(window.UiCustomViewTheme.Provider, {value: 'placed'},
         h(lsfusion.Platform, {name: 'GRID(i)'}),
         h(lsfusion.Platform, {name: 'i.panelQuantity', className: 'ui-custom-placed-panel'}));
+};
+
+// the container of uiCustomViewEmbedded: under its theme, the table the platform draws, whose quantities a React
+// component draws, the group the platform draws with a React component, and - while the test says so,
+// window.uiCustomViewEmbedded.placeInner - the container below with a component of its own. It counts the key presses
+// that reach it in window.uiCustomViewOuterKeys
+window.UiCustomViewEmbeddedOuter = function () {
+    const h = React.createElement, Platform = lsfusion.Platform;
+    const [inner, placeInner] = React.useState(true);
+    window.uiCustomViewEmbedded = {placeInner: placeInner};
+    return h(window.UiCustomViewTheme.Provider, {value: 'outer'},
+        h('div', {className: 'ui-custom-embedded',
+                  onKeyDown: () => { window.uiCustomViewOuterKeys = (window.uiCustomViewOuterKeys || 0) + 1; }},
+            h(Platform, {name: 'GRID(i)', className: 'ui-custom-embedded-table'}),
+            h(Platform, {name: 'GRID(c)', className: 'ui-custom-embedded-cards'}),
+            inner && h(Platform, {name: 'inner', className: 'ui-custom-embedded-inner'})));
+};
+
+// ... and the component of the container inside it: the theme around it and which instance it is, and, under a
+// theme of its own, the count the platform draws
+window.UiCustomViewEmbeddedInner = function () {
+    const h = React.createElement;
+    const [instance] = React.useState(() => window.uiCustomViewInnerInstances = (window.uiCustomViewInnerInstances || 0) + 1);
+    return h(window.UiCustomViewTheme.Provider, {value: 'inner'},
+        h('span', {className: 'ui-custom-embedded-inner-view', 'data-instance': instance,
+                   'data-theme': React.useContext(window.UiCustomViewTheme)}, 'inner'),
+        h(lsfusion.Platform, {name: 'uiCustomViewCount', className: 'ui-custom-embedded-count'}));
 };
 
 // the classic render function a group's CUSTOM names, named as a component is and not registered as one

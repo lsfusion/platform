@@ -332,10 +332,12 @@ public class UiCustomViewIT extends UiTest {
     }
 
     // a React view places what the platform draws with a React component of a property's CUSTOM as it places the
-    // platform's own editor: a row's cell in the row, the panel's value where the view puts it, each changing its own
+    // platform's own editor: a row's cell in the row, the panel's value where the view puts it, each changing its own -
+    // and each drawn in the tree of the view that places it, the grid's view in its container's: one root for the form
     @Test
     public void reactFormPlacesPlatformCustomPropertiesInGridAndPanel() throws Exception {
         String[] items = seed();
+        countRoots();
         Locator form = open(FOLDER, "UiCustomView.uiCustomViewPlacedProperties");
         Locator rows = form.locator(".ui-custom-placed-grid .ui-custom-placed-row");
         Locator panel = form.locator(".ui-custom-placed-panel lsfusion-react-cell .ui-custom-react-cell");
@@ -344,9 +346,12 @@ public class UiCustomViewIT extends UiTest {
         assertThat(rows.first().locator(".ui-custom-react-cell")).hasText("1");
         assertThat(rows.first().locator(".ui-custom-standard-cell")).hasText("1");
         assertThat(panel).hasAttribute("data-matching-context", "true");
+        assertThat(panel).hasAttribute("data-theme", "placed");
         Locator second = rows.nth(1);
         Locator cell = second.locator(".ui-custom-react-cell");
         assertThat(cell).hasAttribute("data-matching-context", "true");
+        assertThat(cell).hasAttribute("data-theme", "placed");
+        assertEquals(1, roots(form));
         rows.first().getByText(items[0]).click();
         assertThat(panel).hasText("1");
         cell.click();
@@ -365,6 +370,108 @@ public class UiCustomViewIT extends UiTest {
         check("UiCustomView.uiCustomViewCheckQuantity", items[0], "1");
         check("UiCustomView.uiCustomViewCheckQuantity", items[1], "22");
         close(form);
+    }
+
+    // what the platform draws with a React component inside a view a React view places is drawn in that view's tree,
+    // not in a React root of its own - the cells of a table placed whole, however many, a group's CUSTOM, a container
+    // with a component of its own, and what that container places in its turn, in its tree: the context the view
+    // provides reaches each, each keeps its own data and controller, and the page makes one root for the form. A table
+    // sorted keeps its cells' components. A component lives as its place does: taken away it is unmounted, and given
+    // back it is mounted anew
+    @Test
+    public void reactComponentsAViewPlacesAreDrawnInItsTree() throws Exception {
+        String[] items = seed();
+        countRoots();
+        Locator form = open(FOLDER, "UiCustomView.uiCustomViewEmbedded");
+        Locator cells = form.locator(".ui-custom-embedded-table .data-grid-cell .ui-custom-react-cell");
+        assertThat(cells).hasText(new String[] {"1", "2"});
+        Locator cards = form.locator(".ui-custom-embedded-cards .ui-custom-cards");
+        assertThat(cards.locator(".ui-custom-card")).hasCount(2);
+        Locator inner = form.locator(".ui-custom-embedded-inner .ui-custom-embedded-inner-view");
+        for (Locator embedded : new Locator[] {cells.first(), cells.last(), cards, inner})
+            assertThat(embedded).hasAttribute("data-theme", "outer");
+        Locator count = form.locator(".ui-custom-embedded-count .ui-custom-react-cell");
+        assertThat(count).hasAttribute("data-theme", "inner");
+        assertThat(cells.first()).hasAttribute("data-matching-context", "true");
+        assertEquals(1, roots(form));
+
+        String firstInstance = cells.first().getAttribute("data-instance");
+        form.locator("th[lsfusion-container='PROPERTY(uiCustomViewName(i))']:visible").dblclick();
+        assertThat(cells).hasText(new String[] {"2", "1"});
+        assertThat(cells.first()).hasAttribute("data-instance", firstInstance);
+        cells.first().click();
+        assertThat(cells).hasText(new String[] {"12", "1"});
+        cards.locator(".ui-custom-card-quantity").first().click();
+        assertThat(cells).hasText(new String[] {"12", "11"});
+
+        String innerInstance = inner.getAttribute("data-instance");
+        page.evaluate("() => window.uiCustomViewEmbedded.placeInner(false)");
+        assertThat(inner).hasCount(0);
+        page.evaluate("() => window.uiCustomViewEmbedded.placeInner(true)");
+        assertThat(inner).hasAttribute("data-theme", "outer");
+        assertThat(inner).not().hasAttribute("data-instance", innerInstance);
+        assertThat(count).hasAttribute("data-theme", "inner");
+        assertEquals(1, roots(form));
+
+        form.locator("button[lsfusion-container='PROPERTY(formApply())']").click();
+        check("UiCustomView.uiCustomViewCheckQuantity", items[1], "12");
+        check("UiCustomView.uiCustomViewCheckQuantity", items[0], "11");
+        close(form);
+    }
+
+    // the nodes the page makes React roots in are kept from now on, and those of them in a form counted
+    private void countRoots() {
+        page.evaluate("() => { if (window.uiCustomViewRoots) return;"
+                + " const create = ReactDOM.createRoot, roots = window.uiCustomViewRoots = [];"
+                + " ReactDOM.createRoot = function (node) { roots.push(node); return create.apply(this, arguments); }; }");
+    }
+    private static int roots(Locator form) {
+        return (Integer) form.evaluate("form => window.uiCustomViewRoots.filter(node => form.contains(node)).length");
+    }
+
+    // a handler of a property's component runs before the platform's handling of the cell, and can stop it, whether
+    // the component is drawn in a root of its own - where no React view places it, and no context reaches it - or in
+    // the tree of a view that places its table: a mouse press it stops does not make the row current. Drawn in a
+    // view's tree, its events bubble through that view's own handlers around the place, and one it stops reaches none
+    // of them
+    @Test
+    public void aReactCellStopsAnEventBeforeThePlatformHandlesIt() throws Exception {
+        for (String name : new String[] {"uiCustomViewReactCells", "uiCustomViewEmbedded"}) {
+            String[] items = seed();
+            Locator form = open(FOLDER, "UiCustomView." + name);
+            Locator cells = form.locator(".data-grid-cell .ui-custom-react-cell");
+            assertThat(cells).hasCount(2);
+            assertThat(cells.first()).hasAttribute("data-theme", name.equals("uiCustomViewEmbedded") ? "outer" : "none");
+            Locator rows = form.locator("tr.data-grid-row")
+                    .filter(new Locator.FilterOptions().setHas(page.locator(".ui-custom-react-cell")));
+            Locator firstRow = rows.first(), secondRow = rows.last();
+            form.getByText(items[0], new Locator.GetByTextOptions().setExact(true)).first().click();
+            assertThat(firstRow).hasClass(Pattern.compile("\\btable-active\\b"));
+
+            page.evaluate("() => { window.uiCustomViewStops = 'mousedown'; window.uiCustomViewStopped = 0; }");
+            cells.last().click();
+            assertThat(cells.last()).hasText("12");
+            assertEquals(1, page.evaluate("() => window.uiCustomViewStopped"));
+            assertThat(firstRow).hasClass(Pattern.compile("\\btable-active\\b"));
+
+            page.evaluate("() => { window.uiCustomViewStops = null; }");
+            cells.last().click();
+            assertThat(cells.last()).hasText("22");
+            assertThat(secondRow).hasClass(Pattern.compile("\\btable-active\\b"));
+
+            if (name.equals("uiCustomViewEmbedded")) {
+                page.evaluate("() => { window.uiCustomViewOuterKeys = 0; }");
+                cells.last().press("F8");
+                assertEquals(1, page.evaluate("() => window.uiCustomViewOuterKeys"));
+                page.evaluate("() => { window.uiCustomViewStops = 'keydown'; }");
+                cells.last().press("F8");
+                assertEquals(1, page.evaluate("() => window.uiCustomViewOuterKeys"));
+                page.evaluate("() => { window.uiCustomViewStops = null; }");
+            }
+            form.locator("button[lsfusion-container='PROPERTY(formApply())']").click();
+            check("UiCustomView.uiCustomViewCheckQuantity", items[1], "22");
+            close(form);
+        }
     }
 
     // a classic render function of a group named as a component is, and not registered as one, is called as before

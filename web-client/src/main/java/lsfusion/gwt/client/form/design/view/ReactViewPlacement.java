@@ -37,6 +37,13 @@ abstract class ReactViewPlacement implements ReactRoot.Placement {
         return new ReactRoot.MarkedHost(); // a host here holds a view of the form, which the layout styles by its marks
     }
 
+    // a React component the platform draws in what a host here holds - a property's CUSTOM, a group's, the view of a
+    // react container or of another component - is a part of this view's tree
+    @Override
+    public boolean embeds() {
+        return true;
+    }
+
     // ... what a name given no row places: a view of the kind's, or a mistake
     abstract PlatformPlacement placeView(String name);
 

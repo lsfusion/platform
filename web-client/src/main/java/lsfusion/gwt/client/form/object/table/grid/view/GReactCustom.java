@@ -21,13 +21,9 @@ public final class GReactCustom extends GTippySimpleStateTableView {
         Element element = getDrawElement();
         CustomCellRenderer.setCustomElement(element);
         // drawn while the view is attached - a grid switched to another view detaches it -, and, in a form whose size
-        // is fixed as it is shown, before the form is measured: a grid in CUSTOM view takes the size of what it draws
-        addAttachHandler(event -> {
-            if (event.isAttached())
-                root.mount(element, form.isSizeFixedOnShow());
-            else
-                root.unmount();
-        });
+        // is fixed as it is shown, before the form is measured: a grid in CUSTOM view takes the size of what it draws.
+        // Where a React view places the grid, in that view's tree (ReactRoot.settle)
+        form.getFormLayout().mountReactView(root, this, element);
     }
 
     @Override

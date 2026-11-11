@@ -12,8 +12,8 @@ import lsfusion.gwt.client.base.jsni.JsniTestSupport;
 
 // the store a ReactRoot hands its component's hooks, with no React drawing anything: the first push, which would draw
 // the component, draws nothing while the root is not mounted, and every later one only tells the store's subscribers.
-// And what a root dresses a host in, by the kind of host its owner places into (ReactRoot.Host), and that a host it
-// hides hides what is in it
+// And where it draws its component, by where its node is. And what a root dresses a host in, by the kind of host its
+// owner places into (ReactRoot.Host), and that a host it hides hides what is in it
 public class ReactRootTest extends GWTTestCase {
     @Override public String getModuleName() { return "lsfusion.gwt.main"; }
 
@@ -32,7 +32,7 @@ public class ReactRootTest extends GWTTestCase {
         element.addClassName("panel");
         JavaScriptObject restore = installRootFactory();
         try {
-            root.mount(element, false);
+            root.settle(element, false);
             assertTrue(element.hasClassName("panel-react"));
             assertTrue(element.hasClassName("panel"));
         } finally {
@@ -52,6 +52,85 @@ public class ReactRootTest extends GWTTestCase {
             $wnd.ReactDOM = reactDOM;
             $wnd.lsfusion = lsfusion;
         };
+    }-*/;
+
+    // a component is drawn where its node is, asked as it is mounted and again as its form says a view was moved: in
+    // a form's park nowhere, whatever holds the form;
+    // inside a host that embeds what it holds as that host's, once however it is moved there, and taken out of it as
+    // its node leaves the host; anywhere else in a React root of its own - which it keeps wherever its node goes next,
+    // until it is unmounted. And in a root of its own in the form outside its park, a host holding the form or not
+    public void testAComponentIsDrawnWhereItsNodeIs() {
+        ReactRoot root = new ReactRoot("Component", JavaScriptObject.createObject(), new NoPlacement());
+        Element plain = Document.get().createDivElement(), host = Document.get().createDivElement();
+        Element inside = Document.get().createDivElement(), park = park(host);
+        Element element = Document.get().createDivElement();
+        host.appendChild(inside);
+        JavaScriptObject restore = installRootFactory();
+        try {
+            JavaScriptObject said = sayWhatIsDrawn(host);
+            root.updateData(snapshot(1));
+            park.appendChild(element);
+            root.settle(element, false);
+            assertEquals("", joined(said));
+
+            host.appendChild(element);
+            root.settle();
+            inside.appendChild(element);
+            root.settle();
+            assertEquals("add", joined(said));
+
+            park.appendChild(element);
+            root.settle();
+            assertEquals("add,remove", joined(said));
+
+            plain.appendChild(element);
+            root.settle();
+            host.appendChild(element);
+            root.settle();
+            park.appendChild(element);
+            root.settle();
+            assertEquals("add,remove,root,render", joined(said));
+
+            root.unmount();
+            root.unmount();
+            assertEquals("add,remove,root,render,unmount", joined(said));
+
+            host.appendChild(element);
+            root.settle(element, false);
+            root.unmount();
+            assertEquals("add,remove,root,render,unmount,add,remove", joined(said));
+
+            park.getParentElement().appendChild(element);
+            root.settle(element, false);
+            assertEquals("add,remove,root,render,unmount,add,remove,root,render", joined(said));
+        } finally {
+            root.unmount();
+            GwtClientUtils.call(restore);
+        }
+    }
+
+    // a form's park, in the form - here inside `outer`, as those of a form that a host holds are
+    private static Element park(Element outer) {
+        Element form = Document.get().createDivElement(), park = Document.get().createDivElement();
+        outer.appendChild(form);
+        form.appendChild(park);
+        ReactRoot.setPark(form, park);
+        return park;
+    }
+
+    // ... over the root factory, a React that says what is asked of it - a root made, drawn in and unmounted -, and
+    // `host` made a host that embeds what it holds, saying what it is asked to draw and to take down
+    private static native JavaScriptObject sayWhatIsDrawn(Element host) /*-{
+        var said = [];
+        $wnd.React.createElement = function (type, props) { return { type: type, props: props }; };
+        $wnd.ReactDOM.createRoot = function () {
+            said.push('root');
+            return { render: function () { said.push('render'); }, unmount: function () { said.push('unmount'); } };
+        };
+        $wnd.lsfusion.__context = { Provider: {} };
+        $wnd.lsfusion.__root = {};
+        host.lsfEmbedder = { add: function () { said.push('add'); }, remove: function () { said.push('remove'); } };
+        return said;
     }-*/;
 
     // #46: a listener that throws - a view's bucketOf, a selector - is its own error, logged where it is thrown, and

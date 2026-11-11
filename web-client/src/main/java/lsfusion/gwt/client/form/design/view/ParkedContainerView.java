@@ -30,11 +30,11 @@ public abstract class ParkedContainerView extends LayoutContainerView {
         return panel;
     }
 
-    // the park is the (invisible) attachContainer, so a parked element stays in the document — its widget is attached,
+    // the park is in the (invisible) attachContainer, so a parked element stays in the document — its widget is attached,
     // and lying about that would break events and sizing — but is hidden; and it is outside panel, so the renderer,
     // which owns panel's DOM and for React literally clears it on the first commit, never sees a parked element
     protected Element getParkElement() {
-        return formController.getFormLayout().attachContainer.getElement();
+        return formController.getFormLayout().park;
     }
 
     @Override
@@ -49,6 +49,7 @@ public abstract class ParkedContainerView extends LayoutContainerView {
 
     protected void parkChild(int index) {
         getChildView(index).appendTo(getParkElement());
+        formController.getFormLayout().viewMoved();
     }
 
     // a child that just moved from the (display:none) park into a visible place has never been measured, and a DOM move

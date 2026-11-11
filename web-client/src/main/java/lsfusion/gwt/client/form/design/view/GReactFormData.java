@@ -113,7 +113,7 @@ public class GReactFormData {
     // CHANGE writes - a call of a view's member, a server's delta applied (change) - is published once the outermost
     // one is over, at once: before the view's event handler returns, as React puts a controlled input back to what the
     // store says once the handler is done, and before a window measured when it is shown measures the form's first
-    // changes (ReactRoot.mount). What is written outside a change - by an event of the platform's - is published when
+    // changes (ReactRoot.settle). What is written outside a change - by an event of the platform's - is published when
     // the GWT entry it is written in exits (Scheduler.scheduleFinally), as the platform's own views defer what they
     // draw (DataGrid's DOM, the forms window)
     private int changing; // the changes under way

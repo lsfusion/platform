@@ -231,7 +231,7 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
     // ---- internals ----
 
     private Element getParkElement() {
-        return formController.getFormLayout().attachContainer.getElement();
+        return formController.getFormLayout().park;
     }
 
     // the widget of the renderer this property draws for this row, from the property's own controller - the single
