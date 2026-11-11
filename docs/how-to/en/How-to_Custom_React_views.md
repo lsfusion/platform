@@ -185,8 +185,7 @@ The reservation follows what a row or a node carries:
 | --- | --- |
 | A row | `key`, `current`, `objects`, `background`, `foreground`, `selected` — on a row of a [tree](#trees) also `parent`, `hasChildren`, `expanded`, `loading` |
 | A group's node, wherever it is | `properties`, `change` |
-| A group's node where its rows are drawn | `list`, `byKey`, `keys`, `options`, and `orders` of a group not in a tree — on a group of a tree `expand`, `collapse`, `toggle`, `expandAll`, `collapseAll` |
-| A flat LIST group whose rows React draws | `viewFilters` |
+| A group's node where its rows are drawn | `list`, `byKey`, `keys`, `options`, and `orders` and `viewFilters` of a group not in a tree — on a group of a tree `expand`, `collapse`, `toggle`, `expandAll`, `collapseAll` |
 | The node of a group in `LIST` view where `FILTERS(<group>)` is | `filters`, `filterProperties` |
 | The node of a group in `LIST` view where `FILTERCONTROLS(<group>)` is | The names of the [filter controls](#filter-controls): `addFilter`, `applyFilters`, `resetFilters`, `filtersPending`, `filtersManual` |
 | The node of a group in `LIST` view where `TOOLBARSYSTEM(<group>)` is, unless the design hides it (`visible = FALSE`) | The names of all the [toolbar](#toolbar)'s buttons, whatever the design's `show…` flags say: `manual`, `updatePending`, `update`, `filterControlsVisible`, `listView`, `listViews`, `getCount`, `getSum`, `export` |
@@ -678,15 +677,6 @@ A pick is sent as the platform's own element sends it, one option at a time, pic
 The options are read and sent as a value is: when the form is opened, and again whenever what they depend on changes — their views, which objects they are, what is picked — or the current object or the rows do; each time the cell's options come whole. Where the platform's own element is given only the options picked and looks the others up by the text typed — over many options —, a view is still given all of them.
 
 The platform also builds a [selection element](../paradigm/Interactive_view.md#select) by itself, for a link with a unique view or a selection of several values; a property a React component draws gets none of that: its entry has options only where a selection is given — `SELECT` in the form or in the property's declaration. The design's `select` always names an element of the platform's, so it goes with `custom = NULL`. With `NOCUSTOM` — `PROPERTIES(o) nameStatus SELECT 'buttonGroup' NOCUSTOM` — the platform draws its own element of the selection, and the component places it with `<Platform name/>` like any [child the platform draws](#placing), per row in the rows it draws.
-
-### Own view filters {#view-filters}
-
-For a flat LIST group drawn by React, use the member or its named form twin to set the view’s own AND conditions. They intersect user, regular and fixed filters; `[]` clears only this group’s view set. See the [controller API](How-to_Custom_view_controller.md#view-filters).
-
-```js
-await controller.i.viewFilters.change([{property: 'number', compare: '>=', value: 400}]);
-await controller.form.changeViewFilters('i', []);
-```
 
 ### Extending a container with placed children
 
@@ -1937,6 +1927,53 @@ there are two recipes, and they read differently in the design rather than in th
 
 A component on a box beside `FILTERS(o)` — `TOOLBARLEFT(o)`, say — gets no part of the filters: the group's node
 there, if it has one, has no `filters`.
+
+### View filters {#view-filters}
+
+A view that draws the rows of a group not in a tree can have the server filter them by conditions of its own — the
+group's view filters, as a calendar filters its group by the period it shows. They are a list apart from the group's
+[user filters](#filters), which the user changes and a `FILTER` action states, and the server applies them together
+with those, with the form's own `FILTERS` and with its filter groups. `viewFilters` lists them beside `list` and
+`keys`, where the rows are drawn: always there, and empty until the view states any. Each entry is a condition in the
+shape [`filters`](#filters) gives one — `property`, `compare`, `value`, `negation`, `or` —, on a property of the group
+named the same way, wherever it is drawn.
+
+`controller.<group>.viewFilters.change(conditions)` — a member in the same place, and only there — states the whole
+list, an array, read as an array of `filters.change` is: what a condition leaves out of `compare` and `negation` is the
+default, and one with no `value` compares with `NULL`. An empty array takes them all off. The conditions are all applied
+together, so one with `or: true` is refused, and so is what `filters.change` refuses in a condition.
+
+```jsx
+export function MeetingList({data, controller}) {
+    const meetings = data.e;
+    const show = first => controller.e.viewFilters.change([       // the meetings of one month: two conditions on the date
+        {property: 'date', compare: '>=', value: first},
+        {property: 'date', compare: '<', value: new Date(first.getFullYear(), first.getMonth() + 1, 1)}
+    ]);
+    const stated = meetings.viewFilters[0];                       // what the view stated is read back out of the projection
+    return (
+        <div>
+            <button onClick={() => show(new Date(2031, 0, 1))}>January</button>
+            <button onClick={() => show(new Date(2031, 1, 1))}>February</button>
+            <button onClick={() => controller.e.viewFilters.change([])}>All</button>
+            <span>{stated ? 'from ' + stated.value.toLocaleDateString() : 'all meetings'}</span>
+            <ul>{meetings.list.map(row => <li key={row.key}>{row.name.value}</li>)}</ul>
+        </div>
+    );
+}
+```
+
+A change through the controller is sent at once, as the group's whole list, and `viewFilters` shows it straight away,
+before the rows filtered by it come back. The server does not report view filters, so `viewFilters` is what a call
+stated last: it is rebuilt only by one, keeping its identity across renders otherwise, and after a request that failed
+it still lists what that request stated — state the list again where it matters. No page size goes with them: the
+group's stays as the form gives it (`PAGESIZE`).
+
+The view filters are the view's that draws the rows. Another container states them through the form's controller,
+`controller.form.changeViewFilters('<group>', conditions)`
+([across containers](How-to_Custom_view_controller.md#across-containers)); for a group whose rows the platform draws
+the call is refused — the view types the platform's table shows such rows in state their own, a calendar the period it
+shows —, as it is for a group of a tree.
 
 ### Toolbar {#toolbar}
 

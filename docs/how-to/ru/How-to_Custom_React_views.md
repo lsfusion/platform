@@ -185,8 +185,7 @@ function Row(props) {
 | --- | --- |
 | Строка | `key`, `current`, `objects`, `background`, `foreground`, `selected` — у строки [дерева](#trees) ещё и `parent`, `hasChildren`, `expanded`, `loading` |
 | Узел группы, где бы он ни был | `properties`, `change` |
-| Узел группы там, где рисуются её строки | `list`, `byKey`, `keys`, `options`, а у группы вне дерева и `orders` — у группы дерева `expand`, `collapse`, `toggle`, `expandAll`, `collapseAll` |
-| Плоская группа LIST, строки которой рисует React | `viewFilters` |
+| Узел группы там, где рисуются её строки | `list`, `byKey`, `keys`, `options`, а у группы вне дерева и `orders` с `viewFilters` — у группы дерева `expand`, `collapse`, `toggle`, `expandAll`, `collapseAll` |
 | Узел группы в виде `LIST` там, где стоит `FILTERS(<group>)` | `filters`, `filterProperties` |
 | Узел группы в виде `LIST` там, где стоит `FILTERCONTROLS(<group>)` | Имена [управляющих элементов фильтров](#filter-controls): `addFilter`, `applyFilters`, `resetFilters`, `filtersPending`, `filtersManual` |
 | Узел группы в виде `LIST` там, где стоит `TOOLBARSYSTEM(<group>)`, если дизайн его не прячет (`visible = FALSE`) | Имена всех кнопок [тулбара](#toolbar), что бы ни говорили флаги дизайна `show…`: `manual`, `updatePending`, `update`, `filterControlsVisible`, `listView`, `listViews`, `getCount`, `getSum`, `export` |
@@ -476,15 +475,6 @@ export function Board(props) {
         <Platform name="comment"/>
     </div>;
 }
-```
-
-### Собственные фильтры представления {#view-filters}
-
-Для плоской группы LIST, строки которой рисует React, задавайте собственные условия представления через член группы или метод контроллера формы. Условия соединяются через AND с пользовательскими, регулярными и фиксированными фильтрами. `[]` очищает только собственный набор этой группы. См. [API контроллера](How-to_Custom_view_controller.md#view-filters).
-
-```js
-await controller.i.viewFilters.change([{property: 'number', compare: '>=', value: 400}]);
-await controller.form.changeViewFilters('i', []);
 ```
 
 ### Размещение дочернего компонента, который рисует платформа {#placing}
@@ -1946,6 +1936,53 @@ DESIGN items {
 
 Компонент на соседнем с `FILTERS(o)` боксе — например, `TOOLBARLEFT(o)` — части фильтров не получает: в узле группы
 там, если он есть, `filters` нет.
+
+### Фильтры представления {#view-filters}
+
+Представление, которое рисует строки группы вне дерева, может попросить сервер фильтровать их по собственным условиям —
+фильтрам представления группы, как календарь фильтрует свою группу по периоду, который показывает. Это список, отдельный
+от [пользовательских фильтров](#filters) группы, которые меняет пользователь и задаёт действие `FILTER`, и сервер
+применяет его вместе с ними, с собственными `FILTERS` формы и с её группами фильтров. `viewFilters` перечисляет их рядом
+с `list` и `keys`, там, где рисуются строки: поле есть всегда и пусто, пока представление не задало ни одного условия.
+Каждая запись — условие в той форме, в какой его даёт [`filters`](#filters), — `property`, `compare`, `value`,
+`negation`, `or`, — на свойстве группы, названном так же, где бы оно ни рисовалось.
+
+`controller.<group>.viewFilters.change(conditions)` — член ровно там же и только там — заявляет список целиком,
+массивом, который читается как массив у `filters.change`: то, чего условие не задаёт из `compare` и `negation`, берётся
+по умолчанию, а условие без `value` сравнивает с `NULL`. Пустой массив снимает все условия. Условия применяются все
+вместе, поэтому условие с `or: true` отклоняется, как и всё, что отклоняет в условии `filters.change`.
+
+```jsx
+export function MeetingList({data, controller}) {
+    const meetings = data.e;
+    const show = first => controller.e.viewFilters.change([       // встречи одного месяца: два условия на дату
+        {property: 'date', compare: '>=', value: first},
+        {property: 'date', compare: '<', value: new Date(first.getFullYear(), first.getMonth() + 1, 1)}
+    ]);
+    const stated = meetings.viewFilters[0];                       // заданное представлением читается обратно из проекции
+    return (
+        <div>
+            <button onClick={() => show(new Date(2031, 0, 1))}>Январь</button>
+            <button onClick={() => show(new Date(2031, 1, 1))}>Февраль</button>
+            <button onClick={() => controller.e.viewFilters.change([])}>Все</button>
+            <span>{stated ? 'с ' + stated.value.toLocaleDateString() : 'все встречи'}</span>
+            <ul>{meetings.list.map(row => <li key={row.key}>{row.name.value}</li>)}</ul>
+        </div>
+    );
+}
+```
+
+Изменение через контроллер отправляется сразу, всем списком группы, и `viewFilters` показывает его тут же, ещё до того,
+как придут отфильтрованные строки. Сервер фильтры представления не сообщает, поэтому `viewFilters` — то, что вызов задал
+последним: поле перестраивается только вызовом, а между ними сохраняет идентичность от рендера к рендеру, и после
+запроса, который не удался, по-прежнему перечисляет заданное этим запросом — там, где это важно, задайте список заново.
+Размер страницы с ними не передаётся: у группы остаётся тот, что дала форма (`PAGESIZE`).
+
+Фильтры представления принадлежат тому представлению, которое рисует строки. Другой контейнер задаёт их через контроллер
+формы, `controller.form.changeViewFilters('<group>', conditions)`
+([между контейнерами](How-to_Custom_view_controller.md#across-containers)); для группы, строки которой рисует платформа,
+вызов отклоняется — виды отображения, в которых таблица платформы показывает такие строки, задают собственные фильтры:
+календарь — период, который он показывает, — как и для группы дерева.
 
 ### Тулбар {#toolbar}
 
