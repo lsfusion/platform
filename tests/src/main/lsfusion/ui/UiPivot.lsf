@@ -5,8 +5,8 @@ REQUIRE System, SystemEvents;
 // the forms UiPivotIT works on in the browser - a group's pivot: a group in manual update switched to its pivot and
 // back to its table before an update there, on the platform's toolbar and on the toolbar a React view draws
 // (UiPivot.js), the pivot of a group whose design hides the XLS export button, a pivot switched on before a row
-// change is answered, and pivots with a PIVOT LAST quantity by a name, a number and a date-time -, and the action it
-// seeds the items with
+// change is answered, pivots with a PIVOT LAST quantity by a name, a number and a date-time, one with the three of
+// them under the same caption, and ones with properties captioned alike -, and the action it seeds the items with
 
 CLASS UiPivotItem 'Item';
 uiPivotName 'Name' = DATA STRING[50] (UiPivotItem);
@@ -121,6 +121,36 @@ FORM uiPivotLastDateTime 'PIVOT LAST by a date-time'
     FILTERS uiPivotShown(i)
 ;
 
+// the quantity three times, under aliases, which keep its caption, each taken from the last row by an order of its own:
+// by the name 300, by the rank 200 and by the date-time 200
+FORM uiPivotSameCaption 'Same captions'
+    OBJECTS i = UiPivotItem PIVOT
+    PROPERTIES(i) READONLY uiPivotName,
+        byName = uiPivotQuantity PIVOT LAST (uiPivotName(i)),
+        byRank = uiPivotQuantity PIVOT LAST (uiPivotRank(i)),
+        byDateTime = uiPivotQuantity PIVOT LAST (uiPivotDateTime(i))
+    FILTERS uiPivotShown(i)
+;
+
+// two properties captioned 'Quantity', placed without aliases and summed - 600 and 1,200 -, and two captioned 'Name'
+uiPivotDouble 'Quantity' (UiPivotItem i) = uiPivotQuantity(i) * 2;
+uiPivotUpper 'Name' (UiPivotItem i) = upper(uiPivotName(i));
+
+FORM uiPivotSameCaptionSum 'Same captions, summed'
+    OBJECTS i = UiPivotItem PIVOT
+    PROPERTIES(i) READONLY uiPivotName, uiPivotUpper, uiPivotQuantity, uiPivotDouble
+    FILTERS uiPivotShown(i)
+;
+
+// ... the second quantity hidden
+uiPivotNever = DATA LOCAL BOOLEAN ();
+
+FORM uiPivotSameCaptionHidden 'Same captions, one hidden'
+    OBJECTS i = UiPivotItem PIVOT
+    PROPERTIES(i) READONLY uiPivotName, uiPivotQuantity, uiPivotDouble SHOWIF uiPivotNever()
+    FILTERS uiPivotShown(i)
+;
+
 onWebClientInit() + {
     onWebClientInit('UiPivot.js') <- 1;
 }
@@ -136,6 +166,9 @@ NAVIGATOR {
         NEW uiPivotLast;
         NEW uiPivotLastRank;
         NEW uiPivotLastDateTime;
+        NEW uiPivotSameCaption;
+        NEW uiPivotSameCaptionSum;
+        NEW uiPivotSameCaptionHidden;
     }
 }
 

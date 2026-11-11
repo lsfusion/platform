@@ -20,8 +20,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 // a group's pivot in the web client: what a group in manual update holds back once it is back from its pivot, the pivot
-// of a group whose design hides the XLS export button, a pivot switched on before a row change is answered, and a
-// PIVOT LAST quantity
+// of a group whose design hides the XLS export button, a pivot switched on before a row change is answered, PIVOT LAST
+// quantities, and quantities with the same caption
 public class UiPivotIT extends UiTest {
 
     private static final String RENDER_ERROR = "An error occurred rendering the PivotTable results.";
@@ -157,6 +157,68 @@ public class UiPivotIT extends UiTest {
     @Test
     public void aLastMeasureByADateTimeTakesTheLatest() throws Exception {
         lastMeasureIs("UiPivot.uiPivotLastDateTime", "200");
+    }
+
+    // three PIVOT LAST quantities under the same caption are three attributes of the pivot, each named by its alias and
+    // with its own value - 300, 200 and 200 -: they were one attribute, its value the sum of the quantities times three,
+    // 1,800, of none of them (#1978)
+    @Test
+    public void measuresWithTheSameCaptionStayApart() throws Exception {
+        seed();
+        List<String> errors = consoleErrors();
+        Locator form = open("UiPivot.uiPivot", "UiPivot.uiPivotSameCaption");
+        Locator pivot = form.locator(".subtotalouterdiv");
+        assertThat(cellOf(pivot, "3")).hasCount(1);
+        assertThat(cellOf(pivot, "300")).hasCount(1);
+        assertThat(cellOf(pivot, "200")).hasCount(2);
+        for (String other : new String[]{"100", "600", "1,800"})
+            assertThat(cellOf(pivot, other)).hasCount(0);
+        for (String alias : new String[]{"byName", "byRank", "byDateTime"})
+            assertThat(pivot.locator("th[title='Quantity (" + alias + ")']")).hasCount(1);
+        assertThat(form.getByText(RENDER_ERROR)).hasCount(0);
+        assertEquals("the errors the page logged", "", String.join("\n", errors));
+        close(form);
+    }
+
+    // ... and so are two properties captioned alike, placed without aliases and summed - 600 and 1,200 -, each named by
+    // its name on the form without its parameters, and two such names: they were one attribute, its sum 4,800 (#1978)
+    @Test
+    public void propertiesWithTheSameCaptionStayApart() throws Exception {
+        seed();
+        List<String> errors = consoleErrors();
+        Locator form = open("UiPivot.uiPivot", "UiPivot.uiPivotSameCaptionSum");
+        Locator pivot = form.locator(".subtotalouterdiv");
+        assertThat(cellOf(pivot, "3")).hasCount(1);
+        assertThat(cellOf(pivot, "600")).hasCount(1);
+        assertThat(cellOf(pivot, "1,200")).hasCount(1);
+        assertThat(cellOf(pivot, "4,800")).hasCount(0);
+        for (String name : new String[]{"uiPivotQuantity", "uiPivotDouble"})
+            assertThat(pivot.locator("th[title='Quantity (" + name + ")']")).hasCount(1);
+        for (String name : new String[]{"uiPivotName", "uiPivotUpper"})
+            assertThat(attribute(form, "Name (" + name + ")")).hasCount(1);
+        assertThat(form.getByText(RENDER_ERROR)).hasCount(0);
+        assertEquals("the errors the page logged", "", String.join("\n", errors));
+        close(form);
+    }
+
+    // ... and with the second one hidden, the first keeps the name it has when both are shown: showing or hiding a
+    // property renames no other, which would drop out of the pivot's layout (#1978)
+    @Test
+    public void aPropertyKeepsItsNameWhenOneWithTheSameCaptionIsHidden() throws Exception {
+        seed();
+        Locator form = open("UiPivot.uiPivot", "UiPivot.uiPivotSameCaptionHidden");
+        Locator pivot = form.locator(".subtotalouterdiv");
+        assertThat(cellOf(pivot, "600")).hasCount(1);
+        assertThat(cellOf(pivot, "1,200")).hasCount(0);
+        assertThat(pivot.locator("th[title='Quantity (uiPivotQuantity)']")).hasCount(1);
+        assertThat(attribute(form, "Quantity (uiPivotDouble)")).hasCount(0);
+        close(form);
+    }
+
+    // an attribute of the pivot named exactly so, in the list of the attributes; the pattern runs in javascript, which
+    // has no \Q...\E of Pattern.quote, so the brackets are escaped one by one
+    private static Locator attribute(Locator form, String name) {
+        return form.locator("select.pvtAttr option").filter(new Locator.FilterOptions().setHasText(Pattern.compile("^" + name.replaceAll("[()]", "\\\\$0") + "$")));
     }
 
     // the pivot of the form shows the count of the three items, 3, and the quantity of the item last in the order, and no

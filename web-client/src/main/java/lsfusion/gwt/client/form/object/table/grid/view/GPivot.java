@@ -181,6 +181,19 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         Map<GPropertyDraw, Map<GGroupObjectValue, ColumnAggregator>> aggregators = new HashMap<>();
         Map<GPropertyDraw, List<String>> orderedColumns = new HashMap<>();
 
+        // the pivot tells its attributes apart only by their names, the captions: a property whose caption another
+        // property of the group's list has - two properties captioned alike, or a property placed on the form under an
+        // alias, which keeps the caption of the one it is built from - gets its name on the form, without its
+        // parameters, and a name that still clashes (columns of one property, a caption changed at runtime, the pivot's
+        // own column attribute) a number. The clashes are of the captions of the form's design, among all the properties
+        // of the list, shown or not - a property hidden is not even in the pivot -, so that showing or hiding one renames
+        // no other: the pivot's layout keeps its attributes by their names, and one renamed would drop out of it
+        Map<String, Integer> designCaptions = new HashMap<>();
+        for (GPropertyDraw formProperty : form.getForm().propertyDraws)
+            if (formProperty.groupObject == grid.groupObject && formProperty.isList)
+                designCaptions.merge(formProperty.getNotEmptyCaption(), 1, Integer::sum);
+        Set<String> names = new HashSet<>(Collections.singleton(COLUMN));
+
         for (GPropertyDraw property : orderedProperties) {
             ArrayList<String> propColumns = new ArrayList<>();
             orderedColumns.put(property, propColumns);
@@ -194,7 +207,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 if(checkShowIf(baseOrder, columnKey))
                     continue;
 
-                String caption = property.getNotEmptyCaption(property.getCaption(propCaptions, columnKey));
+                String propCaption = property.getNotEmptyCaption(property.getCaption(propCaptions, columnKey));
+                if (designCaptions.getOrDefault(property.getNotEmptyCaption(), 0) > 1) {
+                    String formName = property.propertyFormName;
+                    int params = formName.indexOf('(');
+                    propCaption += " (" + (params >= 0 ? formName.substring(0, params) : formName) + ")";
+                }
+                String caption = propCaption;
+                for (int i = 2; !names.add(caption); i++)
+                    caption = propCaption + " (" + i + ")";
 
                 columnMap.put(caption, new Column(property, columnKey));
 
