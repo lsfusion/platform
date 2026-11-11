@@ -180,12 +180,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
         if(colCount <= 0 || rowCount <= 0)
             return;
 
-        NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows = new NativeHashMap<>();
-        for (int i = 0; i < rowCount; i++)
-            changeSelectionRows.put(getRowValue(i).getKey(), PValue.getPValue(true));
-
-        // not sending the columns that are already selected, otherwise a repeated select all would look like a select change
-        form.selectAll(groupObject, changeSelectionRows, updateColumnSelection(0, colCount - 1));
+        // not sending the rows and the columns that are already selected: a repeated select all would look like a select
+        // change of the columns, and leave the rows shown as not selected
+        form.selectAll(groupObject, GGridSelection.getAllRowChanges(rowSelectValues, i -> getRowValue(i).getKey(), rowCount), updateColumnSelection(0, colCount - 1));
     }
 
     @Nullable

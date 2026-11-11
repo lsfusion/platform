@@ -34,6 +34,19 @@ public final class GGridSelection {
         return changes;
     }
 
+    // the rows Select All changes, of the rows the grid has: those it has not as selected yet. One it has so already the
+    // server does not say again, and the form takes what is not said of a row it waits for as the row not being selected
+    // (GFormController.modifyFormChangesWithChangePropertyAsyncs)
+    public static NativeHashMap<GGroupObjectValue, PValue> getAllRowChanges(NativeHashMap<GGroupObjectValue, PValue> rowSelectValues, IntFunction<GGroupObjectValue> rowKey, int rowCount) {
+        NativeHashMap<GGroupObjectValue, PValue> changes = new NativeHashMap<>();
+        for (int i = 0; i < rowCount; i++) {
+            GGroupObjectValue key = rowKey.apply(i);
+            if(!GridDataRecord.isRowSelect(rowSelectValues.get(key)))
+                changes.put(key, PValue.getPValue(true));
+        }
+        return changes;
+    }
+
     // the column a range starts from once a move makes a column its end: that column where a range starts anew (MOVE)
     // or there is none yet (-1), else where it started
     public static int getStartColumn(int startSelectColumn, int column, GChangeSelection changeSelection) {

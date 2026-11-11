@@ -76,7 +76,9 @@ public class UiGridIT extends UiTest {
     }
 
     // a range of rows runs on from the row it starts from and shrinks back, a range of columns runs on beside it, a move
-    // without Shift starts both anew, and every row and column is selected (GGridSelection)
+    // without Shift starts both anew, and every row and column is selected (GGridSelection) - and stays shown so when
+    // selected again: the server says nothing of the rows it has as selected already, which the table took for their
+    // not being selected, showing none
     @Test
     public void rowsAndColumnsAreSelected() throws Exception {
         exec("UiGrid.uiGridSeedLines", "20");
@@ -105,6 +107,8 @@ public class UiGridIT extends UiTest {
         answered(0, () -> press("Control+a"));
         assertThat(count).hasText(Pattern.compile("(^|\\D)20$"));
         assertThat(nameSelected).isChecked();
+        assertThat(selectedCells).hasCount(60);
+        answered(0, () -> press("Control+a"));
         assertThat(selectedCells).hasCount(60);
         close(form);
     }
