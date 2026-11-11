@@ -1,0 +1,25 @@
+MODULE ListViewRowsInReact;
+
+REQUIRE System;
+
+// groups the form puts in a list view of the platform's - PIVOT, CUSTOM -, inside a React container: the platform
+// draws their grids, each in its view, and the container places them, as it places a grid given custom = NULL
+CLASS ListViewRowsItem;
+listViewRowsName = DATA STRING[20] (ListViewRowsItem);
+listViewRowsSum = DATA NUMERIC[14,2] (ListViewRowsItem);
+
+FORM listViewRowsInReact
+    OBJECTS p = ListViewRowsItem PIVOT
+    PROPERTIES(p) listViewRowsName, listViewRowsSum
+
+    OBJECTS c = ListViewRowsItem CUSTOM 'listViewRowsCards'
+    PROPERTIES(c) listViewRowsName, listViewRowsSum
+;
+
+DESIGN listViewRowsInReact {
+    NEW board {
+        custom = 'ListViewRowsBoard';
+        MOVE BOX(p);
+        MOVE BOX(c);
+    }
+}

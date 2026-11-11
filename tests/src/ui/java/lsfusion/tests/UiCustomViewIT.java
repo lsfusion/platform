@@ -316,6 +316,21 @@ public class UiCustomViewIT extends UiTest {
         close(form);
     }
 
+    // a group in CUSTOM view inside a React container: the platform draws its grid in that view with no custom = NULL
+    // on it, and the container places it - the group's React component draws the rows there and changes one
+    @Test
+    public void reactContainerPlacesTheGridOfACustomGroup() throws Exception {
+        String[] items = seed();
+        Locator form = open(FOLDER, "UiCustomView.uiCustomViewPlacedGroup");
+        Locator rows = form.locator(".ui-custom-cards-outer .lsf-platform .ui-custom-cards .ui-custom-card");
+        assertThat(rows).hasCount(2);
+        rows.nth(1).locator(".ui-custom-card-quantity").click();
+        assertThat(rows.nth(1).locator(".ui-custom-card-quantity")).hasText("12");
+        form.locator("button[lsfusion-container='PROPERTY(formApply())']").click();
+        check("UiCustomView.uiCustomViewCheckQuantity", items[1], "12");
+        close(form);
+    }
+
     // a React view places what the platform draws with a React component of a property's CUSTOM as it places the
     // platform's own editor: a row's cell in the row, the panel's value where the view puts it, each changing its own
     @Test

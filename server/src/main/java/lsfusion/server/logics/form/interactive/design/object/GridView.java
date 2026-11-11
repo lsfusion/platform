@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.identity.IDGenerator;
+import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
@@ -149,6 +150,13 @@ public class GridView extends GridPropertyView<GridView, GroupObjectView>{
 
     protected boolean isCustom() {
         return groupObject.entity.isCustom();
+    }
+
+    // a list view of the platform's the form gives the group - PIVOT, MAP, CALENDAR, CUSTOM - is a view of the grid's
+    // own as its custom is: a React view above it places the grid, as it places a property the form gives a CUSTOM
+    @Override
+    public boolean hasExplicitCustom() {
+        return super.hasExplicitCustom() || groupObject.entity.getListViewTypeValue() != ListViewType.GRID;
     }
 
     // copy-constructor

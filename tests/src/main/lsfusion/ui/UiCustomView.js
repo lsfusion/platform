@@ -176,6 +176,11 @@ lsfusion.custom.register('UiCustomViewCards', function ({data, controller}) {
             }, row.uiCustomViewQuantity))));
 }, 'reactView');
 
+// the container of uiCustomViewPlacedGroup: it places the grid the platform draws in its CUSTOM view
+window.UiCustomViewCardsOuter = function () {
+    return React.createElement('div', {className: 'ui-custom-cards-outer'}, React.createElement(lsfusion.Platform, {name: 'GRID(i)'}));
+};
+
 // the React view of the grid of uiCustomViewPlacedProperties: it draws the rows, and in each places the quantity the
 // platform draws with a React component and the one it draws with its own editor
 lsfusion.custom.register('UiCustomViewPlacedGrid', function ({data, controller}) {

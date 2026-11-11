@@ -877,7 +877,9 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // a group whose rows a React view draws is a list of rows: the server starts a group in another list view - PIVOT,
     // MAP, CALENDAR, CUSTOM - as the platform's view of that kind needs it (a pivot's group mode, or under asyncInit
     // waiting for the pivot to ask for it; a calendar's or a map's page size), which a view drawing the rows never asks
-    // for nor undoes. Refused when the form is built, rather than the view getting rows it did not ask for - or none
+    // for nor undoes. Refused when the form is built, rather than the view getting rows it did not ask for - or none:
+    // where the grid of such a group is drawn by a React component of its own, or the group is a tree's. Under a React
+    // view above it the grid is the platform's, which that view places (GridView.hasExplicitCustom)
     private void checkReactRowsListView() {
         for (GroupObjectView groupObject : getGroupObjectsIt()) {
             GroupObjectEntity group = groupObject.entity;
@@ -887,8 +889,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                 throw new IllegalStateException(formErrorPrefix() + "the rows of group '" + group.getSID() + "' are drawn by"
                         + " the React view of '" + rows.getSID() + "', but the group is in "
                         + listViewType.name() + " view, which the platform draws; a React view draws the rows in the"
-                        + " default GRID view - drop the view type, or give what draws the rows, the group's grid or its tree,"
-                        + " `custom = NULL` for the platform to draw them");
+                        + " default GRID view - drop the view type, or the React component of what draws the rows, the"
+                        + " group's grid or its tree, for the platform to draw them");
         }
     }
 

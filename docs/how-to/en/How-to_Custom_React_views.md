@@ -2033,10 +2033,11 @@ filter's row, the view drawing them, or the design removing them or a container 
 platform's filters off (`showFilters = FALSE`) — it stays `false` and its change is refused, saying why. Controls a view
 draws itself are its own to show, its [filter controls](#filter-controls). The view type switch switches the platform's
 table: where a view draws the rows, `listViews` is empty, `listView` is `null`, and a change is refused. A group whose
-rows a view draws has the default `GRID` list view type: one the form gives another (`OBJECTS o = Order PIVOT`, and
-`MAP`, `CALENDAR`, `CUSTOM`) is refused when the form is built, since the server starts such a group as the platform's
-view of that kind needs it — give what draws the rows, the group's grid or its tree, `custom = NULL` for the platform
-to draw them there.
+rows a view draws has the default `GRID` list view type. The grid of a group the form gives another
+(`OBJECTS o = Order PIVOT`, and `MAP`, `CALENDAR`, `CUSTOM`) is drawn by the platform in that view type, and a React
+container around it places the grid with `<Platform name="GRID(o)"/>`, as it places a grid given `custom = NULL`. A
+React component of the grid itself (`GRID(o) { custom = 'OrderCards'; }`) is refused for such a group when the form is
+built, since the server starts the group as the platform's view of that kind needs it.
 
 The toolbar's `export()`, `update()`, `manual.change()` and `listView.change()` return the `Promise` of their request.
 Inside a [batch](How-to_Custom_view_controller.md#batch) the members that ask the server return a rejected `Promise` with the reason. The settings of
@@ -2243,4 +2244,4 @@ function ItemCards({data, controller}) {
 window.lsfusion.custom.register('ItemCards', ItemCards, 'reactView');
 ```
 
-The component is given what the `update` of a classic render function is given ([How-to: Custom Components (objects)](How-to_Custom_components_objects.md)): the rows as `data.list`, each holding the values of its properties under their names, the `OPTIONS` of the group as `data.options`, and the same `controller`.
+The component is given what the `update` of a classic render function is given ([How-to: Custom Components (objects)](How-to_Custom_components_objects.md)): the rows as `data.list`, each holding the values of its properties under their names, the `OPTIONS` of the group as `data.options`, and the same `controller`. Inside a container a React view draws, the grid of such a group is drawn by the platform, and the view places it with `<Platform name="GRID(i)"/>`.

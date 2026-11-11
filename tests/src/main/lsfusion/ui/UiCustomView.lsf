@@ -157,6 +157,23 @@ FORM uiCustomViewReactGroup 'React group'
     ORDERS uiCustomViewName(i)
 ;
 
+// ... and the same group inside a React container (UiCustomViewCardsOuter): its grid stays the platform's, in its
+// CUSTOM view, and the container places it
+FORM uiCustomViewPlacedGroup 'Placed React group'
+    OBJECTS i = UiCustomViewItem CUSTOM 'UiCustomViewCards' OPTIONS uiCustomViewCardsOptions()
+    PROPERTIES(i) READONLY uiCustomViewName
+    PROPERTIES(i) uiCustomViewQuantity
+    FILTERS uiCustomViewShown(i)
+    ORDERS uiCustomViewName(i)
+;
+
+DESIGN uiCustomViewPlacedGroup {
+    NEW cards FIRST {
+        custom = 'UiCustomViewCardsOuter';
+        MOVE GRID(i);
+    }
+}
+
 // a React view of the grid that draws the rows and places in each what the platform draws of it - the quantity with
 // the React component its CUSTOM names, and with the platform's own editor (NOCUSTOM) -, in a React container that
 // places the grid and the quantity of the current item, which the platform draws with the same component
@@ -210,6 +227,7 @@ NAVIGATOR {
         NEW uiCustomViewCell;
         NEW uiCustomViewPlacedProperties;
         NEW uiCustomViewReactGroup;
+        NEW uiCustomViewPlacedGroup;
         NEW uiCustomViewClassicGroup;
         NEW uiCustomViewReactCells;
         NEW uiCustomViewFromNavigator;

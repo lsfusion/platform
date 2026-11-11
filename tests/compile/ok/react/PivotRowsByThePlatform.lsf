@@ -3,7 +3,7 @@ MODULE PivotRowsByThePlatform;
 REQUIRE System;
 
 // a group in PIVOT view inside a CUSTOM REACT container is fine where its grid has `custom = NULL`: the platform
-// draws the pivot, and the view places it (PivotRowsInReact is the one refused)
+// draws the pivot, and the view places it (so does a grid with no custom at all - ListViewRowsInReact)
 CLASS PivotPlatformItem;
 pivotPlatformName = DATA STRING[20] (PivotPlatformItem);
 pivotPlatformSum = DATA NUMERIC[14,2] (PivotPlatformItem);
