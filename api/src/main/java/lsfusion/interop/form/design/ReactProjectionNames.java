@@ -14,12 +14,13 @@ public class ReactProjectionNames {
     public static final String NODE_OWN = "properties,change";
     // the rows' part of a group (RowsPart), a tree's group's too, where the rows are drawn: on the node, and on a row
     public static final String GRID_PART = "list,byKey,keys,options";
-    public static final String GRID_VIEW_FILTER_PART = "viewFilters";
     public static final String GRID_ROW = "key,current,objects,background,foreground,selected";
     // ... and of a group of a tree (TreeRowsPart): its node verbs - not the tree's own part (TreeTablePart), which
     // carries no property -: on the node, and on a row
     public static final String TREE_PART = "expand,collapse,toggle,expandAll,collapseAll";
     public static final String TREE_ROW = "parent,hasChildren,expanded,loading";
+    // ... and of a list's group not in a tree (GridRowsPart): the view's own filters of its rows, on the node
+    public static final String VIEW_FILTERS_PART = "viewFilters";
     // the sortings' part, of a list's group, with its rows - a tree's are on the tree's node, which carries no property
     public static final String ORDERS_PART = "orders";
     // the user filters' part, where what FILTERS(g) holds is drawn

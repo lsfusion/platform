@@ -536,9 +536,6 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         call.accept(callback);
         return callback.get().promise;
     }
-    public JavaScriptObject noRequestPromise() {
-        return requestPromise(ExecCallback::onCancel);
-    }
     // ... told at once - the request made: the Promise kept under its index, the one kept there already shared (a
     // request in flight another call waits for); none to make: resolved; failing to make it: rejected with the reason
     // -, or later, the Promise returned taking the request. In a batch it is the batch's, which the batch's request
@@ -576,6 +573,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         JavaScriptObject promise = GController.rejectedControllerPromise(refusal);
         handled(promise);
         return promise;
+    }
+    // ... and of a view's call that has no request to make and knows it before it asks the form - a custom grid view's
+    // view filter on a property that is none of its columns -: the Promise of a call that tells there is none
+    public JavaScriptObject noRequestPromise() {
+        return requestPromise(ExecCallback::onCancel);
     }
 
     // ... and of a change the projection makes through what sends its request (change) - the user filters' model, a
@@ -2498,11 +2500,15 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         return requestIndex;
     }
 
+    // a group's view filters as the view that draws its rows states them - a custom grid view's, with the page size it
+    // asks for with them (GSimpleStateTableView), a React view's, which asks for none (GReactFormData.Verbs) -: the
+    // whole list, sent with its group, as an empty one takes them all off, and shown at once by what draws the rows
+    // (GGroupController.changeViewFilters)
     @Override
-    public JavaScriptObject changeViewFilters(GGroupObject group, List<GPropertyFilter> conditions, Integer pageSize, Runnable change) {
+    public JavaScriptObject changeViewFilters(GGroupObject group, List<GPropertyFilter> conditions, Integer pageSize) {
         return requestPromise(call -> {
-            change.run();
-            call.onSuccess(asyncResponseDispatch(new SetViewFilters(group.ID, GPropertyFilter.getFilterDTOs(conditions), pageSize)));
+            getGroupController(group).changeViewFilters(conditions);
+            call.onSuccess(asyncResponseDispatch(new SetViewFilters(group.ID, conditions.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(ArrayList::new)), pageSize)));
         });
     }
 

@@ -2,43 +2,35 @@ MODULE UiReactViewFilters;
 
 REQUIRE System, Utils, SystemEvents;
 
-// #1675: filter-only fixture uses existing ACTIVATE actions for first/last checks.
+// the form UiReactViewFiltersIT works on in the browser - the rows of a group a React view (UiReactViewFilters.js)
+// draws, which states view filters of its own for them -, and the action it seeds the items with
+
 CLASS UiReactViewFiltersItem 'Item';
 uiReactViewFiltersNumber 'Number' = DATA INTEGER (UiReactViewFiltersItem);
-uiReactViewFiltersName 'Name' = DATA STRING[100] (UiReactViewFiltersItem);
-uiReactViewFiltersQty 'Quantity' = DATA INTEGER (UiReactViewFiltersItem);
-uiReactViewFiltersShown = DATA BOOLEAN (UiReactViewFiltersItem);
+uiReactViewFiltersShown = DATA BOOLEAN (UiReactViewFiltersItem); // the items of the test that seeded last: the form shows only them
 
-FORM uiReactViewFilters 'React grid view filters'
+FORM uiReactViewFilters 'React view filters'
     OBJECTS i = UiReactViewFiltersItem
     PROPERTIES(i) READONLY number = uiReactViewFiltersNumber
-    PROPERTIES(i) name = uiReactViewFiltersName, qty = uiReactViewFiltersQty
     FILTERS uiReactViewFiltersShown(i)
     ORDERS number
 ;
-uiReactViewFiltersFirst() { ACTIVATE FIRST uiReactViewFilters.i; }
-uiReactViewFiltersLast() { ACTIVATE LAST uiReactViewFilters.i; }
-EXTEND FORM uiReactViewFilters
-    PROPERTIES() filterFirst = uiReactViewFiltersFirst, filterLast = uiReactViewFiltersLast
-;
+
 DESIGN uiReactViewFilters {
-    NEW uiReactViewFiltersView FIRST {
-        custom = 'UiReactViewFilters';
-        MOVE BOX(i);
-        MOVE PROPERTY(filterFirst);
-        MOVE PROPERTY(filterLast);
-    }
+    BOX(i) { custom = r'UiReactViewFilters'; }
 }
-onWebClientInit() + { onWebClientInit('UiReactViewFilters.js') <- 1; }
+
+onWebClientInit() + { onWebClientInit(r'UiReactViewFilters.js') <- 1; }
+
 NAVIGATOR {
     NEW FOLDER uiReactViewFiltersFolder 'UI React view filters' WINDOW toolbar { NEW uiReactViewFilters; }
 }
+
+// the items shown from now on, numbered 1 to n
 uiReactViewFiltersSeed (INTEGER n) {
     uiReactViewFiltersShown(UiReactViewFiltersItem i) <- NULL;
     FOR iterate(INTEGER k, 1, n) DO NEW i = UiReactViewFiltersItem {
         uiReactViewFiltersNumber(i) <- k;
-        uiReactViewFiltersName(i) <- 'item ' + k;
-        uiReactViewFiltersQty(i) <- k;
         uiReactViewFiltersShown(i) <- TRUE;
     }
     APPLY;

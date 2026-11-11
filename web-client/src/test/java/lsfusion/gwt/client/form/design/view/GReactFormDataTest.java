@@ -330,7 +330,6 @@ public class GReactFormDataTest extends GWTTestCase {
                 placements++;
                 return component.getReactPlace();
             }, verbs = new GReactFormData.Verbs() { // the form, as far as a member asks it: what it is handed is kept
-                public JavaScriptObject changeViewFilters(GGroupObject group, List<GPropertyFilter> conditions, Integer pageSize, Runnable change) { assertNull(pageSize); change.run(); return null; }
                 public JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key) { chosen = key; edits.add("current " + key.toKeyString()); return batching ? batchPromise : requestPromise; }
                 public JavaScriptObject changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue) {
                     changed = key;
@@ -413,6 +412,13 @@ public class GReactFormDataTest extends GWTTestCase {
                 public JavaScriptObject changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
                     edits.add("regularFilter " + filterGroup.sID + " " + (filter != null ? filter.caption : "none"));
                     controllers.filterGroups.get(filterGroup).showFilter(filter);
+                    return batching ? batchPromise : requestPromise;
+                }
+                // ... and a group's view filters, a view's with no page size: what draws its rows told, as the form does
+                public JavaScriptObject changeViewFilters(GGroupObject group, List<GPropertyFilter> conditions, Integer pageSize) {
+                    assertNull(pageSize);
+                    filtersCalls.add("changeViewFilters " + group.sID + describe(new ArrayList<>(conditions)));
+                    controllers.groups.get(group).changeViewFilters(conditions);
                     return batching ? batchPromise : requestPromise;
                 }
                 // ... and a batch: what it is handed while the batch runs comes between the batch and its sending - a
@@ -631,7 +637,6 @@ public class GReactFormDataTest extends GWTTestCase {
 
         // as the form does: the request numbered and sent, the group's controller told of the current object at once
         // (GFormController.changeGroupObject) - published by the member's call that asked it
-        public JavaScriptObject changeViewFilters(GGroupObject group, List<GPropertyFilter> conditions, Integer pageSize, Runnable change) { assertNull(pageSize); change.run(); return null; }
         public JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key) {
             ask("current " + group.getSID() + " " + key.toKeyString());
             controllers.groups.get(group).changeCurrentKey(key);
@@ -655,6 +660,7 @@ public class GReactFormDataTest extends GWTTestCase {
         }
         public boolean isManualUpdate(GGroupObject group) { return group.enableManualUpdate; }
         public JavaScriptObject changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) { return batching ? batchPromise : requestPromise; }
+        public JavaScriptObject changeViewFilters(GGroupObject group, List<GPropertyFilter> conditions, Integer pageSize) { return null; }
         public Widget getViewWidget(GComponent scope) { return null; }
         public void pressProperty(GPropertyDraw property, Event event) { }
         // as the form does: the request numbered and sent, the group's controller told of it
@@ -4135,6 +4141,56 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals(0, f.filtersCalls.size());
     }
 
+    // a grid's VIEW FILTERS are its rows': `viewFilters` on the group's node where a view draws them, there from the
+    // start, none of them. Their member states them all, an array - each condition read as one of `filters`' list is,
+    // and handed to the form with no page size -, and the node shows them at once, as the form tells what draws the
+    // rows, in the shape `filters` gives a condition, the snapshot a view had before left as it was; an empty array
+    // takes them off, the form's controller states them by the group's name, and in a batch the Promise is the
+    // batch's. What is no list of them is refused, the form handed nothing: no array, a condition joined by `or`, a
+    // name the group does not carry
+    public void testAGridsViewFiltersAreStatedThroughItsRowsMember() {
+        Fixture f = new Fixture();
+        assertEquals(0, length(field(f.node(), "viewFilters")));
+        assertNull(field(field(f.snapshots[1], "items"), "viewFilters")); // b holds a panel property of the group, no rows
+        JavaScriptObject member = member(f.sa, "items", "viewFilters");
+        assertNull(member(f.sb, "items", "viewFilters"));
+        JavaScriptObject before = f.data();
+        int published = f.publications[0];
+        assertSame(f.requestPromise, callChange(member, parse("[{\"property\": \"quantity\", \"compare\": \">=\", \"value\": 2},"
+                + " {\"property\": \"price\", \"negation\": true}]")));
+        assertEquals("changeViewFilters items quantity>= price" + f.price.getDefaultCompare() + " not", lastOf(f.filtersCalls));
+        assertEquals(published + 1, f.publications[0]);
+        JavaScriptObject viewFilters = field(f.node(), "viewFilters");
+        assertEquals(2, length(viewFilters));
+        assertEquals("quantity", text(at(viewFilters, 0), "property"));
+        assertEquals(">=", text(at(viewFilters, 0), "compare"));
+        assertEquals(2.0, number(at(viewFilters, 0), "value"), 0.0);
+        assertTrue(isFalse(at(viewFilters, 0), "negation") && isFalse(at(viewFilters, 0), "or"));
+        assertTrue(flag(at(viewFilters, 1), "negation") && noValue(at(viewFilters, 1))); // no value: compared with NULL
+        assertEquals(0, length(field(field(before, "items"), "viewFilters")));
+        f.controller(f.group).updateCurrentKey(f.two); // an unrelated change: the node is new, the array is not
+        f.projection.flush();
+        assertSame(viewFilters, field(f.node(), "viewFilters"));
+
+        callChange(member, parse("[]"));
+        assertEquals("changeViewFilters items", lastOf(f.filtersCalls));
+        assertEquals(0, length(field(f.node(), "viewFilters")));
+        assertSame(f.requestPromise, call(field(f.sb.controller, "form"), "changeViewFilters", "items", parse("[{\"property\": \"quantity\", \"value\": 5}]")));
+        assertEquals("quantity", text(at(field(f.node(), "viewFilters"), 0), "property"));
+        batch(f.sa.controller, () -> assertSame(f.batchPromise, callChange(member, parse("[{\"property\": \"price\", \"value\": 3}]"))));
+        assertEquals("price", text(at(field(f.node(), "viewFilters"), 0), "property"));
+
+        int calls = f.filtersCalls.size();
+        assertRefusal("controller.items.viewFilters.change(): takes the conditions, as an array - an empty one for none",
+                refusedChange(member, parse("{\"property\": \"price\", \"value\": 1}")));
+        assertRefusal("controller.items.viewFilters.change(): condition 1: view filters are all applied together, so 'or' cannot be true",
+                refusedChange(member, parse("[{\"property\": \"price\", \"value\": 1}, {\"property\": \"quantity\", \"value\": 1, \"or\": true}]")));
+        assertRefusal("controller.items.viewFilters.change(): condition 0: unknown property 'nope' of object group 'items'",
+                refusedChange(member, parse("[{\"property\": \"nope\", \"value\": 1}]")));
+        assertEquals(calls, f.filtersCalls.size());
+        assertEquals("price", text(at(field(f.node(), "viewFilters"), 0), "property"));
+    }
+
     // a sorting set elsewhere on a property with no integration SID is left out of `orders`, and said once; a sorting a
     // view asks for by a name its group does not carry is refused, and the form handed nothing
     public void testASortingTheProjectionCannotNameIsLeftOutAndAnUnknownOneRefused() {
@@ -5918,7 +5974,7 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(own(rows.node(), "options") && own(row, "background") && own(row, "foreground") && own(row, "selected"));
         String columns = join(field(rows.node(), "properties"));
         assertNodeReserved("the rows", rows.node(), field(rows.sa.controller, "items"), columns,
-                ReactProjectionNames.NODE_OWN, ReactProjectionNames.GRID_PART, ReactProjectionNames.GRID_VIEW_FILTER_PART, ReactProjectionNames.ORDERS_PART);
+                ReactProjectionNames.NODE_OWN, ReactProjectionNames.GRID_PART, ReactProjectionNames.VIEW_FILTERS_PART, ReactProjectionNames.ORDERS_PART);
         assertReserved("a row", row, columns, ReactProjectionNames.GRID_ROW);
         // ... and the controller of the container they are in: its own names - the form's controller and its batch -,
         // beside the group's and the properties'
@@ -6359,11 +6415,17 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("count items", f.toolbarCalls.get(3));
     }
 
-    // #1675: a known group whose rows the platform draws must get the owner refusal, without looking up a null React scope.
+    // ... but a group's view filters, which are its view's own: where the platform draws the group's rows a call has
+    // none to state - a table of the platform's states those of the views it shows the rows as -, nor has one of a
+    // group of a tree, and the form is handed nothing
     public void testTheFormsControllerRefusesViewFiltersWithoutReactRows() {
         Fixture f = new Fixture(Fixture::rowsByThePlatform);
-        assertEquals("controller.form.changeViewFilters('items'): requires a flat LIST group drawn by React",
-                refusedWith(field(f.sb.controller, "form"), "changeViewFilters", "items", parse("[]")));
+        assertRefusal("controller.form.changeViewFilters('items'): 'items' has no view filters to state: a view states them for the"
+                + " rows it draws, of a list group not in a tree", refusedWith(field(f.sb.controller, "form"), "changeViewFilters", "items", parse("[]")));
+        assertTrue(f.filtersCalls.isEmpty());
+        TreeFixture tree = new TreeFixture();
+        assertRefusal("controller.form.changeViewFilters('cat'): 'cat' has no view filters to state",
+                refusedWith(field(tree.sa.controller, "form"), "changeViewFilters", "cat", parse("[]")));
     }
 
     // ... and a name that names nothing the call reaches is refused, saying why - unknown, of another kind, no string -,

@@ -5,8 +5,8 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilterDTO;
 import java.util.ArrayList;
 
 public class SetViewFilters extends FormRequestCountingAction<ServerResponseResult> {
-    public ArrayList<GPropertyFilterDTO> filters;
     public int groupObjectID;
+    public ArrayList<GPropertyFilterDTO> filters;
     public Integer pageSize;
 
     public SetViewFilters() {}

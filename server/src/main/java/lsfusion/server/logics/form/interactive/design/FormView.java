@@ -519,10 +519,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         String[] reserved = NODE_OWN_NAMES;
         if (rowsScope(group) == scope) { // where the rows are drawn: the rows' part, a tree group's too
             reserved = ArrayUtils.addAll(reserved, GRID_PART_NAMES);
-            if (group.isInTree())
-                reserved = ArrayUtils.addAll(reserved, TREE_PART_NAMES);
-            else
-                reserved = ArrayUtils.addAll(reserved, GRID_VIEW_FILTER_PART_NAMES);
+            // ... and what its kind writes beside the rows: a tree group's node verbs, a grid's group's view filters
+            reserved = ArrayUtils.addAll(reserved, group.isInTree() ? TREE_PART_NAMES : VIEW_FILTERS_PART_NAMES);
         }
         // ... and where FILTERs of its properties are drawn, their parts under one name, a tree group's too
         if (getFilterComponents(group).stream().anyMatch(filter -> filterScope(filter) == scope))
@@ -1177,13 +1175,15 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // member hangs on the group's -, so a part that writes on the node has one array to update, not two. First the
     // rows' part of a group (GReactFormData.RowsPart), a tree's group's too, where the rows are drawn
     private static final String[] GRID_PART_NAMES = reserved(ReactProjectionNames.GRID_PART);
-    private static final String[] GRID_VIEW_FILTER_PART_NAMES = reserved(ReactProjectionNames.GRID_VIEW_FILTER_PART);
     private static final String[] GRID_ROW_NAMES = reserved(ReactProjectionNames.GRID_ROW, PROTO);
     // ... and of a group of a tree (GReactFormData.TreeRowsPart): its node verbs, and where each row hangs - not the
     // tree's own part (TreeTablePart), which carries no property. A group outside a tree states none of it, and a
     // property of one may take these names
     private static final String[] TREE_PART_NAMES = reserved(ReactProjectionNames.TREE_PART);
     private static final String[] TREE_ROW_NAMES = reserved(ReactProjectionNames.TREE_ROW);
+    // ... and of a list's group not in a tree (GReactFormData.GridRowsPart): the view filters the view that draws its
+    // rows states. A group of a tree has none, and a property of one may take the name
+    private static final String[] VIEW_FILTERS_PART_NAMES = reserved(ReactProjectionNames.VIEW_FILTERS_PART);
     // the sortings' part, placed with the rows - the order they are drawn in -, as a group's design has no box of its
     // sortings to place them by
     private static final String[] ORDERS_PART_NAMES = reserved(ReactProjectionNames.ORDERS_PART);

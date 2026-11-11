@@ -1,9 +1,9 @@
-// #1675: expose the own-filter projection to the browser regression.
+// the React view UiReactViewFiltersIT uses for the group's rows, in plain JS: it draws their numbers, and hands on its
+// data and controller (window.uiReactViewFilters) for the test to state the view filters with
 window.UiReactViewFilters = function (props) {
-    var e = React.createElement, data = props.data, controller = props.controller;
-    window.uiReactViewFilters = {data: data, controller: controller};
-    return e('div', null, data.i.list.map(function (row) {
-        return e('div', {key: row.key, 'data-number': row.number.value},
-            [row.qty.value, row.name.value, row.number.value].join('|'));
+    var e = React.createElement;
+    window.uiReactViewFilters = {data: props.data, controller: props.controller};
+    return e('div', null, props.data.i.list.map(function (row) {
+        return e('div', {key: row.key}, String(row.number.value));
     }));
 };

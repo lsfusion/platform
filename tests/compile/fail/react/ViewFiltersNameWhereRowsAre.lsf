@@ -1,0 +1,17 @@
+MODULE ViewFiltersNameWhereRowsAre;
+
+REQUIRE System;
+
+// where a CUSTOM REACT container draws the rows of a group not in a tree, the group's node carries `viewFilters` - the
+// view's own filters of those rows - beside `list`, `keys` and `orders`, so a property drawn there may not take that name
+CLASS ViewFiltersItem;
+viewFiltersItemName = DATA STRING[50] (ViewFiltersItem);
+
+FORM viewFiltersNameWhereRowsAre
+    OBJECTS i = ViewFiltersItem
+    PROPERTIES(i) viewFiltersItemName EXTID r'viewFilters'
+;
+
+DESIGN viewFiltersNameWhereRowsAre {
+    BOX(i) { custom = r'ItemBoard'; }
+}

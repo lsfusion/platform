@@ -59,7 +59,6 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.GUserFilter;
 import lsfusion.gwt.client.form.filter.user.GUserFiltersController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GComponentLabelReader;
 import lsfusion.gwt.client.form.property.GComponentReader;
 import lsfusion.gwt.client.form.property.GExtraLabelReader;
@@ -132,7 +131,6 @@ public class GReactFormData {
     public interface Verbs {
         // ===== the current object of a group whose rows a view draws: one of those rows
         JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key);
-        JavaScriptObject changeViewFilters(GGroupObject group, List<GPropertyFilter> conditions, Integer pageSize, Runnable change);
         // ===== a property: its cell - its key (EMPTY: the current objects), its value (PValue.UNDEFINED: its change
         // event, or the action) and what the cell shows until the answer (PValue.UNDEFINED: the value it has) -, the
         // Promise of the change's request returned, and the Promise of the cell's suggestion list, from the server's
@@ -167,6 +165,11 @@ public class GReactFormData {
         JavaScriptObject changeUserFilters(List<GGroupObject> groups, Runnable change);
         // ===== a filter group of a group: the filter selected in it - null: none -, as its member read it
         JavaScriptObject changeRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter);
+        // ===== the view filters of a list group whose rows a view draws - the conditions the view states of its own,
+        // beside the table's user filters -, as its member read them (changeViewConditions): the whole list, which the
+        // form sends and tells what draws the rows of (GGroupController.changeViewFilters) - with no page size, which
+        // only a custom grid view states with them
+        JavaScriptObject changeViewFilters(GGroupObject group, List<GPropertyFilter> conditions, Integer pageSize);
         // ===== what a toolbar asks where a view draws it - requests: a group's (GridToolbarPart), the
         // count of its rows and the sum of a column of them, answered or failed, ...
         JavaScriptObject countRecords(String surface, GGroupObject group);
@@ -1237,20 +1240,33 @@ public class GReactFormData {
                 return "an action, which the server is never asked to filter by";
             return "it is grouped in columns, and a condition names no column";
         }
-        GPropertyFilter readCondition(String errorPrefix, GGridProperty table, JavaScriptObject condition) {
-            GPropertyDraw property = readProperty(errorPrefix, table, condition);
-            return readFilterCondition(errorPrefix, condition, GPropertyFilter.getBase(getConditionColumn(property), null),
-                    getOwnField(condition, "value"));
+        // the conditions an array states, each a new one, named in a message by its place in the array: the list the
+        // table's user filters are stated as (changeAll), and the view filters of a grid's rows (changeViewConditions)
+        ArrayList<GPropertyFilter> readConditions(String errorPrefix, GGridProperty table, JavaScriptObject conditions) {
+            ArrayList<GPropertyFilter> result = new ArrayList<>();
+            int size = jsArrayLength(conditions);
+            for (int i = 0; i < size; i++) {
+                String itemPrefix = errorPrefix + "condition " + i + ": ";
+                JavaScriptObject condition = jsArrayGet(conditions, i);
+                GPropertyDraw property = readProperty(itemPrefix, table, condition);
+                JavaScriptObject value = getOwnField(condition, "value"); // read once: a condition is what was read
+                result.add(readFilterCondition(itemPrefix, condition, GPropertyFilter.getBase(getConditionColumn(property), null), value));
+            }
+            return result;
         }
+        // ... and a condition as a list gives it, its property named as the table's lists name it: `filters`'
+        // (FiltersPart.writeFilters), and a grid's rows' `viewFilters` (GridRowsPart.changeViewFilters)
         JavaScriptObject writeCondition(GGridProperty table, GPropertyFilter condition) {
             GPropertyDraw property = condition.column.property;
             JavaScriptObject entry = newObject();
             setField(entry, "property", getListName(table, property));
             setField(entry, "compare", condition.compare.toString());
-            // The FILTER type, as readFilterCondition reads it; no property renderer (e.g. an image).
+            // the FILTER type, the one the platform's own filter editor uses for this cell
+            // - and the one a condition is read back with (readFilterCondition)
+            // - and no property: one named `image` draws its own value as an image, while a condition's is plain
             setField(entry, "value", JSValueConverter.convertToJSValue(property.getFilterBaseType(), null, true, condition.value.value));
             setField(entry, "negation", condition.negation);
-            // GPropertyFilter.junction is the conjunction flag; .lsf says `or`.
+            // GPropertyFilter.junction is the conjunction flag; .lsf says `or`
             setField(entry, "or", !condition.junction);
             return entry;
         }
@@ -1261,14 +1277,7 @@ public class GReactFormData {
         // the conditions a view can name, the rest keeping their places
         @Override
         JavaScriptObject changeAll(String surface, GGridProperty table, JavaScriptObject conditions) {
-            String errorPrefix = controllerPrefix(surface);
-            ArrayList<GPropertyFilter> result = new ArrayList<>();
-            int size = jsArrayLength(conditions);
-            for (int i = 0; i < size; i++) {
-                String itemPrefix = errorPrefix + "condition " + i + ": ";
-                JavaScriptObject condition = jsArrayGet(conditions, i);
-                result.add(readCondition(itemPrefix, table, condition));
-            }
+            ArrayList<GPropertyFilter> result = readConditions(controllerPrefix(surface), table, conditions);
             return verbs.changeUserFilters(table.getGroups(), () -> getUserFilters(table).changeConditions(result, GReactFormData::isProjectableCondition));
         }
         // ... one condition, in the working list - those an earlier call of a batch stated included -: a value given
@@ -1280,7 +1289,7 @@ public class GReactFormData {
         JavaScriptObject changeOne(String surface, GGridProperty table, JavaScriptObject condition) {
             String errorPrefix = controllerPrefix(surface);
             GPropertyDraw property = readProperty(errorPrefix, table, condition);
-            JavaScriptObject value = getOwnField(condition, "value"); // read once, as in changeAll
+            JavaScriptObject value = getOwnField(condition, "value"); // read once, as in readConditions
             GUserFiltersController userFilters = getUserFilters(table);
             Column column = getConditionColumn(property);
             GPropertyFilter stated = readFilterCondition(errorPrefix, condition, GPropertyFilter.getBase(column, userFilters.getValueBase(column, false)), value);
@@ -1891,38 +1900,40 @@ public class GReactFormData {
         }
     }
 
-    // ... of the group of a GRID - a list's group not in a tree -: its rows alone, none of them a node to open
-    // (GGroupController's defaults); what the grid's toolbar and filter input controller ask of the grid as a whole is
-    // its table's (GridTablePart)
+    // ... of the group of a GRID - a list's group not in a tree -: its rows, none of them a node to open
+    // (GGroupController's defaults), and its view filters - the conditions the view that draws the rows has the server
+    // filter them by, its own: beside the table's user filters, which a user changes and a FILTER states, and applied
+    // with them; what the grid's toolbar and filter input controller ask of the grid as a whole is its table's
+    // (GridTablePart)
     private final class GridRowsPart extends RowsPart {
         GridRowsPart(GroupNode node) {
             super(node);
         }
+        // `viewFilters`, beside its rows: there from the start, none of them yet
         @Override
         void initialize() {
             super.initialize();
-            setField(node.edit(), "viewFilters", emptyArray());
+            setField(node.edit(), VIEW_FILTERS, emptyArray());
         }
+        // ... and their member, on the group's: change(conditions) states them all (changeViewConditions)
         @Override
-        void putMember(JavaScriptObject member) {
-            super.putMember(member);
-            addGridVerbs(this, member, node.name);
+        void putMember(JavaScriptObject groupMember) {
+            super.putMember(groupMember);
+            setField(groupMember, VIEW_FILTERS, makeViewFiltersMember(GReactFormData.this, node.group, node.name + "." + VIEW_FILTERS + ".change()"));
         }
-        JavaScriptObject changeViewFilters(String surface, JavaScriptObject conditions) {
-            String prefix = controllerPrefix(surface);
-            if (!isJSArray(conditions)) throw refusal(prefix + "expects an array of conditions");
-            ArrayList<GPropertyFilter> filters = new ArrayList<>();
-            JavaScriptObject requested = emptyArray();
-            for (int i = 0; i < jsArrayLength(conditions); i++) {
-                JavaScriptObject condition = jsArrayGet(conditions, i);
-                GPropertyFilter filter = filtersList.readCondition(prefix, node.group.grid, condition);
-                if (!filter.junction) throw refusal(prefix + "view filters support AND only; 'or: true' is not supported");
-                filters.add(filter);
-                push(requested, filtersList.writeCondition(node.group.grid, filter));
-            }
-            return verbs.changeViewFilters(node.group, filters, null, () -> setField(node.edit(), "viewFilters", requested));
+        // ... and the conditions, as the form sends them, whoever states them - this view's member, the form's
+        // controller - (GGroupController.changeViewFilters): shown at once, each as a condition of `filters` is
+        // (writeCondition), and kept as shown - the server reports no view filters, so what a request that fails
+        // stated stays, as it does of the user filters
+        @Override
+        public void changeViewFilters(List<GPropertyFilter> conditions) {
+            JavaScriptObject array = emptyArray();
+            for (GPropertyFilter condition : conditions)
+                push(array, filtersList.writeCondition(node.group.grid, condition));
+            setField(node.edit(), VIEW_FILTERS, array);
         }
     }
+    private static final String VIEW_FILTERS = "viewFilters";
     // ... of a group of a TREE: its rows say where they hang in it, from the hierarchy sent beside them. A node's
     // children are rows of its own group, when that one recurses, or of the group below; the tree draws all its groups,
     // so the rows of each of them are here, each group's its part - and what the rows of one group state about those
@@ -3120,6 +3131,22 @@ public class GReactFormData {
                 + "the conditions, and its toolbar turns its filters off (showFilters)");
     }
 
+    // the VIEW FILTERS of a grid's group whose rows a view draws, as a call states them: all of them, an array - an
+    // empty one for none -, each read as a condition of the user filters' list is (FiltersTableList.readConditions):
+    // on a property of the group, wherever it is drawn, what it does not state the default way, no value comparing
+    // with NULL. They are applied together, as the server keeps them, so one joined to the next by `or` is refused.
+    // What draws the rows is told of them by the form (Verbs.changeViewFilters)
+    private JavaScriptObject changeViewConditions(String surface, GGroupObject group, JavaScriptObject conditions) {
+        String errorPrefix = controllerPrefix(surface);
+        if (!isJSArray(conditions))
+            throw refusal(errorPrefix + "takes the conditions, as an array - an empty one for none");
+        ArrayList<GPropertyFilter> result = filtersList.readConditions(errorPrefix, group.grid, conditions);
+        for (int i = 0; i < result.size(); i++)
+            if (!result.get(i).junction)
+                throw refusal(errorPrefix + "condition " + i + ": view filters are all applied together, so 'or' cannot be true");
+        return verbs.changeViewFilters(group, result, null);
+    }
+
     // a PROPERTY'S SUGGESTION LIST - getValues(value[, {row, mode, count}]) of its member, getValues(name, value[,
     // ...]) of the form's controller -: the Promise of the list the server offers for the cell the call names, from the
     // lookup `mode` picks (objects, values, change), `count` more than the server's own number - refused while the form
@@ -3232,16 +3259,6 @@ public class GReactFormData {
         GGroupObject group = readGroup(form, errorPrefix, name);
         return verbs.changeCurrentObject(group, readFormRow(errorPrefix, group, objectOrKey));
     }
-    private GridRowsPart readReactGrid(String surface, GGroupObject group) {
-        GComponent scope = rowsScope(group);
-        ViewState state = scope == null ? null : views.get(scope);
-        if (group.isInTree() || group.grid == null || group.viewType != GClassViewType.LIST || state == null || !(state.getRowsPart(group) instanceof GridRowsPart))
-            throw refusal(controllerPrefix(surface) + "requires a flat LIST group drawn by React");
-        return (GridRowsPart) state.getRowsPart(group);
-    }
-    private JavaScriptObject changeViewFilters(String surface, String name, JavaScriptObject conditions) {
-        return readReactGrid(surface, readGroup(form, controllerPrefix(surface), name)).changeViewFilters(surface, conditions);
-    }
     // ... a node of a tree's group, opened or closed, and every node of it and of the groups below it
     private JavaScriptObject expand(String surface, String name, JavaScriptObject objectOrKey) {
         String errorPrefix = controllerPrefix(surface);
@@ -3346,6 +3363,17 @@ public class GReactFormData {
     private JavaScriptObject changeFilterControlsVisible(String surface, String name, Object shown) {
         GGridProperty table = readTable(controllerPrefix(surface), name);
         return toggleFilterControls(surface, table.getGroups(), getFilterInput(table), shown);
+    }
+    // ... and the view filters of a grid's group whose rows a view draws: the view's own, so a group whose rows the
+    // platform draws has none for a call to state - the views a table of the platform's shows the rows as state their
+    // own, and a switch of them takes them off (gridRows)
+    private JavaScriptObject changeViewFilters(String surface, String name, JavaScriptObject conditions) {
+        String errorPrefix = controllerPrefix(surface);
+        GGroupObject group = readGroup(form, errorPrefix, name);
+        if (group.isInTree() || !(gridRows.get(group.grid) instanceof GridTablePart))
+            throw refusal(errorPrefix + "'" + name + "' has no view filters to state: a view states them for the rows it"
+                    + " draws, of a list group not in a tree");
+        return changeViewConditions(surface, group, conditions);
     }
     // the user filters of a table, its groups' one model
     private GUserFiltersController getUserFilters(GGridProperty table) {
@@ -3498,12 +3526,6 @@ public class GReactFormData {
         };
     }-*/;
 
-    private static native void addGridVerbs(GridRowsPart part, JavaScriptObject member, String sid) /*-{
-        member.viewFilters = {change: function (conditions) {
-            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridRowsPart::changeViewFilters(*)(sid + ".viewFilters.change()", conditions);
-        }};
-    }-*/;
-
     // ... and on a group of a TREE, its node verbs: a node IS a row, so the verbs that open one are the group's - and
     // those that open all of them, a level, and on the top group the whole tree
     private static native void addNodeVerbs(TreeRowsPart part, JavaScriptObject member, String sid) /*-{
@@ -3546,6 +3568,16 @@ public class GReactFormData {
         return {
             change: function (items) {
                 return list.@lsfusion.gwt.client.form.design.view.GReactFormData.TableList::change(*)(surface, table, items);
+            }
+        };
+    }-*/;
+
+    // a grid's group's VIEW FILTERS, on its member where its rows are drawn: change(conditions) states them all
+    // (changeViewConditions)
+    private static native JavaScriptObject makeViewFiltersMember(GReactFormData projection, GGroupObject group, String surface) /*-{
+        return {
+            change: function (conditions) {
+                return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeViewConditions(*)(surface, group, conditions);
             }
         };
     }-*/;
@@ -3634,9 +3666,6 @@ public class GReactFormData {
         controller.changeObject = function (group, row) {
             return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeObject(*)(surface('changeObject', group), name(group), row);
         };
-        controller.changeViewFilters = function (group, conditions) {
-            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeViewFilters(*)(surface('changeViewFilters', group), name(group), conditions);
-        };
         controller.expand = function (group, row) {
             return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::expand(*)(surface('expand', group), name(group), row);
         };
@@ -3678,6 +3707,9 @@ public class GReactFormData {
         };
         controller.changeFilterControlsVisible = function (table, shown) {
             return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeFilterControlsVisible(*)(surface('changeFilterControlsVisible', table), name(table), shown);
+        };
+        controller.changeViewFilters = function (group, conditions) {
+            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeViewFilters(*)(surface('changeViewFilters', group), name(group), conditions);
         };
         controller.getCount = function (group) {
             return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::getCount(*)(surface('getCount', group), name(group));

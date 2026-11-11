@@ -547,7 +547,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     // ... the Promise of their request
     private JavaScriptObject setViewFilters(int pageSize, GPropertyFilter... filters) {
-        JavaScriptObject promise = form.changeViewFilters(grid.groupObject, Arrays.asList(filters), pageSize, () -> {});
+        JavaScriptObject promise = form.changeViewFilters(grid.groupObject, Arrays.asList(filters), pageSize);
         setPageSize(pageSize);
         return promise;
     }

@@ -2,12 +2,14 @@ package lsfusion.gwt.client.form.object.table.controller;
 
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GGroupObjectPropertyReader;
 import lsfusion.gwt.client.form.property.PValue;
 
 import java.util.ArrayList;
+import java.util.List;
 
 // THE FORM'S CONTROLLER OF A GROUP, settled once where the design says who draws its rows
 // (GFormController.groupControllers): the platform's grid or tree, or the rows' part where React draws them - all the
@@ -36,6 +38,11 @@ public interface GGroupController {
     }
     // ... and a node and every node under it, opened - a tree's toolbar only opens
     default void changeExpandedUnder(GGroupObjectValue key, long requestIndex) {
+    }
+    // ... and the group's view filters, the conditions the view that draws its rows states of its own, which the
+    // server reports to nobody: shown where a view shows them, on the rows React draws (GReactFormData.GridRowsPart) -
+    // a view of the platform's keeps what it states itself
+    default void changeViewFilters(List<GPropertyFilter> conditions) {
     }
     // what a reader of the group brings (GGroupObjectPropertyReader): an attribute of its rows or of the group
     void updateAttribute(GGroupObjectPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial);
