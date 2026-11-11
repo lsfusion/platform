@@ -157,6 +157,27 @@ FORM uiCustomViewReactGroup 'React group'
     ORDERS uiCustomViewName(i)
 ;
 
+// a React view of the grid that draws the rows and places in each what the platform draws of it - the quantity with
+// the React component its CUSTOM names, and with the platform's own editor (NOCUSTOM) -, in a React container that
+// places the grid and the quantity of the current item, which the platform draws with the same component
+FORM uiCustomViewPlacedProperties 'Placed custom properties'
+    OBJECTS i = UiCustomViewItem
+    PROPERTIES(i) READONLY uiCustomViewName
+    PROPERTIES(i) uiCustomViewQuantity CUSTOM 'UiCustomViewReactCell'
+    PROPERTIES(i) standardQuantity = uiCustomViewQuantity NOCUSTOM
+    PROPERTIES(i) PANEL panelQuantity = uiCustomViewQuantity CUSTOM 'UiCustomViewReactCell'
+    FILTERS uiCustomViewShown(i)
+    ORDERS uiCustomViewName(i)
+;
+
+DESIGN uiCustomViewPlacedProperties {
+    NEW cards FIRST {
+        custom = 'UiCustomViewPlacedOuter';
+        MOVE GRID(i) { custom = 'UiCustomViewPlacedGrid'; }
+        MOVE PROPERTY(panelQuantity);
+    }
+}
+
 // a group whose CUSTOM is a classic render function named as a component is (UiCustomViewClassicGroup)
 FORM uiCustomViewClassicGroup 'Classic group'
     OBJECTS i = UiCustomViewItem CUSTOM 'UiCustomViewClassicGroup'
@@ -187,6 +208,7 @@ NAVIGATOR {
         NEW uiCustomViewCalls;
         NEW uiCustomViewClient;
         NEW uiCustomViewCell;
+        NEW uiCustomViewPlacedProperties;
         NEW uiCustomViewReactGroup;
         NEW uiCustomViewClassicGroup;
         NEW uiCustomViewReactCells;

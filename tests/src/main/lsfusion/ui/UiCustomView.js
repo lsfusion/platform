@@ -176,6 +176,25 @@ lsfusion.custom.register('UiCustomViewCards', function ({data, controller}) {
             }, row.uiCustomViewQuantity))));
 }, 'reactView');
 
+// the React view of the grid of uiCustomViewPlacedProperties: it draws the rows, and in each places the quantity the
+// platform draws with a React component and the one it draws with its own editor
+lsfusion.custom.register('UiCustomViewPlacedGrid', function ({data, controller}) {
+    const h = React.createElement;
+    return h('div', {className: 'ui-custom-placed-grid'},
+        data.i.list.map(row => h('div', {key: row.key, className: 'ui-custom-placed-row', 'data-current': String(row.current)},
+            h('button', {onClick: () => controller.i.change(row)}, row.uiCustomViewName.value),
+            h(lsfusion.Platform, {name: 'i.uiCustomViewQuantity', row: row}),
+            h(lsfusion.Platform, {name: 'i.standardQuantity', row: row, className: 'ui-custom-standard-cell'}))));
+}, 'reactView');
+
+// ... and the container around it: the grid, and the quantity of the current item
+window.UiCustomViewPlacedOuter = function () {
+    const h = React.createElement;
+    return h(React.Fragment, null,
+        h(lsfusion.Platform, {name: 'GRID(i)'}),
+        h(lsfusion.Platform, {name: 'i.panelQuantity', className: 'ui-custom-placed-panel'}));
+};
+
 // the classic render function a group's CUSTOM names, named as a component is and not registered as one
 window.UiCustomViewClassicGroup = function () {
     return {

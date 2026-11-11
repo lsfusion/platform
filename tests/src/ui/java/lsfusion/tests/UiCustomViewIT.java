@@ -316,6 +316,42 @@ public class UiCustomViewIT extends UiTest {
         close(form);
     }
 
+    // a React view places what the platform draws with a React component of a property's CUSTOM as it places the
+    // platform's own editor: a row's cell in the row, the panel's value where the view puts it, each changing its own
+    @Test
+    public void reactFormPlacesPlatformCustomPropertiesInGridAndPanel() throws Exception {
+        String[] items = seed();
+        Locator form = open(FOLDER, "UiCustomView.uiCustomViewPlacedProperties");
+        Locator rows = form.locator(".ui-custom-placed-grid .ui-custom-placed-row");
+        Locator panel = form.locator(".ui-custom-placed-panel lsfusion-react-cell .ui-custom-react-cell");
+        assertThat(rows).hasCount(2);
+        assertThat(form.locator("lsfusion-react-cell")).hasCount(3);
+        assertThat(rows.first().locator(".ui-custom-react-cell")).hasText("1");
+        assertThat(rows.first().locator(".ui-custom-standard-cell")).hasText("1");
+        assertThat(panel).hasAttribute("data-matching-context", "true");
+        Locator second = rows.nth(1);
+        Locator cell = second.locator(".ui-custom-react-cell");
+        assertThat(cell).hasAttribute("data-matching-context", "true");
+        rows.first().getByText(items[0]).click();
+        assertThat(panel).hasText("1");
+        cell.click();
+        assertThat(cell).hasText("12");
+        assertThat(panel).hasText("1");
+        second.getByText(items[1]).click();
+        assertThat(second).hasAttribute("data-current", "true");
+        assertThat(panel).hasText("12");
+        panel.click();
+        assertThat(panel).hasText("22");
+        assertThat(cell).hasText("22");
+        assertThat(cell).hasAttribute("data-stable-controller", "true");
+        assertThat(panel).hasAttribute("data-stable-controller", "true");
+        assertThat(rows.first().locator(".ui-custom-react-cell")).hasText("1");
+        form.locator("button[lsfusion-container='PROPERTY(formApply())']").click();
+        check("UiCustomView.uiCustomViewCheckQuantity", items[0], "1");
+        check("UiCustomView.uiCustomViewCheckQuantity", items[1], "22");
+        close(form);
+    }
+
     // a classic render function of a group named as a component is, and not registered as one, is called as before
     @Test
     public void anUppercaseClassicCustomGroupStillUsesCallbacks() throws Exception {
