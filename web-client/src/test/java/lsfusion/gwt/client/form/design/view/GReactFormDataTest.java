@@ -342,6 +342,12 @@ public class GReactFormDataTest extends GWTTestCase {
                     edits.add("column " + property.integrationSID + describeColumns(selection));
                     return batching ? batchPromise : requestPromise;
                 }
+                public JavaScriptObject copySelection(String surface, ArrayList<GPropertyDraw> properties) { edits.add("copy" + names(properties)); return requestPromise; }
+                public JavaScriptObject copyText(String surface, String text) { edits.add("copy '" + text + "'"); return requestPromise; }
+                public JavaScriptObject pasteSelection(String surface, ArrayList<GPropertyDraw> properties, List<List<String>> table, List<List<String>> patterns, boolean groupChange) {
+                    edits.add("paste" + names(properties) + " " + table + " by " + patterns + (groupChange ? " into every cell" : ""));
+                    return requestPromise;
+                }
                 public JavaScriptObject changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue) {
                     changed = key;
                     changedTo = value;
@@ -651,6 +657,9 @@ public class GReactFormDataTest extends GWTTestCase {
         public JavaScriptObject scrollCurrentObject(GGroupObject group, boolean toEnd, GChangeSelection selection) { return null; }
         public JavaScriptObject selectAllRows(GGroupObject group, NativeHashMap<GGroupObjectValue, PValue> selectionRows, ArrayList<GGridTable.ColumnSelection> selection) { return null; }
         public JavaScriptObject changeActiveProperty(GGroupObject group, GPropertyDraw property, ArrayList<GGridTable.ColumnSelection> selection) { return null; }
+        public JavaScriptObject copySelection(String surface, ArrayList<GPropertyDraw> properties) { return null; }
+        public JavaScriptObject copyText(String surface, String text) { return null; }
+        public JavaScriptObject pasteSelection(String surface, ArrayList<GPropertyDraw> properties, List<List<String>> table, List<List<String>> patterns, boolean groupChange) { return null; }
         public JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key, GChangeSelection selection, NativeHashMap<GGroupObjectValue, PValue> selectionRows) {
             ask("current " + group.getSID() + " " + key.toKeyString());
             controllers.groups.get(group).changeCurrentKey(key);
@@ -1368,6 +1377,13 @@ public class GReactFormDataTest extends GWTTestCase {
         StringBuilder text = new StringBuilder();
         for (GGridTable.ColumnSelection column : selection)
             text.append(" ").append(column.property.integrationSID).append(column.set ? "+" : "-");
+        return text.toString();
+    }
+    // ... and the columns a clipboard operation is of, by their names
+    private static String names(ArrayList<GPropertyDraw> properties) {
+        StringBuilder text = new StringBuilder();
+        for (GPropertyDraw property : properties)
+            text.append(" ").append(property.integrationSID);
         return text.toString();
     }
     // ... a list of sortings, each its property's name and direction, as a test reads it
@@ -6525,6 +6541,58 @@ public class GReactFormDataTest extends GWTTestCase {
         return ['price', 'quantity'].map(function (name) { return node[name].current + ' ' + node[name].selected; }).join(', ');
     }-*/;
 
+    // ... and its CLIPBOARD. The cells are rows in columns, each side its own: the rows selected, the server's, while
+    // the view shows one as selected, else the current row; the columns of the range that the form shows, else the
+    // current column. Of the current row copy is the text the view has, a line of its cells, and one value goes into
+    // those cells; of the rows selected copy and paste hand the form the columns, and one value goes into every one of
+    // the rows. A table goes into the columns from the current one on, as many as it is wide, as the text states it -
+    // each value read by the pattern of its cell, the cell's own in a row the view has (quantity in the first), else
+    // the property's. Nothing is pasted from an empty text, and what is no text is refused
+    public void testAGridsClipboard() {
+        Fixture f = new Fixture(fixture -> {
+            fixture.quantity.patternReader = new GExtraPropReader(21, 10, GFormChanges.GPropertyReadType.PATTERN);
+            fixture.quantity.pattern = "0";
+        });
+        GFormChanges patterns = new GFormChanges();
+        put(patterns, f.quantity.patternReader, f.one, "0.0");
+        f.apply(patterns);
+        JavaScriptObject items = field(f.sa.controller, "items"), properties = field(items, "properties"), form = field(f.sb.controller, "form");
+        assertSame(f.requestPromise, call(items, "copy"));
+        assertEquals("copy ''", lastOf(f.edits)); // no column yet
+        call(items, "paste", "7");
+        assertEquals("paste [[]] by [[]]", lastOf(f.edits)); // ... so nothing to paste into
+        call(properties, "change", "quantity", parse("{\"selection\": \"keep\"}")); // a current column, no range of them
+        call(form, "copy", "items");
+        assertEquals("copy '1.0'", lastOf(f.edits)); // the current row in it, as the form formats it - by the cell's own pattern
+        call(form, "paste", "items", "7");
+        assertEquals("paste quantity [[7]] by [[0.0]]", lastOf(f.edits)); // ... and into that cell
+        call(properties, "change", "price");
+        call(properties, "change", "quantity", parse("{\"selection\": \"extend\"}")); // a range of columns: the current row in them
+        call(items, "copy");
+        assertEquals("copy '10\t1.0'", lastOf(f.edits));
+        call(items, "paste", "7");
+        assertEquals("paste price quantity [[7, 7]] by [[null, 0.0]]", lastOf(f.edits));
+        GFormChanges selected = new GFormChanges();
+        put(selected, f.group.rowSelectReader, f.one, true);
+        f.apply(selected); // a row shown as selected: the rows selected in them, the server's
+        call(items, "copy");
+        assertEquals("copy price quantity", lastOf(f.edits));
+        assertSame(f.requestPromise, call(items, "paste", "7"));
+        assertEquals("paste price quantity [[7, 7]] by [[null, 0.0]] into every cell", lastOf(f.edits));
+        call(items, "paste", "1\t2\n3");
+        assertEquals("paste quantity [[1, 2], [3]] by [[0.0], [0]]", lastOf(f.edits)); // from the current column on
+        call(properties, "change", "price");
+        call(items, "paste", "1\t2\t3\n4\n5");
+        assertEquals("paste price quantity [[1, 2, 3], [4], [5]] by [[null, 0.0], [null, 0], [null, 0]]", lastOf(f.edits));
+        f.apply(drop(f.quantity)); // the form shows it no longer
+        call(items, "copy");
+        assertEquals("copy price", lastOf(f.edits));
+        call(items, "paste", "");
+        assertEquals("paste [[]] by [[]] into every cell", lastOf(f.edits)); // nothing
+        assertEquals("controller.items.paste(): takes the text to paste, as a string", refusedWith(items, "paste", parse("7")));
+        assertEquals("controller.form.paste('items'): takes the text to paste, as a string", refusedWith(form, "paste", "items"));
+    }
+
     // ... and what it does not take is refused, saying why, with nothing handed to the form: a column that is none of
     // the grid's - a panel property, an action, an unknown name, no name -, one the form does not show now, a selection
     // or an edge that is none; and an edge or a selection asked of a group that is no grid a view draws - a tree's
@@ -6575,6 +6643,8 @@ public class GReactFormDataTest extends GWTTestCase {
                 refusedWith(form, "changeObject", "items", objects(platform.two), parse("{\"selection\": \"start\"}")));
         assertEquals("controller.form.changeColumn('items'): " + refusal, refusedWith(form, "changeColumn", "items", "price"));
         assertEquals("controller.form.selectAll('items'): " + refusal, refusedWith(form, "selectAll", "items"));
+        assertEquals("controller.form.copy('items'): " + refusal, refusedWith(form, "copy", "items"));
+        assertEquals("controller.form.paste('items'): " + refusal, refusedWith(form, "paste", "items", "7"));
         assertTrue(platform.edits.isEmpty());
     }
 

@@ -1086,7 +1086,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
                     () -> focus(FocusUtils.Reason.RESTOREFOCUS)
                 );
                 CopyPasteUtils.removeCopyingClassDelayed(tableElement);
-            });
+            }, error -> {});
 
             return;
         }

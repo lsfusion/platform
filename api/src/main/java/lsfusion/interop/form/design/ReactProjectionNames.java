@@ -21,8 +21,8 @@ public class ReactProjectionNames {
     public static final String TREE_ROW = "parent,hasChildren,expanded,loading";
     // ... and of a list's group not in a tree (GridRowsPart): the view's own filters of its rows, on the node
     public static final String VIEW_FILTERS_PART = "viewFilters";
-    // ... and what selects its rows and columns, on the node
-    public static final String SELECTION_PART = "selectAll";
+    // ... and what selects its rows and columns, and copies and pastes those selected, on the node
+    public static final String SELECTION_PART = "selectAll,copy,paste";
     // the sortings' part, of a list's group, with its rows - a tree's are on the tree's node, which carries no property
     public static final String ORDERS_PART = "orders";
     // the user filters' part, where what FILTERS(g) holds is drawn

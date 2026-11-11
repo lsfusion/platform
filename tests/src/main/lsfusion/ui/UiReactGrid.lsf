@@ -3,8 +3,8 @@ MODULE UiReactGrid;
 REQUIRE System, Utils, SystemEvents;
 
 // the form UiReactGridIT works on in the browser - a grid whose rows a React view draws (UiReactGrid.js), more of them
-// than a page holds, its rows and columns selected through the view's controller -, what the form reads of the
-// selection, and the action it seeds its items with
+// than a page holds, its rows and columns selected through the view's controller, the selection copied and pasted -,
+// what the form reads of the selection, and the action it seeds its items with
 
 CLASS UiRgItem 'Item';
 uiRgNumber 'Number' = DATA INTEGER (UiRgItem);
@@ -12,6 +12,7 @@ uiRgName 'Name' = DATA STRING[100] (UiRgItem);
 uiRgQty 'Quantity' = DATA INTEGER (UiRgItem);
 uiRgShown = DATA BOOLEAN (UiRgItem); // the items of the test that seeded last: the form shows only them
 
+// the number read only: a paste leaves it as it is
 FORM uiRgGrid 'Selection of a view'
     OBJECTS i = UiRgItem
     PROPERTIES(i) READONLY number = uiRgNumber
@@ -30,10 +31,12 @@ uiRgQtyActive = ACTIVE PROPERTY uiRgGrid.qty;
 uiRgQtyEvents = DATA LOCAL INTEGER ();
 uiRgCaptured = DATA LOCAL INTEGER ();
 uiRgCapture (UiRgItem i) { uiRgCaptured() <- uiRgNumber(i); }
+// ... and how many items there are at all, shown or not: a paste that adds one changes it
+uiRgItems () = GROUP SUM 1 IF UiRgItem i IS UiRgItem;
 
 EXTEND FORM uiRgGrid
     PROPERTIES() selectedCount = uiRgSelected, nameSelected = uiRgNameSelected, qtySelected = uiRgQtySelected,
-                 qtyActive = uiRgQtyActive, qtyEvents = uiRgQtyEvents, captured = uiRgCaptured
+                 qtyActive = uiRgQtyActive, qtyEvents = uiRgQtyEvents, captured = uiRgCaptured, items = uiRgItems
     PROPERTIES(i) PANEL capture = uiRgCapture
     EVENTS ON SELECT PROPERTY qty { uiRgQtyEvents() <- (OVERRIDE uiRgQtyEvents(), 0) + 1; }
 ;
@@ -48,6 +51,7 @@ DESIGN uiRgGrid {
         MOVE PROPERTY(qtyActive);
         MOVE PROPERTY(qtyEvents);
         MOVE PROPERTY(captured);
+        MOVE PROPERTY(items);
         MOVE PROPERTY(capture);
     }
 }

@@ -50,6 +50,8 @@ import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ContinueInvocation;
+import lsfusion.gwt.client.controller.remote.action.form.CopyExternalTable;
+import lsfusion.gwt.client.controller.remote.action.form.CopyExternalTableResult;
 import lsfusion.gwt.client.controller.remote.action.form.ControllerExecAction;
 import lsfusion.gwt.client.controller.remote.action.form.CountRecords;
 import lsfusion.gwt.client.controller.remote.action.form.CalculateSum;
@@ -74,6 +76,7 @@ import lsfusion.gwt.client.controller.remote.action.form.FormAction;
 import lsfusion.gwt.client.controller.remote.action.form.FormRequestAction;
 import lsfusion.gwt.client.controller.remote.action.form.GetAsyncValues;
 import lsfusion.gwt.client.controller.remote.action.form.GetPriorityAsyncValues;
+import lsfusion.gwt.client.controller.remote.action.form.PasteExternalTable;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestAction;
@@ -1039,6 +1042,80 @@ public class GFormControllerTest extends GWTTestCase {
             return row.selected;
         }).map(function (row) { return row.key; }).join(',');
     }-*/;
+
+    // ... and its CLIPBOARD. With no row selected it is the current row's, in the columns selected: copy is the Promise of
+    // the text the view has, with no request, and a value is pasted into those cells of it. With rows selected - shown so at once by the move
+    // that selects them - copy asks the server for the cells selected (CopyExternalTable) and is the Promise of their
+    // text - the values as the form formats them, a row a line, tabs between its cells; paste reads its values as the
+    // platform's grid reads them and is the Promise of its request (PasteExternalTable), one value pasted by a group
+    // change. A batch carries neither, and with no column there is nothing to ask
+    public void testAGridsClipboardIsTheFormsOwnRequests() {
+        FiltersForm filters = new FiltersForm(false);
+        filters.deliver(true);
+        filters.form.sessionID = "clipboard" + (++asksForms);
+        filters.group.rowSelectReader = new GRowSelectReader(filters.group.ID); // the rows selected, as every group of a form reads them
+        GFormController controller = filters.controller();
+        Server requests = new Server(controller) {
+            @Override
+            boolean takes(Action<?> action) {
+                return (action instanceof CopyExternalTable || action instanceof PasteExternalTable || action instanceof ChangeGroupObject) && controller.getForm().sessionID.equals(((FormAction<?>) action).formSessionID);
+            }
+        };
+        server = requests;
+        JavaScriptObject form = controller.controller;
+        ArrayList<String> settled = new ArrayList<>();
+        then((JavaScriptObject) call(form, "copy", "items"), text -> settled.add("copied '" + text + "'"), error -> fail(error));
+        then((JavaScriptObject) call(form, "paste", "items", "7"), answer -> settled.add("pasted nothing"), error -> fail(error));
+        assertTrue(requests.actions.isEmpty()); // no column yet
+        call(form, "changeColumn", "items", "quantity");
+        then((JavaScriptObject) call(form, "copy", "items"), text -> settled.add("copied '" + text + "'"), error -> fail(error));
+        assertTrue(requests.actions.isEmpty()); // the current cell: the view has it
+        then((JavaScriptObject) call(form, "paste", "items", "7"), answer -> settled.add("pasted into the cell"), error -> fail(error));
+        PasteExternalTable cell = (PasteExternalTable) requests.actions.get(0);
+        assertEquals(Collections.singletonList(filters.quantity.ID), cell.propertyIdList);
+        assertFalse(cell.forceGroupChange);
+        requests.answer(0, false);
+        call(form, "changeObject", "items", objects(new GGroupObjectValue(filters.group.ID, 2)), parse("{\"selection\": \"extend\"}")); // both rows
+        call(form, "changeColumn", "items", "price");
+        call(form, "changeColumn", "items", "quantity", parse("{\"selection\": \"extend\"}"));
+        then((JavaScriptObject) call(form, "copy", "items"), text -> settled.add("copied '" + text + "'"), error -> fail(error));
+        assertEquals(Arrays.asList(filters.price.ID, filters.quantity.ID), ((CopyExternalTable) requests.actions.get(2)).propertyIdList);
+        then((JavaScriptObject) call(form, "paste", "items", "7"), answer -> settled.add("pasted"), error -> fail(error));
+        PasteExternalTable one = (PasteExternalTable) requests.actions.get(3);
+        assertEquals(Arrays.asList(filters.price.ID, filters.quantity.ID), one.propertyIdList);
+        assertEquals(Collections.singletonList(Arrays.asList(7, 7)), one.values);
+        assertTrue(one.forceGroupChange);
+        call(form, "paste", "items", "1\tx\n3");
+        PasteExternalTable table = (PasteExternalTable) requests.actions.get(4);
+        assertEquals(Collections.singletonList(filters.quantity.ID), table.propertyIdList); // from the current column on
+        assertEquals(Arrays.asList(Collections.singletonList(1), Collections.singletonList(3)), table.values);
+        assertFalse(table.forceGroupChange);
+        String[] refused = new String[2];
+        controller.batch(() -> {
+            then((JavaScriptObject) call(form, "copy", "items"), text -> fail("copied"), error -> refused[0] = error);
+            then((JavaScriptObject) call(form, "paste", "items", "7"), answer -> fail("pasted"), error -> refused[1] = error);
+        });
+        assertEquals(5, requests.actions.size());
+        delayTestFinish(5000);
+        inTurn(() -> {
+            assertEquals(Arrays.asList("copied ''", "pasted nothing", "copied '2'", "pasted into the cell"), settled);
+            String refusal = "a batch is running, which carries changes only: make this call before the batch or after it";
+            assertEquals("controller.form.copy('items'): " + refusal, refused[0]);
+            assertEquals("controller.form.paste('items'): " + refusal, refused[1]);
+            ArrayList<ArrayList<Object>> values = new ArrayList<>();
+            values.add(new ArrayList<>(Arrays.asList(5, 2)));
+            values.add(new ArrayList<>(Arrays.asList(null, 4)));
+            ArrayList<ArrayList<String>> rawValues = new ArrayList<>();
+            rawValues.add(new ArrayList<>(Arrays.asList("5", "2")));
+            rawValues.add(new ArrayList<>(Arrays.asList(null, "4")));
+            requests.callbacks.get(2).onSuccess(new CopyExternalTableResult(values, rawValues));
+            for (int i : new int[] {1, 3, 4})
+                requests.answer(i, false);
+        }, () -> {
+            assertEquals(Arrays.asList("copied ''", "pasted nothing", "copied '2'", "pasted into the cell", "copied '5\t2\n\t4'", "pasted"), settled);
+            finishTest();
+        });
+    }
 
     // Asks refuse inside the form: no request or state change, their Promise rejected with the reason.
     public void testAsksAreRefusedInABatchAndOnAClosedForm() {

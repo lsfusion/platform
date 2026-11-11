@@ -171,7 +171,7 @@ The reservation follows what a row or a node carries:
 | --- | --- |
 | A row | `key`, `current`, `objects`, `background`, `foreground`, `selected` — on a row of a [tree](#trees) also `parent`, `hasChildren`, `expanded`, `loading` |
 | A group's node, wherever it is | `properties`, `change` |
-| A group's node where its rows are drawn | `list`, `byKey`, `keys`, `options`, and `orders`, `viewFilters` and `selectAll` of a group not in a tree — on a group of a tree `expand`, `collapse`, `toggle`, `expandAll`, `collapseAll` |
+| A group's node where its rows are drawn | `list`, `byKey`, `keys`, `options`, and `orders`, `viewFilters`, `selectAll`, `copy` and `paste` of a group not in a tree — on a group of a tree `expand`, `collapse`, `toggle`, `expandAll`, `collapseAll` |
 | The node of a group in `LIST` view where `FILTERS(<group>)` is | `filters`, `filterProperties` |
 | The node of a group in `LIST` view where `FILTERCONTROLS(<group>)` is | The names of the [filter controls](#filter-controls): `addFilter`, `applyFilters`, `resetFilters`, `filtersPending`, `filtersManual` |
 | The node of a group in `LIST` view where `TOOLBARSYSTEM(<group>)` is, unless the design hides it (`visible = FALSE`) | The names of all the [toolbar](#toolbar)'s buttons, whatever the design's `show…` flags say: `manual`, `updatePending`, `update`, `filterControlsVisible`, `listView`, `listViews`, `getCount`, `getSum`, `export` |
@@ -1579,6 +1579,58 @@ The selection is the view's that draws the rows. Another container changes it th
 `selectAll('<group>')` ([across containers](How-to_Custom_view_controller.md#across-containers)); for a group whose
 rows the platform draws a change of the selection is refused — the platform's table keeps a selection of its own —,
 as it is for a group of a tree: `changeObject` takes a row there, with no `selection` but `'keep'`.
+
+### Clipboard {#clipboard}
+
+A view that draws the rows of a group not in a tree copies and pastes the [selected](#selection) cells as the
+platform's table does, by two more members in the same place:
+
+| Member | What it does |
+| --- | --- |
+| `copy()` | Returns the `Promise` of the text of the selected cells: a line for each row, with tabs between the values of its cells |
+| `paste(text)` | Pastes the text into the selected cells and returns the `Promise` of its request |
+
+The cells are the selected rows in the selected columns the form shows. While no row of `list` is `selected`, the row
+is the current one, and while no column is selected, the column is the current one. The selected rows are the ones the
+server keeps, so `copy` also returns the rows the view has not read, and `paste` changes them too; the text of the
+current row `copy` returns with no request to the server.
+
+`copy` returns each value as the platform's table writes it to the clipboard, and `paste` reads a text written so, by
+the platform's table or by a spreadsheet. What `paste` does depends on the text:
+
+| Text | What is pasted |
+| --- | --- |
+| One value | The value, into every one of these cells. With rows selected, the current row takes it too where it is not among the selected rows, as in the platform's table |
+| Several values, in lines with tabs between the values | The values, into the cells from the current one on: the columns go into the current column and the columns after it, the lines into the current row and the rows after it in the group's order. Where the list has fewer rows, the server adds new objects — in a group of one object —, as it does for the platform's table |
+| An empty text | Nothing |
+
+Each cell is changed as a user's change of it: the property's [change event](../language/Event_block.md) runs, and a
+cell the form does not let change — a `READONLY` property, for example — is skipped, the other values staying in their
+cells. A value that cannot be read as the cell's type is pasted as `NULL`. With no current row in `list` nothing is
+pasted, and with no column `copy` returns an empty text.
+
+`copy` and `paste` are calls of their own. A [batch](How-to_Custom_view_controller.md#batch) does not carry them,
+and inside one they are refused. The platform's table asks the user before it pastes several values. `paste` does not
+ask, so a view that needs the question asks it itself.
+
+The view takes the browser's `copy` and `paste` events itself and gives the text to the clipboard when it has it:
+
+```jsx
+<div tabIndex={0}
+     onCopy={e => {
+         e.preventDefault();
+         controller.i.copy().then(text => navigator.clipboard.writeText(text));
+     }}
+     onPaste={e => {
+         e.preventDefault();
+         controller.i.paste(e.clipboardData.getData('text/plain'));
+     }}>
+    ...
+</div>
+```
+
+Another container copies and pastes through the form's controller, `controller.form.copy('<group>')` and
+`paste('<group>', text)`, which are refused where the selection's calls are.
 
 ### Filters {#filters}
 

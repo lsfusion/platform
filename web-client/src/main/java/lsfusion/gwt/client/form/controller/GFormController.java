@@ -730,6 +730,41 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
             call.onSuccess(requestIndex);
         });
     }
+    // ===== the clipboard of a grid whose rows a view draws (GReactFormData.GridRowsPart). Its cells selected - the
+    // rows the server has as selected, in these columns - copied as the platform's grid copies a range, the Promise of
+    // the text: the values as the form formats them, a row a line, tabs between its cells ...
+    @Override
+    public JavaScriptObject copySelection(String surface, ArrayList<GPropertyDraw> properties) {
+        return copyPromise(surface, text -> copyExternalTable(properties, new ArrayList<>(Collections.nCopies(properties.size(), GGroupObjectValue.EMPTY)),
+                table -> text.resolve(JSValueConverter.fromString(GwtClientUtils.getClipboardTable(table))), error -> text.reject(error.getMessage())));
+    }
+    // ... a text the view has itself, its current row's, the Promise of it all the same ...
+    @Override
+    public JavaScriptObject copyText(String surface, String copied) {
+        return copyPromise(surface, text -> text.resolve(JSValueConverter.fromString(copied)));
+    }
+    private JavaScriptObject copyPromise(String surface, Consumer<PendingPromise> copy) {
+        String refusal = getBatchOrClosedRefusal(surface);
+        if (refusal != null)
+            return GController.rejectedControllerPromise(refusal);
+        PendingPromise text = new PendingPromise();
+        copy.accept(text);
+        return text.promise;
+    }
+    // ... and a table of values pasted into them as the platform's grid pastes one, a group change making one value
+    // the value of every cell selected: the platform's own request - none with no column
+    @Override
+    public JavaScriptObject pasteSelection(String surface, ArrayList<GPropertyDraw> properties, List<List<String>> table, List<List<String>> patterns, boolean groupChange) {
+        String refusal = getBatchOrClosedRefusal(surface);
+        if (refusal != null)
+            return closedPromise(refusal);
+        return requestPromise(call -> {
+            if (properties.isEmpty())
+                call.onCancel();
+            else
+                call.onSuccess(pasteExternalTable(properties, new ArrayList<>(Collections.nCopies(properties.size(), GGroupObjectValue.EMPTY)), table, patterns, groupChange));
+        });
+    }
     // ... and its expandAll / collapseAll: the server starts at the group it is given - its nodes under the open nodes
     // of the group above, all of them for the top group - and goes down
     @Override
@@ -1753,7 +1788,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         pasteExternalTable(propertyList, columnKeys, table, patterns, false);
     }
 
-    public void pasteExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, List<List<String>> table, List<List<String>> patterns, boolean forceGroupChange) {
+    public long pasteExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, List<List<String>> table, List<List<String>> patterns, boolean forceGroupChange) {
         ArrayList<ArrayList<Object>> values = new ArrayList<>();
         ArrayList<ArrayList<String>> rawValues = new ArrayList<>();
 
@@ -1783,10 +1818,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
             propertyIdList.add(propertyDraw.ID);
         }
 
-        syncResponseDispatch(new PasteExternalTable(propertyIdList, columnKeys, values, rawValues, forceGroupChange));
+        return syncResponseDispatch(new PasteExternalTable(propertyIdList, columnKeys, values, rawValues, forceGroupChange));
     }
 
-    public void copyExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, Consumer<List<List<String>>> callback) {
+    public void copyExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, Consumer<List<List<String>>> callback, Consumer<Throwable> failed) {
         final ArrayList<Integer> propertyIdList = new ArrayList<>();
         for (GPropertyDraw propertyDraw : propertyList) {
             propertyIdList.add(propertyDraw.ID);
@@ -1822,6 +1857,11 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
                 }
 
                 callback.accept(table);
+            }
+            @Override
+            public void onFailure(ExceptionResult exceptionResult) {
+                super.onFailure(exceptionResult);
+                failed.accept(exceptionResult.throwable);
             }
         });
     }

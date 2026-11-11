@@ -47,6 +47,7 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.view.GGridSelection;
 import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
+import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -143,6 +144,13 @@ public class GReactFormData {
         // (GridRowsPart.updateColumnSelection)
         JavaScriptObject selectAllRows(GGroupObject group, NativeHashMap<GGroupObjectValue, PValue> selectionRows, ArrayList<GGridTable.ColumnSelection> selection);
         JavaScriptObject changeActiveProperty(GGroupObject group, GPropertyDraw property, ArrayList<GGridTable.ColumnSelection> selection);
+        // ... and its clipboard: the cells selected - the rows the server has as selected, in these columns - copied,
+        // the Promise of their text; the Promise of a text the view has itself, its current row's; and a table of
+        // values pasted into these columns from the current row on, one value into every row selected (groupChange)
+        // - none of them a batch's
+        JavaScriptObject copySelection(String surface, ArrayList<GPropertyDraw> properties);
+        JavaScriptObject copyText(String surface, String text);
+        JavaScriptObject pasteSelection(String surface, ArrayList<GPropertyDraw> properties, List<List<String>> table, List<List<String>> patterns, boolean groupChange);
         // ===== a property: its cell - its key (EMPTY: the current objects), its value (PValue.UNDEFINED: its change
         // event, or the action) and what the cell shows until the answer (PValue.UNDEFINED: the value it has) -, the
         // Promise of the change's request returned, and the Promise of the cell's suggestion list, from the server's
@@ -2078,6 +2086,81 @@ public class GReactFormData {
                 setField(entry, "selected", GGridSelection.isColumnSelected(startSelectColumn, endSelectColumn, index));
             }
         }
+        // ===== its clipboard. The cells are rows in columns, each side its own: the rows selected, the server's, while
+        // the view shows one as selected (hasRowSelection), else the current row; the columns of the range, else the
+        // current column (getSelectedColumns). copy(): their text - which the server gives of the rows it has as
+        // selected, having those the view has not too, as the platform's table copies a range; of the current row the
+        // view has it itself, a line of its cells
+        JavaScriptObject copy(String surface) {
+            ArrayList<ReactColumnPropertyEntry> columns = getSelectedColumns();
+            if (hasRowSelection() && !columns.isEmpty())
+                return verbs.copySelection(surface, getProperties(columns));
+            List<String> cells = new ArrayList<>();
+            if (getRow(currentKey) >= 0)
+                for (ReactColumnPropertyEntry column : columns)
+                    cells.add(column.getCopy(currentKey));
+            return verbs.copyText(surface, GwtClientUtils.getClipboardTable(Collections.singletonList(cells))); // written as the server's rows are
+        }
+        // ... paste(text): a text pasted as the platform's table pastes one - one value into every one of those
+        // cells, by a group change over the rows selected, else into the current row's; a table of them into the cells
+        // from the current one on, to the right and down, as far as the table goes, the server reading the rows from
+        // the current one on. Each value is read by the pattern of its cell, of a row the view has (getPattern).
+        // Nothing is pasted from an empty text, nor where the view has no current row
+        JavaScriptObject paste(String surface, String text) {
+            if (text == null)
+                throw refusal(controllerPrefix(surface) + "takes the text to paste, as a string");
+            List<List<String>> table = GwtClientUtils.getClipboardTable(text);
+            int width = 0;
+            for (List<String> row : table)
+                width = Math.max(width, row.size());
+            int current = getRow(currentKey);
+            boolean single = table.size() == 1 && width == 1;
+            ArrayList<ReactColumnPropertyEntry> columns = text.isEmpty() || current < 0 ? new ArrayList<>()
+                    : single ? getSelectedColumns() : getColumnsFromCurrent(width);
+            if (single)
+                table = Collections.singletonList(Collections.nCopies(columns.size(), table.get(0).get(0)));
+            List<List<String>> patterns = new ArrayList<>();
+            for (int i = 0; i < table.size(); i++) {
+                GGroupObjectValue key = current >= 0 && current + i < rows.size() ? rows.get(current + i) : null;
+                List<String> rowPatterns = new ArrayList<>();
+                for (ReactColumnPropertyEntry column : columns)
+                    rowPatterns.add(column.getPattern(key));
+                patterns.add(rowPatterns);
+            }
+            return verbs.pasteSelection(surface, getProperties(columns), table, patterns, single && hasRowSelection());
+        }
+        // whether the view shows a row as selected, of the rows it has
+        boolean hasRowSelection() {
+            NativeHashMap<GGroupObjectValue, PValue> rowSelectValues = getRowSelectValues();
+            for (GGroupObjectValue row : rows)
+                if (GridDataRecord.isRowSelect(rowSelectValues.get(row)))
+                    return true;
+            return false;
+        }
+        // the columns of the cells: those of the range that the form shows now - with no range, the current one
+        ArrayList<ReactColumnPropertyEntry> getSelectedColumns() {
+            ArrayList<ReactColumnPropertyEntry> columns = getColumns(), selected = new ArrayList<>();
+            for (int i = 0; i < columns.size(); i++)
+                if (columns.get(i).isShown() && (startSelectColumn >= 0 ? GGridSelection.isColumnSelected(startSelectColumn, endSelectColumn, i) : i == currentColumn))
+                    selected.add(columns.get(i));
+            return selected;
+        }
+        // ... and those a table is pasted into: from the current one on, as many as the table is wide, of those the
+        // form shows now - none where it does not show the current one
+        ArrayList<ReactColumnPropertyEntry> getColumnsFromCurrent(int count) {
+            ArrayList<ReactColumnPropertyEntry> columns = getColumns(), fromCurrent = new ArrayList<>();
+            if (currentColumn >= 0 && columns.get(currentColumn).isShown())
+                for (int i = currentColumn; i < columns.size() && fromCurrent.size() < count; i++)
+                    if (columns.get(i).isShown())
+                        fromCurrent.add(columns.get(i));
+            return fromCurrent;
+        }
+        ArrayList<GPropertyDraw> getProperties(ArrayList<ReactColumnPropertyEntry> columns) {
+            ArrayList<GPropertyDraw> properties = new ArrayList<>();
+            for (ReactColumnPropertyEntry column : columns)
+                properties.add(column.property);
+            return properties;
+        }
     }
     private static final String VIEW_FILTERS = "viewFilters";
     // ... of a group of a TREE: its rows say where they hang in it, from the hierarchy sent beside them. A node's
@@ -2826,6 +2909,15 @@ public class GReactFormData {
             if (row != null)
                 fillRow(row, key);
         }
+        // a cell's text as it is copied, formatted as the form formats what the server copies (copyExternalTable)
+        String getCopy(GGroupObjectValue key) {
+            return property.formatCopy(getValueAt(key), property.getPasteType(), getPattern(key));
+        }
+        // the pattern a value pasted into a cell is read by: the cell's, of a row the view has, else the property's
+        String getPattern(GGroupObjectValue key) {
+            PValue pattern = key != null && property.patternReader != null ? values.get(property.patternReader, key) : null;
+            return pattern != null ? PValue.getStringValue(pattern) : property.getPattern();
+        }
         // a cell, in the row
         void fillRow(JavaScriptObject row, GGroupObjectValue key) {
             JavaScriptObject cell = newObject();
@@ -3344,8 +3436,15 @@ public class GReactFormData {
     private JavaScriptObject selectAll(String surface, String name) {
         return readGridRows(surface, name).selectAll();
     }
-    // ... the selection being the grid's own where a view draws its rows: a group of a tree has none, and a table of
-    // the platform's keeps its own (gridRows)
+    // ... and its clipboard
+    private JavaScriptObject copy(String surface, String name) {
+        return readGridRows(surface, name).copy(surface);
+    }
+    private JavaScriptObject paste(String surface, String name, String text) {
+        return readGridRows(surface, name).paste(surface, text);
+    }
+    // ... the selection and its clipboard being the grid's own where a view draws its rows: a group of a tree has
+    // none, and a table of the platform's keeps its own (gridRows)
     private GridRowsPart readGridRows(String surface, String name) {
         String errorPrefix = controllerPrefix(surface);
         return readGridRows(errorPrefix, readGroup(form, errorPrefix, name));
@@ -3665,14 +3764,21 @@ public class GReactFormData {
         };
     }-*/;
 
-    // ... and on a GRID's group, what selects its columns and all of it: properties.change(column[, options]) makes a
-    // column current, selectAll() selects every row and column
+    // ... and on a GRID's group, what selects its columns and all of it, and its clipboard: properties.change(column[,
+    // options]) makes a column current, selectAll() selects every row and column, copy() and paste(text) copy the
+    // cells selected and paste into them
     private static native void addGridVerbs(GridRowsPart part, JavaScriptObject member, String sid) /*-{
         member.properties = {change: function (column, options) {
             return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridRowsPart::changeColumn(*)(sid + ".properties.change()", typeof column === 'string' ? column : null, options);
         }};
         member.selectAll = function () {
             return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridRowsPart::selectAll()();
+        };
+        member.copy = function () {
+            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridRowsPart::copy(*)(sid + ".copy()");
+        };
+        member.paste = function (text) {
+            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridRowsPart::paste(*)(sid + ".paste()", typeof text === 'string' ? text : null);
         };
     }-*/;
 
@@ -3823,6 +3929,12 @@ public class GReactFormData {
         };
         controller.selectAll = function (group) {
             return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::selectAll(*)(surface('selectAll', group), name(group));
+        };
+        controller.copy = function (group) {
+            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::copy(*)(surface('copy', group), name(group));
+        };
+        controller.paste = function (group, text) {
+            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::paste(*)(surface('paste', group), name(group), typeof text === 'string' ? text : null);
         };
         controller.expand = function (group, row) {
             return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::expand(*)(surface('expand', group), name(group), row);
