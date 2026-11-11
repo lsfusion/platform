@@ -2437,7 +2437,7 @@ public class GReactFormData {
             this.property = property;
             node.properties.add(this);
         }
-        boolean isShown() {
+        public boolean isShown() {
             return shown;
         }
         void setShown(boolean shown) {
@@ -2463,7 +2463,7 @@ public class GReactFormData {
     }
     // a property React draws - a panel entry, a column and its cells: carried by name on its group's node, its values
     // and the attributes it is drawn with kept here, React's alone - the platform has no view of it
-    private abstract class ReactPropertyEntry extends PropertyEntry {
+    private abstract class ReactPropertyEntry extends PropertyEntry implements PropertyMember {
         ReactPropertyEntry(Node node, GPropertyDraw property) {
             super(node, property);
         }
@@ -2499,7 +2499,7 @@ public class GReactFormData {
         // entry is its one cell, a column has one per row -, and `loading` while it is loading
         final void emitCell(JavaScriptObject target, GPropertyReader[] readers, GGroupObjectValue key) {
             if (shown)
-                emitValue(target, getValueAt(key));
+                emitPropertyValue(target, property, getValueAt(key));
             emitAttributes(target, readers, key, property);
             if (isLoading(key))
                 setField(target, "loading", true);
@@ -2509,40 +2509,9 @@ public class GReactFormData {
         boolean isLoading(GGroupObjectValue key) {
             return PValue.getBooleanValue(values.get(property.loadingReader, key));
         }
-        // ===== its value, as a view is given it (emitValue) and as a view's call changes it back (changeValue): as its
-        // type converts it - a SELECTION's, whose cell holds the list of its options, as ReactSelect gives and changes it
-        private void emitValue(JavaScriptObject target, PValue value) {
-            if (property.select != null)
-                ReactSelect.emit(target, property, value);
-            else
-                setField(target, "value", JSValueConverter.convertToJSValue(property, value, RendererType.SIMPLE, true));
-        }
-        // ... the cell a call names changed to the value it gives - of a selection, by the options it picks
-        // (ReactSelect.change); with none given (UNDEFINED, exec()), its change event run as it is -, the cell showing
-        // until the answer what the change makes of it: one change sent as it is, several in one batch - the Promise of
-        // the request returned
-        private JavaScriptObject changeValue(String errorPrefix, JavaScriptObject objectOrKey, JavaScriptObject value) {
-            checkShown(errorPrefix);
-            GGroupObjectValue key = getMemberKey(errorPrefix, objectOrKey);
-            ArrayList<PValue> changes = new ArrayList<>();
-            PValue shown;
-            if (property.select != null && !isUndefined(value))
-                shown = ReactSelect.change(errorPrefix, property, getCellValue(errorPrefix, key), value, changes);
-            else {
-                PValue change = JSValueConverter.convertFromJSUndefValue(property, value);
-                changes.add(change);
-                shown = property.getExternalChangeRenderValue(change, RendererType.SIMPLE);
-            }
-            if (changes.size() == 1)
-                return verbs.changeProperty(property, key, changes.get(0), shown);
-            return verbs.batch(() -> {
-                for (PValue change : changes)
-                    verbs.changeProperty(property, key, change, shown);
-            });
-        }
-        // ... the value of the cell a call names - of a column with no row named, the current row's; refused where there
+        // the value of the cell a call names - of a column with no row named, the current row's; refused where there
         // is none -, a change not answered yet included: what a pick is made against
-        private PValue getCellValue(String errorPrefix, GGroupObjectValue key) {
+        public PValue getCellValue(String errorPrefix, GGroupObjectValue key) {
             GGroupObjectValue cellKey = getCellKey(key);
             if (cellKey == null) // a column whose group has no current row, and no row named
                 throw refusal(errorPrefix + "'" + property.groupObject.getSID() + "' has no current row: name the row to pick in");
@@ -2607,57 +2576,16 @@ public class GReactFormData {
         abstract void valueChanged(GGroupObjectValue key);
 
         // ===== its member, on its node's member as its entry is on its node. The member IS the address - it holds this
-        // state - so a call through it names nothing but the row
+        // state - so a call through it names nothing but the row (PropertyMember)
         void putMember(JavaScriptObject owner) {
-            setField(owner, property.integrationSID, makePropertyMember(this, getName(property)));
+            setField(owner, property.integrationSID, makePropertyMember(this, getName(property) + "."));
         }
-        // change(value[, row]): the value is given - null clears it - since running the property's change event without
-        // one is exec(), and an action has no value to set
-        JavaScriptObject change(String surface, JavaScriptObject value, JavaScriptObject objectOrKey, boolean noValue) {
-            String errorPrefix = controllerPrefix(surface);
-            if (property.isAction())
-                throw refusal(errorPrefix + "'" + property.integrationSID + "' is an action, which has no value to set: call exec()");
-            if (noValue)
-                throw refusal(errorPrefix + "the value is missing - pass null to clear it, or call exec() to run the property's change event");
-            return changeValue(errorPrefix, objectOrKey, value);
+        public GPropertyDraw getProperty() {
+            return property;
         }
-        // ... exec([row]): the property's change event, or the action, with no value given - but a value the platform
-        // asks for before it runs the event - its change type; the group change it makes of the change asks it first
-        // too - is asked in the cell the change is made in, and a call has none: the view gives a property's value
-        // itself, and an action's no call can give. One the event asks for only as it runs finds no cell either, and is
-        // cancelled (GFormActionDispatcher)
-        JavaScriptObject exec(String surface, JavaScriptObject objectOrKey) {
-            String errorPrefix = controllerPrefix(surface);
-            if (asksValue())
-                throw refusal(errorPrefix + "'" + property.integrationSID + "' asks for a value" + (property.isAction()
-                        ? ", which no call can give an action" : ", which a view gives itself: call change(value)"));
-            return changeValue(errorPrefix, objectOrKey, UNDEFINED);
+        public Verbs getVerbs() {
+            return verbs;
         }
-        // whether its change asks a value before it runs - its change type -, in the cell the change is made in, which
-        // neither a call nor a binding of a view has: exec() is refused, and no binding is taken (getBindingWidget) -
-        // the platform would open its editor there, and the editor is the view's
-        private boolean asksValue() {
-            return property.getChangeType() != null;
-        }
-        // ... getValues(value[, {row, mode, count}]): the Promise of the suggestion list of the cell the call names
-        // (lookupValues), its row read as a member names one, by a member the form shows
-        JavaScriptObject getValues(String surface, String value, JavaScriptObject options) {
-            return lookupValues(surface, property, value, options, row -> {
-                String errorPrefix = controllerPrefix(surface);
-                checkShown(errorPrefix);
-                return getMemberKey(errorPrefix, row);
-            });
-        }
-        // a member answers while the form shows its property: it stays on the controller when a SHOWIF hides it - the
-        // names are design data, like the entries - and a call through it is refused until its entry is no longer
-        // `hidden`
-        void checkShown(String errorPrefix) {
-            if (!shown)
-                throw refusal(errorPrefix + "'" + property.integrationSID + "' is not shown by the form now"
-                        + " (its entry is hidden), so it has nobody to change it for");
-        }
-        // the key of the cell a call names: EMPTY, the current objects, where it names no row
-        abstract GGroupObjectValue getMemberKey(String errorPrefix, JavaScriptObject objectOrKey);
     }
     // a panel or empty-group property's entry: its value and every attribute of it, in one place
     private final class ReactPanelPropertyEntry extends ReactPropertyEntry {
@@ -2703,7 +2631,7 @@ public class GReactFormData {
         }
         // a member names no row of it: a panel entry shows its group's current object, one slot, and the empty group
         // has no rows at all - it is changed for the current objects
-        GGroupObjectValue getMemberKey(String errorPrefix, JavaScriptObject objectOrKey) {
+        public GGroupObjectValue getMemberKey(String errorPrefix, JavaScriptObject objectOrKey) {
             // raw JS key: a numeric 0 key reads as null under Java == null (GWT falsy-primitive collapse)
             if (!GwtClientUtils.isUndefinedOrNull(objectOrKey))
                 throw refusal(errorPrefix + (property.groupObject == null
@@ -2769,7 +2697,7 @@ public class GReactFormData {
         // cell of this group that nobody named. In a TREE a row of a group BELOW passes, and should: its key is the
         // path down to it, so it holds one row of every group above too - the same reading the group's change(row) has
         // always had
-        GGroupObjectValue getMemberKey(String errorPrefix, JavaScriptObject objectOrKey) {
+        public GGroupObjectValue getMemberKey(String errorPrefix, JavaScriptObject objectOrKey) {
             // raw JS key: a numeric 0 key reads as null under Java == null (GWT falsy-primitive collapse)
             if (GwtClientUtils.isUndefinedOrNull(objectOrKey))
                 return GGroupObjectValue.EMPTY;
@@ -3154,7 +3082,7 @@ public class GReactFormData {
     // (key: the current objects for none). The row is whatever the author gave - a data row, its handle, a key: a
     // number, a string, a Java object -, so its reader is typed as JSNI hands the value over, not through a generic,
     // whose bridge would check it as a JS object
-    private JavaScriptObject lookupValues(String surface, GPropertyDraw property, String value, JavaScriptObject options, RowKey key) {
+    private static JavaScriptObject lookupValues(Verbs verbs, String surface, GPropertyDraw property, String value, JavaScriptObject options, RowKey key) {
         String errorPrefix = controllerPrefix(surface);
         if (value == null)
             throw refusal(errorPrefix + "takes the query, as a string");
@@ -3330,7 +3258,7 @@ public class GReactFormData {
     private JavaScriptObject getValues(String surface, String name, String value, JavaScriptObject options) {
         String errorPrefix = controllerPrefix(surface);
         GPropertyDraw property = readClassicProperty(form, errorPrefix, name);
-        return lookupValues(surface, property, value, options, row -> {
+        return lookupValues(verbs, surface, property, value, options, row -> {
             if (GwtClientUtils.isUndefinedOrNull(row))
                 return GGroupObjectValue.EMPTY;
             if (property.groupObject == null)
@@ -3734,26 +3662,126 @@ public class GReactFormData {
         };
     }-*/;
 
-    private static native JavaScriptObject makePropertyMember(ReactPropertyEntry propertyEntry, String qualified) /*-{
+    // A PROPERTY'S MEMBER - change, exec, getValues -, as makePropertyMember puts it on a controller: of a property a
+    // view draws, its entry (ReactPropertyEntry), whose call names a row of the view's or none; of a property the
+    // platform draws with a React component of its own, the cell the component stands in (ReactCellRenderer), whose
+    // call names nothing. Each says what differs - whether the form shows the property, the cell a call names, that
+    // cell's value -, and what a call does with it is here, once
+    interface PropertyMember {
+        GPropertyDraw getProperty();
+        // what makes its changes and its lookups: the form
+        Verbs getVerbs();
+        // a member answers while the form shows its property: it stays on the controller when a SHOWIF hides it - the
+        // names are design data, like the entries - and a call through it is refused until its entry is no longer
+        // `hidden`
+        boolean isShown();
+        // the key of the cell a call names: EMPTY, the current objects, where it names no row
+        GGroupObjectValue getMemberKey(String errorPrefix, JavaScriptObject objectOrKey);
+        // ... and the value of that cell, a change not answered yet included: what a pick is made against
+        PValue getCellValue(String errorPrefix, GGroupObjectValue key);
+
+        // change(value[, row]): the value is given - null clears it - since running the property's change event without
+        // one is exec(), and an action has no value to set
+        default JavaScriptObject change(String surface, JavaScriptObject value, JavaScriptObject objectOrKey, boolean noValue) {
+            String errorPrefix = controllerPrefix(surface);
+            GPropertyDraw property = getProperty();
+            if (property.isAction())
+                throw refusal(errorPrefix + "'" + property.integrationSID + "' is an action, which has no value to set: call exec()");
+            if (noValue)
+                throw refusal(errorPrefix + "the value is missing - pass null to clear it, or call exec() to run the property's change event");
+            return changeValue(errorPrefix, objectOrKey, value);
+        }
+        // ... exec([row]): the property's change event, or the action, with no value given - but a value the platform
+        // asks for before it runs the event - its change type; the group change it makes of the change asks it first
+        // too - is asked in the cell the change is made in, and a call has none: the view gives a property's value
+        // itself, and an action's no call can give. One the event asks for only as it runs finds no cell either, and is
+        // cancelled (GFormActionDispatcher)
+        default JavaScriptObject exec(String surface, JavaScriptObject objectOrKey) {
+            String errorPrefix = controllerPrefix(surface);
+            GPropertyDraw property = getProperty();
+            if (asksValue())
+                throw refusal(errorPrefix + "'" + property.integrationSID + "' asks for a value" + (property.isAction()
+                        ? ", which no call can give an action" : ", which a view gives itself: call change(value)"));
+            return changeValue(errorPrefix, objectOrKey, UNDEFINED);
+        }
+        // whether its change asks a value before it runs - its change type -, in the cell the change is made in, which
+        // neither a call nor a binding of a view has: exec() is refused, and no binding is taken (getBindingWidget) -
+        // the platform would open its editor there, and the editor is the view's
+        default boolean asksValue() {
+            return getProperty().getChangeType() != null;
+        }
+        // ... the cell a call names changed to the value it gives - of a selection, by the options it picks
+        // (ReactSelect.change); with none given (UNDEFINED, exec()), its change event run as it is -, the cell showing
+        // until the answer what the change makes of it: one change sent as it is, several in one batch - the Promise of
+        // the request returned
+        default JavaScriptObject changeValue(String errorPrefix, JavaScriptObject objectOrKey, JavaScriptObject value) {
+            checkShown(errorPrefix);
+            GPropertyDraw property = getProperty();
+            Verbs verbs = getVerbs();
+            GGroupObjectValue key = getMemberKey(errorPrefix, objectOrKey);
+            ArrayList<PValue> changes = new ArrayList<>();
+            PValue shown;
+            if (property.select != null && !isUndefined(value))
+                shown = ReactSelect.change(errorPrefix, property, getCellValue(errorPrefix, key), value, changes);
+            else {
+                PValue change = JSValueConverter.convertFromJSUndefValue(property, value);
+                changes.add(change);
+                shown = property.getExternalChangeRenderValue(change, RendererType.SIMPLE);
+            }
+            if (changes.size() == 1)
+                return verbs.changeProperty(property, key, changes.get(0), shown);
+            return verbs.batch(() -> {
+                for (PValue change : changes)
+                    verbs.changeProperty(property, key, change, shown);
+            });
+        }
+        // ... getValues(value[, {row, mode, count}]): the Promise of the suggestion list of the cell the call names
+        // (lookupValues), its row read as a member names one, by a member the form shows
+        default JavaScriptObject getValues(String surface, String value, JavaScriptObject options) {
+            return lookupValues(getVerbs(), surface, getProperty(), value, options, row -> {
+                String errorPrefix = controllerPrefix(surface);
+                checkShown(errorPrefix);
+                return getMemberKey(errorPrefix, row);
+            });
+        }
+        default void checkShown(String errorPrefix) {
+            if (!isShown())
+                throw refusal(errorPrefix + "'" + getProperty().integrationSID + "' is not shown by the form now"
+                        + " (its entry is hidden), so it has nobody to change it for");
+        }
+    }
+
+    // ... and the member itself: `prefix` is how a message names it - the path of a view's member, o.note. - none for a
+    // cell's, which its component is handed whole
+    static native JavaScriptObject makePropertyMember(PropertyMember propertyMember, String prefix) /*-{
         var member = {
             //   .change(value)          set it on the current object       .change(value, row)   ... on that row
             change: function (value, object) {
-                return propertyEntry.@lsfusion.gwt.client.form.design.view.GReactFormData.ReactPropertyEntry::change(*)(qualified + ".change()", value === undefined ? null : value, object === undefined ? null : object, value === undefined);
+                return propertyMember.@lsfusion.gwt.client.form.design.view.GReactFormData.PropertyMember::change(*)(prefix + "change()", value === undefined ? null : value, object === undefined ? null : object, value === undefined);
             },
             //   .exec()                 run its change event on the current object       .exec(row)   ... on that row
             exec: function (object) {
-                return propertyEntry.@lsfusion.gwt.client.form.design.view.GReactFormData.ReactPropertyEntry::exec(*)(qualified + ".exec()", object === undefined ? null : object);
+                return propertyMember.@lsfusion.gwt.client.form.design.view.GReactFormData.PropertyMember::exec(*)(prefix + "exec()", object === undefined ? null : object);
             },
             //   .getValues(value)       the Promise of its suggestions for the current object
             //   .getValues(value, {row, mode, count})   ... for that row, from that lookup, that many more
             getValues: function (value, options) {
-                return propertyEntry.@lsfusion.gwt.client.form.design.view.GReactFormData.ReactPropertyEntry::getValues(*)(qualified + ".getValues()", typeof value === 'string' ? value : null, options);
+                return propertyMember.@lsfusion.gwt.client.form.design.view.GReactFormData.PropertyMember::getValues(*)(prefix + "getValues()", typeof value === 'string' ? value : null, options);
             }
         };
         return member;
     }-*/;
 
-    private void emitPropertyFacts(JavaScriptObject entry, GPropertyDraw property) {
+    // a property's value, as a view is given it and as a view's call changes it back (PropertyMember.changeValue): as
+    // its type converts it - a SELECTION's, whose cell holds the list of its options, as ReactSelect gives and changes it
+    static void emitPropertyValue(JavaScriptObject target, GPropertyDraw property, PValue value) {
+        if (property.select != null)
+            ReactSelect.emit(target, property, value);
+        else
+            setField(target, "value", JSValueConverter.convertToJSValue(property, value, RendererType.SIMPLE, true));
+    }
+
+    static void emitPropertyFacts(JavaScriptObject entry, GPropertyDraw property) {
         // the kind of its value - of a selection a text: the views of its options, which the platform's element shows as
         // text too (ReactSelect)
         setField(entry, "type", property.select != null ? "string" : JSValueConverter.getJSTypeName(property.getRenderType(RendererType.SIMPLE)));
