@@ -376,6 +376,25 @@ public class UiCustomViewIT extends UiTest {
         close(form);
     }
 
+    // a property the form hides leaves a group's custom view, and what it was drawn with leaves with it: the property
+    // after it keeps its own
+    @Test
+    public void aCustomGroupDropsAHiddenPropertyWithItsAttributes() throws Exception {
+        seed();
+        Locator form = open(FOLDER, "UiCustomView.uiCustomViewClassicGroup");
+        Locator view = form.locator("[data-name-background]");
+        Locator toggle = form.locator("button[lsfusion-container='PROPERTY(uiCustomViewToggleCells())']");
+        assertThat(view).hasAttribute("data-marked", "true");
+        assertThat(view).hasAttribute("data-name-background", "none");
+        toggle.click();
+        assertThat(view).hasAttribute("data-marked", "false");
+        assertThat(view).hasAttribute("data-name-background", "none");
+        toggle.click();
+        assertThat(view).hasAttribute("data-marked", "true");
+        assertThat(view).hasAttribute("data-name-background", "none");
+        close(form);
+    }
+
     // two items under names no other attempt has - what a failed attempt saved stays in the database for its rerun -,
     // of the quantities 1 and 2
     private static String[] seed() throws Exception {

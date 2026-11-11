@@ -206,6 +206,9 @@ window.UiCustomViewClassicGroup = function () {
         render: function () {},
         update: function (element, controller, list) {
             element.textContent = list.length + ' classic rows';
+            element.setAttribute('data-marked', String(list.length > 0 && 'mark' in list[0]));
+            element.setAttribute('data-name-background',
+                list.length > 0 && controller.getBackground('uiCustomViewName', list[0]) || 'none');
         }
     };
 };

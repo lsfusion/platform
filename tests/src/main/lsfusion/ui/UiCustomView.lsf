@@ -195,10 +195,13 @@ DESIGN uiCustomViewPlacedProperties {
     }
 }
 
-// a group whose CUSTOM is a classic render function named as a component is (UiCustomViewClassicGroup)
+// a group whose CUSTOM is a classic render function named as a component is (UiCustomViewClassicGroup); its first
+// property has a background and is hidden by the toggle
 FORM uiCustomViewClassicGroup 'Classic group'
     OBJECTS i = UiCustomViewItem CUSTOM 'UiCustomViewClassicGroup'
+    PROPERTIES(i) READONLY mark = uiCustomViewName BACKGROUND RGB(255, 0, 0) SHOWIF uiCustomViewShowCells()
     PROPERTIES(i) READONLY uiCustomViewName
+    PROPERTIES() uiCustomViewToggleCells
     FILTERS uiCustomViewShown(i)
 ;
 

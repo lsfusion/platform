@@ -295,6 +295,20 @@ public abstract class GStateTableView extends FlexPanel implements GListView {
         values.remove(index);
         readOnlys.remove(index);
         showIfs.remove(index);
+        cellGridElementClasses.remove(index);
+        cellValueElementClasses.remove(index);
+        cellFontValues.remove(index);
+        cellBackgroundValues.remove(index);
+        cellForegroundValues.remove(index);
+        placeholders.remove(index);
+        patterns.remove(index);
+        regexps.remove(index);
+        regexpMessages.remove(index);
+        tooltips.remove(index);
+        valueTooltips.remove(index);
+        propertyCustomOptions.remove(index);
+        changeKeys.remove(index);
+        changeMouses.remove(index);
 
         dataUpdated = true;
     }
