@@ -520,7 +520,13 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
         if (rowsScope(group) == scope) { // where the rows are drawn: the rows' part, a tree group's too
             reserved = ArrayUtils.addAll(reserved, GRID_PART_NAMES);
             // ... and what its kind writes beside the rows: a tree group's node verbs, a grid's group's view filters
-            reserved = ArrayUtils.addAll(reserved, group.isInTree() ? TREE_PART_NAMES : VIEW_FILTERS_PART_NAMES);
+            // and its selection
+            if (group.isInTree())
+                reserved = ArrayUtils.addAll(reserved, TREE_PART_NAMES);
+            else {
+                reserved = ArrayUtils.addAll(reserved, VIEW_FILTERS_PART_NAMES);
+                reserved = ArrayUtils.addAll(reserved, SELECTION_PART_NAMES);
+            }
         }
         // ... and where FILTERs of its properties are drawn, their parts under one name, a tree group's too
         if (getFilterComponents(group).stream().anyMatch(filter -> filterScope(filter) == scope))
@@ -1186,6 +1192,8 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // ... and of a list's group not in a tree (GReactFormData.GridRowsPart): the view filters the view that draws its
     // rows states. A group of a tree has none, and a property of one may take the name
     private static final String[] VIEW_FILTERS_PART_NAMES = reserved(ReactProjectionNames.VIEW_FILTERS_PART);
+    // ... and what selects its rows and columns, which a tree has none of either
+    private static final String[] SELECTION_PART_NAMES = reserved(ReactProjectionNames.SELECTION_PART);
     // the sortings' part, placed with the rows - the order they are drawn in -, as a group's design has no box of its
     // sortings to place them by
     private static final String[] ORDERS_PART_NAMES = reserved(ReactProjectionNames.ORDERS_PART);

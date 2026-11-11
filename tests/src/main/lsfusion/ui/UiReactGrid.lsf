@@ -1,0 +1,75 @@
+MODULE UiReactGrid;
+
+REQUIRE System, Utils, SystemEvents;
+
+// the form UiReactGridIT works on in the browser - a grid whose rows a React view draws (UiReactGrid.js), more of them
+// than a page holds, its rows and columns selected through the view's controller -, what the form reads of the
+// selection, and the action it seeds its items with
+
+CLASS UiRgItem 'Item';
+uiRgNumber 'Number' = DATA INTEGER (UiRgItem);
+uiRgName 'Name' = DATA STRING[100] (UiRgItem);
+uiRgQty 'Quantity' = DATA INTEGER (UiRgItem);
+uiRgShown = DATA BOOLEAN (UiRgItem); // the items of the test that seeded last: the form shows only them
+
+FORM uiRgGrid 'Selection of a view'
+    OBJECTS i = UiRgItem
+    PROPERTIES(i) READONLY number = uiRgNumber
+    PROPERTIES(i) name = uiRgName, qty = uiRgQty
+    FILTERS uiRgShown(i)
+    ORDERS number
+;
+
+// what the form reads of the selection: how many rows SELECT returns - the current one while none is selected -, the
+// columns it reads as selected and how many times the quantity's selection changed, the active property - and the
+// number of the item that is current as an action of the form runs
+uiRgSelected () = GROUP SUM 1 IF [ SELECT uiRgGrid.i](UiRgItem i);
+uiRgNameSelected () = [ SELECT PROPERTY uiRgGrid.name]();
+uiRgQtySelected () = [ SELECT PROPERTY uiRgGrid.qty]();
+uiRgQtyActive = ACTIVE PROPERTY uiRgGrid.qty;
+uiRgQtyEvents = DATA LOCAL INTEGER ();
+uiRgCaptured = DATA LOCAL INTEGER ();
+uiRgCapture (UiRgItem i) { uiRgCaptured() <- uiRgNumber(i); }
+
+EXTEND FORM uiRgGrid
+    PROPERTIES() selectedCount = uiRgSelected, nameSelected = uiRgNameSelected, qtySelected = uiRgQtySelected,
+                 qtyActive = uiRgQtyActive, qtyEvents = uiRgQtyEvents, captured = uiRgCaptured
+    PROPERTIES(i) PANEL capture = uiRgCapture
+    EVENTS ON SELECT PROPERTY qty { uiRgQtyEvents() <- (OVERRIDE uiRgQtyEvents(), 0) + 1; }
+;
+
+DESIGN uiRgGrid {
+    NEW view FIRST {
+        custom = 'UiRgView';
+        MOVE BOX(i);
+        MOVE PROPERTY(selectedCount);
+        MOVE PROPERTY(nameSelected);
+        MOVE PROPERTY(qtySelected);
+        MOVE PROPERTY(qtyActive);
+        MOVE PROPERTY(qtyEvents);
+        MOVE PROPERTY(captured);
+        MOVE PROPERTY(capture);
+    }
+}
+
+onWebClientInit() + {
+    onWebClientInit('UiReactGrid.js') <- 1;
+}
+
+NAVIGATOR {
+    NEW FOLDER uiRg 'UI React grid' WINDOW toolbar {
+        NEW uiRgGrid;
+    }
+}
+
+// the items shown from now on, numbered from 1, each named by its number and with it as its quantity
+uiRgSeed (INTEGER count) {
+    uiRgShown(UiRgItem i) <- NULL;
+    FOR iterate(INTEGER k, 1, count) DO NEW i = UiRgItem {
+        uiRgNumber(i) <- k;
+        uiRgName(i) <- 'item ' + k;
+        uiRgQty(i) <- k;
+        uiRgShown(i) <- TRUE;
+    }
+    APPLY;
+}

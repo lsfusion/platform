@@ -594,7 +594,7 @@ public abstract class GStateTableView extends FlexPanel implements GListView {
 
     protected long changeGroupObject(GGroupObjectValue value, boolean rendered) {
         setCurrentKey(value, rendered);
-        return form.changeGroupObject(grid.groupObject, value);
+        return form.changeGroupObject(grid.groupObject, value, null, null);
     }
 
     public PValue getValue(GPropertyDraw property, GGroupObjectValue fullKey) {

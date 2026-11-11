@@ -131,7 +131,7 @@ To move to the first or last row of the whole list under the group's current fil
 </>
 ```
 
-This is the move of the platform table's Ctrl+Home / Ctrl+End: the server finds the row, the first / last row becomes current, and the rows read from the start / up to the end replace `list`. An action with [`ACTIVATE FIRST` / `LAST`](../language/ACTIVATE_operator.md) placed in the view's container and run through its member performs the same move.
+This is the move of the platform table's Ctrl+Home / Ctrl+End: the server finds the row, the first / last row becomes current, and the rows read from the start / up to the end replace `list`. The same call can change the [selected rows](#selection). An action with [`ACTIVATE FIRST` / `LAST`](../language/ACTIVATE_operator.md) placed in the view's container and run through its member performs the same move.
 
 A group of an [object tree](#trees) takes no edge, and `ACTIVATE FIRST` and `ACTIVATE LAST` without seek objects keep its current objects: the tree is read whole under its open nodes, without pages. To move to the first or last node, call `controller.<group>.change(row)` through the member of that node's group, passing the row of the first or last node the view draws in its own order — parent then children — rather than the first or last element of one group's `list`.
 
@@ -171,7 +171,7 @@ The reservation follows what a row or a node carries:
 | --- | --- |
 | A row | `key`, `current`, `objects`, `background`, `foreground`, `selected` — on a row of a [tree](#trees) also `parent`, `hasChildren`, `expanded`, `loading` |
 | A group's node, wherever it is | `properties`, `change` |
-| A group's node where its rows are drawn | `list`, `byKey`, `keys`, `options`, and `orders` and `viewFilters` of a group not in a tree — on a group of a tree `expand`, `collapse`, `toggle`, `expandAll`, `collapseAll` |
+| A group's node where its rows are drawn | `list`, `byKey`, `keys`, `options`, and `orders`, `viewFilters` and `selectAll` of a group not in a tree — on a group of a tree `expand`, `collapse`, `toggle`, `expandAll`, `collapseAll` |
 | The node of a group in `LIST` view where `FILTERS(<group>)` is | `filters`, `filterProperties` |
 | The node of a group in `LIST` view where `FILTERCONTROLS(<group>)` is | The names of the [filter controls](#filter-controls): `addFilter`, `applyFilters`, `resetFilters`, `filtersPending`, `filtersManual` |
 | The node of a group in `LIST` view where `TOOLBARSYSTEM(<group>)` is, unless the design hides it (`visible = FALSE`) | The names of all the [toolbar](#toolbar)'s buttons, whatever the design's `show…` flags say: `manual`, `updatePending`, `update`, `filterControlsVisible`, `listView`, `listViews`, `getCount`, `getSum`, `export` |
@@ -1503,6 +1503,82 @@ click that would sort by it.
 Asking to sort BY a property declared `noSort` is refused, and so is a list naming one property twice, a name the
 group does not carry, and a property grouped in columns. Taking a `noSort` sorting off is stating an order with no
 `desc`, which is allowed: what is refused is sorting by such a property, not stopping.
+
+### Selected rows and columns {#selection}
+
+A view that draws the rows of a group not in a tree selects rows and columns as the platform's table does. The selected
+rows are a range the server keeps, in the group's current order ([selection](../paradigm/Selection_SELECT.md)), so the
+range also holds rows the view has not read. A row in the range has `selected` in `list`; a `change` to a row changes
+the range on the rows of `list` at once, before the server answers — unless `'extend'` runs it on from a current row
+`list` does not have, which the answer brings. The columns are the list
+properties the view draws in its rows, except actions, in the order of `properties`. The entry of a column — the one
+its caption is in — has `current`, whether the column is the current one, and `selected`, whether the range of
+selected columns holds it. A cell is selected where its row and its column are.
+
+The members that change the selection are on the group's member where its rows are drawn, and only there:
+
+| Member | What it does |
+| --- | --- |
+| `change(row[, {selection}])` | Makes the row current and changes the selected rows |
+| `change({to: 'home'}[, {selection}])`, `change({to: 'end'}[, {selection}])` | Makes the first or last row of the whole list current, under the group's current filters and sortings, and changes the selected rows. The form's controller has the two edges of the list as `form.HOME` and `form.END` |
+| `properties.change(column[, {selection}])` | Makes the column current, named by its property, and changes the selected columns |
+| `selectAll()` | Selects all the rows the filters leave and all the columns. The current row and the current column stay |
+
+Each returns the `Promise` of its request. What a call does to the selection, `selection` says:
+
+| `selection` | Rows | Columns |
+| --- | --- | --- |
+| `'start'`, or not given | No row is selected, and a range starts from this row | This column alone is selected, and a range starts from it |
+| `'extend'` | The rows from the row the range starts from to this one are selected | The columns from the column the range starts from to this one are selected |
+| `'keep'` | The selected rows stay. While no row is selected, a range starts from this row | The selected columns stay |
+
+The two ranges are independent: a change of the row leaves the selected columns as they are, and a change of the
+column leaves the selected rows. The platform's table changes both by one move of the cell; a view does it by the two
+calls, which a [batch](How-to_Custom_view_controller.md#batch) sends in one request — a click on a cell, for example:
+
+```jsx
+function Cell({ row, name, controller }) {
+    const select = selection => controller.batch(() => {
+        controller.i.change(row, { selection });
+        controller.i.properties.change(name, { selection });
+    });
+    return <td onClick={e => select(e.shiftKey ? 'extend' : 'start')}>{row[name].value}</td>;
+}
+```
+
+The view takes the keys of the platform's table itself, as it takes [the other keys of the table](#keys):
+
+```jsx
+function onKeyDown(e, controller) {
+    const selection = e.shiftKey ? 'extend' : 'start';
+    if (e.ctrlKey && e.key === 'Home')
+        controller.i.change(controller.form.HOME, { selection });
+    else if (e.ctrlKey && e.key === 'End')
+        controller.i.change(controller.form.END, { selection });
+    else if (e.ctrlKey && e.key === 'a')
+        controller.i.selectAll();
+}
+```
+
+The server finds the first or last row when it reads the rows of the group, after all the changes of the request are
+made, as it does for an action's `ACTIVATE FIRST` / `LAST`. So a call made after such a move in the same batch still
+acts on the row that was current before it.
+
+The form sees this selection as it sees the selection in the platform's table: the properties of
+[`SELECT`, `SELECT ACTIVE` and `SELECT PROPERTY`](../language/Object_group_operator.md) return it, the current column
+is the active property ([`ACTIVE PROPERTY`](../language/ACTIVE_operator.md)), and the form's
+[`SELECT` and `SELECT PROPERTY` events](../language/Event_block.md) occur.
+
+A column the form does not show now — its entry is `hidden` — cannot be made current, and a name that is not a column
+is refused. A group of a tree has no selection: its `change` takes a row only, with no `selection` but `'keep'`.
+`useSeekOnScroll` moves the current row with `'keep'`, as a scroll of the platform's table
+leaves its selection.
+
+The selection is the view's that draws the rows. Another container changes it through the form's controller —
+`controller.form.changeObject('<group>', row, {selection})`, `changeColumn('<group>', column, {selection})` and
+`selectAll('<group>')` ([across containers](How-to_Custom_view_controller.md#across-containers)); for a group whose
+rows the platform draws a change of the selection is refused — the platform's table keeps a selection of its own —,
+as it is for a group of a tree: `changeObject` takes a row there, with no `selection` but `'keep'`.
 
 ### Filters {#filters}
 

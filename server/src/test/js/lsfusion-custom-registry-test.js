@@ -580,7 +580,7 @@ console.log('useSeekOnScroll');
             rows.push({ key: String(k), current: k === 1 });
         }
         makeReact.__ctxValue = root.context;
-        const controller = { change: (row) => seeks.push(row.key) };
+        const controller = { change: (row, options) => { check('a seek keeps the selection', options && options.selection === 'keep'); seeks.push(row.key); } };
         const hook = instance();
         const draw = () => {
             const seekRef = render(hook, () => w.lsfusion.useSeekOnScroll(controller));
@@ -714,7 +714,7 @@ console.log('useSeekOnScroll');
             }
             return elements.get(n);
         };
-        const seeks = [], controller = { change: (row) => seeks.push(row.key) }, hook = instance();
+        const seeks = [], controller = { change: (row, options) => { check('a seek keeps the selection', options && options.selection === 'keep'); seeks.push(row.key); } }, hook = instance();
         let refs = new Map();
         const show = (from, to, current) => {
             makeReact.__ctxValue = { element: root, view: null, store: null };

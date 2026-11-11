@@ -681,24 +681,31 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // (the row-carried `objects` handle + raw-GGV accept). Dispatch through the SAME classic path as a normal edit
     // (executePropertyEventAction / changeGroupObject + setLoadingValueAt) ===== a group member's change(row), once it
     // has read the row (GReactFormData.RowsPart.change), the form's controller's changeObject: the group's current
-    // object
+    // object - and, of a grid's group (GridRowsPart), what becomes of the rows selected, as the platform's grid sends
+    // it with a move
     @Override
-    public JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key) {
-        return requestPromise(call -> call.onSuccess(changeGroupObject(group, key)));
+    public JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key, GChangeSelection selection, NativeHashMap<GGroupObjectValue, PValue> selectionRows) {
+        return requestPromise(call -> call.onSuccess(changeGroupObject(group, key, selection, selectionRows)));
     }
     // ... the first or the last of a grid's rows, which the server finds: the platform's own request (Ctrl+Home /
     // Ctrl+End), the row coming with its answer
     @Override
-    public JavaScriptObject scrollCurrentObject(GGroupObject group, boolean toEnd) {
-        return requestPromise(call -> call.onSuccess(scrollToEnd(group, toEnd, null)));
+    public JavaScriptObject scrollCurrentObject(GGroupObject group, boolean toEnd, GChangeSelection selection) {
+        return requestPromise(call -> call.onSuccess(scrollToEnd(group, toEnd, selection)));
     }
-    // ... and a grid's current column, the form's active property: the platform's own request, as its grid makes it
-    // - where the column is another one, and the form follows it (updatePropertyActive)
+    // ... every row of it selected (Ctrl+A), with what that changes of the columns the form reads as selected
     @Override
-    public JavaScriptObject changeActiveProperty(GGroupObject group, GPropertyDraw property) {
+    public JavaScriptObject selectAllRows(GGroupObject group, NativeHashMap<GGroupObjectValue, PValue> selectionRows, ArrayList<GGridTable.ColumnSelection> selection) {
+        return requestPromise(call -> call.onSuccess(selectAll(group, selectionRows, selection)));
+    }
+    // ... and a grid's current column, the form's active property, with what its change changes of the columns the
+    // form reads as selected: the platform's own request, as its grid makes it - where the column is another one or
+    // the columns selected change, and the form follows any of it (updatePropertyActive)
+    @Override
+    public JavaScriptObject changeActiveProperty(GGroupObject group, GPropertyDraw property, ArrayList<GGridTable.ColumnSelection> selection) {
         return requestPromise(call -> {
-            if (property != prevPropertyActive)
-                updatePropertyActive(property, GGroupObjectValue.EMPTY, true, null, call);
+            if (property != prevPropertyActive || !selection.isEmpty())
+                updatePropertyActive(property, GGroupObjectValue.EMPTY, true, selection.isEmpty() ? null : selection, call);
             else
                 call.onCancel();
         });
@@ -1695,8 +1702,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // a current object chosen and sent at once - by a view of the platform's that waits for the answer (a popup of its
     // record), by a view's call (changeCurrentObject) -: as one sent later (changeGroupObjectLater), sent now with every
     // move still waiting, as the last one made; the index of its request
-    public long changeGroupObject(final GGroupObject group, GGroupObjectValue key) {
-        changeGroupObjectLater(group, key, null, null);
+    public long changeGroupObject(final GGroupObject group, GGroupObjectValue key, GChangeSelection changeSelection, NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows) {
+        changeGroupObjectLater(group, key, changeSelection, changeSelectionRows);
         commitDelayedGroupObjectChanges();
         return pendingChangeCurrentObjectsRequests.get(group);
     }
@@ -1877,7 +1884,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         return syncResponseDispatch(new ScrollToEnd(group.ID, toEnd, changeSelection));
     }
 
-    public void selectAll(GGroupObject group, NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows, ArrayList<GGridTable.ColumnSelection> changeSelectionColumns) {
+    public long selectAll(GGroupObject group, NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows, ArrayList<GGridTable.ColumnSelection> changeSelectionColumns) {
         int size = changeSelectionColumns.size();
         int[] changeSelectionProps = new int[size];
         GGroupObjectValue[] changeSelectionColumnKeys = new GGroupObjectValue[size];
@@ -1893,6 +1900,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
 
         long requestIndex = syncResponseDispatch(new SelectAll(group.ID, changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues));
         pendingChangeGroupObject(group, changeSelectionRows, requestIndex);
+        return requestIndex;
     }
 
     public void onPropertyBinding(Event bindingEvent, ExecuteEditContext editContext) {

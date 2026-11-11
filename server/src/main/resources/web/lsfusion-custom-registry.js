@@ -561,7 +561,7 @@
                 if (!scroller) { inert(); return; }
                 setAnchor(target, scroller); // the new current holds its on-screen place through the coming shift
                 t.asked = row.key; t.busy = true;
-                t.controller.change(row);
+                t.controller.change(row, {selection: 'keep'}); // a scroll leaves the rows selected, as the platform's table's does
                 if (t.opts.onSeek) t.opts.onSeek(row);
                 clearTimeout(t.flight); // one seek in flight: let the answer land before the next one
                 t.flight = setTimeout(function () { t.flight = null; t.busy = false; }, 500);

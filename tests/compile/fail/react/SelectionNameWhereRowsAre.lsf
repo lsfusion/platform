@@ -1,0 +1,17 @@
+MODULE SelectionNameWhereRowsAre;
+
+REQUIRE System;
+
+// where a CUSTOM REACT container draws the rows of a group not in a tree, the group's member carries what selects its
+// rows and columns - `selectAll` -, so a property drawn there may not take that name
+CLASS SelectionItem;
+selectionItemName = DATA STRING[50] (SelectionItem);
+
+FORM selectionNameWhereRowsAre
+    OBJECTS i = SelectionItem
+    PROPERTIES(i) selectionItemName EXTID r'selectAll'
+;
+
+DESIGN selectionNameWhereRowsAre {
+    BOX(i) { custom = r'ItemBoard'; }
+}

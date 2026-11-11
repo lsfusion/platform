@@ -57,11 +57,14 @@ import lsfusion.gwt.client.controller.remote.action.form.GroupReport;
 import lsfusion.gwt.client.controller.remote.action.form.GroupReportResult;
 import lsfusion.gwt.client.controller.remote.action.form.ChangeMode;
 import lsfusion.gwt.client.controller.remote.action.form.ChangeGroupObject;
+import lsfusion.gwt.client.controller.remote.action.form.ChangePropertyActive;
 import lsfusion.gwt.client.controller.remote.action.form.ExpandGroupObject;
 import lsfusion.gwt.client.controller.remote.action.form.ExpandGroupObjectRecursive;
 import lsfusion.gwt.client.controller.remote.action.form.CollapseGroupObject;
 import lsfusion.gwt.client.controller.remote.action.form.CollapseGroupObjectRecursive;
 import lsfusion.gwt.client.controller.remote.action.form.ExecuteBatch;
+import lsfusion.gwt.client.controller.remote.action.form.ScrollToEnd;
+import lsfusion.gwt.client.controller.remote.action.form.SelectAll;
 import lsfusion.gwt.client.controller.remote.action.form.SetViewFilters;
 import lsfusion.gwt.client.controller.remote.action.form.FormRequestCountingAction;
 import lsfusion.gwt.client.controller.remote.action.form.ExecuteEventAction;
@@ -88,6 +91,7 @@ import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.event.GBindingEnv;
 import lsfusion.gwt.client.form.event.GBindingEvent;
+import lsfusion.gwt.client.form.event.GChangeSelection;
 import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
@@ -915,6 +919,127 @@ public class GFormControllerTest extends GWTTestCase {
         }).join(' ');
     }-*/;
 
+    // A grid's SELECTION, where a view draws its rows, is the platform's own requests, as its grid makes them, each the
+    // Promise of its request: a row and what becomes of the rows selected (ChangeGroupObject), an edge of the rows
+    // (ScrollToEnd), every row (SelectAll), the current column (ChangePropertyActive) - that one made only where the
+    // form follows what changes of the columns, the active property or a column it reads as selected (quantity):
+    // following none of it, the call is the Promise of no request, resolved at once. In a batch they go in its one
+    // request, in the order they are made, each the batch's Promise; on a closed form they are refused
+    public void testAGridsSelectionIsTheFormsOwnRequests() {
+        FiltersForm filters = new FiltersForm(false);
+        filters.deliver(true);
+        filters.form.sessionID = "selection" + (++asksForms);
+        filters.quantity.hasSelectProperty = true;
+        filters.group.rowSelectReader = new GRowSelectReader(filters.group.ID); // the rows selected, as every group of a form reads them
+        GFormController controller = filters.controller();
+        Server requests = new Server(controller) {
+            @Override
+            boolean takes(Action<?> action) {
+                return action instanceof FormRequestCountingAction && controller.getForm().sessionID.equals(((FormAction<?>) action).formSessionID);
+            }
+        };
+        server = requests;
+        JavaScriptObject form = controller.controller;
+        GGroupObjectValue one = new GGroupObjectValue(filters.group.ID, 1), two = new GGroupObjectValue(filters.group.ID, 2);
+        ArrayList<String> settled = new ArrayList<>();
+        then((JavaScriptObject) call(form, "changeColumn", "items", "price", parse("{\"selection\": \"start\"}")), answer -> settled.add("price"), error -> fail(error));
+        assertTrue(requests.actions.isEmpty()); // the form follows nothing of price
+        call(form, "changeObject", "items", objects(two), parse("{\"selection\": \"extend\"}"));
+        ChangeGroupObject row = (ChangeGroupObject) requests.actions.get(0);
+        assertEquals(two, row.keyValues);
+        assertEquals(GChangeSelection.MOVEEND, row.changeSelection);
+        call(form, "changeObject", "items", field(form, "END"), parse("{\"selection\": \"keep\"}"));
+        ScrollToEnd end = (ScrollToEnd) requests.actions.get(1);
+        assertTrue(end.toEnd && end.changeSelection == null);
+        then((JavaScriptObject) call(form, "changeColumn", "items", "quantity", parse("{\"selection\": \"extend\"}")), answer -> settled.add("quantity"), error -> fail(error));
+        ChangePropertyActive column = (ChangePropertyActive) requests.actions.get(2);
+        assertEquals(filters.quantity.ID, column.propertyId);
+        assertTrue(Arrays.equals(new int[] {filters.quantity.ID}, column.changeSelectionProps) && column.changeSelectionValues[0]);
+
+        JavaScriptObject[] inBatch = new JavaScriptObject[3];
+        JavaScriptObject batch = controller.batch(() -> {
+            inBatch[0] = (JavaScriptObject) call(form, "changeObject", "items", objects(one), parse("{\"selection\": \"start\"}"));
+            inBatch[1] = (JavaScriptObject) call(form, "changeColumn", "items", "price", parse("{\"selection\": \"start\"}"));
+            inBatch[2] = (JavaScriptObject) call(form, "selectAll", "items");
+        });
+        for (JavaScriptObject promise : inBatch)
+            assertSame(batch, promise);
+        assertEquals(4, requests.actions.size());
+        ArrayList<FormRequestCountingAction<?>> sent = ((ExecuteBatch) requests.actions.get(3)).requests;
+        assertEquals(3, sent.size());
+        assertEquals(GChangeSelection.MOVE, ((ChangeGroupObject) sent.get(0)).changeSelection);
+        assertEquals(filters.price.ID, ((ChangePropertyActive) sent.get(1)).propertyId);
+        assertFalse(((ChangePropertyActive) sent.get(1)).changeSelectionValues[0]); // quantity is selected no longer
+        assertTrue(((SelectAll) sent.get(2)).changeSelectionValues[0]); // ... and is again
+        delayTestFinish(5000);
+        inTurn(() -> {
+            assertEquals(Collections.singletonList("price"), settled);
+            for (int i = 0; i < 4; i++)
+                requests.answer(i, false);
+        }, () -> {
+            assertEquals(Arrays.asList("price", "quantity"), settled);
+            closeForm(controller);
+            then((JavaScriptObject) call(form, "selectAll", "items"), answer -> fail("resolved"), error -> {
+                assertEquals("Form is closed", error);
+                assertEquals(4, requests.actions.size());
+                finishTest();
+            });
+        });
+    }
+
+    // ... and the rows a move selects are HELD as the platform's table's are, by the form's own way with a row's
+    // selection - the move's request waited for (changeGroupObjectLater), the deliveries made meanwhile and its answer
+    // set right by it (modifyFormChangesWithChangePropertyAsyncs): shown at once; kept through a delivery that comes
+    // before the request is answered and says them not selected; kept by the answer that says them; and, the rows a
+    // move leaves out, shown again where its answer says nothing of them - the server left them selected
+    public void testTheRowsAGridsMoveSelectsAreHeldUntilItsRequestIsAnswered() {
+        FiltersForm filters = new FiltersForm(false);
+        filters.deliver(true);
+        filters.form.sessionID = "held" + (++asksForms);
+        filters.group.rowSelectReader = new GRowSelectReader(filters.group.ID); // the rows selected, as every group of a form reads them
+        GFormController controller = filters.controller();
+        Server requests = new Server(controller) {
+            @Override
+            boolean takes(Action<?> action) {
+                return action instanceof ChangeGroupObject && controller.getForm().sessionID.equals(((FormAction<?>) action).formSessionID);
+            }
+        };
+        server = requests;
+        JavaScriptObject form = controller.controller;
+        GGroupObject group = filters.group;
+        GGroupObjectValue one = new GGroupObjectValue(group.ID, 1), two = new GGroupObjectValue(group.ID, 2);
+        call(form, "changeObject", "items", objects(two), parse("{\"selection\": \"extend\"}"));
+        assertEquals("1,2", rowsSelected(controller, group)); // at once
+        int extended = (int) ((FormRequestAction<?>) requests.actions.get(0)).requestIndex;
+        GFormChanges before = new GFormChanges(); // the rows as the server had them before the move: none selected
+        before.properties.put(group.rowSelectReader, new NativeHashMap<>());
+        controller.applyRemoteChanges(before, extended - 1);
+        assertEquals("1,2", rowsSelected(controller, group));
+        GFormChanges answer = new GFormChanges();
+        NativeHashMap<GGroupObjectValue, PValue> selected = new NativeHashMap<>();
+        selected.put(one, PValue.getPValue(true));
+        selected.put(two, PValue.getPValue(true));
+        answer.properties.put(group.rowSelectReader, selected);
+        controller.applyRemoteChanges(answer, extended);
+        assertEquals("1,2", rowsSelected(controller, group));
+
+        call(form, "changeObject", "items", objects(one)); // a range anew: none selected
+        assertEquals("", rowsSelected(controller, group));
+        controller.applyRemoteChanges(new GFormChanges(), (int) ((FormRequestAction<?>) requests.actions.get(1)).requestIndex);
+        assertEquals("1,2", rowsSelected(controller, group)); // the answer says nothing of them: they are as they were
+        requests.answer(0, false);
+        requests.answer(1, false);
+    }
+    // the rows of a group that say they are selected, by their keys, as the view of its grid that draws them is given
+    // them now
+    private static native String rowsSelected(GFormController controller, GGroupObject group) /*-{
+        var projection = controller.@lsfusion.gwt.client.form.controller.GFormController::reactData;
+        var state = projection.@lsfusion.gwt.client.form.design.view.GReactFormData::views.@lsfusion.gwt.client.base.jsni.NativeSIDMap::get(*)(group.@lsfusion.gwt.client.form.object.GGroupObject::grid);
+        return state.@lsfusion.gwt.client.form.design.view.GReactFormData.ViewState::current()().items.list.filter(function (row) {
+            return row.selected;
+        }).map(function (row) { return row.key; }).join(',');
+    }-*/;
+
     // Asks refuse inside the form: no request or state change, their Promise rejected with the reason.
     public void testAsksAreRefusedInABatchAndOnAClosedForm() {
         AskServer asks = asks();
@@ -1740,7 +1865,7 @@ public class GFormControllerTest extends GWTTestCase {
         LinkedHashMap<Column, Boolean> orders = new LinkedHashMap<>();
         orders.put(new Column(controller.getForm().propertyDraws.get(0), GGroupObjectValue.EMPTY), true);
         JavaScriptObject sorted = controller.changeOrders(Collections.singletonList(group), orders);
-        JavaScriptObject chosen = controller.changeCurrentObject(group, new GGroupObjectValue(group.ID, 1));
+        JavaScriptObject chosen = controller.changeCurrentObject(group, new GGroupObjectValue(group.ID, 1), null, null);
         assertEquals(2, groups.actions.size());
         assertTrue(groups.actions.get(0) instanceof SetPropertyOrders); // its own request, no batch
         assertTrue(groups.actions.get(1) instanceof ChangeGroupObject);
@@ -1839,7 +1964,7 @@ public class GFormControllerTest extends GWTTestCase {
         GGroupObject group = controller.getForm().groupObjects.get(0);
         GGroupObjectValue before = controller.getGroupController(group).getSelectedKey();
         closeForm(controller);
-        JavaScriptObject chosen = controller.changeCurrentObject(group, new GGroupObjectValue(group.ID, 1));
+        JavaScriptObject chosen = controller.changeCurrentObject(group, new GGroupObjectValue(group.ID, 1), null, null);
         assertEquals(before, controller.getGroupController(group).getSelectedKey());
         assertTrue(groups.actions.isEmpty());
         delayTestFinish(5000);
@@ -3072,7 +3197,7 @@ public class GFormControllerTest extends GWTTestCase {
         GGroupObject group = controller.getForm().groupObjects.get(0);
         GPropertyDraw name = controller.getForm().propertyDraws.get(0);
         GGroupObjectValue two = new GGroupObjectValue(90, 2);
-        controller.changeCurrentObject(group, two);
+        controller.changeCurrentObject(group, two, null, null);
         assertEquals(two, group.getRowKey(controller.getFullCurrentKey(name, GGroupObjectValue.EMPTY)));
     }
     // ... and over a tree the platform draws: a node the form chose is the node the tree's toolbar opens next, before
@@ -3100,7 +3225,7 @@ public class GFormControllerTest extends GWTTestCase {
         delayTestFinish(5000);
         Scheduler.get().scheduleDeferred(() -> { // ... once it has drawn them
             try {
-                controller.changeCurrentObject(cat, c2);
+                controller.changeCurrentObject(cat, c2, null, null);
                 ((GTreeController) tableController(controller, tree)).expandCurrent(); // the tree's toolbar's button
                 assertEquals(Boolean.TRUE, pendingExpanding(platformView(controller, tree), cat, c2));
                 finishTest();
@@ -3179,7 +3304,7 @@ public class GFormControllerTest extends GWTTestCase {
         GGroupObject group = controller.getForm().groupObjects.get(0);
         GGridTable rows = platformGridView(controller, group);
         try {
-            controller.changeCurrentObject(group, new GGroupObjectValue(90, 3));
+            controller.changeCurrentObject(group, new GGroupObjectValue(90, 3), null, null);
             moveTo(rows, 1, FocusUtils.Reason.MOUSENAVIGATE, null); // a click on the second row
             controller.applyRemoteChanges(new GFormChanges(), 2); // the answer to the form's
             assertEquals(new GGroupObjectValue(90, 2), rows.getSelectedKey());
@@ -3275,7 +3400,7 @@ public class GFormControllerTest extends GWTTestCase {
         values.properties.put(name, names);
         controller.applyRemoteChanges(values, 2);
 
-        controller.changeCurrentObject(group, new GGroupObjectValue(90, 2));
+        controller.changeCurrentObject(group, new GGroupObjectValue(90, 2), null, null);
         GTableController rows = tableController(controller, group.grid);
         assertEquals(1, rows.getSelectedRow());
         assertValue(20, rows.getSelectedValue(name, GGroupObjectValue.EMPTY));
@@ -3288,7 +3413,7 @@ public class GFormControllerTest extends GWTTestCase {
         GPropertyDraw itemName = controller.getForm().propertyDraws.get(1);
         GGroupObjectValue i1 = GGroupObjectValue.getFullKey(new GGroupObjectValue(10, 2), new GGroupObjectValue(40, 1));
         GTreeGroup tree = item.parent;
-        controller.changeCurrentObject(item, i1);
+        controller.changeCurrentObject(item, i1, null, null);
         GTableController rows = tableController(controller, tree);
         assertSame(itemName, rows.getSelectedFilterProperty());
         assertValue(7, rows.getSelectedValue(itemName, GGroupObjectValue.EMPTY));
@@ -3315,7 +3440,7 @@ public class GFormControllerTest extends GWTTestCase {
         List<String> captions = captions(input, filters);
 
         GGroupObjectValue i1 = GGroupObjectValue.getFullKey(new GGroupObjectValue(10, 2), new GGroupObjectValue(40, 1));
-        controller.applyRemoteChanges(new GFormChanges(), (int) controller.changeGroupObject(item, i1));
+        controller.applyRemoteChanges(new GFormChanges(), (int) controller.changeGroupObject(item, i1, null, null));
         assertSame(controller.getForm().propertyDraws.get(1), rows.getSelectedFilterProperty()); // on the item
         captions.addAll(captions(input, filters));
         assertEquals(Arrays.asList("Category", "Item", "Category", "Item"), captions);
@@ -3456,7 +3581,7 @@ public class GFormControllerTest extends GWTTestCase {
         GGroupObject group = controller.getForm().groupObjects.get(0);
         try {
             moveTo(platformGridView(controller, group), 1, FocusUtils.Reason.SCROLLNAVIGATE, null); // to the second row, by a scroll: no selection mode, as the choice's
-            long sent = controller.changeGroupObject(group, new GGroupObjectValue(90, 3)); // the third, at once
+            long sent = controller.changeGroupObject(group, new GGroupObjectValue(90, 3), null, null); // the third, at once
             DeferredRunner.get().commitDelayedGroupObjectChange(group); // ... and what still waits sent
             assertEquals(sent, (long) sentAt(controller, group));
         } finally {
@@ -3470,7 +3595,7 @@ public class GFormControllerTest extends GWTTestCase {
         GGroupObject a = controller.getForm().groupObjects.get(0), b = controller.getForm().groupObjects.get(1);
         try {
             moveTo(platformGridView(controller, a), 1, FocusUtils.Reason.KEYMOVENAVIGATE, null); // down in a
-            long sent = controller.changeGroupObject(b, new GGroupObjectValue(70, 2)); // b's second, at once
+            long sent = controller.changeGroupObject(b, new GGroupObjectValue(70, 2), null, null); // b's second, at once
             assertTrue(sentAt(controller, a) < sent);
         } finally {
             DeferredRunner.get().commitDelayedGroupObjectChange(a);

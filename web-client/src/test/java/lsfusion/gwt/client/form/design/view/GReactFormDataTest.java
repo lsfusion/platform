@@ -37,6 +37,7 @@ import lsfusion.gwt.client.form.controller.GFormControllerTest;
 import lsfusion.gwt.client.form.controller.GController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.event.GChangeSelection;
 import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.event.GKeyInputEvent;
 import lsfusion.gwt.client.form.event.GKeyStroke;
@@ -74,6 +75,7 @@ import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.property.JSValueConverter;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
@@ -330,7 +332,16 @@ public class GReactFormDataTest extends GWTTestCase {
                 placements++;
                 return component.getReactPlace();
             }, verbs = new GReactFormData.Verbs() { // the form, as far as a member asks it: what it is handed is kept
-                public JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key) { chosen = key; edits.add("current " + key.toKeyString()); return batching ? batchPromise : requestPromise; }
+                public JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key, GChangeSelection selection, NativeHashMap<GGroupObjectValue, PValue> selectionRows) { chosen = key; edits.add("current " + key.toKeyString() + describe(selection) + describeRows(selectionRows)); return batching ? batchPromise : requestPromise; }
+                public JavaScriptObject scrollCurrentObject(GGroupObject group, boolean toEnd, GChangeSelection selection) { edits.add((toEnd ? "end" : "home") + describe(selection)); return batching ? batchPromise : requestPromise; }
+                public JavaScriptObject selectAllRows(GGroupObject group, NativeHashMap<GGroupObjectValue, PValue> selectionRows, ArrayList<GGridTable.ColumnSelection> selection) {
+                    edits.add("selectAll" + describeRows(selectionRows) + describeColumns(selection));
+                    return batching ? batchPromise : requestPromise;
+                }
+                public JavaScriptObject changeActiveProperty(GGroupObject group, GPropertyDraw property, ArrayList<GGridTable.ColumnSelection> selection) {
+                    edits.add("column " + property.integrationSID + describeColumns(selection));
+                    return batching ? batchPromise : requestPromise;
+                }
                 public JavaScriptObject changeProperty(GPropertyDraw property, GGroupObjectValue key, PValue value, PValue shownValue) {
                     changed = key;
                     changedTo = value;
@@ -637,7 +648,10 @@ public class GReactFormDataTest extends GWTTestCase {
 
         // as the form does: the request numbered and sent, the group's controller told of the current object at once
         // (GFormController.changeGroupObject) - published by the member's call that asked it
-        public JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key) {
+        public JavaScriptObject scrollCurrentObject(GGroupObject group, boolean toEnd, GChangeSelection selection) { return null; }
+        public JavaScriptObject selectAllRows(GGroupObject group, NativeHashMap<GGroupObjectValue, PValue> selectionRows, ArrayList<GGridTable.ColumnSelection> selection) { return null; }
+        public JavaScriptObject changeActiveProperty(GGroupObject group, GPropertyDraw property, ArrayList<GGridTable.ColumnSelection> selection) { return null; }
+        public JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key, GChangeSelection selection, NativeHashMap<GGroupObjectValue, PValue> selectionRows) {
             ask("current " + group.getSID() + " " + key.toKeyString());
             controllers.groups.get(group).changeCurrentKey(key);
             return batching ? batchPromise : requestPromise;
@@ -1333,6 +1347,29 @@ public class GReactFormDataTest extends GWTTestCase {
                     .append(condition.negation ? " not" : "").append(condition.junction ? "" : " or");
         return text.toString();
     }
+    // ... what a change of a grid's current row makes of the rows selected, and of its columns of those the form reads
+    // as selected: each by its name, taken in (+) or left out (-)
+    private static String describe(GChangeSelection selection) {
+        return selection != null ? " " + selection : "";
+    }
+    // ... and of the rows the view has: each by its key, selected (+) or no longer (-)
+    private static String describeRows(NativeHashMap<GGroupObjectValue, PValue> rows) {
+        ArrayList<String> described = new ArrayList<>();
+        if (rows != null)
+            rows.foreachEntry((key, value) -> described.add(key.toKeyString() + (PValue.getBooleanValue(value) ? "+" : "-")));
+        Collections.sort(described);
+        return described.isEmpty() ? "" : " rows " + String.join(" ", described);
+    }
+    // the rows of a grid's node that say they are selected, by their keys
+    private static native String selectedRows(JavaScriptObject node) /*-{
+        return node.list.filter(function (row) { return row.selected; }).map(function (row) { return row.key; }).join(',');
+    }-*/;
+    private static String describeColumns(ArrayList<GGridTable.ColumnSelection> selection) {
+        StringBuilder text = new StringBuilder();
+        for (GGridTable.ColumnSelection column : selection)
+            text.append(" ").append(column.property.integrationSID).append(column.set ? "+" : "-");
+        return text.toString();
+    }
     // ... a list of sortings, each its property's name and direction, as a test reads it
     private static String describeOrders(LinkedHashMap<Column, Boolean> orders) {
         StringBuilder text = new StringBuilder();
@@ -1945,7 +1982,7 @@ public class GReactFormDataTest extends GWTTestCase {
             changeAt(quantity, 6, null);
             callChange(items, keyOf("2"));
         });
-        assertEquals(Arrays.asList("batch", "cell price@2", "cell quantity@", "current 2", "sent"), f.edits);
+        assertEquals(Arrays.asList("batch", "cell price@2", "cell quantity@", "current 2 MOVE", "sent"), f.edits);
     }
 
     // a call is made when it is made, so a batch that throws - a call refused, or the view's own throw - ends with what
@@ -5974,7 +6011,8 @@ public class GReactFormDataTest extends GWTTestCase {
         assertTrue(own(rows.node(), "options") && own(row, "background") && own(row, "foreground") && own(row, "selected"));
         String columns = join(field(rows.node(), "properties"));
         assertNodeReserved("the rows", rows.node(), field(rows.sa.controller, "items"), columns,
-                ReactProjectionNames.NODE_OWN, ReactProjectionNames.GRID_PART, ReactProjectionNames.VIEW_FILTERS_PART, ReactProjectionNames.ORDERS_PART);
+                ReactProjectionNames.NODE_OWN, ReactProjectionNames.GRID_PART, ReactProjectionNames.VIEW_FILTERS_PART,
+                ReactProjectionNames.SELECTION_PART, ReactProjectionNames.ORDERS_PART);
         assertReserved("a row", row, columns, ReactProjectionNames.GRID_ROW);
         // ... and the controller of the container they are in: its own names - the form's controller and its batch -,
         // beside the group's and the properties'
@@ -6426,6 +6464,118 @@ public class GReactFormDataTest extends GWTTestCase {
         TreeFixture tree = new TreeFixture();
         assertRefusal("controller.form.changeViewFilters('cat'): 'cat' has no view filters to state",
                 refusedWith(field(tree.sa.controller, "form"), "changeViewFilters", "cat", parse("[]")));
+    }
+
+    // a GRID's SELECTION, where a view draws its rows. Its member's change takes an edge of the rows in a row's place -
+    // {to: ...}, the form's controller's HOME and END - and says what becomes of the rows selected: the form is asked
+    // each as the platform's grid asks it. The current column and the range of columns selected are the grid's own:
+    // properties.change and selectAll change them, each column's entry says them, and the form is told the active
+    // property and what changes of the columns it reads as selected (price). The form's controller's methods make the
+    // same calls
+    public void testAGridsSelection() {
+        Fixture f = new Fixture(fixture -> fixture.price.hasSelectProperty = true);
+        JavaScriptObject items = field(f.sa.controller, "items"), properties = field(items, "properties"), form = field(f.sb.controller, "form");
+        assertSame(f.requestPromise, call(items, "change", f.row("2"), parse("{\"selection\": \"start\"}")));
+        assertEquals("current 2 MOVE", lastOf(f.edits));
+        assertSame(f.requestPromise, call(items, "change", field(form, "END"), parse("{\"selection\": \"extend\"}")));
+        assertEquals("end MOVEEND", lastOf(f.edits));
+        call(items, "change", parse("{\"to\": \"home\"}")); // not said: a range starting from there
+        assertEquals("home MOVE", lastOf(f.edits));
+        call(items, "change", f.row("2"), parse("{\"selection\": \"keep\"}")); // the range stays
+        assertEquals("current 2", lastOf(f.edits));
+        call(form, "changeObject", "items", field(form, "HOME"), parse("{\"selection\": \"start\"}"));
+        assertEquals("home MOVE", lastOf(f.edits));
+        call(form, "changeObject", "items", objects(f.two), parse("{\"selection\": \"extend\"}"));
+        assertEquals("current 2 MOVEEND rows 1+ 2+", lastOf(f.edits));
+        // the rows selected, of those the view has, are shown at once, as the platform's table shows its own: the
+        // range from the current row to the new one - and none once a move starts a range anew
+        f.projection.flush();
+        assertEquals("1,2", selectedRows(f.node()));
+        call(items, "change", f.row("1"));
+        assertEquals("current 1 MOVE rows 1- 2-", lastOf(f.edits));
+        f.projection.flush();
+        assertEquals("", selectedRows(f.node()));
+        assertTrue(frozenEdges(form) && !own(f.sa.controller, "HOME") && !own(f.sa.controller, "END"));
+
+        assertEquals("false false, false false", columns(f.node()));
+        assertSame(f.requestPromise, call(properties, "change", "quantity", parse("{\"selection\": \"start\"}")));
+        assertEquals("column quantity", lastOf(f.edits)); // the form reads no selection of it
+        assertEquals("false false, true true", columns(f.node()));
+        call(form, "changeColumn", "items", "price", parse("{\"selection\": \"extend\"}"));
+        assertEquals("column price price+", lastOf(f.edits));
+        assertEquals("true true, false true", columns(f.node()));
+        call(properties, "change", "quantity", parse("{\"selection\": \"keep\"}")); // the current one alone: the range stays
+        assertEquals("column quantity", lastOf(f.edits));
+        assertEquals("false true, true true", columns(f.node()));
+        call(properties, "change", "quantity"); // not said: a range starting from there
+        assertEquals("column quantity price-", lastOf(f.edits));
+        assertEquals("false false, true true", columns(f.node()));
+        assertSame(f.requestPromise, call(form, "selectAll", "items"));
+        assertEquals("selectAll rows 1+ 2+ price+", lastOf(f.edits));
+        assertEquals("false true, true true", columns(f.node())); // the current column stays
+        call(items, "selectAll");
+        assertEquals("selectAll rows 1+ 2+", lastOf(f.edits)); // every column is selected already - the rows say it by the answer
+        assertEquals("price,quantity", join(field(f.node(), "properties"))); // the names, as they were
+    }
+    private static native boolean frozenEdges(JavaScriptObject form) /*-{
+        return form.HOME.to === 'home' && form.END.to === 'end' && Object.isFrozen(form.HOME) && Object.isFrozen(form.END);
+    }-*/;
+    // whether each of the fixture's columns is current and is selected, as its entry says it
+    private static native String columns(JavaScriptObject node) /*-{
+        return ['price', 'quantity'].map(function (name) { return node[name].current + ' ' + node[name].selected; }).join(', ');
+    }-*/;
+
+    // ... and what it does not take is refused, saying why, with nothing handed to the form: a column that is none of
+    // the grid's - a panel property, an action, an unknown name, no name -, one the form does not show now, a selection
+    // or an edge that is none; and an edge or a selection asked of a group that is no grid a view draws - a tree's
+    // group, by its member and by the form's controller, the platform's rows by the form's controller
+    public void testAGridsSelectionRefusesWhatItDoesNotTake() {
+        GPropertyDraw[] approve = new GPropertyDraw[1];
+        Fixture f = new Fixture(fixture -> {
+            approve[0] = fixture.property(73, "approve", fixture.group, true, fixture.a);
+            approve[0].valueType = GActionType.instance;
+        });
+        JavaScriptObject items = field(f.sa.controller, "items"), properties = field(items, "properties");
+        int edits = f.edits.size();
+        for (String name : Arrays.asList("panel", "approve", "missing"))
+            assertEquals("controller.items.properties.change(): '" + name + "' is no column of 'items': a list property the view draws in"
+                    + " its rows, not an action", refusedWith(properties, "change", name));
+        assertEquals("controller.items.properties.change(): takes the name of the column, as a string", refusedWith(properties, "change", parse("5")));
+        f.apply(drop(f.price));
+        assertRefusal("controller.items.properties.change(): 'price' is not shown by the form now", refusedWith(properties, "change", "price"));
+        assertEquals("controller.items.properties.change(): 'selection' must be 'start', 'extend' or 'keep'",
+                refusedWith(properties, "change", "quantity", parse("{\"selection\": \"all\"}")));
+        assertRefusal("controller.items.change(): unknown field 'column'", refusedWith(items, "change", f.row("1"), parse("{\"column\": \"price\"}")));
+        assertEquals("controller.items.change(): 'to' must be 'home' or 'end'", refusedWith(items, "change", parse("{\"to\": \"last\"}")));
+        // ... options that are no object, the falsy ones too
+        assertEquals("controller.items.change(): the options argument must be an object {selection}", refusedWith(items, "change", f.row("1"), parse("false")));
+        assertEquals("controller.items.properties.change(): the options argument must be an object {selection}", refusedWith(properties, "change", "quantity", parse("0")));
+        assertEquals("controller.form.changeObject('items'): the options argument must be an object {selection}",
+                refusedWith(field(f.sa.controller, "form"), "changeObject", "items", f.row("1"), parse("false")));
+        assertEquals(edits, f.edits.size());
+        assertEquals("false false, false false", columns(f.node()));
+
+        TreeFixture tree = new TreeFixture();
+        tree.apply(closedPage(tree));
+        JavaScriptObject cat = field(tree.sa.controller, "cat");
+        for (JavaScriptObject[] arguments : new JavaScriptObject[][] {{tree.row(tree.cat, tree.c2), parse("{\"selection\": \"start\"}")}, {parse("{\"to\": \"end\"}"), null}})
+            assertEquals("controller.cat.change(): takes a row of 'cat': the first and the last row and a selection are a grid's",
+                    refusedWith(cat, "change", arguments[0], arguments[1]));
+        assertEquals("controller.form.selectAll('cat'): 'cat' has no selection of a view's: a view selects among the rows it draws, of a"
+                + " list group not in a tree", refusedWith(field(tree.sa.controller, "form"), "selectAll", "cat"));
+        assertTrue(tree.verbs.asked.isEmpty());
+        call(cat, "change", tree.row(tree.cat, tree.c2), parse("{\"selection\": \"keep\"}")); // ... what keeps it changes none
+        assertEquals(1, tree.verbs.asked.size());
+
+        Fixture platform = new Fixture(Fixture::rowsByThePlatform);
+        JavaScriptObject form = field(platform.sb.controller, "form");
+        String refusal = "'items' has no selection of a view's: a view selects among the rows it draws, of a list group not in a tree";
+        assertEquals("controller.form.changeObject('items'): " + refusal, refusedWith(form, "changeObject", "items", field(form, "END")));
+        assertEquals("controller.form.changeObject('items'): " + refusal,
+                refusedWith(form, "changeObject", "items", objects(platform.two), parse("{\"selection\": \"start\"}")));
+        assertEquals("controller.form.changeColumn('items'): " + refusal, refusedWith(form, "changeColumn", "items", "price"));
+        assertEquals("controller.form.selectAll('items'): " + refusal, refusedWith(form, "selectAll", "items"));
+        assertTrue(platform.edits.isEmpty());
     }
 
     // ... and a name that names nothing the call reaches is refused, saying why - unknown, of another kind, no string -,

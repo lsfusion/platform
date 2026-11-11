@@ -30,6 +30,7 @@ import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.filter.GFilterGroupController;
 import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
+import lsfusion.gwt.client.form.event.GChangeSelection;
 import lsfusion.gwt.client.form.event.GInputBindingEvent;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterControlsController;
 import lsfusion.gwt.client.form.object.table.controller.GGridToolbarController;
@@ -44,6 +45,8 @@ import lsfusion.gwt.client.form.filter.user.controller.GFilterInputController;
 import lsfusion.gwt.client.form.filter.user.controller.GFilterControlsToggle;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
+import lsfusion.gwt.client.form.object.table.grid.view.GGridSelection;
+import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -129,12 +132,17 @@ public class GReactFormData {
     // hands the form the edit, which the form shows at once and sends at once or, inside a batch, when the batch ends
     // (batch). The user filters of each table are its model's (GUserFiltersController), sent through its Transport
     public interface Verbs {
-        // ===== the current object of a group whose rows a view draws: one of those rows ...
-        JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key);
+        // ===== the current object of a group whose rows a view draws: one of those rows - and, of a grid's group, what
+        // becomes of the rows selected (readSelection), null: the range stays, with what that changes of the rows the
+        // view has, shown already (GridRowsPart.updateRowSelection) ...
+        JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key, GChangeSelection selection, NativeHashMap<GGroupObjectValue, PValue> selectionRows);
         // ... the first or the last of a grid's rows, which the server finds ...
-        JavaScriptObject scrollCurrentObject(GGroupObject group, boolean toEnd);
-        // ... and its current column, the form's active property
-        JavaScriptObject changeActiveProperty(GGroupObject group, GPropertyDraw property);
+        JavaScriptObject scrollCurrentObject(GGroupObject group, boolean toEnd, GChangeSelection selection);
+        // ... every row of it selected, and its current column, the form's active property - each with what it
+        // changes of the columns the form reads as selected, the range of them being the grid's own
+        // (GridRowsPart.updateColumnSelection)
+        JavaScriptObject selectAllRows(GGroupObject group, NativeHashMap<GGroupObjectValue, PValue> selectionRows, ArrayList<GGridTable.ColumnSelection> selection);
+        JavaScriptObject changeActiveProperty(GGroupObject group, GPropertyDraw property, ArrayList<GGridTable.ColumnSelection> selection);
         // ===== a property: its cell - its key (EMPTY: the current objects), its value (PValue.UNDEFINED: its change
         // event, or the action) and what the cell shows until the answer (PValue.UNDEFINED: the value it has) -, the
         // Promise of the change's request returned, and the Promise of the cell's suggestion list, from the server's
@@ -1884,12 +1892,12 @@ public class GReactFormData {
         }
 
         // ===== a call through its member: change(row), the current object chosen among the rows drawn here - an edge
-        // of the rows, which a grid's member takes too (GridRowsPart), refused
-        JavaScriptObject change(String surface, JavaScriptObject objectOrKey) {
+        // of the rows and a change of the rows selected, which a grid's member takes too (GridRowsPart), refused
+        JavaScriptObject change(String surface, JavaScriptObject objectOrKey, JavaScriptObject options) {
             String errorPrefix = controllerPrefix(surface);
-            if (isEdge(objectOrKey))
-                throw refusal(errorPrefix + "takes a row of '" + node.name + "': the first and the last row are a grid's");
-            return verbs.changeCurrentObject(node.group, resolveGroupRow(errorPrefix, objectOrKey));
+            if (isSelectionChange(errorPrefix, options) || isEdge(objectOrKey))
+                throw refusal(errorPrefix + "takes a row of '" + node.name + "': the first and the last row and a selection are a grid's");
+            return verbs.changeCurrentObject(node.group, resolveGroupRow(errorPrefix, objectOrKey), null, null);
         }
         // what a column's entry says of the column besides - a grid's alone
         void emitColumn(JavaScriptObject entry, ReactColumnPropertyEntry column) {
@@ -1918,8 +1926,9 @@ public class GReactFormData {
     // (GridTablePart)
     private final class GridRowsPart extends RowsPart {
         // its COLUMNS (getColumns), each by its place among them, and what is the grid's own of them, as the platform's
-        // grid keeps its columns' (DataGrid): the current one - -1: none
-        int currentColumn = -1;
+        // grid keeps its columns' (DataGrid): the current one, and the range selected, between the column it starts
+        // from and the one it ends on - -1: none. The rows selected are the server's (updateRowSelection)
+        int currentColumn = -1, startSelectColumn = -1, endSelectColumn = -1;
 
         GridRowsPart(GroupNode node) {
             super(node);
@@ -1949,24 +1958,46 @@ public class GReactFormData {
             setField(node.edit(), VIEW_FILTERS, array);
         }
 
-        // ===== change(row | HOME | END): the current object - a row drawn here, or an edge of the rows, the first or
-        // the last of them all, which the server finds
+        // ===== its selection, as calls through its member state it. change(row | HOME | END[, {selection}]): the
+        // current object - a row drawn here, or an edge of the rows, the first or the last of them all, which the
+        // server finds - and what becomes of the rows selected (readSelection)
         @Override
-        JavaScriptObject change(String surface, JavaScriptObject target) {
+        JavaScriptObject change(String surface, JavaScriptObject target, JavaScriptObject options) {
             String errorPrefix = controllerPrefix(surface);
-            return changeCurrentObject(errorPrefix, target, row -> resolveGroupRow(errorPrefix, row));
+            return changeCurrentObject(errorPrefix, target, options, row -> resolveGroupRow(errorPrefix, row));
         }
         // ... as the form's controller's changeObject names it too, a row read as it reads one (readRow)
-        JavaScriptObject changeCurrentObject(String errorPrefix, JavaScriptObject target, RowKey readRow) {
+        JavaScriptObject changeCurrentObject(String errorPrefix, JavaScriptObject target, JavaScriptObject options, RowKey readRow) {
+            GChangeSelection selection = readSelection(errorPrefix, options);
             if (isEdge(target))
-                return verbs.scrollCurrentObject(node.group, readToEnd(errorPrefix, target));
-            return verbs.changeCurrentObject(node.group, readRow.read(target));
+                return verbs.scrollCurrentObject(node.group, readToEnd(errorPrefix, target), selection);
+            GGroupObjectValue key = readRow.read(target);
+            return verbs.changeCurrentObject(node.group, key, selection, selection != null ? updateRowSelection(getRow(key), getRow(currentKey), selection) : null);
         }
-        // ... properties.change(column): the current column
-        JavaScriptObject changeColumn(String surface, String name) {
-            int column = readColumn(controllerPrefix(surface), name);
+        // the rows selected are the server's, each row saying it (GRID_ROW) - and, as the platform's table keeps its
+        // own (GGridTable.updateRowSelection), changed here at once by the move that changes them, of the rows the
+        // view has: what the move changes (GGridSelection.getRowChanges), which the form holds against the server's
+        // until the move's request is answered (GFormController.pendingChangeGroupObject). A range run on from a row
+        // the view has not, or up to one, changes none here: the server's answer says what it takes in
+        NativeHashMap<GGroupObjectValue, PValue> updateRowSelection(int row, int prevRow, GChangeSelection changeSelection) {
+            NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows = changeSelection == GChangeSelection.MOVEEND && (row < 0 || prevRow < 0) ? new NativeHashMap<>()
+                    : GGridSelection.getRowChanges(getRowSelectValues(), rows::get, row, prevRow, changeSelection);
+            updateAttribute(node.group.rowSelectReader, changeSelectionRows, true);
+            return changeSelectionRows;
+        }
+        NativeHashMap<GGroupObjectValue, PValue> getRowSelectValues() {
+            NativeHashMap<GGroupObjectValue, PValue> rowSelectValues = values.get(node.group.rowSelectReader);
+            return rowSelectValues != null ? rowSelectValues : new NativeHashMap<>();
+        }
+        // ... properties.change(column[, {selection}]): the current column, and what becomes of the columns selected,
+        // as a row's change says it of the rows: 'start' leaves the column alone selected, 'extend' the range from the
+        // column the range starts from up to it (GGridSelection.getStartColumn)
+        JavaScriptObject changeColumn(String surface, String name, JavaScriptObject options) {
+            String errorPrefix = controllerPrefix(surface);
+            int column = readColumn(errorPrefix, name);
+            GChangeSelection selection = readSelection(errorPrefix, options);
             updateCurrentColumn(column);
-            return verbs.changeActiveProperty(node.group, getColumns().get(column).property);
+            return verbs.changeActiveProperty(node.group, getColumns().get(column).property, selection != null ? updateColumnSelection(column, selection) : new ArrayList<>());
         }
         // the column a call names, one the form shows now, by the name its entry has on the group's node
         int readColumn(String errorPrefix, String name) {
@@ -1978,6 +2009,14 @@ public class GReactFormData {
                 }
             throw refusal(errorPrefix + (name == null ? "takes the name of the column, as a string"
                     : "'" + name + "' is no column of '" + node.name + "': a list property the view draws in its rows, not an action"));
+        }
+        // ... selectAll(): every row the filter leaves - the server's, those the view has said so by its answer, the
+        // form told which of them are not selected yet (GGridSelection.getAllRowChanges) - and every column; the
+        // current row and the current column stay (GGridTable.selectAllCells)
+        JavaScriptObject selectAll() {
+            int columnCount = getColumns().size();
+            return verbs.selectAllRows(node.group, GGridSelection.getAllRowChanges(getRowSelectValues(), rows::get, rows.size()),
+                    updateColumnSelection(columnCount > 0 ? 0 : -1, columnCount - 1));
         }
         // its columns: the list properties React draws in these rows, with a value - an action has none -, in the
         // form's order, as data.<group>.properties lists them
@@ -1999,12 +2038,44 @@ public class GReactFormData {
             for (ReactColumnPropertyEntry column : changed)
                 column.updateEntry();
         }
-        // what a column's entry says of it: whether it is the current one
+        // ... and the range of columns selected, as the platform's table sets its own: once a move makes a column its
+        // end (GGridTable.updateColumnSelection) ...
+        ArrayList<GGridTable.ColumnSelection> updateColumnSelection(int newEnd, GChangeSelection changeSelection) {
+            return updateColumnSelection(GGridSelection.getStartColumn(startSelectColumn, newEnd, changeSelection), newEnd);
+        }
+        // ... and between two columns: the entry of every column it changes rebuilt, each saying it (emitColumn) - and
+        // what it changes for the server (addSelectedColumn)
+        ArrayList<GGridTable.ColumnSelection> updateColumnSelection(int newStart, int newEnd) {
+            ArrayList<GGridTable.ColumnSelection> changes = new ArrayList<>();
+            if (newEnd == endSelectColumn && newStart == startSelectColumn) return changes;
+
+            ArrayList<ReactColumnPropertyEntry> columns = getColumns(), changed = new ArrayList<>();
+            GGridSelection.forColumnChanges(startSelectColumn, endSelectColumn, newStart, newEnd, (i, set) -> {
+                changed.add(columns.get(i));
+                addSelectedColumn(columns.get(i), changes, set);
+            });
+
+            startSelectColumn = newStart;
+            endSelectColumn = newEnd;
+
+            for (ReactColumnPropertyEntry column : changed)
+                column.updateEntry();
+
+            return changes;
+        }
+        // ... of the columns the form reads as selected (SELECT PROPERTY) and shows now
+        void addSelectedColumn(ReactColumnPropertyEntry column, ArrayList<GGridTable.ColumnSelection> changeSelectionColumns, boolean set) {
+            if (column.property.hasSelectProperty && column.isShown())
+                changeSelectionColumns.add(new GGridTable.ColumnSelection(column.property, GGroupObjectValue.EMPTY, set));
+        }
+        // what a column's entry says of it: whether it is the current one, and whether the range selected holds it - a
+        // cell is selected where its row and its column both are
         @Override
         void emitColumn(JavaScriptObject entry, ReactColumnPropertyEntry column) {
             int index = getColumns().indexOf(column);
             if (index >= 0) {
                 setField(entry, "current", index == currentColumn);
+                setField(entry, "selected", GGridSelection.isColumnSelected(startSelectColumn, endSelectColumn, index));
             }
         }
     }
@@ -3258,17 +3329,20 @@ public class GReactFormData {
     // (addFormMethods)
 
     // the current object of a group: a row of it - the row, or its `objects` handle -; of a grid whose rows a view
-    // draws, an edge of the rows too (GridRowsPart.changeCurrentObject)
-    private JavaScriptObject changeObject(String surface, String name, JavaScriptObject objectOrKey) {
+    // draws, an edge of the rows too, and what becomes of the rows selected (GridRowsPart.changeCurrentObject)
+    private JavaScriptObject changeObject(String surface, String name, JavaScriptObject objectOrKey, JavaScriptObject options) {
         String errorPrefix = controllerPrefix(surface);
         GGroupObject group = readGroup(form, errorPrefix, name);
-        if (isEdge(objectOrKey))
-            return readGridRows(errorPrefix, group).changeCurrentObject(errorPrefix, objectOrKey, row -> readFormRow(errorPrefix, group, row));
-        return verbs.changeCurrentObject(group, readFormRow(errorPrefix, group, objectOrKey));
+        if (hasGridRows(group) || isSelectionChange(errorPrefix, options) || isEdge(objectOrKey))
+            return readGridRows(errorPrefix, group).changeCurrentObject(errorPrefix, objectOrKey, options, row -> readFormRow(errorPrefix, group, row));
+        return verbs.changeCurrentObject(group, readFormRow(errorPrefix, group, objectOrKey), null, null);
     }
-    // ... and such a grid's current column
-    private JavaScriptObject changeColumn(String surface, String name, String column) {
-        return readGridRows(surface, name).changeColumn(surface, column);
+    // ... such a grid's current column, and every row and column of it selected
+    private JavaScriptObject changeColumn(String surface, String name, String column, JavaScriptObject options) {
+        return readGridRows(surface, name).changeColumn(surface, column, options);
+    }
+    private JavaScriptObject selectAll(String surface, String name) {
+        return readGridRows(surface, name).selectAll();
     }
     // ... the selection being the grid's own where a view draws its rows: a group of a tree has none, and a table of
     // the platform's keeps its own (gridRows)
@@ -3521,6 +3595,27 @@ public class GReactFormData {
     private static native JavaScriptObject makeEdge(String to) /*-{
         return Object.freeze({to: to});
     }-*/;
+    // ... and what such a change, or a change of its current column, makes of the range selected - the rows', which
+    // the server keeps, the columns', which the grid keeps (GridRowsPart) -, options.selection: 'start', none, a range
+    // starting from there (MOVE) - what a user's move in the platform's table makes of it, so what it is when not
+    // given -; 'extend', the range up to there (MOVEEND); 'keep', the range stays as it is (null)
+    private static GChangeSelection readSelection(String errorPrefix, JavaScriptObject options) {
+        if (GwtClientUtils.isUndefinedOrNull(options))
+            return GChangeSelection.MOVE;
+        checkAuthorObject(errorPrefix, options, "the options argument", "selection");
+        if (!hasOwnField(options, "selection"))
+            return GChangeSelection.MOVE;
+        String selection = getOwnString(options, "selection");
+        if ("keep".equals(selection))
+            return null;
+        if (!"start".equals(selection) && !"extend".equals(selection))
+            throw refusal(errorPrefix + "'selection' must be 'start', 'extend' or 'keep'");
+        return "start".equals(selection) ? GChangeSelection.MOVE : GChangeSelection.MOVEEND;
+    }
+    // ... which options given where there is no selection change, unless they keep it
+    private static boolean isSelectionChange(String errorPrefix, JavaScriptObject options) {
+        return !GwtClientUtils.isUndefinedOrNull(options) && readSelection(errorPrefix, options) != null;
+    }
 
     // ===== THE MEMBERS. A member IS the address: it holds the state it stands for - a property member its property's
     // value, a part's member its part - so a call through it names nothing it changes, and its
@@ -3565,16 +3660,20 @@ public class GReactFormData {
     // the verb of a group whose rows are drawn here, on its member, named the way data.<group> names it: its current
     // object is chosen among its rows, so .change(row) is there, and only there
     private static native void addRowsVerbs(RowsPart part, JavaScriptObject member, String sid) /*-{
-        member.change = function (row) {
-            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.RowsPart::change(*)(sid + ".change()", row);
+        member.change = function (row, options) {
+            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.RowsPart::change(*)(sid + ".change()", row, options);
         };
     }-*/;
 
-    // ... and on a GRID's group, properties.change(column), which makes a column current
+    // ... and on a GRID's group, what selects its columns and all of it: properties.change(column[, options]) makes a
+    // column current, selectAll() selects every row and column
     private static native void addGridVerbs(GridRowsPart part, JavaScriptObject member, String sid) /*-{
-        member.properties = {change: function (column) {
-            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridRowsPart::changeColumn(*)(sid + ".properties.change()", typeof column === 'string' ? column : null);
+        member.properties = {change: function (column, options) {
+            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridRowsPart::changeColumn(*)(sid + ".properties.change()", typeof column === 'string' ? column : null, options);
         }};
+        member.selectAll = function () {
+            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridRowsPart::selectAll()();
+        };
     }-*/;
 
     // ... and on a group of a TREE, its node verbs: a node IS a row, so the verbs that open one are the group's - and
@@ -3716,11 +3815,14 @@ public class GReactFormData {
         };
         controller.HOME = @lsfusion.gwt.client.form.design.view.GReactFormData::HOME;
         controller.END = @lsfusion.gwt.client.form.design.view.GReactFormData::END;
-        controller.changeObject = function (group, row) {
-            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeObject(*)(surface('changeObject', group), name(group), row);
+        controller.changeObject = function (group, row, options) {
+            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeObject(*)(surface('changeObject', group), name(group), row, options);
         };
-        controller.changeColumn = function (group, column) {
-            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeColumn(*)(surface('changeColumn', group), name(group), typeof column === 'string' ? column : null);
+        controller.changeColumn = function (group, column, options) {
+            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeColumn(*)(surface('changeColumn', group), name(group), typeof column === 'string' ? column : null, options);
+        };
+        controller.selectAll = function (group) {
+            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::selectAll(*)(surface('selectAll', group), name(group));
         };
         controller.expand = function (group, row) {
             return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::expand(*)(surface('expand', group), name(group), row);
