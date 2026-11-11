@@ -17,8 +17,12 @@ uiRbcPrice 'Price' = DATA NUMERIC[10,2] (UiRbcItem);
 uiRbcCategory = DATA UiRbcCategory (UiRbcItem);
 uiRbcShown = DATA BOOLEAN (UiRbcItem); // the items of the test that seeded last: the forms show only them
 
-// the toolbar drawn by a view over the platform's grid, the name an ACTIVE PROPERTY - the focus moved in or out of its
-// cell sends a request of the platform's own, which no batch carries
+// the toolbar drawn by a view over the platform's grid, the name an ACTIVE PROPERTY - the form follows the focus of
+// its cell -, and tabs of the platform's below: a click on one sends a request of the platform's own, which no batch
+// carries
+uiRbcFirst 'First' = DATA LOCAL STRING[10] ();
+uiRbcSecond 'Second' = DATA LOCAL STRING[10] ();
+
 FORM uiRbcHeader 'Toolbar of a view in a batch'
     OBJECTS i = UiRbcItem
     PROPERTIES(i) READONLY name = uiRbcName, price = uiRbcPrice
@@ -30,12 +34,18 @@ uiRbcNameActive = ACTIVE PROPERTY uiRbcHeader.name;
 
 EXTEND FORM uiRbcHeader
     PROPERTIES() READONLY uiRbcNameActive
+    PROPERTIES() uiRbcFirst, uiRbcSecond
 ;
 
 DESIGN uiRbcHeader {
     NEW header FIRST {
         custom = 'UiRbcView';
         MOVE TOOLBARSYSTEM(i);
+    }
+    NEW uiRbcTabs {
+        tabbed = TRUE;
+        NEW uiRbcFirstTab { caption = 'First'; MOVE PROPERTY(uiRbcFirst()); }
+        NEW uiRbcSecondTab { caption = 'Second'; MOVE PROPERTY(uiRbcSecond()); }
     }
 }
 

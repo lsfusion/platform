@@ -3,6 +3,7 @@ package lsfusion.interop.form.remote;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.event.ChangeSelection;
 import lsfusion.interop.form.object.table.grid.ListViewType;
+import lsfusion.interop.form.order.Scroll;
 import lsfusion.interop.form.property.EventSource;
 import lsfusion.interop.form.property.PropertyGroupType;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -58,6 +59,12 @@ public abstract class BatchRequest implements Serializable {
     public interface Requests<S> {
         void changeGroupObject(S stack, ChangeGroupObject request) throws Exception;
 
+        void scrollGroupObject(S stack, ScrollGroupObject request) throws Exception;
+
+        void selectAll(S stack, SelectAll request) throws Exception;
+
+        void changePropertyActive(S stack, ChangePropertyActive request) throws Exception;
+
         void executeEventAction(S stack, ExecuteEventAction request) throws Exception;
 
         void expandGroupObject(S stack, ExpandGroupObject request) throws Exception;
@@ -92,6 +99,62 @@ public abstract class BatchRequest implements Serializable {
 
         public <S> void make(Requests<S> requests, S stack) throws Exception {
             requests.changeGroupObject(stack, this);
+        }
+    }
+
+    public static final class ScrollGroupObject extends BatchRequest {
+        public final int groupID;
+        public final Scroll scroll;
+        public final ChangeSelection changeSelection;
+
+        public ScrollGroupObject(int groupID, Scroll scroll, ChangeSelection changeSelection) {
+            this.groupID = groupID;
+            this.scroll = scroll;
+            this.changeSelection = changeSelection;
+        }
+
+        public <S> void make(Requests<S> requests, S stack) throws Exception {
+            requests.scrollGroupObject(stack, this);
+        }
+    }
+
+    public static final class SelectAll extends BatchRequest {
+        public final int groupID;
+        public final int[] changeSelectionProps;
+        public final byte[][] changeSelectionColumnKeys;
+        public final boolean[] changeSelectionValues;
+
+        public SelectAll(int groupID, int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) {
+            this.groupID = groupID;
+            this.changeSelectionProps = changeSelectionProps;
+            this.changeSelectionColumnKeys = changeSelectionColumnKeys;
+            this.changeSelectionValues = changeSelectionValues;
+        }
+
+        public <S> void make(Requests<S> requests, S stack) throws Exception {
+            requests.selectAll(stack, this);
+        }
+    }
+
+    public static final class ChangePropertyActive extends BatchRequest {
+        public final int propertyID;
+        public final byte[] columnKey;
+        public final boolean focused;
+        public final int[] changeSelectionProps;
+        public final byte[][] changeSelectionColumnKeys;
+        public final boolean[] changeSelectionValues;
+
+        public ChangePropertyActive(int propertyID, byte[] columnKey, boolean focused, int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) {
+            this.propertyID = propertyID;
+            this.columnKey = columnKey;
+            this.focused = focused;
+            this.changeSelectionProps = changeSelectionProps;
+            this.changeSelectionColumnKeys = changeSelectionColumnKeys;
+            this.changeSelectionValues = changeSelectionValues;
+        }
+
+        public <S> void make(Requests<S> requests, S stack) throws Exception {
+            requests.changePropertyActive(stack, this);
         }
     }
 

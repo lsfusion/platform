@@ -3,7 +3,6 @@ package lsfusion.client.form.controller.remote.proxy;
 import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.proxy.RemoteRequestObjectProxy;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.form.event.ChangeSelection;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -81,34 +80,10 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse changePropertyActive(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] columnKey, boolean focused,
-                                               int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException {
-        logRemoteMethodStartVoidCall("setPropertyActive");
-        ServerResponse result = target.changePropertyActive(requestIndex, lastReceivedRequestIndex, propertyID, columnKey, focused, changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues);
-        logRemoteMethodEndVoidCall("setPropertyActive");
-        return result;
-    }
-
     public ServerResponse setUserHidden(long requestIndex, long lastReceivedRequestIndex, int componentID, boolean hidden) throws RemoteException {
         logRemoteMethodStartVoidCall("setUserHidden");
         ServerResponse result = target.setUserHidden(requestIndex, lastReceivedRequestIndex, componentID, hidden);
         logRemoteMethodEndVoidCall("setUserHidden");
-        return result;
-    }
-
-    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte changeType, ChangeSelection changeSelection) throws RemoteException {
-        logRemoteMethodStartVoidCall("changeGroupObject");
-        ServerResponse result = target.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupID, changeType, changeSelection);
-        logRemoteMethodEndVoidCall("changeGroupObject");
-        return result;
-    }
-
-    @Override
-    public ServerResponse selectAll(long requestIndex, long lastReceivedRequestIndex, int groupID,
-                                    int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException {
-        logRemoteMethodStartVoidCall("selectAll");
-        ServerResponse result = target.selectAll(requestIndex, lastReceivedRequestIndex, groupID, changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues);
-        logRemoteMethodEndVoidCall("selectAll");
         return result;
     }
 

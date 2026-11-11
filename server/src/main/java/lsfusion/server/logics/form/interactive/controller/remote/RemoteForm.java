@@ -17,12 +17,10 @@ import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.FormClientData;
-import lsfusion.interop.form.event.ChangeSelection;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
-import lsfusion.interop.form.order.Scroll;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.property.EventSource;
@@ -411,17 +409,16 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, final int groupID, final byte changeType, ChangeSelection changeSelection) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
+    @Override
+    public void scrollGroupObject(ExecutionStack stack, BatchRequest.ScrollGroupObject request) throws SQLException, SQLHandledException {
+        GroupObjectInstance groupObject = form.getGroupObjectInstance(request.groupID);
 
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("changeGroupSize: [ID: %1$d]", groupObject.getID()));
-                logger.debug(String.format("new type: %s", changeType));
-            }
-            
-            form.changeGroupObject(groupObject, Scroll.deserialize(changeType), changeSelection);
-        });
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("changeGroupSize: [ID: %1$d]", groupObject.getID()));
+            logger.debug(String.format("new type: %s", request.scroll));
+        }
+
+        form.changeGroupObject(groupObject, request.scroll, request.changeSelection);
     }
 
     @Override
@@ -764,35 +761,29 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse changePropertyActive(long requestIndex, long lastReceivedRequestIndex, final int propertyID, byte[] columnKey, boolean focused,
-                                               int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+    @Override
+    public void changePropertyActive(ExecutionStack stack, BatchRequest.ChangePropertyActive request) throws IOException, SQLException, SQLHandledException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("setPropertyActive Action");
+        }
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("setPropertyActive Action");
-            }
+        List<FormInstance.ColumnSelection> changeSelectionColumns = null;
+        if (request.changeSelectionProps != null)
+            changeSelectionColumns = convertChangeSelectionColumns(request.changeSelectionProps, request.changeSelectionColumnKeys, request.changeSelectionValues);
 
-            List<FormInstance.ColumnSelection> changeSelectionColumns = null;
-            if (changeSelectionProps != null)
-                changeSelectionColumns = convertChangeSelectionColumns(changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues);
-
-            form.changePropertyActive(propertyID >= 0 ? form.entity.getPropertyDraw(propertyID) : null,
-                    columnKey != null ? deserializeDataKeysValues(columnKey) : null, focused, changeSelectionColumns, stack);
-        });
+        form.changePropertyActive(request.propertyID >= 0 ? form.entity.getPropertyDraw(request.propertyID) : null,
+                request.columnKey != null ? deserializeDataKeysValues(request.columnKey) : null, request.focused, changeSelectionColumns, stack);
     }
 
     @Override
-    public ServerResponse selectAll(long requestIndex, long lastReceivedRequestIndex, int groupID,
-                                    int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
+    public void selectAll(ExecutionStack stack, BatchRequest.SelectAll request) throws IOException, SQLException, SQLHandledException {
+        GroupObjectInstance groupObject = form.getGroupObjectInstance(request.groupID);
 
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("selectAll: [ID: %1$d]", groupObject.getID()));
-            }
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("selectAll: [ID: %1$d]", groupObject.getID()));
+        }
 
-            form.selectAll(groupObject, convertChangeSelectionColumns(changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues), stack);
-        });
+        form.selectAll(groupObject, convertChangeSelectionColumns(request.changeSelectionProps, request.changeSelectionColumnKeys, request.changeSelectionValues), stack);
     }
 
     @NotNull

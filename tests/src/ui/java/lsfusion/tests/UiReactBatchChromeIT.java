@@ -47,9 +47,10 @@ public class UiReactBatchChromeIT extends UiTest {
         close(form);
     }
 
-    // against the contract: a request a batch does not carry - the platform's own, the grid's column changed by a click
-    // made in fn while the name, whose focus the form follows, is current (ChangePropertyActive) - fails the batch on the
-    // server, which the client says, and the form goes on (#1875)
+    // against the contract: a request a batch does not carry - the platform's own, a tab of the platform's chosen by a
+    // click made in fn (SetTabActive) - fails the batch on the server, which the client says, and the form goes on
+    // (#1875); the grid's column changed by such a click while the name, whose focus the form follows, is current
+    // (ChangePropertyActive), is one a batch carries, and goes with it
     @Test
     public void aRequestABatchDoesNotCarryFailsIt() throws Exception {
         String[] items = items(seed());
@@ -60,11 +61,18 @@ public class UiReactBatchChromeIT extends UiTest {
         List<String> requests = requests(request -> request.method().equals("POST"));
         view.drawn().call("controller.batch(() => { const price = document.querySelector(\"td[lsfusion-container='PROPERTY(price)']\");"
                 + " for (const type of ['mousedown', 'mouseup', 'click']) price.dispatchEvent(new MouseEvent(type, {bubbles: true, cancelable: true, view: window})); })");
-        assertThat(dialog("ChangePropertyActive is no request a batch carries")).isVisible();
+        idle();
         assertEquals(1, requests.stream().filter(request -> request.contains(signature("ExecuteBatch")) && request.contains(signature("ChangePropertyActive"))).count());
         assertEquals(0, requests.stream().filter(request -> !request.contains(signature("ExecuteBatch")) && request.contains(signature("ChangePropertyActive"))).count());
-        closeDialog("ChangePropertyActive is no request a batch carries");
-        reported("ChangePropertyActive is no request a batch carries");
+        assertThat(page.locator(".modal-content")).hasCount(0);
+
+        view.drawn().call("controller.batch(() => { const tab = document.querySelectorAll(\"[lsfusion-container='uiRbcTabs'] .nav-link\")[1];"
+                + " for (const type of ['mousedown', 'mouseup', 'click']) tab.dispatchEvent(new MouseEvent(type, {bubbles: true, cancelable: true, view: window})); })");
+        assertThat(dialog("SetTabActive is no request a batch carries")).isVisible();
+        assertEquals(1, requests.stream().filter(request -> request.contains(signature("ExecuteBatch")) && request.contains(signature("SetTabActive"))).count());
+        assertEquals(0, requests.stream().filter(request -> !request.contains(signature("ExecuteBatch")) && request.contains(signature("SetTabActive"))).count());
+        closeDialog("SetTabActive is no request a batch carries");
+        reported("SetTabActive is no request a batch carries");
         assertEquals("2", view.drawn().answer("controller.i.getCount()"));
         close(form);
     }

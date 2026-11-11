@@ -3,7 +3,6 @@ package lsfusion.interop.form.remote;
 import lsfusion.base.Pair;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
-import lsfusion.interop.form.event.ChangeSelection;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -26,9 +25,6 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     ServerResponse setTabActive(long requestIndex, long lastReceivedRequestIndex, int tabPaneID, int childId) throws RemoteException;
 
-    ServerResponse changePropertyActive(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] columnKey, boolean focused,
-                                        int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException;
-
     // user-driven hide of a component: a collapsed container or a CUSTOM REACT component hiding a delegated child
     ServerResponse setUserHidden(long requestIndex, long lastReceivedRequestIndex, int componentID, boolean hidden) throws RemoteException;
 
@@ -37,11 +33,6 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
     // events : group objects
 
     ServerResponse changePageSize(long requestIndex, long lastReceivedRequestIndex, int groupID, Integer pageSize) throws RemoteException; // размер страницы
-
-    ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte changeType, ChangeSelection changeSelection) throws RemoteException; // home / end
-
-    ServerResponse selectAll(long requestIndex, long lastReceivedRequestIndex, int groupID,
-                             int[] changeSelectionProps, byte[][] changeSelectionColumnKeys, boolean[] changeSelectionValues) throws RemoteException; // select all cells
 
     ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, ArrayList<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values, ArrayList<ArrayList<String>> rawValues, boolean forceGroupChange) throws RemoteException; // paste подряд
 
@@ -60,8 +51,9 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     // events : filters + orders
 
-    // the requests a BatchRequest kind holds - a group's current object, a property's event action, a tree's nodes,
-    // sortings, user filters, a filter group's filter -, one or several, in their order: one processing, one answer
+    // the requests a BatchRequest kind holds - a group's current object and the rows selected, the active property and
+    // the columns selected, a property's event action, a tree's nodes, sortings, user filters, a filter group's filter
+    // -, one or several, in their order: one processing, one answer
     ServerResponse executeBatch(long requestIndex, long lastReceivedRequestIndex, List<BatchRequest> requests) throws RemoteException;
 
 

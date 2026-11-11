@@ -1,18 +1,13 @@
 package lsfusion.gwt.server.form.handlers;
 
 import lsfusion.gwt.client.controller.remote.action.form.ScrollToEnd;
-import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
-import lsfusion.gwt.server.form.FormServerResponseActionHandler;
-import lsfusion.interop.action.ServerResponse;
+import lsfusion.gwt.server.form.BatchRequestHandler;
 import lsfusion.interop.form.order.Scroll;
-import lsfusion.interop.form.remote.RemoteFormInterface;
-import net.customware.gwt.dispatch.server.ExecutionContext;
+import lsfusion.interop.form.remote.BatchRequest;
 
-import java.rmi.RemoteException;
-
-public class ScrollToEndHandler extends FormServerResponseActionHandler<ScrollToEnd> {
+public class ScrollToEndHandler extends BatchRequestHandler<ScrollToEnd> {
     private static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
     public ScrollToEndHandler(MainDispatchServlet servlet) {
@@ -20,12 +15,8 @@ public class ScrollToEndHandler extends FormServerResponseActionHandler<ScrollTo
     }
 
     @Override
-    public ServerResponseResult executeEx(final ScrollToEnd action, ExecutionContext context) throws RemoteException {
-        return getServerResponseResult(action, new RemoteCall() {
-            public ServerResponse call(RemoteFormInterface remoteForm) throws RemoteException {
-                Scroll scrollType = action.toEnd ? Scroll.END : Scroll.HOME;
-                return remoteForm.changeGroupObject(action.requestIndex, action.lastReceivedRequestIndex, action.groupId, scrollType.serialize(), gwtConverter.convertOrCast(action.changeSelection));
-            }
-        });
+    public BatchRequest getBatchRequest(ScrollToEnd action) {
+        Scroll scrollType = action.toEnd ? Scroll.END : Scroll.HOME;
+        return new BatchRequest.ScrollGroupObject(action.groupId, scrollType, gwtConverter.convertOrCast(action.changeSelection));
     }
 }

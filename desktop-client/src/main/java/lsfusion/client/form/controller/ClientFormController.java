@@ -1033,7 +1033,7 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changeGroupObject.end - " + groupObject.getLogName()) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupObject.getID(), changeType.serialize(), null);
+                return executeBatch(remoteForm, requestIndex, lastReceivedRequestIndex, new BatchRequest.ScrollGroupObject(groupObject.getID(), changeType, null));
             }
         });
     }
@@ -1309,7 +1309,7 @@ public class ClientFormController implements AsyncListener {
             rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setPropertyActive") {
                 @Override
                 protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                    return remoteForm.changePropertyActive(requestIndex, lastReceivedRequestIndex, property != null ? property.getID() : -1, null, focused, null, null, null);
+                    return executeBatch(remoteForm, requestIndex, lastReceivedRequestIndex, new BatchRequest.ChangePropertyActive(property != null ? property.getID() : -1, null, focused, null, null, null));
                 }
             });
         }
