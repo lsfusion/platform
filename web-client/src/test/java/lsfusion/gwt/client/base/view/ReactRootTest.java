@@ -114,6 +114,97 @@ public class ReactRootTest extends GWTTestCase {
         assertNotSame(one, ReactRoot.reuse(one, names(2)));
     }
 
+    // ... and only an array and a plain object are what their keys say. Anything else is a value of its own, the one
+    // it answers for itself (valueOf). A date carries its moment in no key: it is the last snapshot's only where it
+    // is the same moment - the page's date, as the platform's dates are, or one of the client's own window
+    public void testARebuiltSnapshotTakesAnotherDate() {
+        for (int window = 0; window < 2; window++) {
+            boolean ofPage = window == 1;
+            JavaScriptObject january = dated(1, ofPage);
+            assertSame(january, ReactRoot.reuse(january, dated(1, ofPage)));
+            JavaScriptObject february = ReactRoot.reuse(january, dated(2, ofPage));
+            assertNotSame(january, february);
+            assertEquals(1, month(february));
+        }
+    }
+    private static native JavaScriptObject dated(int month, boolean ofPage) /*-{
+        var time = new Date(2026, month - 1, 1).getTime();
+        return { value: ofPage ? new $wnd.Date(time) : new Date(time) };
+    }-*/;
+    private static native int month(JavaScriptObject dated) /*-{ return dated.value.getMonth(); }-*/;
+
+    // ... as is any object that answers a value for itself, not a date alone: the last snapshot's where it is of the
+    // same class and answers the same, whatever its fields say - and two of different classes are not the same by
+    // answering the same
+    public void testARebuiltSnapshotTakesAnotherValueOfAnObject() {
+        JavaScriptObject one = valued(1, 0, false);
+        assertSame(one, ReactRoot.reuse(one, valued(1, 5, false)));
+        JavaScriptObject two = ReactRoot.reuse(one, valued(2, 0, false));
+        assertNotSame(one, two);
+        assertEquals(2, answer(two));
+        JavaScriptObject other = ReactRoot.reuse(one, valued(1, 0, true));
+        assertNotSame(one, other);
+        assertEquals(-1, answer(other));
+    }
+    // an object of a class that answers `value` for itself, or of another one, which answers the same of a field of
+    // its own
+    private static native JavaScriptObject valued(int value, int field, boolean other) /*-{
+        var classes = $wnd.uiValuedClasses;
+        if (!classes) {
+            var Valued = function (value, field) { this.value = value; this.field = field; };
+            Valued.prototype.valueOf = function () { return this.value; };
+            var Other = function (value) { this.other = value; };
+            Other.prototype.valueOf = function () { return this.other; };
+            classes = $wnd.uiValuedClasses = { Valued: Valued, Other: Other };
+        }
+        return { value: other ? new classes.Other(value) : new classes.Valued(value, field) };
+    }-*/;
+    // what the object answers, or -1 of the other class's
+    private static native int answer(JavaScriptObject valued) /*-{
+        return 'other' in valued.value ? -1 : valued.value.valueOf();
+    }-*/;
+
+    // ... and an object that answers nothing for itself - an object of the client's own, as the key a row carries
+    // (GGroupObjectValue.setRowObjects) - is what it is, not what its fields say: another one is taken, never looked
+    // into, and the last one's fields are not put into it
+    public void testARebuiltSnapshotTakesAnotherObjectOfTheClients() {
+        Handle last = new Handle(names(1)), next = new Handle(names(1));
+        JavaScriptObject row = held(last);
+        assertSame(row, ReactRoot.reuse(row, held(last)));
+        JavaScriptObject rebuilt = ReactRoot.reuse(row, held(next));
+        assertNotSame(row, rebuilt);
+        assertSame(next, holder(rebuilt));
+        assertNotSame(last.names, next.names);
+    }
+    private static class Handle {
+        final JavaScriptObject names;
+        Handle(JavaScriptObject names) { this.names = names; }
+    }
+    private static native JavaScriptObject held(Handle handle) /*-{ return { objects: handle, caption: 'a' }; }-*/;
+    private static native Handle holder(JavaScriptObject row) /*-{ return row.objects; }-*/;
+
+    // ... while a plain object is one whichever window made it - a JSON the client parsed, an object a script of the
+    // page built - and with no prototype at all
+    public void testARebuiltSnapshotKeepsAPlainObjectOfAnyWindow() {
+        for (int kind = 0; kind < 3; kind++)
+            for (int nextKind = 0; nextKind < 3; nextKind++) {
+                JavaScriptObject last = plain(kind, "a");
+                assertSame(last, ReactRoot.reuse(last, plain(nextKind, "a")));
+                JavaScriptObject changed = ReactRoot.reuse(last, plain(nextKind, "b"));
+                assertNotSame(last, changed);
+                assertSame(JsniTestSupport.field(last, "kept"), JsniTestSupport.field(changed, "kept"));
+            }
+    }
+    private static native JavaScriptObject plain(int kind, String caption) /*-{
+        var make = function () { return kind === 0 ? {} : kind === 1 ? new $wnd.Object() : Object.create(null); };
+        var object = make(), kept = make(), list = kind === 1 ? new $wnd.Array() : [];
+        list.push('x');
+        kept.list = list;
+        object.caption = caption;
+        object.kept = kept;
+        return object;
+    }-*/;
+
     private static native JavaScriptObject keyed(String key) /*-{
         var data = {};
         data[key] = undefined;

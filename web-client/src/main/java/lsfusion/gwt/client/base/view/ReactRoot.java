@@ -208,12 +208,32 @@ public class ReactRoot {
     // no tree (a row is in `list` and in `byKey`), so it never goes through this pass.
     // over the OWN keys, at every level, so a field an owner adds to its entries cannot be forgotten here - and
     // forgetting one fails silently, by handing back the previous value for ever. `next` is a new build nobody has
-    // seen yet, so what did not change is put into it in place
+    // seen yet, so what did not change is put into it in place.
+    // Only an array and a plain object are what their keys say, and only they are looked into. Anything else is a value
+    // of its own, and says which itself (valueOf): the last one where it is of the same class and answers the same - a
+    // date, which a build makes anew each time and which carries its moment in no key at all - and, answering nothing
+    // but itself, only where it is that very object: an object of the client's own (a row's key,
+    // GGroupObjectValue.setRowObjects), whose fields are not a snapshot's to compare, still less to write.
+    // A plain object is told by what it is and not by its window's Object: the client's code runs in a window of its
+    // own, and a snapshot carries the plain objects both windows made (a JSON the client parsed, an object of the page's)
     public static native JavaScriptObject reuse(JavaScriptObject prev, JavaScriptObject next)/*-{
+        // a plain object's prototype is some window's Object.prototype, which has none above it, or none at all - as
+        // the prototype of no class is, a class's being an object itself
+        var isPlain = function (value) {
+            if (Array.isArray(value))
+                return true;
+            var prototype = Object.getPrototypeOf(value);
+            return prototype === null || Object.getPrototypeOf(prototype) === null;
+        };
         var reuse = function (prev, next) {
-            if (prev === next || prev === null || next === null || typeof prev !== 'object' || typeof next !== 'object'
-                    || Array.isArray(prev) !== Array.isArray(next))
+            if (prev === next || prev === null || next === null || typeof prev !== 'object' || typeof next !== 'object')
                 return next;
+            var plain = isPlain(prev);
+            if (plain !== isPlain(next) || Array.isArray(prev) !== Array.isArray(next))
+                return next;
+            if (!plain)
+                return Object.getPrototypeOf(prev) === Object.getPrototypeOf(next) && prev.valueOf() === next.valueOf()
+                        ? prev : next;
 
             // the same keys, and an array's length too - a hole has no key
             var keys = Object.keys(next), same = keys.length === Object.keys(prev).length
