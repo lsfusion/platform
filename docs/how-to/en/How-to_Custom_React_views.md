@@ -2219,3 +2219,28 @@ FORM items
 The component of a property draws one cell: a cell of the table, or the value of the property on a panel. `data` describes that cell — its `value`, `readOnly`, `disabled`, `loading`, `background`, `foreground`, `placeholder`, `defaultValue`, `valueTooltip` and `options`, and the `type` and `askConfirm` of the property, with the meaning they have in [the entry of a property a view draws](#display-options). `controller` is the property's [member](How-to_Custom_view_controller.md) for that cell — `change(value)`, `exec()` and `getValues(query, {mode, count})`, each returning the `Promise` of its request — with the form's controller as `controller.form`. A call takes no row: in a table it changes the row of the cell, whichever row is current, and on a panel the current object of the form. The component changes the value by these calls only: a click on the cell or typing in it does not start the platform's editing of the cell. Whether the cell may be changed is checked by the server, as for a classic render function, so a change of a read-only cell is not made.
 
 A table reuses the element of a cell for another row when its rows are sorted or scrolled. The component stays mounted then and keeps its state: it receives the `data` of the other row, and its `controller`, which stays the same object, changes the row the cell shows at the moment of the call — after an `await` too. A view that draws the rows itself places such a property as any other property the platform draws, with [`<Platform name row/>`](#live-editor).
+
+The component of a group draws the rows of the group where the platform's table would, as one of the view types the toolbar switches:
+
+```lsf
+FORM itemCards
+    OBJECTS i = Item CUSTOM 'ItemCards'
+    PROPERTIES(i) READONLY name
+    PROPERTIES(i) quantity
+;
+```
+
+```jsx
+function ItemCards({data, controller}) {
+    return data.list.map(row =>
+        <button key={controller.getObjectsString(row)}
+                onClick={() => controller.changeObject(row)}>
+            {row.name}
+        </button>
+    );
+}
+
+window.lsfusion.custom.register('ItemCards', ItemCards, 'reactView');
+```
+
+The component is given what the `update` of a classic render function is given ([How-to: Custom Components (objects)](How-to_Custom_components_objects.md)): the rows as `data.list`, each holding the values of its properties under their names, the `OPTIONS` of the group as `data.options`, and the same `controller`.

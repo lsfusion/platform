@@ -8,6 +8,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.StaticImage;
+import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -141,7 +142,9 @@ public final class GPlatformGridController extends GPlatformTableController<GGri
                 view = new GPivot(formController, this, getSelectedProperty(), gridView);
                 break;
             case CUSTOM:
-                view = new GCustom(formController, this, gridView, groupObject.customRenderFunction);
+                String name = groupObject.customRenderFunction;
+                view = ReactRoot.isReactView(name) ? new GReactCustom(formController, this, gridView, name)
+                        : new GCustom(formController, this, gridView, name);
                 break;
             case MAP:
                 view = new GMap(formController, this, gridView);

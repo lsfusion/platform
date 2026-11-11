@@ -14,12 +14,13 @@ That is the name a view has, everywhere: `props.data` is keyed by it and every c
 | view | declared | JavaScript entry point | its controller is |
 | --- | --- | --- | --- |
 | [React view](How-to_Custom_React_views.md) | `DESIGN c { custom = 'Name'; }` | a component taking `props` (`data`, `controller`) | `props.controller` |
+| [React component in CUSTOM](How-to_Custom_React_views.md#form-custom) | `OBJECTS g = Cls CUSTOM 'Name'` or `PROPERTIES p CUSTOM 'Name'` | a component registered with the kind `reactView`, taking `props` (`data`, `controller`) | `props.controller.form` |
 | [Navigator window](How-to_Custom_React_views.md#navigator-window) | `EXTEND WINDOW System.toolbar CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — the [navigator controller](#navigator-controller) |
 | [Forms window](How-to_Custom_React_views.md#forms-window) | `EXTEND WINDOW System.forms CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — the [navigator controller](#navigator-controller)'s methods plus `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen` |
 | [Log window](How-to_Custom_React_views.md#log-window) | `EXTEND WINDOW System.log CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — the [navigator controller](#navigator-controller)'s methods plus `togglePin` |
 | [Window layout](How-to_Custom_React_views.md#window-layout) | `NAVIGATOR CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — the [navigator controller](#navigator-controller) |
-| [CUSTOM object group](How-to_Custom_components_objects.md) | `OBJECTS g = Cls CUSTOM 'name'` | `render` / `update` callbacks | `controller.form` |
-| [CUSTOM property cell](How-to_Custom_components_properties.md) | `PROPERTIES p CUSTOM 'name'` | `render` / `update` callbacks | `controller.form` |
+| [Classic CUSTOM object group](How-to_Custom_components_objects.md) | `OBJECTS g = Cls CUSTOM 'name'` | `render` / `update` callbacks | `controller.form` |
+| [Classic CUSTOM property cell](How-to_Custom_components_properties.md) | `PROPERTIES p CUSTOM 'name'` | `render` / `update` callbacks | `controller.form` |
 
 In a form's React view, requests through controller members or `controller.form` return `Promise`s. The window operations `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen`, `togglePin` and `activate` return nothing.
 

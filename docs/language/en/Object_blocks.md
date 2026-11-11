@@ -213,9 +213,11 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
 
             A more detailed description of the mechanism can be found in the article [How-to: Custom Components (Objects)](../how-to/How-to_Custom_components_objects.md).
 
+            The name can also be that of a React component registered on the client with the kind `reactView`. The web client then displays the data with the component: it is given what `update` is given — the list and the options as `props.data.list` and `props.data.options`, and the controller as `props.controller`.
+
 - `OPTIONS optionsExpr`
 
-    Specifying additional settings of the view type. The option is specified after the view type `viewType`. The value is used by the *custom* view type (passed as the `options` argument of the `update` function) and the *map* view type (map settings).
+    Specifying additional settings of the view type. The option is specified after the view type `viewType`. The value is used by the *custom* view type (passed as the `options` argument of the `update` function, or to a React component as `props.data.options`) and the *map* view type (map settings).
 
     - `optionsExpr`
 

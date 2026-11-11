@@ -160,6 +160,32 @@ lsfusion.custom.register('UiCustomViewReactCell', function ({data, controller}) 
     }, String(data.value));
 }, 'reactView');
 
+// the React component a group's CUSTOM names: a card for each row of the list it is given, which makes the row
+// current and adds 10 to its quantity through the classic controller of a custom view, under the title its OPTIONS give
+lsfusion.custom.register('UiCustomViewCards', function ({data, controller}) {
+    const h = React.createElement;
+    return h('div', {className: 'ui-custom-cards'}, data.options && data.options.title,
+        data.list.map(row => h('div', {
+            key: controller.getObjectsString(row),
+            className: 'ui-custom-card',
+            'data-current': String(controller.isCurrent(row))
+        },
+            h('button', {onClick: () => controller.changeObject(row)}, row.uiCustomViewName),
+            h('button', {className: 'ui-custom-card-quantity',
+                onClick: () => controller.changeProperty('uiCustomViewQuantity', row, row.uiCustomViewQuantity + 10)
+            }, row.uiCustomViewQuantity))));
+}, 'reactView');
+
+// the classic render function a group's CUSTOM names, named as a component is and not registered as one
+window.UiCustomViewClassicGroup = function () {
+    return {
+        render: function () {},
+        update: function (element, controller, list) {
+            element.textContent = list.length + ' classic rows';
+        }
+    };
+};
+
 // what the navigator's action uiCustomViewFromNavigator runs, asynchronously, with the navigator's controller: the
 // action uiCustomViewNavigatorMark run by name with what a script returns for the parameter
 window.uiCustomViewFromNavigator = function (a, controller, resolve, reject) {

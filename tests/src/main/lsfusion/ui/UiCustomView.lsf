@@ -145,6 +145,25 @@ FORM uiCustomViewReactCells 'React cells'
     ORDERS uiCustomViewName(i)
 ;
 
+// a group whose CUSTOM is a React component (UiCustomViewCards), given the group's rows, its OPTIONS and the classic
+// controller of a custom view of them
+uiCustomViewCardsOptions () = JSON FROM title = 'Cards';
+
+FORM uiCustomViewReactGroup 'React group'
+    OBJECTS i = UiCustomViewItem CUSTOM 'UiCustomViewCards' OPTIONS uiCustomViewCardsOptions()
+    PROPERTIES(i) READONLY uiCustomViewName
+    PROPERTIES(i) uiCustomViewQuantity
+    FILTERS uiCustomViewShown(i)
+    ORDERS uiCustomViewName(i)
+;
+
+// a group whose CUSTOM is a classic render function named as a component is (UiCustomViewClassicGroup)
+FORM uiCustomViewClassicGroup 'Classic group'
+    OBJECTS i = UiCustomViewItem CUSTOM 'UiCustomViewClassicGroup'
+    PROPERTIES(i) READONLY uiCustomViewName
+    FILTERS uiCustomViewShown(i)
+;
+
 // an INTERNAL CLIENT action the navigator runs, given 6 and the navigator's controller: through it, the JS function
 // evaluates a script and runs an action by name, which marks what it is given, in a session of its own
 uiCustomViewNavigatorMarks = DATA TEXT ();
@@ -168,6 +187,8 @@ NAVIGATOR {
         NEW uiCustomViewCalls;
         NEW uiCustomViewClient;
         NEW uiCustomViewCell;
+        NEW uiCustomViewReactGroup;
+        NEW uiCustomViewClassicGroup;
         NEW uiCustomViewReactCells;
         NEW uiCustomViewFromNavigator;
     }

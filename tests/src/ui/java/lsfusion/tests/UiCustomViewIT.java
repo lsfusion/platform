@@ -286,6 +286,45 @@ public class UiCustomViewIT extends UiTest {
         close(form);
     }
 
+    // a group's CUSTOM that is a React component: it draws the rows it is given, with the group's OPTIONS, and changes
+    // the current object and a row's value through the classic controller of a custom view; the grid switched to the
+    // table and back draws it again
+    @Test
+    public void reactCustomGroupUsesClassicRowsAndSwitchesViews() throws Exception {
+        String[] items = seed();
+        Locator form = open(FOLDER, "UiCustomView.uiCustomViewReactGroup");
+        Locator cards = form.locator(".ui-custom-cards");
+        assertThat(cards).containsText("Cards");
+        Locator rows = cards.locator(".ui-custom-card");
+        assertThat(rows).hasCount(2);
+        Locator second = rows.nth(1);
+        second.getByText(items[1]).click();
+        assertThat(second).hasAttribute("data-current", "true");
+        second.locator(".ui-custom-card-quantity").click();
+        assertThat(second.locator(".ui-custom-card-quantity")).hasText("12");
+        assertThat(rows.first().locator(".ui-custom-card-quantity")).hasText("1");
+
+        form.locator("[title='Table']").click();
+        assertThat(cards).hasCount(0);
+        form.locator("[title='Custom view']").click();
+        assertThat(cards).containsText("Cards");
+        assertThat(rows.nth(1).locator(".ui-custom-card-quantity")).hasText("12");
+
+        form.locator("button[lsfusion-container='PROPERTY(formApply())']").click();
+        check("UiCustomView.uiCustomViewCheckQuantity", items[0], "1");
+        check("UiCustomView.uiCustomViewCheckQuantity", items[1], "12");
+        close(form);
+    }
+
+    // a classic render function of a group named as a component is, and not registered as one, is called as before
+    @Test
+    public void anUppercaseClassicCustomGroupStillUsesCallbacks() throws Exception {
+        seed();
+        Locator form = open(FOLDER, "UiCustomView.uiCustomViewClassicGroup");
+        assertThat(form.getByText("2 classic rows")).isVisible();
+        close(form);
+    }
+
     // two items under names no other attempt has - what a failed attempt saved stays in the database for its rerun -,
     // of the quantities 1 and 2
     private static String[] seed() throws Exception {

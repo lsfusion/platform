@@ -14,12 +14,13 @@ title: 'How-to: API контроллера пользовательского п
 | представление | объявление | точка входа JavaScript | его контроллер — это |
 | --- | --- | --- | --- |
 | [React-представление](How-to_Custom_React_views.md) | `DESIGN c { custom = 'Name'; }` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` |
+| [Компонент React в CUSTOM](How-to_Custom_React_views.md#form-custom) | `OBJECTS g = Cls CUSTOM 'Name'` или `PROPERTIES p CUSTOM 'Name'` | компонент, зарегистрированный с видом `reactView`, принимающий `props` (`data`, `controller`) | `props.controller.form` |
 | [Окно навигатора](How-to_Custom_React_views.md#navigator-window) | `EXTEND WINDOW System.toolbar CUSTOM 'Name';` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` — [контроллер навигатора](#navigator-controller) |
 | [Окно форм](How-to_Custom_React_views.md#forms-window) | `EXTEND WINDOW System.forms CUSTOM 'Name';` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` — методы [контроллера навигатора](#navigator-controller) и `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen` |
 | [Окно сообщений](How-to_Custom_React_views.md#log-window) | `EXTEND WINDOW System.log CUSTOM 'Name';` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` — методы [контроллера навигатора](#navigator-controller) и `togglePin` |
 | [Расположение окон](How-to_Custom_React_views.md#window-layout) | `NAVIGATOR CUSTOM 'Name';` | компонент, принимающий `props` (`data`, `controller`) | `props.controller` — [контроллер навигатора](#navigator-controller) |
-| [CUSTOM группа объектов](How-to_Custom_components_objects.md) | `OBJECTS g = Cls CUSTOM 'name'` | колбэки `render` / `update` | `controller.form` |
-| [CUSTOM ячейка свойства](How-to_Custom_components_properties.md) | `PROPERTIES p CUSTOM 'name'` | колбэки `render` / `update` | `controller.form` |
+| [Классическая CUSTOM группа объектов](How-to_Custom_components_objects.md) | `OBJECTS g = Cls CUSTOM 'name'` | колбэки `render` / `update` | `controller.form` |
+| [Классическая CUSTOM ячейка свойства](How-to_Custom_components_properties.md) | `PROPERTIES p CUSTOM 'name'` | колбэки `render` / `update` | `controller.form` |
 
 В React-представлении формы запросы через члены контроллера или `controller.form` возвращают `Promise`. Операции окон `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen`, `togglePin` и `activate` ничего не возвращают.
 
