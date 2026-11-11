@@ -94,29 +94,39 @@ public final class ReactCellRenderer extends CellRenderer {
         final String placeholder;
         final String defaultValue;
         final String valueTooltip;
+        final String pattern;
+        final String regexp;
+        final String regexpMessage;
         final PValue options;
 
         CellAttributes(UpdateContext context) {
-            readOnly = context.isPropertyReadOnly();
+            // a cell of a READONLY / DISABLE property is not asked its READONLYIF, and says it is read only (GGridTable)
+            readOnly = property.isReadOnly() != null ? null : context.isPropertyReadOnly();
             loading = context.isLoading();
             background = context.getBackground();
             foreground = context.getForeground();
             placeholder = context.getPlaceholder();
             defaultValue = context.getDefaultValue();
             valueTooltip = context.getValueTooltip();
+            pattern = context.getPattern();
+            regexp = context.getRegexp();
+            regexpMessage = context.getRegexpMessage();
             options = context.getPropertyCustomOptions();
         }
 
         void emit(JavaScriptObject data) {
-            setFlag(data, "readOnly", Boolean.FALSE.equals(readOnly) || (readOnly == null && !property.hasChangeAction));
-            setFlag(data, "disabled", Boolean.TRUE.equals(readOnly));
-            setFlag(data, "loading", loading);
-            setFieldOrNull(data, "background", background);
-            setFieldOrNull(data, "foreground", foreground);
-            setFieldOrNull(data, "placeholder", placeholder);
-            setFieldOrNull(data, "defaultValue", defaultValue);
-            setFieldOrNull(data, "valueTooltip", valueTooltip);
-            setField(data, "options", JSValueConverter.convertToJSValue(GJSONType.instance, null, false, options));
+            GReactFormData.emitEditability(data, property, readOnly);
+            if (loading)
+                setField(data, "loading", true);
+            GReactFormData.emitPresent(data, "background", background);
+            GReactFormData.emitPresent(data, "foreground", foreground);
+            GReactFormData.emitPresent(data, "placeholder", placeholder);
+            GReactFormData.emitPresent(data, "defaultValue", defaultValue);
+            GReactFormData.emitPresent(data, "valueTooltip", valueTooltip);
+            GReactFormData.emitPresent(data, "pattern", pattern);
+            GReactFormData.emitPresent(data, "regexp", regexp);
+            GReactFormData.emitPresent(data, "regexpMessage", regexpMessage);
+            GReactFormData.emitPresent(data, "options", JSValueConverter.convertToJSValue(GJSONType.instance, null, false, options));
         }
 
         @Override
@@ -127,12 +137,14 @@ public final class ReactCellRenderer extends CellRenderer {
             return loading == other.loading && nullEquals(readOnly, other.readOnly)
                     && nullEquals(background, other.background) && nullEquals(foreground, other.foreground)
                     && nullEquals(placeholder, other.placeholder) && nullEquals(defaultValue, other.defaultValue)
-                    && nullEquals(valueTooltip, other.valueTooltip) && nullEquals(options, other.options);
+                    && nullEquals(valueTooltip, other.valueTooltip) && nullEquals(pattern, other.pattern)
+                    && nullEquals(regexp, other.regexp) && nullEquals(regexpMessage, other.regexpMessage)
+                    && nullEquals(options, other.options);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(readOnly, loading, background, foreground, placeholder, defaultValue, valueTooltip, options);
+            return Objects.hash(readOnly, loading, background, foreground, placeholder, defaultValue, valueTooltip, pattern, regexp, regexpMessage, options);
         }
     }
 

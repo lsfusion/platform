@@ -2730,6 +2730,8 @@ public class GReactFormData {
             if (shown)
                 emitPropertyValue(target, property, getValueAt(key));
             emitAttributes(target, readers, key, property);
+            if (!hasOwnField(target, "readOnly") && !hasOwnField(target, "disabled")) // READONLYIF says nothing of it
+                emitEditability(target, property, null);
             if (isLoading(key))
                 setField(target, "loading", true);
         }
@@ -4121,6 +4123,22 @@ public class GReactFormData {
             ReactSelect.emit(target, property, value);
         else
             setField(target, "value", JSValueConverter.convertToJSValue(property, value, RendererType.SIMPLE, true));
+    }
+
+    // whether a cell can be changed - by READONLYIF where it says so, else by the property itself (READONLY, DISABLE):
+    // `disabled`, or `readOnly` - which a property with no change at all is too
+    static void emitEditability(JavaScriptObject target, GPropertyDraw property, Boolean readOnlyIf) {
+        Boolean readOnly = readOnlyIf != null ? readOnlyIf : property.isReadOnly();
+        if (Boolean.TRUE.equals(readOnly))
+            setField(target, "disabled", true);
+        else if (readOnly != null || !property.hasChangeAction)
+            setField(target, "readOnly", true);
+    }
+
+    // an attribute the platform has nothing for is absent
+    static void emitPresent(JavaScriptObject target, String field, Object value) {
+        if (isPresent(value))
+            setField(target, field, value);
     }
 
     static void emitPropertyFacts(JavaScriptObject entry, GPropertyDraw property) {

@@ -5928,6 +5928,33 @@ public class GReactFormDataTest extends GWTTestCase {
         assertNotNull(go.getBindingWidget(p[0]));
     }
 
+    // a cell says whether it can be changed as the platform's own cell has it: `disabled` or `readOnly` by READONLYIF
+    // where it says so, else by the property itself - READONLY on the form, or no change at all -, and nothing of one
+    // that can be changed
+    public void testACellSaysWhetherItCanBeChangedByThePropertyToo() {
+        GPropertyDraw[] p = new GPropertyDraw[3];
+        Fixture f = new Fixture(fixture -> {
+            p[0] = fixture.property(45, "free", null, false, fixture.a);
+            p[0].hasChangeAction = true;
+            p[0].readOnlyReader = new GReadOnlyReader(45, -1);
+            p[1] = fixture.property(46, "fixed", null, false, fixture.a);
+            p[1].hasChangeAction = true;
+            p[1].editType = GPropertyEditType.READONLY;
+            p[2] = fixture.property(47, "computed", null, false, fixture.a); // no change action
+        });
+        GFormChanges shown = new GFormChanges();
+        for (GPropertyDraw property : p)
+            put(shown, property, GGroupObjectValue.EMPTY, 1);
+        f.apply(shown);
+        assertFalse(own(field(f.data(), "free"), "readOnly"));
+        assertFalse(own(field(f.data(), "free"), "disabled"));
+        assertTrue(flag(field(f.data(), "fixed"), "readOnly"));
+        assertTrue(flag(field(f.data(), "computed"), "readOnly"));
+        GFormChanges disabled = new GFormChanges(); put(disabled, p[0].readOnlyReader, GGroupObjectValue.EMPTY, true); f.apply(disabled);
+        assertTrue(flag(field(f.data(), "free"), "disabled"));
+        assertFalse(own(field(f.data(), "free"), "readOnly"));
+    }
+
     // a property a view draws takes its key where its change asks no value - its ON CHANGE runs an action -, as an
     // action does. Not one whose change asks a value in the cell right away - a DATA property's default change, a
     // scanner's field: the platform opens an editor in the cell for it, and the editor here is the view's -, nor one
