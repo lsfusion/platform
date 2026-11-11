@@ -118,6 +118,31 @@ public class ReactRootTest extends GWTTestCase {
         return park;
     }
 
+    // in a host that says no embedder - one given ownRoot - the component has a root of its own, whatever embeds above
+    // that host, and keeps it while its node waits in the park and as a host that embeds takes it
+    public void testAComponentHasARootOfItsOwnWhereItsHostSaysSo() {
+        ReactRoot root = new ReactRoot("Component", JavaScriptObject.createObject(), new NoPlacement());
+        Element host = Document.get().createDivElement(), ownRoot = Document.get().createDivElement();
+        Element park = park(host), element = Document.get().createDivElement();
+        host.appendChild(ownRoot);
+        ownRoot.setPropertyObject("lsfEmbedder", null);
+        JavaScriptObject restore = installRootFactory();
+        try {
+            JavaScriptObject said = sayWhatIsDrawn(host);
+            root.updateData(snapshot(1));
+            ownRoot.appendChild(element);
+            root.settle(element, false);
+            park.appendChild(element);
+            root.settle();
+            host.appendChild(element);
+            root.settle();
+            assertEquals("root,render", joined(said));
+        } finally {
+            root.unmount();
+            GwtClientUtils.call(restore);
+        }
+    }
+
     // ... over the root factory, a React that says what is asked of it - a root made, drawn in and unmounted -, and
     // `host` made a host that embeds what it holds, saying what it is asked to draw and to take down
     private static native JavaScriptObject sayWhatIsDrawn(Element host) /*-{

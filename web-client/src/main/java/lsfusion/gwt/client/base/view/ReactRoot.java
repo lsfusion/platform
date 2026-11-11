@@ -184,7 +184,8 @@ public class ReactRoot {
     // the node leaves the host; in a form's park, where what no host holds waits unseen, nowhere; anywhere else in a
     // React root of its own. A root it keeps wherever its node goes next: React clears the node of a root whenever it
     // renders that root with nothing in it - an unmounted one too, if anything was told to it while it was taken
-    // down -, so the node of a root is never handed to another tree.
+    // down -, so the node of a root is never handed to another tree. So a component drawn in a host given `ownRoot`,
+    // which embeds nothing, keeps its root, mounted, while its node waits in the park, whichever host takes it next.
     // The place is taken as soon as there is one, but the component is drawn only once there is data too. `sync`:
     // commit that first render of a root inside this call instead of in a later task. Only an owner whose window is
     // MEASURED when it is shown needs it - a -3 main container is fixed to whatever can be measured then, and an
@@ -209,7 +210,7 @@ public class ReactRoot {
     }
 
     // the embedder the nearest node above that says one says, null where none does - and where what says is the
-    // form, which says none
+    // form or a host given `ownRoot`, which say none: what they hold is drawn in roots of its own
     private static native JavaScriptObject getEmbedder(Element element)/*-{
         for (var node = element.parentNode; node; node = node.parentNode)
             if (node.lsfEmbedder !== undefined)

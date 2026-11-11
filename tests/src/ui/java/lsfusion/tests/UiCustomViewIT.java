@@ -377,7 +377,9 @@ public class UiCustomViewIT extends UiTest {
     // with a component of its own, and what that container places in its turn, in its tree: the context the view
     // provides reaches each, each keeps its own data and controller, and the page makes one root for the form. A table
     // sorted keeps its cells' components. A component lives as its place does: taken away it is unmounted, and given
-    // back it is mounted anew
+    // back it is mounted anew - unless its place is given ownRoot: then it is drawn in a root of its own, which the
+    // view's context does not reach, stays mounted while it has no place, and is the same component when given back -
+    // and keeps that root when its place is no longer given ownRoot. What it places itself is still drawn in its tree
     @Test
     public void reactComponentsAViewPlacesAreDrawnInItsTree() throws Exception {
         String[] items = seed();
@@ -412,6 +414,19 @@ public class UiCustomViewIT extends UiTest {
         assertThat(inner).not().hasAttribute("data-instance", innerInstance);
         assertThat(count).hasAttribute("data-theme", "inner");
         assertEquals(1, roots(form));
+
+        page.evaluate("() => window.uiCustomViewEmbedded.ownRootInner(true)");
+        assertThat(inner).hasAttribute("data-theme", "none");
+        String ownInstance = inner.getAttribute("data-instance");
+        page.evaluate("() => window.uiCustomViewEmbedded.placeInner(false)");
+        assertThat(inner).hasCount(0);
+        page.evaluate("() => window.uiCustomViewEmbedded.placeInner(true)");
+        assertThat(inner).hasAttribute("data-instance", ownInstance);
+        page.evaluate("() => window.uiCustomViewEmbedded.ownRootInner(false)");
+        assertThat(count).hasAttribute("data-theme", "inner");
+        assertThat(inner).hasAttribute("data-instance", ownInstance);
+        assertThat(inner).hasAttribute("data-theme", "none");
+        assertEquals(2, roots(form));
 
         form.locator("button[lsfusion-container='PROPERTY(formApply())']").click();
         check("UiCustomView.uiCustomViewCheckQuantity", items[1], "12");

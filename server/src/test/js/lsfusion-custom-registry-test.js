@@ -898,6 +898,16 @@ console.log('embedding');
     check("a view that leaves in a host's ref waits for the commit to end", flushed === 1
         && render(hostOf, () => w.lsfusion.usePlatform('GRID(i)')).children === undefined);
 
+    // a host given ownRoot embeds nothing, and says so to what it holds
+    const own = { tag: 'own' }, ownOf = instance();
+    const ownProps = render(ownOf, () => w.lsfusion.usePlatform('inner', { ownRoot: true }));
+    ownProps.ref(own);
+    check('a host given ownRoot says no embedder to what it holds', own.lsfEmbedder === null && ownProps.children === undefined);
+    check('...and one told otherwise is placed again',
+        render(ownOf, () => w.lsfusion.usePlatform('inner', { ownRoot: false })).ref !== ownProps.ref
+            && render(ownOf, () => w.lsfusion.usePlatform('inner', {})).ref
+                === render(ownOf, () => w.lsfusion.usePlatform('inner', { ownRoot: false })).ref);
+
     // a root whose hosts embed nothing - the forms window's, a navigator window's
     makeReact.__ctxValue = { view: { entryOf, host, mount: () => {}, unmount: () => {} } };
     const plain = { tag: 'plain' };

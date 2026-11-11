@@ -2384,4 +2384,13 @@ function Quantity({data}) {
 - A component that throws while it draws shows its message in its own place, and the view around it stays. A component that suspends shows the fallback of the nearest `Suspense` above it, which, unless the component has one of its own, is one of the view's, around the whole placed child.
 - The component is mounted while its place is: when the view stops rendering the `<Platform>`, gives it another name, or a `Suspense` around it shows its fallback, the component is unmounted and loses its state, and it is mounted anew when the child is placed again. A child no `<Platform>` places is not drawn.
 
+Give a place `ownRoot` when the view takes the place away and gives it back — a tab strip of its own that renders only the active child — and the components inside have to keep their state meanwhile, at the price of the context and the boundaries the view has around the place:
+
+```jsx
+<Platform key={active} name={active} ownRoot/>
+// or: usePlatform(active, { ownRoot: true })
+```
+
+Every component in what such a place holds is drawn in a React root of its own instead, and stays mounted, with its state, while no place holds the child, until the form is closed. No context and no error or `Suspense` boundary of the view around the `<Platform>` reaches it then; an event in it still reaches the view's handlers around the place, after the platform has handled it. While the child is not placed it is [not read](#placing): the component keeps the `data` it had until the child is placed again, and its effects and timers go on running with that `data`. A component drawn in a root of its own stays in it wherever its child is placed later, in a place without `ownRoot` too; one already drawn in the view's tree is mounted anew when its place is given `ownRoot`. A component in such a place that is itself a view draws what it places with its own `<Platform>` in its own tree.
+
 Where no view of the form places it — in a table or on a panel the platform lays out — the component is drawn in a React root of its own, one for each cell, and no context reaches it. A form in the [forms window](#forms-window) and a window in the [window layout](#window-layout) keep their own roots too: an open form that no `<Platform>` shows stays open, and its components keep their state. So does a form shown inside another form, in a container or in a cell that a view of that form places — a component is drawn in the tree of a view of its own form only —, and what a form shows outside its place: the content of a popup container, a record of a table.

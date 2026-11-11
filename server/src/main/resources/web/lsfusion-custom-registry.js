@@ -190,7 +190,7 @@
         // can wipe the foreign GWT DOM - what it embeds (below) are portals, drawn in nodes of the platform's. Cleanup
         // is the exact inverse of mount, so StrictMode's mount->cleanup->mount cannot stack
         // duplicates. The GWT view stays logically attached throughout, so no onUnload/onLoad fires.
-        // usePlatform(name[, { row, className }]) -> the props of a host, to spread onto an element the component
+        // usePlatform(name[, { row, className, ownRoot }]) -> the props of a host, to spread onto an element the component
         // ALREADY renders, so no placeholder node exists at all: the ref that mounts the platform-drawn child into it,
         // what the root dresses a host in, and, while the child's entry says so, `hidden`. `name` is whatever the root
         // it is mounted under names the thing being placed: for a form container, a component's DESIGN identifier, or a
@@ -225,7 +225,11 @@
         // While React is committing - it runs a host's ref, which is where the platform moves a view in or out -
         // what leaves a host is taken out of the tree as that commit ends, and cannot be any sooner; at any other
         // time at once, so that what the platform does next - closing the form, drawing in the node again - finds
-        // the component gone
+        // the component gone.
+        // A host given `ownRoot` embeds nothing, and says so to what it holds - no embedder, where a host of its
+        // view's would have one: a component there has a root of its own, as one no view places, and keeps it,
+        // mounted, with its state, while it waits in the form's park for a place. No context or boundary of the
+        // view around the host reaches it
         var committing = 0;
         var makeEmbedder = function (setPortals) {
             var portals = new Map(), made = 0;
@@ -258,6 +262,7 @@
             var store = context ? context.store : null;
             var row = options ? options.row : undefined;
             var className = options ? options.className : undefined;
+            var ownRoot = options ? !!options.ownRoot : false;
             var held = React.useRef(null); // the ref callback is handed null on detach, so the host is remembered here
             var heldRow = React.useRef(null); // and the row with it, since unmounting has to name the same renderer
             // what the host embeds, where the root's hosts embed at all - a form view's (ReactRoot.Placement.embeds)
@@ -292,7 +297,7 @@
                     if (held.current) { view.unmount(named, held.current, heldRow.current); held.current = null; heldRow.current = null; }
                     if (host) {
                         if (embedder)
-                            host.lsfEmbedder = embedder;
+                            host.lsfEmbedder = ownRoot ? null : embedder;
                         view.mount(named, host, row); held.current = host; heldRow.current = row;
                     }
                 } finally {
@@ -311,7 +316,7 @@
                             });
                         });
                 }
-            }, [view, named, row ? row.objects || row : null]); // by the row's own handle: the row object is rebuilt
+            }, [view, named, ownRoot, row ? row.objects || row : null]); // by the row's own handle: the row object is rebuilt
             // whenever its values change, but keeps its `objects`, which is the row's identity - its key alone is not:
             // rows of two groups may have one key, and a host handed another row with the same key has to be placed
             // again, if only to say the row is not its group's

@@ -218,18 +218,19 @@ window.UiCustomViewPlacedOuter = function () {
 
 // the container of uiCustomViewEmbedded: under its theme, the table the platform draws, whose quantities a React
 // component draws, the group the platform draws with a React component, and - while the test says so,
-// window.uiCustomViewEmbedded.placeInner - the container below with a component of its own. It counts the key presses
-// that reach it in window.uiCustomViewOuterKeys
+// window.uiCustomViewEmbedded.placeInner - the container below with a component of its own, in a place given ownRoot
+// if the test says so (ownRootInner). It counts the key presses that reach it in window.uiCustomViewOuterKeys
 window.UiCustomViewEmbeddedOuter = function () {
     const h = React.createElement, Platform = lsfusion.Platform;
     const [inner, placeInner] = React.useState(true);
-    window.uiCustomViewEmbedded = {placeInner: placeInner};
+    const [ownRoot, ownRootInner] = React.useState(false);
+    window.uiCustomViewEmbedded = {placeInner: placeInner, ownRootInner: ownRootInner};
     return h(window.UiCustomViewTheme.Provider, {value: 'outer'},
         h('div', {className: 'ui-custom-embedded',
                   onKeyDown: () => { window.uiCustomViewOuterKeys = (window.uiCustomViewOuterKeys || 0) + 1; }},
             h(Platform, {name: 'GRID(i)', className: 'ui-custom-embedded-table'}),
             h(Platform, {name: 'GRID(c)', className: 'ui-custom-embedded-cards'}),
-            inner && h(Platform, {name: 'inner', className: 'ui-custom-embedded-inner'})));
+            inner && h(Platform, {name: 'inner', className: 'ui-custom-embedded-inner', ownRoot: ownRoot})));
 };
 
 // ... and the component of the container inside it: the theme around it and which instance it is, and, under a
