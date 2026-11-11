@@ -3,6 +3,8 @@ package lsfusion.tests;
 import com.microsoft.playwright.Locator;
 import org.junit.Test;
 
+import java.util.regex.Pattern;
+
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -70,6 +72,40 @@ public class UiGridIT extends UiTest {
         Locator form = open("UiGrid.uiGrid", "UiGrid.uiGridIcons");
         assertThat(form.locator("tfoot")).containsText("a string footer of icons");
         assertThat(form.locator("tbody i.bi-plus").first()).isVisible();
+        close(form);
+    }
+
+    // a range of rows runs on from the row it starts from and shrinks back, a range of columns runs on beside it, a move
+    // without Shift starts both anew, and every row and column is selected (GGridSelection)
+    @Test
+    public void rowsAndColumnsAreSelected() throws Exception {
+        exec("UiGrid.uiGridSeedLines", "20");
+        Locator form = open("UiGrid.uiGrid", "UiGrid.uiGridSelection");
+        Locator count = form.locator("[lsfusion-container='PROPERTY(selectedCount)']");
+        Locator nameSelected = form.locator("[lsfusion-container='PROPERTY(nameSelected)'] input");
+        Locator qtySelected = form.locator("[lsfusion-container='PROPERTY(qtySelected)'] input");
+        Locator selectedCells = form.locator("td.column-select");
+        click(form.locator("td[lsfusion-container='PROPERTY(qty)']").nth(1));
+        assertThat(qtySelected).isChecked();
+        for (int i = 0; i < 3; i++)
+            press("Shift+ArrowDown");
+        assertThat(count).hasText(Pattern.compile("(^|\\D)4$"));
+        assertThat(selectedCells).hasCount(4);
+        press("Shift+ArrowUp");
+        assertThat(count).hasText(Pattern.compile("(^|\\D)3$"));
+        assertThat(nameSelected).not().isChecked();
+        press("Shift+ArrowLeft");
+        assertThat(nameSelected).isChecked();
+        assertThat(qtySelected).isChecked();
+        assertThat(selectedCells).hasCount(6);
+        press("ArrowRight"); // a range anew: the quantity alone, and its row
+        assertThat(nameSelected).not().isChecked();
+        assertThat(count).hasText(Pattern.compile("(^|\\D)1$"));
+        assertThat(selectedCells).hasCount(0);
+        answered(0, () -> press("Control+a"));
+        assertThat(count).hasText(Pattern.compile("(^|\\D)20$"));
+        assertThat(nameSelected).isChecked();
+        assertThat(selectedCells).hasCount(60);
         close(form);
     }
 }

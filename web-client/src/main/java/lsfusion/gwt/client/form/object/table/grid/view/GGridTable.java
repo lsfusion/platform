@@ -184,49 +184,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
         for (int i = 0; i < rowCount; i++)
             changeSelectionRows.put(getRowValue(i).getKey(), PValue.getPValue(true));
 
-        int selectedFrom = Math.min(startSelectColumn, endSelectColumn); // the selection keeps the direction it was made in, so the bounds can be reversed
-        int selectedTo = Math.max(startSelectColumn, endSelectColumn);
-
-        ArrayList<ColumnSelection> changeSelectionColumns = new ArrayList<>();
-        for (int i = 0; i < colCount; i++)
-            if(!(startSelectColumn >= 0 && i >= selectedFrom && i <= selectedTo)) // not sending the columns that are already selected, otherwise a repeated select all would look like a select change
-                addSelectedColumn(i, changeSelectionColumns, true);
-
-        startSelectColumn = 0;
-        endSelectColumn = colCount - 1;
-        selectColumnsChanged();
-
-        form.selectAll(groupObject, changeSelectionRows, changeSelectionColumns);
+        // not sending the columns that are already selected, otherwise a repeated select all would look like a select change
+        form.selectAll(groupObject, changeSelectionRows, updateColumnSelection(0, colCount - 1));
     }
 
     @Nullable
     private NativeHashMap<GGroupObjectValue, PValue> updateRowSelection(int row, int prevRow, FocusUtils.Reason reason, GChangeSelection changeSelection) {
-        NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows = new NativeHashMap<>();
-        if (changeSelection == GChangeSelection.MOVE) {
-            NativeHashMap<GGroupObjectValue, PValue> fChangeSelectionRows = changeSelectionRows;
-            rowSelectValues.foreachEntry((key, value) -> { if(GridDataRecord.isRowSelect(value)) fChangeSelectionRows.put(key, GridDataRecord.invertSelect(value)); });
-            rowSelectValues.clear();
-        } else {
-            int dir = row >= prevRow ? 1 : -1;
-            for (int i = prevRow; (dir > 0 ? i <= row : i >= row); i += dir) {
-                GGroupObjectValue rowKey = getRowValue(i).getKey();
-
-                PValue pValue;
-                if (i == row)
-                    pValue = PValue.getPValue((Boolean)null);
-                else
-                    pValue = rowSelectValues.get(getRowValue(i + dir).getKey());
-
-                PValue newSelectValue = GridDataRecord.invertSelect(pValue);
-
-                PValue prevSelectValue = rowSelectValues.put(rowKey, newSelectValue);
-                if(!GwtClientUtils.nullEquals(prevSelectValue, newSelectValue))
-                    changeSelectionRows.put(rowKey, newSelectValue);
-            }
-        }
+        NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows = GGridSelection.getRowChanges(rowSelectValues, i -> getRowValue(i).getKey(), row, prevRow, changeSelection);
 
         if(!changeSelectionRows.isEmpty()) {
-            selectRowsUpdated = true;
+            updateRowSelectValues(changeSelectionRows, true); // shown at once, as the server's own word of these rows is
 
             if(reason != FocusUtils.Reason.COLUMNCHANGE) {
                 // assert equals that is called from another updateModify
@@ -249,31 +216,14 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
     }
 
     private ArrayList<ColumnSelection> updateColumnSelection(int newEnd, int prevCol, GChangeSelection changeSelection) {
-        int newStart;
+        return updateColumnSelection(GGridSelection.getStartColumn(startSelectColumn, newEnd, changeSelection), newEnd);
+    }
 
+    private ArrayList<ColumnSelection> updateColumnSelection(int newStart, int newEnd) {
         ArrayList<ColumnSelection> changes = new ArrayList<>();
-        if(startSelectColumn < 0) { // no selection
-            newStart = newEnd;
-            addSelectedColumn(newEnd, changes, true);
-        } else {
-            newStart = changeSelection == GChangeSelection.MOVE ? newEnd : startSelectColumn;
-            if (newEnd == endSelectColumn && newStart == startSelectColumn) return changes;
+        if (newEnd == endSelectColumn && newStart == startSelectColumn) return changes;
 
-            int oldL = Math.min(startSelectColumn, endSelectColumn);
-            int oldR = Math.max(startSelectColumn, endSelectColumn);
-            int newL = Math.min(newStart, newEnd);
-            int newR = Math.max(newStart, newEnd);
-
-            // Removed = old \ new
-            for (int i = oldL; i <= oldR; i++)
-                if (i < newL || i > newR)
-                    addSelectedColumn(i, changes, false);
-
-            // Added = new \ old
-            for (int i = newL; i <= newR; i++)
-                if (i < oldL || i > oldR)
-                    addSelectedColumn(i, changes, true);
-        }
+        GGridSelection.forColumnChanges(startSelectColumn, endSelectColumn, newStart, newEnd, (i, set) -> addSelectedColumn(i, changes, set));
 
         this.startSelectColumn = newStart;
         this.endSelectColumn = newEnd;

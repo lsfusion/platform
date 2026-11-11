@@ -1,6 +1,6 @@
 MODULE UiGrid;
 
-REQUIRE TestUtils, SystemEvents;
+REQUIRE TestUtils, Utils, SystemEvents;
 
 // the grids UiGridIT works on in the browser, the render function it draws one with (UiGrid.js), and the actions it
 // seeds and checks its item with
@@ -56,9 +56,33 @@ FORM uiGridIcons 'Icons'
     PROPERTIES(i) READONLY image = uiGridIcon CUSTOM 'uiGridHtml' FOOTER 'a string footer of icons'
 ;
 
+// the lines a table selects - those of the test that seeded last, numbered from 1 -, and what the form reads of the
+// selection: how many rows SELECT returns, the current one while none is selected, and the columns it reads as selected
+CLASS UiGridLine 'Line';
+uiGridLineNumber 'Number' = DATA INTEGER (UiGridLine);
+uiGridLineName 'Name' = DATA STRING[50] (UiGridLine);
+uiGridLineQuantity 'Quantity' = DATA INTEGER (UiGridLine);
+uiGridLineShown = DATA BOOLEAN (UiGridLine);
+
+FORM uiGridSelection 'Selection'
+    OBJECTS l = UiGridLine
+    PROPERTIES(l) READONLY number = uiGridLineNumber
+    PROPERTIES(l) name = uiGridLineName, qty = uiGridLineQuantity
+    FILTERS uiGridLineShown(l)
+    ORDERS number
+;
+uiGridSelected () = GROUP SUM 1 IF [ SELECT uiGridSelection.l](UiGridLine l);
+uiGridNameSelected () = [ SELECT PROPERTY uiGridSelection.name]();
+uiGridQtySelected () = [ SELECT PROPERTY uiGridSelection.qty]();
+
+EXTEND FORM uiGridSelection
+    PROPERTIES() selectedCount = uiGridSelected, nameSelected = uiGridNameSelected, qtySelected = uiGridQtySelected
+;
+
 NAVIGATOR {
     NEW FOLDER uiGrid 'UI grid' WINDOW toolbar {
         NEW uiGridItems;
+        NEW uiGridSelection;
         NEW uiGridPictures;
         NEW uiGridFooters;
         NEW uiGridPatterns;
@@ -73,6 +97,17 @@ onWebClientInit() + {
 uiGridSeed (STRING[50] name) {
     NEW i = UiGridItem {
         uiGridName(i) <- name;
+    }
+    APPLY;
+}
+
+uiGridSeedLines (INTEGER count) {
+    uiGridLineShown(UiGridLine l) <- NULL;
+    FOR iterate(INTEGER k, 1, count) DO NEW l = UiGridLine {
+        uiGridLineNumber(l) <- k;
+        uiGridLineName(l) <- 'line ' + k;
+        uiGridLineQuantity(l) <- k;
+        uiGridLineShown(l) <- TRUE;
     }
     APPLY;
 }
