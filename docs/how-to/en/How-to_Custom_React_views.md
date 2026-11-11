@@ -122,32 +122,18 @@ Options: `enabled` (default `true`) suspends the tracking, `threshold` (`0.6`) i
 
 The hook moves the scroll position of that box and switches off the browser's own scroll anchoring there, so it touches nothing outside the element the view is drawn in: everything there — a platform container, a box another view shares, the page, a portal's box — belongs to something else. Rows that scroll only in such an element leave the hook doing nothing at all — no seek, and no scroll into view of a current moved out of sight — and it says so once in the console. Give the rows a scrolling box of the view's own — a bounded height and `overflow: auto`.
 
-To move to the first or last row of the whole list under the group's current filters and sortings, including the user's, place actions with [`ACTIVATE FIRST` / `LAST`](../language/ACTIVATE_operator.md) in the view's container and run them through the controller's members:
-
-```lsf
-toFirst() { ACTIVATE FIRST orders.o; }
-toLast() { ACTIVATE LAST orders.o; }
-
-EXTEND FORM orders PROPERTIES() toFirst, toLast;
-
-DESIGN orders {
-    BOX(o) {
-        MOVE PROPERTY(toFirst());
-        MOVE PROPERTY(toLast());
-    }
-}
-```
+To move to the first or last row of the whole list under the group's current filters and sortings, including the user's, pass the group's `change` an edge of the list instead of a row — `{to: 'home'}` or `{to: 'end'}`, which the form's controller also has as `form.HOME` and `form.END`:
 
 ```jsx
 <>
-    <button onClick={() => controller.toFirst.exec()}>First</button>
-    <button onClick={() => controller.toLast.exec()}>Last</button>
+    <button onClick={() => controller.o.change(controller.form.HOME)}>First</button>
+    <button onClick={() => controller.o.change(controller.form.END)}>Last</button>
 </>
 ```
 
-These actions perform the same move as the platform table's Ctrl+Home / Ctrl+End: the first / last row becomes current, and the rows read from the start / up to the end replace `list`.
+This is the move of the platform table's Ctrl+Home / Ctrl+End: the server finds the row, the first / last row becomes current, and the rows read from the start / up to the end replace `list`. An action with [`ACTIVATE FIRST` / `LAST`](../language/ACTIVATE_operator.md) placed in the view's container and run through its member performs the same move.
 
-In an [object tree](#trees), `ACTIVATE FIRST` and `ACTIVATE LAST` without seek objects keep the current objects, and the tree is read whole under its open nodes, without pages. To move to the first or last node, call `controller.<group>.change(row)` through the member of that node's group, passing the row of the first or last node the view draws in its own order — parent then children — rather than the first or last element of one group's `list`.
+A group of an [object tree](#trees) takes no edge, and `ACTIVATE FIRST` and `ACTIVATE LAST` without seek objects keep its current objects: the tree is read whole under its open nodes, without pages. To move to the first or last node, call `controller.<group>.change(row)` through the member of that node's group, passing the row of the first or last node the view draws in its own order — parent then children — rather than the first or last element of one group's `list`.
 
 The number of rows read is `list.length`, not how many rows the group's filters admit, so under paged reading the projection alone cannot show "6 of 23". The total is a separate property that counts the rows under the form's current filter with the [`FILTER` operator](../paradigm/Filter_FILTER.md), as in [How-to: Table status](How-to_Table_status.md), placed inside the container so that it reaches `data`:
 

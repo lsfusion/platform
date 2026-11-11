@@ -686,6 +686,23 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     public JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key) {
         return requestPromise(call -> call.onSuccess(changeGroupObject(group, key)));
     }
+    // ... the first or the last of a grid's rows, which the server finds: the platform's own request (Ctrl+Home /
+    // Ctrl+End), the row coming with its answer
+    @Override
+    public JavaScriptObject scrollCurrentObject(GGroupObject group, boolean toEnd) {
+        return requestPromise(call -> call.onSuccess(scrollToEnd(group, toEnd, null)));
+    }
+    // ... and a grid's current column, the form's active property: the platform's own request, as its grid makes it
+    // - where the column is another one, and the form follows it (updatePropertyActive)
+    @Override
+    public JavaScriptObject changeActiveProperty(GGroupObject group, GPropertyDraw property) {
+        return requestPromise(call -> {
+            if (property != prevPropertyActive)
+                updatePropertyActive(property, GGroupObjectValue.EMPTY, true, null, call);
+            else
+                call.onCancel();
+        });
+    }
     // ... and a tree group member's expand / collapse / toggle, once it has read the node and decided
     // (TreeRowsPart): the platform's own request, which takes the state asked for - and the group's controller
     // told of it, to show it at once until the keys of the answer come with the request's index, as changeGroupObject
@@ -1855,9 +1872,9 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
 
     // a group scrolled to its first or last row (Ctrl+Home / Ctrl+End), its move still waiting sent first: the scroll
     // goes from the row that move is to
-    public void scrollToEnd(GGroupObject group, boolean toEnd, GChangeSelection changeSelection) {
+    public long scrollToEnd(GGroupObject group, boolean toEnd, GChangeSelection changeSelection) {
         DeferredRunner.get().commitDelayedGroupObjectChange(group);
-        syncResponseDispatch(new ScrollToEnd(group.ID, toEnd, changeSelection));
+        return syncResponseDispatch(new ScrollToEnd(group.ID, toEnd, changeSelection));
     }
 
     public void selectAll(GGroupObject group, NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows, ArrayList<GGridTable.ColumnSelection> changeSelectionColumns) {
@@ -2361,6 +2378,12 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
 
     public void updatePropertyActive(GPropertyDraw property, GGroupObjectValue columnKey, boolean focused,
                                      ArrayList<GGridTable.ColumnSelection> changeSelectionColumns) {
+        updatePropertyActive(property, columnKey, focused, changeSelectionColumns, requestIndex -> {});
+    }
+
+    // ... its request told to who asks for it (changeActiveProperty) - none made where the form follows nothing of it
+    private void updatePropertyActive(GPropertyDraw property, GGroupObjectValue columnKey, boolean focused,
+                                      ArrayList<GGridTable.ColumnSelection> changeSelectionColumns, ExecCallback onExec) {
         if (prevPropertyActive != null && prevPropertyActive.hasActiveProperty || (property != null && property.hasActiveProperty) || changeSelectionColumns != null) {
             int[] changeSelectionProps = null;
             GGroupObjectValue[] changeSelectionColumnKeys = null;
@@ -2378,9 +2401,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
                 }
             }
 
-            asyncResponseDispatch(new ChangePropertyActive(property != null ? property.ID : -1, columnKey, focused,
-                    changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues));
-        }
+            onExec.onSuccess(asyncResponseDispatch(new ChangePropertyActive(property != null ? property.ID : -1, columnKey, focused,
+                    changeSelectionProps, changeSelectionColumnKeys, changeSelectionValues)));
+        } else
+            onExec.onCancel();
         prevPropertyActive = property;
     }
     

@@ -129,8 +129,12 @@ public class GReactFormData {
     // hands the form the edit, which the form shows at once and sends at once or, inside a batch, when the batch ends
     // (batch). The user filters of each table are its model's (GUserFiltersController), sent through its Transport
     public interface Verbs {
-        // ===== the current object of a group whose rows a view draws: one of those rows
+        // ===== the current object of a group whose rows a view draws: one of those rows ...
         JavaScriptObject changeCurrentObject(GGroupObject group, GGroupObjectValue key);
+        // ... the first or the last of a grid's rows, which the server finds ...
+        JavaScriptObject scrollCurrentObject(GGroupObject group, boolean toEnd);
+        // ... and its current column, the form's active property
+        JavaScriptObject changeActiveProperty(GGroupObject group, GPropertyDraw property);
         // ===== a property: its cell - its key (EMPTY: the current objects), its value (PValue.UNDEFINED: its change
         // event, or the action) and what the cell shows until the answer (PValue.UNDEFINED: the value it has) -, the
         // Promise of the change's request returned, and the Promise of the cell's suggestion list, from the server's
@@ -1879,9 +1883,16 @@ public class GReactFormData {
                 replaceAttribute(row, reader, values.get(reader, key));
         }
 
-        // ===== a call through its member: change(row), the current object chosen among the rows drawn here
+        // ===== a call through its member: change(row), the current object chosen among the rows drawn here - an edge
+        // of the rows, which a grid's member takes too (GridRowsPart), refused
         JavaScriptObject change(String surface, JavaScriptObject objectOrKey) {
-            return verbs.changeCurrentObject(node.group, resolveGroupRow(controllerPrefix(surface), objectOrKey));
+            String errorPrefix = controllerPrefix(surface);
+            if (isEdge(objectOrKey))
+                throw refusal(errorPrefix + "takes a row of '" + node.name + "': the first and the last row are a grid's");
+            return verbs.changeCurrentObject(node.group, resolveGroupRow(errorPrefix, objectOrKey));
+        }
+        // what a column's entry says of the column besides - a grid's alone
+        void emitColumn(JavaScriptObject entry, ReactColumnPropertyEntry column) {
         }
         // the row of THIS group a call names (resolveRow), narrowed by the group's own rule (readGroupRow)
         GGroupObjectValue resolveGroupRow(String errorPrefix, JavaScriptObject objectOrKey) {
@@ -1906,6 +1917,10 @@ public class GReactFormData {
     // with them; what the grid's toolbar and filter input controller ask of the grid as a whole is its table's
     // (GridTablePart)
     private final class GridRowsPart extends RowsPart {
+        // its COLUMNS (getColumns), each by its place among them, and what is the grid's own of them, as the platform's
+        // grid keeps its columns' (DataGrid): the current one - -1: none
+        int currentColumn = -1;
+
         GridRowsPart(GroupNode node) {
             super(node);
         }
@@ -1920,6 +1935,7 @@ public class GReactFormData {
         void putMember(JavaScriptObject groupMember) {
             super.putMember(groupMember);
             setField(groupMember, VIEW_FILTERS, makeViewFiltersMember(GReactFormData.this, node.group, node.name + "." + VIEW_FILTERS + ".change()"));
+            addGridVerbs(this, groupMember, node.name);
         }
         // ... and the conditions, as the form sends them, whoever states them - this view's member, the form's
         // controller - (GGroupController.changeViewFilters): shown at once, each as a condition of `filters` is
@@ -1931,6 +1947,65 @@ public class GReactFormData {
             for (GPropertyFilter condition : conditions)
                 push(array, filtersList.writeCondition(node.group.grid, condition));
             setField(node.edit(), VIEW_FILTERS, array);
+        }
+
+        // ===== change(row | HOME | END): the current object - a row drawn here, or an edge of the rows, the first or
+        // the last of them all, which the server finds
+        @Override
+        JavaScriptObject change(String surface, JavaScriptObject target) {
+            String errorPrefix = controllerPrefix(surface);
+            return changeCurrentObject(errorPrefix, target, row -> resolveGroupRow(errorPrefix, row));
+        }
+        // ... as the form's controller's changeObject names it too, a row read as it reads one (readRow)
+        JavaScriptObject changeCurrentObject(String errorPrefix, JavaScriptObject target, RowKey readRow) {
+            if (isEdge(target))
+                return verbs.scrollCurrentObject(node.group, readToEnd(errorPrefix, target));
+            return verbs.changeCurrentObject(node.group, readRow.read(target));
+        }
+        // ... properties.change(column): the current column
+        JavaScriptObject changeColumn(String surface, String name) {
+            int column = readColumn(controllerPrefix(surface), name);
+            updateCurrentColumn(column);
+            return verbs.changeActiveProperty(node.group, getColumns().get(column).property);
+        }
+        // the column a call names, one the form shows now, by the name its entry has on the group's node
+        int readColumn(String errorPrefix, String name) {
+            ArrayList<ReactColumnPropertyEntry> columns = getColumns();
+            for (int i = 0; i < columns.size(); i++)
+                if (columns.get(i).name.equals(name)) {
+                    columns.get(i).checkShown(errorPrefix);
+                    return i;
+                }
+            throw refusal(errorPrefix + (name == null ? "takes the name of the column, as a string"
+                    : "'" + name + "' is no column of '" + node.name + "': a list property the view draws in its rows, not an action"));
+        }
+        // its columns: the list properties React draws in these rows, with a value - an action has none -, in the
+        // form's order, as data.<group>.properties lists them
+        ArrayList<ReactColumnPropertyEntry> getColumns() {
+            ArrayList<ReactColumnPropertyEntry> columns = new ArrayList<>();
+            for (PropertyEntry propertyEntry : node.properties)
+                if (propertyEntry instanceof ReactColumnPropertyEntry && !propertyEntry.property.isAction())
+                    columns.add((ReactColumnPropertyEntry) propertyEntry);
+            return columns;
+        }
+        // the current column from now on: the entry of the one that was and of the one that is rebuilt, each saying it
+        // (emitColumn)
+        void updateCurrentColumn(int current) {
+            ArrayList<ReactColumnPropertyEntry> columns = getColumns(), changed = new ArrayList<>();
+            for (int i : new int[] {currentColumn, current})
+                if (current != currentColumn && i >= 0)
+                    changed.add(columns.get(i));
+            currentColumn = current;
+            for (ReactColumnPropertyEntry column : changed)
+                column.updateEntry();
+        }
+        // what a column's entry says of it: whether it is the current one
+        @Override
+        void emitColumn(JavaScriptObject entry, ReactColumnPropertyEntry column) {
+            int index = getColumns().indexOf(column);
+            if (index >= 0) {
+                setField(entry, "current", index == currentColumn);
+            }
         }
     }
     private static final String VIEW_FILTERS = "viewFilters";
@@ -2669,10 +2744,11 @@ public class GReactFormData {
         void valueChanged(GGroupObjectValue key) {
             writeCell(key);
         }
-        // the column: its attributes, and what the property is
+        // the column: its attributes, what the property is, and what its rows say of it (emitColumn)
         void emit(JavaScriptObject entry) {
             emitAttributes(entry, columnReaders, GGroupObjectValue.EMPTY, property);
             emitPropertyFacts(entry, property);
+            rowsPart.emitColumn(entry, this);
         }
         void writeCell(GGroupObjectValue key) {
             JavaScriptObject row = rowsPart.editRow(key);
@@ -3181,11 +3257,33 @@ public class GReactFormData {
     // given the call as a message names it (surface) by what puts it on the controller, as a member's is
     // (addFormMethods)
 
-    // the current object of a group: a row of it - the row, or its `objects` handle
+    // the current object of a group: a row of it - the row, or its `objects` handle -; of a grid whose rows a view
+    // draws, an edge of the rows too (GridRowsPart.changeCurrentObject)
     private JavaScriptObject changeObject(String surface, String name, JavaScriptObject objectOrKey) {
         String errorPrefix = controllerPrefix(surface);
         GGroupObject group = readGroup(form, errorPrefix, name);
+        if (isEdge(objectOrKey))
+            return readGridRows(errorPrefix, group).changeCurrentObject(errorPrefix, objectOrKey, row -> readFormRow(errorPrefix, group, row));
         return verbs.changeCurrentObject(group, readFormRow(errorPrefix, group, objectOrKey));
+    }
+    // ... and such a grid's current column
+    private JavaScriptObject changeColumn(String surface, String name, String column) {
+        return readGridRows(surface, name).changeColumn(surface, column);
+    }
+    // ... the selection being the grid's own where a view draws its rows: a group of a tree has none, and a table of
+    // the platform's keeps its own (gridRows)
+    private GridRowsPart readGridRows(String surface, String name) {
+        String errorPrefix = controllerPrefix(surface);
+        return readGridRows(errorPrefix, readGroup(form, errorPrefix, name));
+    }
+    private GridRowsPart readGridRows(String errorPrefix, GGroupObject group) {
+        if (!hasGridRows(group))
+            throw refusal(errorPrefix + "'" + group.getSID() + "' has no selection of a view's: a view selects among the rows it"
+                    + " draws, of a list group not in a tree");
+        return ((GridTablePart) gridRows.get(group.grid)).currentPart();
+    }
+    private boolean hasGridRows(GGroupObject group) {
+        return !group.isInTree() && gridRows.get(group.grid) instanceof GridTablePart;
     }
     // ... a node of a tree's group, opened or closed, and every node of it and of the groups below it
     private JavaScriptObject expand(String surface, String name, JavaScriptObject objectOrKey) {
@@ -3298,7 +3396,7 @@ public class GReactFormData {
     private JavaScriptObject changeViewFilters(String surface, String name, JavaScriptObject conditions) {
         String errorPrefix = controllerPrefix(surface);
         GGroupObject group = readGroup(form, errorPrefix, name);
-        if (group.isInTree() || !(gridRows.get(group.grid) instanceof GridTablePart))
+        if (!hasGridRows(group))
             throw refusal(errorPrefix + "'" + name + "' has no view filters to state: a view states them for the rows it"
                     + " draws, of a list group not in a tree");
         return changeViewConditions(surface, group, conditions);
@@ -3405,6 +3503,24 @@ public class GReactFormData {
                     + " row only in the view that draws the rows, through its member");
         return readGroupRow(errorPrefix, group, key);
     }
+    // ... an EDGE of a grid's rows, which a change of its current object names in a row's place - {to: 'home'} and
+    // {to: 'end'}, HOME and END on the form's controller -: the first and the last of the rows the filter leaves,
+    // whichever of them the view has. An object that is no row and no handle of one is an edge by its `to` ...
+    private static boolean isEdge(JavaScriptObject target) {
+        return GGroupObjectValue.resolveObject(target) == null && isJSObject(target) && hasOwnField(target, "to");
+    }
+    // ... which says whether it is the last one
+    private static boolean readToEnd(String errorPrefix, JavaScriptObject edge) {
+        checkAuthorObject(errorPrefix, edge, "an edge of the rows", "to");
+        String to = getOwnString(edge, "to");
+        if (!"home".equals(to) && !"end".equals(to))
+            throw refusal(errorPrefix + "'to' must be 'home' or 'end'");
+        return "end".equals(to);
+    }
+    private static final JavaScriptObject HOME = makeEdge("home"), END = makeEdge("end");
+    private static native JavaScriptObject makeEdge(String to) /*-{
+        return Object.freeze({to: to});
+    }-*/;
 
     // ===== THE MEMBERS. A member IS the address: it holds the state it stands for - a property member its property's
     // value, a part's member its part - so a call through it names nothing it changes, and its
@@ -3452,6 +3568,13 @@ public class GReactFormData {
         member.change = function (row) {
             return part.@lsfusion.gwt.client.form.design.view.GReactFormData.RowsPart::change(*)(sid + ".change()", row);
         };
+    }-*/;
+
+    // ... and on a GRID's group, properties.change(column), which makes a column current
+    private static native void addGridVerbs(GridRowsPart part, JavaScriptObject member, String sid) /*-{
+        member.properties = {change: function (column) {
+            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridRowsPart::changeColumn(*)(sid + ".properties.change()", typeof column === 'string' ? column : null);
+        }};
     }-*/;
 
     // ... and on a group of a TREE, its node verbs: a node IS a row, so the verbs that open one are the group's - and
@@ -3591,8 +3714,13 @@ public class GReactFormData {
         var surface = function (method, value) {
             return "form." + method + "(" + (typeof value === 'string' ? "'" + value + "'" : "") + ")";
         };
+        controller.HOME = @lsfusion.gwt.client.form.design.view.GReactFormData::HOME;
+        controller.END = @lsfusion.gwt.client.form.design.view.GReactFormData::END;
         controller.changeObject = function (group, row) {
             return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeObject(*)(surface('changeObject', group), name(group), row);
+        };
+        controller.changeColumn = function (group, column) {
+            return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::changeColumn(*)(surface('changeColumn', group), name(group), typeof column === 'string' ? column : null);
         };
         controller.expand = function (group, row) {
             return projection.@lsfusion.gwt.client.form.design.view.GReactFormData::expand(*)(surface('expand', group), name(group), row);
