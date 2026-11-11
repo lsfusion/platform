@@ -1030,6 +1030,11 @@ protected Double getUserFlex(int i) {
     protected RenderContext getRenderContext(Cell cell, Element renderElement, GPropertyDraw property, GGridPropertyTable<T, ?, ?>.GridPropertyColumn column) {
         return new RenderContext() {
             @Override
+            public GFormController getForm() {
+                return form;
+            }
+
+            @Override
             public boolean globalCaptionIsDrawn() {
                 return GGridPropertyTable.this.globalCaptionIsDrawn();
             }
@@ -1115,6 +1120,12 @@ protected Double getUserFlex(int i) {
             @Override
             public PValue getValue() {
                 return column.getValue(property, (T) cell.getRow());
+            }
+
+            @Override
+            public GGroupObjectValue getFullKey() {
+                GGroupObjectValue rowKey = property.isList ? getRowKey(cell) : GGroupObjectValue.EMPTY;
+                return GGroupObjectValue.getFullKey(rowKey, getColumnKey(cell));
             }
 
             @Override

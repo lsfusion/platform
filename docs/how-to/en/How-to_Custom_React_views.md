@@ -2190,3 +2190,32 @@ Some combinations are refused when the form is built:
 
 The attributes of the platform's table — a table's `valueClass` given by a property, a tree's `hierarchicalCaption` —
 mean nothing to its own view, as to a table a React container draws: the projection carries neither.
+
+### A React component in `CUSTOM` {#form-custom}
+
+The `CUSTOM` option of a property in the [`PROPERTIES`](../language/Properties_and_actions_block.md) block and of an object group in the [`OBJECTS`](../language/Object_blocks.md) block specifies a render function, and that function can be a React component. The property or the group remains the platform's: it stays where the form's design puts it, and the component draws only what the render function would draw — one cell of the property, or the rows of the group.
+
+The web client tells a component from a classic render function ([properties](How-to_Custom_components_properties.md), [objects](How-to_Custom_components_objects.md)) by the way the name is registered: a component is registered with the kind `reactView`, and any other name is a classic function, whatever its case. The name itself does not say it here, as it does for the `custom` of a container: a classic function may be named as a component is. A named export of a compiled module is registered without a kind, and a function of a `.jsx` file is not registered at all, so the module registers the component explicitly:
+
+```jsx
+function Quantity({data, controller}) {
+    return <button disabled={data.readOnly || data.disabled}
+                   onClick={() => controller.change((data.value ?? 0) + 1)}>
+        {data.value}
+    </button>;
+}
+
+window.lsfusion.custom.register('Quantity', Quantity, 'reactView');
+```
+
+```lsf
+FORM items
+    OBJECTS i = Item
+    PROPERTIES(i) READONLY name
+    PROPERTIES(i) quantity CUSTOM 'Quantity'
+;
+```
+
+The component of a property draws one cell: a cell of the table, or the value of the property on a panel. `data` describes that cell — its `value`, `readOnly`, `disabled`, `loading`, `background`, `foreground`, `placeholder`, `defaultValue`, `valueTooltip` and `options`, and the `type` and `askConfirm` of the property, with the meaning they have in [the entry of a property a view draws](#display-options). `controller` is the property's [member](How-to_Custom_view_controller.md) for that cell — `change(value)`, `exec()` and `getValues(query, {mode, count})`, each returning the `Promise` of its request — with the form's controller as `controller.form`. A call takes no row: in a table it changes the row of the cell, whichever row is current, and on a panel the current object of the form. The component changes the value by these calls only: a click on the cell or typing in it does not start the platform's editing of the cell. Whether the cell may be changed is checked by the server, as for a classic render function, so a change of a read-only cell is not made.
+
+A table reuses the element of a cell for another row when its rows are sorted or scrolled. The component stays mounted then and keeps its state: it receives the `data` of the other row, and its `controller`, which stays the same object, changes the row the cell shows at the moment of the call — after an `await` too. A view that draws the rows itself places such a property as any other property the platform draws, with [`<Platform name row/>`](#live-editor).

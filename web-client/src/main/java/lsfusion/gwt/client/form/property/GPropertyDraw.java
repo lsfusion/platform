@@ -9,6 +9,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.ReactRoot;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.*;
 import lsfusion.gwt.client.classes.data.*;
@@ -18,6 +19,7 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
+import lsfusion.gwt.client.form.design.view.ReactCellRenderer;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -555,6 +557,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
         if (isEditObjectEvent(editEvent, hasEditObjectAction, hasUserChangeAction, customRenderFunction != null)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
             return GEditBindingMap.EDIT_OBJECT;
 
+        // a React component of the property draws the cell and changes it by its own calls (ReactCellRenderer), as a
+        // React view does with what it draws: no event in the cell starts the platform's change of it - but the one on
+        // a toolbar action, which the platform draws there itself
+        if (editContext.getRendererType() == RendererType.CELL && isReactCustom() && GEditBindingMap.getToolbarAction(editEvent) == null)
+            return null;
+
         // starting change on focus, or any key pressed when focus is on input
         Element editElement = editContext.getEditElement();
         InputElement inputElement = InputBasedCellRenderer.getInputEventTarget(editElement, editEvent);
@@ -674,7 +682,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
             if (footerRenderer == null)
                 footerRenderer = createCellRenderer(rendererType, true);
             return footerRenderer;
-        } else if(rendererType == RendererType.CELL || !differentValue) {
+        } else if(rendererType == RendererType.CELL || !differentValue && !isReactCustom()) {
             if (cellRenderer == null) {
                 cellRenderer = createCellRenderer(rendererType, false);
             }
@@ -690,9 +698,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
         return getCellRenderer(rendererType) instanceof CustomCellRenderer;
     }
 
+    // whether its custom render function is a React component (ReactCellRenderer): one draws a cell of the property and
+    // nothing else that shows its value - a filter's, a pivot's -, being given the controller of a cell
+    private boolean isReactCustom() {
+        return ReactRoot.isReactView(customRenderFunction);
+    }
+
     private CellRenderer createCellRenderer(RendererType rendererType, boolean noCustom) {
         if (customRenderFunction != null && !noCustom) // we don't want custom renderer if value type differs from the cell type
-            return new CustomCellRenderer(this, customRenderFunction);
+            return isReactCustom() ? new ReactCellRenderer(this) : new CustomCellRenderer(this, customRenderFunction);
 
         return getRenderType(rendererType).createCellRenderer(this);
     }

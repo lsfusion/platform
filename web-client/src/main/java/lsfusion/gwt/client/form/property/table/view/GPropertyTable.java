@@ -139,6 +139,11 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
             }
 
             @Override
+            public GGroupObjectValue getFullKey() {
+                return updateContext.getFullKey();
+            }
+
+            @Override
             public Boolean isReadOnly() {
                 return GPropertyTable.this.isReadOnly(editCell);
             }

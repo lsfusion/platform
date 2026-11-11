@@ -27,12 +27,6 @@ public interface EditContext extends ExecContext {
 
     GGroupObjectValue getRowKey();
 
-    default GGroupObjectValue getFullKey() {
-        GPropertyDraw property = getProperty();
-        GGroupObjectValue rowKey = property.isList ? getRowKey() : GGroupObjectValue.EMPTY; // because for example in custom renderer editContext can be not the currentKey
-        return GGroupObjectValue.getFullKey(rowKey, getColumnKey());
-    }
-
     Element getEditElement();
 
     default PValue getValue() { return getUpdateContext().getValue(); }

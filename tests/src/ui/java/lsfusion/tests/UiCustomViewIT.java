@@ -11,8 +11,9 @@ import static org.junit.Assert.assertEquals;
 
 // what a custom view's controller does (UiCustomView.lsf, its views in UiCustomView.js): the places of a React view
 // that can hold no view - one outside the page, a second one of a row's editor -, a value a React view gives a member,
-// the calls to the server a React view makes through the form's controller, a custom cell renderer's controller, and
-// the controller an INTERNAL CLIENT action of a form and of the navigator gives the JS function it runs
+// the calls to the server a React view makes through the form's controller, a custom cell renderer's controller, the
+// React components a property's and a group's CUSTOM name, and the controller an INTERNAL CLIENT action of a form and
+// of the navigator gives the JS function it runs
 public class UiCustomViewIT extends UiTest {
 
     private static final String FOLDER = "UiCustomView.uiCustomView";
@@ -196,6 +197,92 @@ public class UiCustomViewIT extends UiTest {
         assertThat(value(form, "uiCustomViewCellEcho")).hasText("typed");
         form.locator(".ui-custom-view-cell-exec").click();
         assertThat(form.locator(".ui-custom-view-cell-result")).hasText("exec: number 8");
+        close(form);
+    }
+
+    // a property's CUSTOM that is a React component: the platform draws each cell with it, and the component's
+    // controller changes the cell it stands in - a row of the grid that is not the current one, the current item on
+    // the panel, the one value of a property of no group -, while its host is out of the page too, and names no row.
+    // READONLYIF is the server's to refuse, as with a classic render function. A cell the form hides is unmounted, and
+    // a call through the controller it had is refused while the form hides the property
+    @Test
+    public void reactCustomCellsUseTheirOwnKeysAndUnmountWhenHidden() throws Exception {
+        String[] items = seed();
+        Locator form = open(FOLDER, "UiCustomView.uiCustomViewReactCells");
+        Locator cells = form.locator(".data-grid-cell .ui-custom-react-cell");
+        assertThat(cells).hasText(new String[] {"1", "2"});
+        assertThat(cells.first()).isDisabled();
+        cells.first().evaluate("async button => { await button.testController.change(99); }");
+        assertThat(cells.first()).hasText("1");
+        cells.nth(1).evaluate("button => {"
+                + "const host = button.closest('lsfusion-react-cell');"
+                + "const parent = host.parentNode, next = host.nextSibling;"
+                + "host.remove();"
+                + "try { return button.testController.change(12); }"
+                + "finally { parent.insertBefore(host, next); }"
+                + "}");
+        assertThat(cells).hasText(new String[] {"1", "12"});
+        String noRow = "takes no row: the component draws one cell, and this is that cell's controller";
+        assertEquals("controller.change(): " + noRow, // a 0 is a row given too
+                cells.nth(1).evaluate("button => { try { button.testController.change(5, 0); } catch (e) { return e.message; } }"));
+        assertEquals("controller.getValues(): " + noRow,
+                cells.nth(1).evaluate("button => { try { button.testController.getValues('1', {row: {}}); } catch (e) { return e.message; } }"));
+
+        value(form, "uiCustomViewCount").locator(".ui-custom-react-cell").click();
+        assertThat(value(form, "uiCustomViewCountEcho")).hasText("10");
+        assertThat(cells.first()).isEnabled();
+        assertThat(cells.first()).hasText("1");
+
+        form.getByText(items[1], new Locator.GetByTextOptions().setExact(true)).click();
+        form.locator(".panel-renderer-value .ui-custom-react-cell")
+                .filter(new Locator.FilterOptions().setHasText("12")).click();
+        assertThat(cells).hasText(new String[] {"1", "22"});
+
+        page.evaluate("() => { window.uiCustomViewReleasedCell = null; }");
+        form.locator("button[lsfusion-container='PROPERTY(uiCustomViewToggleCells())']").click();
+        assertThat(cells).hasCount(0);
+        page.waitForFunction("() => !!window.uiCustomViewReleasedCell");
+        assertEquals("controller.change(): 'uiCustomViewQuantity' is not shown by the form now"
+                        + " (its entry is hidden), so it has nobody to change it for",
+                page.evaluate("() => { try { window.uiCustomViewReleasedCell.change(99); } catch (e) { return e.message; } }"));
+
+        form.locator("button[lsfusion-container='PROPERTY(uiCustomViewToggleCells())']").click();
+        assertThat(cells).hasText(new String[] {"1", "22"});
+        form.locator("button[lsfusion-container='PROPERTY(formApply())']").click();
+        check("UiCustomView.uiCustomViewCheckQuantity", items[0], "1");
+        check("UiCustomView.uiCustomViewCheckQuantity", items[1], "22");
+        close(form);
+    }
+
+    // a grid hands its cells other rows as they are sorted: the component of a cell stays mounted, with its state and
+    // the controller it was first given, which changes the row the cell shows now. The row a grid sizes its columns by
+    // draws no component
+    @Test
+    public void reactCustomCellsKeepTheirComponentsWhenRowsMove() throws Exception {
+        String[] items = seed();
+        Locator form = open(FOLDER, "UiCustomView.uiCustomViewReactCells");
+        Locator cells = form.locator(".data-grid-cell .ui-custom-react-cell");
+        assertThat(cells).hasText(new String[] {"1", "2"});
+        Locator sizingRow = form.locator(".data-grid-column-row").first();
+        assertThat(sizingRow).isAttached();
+        assertThat(sizingRow.locator(".ui-custom-react-cell")).hasCount(0);
+        String firstInstance = cells.first().getAttribute("data-instance");
+        String secondInstance = cells.last().getAttribute("data-instance");
+
+        form.locator("th[lsfusion-container='PROPERTY(uiCustomViewName(i))']:visible").dblclick();
+        assertThat(cells).hasText(new String[] {"2", "1"});
+        assertThat(cells.first()).hasAttribute("data-instance", firstInstance);
+        assertThat(cells.last()).hasAttribute("data-instance", secondInstance);
+        assertThat(cells.first()).hasAttribute("data-matching-context", "true");
+        assertThat(cells.last()).hasAttribute("data-matching-context", "true");
+        assertThat(cells.first()).hasAttribute("data-stable-controller", "true");
+        assertThat(cells.last()).hasAttribute("data-stable-controller", "true");
+
+        cells.first().click();
+        assertThat(cells).hasText(new String[] {"12", "1"});
+        form.locator("button[lsfusion-container='PROPERTY(formApply())']").click();
+        check("UiCustomView.uiCustomViewCheckQuantity", items[0], "1");
+        check("UiCustomView.uiCustomViewCheckQuantity", items[1], "12");
         close(form);
     }
 

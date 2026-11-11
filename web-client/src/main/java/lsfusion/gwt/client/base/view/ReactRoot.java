@@ -65,6 +65,29 @@ public class ReactRoot {
         }
     }
 
+    // ... and the placement of a root whose component is given nothing to place - a property's cell, the CUSTOM view
+    // of a group's rows: a <Platform> in it says so in its host
+    public static Placement noPlacement(String owner) {
+        return new Placement() {
+            private final Host host = new PlainHost();
+
+            @Override
+            public void mount(String name, Element element, JavaScriptObject row) {
+                GwtClientUtils.showCustomViewError(element, owner + " cannot place '" + name + "'");
+            }
+
+            @Override
+            public void unmount(String name, Element element, JavaScriptObject row) {
+                GwtClientUtils.clearCustomViewError(element);
+            }
+
+            @Override
+            public Host getHost() {
+                return host;
+            }
+        };
+    }
+
     // A HOST's props besides its ref and `hidden`, which the hook adds (usePlatform): the class the component gives it,
     // and what the kind of host adds to it. Props of the host's own, rendered by <Platform> / usePlatform, rather than
     // anything written into the node behind React's back: a class written into a node React renders is lost the moment
@@ -204,6 +227,15 @@ public class ReactRoot {
             return same ? prev : next;
         };
         return reuse(prev, next);
+    }-*/;
+
+    // whether the CUSTOM of a property or of an object group names a React component rather than a classic render
+    // function: one registered as a component - lsfusion.custom.register(name, component, 'reactView'). The name
+    // itself does not say it there, as it does for the `custom` of a container or a window (the server's
+    // Custom.isReactComponent): a classic function may be named as components are
+    public static native boolean isReactView(String name) /*-{
+        var registry = $wnd.lsfusion && $wnd.lsfusion.custom;
+        return name != null && !!(registry && registry.isReactView && registry.isReactView(name));
     }-*/;
 
     private JavaScriptObject findComponent() {

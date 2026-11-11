@@ -815,6 +815,44 @@ console.log('registry');
         JSON.stringify(w2.lsfusion.custom.diagnostics));
 }
 
+// ---- React cell attachment --------------------------------------------------------------------------------------
+console.log('React cell attachment');
+{
+    const w = load(), elements = new Map(), pending = [];
+    w.HTMLElement = function () { this.style = {}; };
+    w.customElements = { get: tag => elements.get(tag), define: (tag, type) => elements.set(tag, type) };
+    w.document = { createElement: tag => new (elements.get(tag))() };
+    w.Promise = { resolve: () => ({ then: callback => pending.push(callback) }) };
+    let mounts = 0, unmounts = 0;
+    const host = w.lsfusion.__createReactCellHost(() => mounts++, () => unmounts++);
+    function connect() {
+        host.isConnected = true;
+        host.connectedCallback();
+    }
+    function disconnect() {
+        host.isConnected = false;
+        host.disconnectedCallback();
+    }
+    function flush() {
+        pending.splice(0).forEach(callback => callback());
+    }
+
+    connect();
+    disconnect();
+    connect();
+    flush();
+    check('moving a connected cell keeps its mounted view', mounts === 1 && unmounts === 0);
+
+    disconnect();
+    connect();
+    disconnect();
+    flush();
+    check('multiple moves ending in removal unmount once', mounts === 1 && unmounts === 1);
+
+    connect();
+    check('reconnecting after removal mounts again', mounts === 2 && unmounts === 1);
+}
+
 // ---- installing the hooks --------------------------------------------------------------------------------------
 console.log('hooks');
 {

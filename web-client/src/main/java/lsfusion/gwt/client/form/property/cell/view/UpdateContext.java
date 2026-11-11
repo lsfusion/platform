@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GInputBindingEvent;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.PValue;
 
 public interface UpdateContext {
@@ -31,6 +32,9 @@ public interface UpdateContext {
     boolean globalCaptionIsDrawn();
 
     PValue getValue();
+
+    // the key of the cell it updates, where the cell is one a change names: a grid's, a panel's
+    default GGroupObjectValue getFullKey() { return null; }
 
     default boolean isLoading() { return false; }
 

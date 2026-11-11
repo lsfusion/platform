@@ -110,8 +110,9 @@ window.uiCustomViewAfterServer = function () {
 };
 
 // the custom cell renderer of uiCustomViewCellText: a field whose change sets the property's value through the
-// renderer's controller, and a button that runs an action through the form's controller it reaches from there
-window.uiCustomViewCell = function () {
+// renderer's controller, and a button that runs an action through the form's controller it reaches from there. Named
+// as a component is and not registered as one, it stays a classic render function
+window.UiCustomViewCell = function () {
     return {
         render: function (element) {
             var field = document.createElement('input'), exec = document.createElement('button');
@@ -134,6 +135,30 @@ window.uiCustomViewCell = function () {
         }
     };
 };
+
+// the React component a property's CUSTOM names, registered as one: a button that shows the cell's value and adds 10
+// to it through the controller it was first given. It tells its instances apart, and says whether that controller is
+// still the one it is given and whether its props are what the hooks give - and hands its controller over as it is
+// unmounted
+lsfusion.custom.register('UiCustomViewReactCell', function ({data, controller}) {
+    const {createElement: h, useEffect, useState} = React;
+    const [instance] = useState(() => window.uiCustomViewCellInstances = (window.uiCustomViewCellInstances || 0) + 1);
+    const [initialController] = useState(() => controller);
+    const currentController = lsfusion.useController();
+    const currentData = lsfusion.useData();
+    useEffect(function () {
+        return function () { window.uiCustomViewReleasedCell = controller; };
+    }, [controller]);
+    return h('button', {
+        ref: button => { if (button) button.testController = controller; },
+        className: 'ui-custom-react-cell',
+        'data-instance': instance,
+        'data-stable-controller': String(controller === initialController),
+        'data-matching-context': String(controller === currentController && data === currentData),
+        disabled: data.readOnly || data.disabled,
+        onClick: () => initialController.change((data.value || 0) + 10)
+    }, String(data.value));
+}, 'reactView');
 
 // what the navigator's action uiCustomViewFromNavigator runs, asynchronously, with the navigator's controller: the
 // action uiCustomViewNavigatorMark run by name with what a script returns for the parameter

@@ -4,8 +4,8 @@ REQUIRE TestUtils, SystemEvents;
 
 // the forms UiCustomViewIT works on in the browser - React views (UiCustomView.js) that place what the platform draws,
 // change what they draw through their members and call the server through their controller, a custom cell renderer,
-// and the JS functions INTERNAL CLIENT actions of a form and of the navigator run with a controller -, and the actions
-// it seeds the items with and checks what was stored by
+// the React components a property's and a group's CUSTOM name, and the JS functions INTERNAL CLIENT actions of a form
+// and of the navigator run with a controller -, and the actions it seeds the items with and checks what was stored by
 
 CLASS UiCustomViewItem 'Item';
 uiCustomViewName 'Name' = DATA STRING[50] (UiCustomViewItem);
@@ -112,15 +112,37 @@ FORM uiCustomViewClient 'Client'
     CUSTOMS uiCustomViewAnswer
 ;
 
-// a property a custom cell renderer draws (uiCustomViewCell), which changes it through its controller and calls the
-// server through the form's controller it reaches from there; the platform draws what the server has of it
+// a property a custom cell renderer draws (UiCustomViewCell - a classic render function named as a component is), which
+// changes it through its controller and calls the server through the form's controller it reaches from there; the
+// platform draws what the server has of it
 uiCustomViewCellText 'Cell text' = DATA LOCAL STRING[50] ();
 uiCustomViewCellEcho 'Echo' () = uiCustomViewCellText();
 
 FORM uiCustomViewCell 'Cell'
-    PROPERTIES() uiCustomViewCellText CUSTOM 'uiCustomViewCell'
+    PROPERTIES() uiCustomViewCellText CUSTOM 'UiCustomViewCell'
     PROPERTIES() READONLY uiCustomViewCellEcho
     CUSTOMS uiCustomViewDouble
+;
+
+// properties whose CUSTOM is a React component (UiCustomViewReactCell), which the platform draws with it: the quantity
+// in the grid - read-only for the item of quantity 1 until the count is set, and hidden by the toggle -, the quantity
+// of the current item on the panel, and the count, a property of no group
+uiCustomViewHideCells = DATA LOCAL BOOLEAN ();
+uiCustomViewShowCells () = NOT uiCustomViewHideCells();
+uiCustomViewToggleCells 'Toggle cells' () { uiCustomViewHideCells() <- NOT uiCustomViewHideCells(); }
+uiCustomViewReadOnlyCell (UiCustomViewItem i) = uiCustomViewQuantity(i) = 1 AND NOT (uiCustomViewCount() > 0);
+uiCustomViewCountEcho 'Count echo' () = uiCustomViewCount();
+
+FORM uiCustomViewReactCells 'React cells'
+    OBJECTS i = UiCustomViewItem
+    PROPERTIES(i) READONLY uiCustomViewName
+    PROPERTIES(i) uiCustomViewQuantity CUSTOM 'UiCustomViewReactCell' SHOWIF uiCustomViewShowCells() READONLYIF uiCustomViewReadOnlyCell(i)
+    PROPERTIES(i) PANEL panelQuantity = uiCustomViewQuantity CUSTOM 'UiCustomViewReactCell'
+    PROPERTIES() uiCustomViewCount CUSTOM 'UiCustomViewReactCell'
+    PROPERTIES() READONLY uiCustomViewCountEcho
+    PROPERTIES() uiCustomViewToggleCells
+    FILTERS uiCustomViewShown(i)
+    ORDERS uiCustomViewName(i)
 ;
 
 // an INTERNAL CLIENT action the navigator runs, given 6 and the navigator's controller: through it, the JS function
@@ -146,6 +168,7 @@ NAVIGATOR {
         NEW uiCustomViewCalls;
         NEW uiCustomViewClient;
         NEW uiCustomViewCell;
+        NEW uiCustomViewReactCells;
         NEW uiCustomViewFromNavigator;
     }
 }

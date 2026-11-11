@@ -1297,6 +1297,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     @Override
+    public GFormController getForm() {
+        return form;
+    }
+
+    @Override
     public boolean globalCaptionIsDrawn() {
         return true;
     }

@@ -26,6 +26,11 @@
             entries[name] = { impl: impl, kind: kind };
             if (window[name] === undefined) window[name] = impl; // back-compat alias (don't overwrite an existing global)
         },
+        // whether a name is registered as a React component: what tells a component from a classic render function
+        // where one name can be either - the CUSTOM of a property, of an object group
+        isReactView: function (name) {
+            return name in entries && entries[name].kind === 'reactView';
+        },
         // resolve registry-first; expectedKind is a soft, call-site-supplied check (registration kind is optional).
         get: function (name, expectedKind) {
             var e = entries[name];
@@ -38,6 +43,42 @@
         }
     };
     Object.defineProperty(ns.custom, 'diagnostics', { value: diagnostics }); // internal (non-enumerable)
+
+    // the node the React component of a property's CUSTOM is drawn in, inside a cell the platform draws
+    // (ReactCellRenderer): mounted as it comes into the page and unmounted as it leaves it - a custom element, since
+    // nothing tells a cell that its row or its column is gone: a grid takes them out of the DOM, and a cell is no
+    // widget. A node that is only moved - a <Platform> placing the cell's view, a grid putting its rows in another
+    // order - is taken out and put back at once, so it is unmounted only if it is still out once that is over
+    ns.__createReactCellHost = function (mount, unmount) {
+        var tag = 'lsfusion-react-cell';
+        if (!window.customElements.get(tag)) {
+            function CellHost() { return Reflect.construct(HTMLElement, [], CellHost); }
+            CellHost.prototype = Object.create(HTMLElement.prototype);
+            CellHost.prototype.constructor = CellHost;
+            CellHost.prototype.connectedCallback = function () {
+                if (this.pendingUnmount)
+                    this.pendingUnmount = false;
+                else
+                    this.mountView();
+            };
+            CellHost.prototype.disconnectedCallback = function () {
+                var host = this;
+                host.pendingUnmount = true;
+                Promise.resolve().then(function () {
+                    if (host.pendingUnmount && !host.isConnected) {
+                        host.pendingUnmount = false;
+                        host.unmountView();
+                    }
+                });
+            };
+            window.customElements.define(tag, CellHost);
+        }
+        var host = document.createElement(tag);
+        host.style.display = 'block';
+        host.mountView = mount;
+        host.unmountView = unmount;
+        return host;
+    };
 })();
 
 // CUSTOM REACT hooks + <List>, on the same window.lsfusion namespace. DEFINED here (this script loads before any
