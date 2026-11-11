@@ -351,10 +351,9 @@ numNode(TSQUERY search) = FORMULA INTEGER PG 'numnode($1)';
 
 // ---------------------------------- JSON functions  ---------------------------------- //
 
-// deprecated
-jsonObject (TEXT j, STRING key) = FORMULA STRING '(($1)::json->($2))::varchar';
-jsonArrayLength (TEXT j) = FORMULA INTEGER 'json_array_length(($1)::json)';
-jsonArrayElement (TEXT j, INTEGER i, STRING id) = FORMULA STRING '((($1)::json)->(($2)-1))->>($3)';
+jsonObject (TEXT j, STRING key) = FORMULA STRING '(($1)::json->($2))::varchar' @@deprecated('6.3', 'use field instead, will be removed in 8.0');
+jsonArrayLength (TEXT j) = FORMULA INTEGER 'json_array_length(($1)::json)' @@deprecated('6.3', 'use array instead, will be removed in 8.0');
+jsonArrayElement (TEXT j, INTEGER i, STRING id) = FORMULA STRING '((($1)::json)->(($2)-1))->>($3)' @@deprecated('6.3', 'use fieldText and array instead, will be removed in 8.0');
 
 merge(JSON a, JSON b) = FORMULA JSON 'jsonb_recursive_merge(($1)::jsonb,($2)::jsonb)';
 
