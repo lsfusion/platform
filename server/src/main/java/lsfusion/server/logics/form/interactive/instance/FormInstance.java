@@ -378,7 +378,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 adjNoCancel = heuristicNoCancel(mapObjects);
             else
                 adjNoCancel = options.noCancel;
-        } else { // deprecated ветка, в будущем должна уйти
+        } else { // non-interactive form instance, used only by deprecated createFormInstance(FormEntity), will be removed in 8.0
             adjManageSession = false;
             adjNoCancel = false; // temp
         }
@@ -398,7 +398,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
         environmentIncrementSources = mEnvironmentIncrementSources.immutable();
         
-        if (!interactive) // deprecated ветка, в будущем должна уйти
+        if (!interactive) // non-interactive form instance, used only by deprecated createFormInstance(FormEntity), will be removed in 8.0
             getChanges(stack, context);
 
         processComponent(entity.view.getMainContainer());
@@ -2884,7 +2884,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     // считывает все данные с формы
-    @Deprecated
+    @Deprecated //deprecated since 2.0, will be removed in 8.0
     public FormData getFormData(ImSet<PropertyDrawInstance<?>> propertyDraws, ImSet<GroupObjectInstance> classGroups, LimitOffset limitOffset) throws SQLException, SQLHandledException {
 
         checkNavigatorDeactivated();

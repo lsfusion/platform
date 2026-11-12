@@ -78,7 +78,7 @@ public class AddObjectAction<T extends PropertyInterface, I extends PropertyInte
     }
 
     // not sure that we gonna support this branch
-    @Deprecated
+    @Deprecated //deprecated since 5.0
     protected boolean needDialog() {
         return valueClass instanceof AbstractCustomClass;  // || (forceDialog && valueClass.hasChildren())
     }

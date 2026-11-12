@@ -1341,7 +1341,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         return getRequestCanceledProperty().read(env) != null;
     }
 
-    @Deprecated
+    @Deprecated //deprecated since 5.0, will be removed in 8.0
     public ObjectValue getRequestedValue(Type type, ExecutionEnvironment env, SQLCallable<ObjectValue> request) throws SQLException, SQLHandledException {
         LP<?> targetProp = getRequestedValueProperty().getLP(type);
         if(isRequestPushed(env))

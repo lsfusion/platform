@@ -129,12 +129,12 @@ public class WriteUtils {
         }, ftps);
     }
 
-    @Deprecated
+    @Deprecated //deprecated since 6.1, will be removed in 8.0
     public static void storeFileToSFTP(String path, RawFileData file, String extension) {
         assert extension == null;
         storeFileToSFTP(path, new NamedFileData(file));
     }
-    @Deprecated
+    @Deprecated //deprecated since 6.1, will be removed in 8.0
     public static void storeFileToFTP(String path, RawFileData file, String extension) {
         assert extension == null;
         storeFileToFTP(path, new NamedFileData(file), false);

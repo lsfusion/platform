@@ -77,7 +77,7 @@ public class LogicsInstanceContext extends AbstractContext {
     }
 
     // used in some deprecated actions
-    @Deprecated
+    @Deprecated //deprecated since 2.0, will be removed in 8.0
     @Override
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, ExecutionStack stack, boolean interactive, FormOptions options) throws SQLException, SQLHandledException {
         assert false;

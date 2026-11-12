@@ -211,19 +211,19 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> im
         }
     }
 
-    // deprecated
+    @Deprecated //deprecated since 6.0, will be removed in 8.0
     @SuppressWarnings("unused")
     public void setPanelCaptionVertical(boolean panelCaptionVertical) {
         target.setCaptionVertical(panelCaptionVertical, getVersion());
     }
 
-    // deprecated
+    @Deprecated //deprecated since 6.0, will be removed in 8.0
     @SuppressWarnings("unused")
     public void setPanelCaptionLast(boolean panelCaptionLast) {
         target.setCaptionLast(panelCaptionLast, getVersion());
     }
 
-    // deprecated
+    @Deprecated //deprecated since 6.0, will be removed in 8.0
     @SuppressWarnings("unused")
     public void setPanelCaptionAlignment(FlexAlignment panelCaptionAlignment) {
         target.setCaptionAlignmentHorz(panelCaptionAlignment, getVersion());

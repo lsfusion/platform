@@ -8,7 +8,7 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawIns
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-@Deprecated
+@Deprecated //deprecated since 2.0, will be removed in 8.0
 public class FormRow {
 
     public ImMap<ObjectInstance,Object> keys;

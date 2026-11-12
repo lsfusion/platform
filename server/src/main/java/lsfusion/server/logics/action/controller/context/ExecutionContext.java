@@ -784,12 +784,12 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getBL().LM.isRequestCanceled(getEnv());
     }
 
-    @Deprecated
+    @Deprecated //deprecated since 5.0, will be removed in 8.0
     public ObjectValue requestUser(Type type, SQLCallable<ObjectValue> request) throws SQLException, SQLHandledException {
         return getBL().LM.getRequestedValue(type, getEnv(), request);
     }
 
-    @Deprecated
+    @Deprecated //deprecated since 5.0, will be removed in 8.0
     public ObjectValue requestUserData(final DataClass dataClass, final Object oldValue) {
         try {
             return requestUser(dataClass, () -> {
@@ -834,7 +834,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, interactive, options);
     }
 
-    @Deprecated
+    @Deprecated //deprecated since 2.0, will be removed in 8.0
     public FormInstance createFormInstance(FormEntity formEntity) throws SQLException, SQLHandledException {
         return createFormInstance(formEntity, MapFact.EMPTY(), getSession(), false, new FormOptions(FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, ModalityShowFormType.DIALOG_MODAL, null, null, false, null, false, false, false, null, null));
     }

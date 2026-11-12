@@ -387,10 +387,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         }
 
         public ClassFormEntity getPolyForm(final BaseLogicsModule LM, CustomClass concreteClass) {
-            // deprecated ветка 
-//            if(CustomClass.this instanceof ConcreteCustomClass && !hasPolyForm())
-//                return getForm(LM);
-            
             if(concreteClass == null) // нет объекта вызываем default (по сути если не передается объект)
                 return getForm(LM);
 

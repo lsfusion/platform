@@ -175,7 +175,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.setPanelColumnVertical(panelColumnVertical, getVersion());
     }
 
-    //deprecated
+    @Deprecated //deprecated since 6.0, will be removed in 8.0
     @SuppressWarnings("unused")
     public void setValueAlignment(FlexAlignment valueAlignment) {
         setValueAlignmentHorz(valueAlignment);
