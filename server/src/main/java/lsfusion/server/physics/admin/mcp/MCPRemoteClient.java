@@ -29,7 +29,10 @@ public class MCPRemoteClient {
     private static final Object LOCK = new Object();
     private static volatile String sessionId;
 
-    /** Calls a remote tool and returns the text from its first content item. */
+    /**
+     * Calls a remote tool and returns the text from its first content item. An error result
+     * ({@code isError}) is thrown as a {@link RuntimeException} carrying that text.
+     */
     public static String callRemoteTool(String toolName, JSONObject arguments) {
         return callRemoteTool(toolName, arguments, DEFAULT_TIMEOUT_SECONDS);
     }
@@ -51,7 +54,10 @@ public class MCPRemoteClient {
             sid = ensureSessionId(timeoutSeconds);
             response = doPostJson(body.toString(), timeoutSeconds, sid);
         }
+        return resultText(response);
+    }
 
+    static String resultText(String response) {
         String jsonText = response.trim();
         JSONObject root = new JSONObject(jsonText);
         JSONObject result = root.optJSONObject("result");
@@ -66,7 +72,7 @@ public class MCPRemoteClient {
         if (text == null) {
             throw new RuntimeException("Remote MCP response missing 'text'");
         }
-        if (text.startsWith("Error executing tool")) {
+        if (result.optBoolean("isError")) {
             throw new RuntimeException(text);
         }
         return text;
