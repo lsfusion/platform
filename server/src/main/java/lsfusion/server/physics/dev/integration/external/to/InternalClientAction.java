@@ -56,7 +56,7 @@ public class InternalClientAction extends CallAction {
             exec = commandMatcher.group(1);
         }
 
-        if(!exec.contains(".") && exec.contains("(")) { //backward compatibility
+        if(!exec.contains(".") && exec.contains("(")) { //deprecated since 5.0, will be removed in 8.0: function name with parentheses
            exec = exec.substring(0, exec.indexOf("("));
         }
 

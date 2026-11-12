@@ -13,7 +13,7 @@ import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
 
 public class GCustom extends GTippySimpleStateTableView {
     private final JavaScriptObject renderFunction;
-    private final boolean renderFunctionWithoutArguments; //backward compatibility
+    private final boolean renderFunctionWithoutArguments; //deprecated since 5.0, will be removed in 8.0: render function with arguments (element, list, controller)
 
     public GCustom(GFormController form, GGridController grid, TableContainer tableContainer, String renderFunction) {
         super(form, grid, tableContainer);

@@ -1927,6 +1927,7 @@ public class Settings implements Cloneable {
         this.useUserChangesSync = useUserChangesSync;
     }
 
+    @Deprecated //deprecated since 2.0, removed in 7.0
     private boolean packStatBackwardCompatibility = false;
 
     public boolean isPackStatBackwardCompatibility() {
@@ -2709,6 +2710,7 @@ public class Settings implements Cloneable {
 
     // version for backward compatibility
     // 3 - version: building hierarchy includes groups without properties
+    @Deprecated //deprecated since 4.0, removed in 7.0
     private int backwardCompatibilityVersion = 999999;
 
     public int getBackwardCompatibilityVersion() {

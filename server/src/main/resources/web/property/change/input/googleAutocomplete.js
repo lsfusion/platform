@@ -2,7 +2,7 @@ function googleAutocomplete() {
     return customGoogleAutocomplete();
 }
 
-// backward compatibility
+// deprecated since 5.0, will be removed in 8.0, use googleAutocomplete instead
 function customGoogleAutocomplete() {
     return {
         renderInput: (element, controller) => {

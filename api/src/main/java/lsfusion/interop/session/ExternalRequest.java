@@ -173,7 +173,7 @@ public class ExternalRequest implements Serializable {
 
             String fileName = null;
             if(name != null) {
-                // backward compatibility, NAMEDFILE should be used instead
+                // deprecated since 5.0, will be removed in 8.0: NAMEDFILE should be used instead
                 String[] nameParts = name.split(";");
                 if (nameParts.length >= 2) {
                     name = nameParts[0];

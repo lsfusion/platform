@@ -675,7 +675,7 @@ propertyCustomView returns [String customRenderFunction, String customEditorFunc
 
 propertyEditCustomView returns [String customEditorFunction]
     :
-        // EDIT TEXT is a temporary fix for backward compatibility
+        // EDIT <type> is deprecated since 5.0, will be removed in 8.0, use CHANGE instead
         ('CHANGE' | ('EDIT' primitiveType)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })? // "DEFAULT" is hardcoded and used in GFormController.edit
     ;
 
@@ -4991,7 +4991,7 @@ windowCreateStatement
 		self.addScriptedWindow(isNative, $name.name, $name.caption, $opts.options);
 	}
 }
-    //'TOOLBAR' is backward compatibility in 6.0, will be removed in 7.0
+    //'TOOLBAR' is backward compatibility, deprecated since 6.0, removed in 7.0
 	:	'WINDOW' name=simpleNameWithCaption ('NATIVE' { isNative = true; })? 'TOOLBAR'? opts=windowOptions  ';'
 	;
 
