@@ -882,6 +882,22 @@ console.log('embedding');
         props.children.length === 2 && props.children[0].portal && props.children[0].element === cell
             && props.children[0].view === 'the cell view' && props.children[1].element === other
             && props.children[0].key !== props.children[1].key && flushed === 0, JSON.stringify(props.children));
+    // a grid placed whole brings a cell after a cell: a list made for each of them would be the square of them
+    const lists = [], maps = vm.runInContext('Map', w).prototype, forEach = maps.forEach; // the registry's own Map
+    maps.forEach = function (fn) { lists.push(this); return forEach.call(this, fn); };
+    try {
+        for (let i = 0; i < 5; i++) {
+            const more = { tag: 'more' };
+            embedder.add(more, 'more');
+            embedder.remove(more);
+        }
+        check('the list of what a host embeds is made as the host is drawn, not as each comes or leaves', lists.length === 0, lists.length);
+        check('...once', render(hostOf, () => w.lsfusion.usePlatform('GRID(i)')).children.length === 2
+            && render(hostOf, () => w.lsfusion.usePlatform('GRID(i)')).children.length === 2 && lists.length === 1, lists.length);
+    } finally {
+        maps.forEach = forEach;
+    }
+    flushed = 0;
     check('the same embedder at every render', render(hostOf, () => w.lsfusion.usePlatform('GRID(i)').ref) === props.ref
         && node.lsfEmbedder === embedder);
     check('Platform draws them as the children of its div',

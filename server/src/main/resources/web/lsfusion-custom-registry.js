@@ -231,14 +231,20 @@
         // mounted, with its state, while it waits in the form's park for a place. No context or boundary of the
         // view around the host reaches it
         var committing = 0;
-        var makeEmbedder = function (setPortals) {
-            var portals = new Map(), made = 0;
-            var changed = function () {
-                var drawn = [];
-                portals.forEach(function (portal) { drawn.push(portal); });
-                setPortals(drawn);
-            };
+        var makeEmbedder = function (setChanges) {
+            // the list the host draws is made as the host is drawn, once for all that came and left since: a grid
+            // placed whole brings a cell after a cell, and a list made for each would be the square of them
+            var portals = new Map(), made = 0, changes = 0, drawn = EMPTY, drawnChanges = 0;
+            var changed = function () { setChanges(++changes); };
             return {
+                drawn: function () {
+                    if (drawnChanges !== changes) {
+                        drawn = [];
+                        portals.forEach(function (portal) { drawn.push(portal); });
+                        drawnChanges = changes;
+                    }
+                    return drawn;
+                },
                 add: function (element, view) {
                     portals.set(element, window.ReactDOM.createPortal(view, element, 'embedded' + made++));
                     changed();
@@ -266,8 +272,8 @@
             var held = React.useRef(null); // the ref callback is handed null on detach, so the host is remembered here
             var heldRow = React.useRef(null); // and the row with it, since unmounting has to name the same renderer
             // what the host embeds, where the root's hosts embed at all - a form view's (ReactRoot.Placement.embeds)
-            var portals = React.useState(EMPTY), embedding = React.useRef(null);
-            var embedder = embedding.current || (embedding.current = view && view.embeds ? makeEmbedder(portals[1]) : null);
+            var changes = React.useState(0), embedding = React.useRef(null);
+            var embedder = embedding.current || (embedding.current = view && view.embeds ? makeEmbedder(changes[1]) : null);
             // a name is what a <Platform> IS, and the platform has the same words for a template place without one -
             // without this the name arrives as the string "undefined" and is reported as something that is not a form.
             // Said from INSIDE the callback, and after the hooks above, because the count of hooks a component calls
@@ -325,8 +331,9 @@
             host.ref = ref;
             if (hidden)
                 host.hidden = true;
-            if (portals[0].length)
-                host.children = portals[0];
+            var embedded = embedder ? embedder.drawn() : EMPTY;
+            if (embedded.length)
+                host.children = embedded;
             return host;
         };
         // <Platform name row className style/> is usePlatform on a <div> of its own: the same props, the same dress
