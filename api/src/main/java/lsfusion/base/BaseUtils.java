@@ -2383,7 +2383,7 @@ public class BaseUtils {
             }
         }
     };
-    //backward compatibility
+    @Deprecated //deprecated since 6.0, will be removed in 8.0
     public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
         return executeWithTimeout(callable, timeout != null ? timeout.longValue() : null);
     }

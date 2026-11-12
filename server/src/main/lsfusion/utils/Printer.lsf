@@ -14,15 +14,15 @@ writeToServerSocket (text, charset, ip, port) { writeToSocket(text, charset, ip,
 
 //isClient, path, printerName, trayName, duplex
 printPath INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.printer.PrintFileAction' (BOOLEAN, STRING, STRING, STRING, BOOLEAN);
-printPath '{printer.print.file}' (STRING path, STRING printer, STRING trayName, BOOLEAN duplex) { printPath(TRUE, path, printer, trayName, duplex); }
+printPath '{printer.print.file}' (STRING path, STRING printer, STRING trayName, BOOLEAN duplex) { printPath(TRUE, path, printer, trayName, duplex); } @@deprecated('5.0', 'use the print-tray, print-sides options in the printer param instead of trayName and duplex, will be removed in 8.0');
 printPath '{printer.print.file}' (STRING path) { printPath(TRUE, path, NULL, NULL, NULL); }
-printPathServer '{printer.print.file}' (STRING path, STRING printer, STRING trayName, BOOLEAN duplex) { printPath(NULL, path, printer, trayName, duplex); }
+printPathServer '{printer.print.file}' (STRING path, STRING printer, STRING trayName, BOOLEAN duplex) { printPath(NULL, path, printer, trayName, duplex); } @@deprecated('5.0', 'use the print-tray, print-sides options in the printer param instead of trayName and duplex, will be removed in 8.0');
 
 //isClient, pdfFile, printerName, trayName, duplex
 printFile INTERNAL 'lsfusion.server.physics.dev.integration.external.to.equ.printer.PrintFileAction' (BOOLEAN, PDFFILE, STRING, STRING, BOOLEAN);
-printFile '{printer.print.file}' (PDFFILE file, STRING printer, STRING trayName, BOOLEAN duplex) { printFile(TRUE, file, printer, trayName, duplex); }
+printFile '{printer.print.file}' (PDFFILE file, STRING printer, STRING trayName, BOOLEAN duplex) { printFile(TRUE, file, printer, trayName, duplex); } @@deprecated('5.0', 'use the print-tray, print-sides options in the printer param instead of trayName and duplex, will be removed in 8.0');
 printFile '{printer.print.file}' (PDFFILE file) { printFile(TRUE, file, NULL, NULL, NULL); }
-printFileServer '{printer.print.file}' (PDFFILE file, STRING printer, STRING trayName, BOOLEAN duplex) { printFile(NULL, file, printer, trayName, duplex); }
+printFileServer '{printer.print.file}' (PDFFILE file, STRING printer, STRING trayName, BOOLEAN duplex) { printFile(NULL, file, printer, trayName, duplex); } @@deprecated('5.0', 'use the print-tray, print-sides options in the printer param instead of trayName and duplex, will be removed in 8.0');
 
-//'trayName' and 'duplex' params are retained for backward compatibility. In 'printer' param after printer name you can pass 'print-sides', 'print-tray', 'sheet-collate', 'copies' options semicolon-separated
+//'trayName' and 'duplex' params are deprecated since 5.0, will be removed in 8.0. In 'printer' param after printer name you can pass 'print-sides', 'print-tray', 'sheet-collate', 'copies' options semicolon-separated
 printFile '{printer.print.file}' (BOOLEAN isClient, PDFFILE file, STRING printer) { printFile(isClient, file, printer, NULL, NULL); }

@@ -119,7 +119,7 @@ public class QueryBuilder<K, V> {
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(ExecutionContext context, ImOrderMap<V, Boolean> orders) throws SQLException, SQLHandledException {
         return getQuery().execute(context, orders, LimitOffset.NOLIMIT);
     }
-    //limitOffset backward compatibility
+    @Deprecated //deprecated since 6.0, will be removed in 8.0
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(DataSession session, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
         return getQuery().execute(session, orders, new LimitOffset(selectTop));
     }
@@ -165,7 +165,7 @@ public class QueryBuilder<K, V> {
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(FormInstance formInstance, BaseClass baseClass) throws SQLException, SQLHandledException {
         return getQuery().executeClasses(formInstance, baseClass);
     }
-    //limitOffset backward compatibility
+    @Deprecated //deprecated since 6.0, will be removed in 8.0
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, ImOrderMap<? extends V, Boolean> orders, int selectTop, DataSession dataSession) throws SQLException, SQLHandledException {
         return getQuery().executeClasses(session, orders, new LimitOffset(selectTop), dataSession.baseClass, dataSession.env);
     }

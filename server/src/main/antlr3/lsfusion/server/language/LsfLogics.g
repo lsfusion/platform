@@ -874,7 +874,7 @@ propertySelectView returns [String select]
 
 propertyEditCustomView returns [String customEditorFunction]
     :
-        // EDIT TEXT is a temporary fix for backward compatibility
+        // EDIT <type> is deprecated since 5.0, will be removed in 8.0, use CHANGE instead
         ('CHANGE' | ('EDIT' primitiveType)) { $customEditorFunction = "DEFAULT"; } (editFun=stringLiteral {$customEditorFunction = $editFun.val; })? // "DEFAULT" is hardcoded and used in GFormController.edit
     ;
 

@@ -150,8 +150,8 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
             target.setPropertyCustom((PropertyObjectEntity<?>) custom, getVersion());
     }
     
-    // should not be here. added for USERFILTER component backward compatibility
-    // as USERFILTER component became FILTERS container in v5.0  
+    // USERFILTER component became FILTERS container in v5.0, use REMOVE FILTERS(...) instead
+    @Deprecated //deprecated since 5.0, will be removed in 8.0
     public void setVisible(boolean visible) {
         if (target.getSID().startsWith("FILTERS") && !visible) {
             target.removeFromParent(Version.current());
