@@ -181,7 +181,7 @@ public class CustomCellRenderer extends CellRenderer {
                     value = @GwtClientUtils::UNDEFINED;
                 return @CustomCellRenderer::changeValue(*)(element, updateContext, value, property, renderValueSupplier);
             },
-            changeValue: function (value) { // deprecated
+            changeValue: function (value) { // deprecated since 5.0, will be removed in 8.0, use change instead
                 return this.change(value);
             },
             changeProperty: function (propertyName, object, newValue, type, index, changeValue) { // important that implementation should guarantee that the position of the object should be relevant (match the list)

@@ -839,7 +839,7 @@ formGroupObject returns [GroupObjectEntity groupObject]
 formGroupObjectViewType returns [ClassViewType type, ListViewType listType, PivotOptions options, String customRenderFunction, FormLPUsage customOptions, String mapTileProvider]
 	:	viewType=groupObjectClassViewType { $type = $viewType.type; $listType = $viewType.listType; $options = $viewType.options;
 	                                        $customRenderFunction = $viewType.customRenderFunction; $mapTileProvider = $viewType.mapTileProvider;}
-        (('OPTIONS'| 'HEADER') // HEADER is deprecated! Only for backward compatibility. Use OPTIONS instead.
+        (('OPTIONS'| 'HEADER') // HEADER is deprecated since 6.0, will be removed in 8.0, use OPTIONS instead
                 decl=customOptionsGroupObjectContext { $customOptions = $decl.customOptions; })?
 	;
 

@@ -756,7 +756,7 @@ public class PropertyDrawEntity<P extends PropertyInterface, AddParent extends I
         this.isSelector.set(true, version);
     }
     public void setEventAction(String actionSID, ActionObjectSelector<?> eventAction, Version version) {
-        if(actionSID.equals(CHANGE_WYS)) { // CHANGE_WYS, temp check
+        if(actionSID.equals(CHANGE_WYS)) { // CHANGE_WYS is deprecated since 5.0 and ignored, will be removed in 8.0
             startLog("WARNING! CHANGE_WYS is deprecated, use LIST clause in INPUT / DIALOG operator instead " + this);
             return;
         }

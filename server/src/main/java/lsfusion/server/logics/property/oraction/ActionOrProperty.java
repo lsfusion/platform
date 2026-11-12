@@ -371,7 +371,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     public void setEventAction(String eventActionSID, ActionMapImplement<?, T> eventActionImplement, Version version) {
-        if(eventActionSID.equals(CHANGE_WYS)) { // CHANGE_WYS, temp check
+        if(eventActionSID.equals(CHANGE_WYS)) { // CHANGE_WYS is deprecated since 5.0 and ignored, will be removed in 8.0
             startLog("WARNING! CHANGE_WYS is deprecated, use LIST clause in INPUT / DIALOG operator instead " + this);
             return;
         }
