@@ -422,7 +422,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 adjNoCancel = heuristicNoCancel(mapObjects);
             else
                 adjNoCancel = noCancel;
-        } else { // deprecated ветка, в будущем должна уйти
+        } else { // non-interactive form instance, used only by deprecated createFormInstance(FormEntity), will be removed in 8.0
             adjManageSession = false;
             adjNoCancel = false; // temp
         }
@@ -438,7 +438,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
         environmentIncrementSources = mEnvironmentIncrementSources.immutable();
         
-        if (!interactive) // deprecated ветка, в будущем должна уйти
+        if (!interactive) // non-interactive form instance, used only by deprecated createFormInstance(FormEntity), will be removed in 8.0
             getChanges(stack, context);
         
         processComponent(entity.getRichDesign().getMainContainer());
@@ -1769,7 +1769,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return ((CustomObjectInstance) object).currentClass;
     }
 
-    @Deprecated //removed in 7.0
+    @Deprecated //deprecated since 5.0, removed in 7.0
     public void forceChangeObject(ObjectInstance object, ObjectValue value) throws SQLException, SQLHandledException {
         seekObject(object, value);
     }
@@ -2672,7 +2672,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             readProperties.exclAdd(propertyReader, columnGroupGrids);
     }
 
-    @Deprecated
+    @Deprecated //deprecated since 2.0, removed in 7.0
     public FormData getFormData(int orderTop) throws SQLException, SQLHandledException {
         return getFormData(getProperties(), getGroups(), new LimitOffset(orderTop));
     }
@@ -2682,7 +2682,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     // считывает все данные с формы
-    @Deprecated
+    @Deprecated //deprecated since 2.0, will be removed in 8.0
     public FormData getFormData(ImSet<PropertyDrawInstance<?>> propertyDraws, ImSet<GroupObjectInstance> classGroups, LimitOffset limitOffset) throws SQLException, SQLHandledException {
 
         checkNavigatorDeactivated();

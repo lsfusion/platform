@@ -36,7 +36,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.function.Function;
 
-@Deprecated
+@Deprecated //deprecated since 2.0
 public class IntegrationService {
     private ImportTable table;
     private Collection<ImportProperty<?>> properties;

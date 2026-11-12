@@ -16,7 +16,7 @@ public class MessageClientAction extends ExecuteClientAction {
     public boolean syncType;
 
     // message method should be used instead
-    @Deprecated
+    @Deprecated //deprecated since 6.0, will be removed in 8.0
     public MessageClientAction(String message, String caption) {
         this(message, message, caption, new ArrayList<>(), new ArrayList<>(), MessageClientType.DEFAULT, false);
     }

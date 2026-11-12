@@ -594,7 +594,7 @@ public class ReportGenerator {
         removeZeroWidthElements(design);
     }
 
-    @Deprecated
+    @Deprecated //deprecated since 2.0, removed in 7.0
     public static File exportToXlsx(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
         return exportToFile(generationData, FormPrintType.XLSX, null, null, false, null);
     }

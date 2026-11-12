@@ -3,7 +3,7 @@ package lsfusion.gwt.client.base.jsni;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 
-@Deprecated //merged with GwtClientUtils in 7.0
+@Deprecated //deprecated since 6.2, removed in 7.0 (merged with GwtClientUtils)
 public class JSNIHelper {
 
     private JSNIHelper() {

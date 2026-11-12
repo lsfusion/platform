@@ -70,7 +70,7 @@ import static lsfusion.server.physics.admin.log.ServerLoggers.*;
 public class SecurityManager extends LogicsManager implements InitializingBean {
     private static final Logger systemLogger = ServerLoggers.systemLogger;
 
-    @Deprecated
+    @Deprecated //deprecated since 2.0, will be removed in 8.0
     public static SecurityPolicy baseServerSecurityPolicy = new SecurityPolicy();
 
     private final HashMap<Long, Object> cachedSecuritySemaphores = new HashMap<>();

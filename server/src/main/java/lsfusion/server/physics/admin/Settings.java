@@ -3582,8 +3582,8 @@ public class Settings implements Cloneable {
         this.exportDBFNumericMandatoryZeroes = exportDBFNumericMandatoryZeroes;
     }
 
-    @Deprecated
-    //todo: backward compatibility, will be removed in v7
+    // backward compatibility
+    @Deprecated //deprecated since 6.0, removed in 7.0
     public boolean externalTCPWaitForByteMinusOne = false;
 
     public boolean isExternalTCPWaitForByteMinusOne() {

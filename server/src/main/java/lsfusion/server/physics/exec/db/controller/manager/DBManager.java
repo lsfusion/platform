@@ -894,7 +894,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return createSession();
     }
 
-    @Deprecated
+    @Deprecated //deprecated since 2.0, removed in 7.0
     public DataSession createSession(SQLSession sql) throws SQLException {
         return createSession(sql, null);
     }

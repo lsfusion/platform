@@ -12,7 +12,7 @@ import java.sql.SQLException;
 
 public class InteractiveFormReportManager extends FormReportManager {
 
-    @Deprecated //removed in 7.0
+    @Deprecated //deprecated since 6.2, removed in 7.0
     public InteractiveFormReportManager(FormInstance form) {
         this(form, null, null);
     }
@@ -25,8 +25,8 @@ public class InteractiveFormReportManager extends FormReportManager {
         super(new InteractiveFormReportInterface(form, groupId, treeGroup, preferences));
     }
 
-    // backward compatibility, removed in 7.0
-    @Deprecated
+    // backward compatibility
+    @Deprecated //deprecated since 2.0, removed in 7.0
     public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences preferences) throws SQLException, SQLHandledException {
         return new InteractiveFormReportManager(((InteractiveFormReportInterface)reportInterface).getForm(), groupId, preferences).getReportData(toExcel ? FormPrintType.XLS : FormPrintType.PRINT);
     }

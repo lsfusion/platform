@@ -3,7 +3,7 @@ package lsfusion.base;
 import java.math.BigDecimal;
 import java.util.HashMap;
 
-@Deprecated
+@Deprecated //deprecated since 6.0, removed in 7.0
 public class Words {
 
     public final static int DG_POWER = 6;

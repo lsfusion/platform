@@ -23,12 +23,14 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class ActionOrPropertyUtils {
+    @Deprecated //deprecated since 2.0, removed in 7.0
     public static ValueClass[] getValueClasses(LA<?>[] dataProperties, int[][] mapInterfaces) {
         return getValueClasses(dataProperties, mapInterfaces, true);
     }
 
+    @Deprecated //deprecated since 2.0, removed in 7.0
     public static ValueClass[] getValueClasses(LA<?>[] dataProperties, int[][] mapInterfaces, boolean allowMissingInterfaces) {
-        Map<Integer, ValueClass> mapClasses = new HashMap<>(); // deprecated этот метод скоро уйдет
+        Map<Integer, ValueClass> mapClasses = new HashMap<>();
         for (int i = 0; i < dataProperties.length; ++i) {
             LA<?> dataProperty = dataProperties[i];
 
