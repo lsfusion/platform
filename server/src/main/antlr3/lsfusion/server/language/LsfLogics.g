@@ -5438,10 +5438,9 @@ windowCreateStatement
 		self.addScriptedWindow(isNative, isForms, single, closeDelay, $name.name, $name.caption, $opts.options);
 	}
 }
-    //'TOOLBAR' is backward compatibility in 6.0, will be removed in 7.0
     // FORMS: the window holds forms opened into it with SHOW ... WINDOW <window>, and draws one at a time unless
     // it is TABBED - which is one window in an application, so it is the one that says so
-	:	'WINDOW' name=simpleNameWithCaption ('NATIVE' { isNative = true; } | 'FORMS' { isForms = true; single = true; } (fk=formsKind { single = !$fk.tabbed; })? (fc=formsClose { closeDelay = $fc.delay; })?)? 'TOOLBAR'? opts=windowOptions  ';'
+	:	'WINDOW' name=simpleNameWithCaption ('NATIVE' { isNative = true; } | 'FORMS' { isForms = true; single = true; } (fk=formsKind { single = !$fk.tabbed; })? (fc=formsClose { closeDelay = $fc.delay; })?)? opts=windowOptions  ';'
 	;
 
 // how a FORMS window draws what is opened into it: a tab per form, or one at a time
