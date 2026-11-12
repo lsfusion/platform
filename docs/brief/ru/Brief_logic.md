@@ -280,7 +280,7 @@ sum(OrderDetail d) <- quantity(d) * price(d) WHEN CHANGED(quantity(d)) OR CHANGE
 | объект формы | `CHANGE` |
 | группу объектов | `FILTER`, `ORDER`, `SELECT`, `FILTERS`, `ORDERS` |
 | группу фильтров | `FILTERGROUPS` |
-| свойство или действие | `CHANGE`, `CHANGEWYS`, `GROUPCHANGE`, `EDIT`, `CONTEXTMENU`, `KEYPRESS`, `FILTERS PROPERTY`, `SELECT PROPERTY` |
+| свойство или действие | `CHANGE`, `GROUPCHANGE`, `EDIT`, `CONTEXTMENU`, `KEYPRESS`, `FILTERS PROPERTY`, `SELECT PROPERTY` |
 | контейнер | `EXPAND`, `COLLAPSE`, `TAB` |
 
 Постфиксы `BEFORE` и `AFTER` дают моменты до и после операции. Для событий изменения свойства есть стандартные обработки `READONLY`, `READONLYIF` и `SELECTOR`.

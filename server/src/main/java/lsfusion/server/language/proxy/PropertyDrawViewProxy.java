@@ -499,9 +499,9 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         }
     }
 
+    @Deprecated //deprecated since 7.0, ignored
     @SuppressWarnings("unused")
     public void setBoxed(boolean boxed) {
-        //do nothing in v7, backward compatibility
     }
 
     public void setDefaultValue(Object defaultValue) {

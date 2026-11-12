@@ -435,7 +435,6 @@ In the current platform implementation, `=` is required before an expression or 
 
         - `CHANGE` — the user tries to change the value of the property being added (call the added action). 
         - `CHANGE BEFORE` / `CHANGE AFTER` — occurs directly before (`BEFORE`) or after (`AFTER`) the value of the property being added is changed.
-        - `CHANGEWYS` — the user tries to change the displayed value of the property. It is triggered when the user inserts a text into the added property (by pressing Ctrl + V or similarly). 
         - `GROUPCHANGE` — the user tries to change the property value for all objects in the table (group change).
         - `EDIT` — editing of the object behind the property: its value or an object the property is computed for, as chosen by the [default handler](../paradigm/Form_events.md#default) of this event. An empty handler (`ON EDIT { }`) keeps the `Follow the link` item in the context menu of the property but makes it do nothing.
         - `KEYPRESS key` — the user presses the `key` key, specified with a string literal.

@@ -208,7 +208,6 @@ The methods of the local controller passed to _render_ and _update_, internal he
 | `changeObject(object[, rendered[, element]])` | set the group's current object (see above); given an `element`, show the table's [record](../paradigm/Form_design.md#record) next to it; the `Promise` of its request |
 | `changeProperty(property[, object][, value])` | set a property value, or exec an action — on the current object or a given one (see above); the `Promise` of its request |
 | `batch(fn)` | run `fn`, the `changeProperty` and view filter calls made in it sent together, in one request; the `Promise` of that request |
-| `changeProperties(properties, objects, values)` | deprecated: `changeProperty` calls from parallel arrays, in a `batch` |
 | `getValue(property, object)` | the current property value for the object |
 | `getCaption(property)` | the property caption |
 | `isPropertyReadOnly(property, object)` | whether the property can be edited: `null` — editable, `false` — read-only |
@@ -234,7 +233,7 @@ controller.batch(() => {
 });
 ```
 
-A batch carries changes only: inside `fn`, `getPropertyValues` is refused — its failure callback called, the reason said on the console —, and so is a server call on the form's controller (`controller.form.exec`, `eval`, `evalAction`, `change`), its promise rejected; make them before the batch or after it; and changes only through `changeProperty` and the view filters (`setBooleanViewFilter`, `setDateIntervalViewFilter`), which go with the batch — moving the focus or changing the DOM inside `fn` makes the platform send requests of its own, which a batch is not made for. A function returning a Promise is refused — but not the batch's own, which a `changeProperty` made in `fn` returns —, as in the [form controller](How-to_Custom_view_controller.md#batch)'s `batch`. `changeProperties`, which took the changes as parallel arrays, is deprecated: it makes them in a `batch`.
+A batch carries changes only: inside `fn`, `getPropertyValues` is refused — its failure callback called, the reason said on the console —, and so is a server call on the form's controller (`controller.form.exec`, `eval`, `evalAction`, `change`), its promise rejected; make them before the batch or after it; and changes only through `changeProperty` and the view filters (`setBooleanViewFilter`, `setDateIntervalViewFilter`), which go with the batch — moving the focus or changing the DOM inside `fn` makes the platform send requests of its own, which a batch is not made for. A function returning a Promise is refused — but not the batch's own, which a `changeProperty` made in `fn` returns —, as in the [form controller](How-to_Custom_view_controller.md#batch)'s `batch`.
 
 `getPropertyValues` uses the same `mode` values as the form controller's `<group>.<property>.getValues`, but the property is resolved among this group's columns, and the lookup runs for its current object. The result is delivered to the `ok` callback as `{ data: [ { displayString, rawString, objects }, ... ], more }`. `more` is `true` while more answers are to come — the final list of an answer the server gave before it was sure the form's unsaved changes do not affect it, or a later lookup's answer. An earlier lookup's answer that comes after a later one's is dropped:
 

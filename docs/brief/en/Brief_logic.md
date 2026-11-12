@@ -280,7 +280,7 @@ sum(OrderDetail d) <- quantity(d) * price(d) WHEN CHANGED(quantity(d)) OR CHANGE
 | a form object | `CHANGE` |
 | an object group | `FILTER`, `ORDER`, `SELECT`, `FILTERS`, `ORDERS` |
 | a filter group | `FILTERGROUPS` |
-| a property or an action | `CHANGE`, `CHANGEWYS`, `GROUPCHANGE`, `EDIT`, `CONTEXTMENU`, `KEYPRESS`, `FILTERS PROPERTY`, `SELECT PROPERTY` |
+| a property or an action | `CHANGE`, `GROUPCHANGE`, `EDIT`, `CONTEXTMENU`, `KEYPRESS`, `FILTERS PROPERTY`, `SELECT PROPERTY` |
 | a container | `EXPAND`, `COLLAPSE`, `TAB` |
 
 The `BEFORE` and `AFTER` postfixes give the moments before and after the operation. For the property change events there are the predefined handlers `READONLY`, `READONLYIF` and `SELECTOR`.

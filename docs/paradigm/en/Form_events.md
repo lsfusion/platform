@@ -32,7 +32,6 @@ The `FILTER` and `ORDER` events of an object group also occur when the form read
 
 -   `CHANGE` - the user initiated a property change or action call.
 -   `CHANGE BEFORE` / `CHANGE AFTER` - occurs on the form immediately before or after the value of a specific property changes.
--   `CHANGEWYS` - the user initiated a WYSIWYG property change using the PASTE operation or a special input mechanism.
 -   `GROUPCHANGE` - the user initiated a property change for all objects in the table.
 -   `EDIT` - the user initiated editing of the object behind the property: its value or an object the property is computed for (see the [default handler](#default)). It is triggered by the F9 key on the property, by a double click on a property that has no change handler and no custom renderer, by a click on it in the link mode of the web client (the Ctrl key held down, or the link mode chosen with the edit-mode button on the toolbar), or by the `Follow the link` item of its context menu.
 -   `CONTEXTMENU [caption]` - the user selected the specified item in the context menu of a property (action) on the form. If necessary, you can also define the caption of this menu item ([string literal](Constant.md)). If it is not specified, then, by default, it will be the same as the action caption.
@@ -130,14 +129,14 @@ For an *object request* from the user, depending on the type of class, the follo
 
 ### Standard handlers {#predefined}
 
-For properties and actions on the form, it is also possible to define the following *standard* change event handlers (`CHANGE`, `CHANGEWYS`, `GROUPCHANGE`):
+For properties and actions on the form, it is also possible to define the following *standard* change event handlers (`CHANGE`, `GROUPCHANGE`):
 
 -   *Read Only* (`READONLY`) - if the property is displayed in the table, the handler will be similar to `CHANGE` default handler when the property is not mutable (that is, the user filter mechanism will be called). If the property is not displayed in the table, nothing will happen. You can also make this option conditional (`READONLYIF`) (that is, change only if the value of some property is not `NULL`).
 -   *Selector* (`SELECTOR`) - when you try to make a change, a dialog will be shown in which the user will be asked to change the current value of the object.
 
 ### Change source {#source}
 
-Inside a property's change event handler (`CHANGE`, `CHANGEWYS`, `GROUPCHANGE`, `EDIT`), the developer can read the `System.eventSource[]` property to find out what triggered the change. Before the handler runs, the platform sets it to one of the following values:
+Inside a property's change event handler (`CHANGE`, `GROUPCHANGE`, `EDIT`), the developer can read the `System.eventSource[]` property to find out what triggered the change. Before the handler runs, the platform sets it to one of the following values:
 
 | Value | Change source |
 | --- | --- |

@@ -271,7 +271,6 @@ To access design components, you can use their names or address property compone
 
 |Property name|Description|Value type|Default value|Examples|
 |---|---|---|---|---|
-|`boxed`|Drawing a frame (box) around a component|Logical literal|`TRUE`|`TRUE`<br/>`FALSE`|
 |`tabVertical`|Specifying that focus will be moved from top to bottom (not from left to right)|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`quickSearch`|Specifying that the table will support quick element search|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`headerHeight`|Header height in pixels**deprecated since version 6, use `captionHeight`**|Integer literal|`NULL`|`60`|

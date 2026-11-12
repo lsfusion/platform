@@ -71,7 +71,6 @@ EXTID extID
 
                 If not specified, the handler runs on the change attempt itself and replaces the default handler.
 
-        - `CHANGEWYS` - occurs when the user tries to change the value of the specified property using a special input mechanism. You can read more in the description of the [form events](../paradigm/Form_events.md).
         - `GROUPCHANGE` - occurs when the user tries to change the property value for all objects in the table (group editing).
         - `EDIT` - occurs when the user tries to edit the object that is the value of the specified property.
         - `CONTEXTMENU [caption]` - the user has selected the specified item in the property context menu on the form.

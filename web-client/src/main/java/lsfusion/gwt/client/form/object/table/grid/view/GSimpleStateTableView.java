@@ -751,7 +751,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             changeDateProperty: function (property, object, year, month, day) {
                 return changeProperty(property, object, new Date(year, month - 1, day))
             },
-            //todo deprecated. use batch with changeProperty instead
+            // deprecated since 7.0, use batch with changeProperty instead
             changeProperties: function (properties, objects, newValues) {
                 return thisObj.@GSimpleStateTableView::changeJSProperties(*)(properties, objects, newValues);
             },

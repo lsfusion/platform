@@ -11,11 +11,11 @@ The *value request* operator creates an [action](Actions.md) in which *requestin
 
 - PASTE
 
-    When the user inserts a value into a property cell using the OS tools, the platform triggers a WYSIWYG event to change this property (`CHANGEWYS`), and calls the corresponding handler on the server. In this case, the value that the user inserted is pushed as the request value.
+    When the user inserts a value into a property cell using the OS tools, the platform triggers the change event of this property (`CHANGE`), and calls the corresponding handler on the server. In this case, the value that the user inserted is pushed as the request value.
 
 <a className="lsdoc-anchor" id="defaultChange"/>
 
-- Change event (`CHANGEWYS` and `CHANGE`) [default handler](Form_events.md#default) for composition
+- Change event (`CHANGE`) [default handler](Form_events.md#default) for composition
 
     If a property being changed is created using the [composition](Composition_JOIN.md) operator with one argument (most often a name or ID), and change event handler is not explicitly defined for it, the platform automatically creates this handler as follows: 
 
@@ -23,12 +23,8 @@ The *value request* operator creates an [action](Actions.md) in which *requestin
 
         The user is [requested](Form_events.md#queryValue) an object of the property value class which is used as an argument, after which the value of this property changes to the received object 
 
-    - CHANGEWYS
-
-        The user is requested for an object of the class of the value of the edited property, after which the platform finds the first object which composition property value is equal to the value input by the user and then changes the value of the property used as an argument to this object.
-
   :::info
-    In both cases, a property change means calling the `CHANGE` event handler, while the value to which the property changes is pushed as the request value.
+    Here a property change means calling the `CHANGE` event handler, while the value to which the property changes is pushed as the request value.
   :::
 
     Creating such default handlers allows to use PASTE "out of the box" for properties whose values belong not only to built-in but also to custom classes.
