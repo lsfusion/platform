@@ -1983,7 +1983,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
         return new PropertyDrawView<>(this, mapping);
     }
 
-    @Deprecated //since 7.0; backward compatibility
+    @Deprecated //deprecated since 7.0
     public LocalizedString getCaption() {
         return entity.getCaption();
     }

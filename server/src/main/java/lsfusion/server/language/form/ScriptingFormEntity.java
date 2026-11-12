@@ -883,7 +883,7 @@ public class ScriptingFormEntity {
         return form.addPropertyObject((LA)prop.property, prop.mapping);
     }
 
-    @Deprecated // since version 7, use addScriptedFilters (FILTERS USER)
+    @Deprecated //deprecated since 7.0, use addScriptedFilters (FILTERS USER)
     public void addScriptedUserFilters(List<PropertyDrawEntity> properties, Version version) {
         for (PropertyDrawEntity property : properties) {
             form.addUserFilter(property, version);

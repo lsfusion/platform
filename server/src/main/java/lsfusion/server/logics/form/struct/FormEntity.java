@@ -1215,7 +1215,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
     public FormView view;
 
-    @Deprecated //backward compatibility
+    @Deprecated //deprecated since 7.0
     public FormView getRichDesign() {
         return view;
     }

@@ -39,11 +39,11 @@ public class ScreenShotAction extends SystemExplicitAction {
 
             ContainerView container;
             if (containerSID != null) {
-                container = formInstance.entity.getRichDesign().getContainerBySID(containerSID);
+                container = formInstance.entity.view.getContainerBySID(containerSID);
                 if (container == null)
                     throw new RuntimeException("SCREENSHOT: container '" + containerSID + "' not found in form '" + formInstance.entity.getCanonicalName() + "'");
             } else {
-                container = formInstance.entity.getRichDesign().getMainContainer();
+                container = formInstance.entity.view.getMainContainer();
                 if (container == null)
                     throw new RuntimeException("SCREENSHOT FORM: form '" + formInstance.entity.getCanonicalName() + "' has no main container");
             }

@@ -22,7 +22,7 @@ public class RequestResult {
         this(ListFact.singleton(chosenValue), type, targetProp);
     }
 
-    @Deprecated
+    @Deprecated //deprecated since 7.0
     public static ImList<RequestResult> get(ObjectValue chosenValue, Type type, LP targetProp) {
         if(chosenValue == null) // cancel
             return null;

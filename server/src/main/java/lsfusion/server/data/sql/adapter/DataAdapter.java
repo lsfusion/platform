@@ -664,7 +664,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         throw new UnsupportedOperationException();
     }
 
-    @Deprecated //backward compatibility
+    @Deprecated //deprecated since 7.0
     public void ensureScript(String script, Properties props) throws IOException {
         String scriptString = readResource(getPath() + script);
         executeEnsure(stringResolver.replacePlaceholders(scriptString, props), null);
