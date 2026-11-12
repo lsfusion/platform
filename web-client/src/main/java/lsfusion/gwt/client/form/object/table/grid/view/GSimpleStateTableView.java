@@ -791,7 +791,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
                 thisObj.@GSimpleStateTableView::changeJSProperty(*)(property, object, newValue);
             },
-            //todo deprecated. use changeProperty instead
+            // deprecated since 6.0, will be removed in 8.0, use changeProperty instead
             changeDateProperty: function (property, object, year, month, day) {
                 return changeProperty(property, object, new Date(year, month - 1, day))
             },
@@ -944,7 +944,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return element.caption;
     }-*/;
 
-    // icon - deprecated
+    // icon is deprecated since 6.0, will be removed in 8.0, use image instead
     private static native BaseImage getElementImage(JavaScriptObject element)/*-{
         return element.image ? element.image : (element.icon ? @lsfusion.gwt.client.base.AppLinkImage::new(Ljava/lang/String;Ljava/lang/String;)(element.icon, "") : null);
     }-*/;

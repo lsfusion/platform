@@ -487,7 +487,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         return element.polygon;
     }-*/;
 
-    // name - deprecated
+    // name is deprecated since 6.0, will be removed in 8.0, use tooltip instead
     protected native static String getName(JavaScriptObject element)/*-{
         return element.tooltip ? element.tooltip.toString() : (element.name ? element.name.toString() : null);
     }-*/;
