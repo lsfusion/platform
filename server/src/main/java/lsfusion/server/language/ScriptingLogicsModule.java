@@ -3459,6 +3459,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LPWithParams> whereProps = whereProp != null ? singletonList(whereProp) : Collections.emptyList();
 
         List<LPWithParams> lpWithParams = mergeLists(groupProps, mainProps, orderProps, whereProps);
+        if(!groupProps.isEmpty()) // with BY an upper parameter used only in TOP / OFFSET still has to be an interface of the result
+            lpWithParams = mergeLists(lpWithParams, selectTop.getParams());
         List<Integer> resultInterfaces = getResultInterfaces(oldContextSize, lpWithParams.toArray(new LAPWithParams[lpWithParams.size()]));
 
         List<LPWithParams> allGroupProps = getAllGroupProps(resultInterfaces, groupProps, true);
@@ -3480,18 +3482,42 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if(!selectTop.isEmpty()) { // optimization
             List<LPWithParams> mapping = new ArrayList<>();
-            for(int resultInterface : resultInterfaces)
-                mapping.add(new LPWithParams(resultInterface));
-
-            mapping.addAll(selectTop.getParams());
+            if(groupProps.isEmpty()) {
+                for(int resultInterface : resultInterfaces)
+                    mapping.add(new LPWithParams(resultInterface));
+                mapping.addAll(selectTop.getParams());
+            } else {
+                for(int i = 0; i < allGroupProps.size(); i++)
+                    mapping.add(new LPWithParams(i));
+                mapping.addAll(mapParamsToPositions(selectTop.getParams(), allGroupProps));
+            }
 
             LPWithParams lgp = addScriptedJProp(gProp, mapping);
 
             gProp = lgp.getLP();
-            resultInterfaces = lgp.usedParams;
+            if(groupProps.isEmpty())
+                resultInterfaces = lgp.usedParams;
         }
 
         return new LPContextIndependent(gProp, getParamClassesByParamProperties(allGroupProps, newContext), resultInterfaces);
+    }
+
+    private static List<LPWithParams> mapParamsToPositions(List<LPWithParams> props, List<LPWithParams> allGroupProps) {
+        Map<Integer, Integer> positions = new HashMap<>();
+        for(int i = 0; i < allGroupProps.size(); i++) {
+            LPWithParams groupProp = allGroupProps.get(i);
+            if(groupProp.getLP() == null)
+                positions.put(groupProp.usedParams.get(0), i);
+        }
+
+        List<LPWithParams> result = new ArrayList<>();
+        for(LPWithParams prop : props) {
+            List<Integer> usedPositions = new ArrayList<>();
+            for(int param : prop.usedParams)
+                usedPositions.add(positions.get(param));
+            result.add(new LPWithParams(prop.getLP(), usedPositions));
+        }
+        return result;
     }
 
     // ci - надо в дырки вставлять, от использованных, если не ci то в конце

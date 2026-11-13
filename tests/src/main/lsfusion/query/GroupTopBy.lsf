@@ -1,0 +1,93 @@
+MODULE GroupTopBy;
+
+REQUIRE TestUtils;
+
+// GROUP with BY takes TOP and OFFSET, constant or given by an upper parameter (#1989: it failed to load whenever it had both)
+
+CLASS GroupTopByTeam 'Team';
+CLASS GroupTopByGame 'Game';
+gtbTeam 'Team' = DATA GroupTopByTeam (GroupTopByGame);
+gtbDate 'Date' = DATA DATE (GroupTopByGame);
+gtbSeason 'Season' = DATA INTEGER (GroupTopByGame);
+gtbGoals 'Goals' = DATA INTEGER (GroupTopByGame);
+
+gtbLastTwo (GroupTopByTeam t) = GROUP SUM gtbGoals(GroupTopByGame g) ORDER DESC gtbDate(g), g TOP 2 BY gtbTeam(g);
+gtbSecondLast (GroupTopByTeam t) = GROUP SUM gtbGoals(GroupTopByGame g) ORDER DESC gtbDate(g), g TOP 1 OFFSET 1 BY gtbTeam(g);
+gtbLast (GroupTopByTeam t, INTEGER n) = GROUP SUM gtbGoals(GroupTopByGame g) ORDER DESC gtbDate(g), g TOP n BY gtbTeam(g);
+gtbLastBefore (GroupTopByTeam t, INTEGER n, DATE d) = GROUP SUM gtbGoals(GroupTopByGame g) IF gtbDate(g) < d ORDER DESC gtbDate(g), g TOP n BY gtbTeam(g);
+gtbLastInSeason (GroupTopByTeam t, INTEGER n, INTEGER s) = GROUP SUM gtbGoals(GroupTopByGame g) ORDER DESC gtbDate(g), g TOP n BY gtbTeam(g), gtbSeason(g);
+gtbGameGoals (GroupTopByGame g, INTEGER n) = GROUP SUM gtbGoals(GroupTopByGame x) ORDER gtbDate(x) TOP n BY x;
+
+gtbNewGame (GroupTopByTeam t, DATE d, INTEGER season, INTEGER goals) {
+    NEW g = GroupTopByGame {
+        gtbTeam(g) <- t;
+        gtbDate(g) <- d;
+        gtbSeason(g) <- season;
+        gtbGoals(g) <- goals;
+    }
+}
+
+// four games scoring 1 to 4 goals in the order of their dates, the first two in season 1, the other two in season 2
+gtbNewGames (GroupTopByTeam t) {
+    gtbNewGame(t, 2026_01_01, 1, 1);
+    gtbNewGame(t, 2026_01_02, 1, 2);
+    gtbNewGame(t, 2026_01_03, 2, 3);
+    gtbNewGame(t, 2026_01_04, 2, 4);
+}
+
+testGroupTopByConstant 'GROUP ... TOP ... BY with constant TOP and OFFSET' () {
+    NEW t = GroupTopByTeam {
+        NEW other = GroupTopByTeam {
+            gtbNewGames(t);
+            gtbNewGame(other, 2026_01_05, 1, 10);
+            assertEquals(gtbLastTwo(t), 7, 'TOP 2: the last two games');
+            assertEquals(gtbLastTwo(other), 10, 'TOP 2: the only game of another team');
+            assertEquals(gtbSecondLast(t), 3, 'TOP 1 OFFSET 1: the game before the last one');
+            assertNull(gtbSecondLast(other), 'TOP 1 OFFSET 1: a team with one game');
+        }
+    }
+}
+
+testGroupTopByParameter 'GROUP ... TOP ... BY with TOP given by an upper parameter' () {
+    NEW t = GroupTopByTeam {
+        NEW other = GroupTopByTeam {
+            gtbNewGames(t);
+            gtbNewGame(other, 2026_01_05, 1, 10);
+            assertEquals(gtbLast(t, 1), 4, 'TOP 1');
+            assertEquals(gtbLast(t, 3), 9, 'TOP 3');
+            assertEquals(gtbLast(other, 2), 10, 'TOP 2 of another team');
+            assertEquals(gtbLastBefore(t, 2, 2026_01_04), 5, 'TOP 2 before a date');
+            assertEquals(gtbLastBefore(t, 1, 2026_01_03), 2, 'TOP 1 before another date');
+        }
+    }
+}
+
+testGroupTopBySeveralBy 'GROUP ... TOP ... BY with the TOP parameter between the BY values' () {
+    NEW t = GroupTopByTeam {
+        gtbNewGames(t);
+        assertEquals(gtbLastInSeason(t, 1, 1), 2, 'TOP 1 of season 1');
+        assertEquals(gtbLastInSeason(t, 2, 1), 3, 'TOP 2 of season 1');
+        assertEquals(gtbLastInSeason(t, 1, 2), 4, 'TOP 1 of season 2');
+    }
+}
+
+testGroupTopByParameterBy 'GROUP ... TOP ... BY a parameter' () {
+    NEW t = GroupTopByTeam {
+        gtbNewGames(t);
+        assertEquals((GROUP SUM gtbGameGoals(GroupTopByGame g, 1) IF gtbTeam(g) = t), 10, 'each game by itself');
+    }
+}
+
+// n, used only in TOP, follows a parameter the GROUP does not use, so it is not at its own index among the GROUP's interfaces
+gtbCheckInline (GroupTopByTeam other, GroupTopByTeam t, INTEGER n) {
+    assertEquals([GROUP SUM gtbGoals(GroupTopByGame g) ORDER DESC gtbDate(g), g TOP n BY gtbTeam(g)](t), 7, 'inline [GROUP ... TOP n BY ...](t)');
+}
+
+testGroupTopByInline 'inline GROUP ... TOP ... BY with TOP given by an upper parameter' () {
+    NEW t = GroupTopByTeam {
+        NEW other = GroupTopByTeam {
+            gtbNewGames(t);
+            gtbCheckInline(other, t, 2);
+        }
+    }
+}
