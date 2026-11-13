@@ -371,6 +371,7 @@ public class ClientComponentToGwtConverter extends CachedFormObjectConverter {
 
         propertyDraw.inline = clientPropertyDraw.inline;
         propertyDraw.isList = clientPropertyDraw.isList;
+        propertyDraw.explicitCustom = clientPropertyDraw.explicitCustom;
 
         propertyDraw.drawAsync = clientPropertyDraw.drawAsync;
 

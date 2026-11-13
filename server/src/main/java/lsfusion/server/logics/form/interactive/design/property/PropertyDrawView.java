@@ -599,6 +599,7 @@ public class PropertyDrawView<P extends PropertyInterface, AddParent extends Ide
 
         pool.writeObject(outStream, getInline());
         outStream.writeBoolean(entity.isList(pool.context));
+        outStream.writeBoolean(hasExplicitCustom());
 
         pool.writeObject(outStream, getFocusable());
         outStream.writeByte(entity.getEditType().serialize());

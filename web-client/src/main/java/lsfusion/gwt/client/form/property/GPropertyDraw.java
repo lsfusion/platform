@@ -93,6 +93,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, GPrope
     public Boolean inline;
 
     public boolean isList;
+    // whether the form gives it a view of its own, the platform's - the standard one (NOCUSTOM) or a CUSTOM render
+    // function (PropertyDrawEntity.hasExplicitCustom): what a React component of its group's CUSTOM does not draw but
+    // places, in each row (GReactFormData.GroupViewState) - where a view of the form draws the rows, the server says it
+    // (isPlatformDrawnPerRow)
+    public boolean explicitCustom;
 
     public boolean isPlatformDrawnPerRow() {
         return isPlatformDrawn() && isList;

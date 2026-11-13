@@ -98,6 +98,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Boolean inline;
 
     public boolean isList;
+    public boolean explicitCustom; // the form gives it a view of its own, the web client's to use (GPropertyDraw)
 
     public ClientType baseType; // cellType
     public ClientType valueType;
@@ -590,6 +591,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         inline = pool.readObject(inStream);
         isList = inStream.readBoolean();
+        explicitCustom = inStream.readBoolean();
 
         focusable = pool.readObject(inStream);
         editType = PropertyEditType.deserialize(inStream.readByte());
