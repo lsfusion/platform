@@ -15,7 +15,7 @@ CONCAT separatorExpr, concatExpr1, ..., concatExprN
 
 The `CONCAT` operator creates a property that concatenates the values of `concatExpr1, ..., concatExprN`, in the order written, placing the `separatorExpr` separator between them. The handling of the separator and of `NULL` operands follows the [`CONCAT` concatenation](../paradigm/String_operators_plus_CONCAT_SUBSTRING.md).
 
-The first operand is always the separator, even when it is meant as a prefix: `CONCAT 'Total: ', 'a', 'b'` gives `'aTotal: b'`, not `'Total: ab'`. Text at the start or at the end of the result is written as an ordinary operand with an empty separator (`CONCAT '', 'Total: ', 'a', 'b'`) or added with the [`+` operator](Arithmetic_operators.md) (`'Total: ' + CONCAT ', ', 'a', 'b'`).
+The first operand is always the separator, even when it is meant as a prefix: `CONCAT 'Total: ', 'a', 'b'` gives `'aTotal: b'`, not `'Total: ab'`. Text at the start or at the end of the result is written as an ordinary operand with an empty separator (`CONCAT '', 'Total: ', 'a', 'b'`) or added with the [`+` operator](Arithmetic_operators.md) (`'Total: ' + CONCAT ', ', 'a', 'b'`). An operator written after the last operand belongs to that operand, not to the result: text after the whole result is added as `(CONCAT ', ', 'a', 'b') + '.'`.
 
 ### Parameters
 

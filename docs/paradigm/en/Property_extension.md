@@ -43,7 +43,7 @@ This makes the extension contract stronger: when more specific cases are added, 
 
 Each implementation of an abstract property has its own parameter signature and its own result class. The platform matches them against the contract of the abstract property.
 
-An implementation must not narrow the signature of the abstract property. In particular, in the explicit conditional form this usually means that all parameters must participate either in the selection condition or in the result calculation. Otherwise such an implementation will have a narrower signature and will not be able to extend the abstract property correctly.
+An implementation must not narrow the signature of the abstract property. In the explicit conditional form the selection condition alone decides for which arguments the implementation applies: a parameter that neither the condition nor the result uses does not narrow it, so the implementation applies for any value of that parameter.
 
 ### Polymorphic form {#poly}
 

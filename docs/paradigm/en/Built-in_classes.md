@@ -207,7 +207,7 @@ Values of classes other than files of a specific type can also be cast into a fi
 
 ## Result properties {#export}
 
-The platform declares one *result property* for each built-in class - a property without parameters that holds a value of that class. An action [called from an external system](Access_from_an_external_system.md#httpresult) passes its result to the response through them: unless the request names the properties to return, or the action has a result of its own, the response contains the value of the first property in the list below that is not `NULL`. The list is read from top to bottom. If the values of all these properties are `NULL`, the response is empty.
+The platform declares one *result property* for each built-in class - a property without parameters that holds a value of that class. An action [called from an external system](Access_from_an_external_system.md#httpresult) passes its result to the response through them: unless the request names the properties to return, or the action has a result of its own, the response contains the value of the first property in the list below that is not `NULL`. The list is read from top to bottom. If the values of all these properties are `NULL`, the response is empty. `exportFile[]` takes a value of the `FILE` class only, so a file of a specific class (`IMAGEFILE`, `PDFFILE` and so on) is written to the property of that class or [converted](Type_conversion.md) to `FILE` first, while `exportRawFile[]` takes a file of any specific class and returns it without an extension.
 
 |Class name|Property name|
 |---|---|
