@@ -5,12 +5,14 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableComponent;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 
 import java.util.ArrayList;
+import java.util.List;
 
 // THE VIEW the platform draws a TABLE's rows in (GPlatformTableController.view): a grid's - the list view it shows
 // (GListView) -, or a tree (GTreeTable). What the form sends for the table's rows and properties goes to it, a
@@ -80,6 +82,15 @@ public interface GTableView extends TableComponent {
     void updateLoadings(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
     void updatePropertyFooters(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
     void updateReadOnlyValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values);
+    // what the platform's own views draw none of - a column's comment, a cell's default value -, and the group's view
+    // filters as the form has them, which a view of the platform's states itself and keeps: a React component of
+    // the group's CUSTOM draws from them (GReactCustom)
+    default void updatePropertyComments(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+    }
+    default void updateDefaultValueValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+    }
+    default void changeViewFilters(List<GPropertyFilter> conditions) {
+    }
     default void updateShowIfValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
     default void updateLastValues(GPropertyDraw property, int index, NativeHashMap<GGroupObjectValue, PValue> values) {

@@ -213,7 +213,7 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
 
             A more detailed description of the mechanism can be found in the article [How-to: Custom Components (Objects)](../how-to/How-to_Custom_components_objects.md).
 
-            The name can also be that of a React component registered on the client with the kind `reactView`. The web client then displays the data with the component: it is given what `update` is given — the list and the options as `props.data.list` and `props.data.options`, and the controller as `props.controller`.
+            The name can also be that of a React component registered on the client with the kind `reactView`. The web client then displays the data with the component: it is given the rows of the object group with the values of its properties as `props.data.list`, the options as `props.data.options`, and a controller of the object group as `props.controller`.
 
 - `OPTIONS optionsExpr`
 

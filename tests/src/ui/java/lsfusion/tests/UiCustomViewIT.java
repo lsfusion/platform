@@ -286,18 +286,22 @@ public class UiCustomViewIT extends UiTest {
         close(form);
     }
 
-    // a group's CUSTOM that is a React component: it draws the rows it is given, with the group's OPTIONS, and changes
-    // the current object and a row's value through the classic controller of a custom view; the grid switched to the
-    // table and back draws it again
+    // a group's CUSTOM that is a React component: it draws the group as a view that draws its grid is given it - the
+    // rows by their keys, each cell with its value and whether it can be changed, the properties' names and captions,
+    // the group's OPTIONS -, and changes the current object and a row's value through the group's member, the row
+    // named by itself or by its key; the grid switched to the table and back draws it again
     @Test
-    public void reactCustomGroupUsesClassicRowsAndSwitchesViews() throws Exception {
+    public void reactCustomGroupIsGivenTheGroupAsAViewAndSwitchesViews() throws Exception {
         String[] items = seed();
         Locator form = open(FOLDER, "UiCustomView.uiCustomViewReactGroup");
         Locator cards = form.locator(".ui-custom-cards");
         assertThat(cards).containsText("Cards");
+        assertThat(cards).hasAttribute("data-properties", "uiCustomViewName,uiCustomViewQuantity,uiCustomViewBump");
         Locator rows = cards.locator(".ui-custom-card");
         assertThat(rows).hasCount(2);
         Locator second = rows.nth(1);
+        assertThat(second).hasAttribute("data-name-read-only", "true");
+        assertThat(second.locator(".ui-custom-card-quantity")).hasAttribute("title", "Quantity");
         second.getByText(items[1]).click();
         assertThat(second).hasAttribute("data-current", "true");
         second.locator(".ui-custom-card-quantity").click();
@@ -310,8 +314,14 @@ public class UiCustomViewIT extends UiTest {
         assertThat(cards).containsText("Cards");
         assertThat(rows.nth(1).locator(".ui-custom-card-quantity")).hasText("12");
 
+        // the key of an action of the rows runs it for the current row, as where a view draws the grid
+        rows.first().getByText(items[0]).click();
+        assertThat(rows.first()).hasAttribute("data-current", "true");
+        page.keyboard().press("F9");
+        assertThat(rows.first().locator(".ui-custom-card-quantity")).hasText("101");
+
         form.locator("button[lsfusion-container='PROPERTY(formApply())']").click();
-        check("UiCustomView.uiCustomViewCheckQuantity", items[0], "1");
+        check("UiCustomView.uiCustomViewCheckQuantity", items[0], "101");
         check("UiCustomView.uiCustomViewCheckQuantity", items[1], "12");
         close(form);
     }

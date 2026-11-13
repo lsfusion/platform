@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 
+
 // a component that is not a container whose custom is a React component (window[fn], fn = the custom): the component
 // draws what this one shows of its group or its tree - a grid's or a tree's rows, a toolbar's buttons, the filter
 // controls, a filter group - from the form's projection, its props { data, controller } (GReactFormData), as a react
@@ -23,19 +24,25 @@ public class ReactBaseComponentView {
 
     public ReactBaseComponentView(GFormController formController, GComponent component) {
         GReactFormData.ViewState state = formController.addReactView(component, this::updateData);
-        root = new ReactRoot(component.getCustom(), state.controller, new ReactViewPlacement(formController, state) {
+        root = new ReactRoot(component.getCustom(), state.controller, rowsPlacement(formController, state, component.getCustom()));
+        formController.getFormLayout().mountReactView(root, panel, panel.getElement());
+    }
+    // what the view of a component that is no container places - this one, and the React component of a group's
+    // CUSTOM, a view of the platform's grid (GReactCustom): the renderers of its rows, nothing whole
+    public static ReactRoot.Placement rowsPlacement(GFormController formController, GReactFormData.ViewState state, String custom) {
+        String sID = state.scope.sID;
+        return new ReactViewPlacement(formController, state) {
             // a name given no row names nothing to place here: the view places only the renderers of its rows
             @Override
             PlatformPlacement placeView(String name) {
                 return new FailedPlatformPlacement(new PlacedViews.Problem(
-                        "'" + name + "' is not placed by '" + component.sID + "'",
-                        "the React view of '" + component.sID + "' places nothing whole, only the per-row renderers of"
+                        "'" + name + "' is not placed by '" + sID + "'",
+                        "the React view of '" + sID + "' places nothing whole, only the per-row renderers of"
                                 + " the platform-drawn grid properties of the rows it draws, given a row: what is to be"
                                 + " placed whole is placed by a container around it - NEW board { custom = '"
-                                + component.getCustom() + "'; MOVE " + component.sID + "; }"));
+                                + custom + "'; MOVE " + sID + "; }"));
             }
-        });
-        formController.getFormLayout().mountReactView(root, panel, panel.getElement());
+        };
     }
 
     public Widget getView() {

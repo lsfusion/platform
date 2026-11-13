@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.form.design.view;
 
+import lsfusion.gwt.client.form.object.panel.controller.GPlatformRowsPanelController;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -118,7 +120,10 @@ abstract class ReactViewPlacement implements ReactRoot.Placement {
 
         @Override
         void unmount(Element host) {
-            formController.getRowsPanelController(property).unplace(rowKey, property, host);
+            // none where the rows' view went before React took its hosts down - a grid's view switched (GReactCustom)
+            GPlatformRowsPanelController rowsPanelController = formController.getRowsPanelController(property);
+            if (rowsPanelController != null)
+                rowsPanelController.unplace(rowKey, property, host);
         }
     }
     // ... and one that can never work: its mistake is shown in the host, which holds it until the host goes

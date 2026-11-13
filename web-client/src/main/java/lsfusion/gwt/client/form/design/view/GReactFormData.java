@@ -6,10 +6,13 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
@@ -22,6 +25,7 @@ import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.form.design.ReactProjectionNames;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -247,10 +251,99 @@ public class GReactFormData {
 
     // a React view's state, made with the view, and its controller with it
     public ViewState addView(GComponent scope, Consumer<JavaScriptObject> publish) {
-        ViewState state = new ViewState(scope, publish);
+        ViewState state = new DesignViewState(scope, publish);
         views.put(scope, state);
         state.enlist(); // published with what the form is set out with - empty / static-only views too
         return state;
+    }
+
+    // ===== THE STATE OF A GROUP'S CUSTOM COMPONENT (GReactCustom) - a React component the platform's grid shows the
+    // group's rows with, as one of its views: a view's state as a React container's that draws those rows is, of the
+    // one group. The component is given the group's node as its data, and its controller is the group's member, with
+    // no name above them. Where a container draws the rows, these parts and entries are the form's controllers of the
+    // group, of its sortings and of its list properties; here those stay the platform's grid's, which tells its view
+    // what the form sends it as it tells any of its views, and the view hands that on to them (GReactCustom). No
+    // view of the form's (views): no design says it is there. A property in columns has no entry, as in any view, and neither has
+    // one named as the node or a row names something of its own, or as a property before it is: the server refuses
+    // such a form only where the design says a view draws the rows (FormView.checkReactProjectionNames). The sortings
+    // start as the form has them
+    public final class GroupViewState extends ViewState {
+        private final GGrid grid;
+
+        // platformRows makes what draws, in each of these rows, the properties the form gives a view of their own -
+        // the platform's, which the component places with <Platform name row/> as a view that draws the rows does -,
+        // asked once, with the first of them (GPlatformRowsPanelController)
+        GroupViewState(GGrid grid, JavaScriptObject formController, Consumer<JavaScriptObject> publish, Function<Rows, PlatformProperty> platformRows) {
+            super(grid, data -> publish.accept(getOwnField(data, grid.groupObject.getSID())));
+            this.grid = grid;
+            GridTablePart table = createGridTablePart(grid);
+            GridRowsPart rows = table.rowsParts.get(grid.groupObject);
+            Set<String> taken = new HashSet<>(GROUP_VIEW_NAMES);
+            PlatformProperty platform = null;
+            for (GPropertyDraw property : form.propertyDraws)
+                if (property.groupObject == grid.groupObject && property.isList && hasEntry(property) && !property.hasColumnGroupObjects()) {
+                    if (!taken.add(property.integrationSID))
+                        GwtClientUtils.logCustomViewError("'" + property.sID + "' of '" + rows.node.name + "' is not given to the group's CUSTOM"
+                                + " component: '" + property.integrationSID + "' is a name the group's node or a row has of its own,"
+                                + " or another property's; give the property an EXTID");
+                    else if (!property.explicitCustom)
+                        new ReactColumnPropertyEntry(rows, property);
+                    else {
+                        if (platform == null)
+                            platform = platformRows.apply(rows);
+                        createPlatformColumnEntry(rows, property, platform);
+                    }
+                }
+            initialize(formController);
+            table.orders.updateOrders(grid.groupObject, verbs.getOrders(grid.groupObject));
+        }
+        // the group's member is the controller itself: its verbs and its properties' members beside the form's
+        // controller and the batch
+        JavaScriptObject createMember(String name) {
+            return controller;
+        }
+        private RowsPart getRows() {
+            return getRowsPart(grid.groupObject);
+        }
+        // by the name its entry has on the node
+        public GPropertyDraw getRowPlatformProperty(String name) {
+            return getRows().getRowPlatformProperty(name);
+        }
+        // what the component starts from: the node as it is set out, there before the form sends anything for it - a
+        // view that places the grid draws the component as it is made
+        public JavaScriptObject getData() {
+            commit();
+            lastPublished = data;
+            return getRows().node.published();
+        }
+        // ===== what the grid's view hands what it is told on to, and answers what it is asked from: the grid's as a
+        // whole, which says the group's and what shows its sortings (GTableController), and a list property's - its
+        // entry here, nothing where it has none
+        public GTableController getTableController() {
+            return tableParts.get(grid);
+        }
+        public GPropertyController getPropertyController(GPropertyDraw property) {
+            for (PropertyEntry propertyEntry : getRows().node.properties)
+                if (propertyEntry.property == property)
+                    return propertyEntry;
+            return GPropertyController.NONE;
+        }
+        // ... and what the grid's view is asked of its rows and columns
+        public int getRowCount() {
+            return getRows().rows.size();
+        }
+        public boolean hasShownProperty() {
+            for (PropertyEntry propertyEntry : getRows().node.properties)
+                if (propertyEntry.isShown())
+                    return true;
+            return false;
+        }
+    }
+    private static final List<String> GROUP_VIEW_NAMES = Arrays.asList(String.join(",", ReactProjectionNames.CONTROLLER, ReactProjectionNames.NODE_OWN,
+            ReactProjectionNames.GRID_PART, ReactProjectionNames.VIEW_FILTERS_PART, ReactProjectionNames.ORDERS_PART,
+            ReactProjectionNames.SELECTION_PART, ReactProjectionNames.GRID_ROW, "__proto__").split(","));
+    public GroupViewState addGroupView(GGrid grid, JavaScriptObject formController, Consumer<JavaScriptObject> publish, Function<Rows, PlatformProperty> platformRows) {
+        return new GroupViewState(grid, formController, publish, platformRows);
     }
 
     // ===== THE FORM'S CONTROLLER OF EACH OWNER, settled once, when every React view is there, from the platform's
@@ -275,13 +368,17 @@ public class GReactFormData {
             RowsPart rows = state.getRowsPart(property.groupObject);
             if (!property.isPlatformDrawn())
                 return new ReactColumnPropertyEntry(rows, property);
-            return property.isAction() ? new PlatformColumnActionEntry(rows, property, platform) : new PlatformColumnPropertyEntry(rows, property, platform);
+            return createPlatformColumnEntry(rows, property, platform);
         }
         // a panel property is a part of its group: on the group's node here, the empty group's on the top level
         Node node = property.groupObject == null ? state.top : state.getOrCreateGroupNode(property.groupObject);
         if (!property.isPlatformDrawn())
             return new ReactPanelPropertyEntry(node, property);
         return property.isAction() ? new PlatformPanelActionEntry(node, property, platform) : new PlatformPanelPropertyEntry(node, property, platform);
+    }
+    // ... the entry of a column the platform draws in each of the rows a React view draws, of its kind
+    private PropertyEntry createPlatformColumnEntry(RowsPart rows, GPropertyDraw property, PlatformProperty platform) {
+        return property.isAction() ? new PlatformColumnActionEntry(rows, property, platform) : new PlatformColumnPropertyEntry(rows, property, platform);
     }
     // ... the platform's controller of a property where the platform draws it, as the projection asks it
     // (GPlatformPropertyController): the form's controller of it - an entry over it hands it what the entry does not
@@ -621,8 +718,10 @@ public class GReactFormData {
         }
     }
 
-    // what one React view is given - its nodes, its snapshot - and what it changes them through: its controller
-    public final class ViewState {
+    // what one React view is given - its nodes, its snapshot - and what it changes them through: its controller. Of a
+    // view the design gives the form - a container's, a component's (DesignViewState) -, or of the component of a
+    // group's CUSTOM, a view of the platform's grid (GroupViewState)
+    public abstract class ViewState {
         final GComponent scope;
         final Consumer<JavaScriptObject> publish;
         // each group's and each tree's node here, by its name - data.<name> -, in the order they are made: the server
@@ -640,6 +739,10 @@ public class GReactFormData {
         // `props.controller`: made with the state and never replaced, so a view keeps the one it is given. Its members
         // mirror the entries of `data` and are made with them (initialize), beside them the form's controller, `form`
         public final JavaScriptObject controller;
+        // the member of a group or of a tree a node of it is made with: where its verbs and the members of its parts
+        // and entries go - on the controller under its name, or the controller itself where the view is given that
+        // one group alone
+        abstract JavaScriptObject createMember(String name);
 
         ViewState(GComponent scope, Consumer<JavaScriptObject> publish) {
             this.scope = scope;
@@ -740,11 +843,23 @@ public class GReactFormData {
             setField(controller, "form", formController);
         }
 
-        // the platform-drawn list property whose per-row renderers a <Platform> places, named as a panel property is -
-        // its group, then its integration name, o.qty, the path of its column entry -, of a group whose rows this
-        // container draws: asked of the rows' parts, not of the container's children, such a property being no child of
-        // it (FormView.isPlatformDrawn). The row a <Platform> gives says which renderer, and has to be a row of that
-        // group
+        // the platform-drawn list property whose per-row renderers a <Platform> places, by the name the view has for
+        // it, of a group whose rows the view draws: asked of the rows' parts, not of the view's children, such a
+        // property being no child of it (FormView.isPlatformDrawn). The row a <Platform> gives says which renderer,
+        // and has to be a row of that group
+        public abstract GPropertyDraw getRowPlatformProperty(String name);
+    }
+    // ... of a view the design gives the form: a react container's, or a component's that is no container
+    public final class DesignViewState extends ViewState {
+        DesignViewState(GComponent scope, Consumer<JavaScriptObject> publish) {
+            super(scope, publish);
+        }
+        JavaScriptObject createMember(String name) {
+            JavaScriptObject member = newObject();
+            setField(controller, name, member);
+            return member;
+        }
+        // named as a panel property is - its group, then its integration name, o.qty, the path of its column entry
         public GPropertyDraw getRowPlatformProperty(String name) {
             int dot = name.lastIndexOf('.');
             if (dot < 0) // a grid property always has a group
@@ -753,7 +868,6 @@ public class GReactFormData {
             RowsPart rows = group != null ? getRowsPart(group) : null;
             return rows != null ? rows.getRowPlatformProperty(name.substring(dot + 1)) : null;
         }
-
     }
 
     // the DESCRIPTOR of a component React draws or places: its entry at its container's top level, keyed by its SID -
@@ -857,13 +971,14 @@ public class GReactFormData {
         // tree's, top down
         final List<GGroupObject> groups;
         final ArrayList<Part<?>> parts = new ArrayList<>(); // in the order they are placed
-        final JavaScriptObject member = newObject(); // controller.<name>, put on the controller with its members
+        final JavaScriptObject member; // controller.<name> - the controller itself where the view is given the group alone
         final NativeStringMap<Boolean> unnameable = new NativeStringMap<>(); // reported already (reportUnnameable)
 
         OwnerNode(ViewState state, String name, List<GGroupObject> groups) {
             super(state);
             this.name = name;
             this.groups = groups;
+            this.member = state.createMember(name);
         }
         JavaScriptObject current() {
             return in(state.current());
@@ -882,10 +997,9 @@ public class GReactFormData {
             }
             return node;
         }
-        // controller.<name>: its member, and on it the members of its parts, then those of the entries it carries - a
-        // group's node's: a tree's carries none
+        // on its member, the members of its parts, then those of the entries it carries - a group's node's: a tree's
+        // carries none
         void fillController() {
-            setField(state.controller, name, member);
             for (Part<?> part : parts)
                 part.putMember(member);
             putPropertyMembers(member);
@@ -1731,9 +1845,9 @@ public class GReactFormData {
         }
         // the platform-drawn list property whose per-row renderers go into the rows drawn here, by its integration name
         GPropertyDraw getRowPlatformProperty(String integrationSID) {
-            for (GPropertyDraw property : form.propertyDraws)
-                if (property.groupObject == node.group && property.isPlatformDrawnPerRow() && integrationSID.equals(property.integrationSID))
-                    return property;
+            for (PropertyEntry propertyEntry : node.properties)
+                if (propertyEntry instanceof PlatformColumnEntry && integrationSID.equals(propertyEntry.property.integrationSID))
+                    return propertyEntry.property;
             return null;
         }
         // a group attribute rebuilds the rows or the node - React's alone: the platform has no view of the rows React

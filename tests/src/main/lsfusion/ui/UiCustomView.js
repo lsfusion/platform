@@ -175,21 +175,26 @@ lsfusion.custom.register('UiCustomViewReactCell', function ({data, controller}) 
     }, String(data.value));
 }, 'reactView');
 
-// the React component a group's CUSTOM names: a card for each row of the list it is given, which makes the row
-// current and adds 10 to its quantity through the classic controller of a custom view, under the title its OPTIONS give
+// the React component a group's CUSTOM names: a card for each row of the group's node it is given, drawn by the
+// platform's List with no group named, which makes the row current and adds 10 to its quantity through the group's
+// member, under the title the group's OPTIONS give
+function UiCustomViewCard({row, controller, caption}) {
+    const h = React.createElement;
+    return h('div', {
+        className: 'ui-custom-card',
+        'data-current': String(row.current),
+        'data-name-read-only': String(row.uiCustomViewName.readOnly === true)
+    },
+        h('button', {onClick: () => controller.change(row)}, row.uiCustomViewName.value),
+        h('button', {className: 'ui-custom-card-quantity', title: caption,
+            onClick: () => controller.uiCustomViewQuantity.change(row.uiCustomViewQuantity.value + 10, row.key)
+        }, row.uiCustomViewQuantity.value));
+}
 lsfusion.custom.register('UiCustomViewCards', function ({data, controller}) {
     const h = React.createElement;
-    return h('div', {className: 'ui-custom-cards', 'data-theme': React.useContext(window.UiCustomViewTheme)},
+    return h('div', {className: 'ui-custom-cards', 'data-properties': data.properties.join(','), 'data-theme': React.useContext(window.UiCustomViewTheme)},
         data.options && data.options.title,
-        data.list.map(row => h('div', {
-            key: controller.getObjectsString(row),
-            className: 'ui-custom-card',
-            'data-current': String(controller.isCurrent(row))
-        },
-            h('button', {onClick: () => controller.changeObject(row)}, row.uiCustomViewName),
-            h('button', {className: 'ui-custom-card-quantity',
-                onClick: () => controller.changeProperty('uiCustomViewQuantity', row, row.uiCustomViewQuantity + 10)
-            }, row.uiCustomViewQuantity))));
+        h(lsfusion.List, {component: UiCustomViewCard, controller: controller, caption: data.uiCustomViewQuantity.caption}));
 }, 'reactView');
 
 // the container of uiCustomViewPlacedGroup: it places the grid the platform draws in its CUSTOM view

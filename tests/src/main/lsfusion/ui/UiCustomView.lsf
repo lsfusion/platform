@@ -145,14 +145,16 @@ FORM uiCustomViewReactCells 'React cells'
     ORDERS uiCustomViewName(i)
 ;
 
-// a group whose CUSTOM is a React component (UiCustomViewCards), given the group's rows, its OPTIONS and the classic
-// controller of a custom view of them
+// a group whose CUSTOM is a React component (UiCustomViewCards), given the group as a view that draws its grid is:
+// its node - the rows, the properties, the OPTIONS - and its member; an action of its rows has a key
 uiCustomViewCardsOptions () = JSON FROM title = 'Cards';
+uiCustomViewBump 'Bump' (UiCustomViewItem i) { uiCustomViewQuantity(i) <- uiCustomViewQuantity(i) + 100; } CHANGEKEY 'F9';
 
 FORM uiCustomViewReactGroup 'React group'
     OBJECTS i = UiCustomViewItem CUSTOM 'UiCustomViewCards' OPTIONS uiCustomViewCardsOptions()
     PROPERTIES(i) READONLY uiCustomViewName
     PROPERTIES(i) uiCustomViewQuantity
+    PROPERTIES(i) GRID uiCustomViewBump
     FILTERS uiCustomViewShown(i)
     ORDERS uiCustomViewName(i)
 ;

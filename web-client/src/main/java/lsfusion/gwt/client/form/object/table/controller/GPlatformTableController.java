@@ -23,6 +23,7 @@ import lsfusion.gwt.client.form.view.Column;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public abstract class GPlatformTableController<P extends GGridProperty, V extends GTableView, B extends GToolbarController<?>> extends GPlatformPropertyController implements GTableController, GGroupController, GUserOrdersController {
     // the TABLE it draws, as its toolbar has it (GPlatformToolbarController.table): a list group's grid, or a tree, one
@@ -346,6 +347,7 @@ public abstract class GPlatformTableController<P extends GGridProperty, V extend
 
     @Override
     public void updatePropertyComments(GCommentReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        view.updatePropertyComments(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
@@ -354,6 +356,7 @@ public abstract class GPlatformTableController<P extends GGridProperty, V extend
 
     @Override
     public void updateDefaultValueValues(GExtraPropReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        view.updateDefaultValueValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
@@ -408,5 +411,10 @@ public abstract class GPlatformTableController<P extends GGridProperty, V extend
     }
     public void updateAttribute(GGroupObjectPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
         reader.updatePlatform(this, values, partial);
+    }
+    // ... and its view filters as the form has them (GGroupController.changeViewFilters): the view's to show
+    @Override
+    public void changeViewFilters(List<GPropertyFilter> conditions) {
+        view.changeViewFilters(conditions);
     }
 }

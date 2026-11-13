@@ -2348,9 +2348,9 @@ FORM itemCards
 ```jsx
 function ItemCards({data, controller}) {
     return data.list.map(row =>
-        <button key={controller.getObjectsString(row)}
-                onClick={() => controller.changeObject(row)}>
-            {row.name}
+        <button key={row.key} disabled={row.current}
+                onClick={() => controller.change(row)}>
+            {row.name.value}: {row.quantity.value}
         </button>
     );
 }
@@ -2358,7 +2358,7 @@ function ItemCards({data, controller}) {
 window.lsfusion.custom.register('ItemCards', ItemCards, 'reactView');
 ```
 
-The component is given what the `update` of a classic render function is given ([How-to: Custom Components (objects)](How-to_Custom_components_objects.md)): the rows as `data.list`, each holding the values of its properties under their names, the `OPTIONS` of the group as `data.options`, and the same `controller`. Inside a container a React view draws, the grid of such a group is drawn by the platform, and the view places it with `<Platform name="GRID(i)"/>`.
+The `custom` of the group's table in the design says the same as `CUSTOM` in `OBJECTS`: `GRID(i) { custom = 'ItemCards'; }` is `OBJECTS i = Item CUSTOM 'ItemCards'`, and `custom = NULL` leaves the table to the platform's own views. The component is given its one group, with no name above it: `data` is the group's node, as a container that draws the group's rows has it under the group's name ([Reading the projection](#reading)) — its rows (`data.list`, `data.byKey`, `data.keys`), the entries of its properties, its [sortings](#orders) and [view filters](#view-filters), and the `OPTIONS` of the group as `data.options` —, and `controller` is the group's [member](How-to_Custom_view_controller.md) — `change(row)`, `orders.change(...)`, `viewFilters.change(...)` and a member per property —, with the form's controller as `controller.form` and `controller.batch`. [`List`](#rendering-rows) and [`BucketScope`](#bucketing) are given no `group` there. A property the form gives a view of its own — `NOCUSTOM`, or a `CUSTOM` render function — is not drawn by the component but placed by it in each row, by its name alone: [`<Platform name="quantity" row={row}/>`](#live-editor); the component places nothing else. The table takes the size of what the component draws, as any `CUSTOM` view does, and the toolbar switches it with the platform's other views of the rows. The toolbar and the user filters of the group remain the platform's, which draws them around the component, so `data` and `controller` carry nothing for them. A property whose name is a [reserved name](#reserved-names) of a row or of a group's node where its rows are drawn, or `form` or `batch`, is not given, and neither is a property grouped in columns (`COLUMNS`): the form is not refused for it, as the server does not know that the render function is a component. Inside a container a React view draws, the grid of such a group is drawn by the platform, and the view places it with `<Platform name="GRID(i)"/>`.
 
 ### A React component inside a React view {#embedded}
 

@@ -2358,9 +2358,9 @@ FORM itemCards
 ```jsx
 function ItemCards({data, controller}) {
     return data.list.map(row =>
-        <button key={controller.getObjectsString(row)}
-                onClick={() => controller.changeObject(row)}>
-            {row.name}
+        <button key={row.key} disabled={row.current}
+                onClick={() => controller.change(row)}>
+            {row.name.value}: {row.quantity.value}
         </button>
     );
 }
@@ -2368,7 +2368,7 @@ function ItemCards({data, controller}) {
 window.lsfusion.custom.register('ItemCards', ItemCards, 'reactView');
 ```
 
-Компоненту передаётся то же, что и функции `update` классической функции отображения ([How-to: Пользовательские компоненты (объекты)](How-to_Custom_components_objects.md)): строки в `data.list`, в каждой из которых значения её свойств лежат под их именами, `OPTIONS` группы в `data.options` и тот же `controller`. Внутри контейнера, который рисует представление React, грид такой группы рисует платформа, а представление размещает его через `<Platform name="GRID(i)"/>`.
+`custom` таблицы группы в дизайне говорит то же, что `CUSTOM` в `OBJECTS`: `GRID(i) { custom = 'ItemCards'; }` — это `OBJECTS i = Item CUSTOM 'ItemCards'`, а `custom = NULL` оставляет таблицу собственным видам платформы. Компоненту передаётся его единственная группа, без имени над ней: `data` — узел группы, такой же, какой контейнер, рисующий строки группы, получает под именем группы ([Чтение проекции](#reading)), — её строки (`data.list`, `data.byKey`, `data.keys`), записи её свойств, её [сортировки](#orders) и [фильтры представления](#view-filters) и `OPTIONS` группы в `data.options`, — а `controller` — [член](How-to_Custom_view_controller.md) группы: `change(row)`, `orders.change(...)`, `viewFilters.change(...)` и член на каждое свойство, — с контроллером формы в `controller.form` и с `controller.batch`. [`List`](#rendering-rows) и [`BucketScope`](#bucketing) там задаются без `group`. Свойство, которому форма задаёт собственное представление, — `NOCUSTOM` или функция отображения `CUSTOM`, — компонент не рисует, а размещает в каждой строке по одному его имени: [`<Platform name="quantity" row={row}/>`](#live-editor); ничего другого компонент не размещает. Таблица принимает размер того, что рисует компонент, как любой вид `CUSTOM`, а тулбар переключает её с другими видами строк, которые даёт платформа. Тулбар и пользовательские фильтры группы остаются за платформой, которая рисует их вокруг компонента, поэтому в `data` и `controller` для них ничего нет. Свойство, имя которого — [зарезервированное имя](#reserved-names) строки или узла группы там, где рисуются её строки, либо `form` или `batch`, не передаётся, как и свойство, сгруппированное по колонкам (`COLUMNS`): форма из-за него не отклоняется, так как сервер не знает, что функция отображения — компонент. Внутри контейнера, который рисует представление React, грид такой группы рисует платформа, а представление размещает его через `<Platform name="GRID(i)"/>`.
 
 ### Компонент React внутри представления React {#embedded}
 

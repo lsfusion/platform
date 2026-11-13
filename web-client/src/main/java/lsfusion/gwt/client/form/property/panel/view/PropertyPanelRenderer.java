@@ -65,7 +65,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
     private ComponentViewWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
         // a platform-drawn property's caption is projected into its entry (like a tab hands its caption up to the tab
         // strip); the React component draws it, so GWT renders the bare value with no label of its own
-        boolean platformDrawn = property.isPlatformDrawn();
+        boolean platformDrawn = isPlaced(property);
         boolean hasCaption = property.caption != null && !platformDrawn;
         String staticComment = getStaticComment();
         // if there is no (empty) static caption and no dynamic caption
@@ -239,7 +239,12 @@ public class PropertyPanelRenderer extends PanelRenderer {
     // React draws - so the editor has none, neither its widget nor its text
     @Override
     protected String getStaticComment() {
-        return property.isPlatformDrawn() ? null : property.comment;
+        return isPlaced(property) ? null : property.comment;
+    }
+    // a property a React view places rather than draws - a list property too, drawn here only as its editor in a
+    // row of rows a React component draws, the view of the form (isPlatformDrawn) or of its group's CUSTOM
+    private static boolean isPlaced(GPropertyDraw property) {
+        return property.isPlatformDrawn() || property.isList;
     }
 
     protected void setCommentText(String text) {

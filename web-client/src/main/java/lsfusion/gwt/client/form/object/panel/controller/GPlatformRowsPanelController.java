@@ -125,6 +125,15 @@ public final class GPlatformRowsPanelController extends GPlatformPanelController
     }
 
 
+    // the view that draws its rows goes while the form stays - the grid shows another of its views (GReactCustom) -:
+    // its renderers go for good, their widgets with them, which the form's own closing leaves to the page (destroy)
+    public void remove() {
+        propertyControllers.foreachValue(propertyController -> {
+            propertyController.destroyRenderers();
+            propertyController.removeAllRenderers();
+        });
+    }
+
     // ---- placement ----
 
     @Override

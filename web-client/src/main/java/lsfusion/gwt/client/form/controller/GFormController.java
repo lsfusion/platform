@@ -436,6 +436,10 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     public GReactFormData.ViewState addReactView(GComponent component, Consumer<JavaScriptObject> publish) {
         return reactData.addView(component, publish);
     }
+    // ... and the state of a group's CUSTOM component, a view of the platform's grid (GReactFormData.GroupViewState)
+    public GReactFormData.GroupViewState addReactGroupView(GGrid grid, Consumer<JavaScriptObject> publish, Function<GReactFormData.Rows, GReactFormData.PlatformProperty> platformRows) {
+        return reactData.addGroupView(grid, controller, publish, platformRows);
+    }
     // say that the user has started, and finished, editing in `element`. This is the CUSTOM branch of the form's
     // editing state (customEditElement): while it stands, the bindings that step aside for the form's own open editor
     // - ENTER to the next component, ESCAPE to close a modal - step aside for this element too. Declare on a wrapper
@@ -1142,9 +1146,19 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         userFiltersControllers.put(group, userFilters);
         for (GPropertyDraw draw : form.propertyDraws)
             if (draw.groupObject == group && draw.isPlatformDrawnPerRow()) {
-                platformRowsPanelControllers.put(group, new GPlatformRowsPanelController(this, group, reactData.getRows(group)));
+                addRowsPanelController(group, reactData.getRows(group));
                 break;
             }
+    }
+    // ... made with the view where that is a React component of the group's CUSTOM, and gone with it - the platform's
+    // grid shows another view when its toolbar switches them (GReactCustom)
+    public GPlatformRowsPanelController addRowsPanelController(GGroupObject group, GReactFormData.Rows rows) {
+        GPlatformRowsPanelController rowsPanelController = new GPlatformRowsPanelController(this, group, rows);
+        platformRowsPanelControllers.put(group, rowsPanelController);
+        return rowsPanelController;
+    }
+    public void removeRowsPanelController(GGroupObject group) {
+        platformRowsPanelControllers.remove(group).remove();
     }
 
     private GGridUserPreferences[] extractUserPreferences(GFormUserPreferences formPreferences, GGroupObject groupObject) {
