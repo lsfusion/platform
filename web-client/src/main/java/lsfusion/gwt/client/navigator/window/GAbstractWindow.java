@@ -14,7 +14,17 @@ public class GAbstractWindow implements Serializable, com.google.gwt.user.client
     public int width;
     public int height;
 
+    // the edge of the page LEFT, RIGHT, TOP or BOTTOM places the window by, instead of POSITION's x, y, width and height:
+    // the desktop client's BorderLayout constraint, null for a window POSITION places
     public String borderConstraint;
+    public static final String LEFT = "West";
+    public static final String RIGHT = "East";
+    public static final String TOP = "North";
+    public static final String BOTTOM = "South";
+
+    public boolean isByEdge() {
+        return borderConstraint != null;
+    }
 
     public boolean titleShown;
     public boolean visible;
@@ -50,8 +60,12 @@ public class GAbstractWindow implements Serializable, com.google.gwt.user.client
     // AUTOSIZE hugs the window ACROSS its own orientation and never along it: a horizontal band is as tall as what
     // it draws and still stretches sideways, a vertical panel is as wide as what it draws and still stretches down.
     // A window declares which way it faces, so this is the one rule that says what AUTOSIZE means, and it is the rule
-    // GNavigatorWindow used to state for its own windows alone (its override now only carries the exception to it)
+    // GNavigatorWindow used to state for its own windows alone (its override now only carries the exception to it).
+    // A window by an edge of the page is as big as what it draws, AUTOSIZE or not, as the desktop client's BorderLayout
+    // gives it its preferred size: it has no declared size to take a share of the split along its edge by
     public boolean isAutoSize(boolean vertical) {
+        if (isByEdge())
+            return true;
         return autoSize && this.vertical != vertical;
     }
 }

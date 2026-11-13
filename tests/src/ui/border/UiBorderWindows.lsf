@@ -1,0 +1,40 @@
+MODULE UiBorderWindows;
+
+REQUIRE SystemEvents;
+
+// UiBorderWindowsIT's application, on a test server of its own: windows placed by an edge of the page rather than by
+// POSITION - a band along the top, a column on the left and one on the right, two bands along the bottom -, and a
+// window is on every page of its application: in the suite's, it would be on the page of every other browser test too
+
+WINDOW uiBorderWindowsTop 'Top' HORIZONTAL TOP HIDETITLE;
+WINDOW uiBorderWindowsLeft 'Left' VERTICAL LEFT HIDETITLE;
+WINDOW uiBorderWindowsRight 'Right' VERTICAL RIGHT HIDETITLE;
+// two by one edge, both shown: the one declared first by the edge itself
+WINDOW uiBorderWindowsBottom 'Bottom' HORIZONTAL BOTTOM HIDETITLE;
+WINDOW uiBorderWindowsBottomInner 'Bottom inner' HORIZONTAL BOTTOM HIDETITLE;
+
+FORM uiBorderWindowsTopForm 'Top form';
+FORM uiBorderWindowsLeftForm 'Left form';
+FORM uiBorderWindowsRightForm 'Right form';
+FORM uiBorderWindowsBottomForm 'Bottom form';
+FORM uiBorderWindowsBottomInnerForm 'Bottom inner form';
+
+NAVIGATOR {
+    // PARENT: the section is drawn in its window together with its items, so the window has something to draw from the
+    // start, whichever section the navigator selects
+    NEW FOLDER uiBorderWindowsTopSection 'Top section' WINDOW uiBorderWindowsTop PARENT {
+        NEW uiBorderWindowsTopForm;
+    }
+    NEW FOLDER uiBorderWindowsLeftSection 'Left section' WINDOW uiBorderWindowsLeft PARENT {
+        NEW uiBorderWindowsLeftForm;
+    }
+    NEW FOLDER uiBorderWindowsRightSection 'Right section' WINDOW uiBorderWindowsRight PARENT {
+        NEW uiBorderWindowsRightForm;
+    }
+    NEW FOLDER uiBorderWindowsBottomSection 'Bottom section' WINDOW uiBorderWindowsBottom PARENT {
+        NEW uiBorderWindowsBottomForm;
+    }
+    NEW FOLDER uiBorderWindowsBottomInnerSection 'Bottom inner section' WINDOW uiBorderWindowsBottomInner PARENT {
+        NEW uiBorderWindowsBottomInnerForm;
+    }
+}

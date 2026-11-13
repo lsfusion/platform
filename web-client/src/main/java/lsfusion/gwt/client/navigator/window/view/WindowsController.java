@@ -64,14 +64,24 @@ public abstract class WindowsController {
         if (custom != null)
             rootElement = new ReactWindowLayout(this, custom, navigatorController, allWindows, formsWindow);
         else {
+            // a window placed by an edge of the page (LEFT, RIGHT, TOP, BOTTOM) has no POSITION, so the windows that
+            // have one are laid out without it, and it is put around them
+            List<GAbstractWindow> positioned = new ArrayList<>();
+            List<GAbstractWindow> byEdge = new ArrayList<>();
+            for (GAbstractWindow window : allWindows)
+                (window.isByEdge() ? byEdge : positioned).add(window);
+
             WindowNode rootNode = new WindowNode(0, 0, 100, 100);
             rootNode.isFlex = true;
 
-            initializeNodes(allWindows, rootNode, formsWindow);
+            initializeNodes(positioned, rootNode, formsWindow);
 
             if (MainFrame.verticalNavbar) {
                 rootNode = rotateNavbar(rootNode);
             }
+
+            rootNode = surroundByEdgeWindows(rootNode, byEdge, false, GAbstractWindow.LEFT, GAbstractWindow.RIGHT);
+            rootNode = surroundByEdgeWindows(rootNode, byEdge, true, GAbstractWindow.TOP, GAbstractWindow.BOTTOM);
 
             rootElement = fillWindowChildren(rootNode);
         }
@@ -418,6 +428,43 @@ public abstract class WindowsController {
         return newRootNode;
     }
     
+    // the windows by the two edges of one axis put on either side of the node, in a split along that axis. Called for the
+    // left and the right edges first, so that the top and the bottom windows run across the whole page, as the desktop
+    // client's BorderLayout puts them. Windows by one edge go in the order they are declared, the first one by the edge
+    // itself. A split orders its children by their coordinate along it, so the windows before the node get coordinates
+    // below its own 0, and the windows after it coordinates past its 100
+    private WindowNode surroundByEdgeWindows(WindowNode node, List<GAbstractWindow> byEdge, boolean vertical, String before, String after) {
+        int beforeCount = 0, afterCount = 0;
+        for (GAbstractWindow window : byEdge) {
+            if (window.borderConstraint.equals(before))
+                beforeCount++;
+            else if (window.borderConstraint.equals(after))
+                afterCount++;
+        }
+        if (beforeCount == 0 && afterCount == 0)
+            return node;
+
+        WindowNode split = new WindowNode(0, 0, 100, 100);
+        split.isFlex = true;
+        split.vertical = vertical;
+        int beforeAt = -beforeCount, afterAt = 100 + afterCount;
+        for (GAbstractWindow window : byEdge) {
+            int at;
+            if (window.borderConstraint.equals(before))
+                at = beforeAt++;
+            else if (window.borderConstraint.equals(after))
+                at = afterAt--;
+            else
+                continue;
+            // no size: a window by an edge is as big as what it draws (GAbstractWindow.isAutoSize)
+            WindowNode windowNode = vertical ? new WindowNode(0, at, 100, 0) : new WindowNode(at, 0, 0, 100);
+            windowNode.window = window;
+            windowNode.changeParent(split);
+        }
+        node.changeParent(split);
+        return split;
+    }
+
     private WindowNode findNavbarWindow(WindowNode parent) {
         for (WindowNode child : parent.children) {
             if (child.window instanceof GNavigatorWindow && ((GNavigatorWindow) child.window).isRoot()) {
