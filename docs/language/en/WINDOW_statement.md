@@ -158,7 +158,7 @@ The `HIDE WINDOW` statement hides the specified window, making it invisible. A h
 
 - `fixedPositionType`
 
-    Specifying a fixed location of the window on the desktop, which does not allow the user to change its position and size. Here the window size is automatically determined based on the preferred dimensions of the component. The window will be located to the left, right, top, and bottom of the desktop, respectively. This option cannot be used simultaneously with the `POSITION` option. Specified by one of the keywords:
+    Specifying a fixed location of the window on the desktop, which does not allow the user to change its position and size. Here the window size is automatically determined based on the preferred dimensions of the component. The window will be located to the left, right, top, and bottom of the desktop, respectively. This option cannot be used simultaneously with the `POSITION` option, and only a window that displays navigator elements can be placed this way: a `NATIVE` or `FORMS` window is placed by `POSITION` only. Specified by one of the keywords:
 
     - `LEFT`
     - `RIGHT`

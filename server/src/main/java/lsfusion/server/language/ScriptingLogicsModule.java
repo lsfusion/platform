@@ -5856,6 +5856,11 @@ public class ScriptingLogicsModule extends LogicsModule {
             window = new AbstractWindow(elementCanonicalName(name), caption);
         }
 
+        // only a navigator window is placed by an edge (createToolbarWindow): taken here, the edge would be dropped, and
+        // the window would reach the client with no place at all
+        if (options.getBorderPosition() != null)
+            errLog.emitNativeWindowBorderPositionError(parser, name, forms ? "FORMS" : "NATIVE");
+
         DockPosition dp = options.getDockPosition();
         if (dp != null)
             window.setDockPosition(dp.x, dp.y, dp.width, dp.height);

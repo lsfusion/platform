@@ -1,0 +1,7 @@
+MODULE FormsWindowByEdge;
+
+REQUIRE System;
+
+// only a navigator window is placed by an edge: a FORMS one took the edge and dropped it, and came to the client with
+// no place at all, which the web client laid out as a window of no size in the top left corner
+WINDOW formsWindowByEdge 'Side' FORMS RIGHT;

@@ -1,0 +1,6 @@
+MODULE NativeWindowByEdge;
+
+REQUIRE System;
+
+// only a navigator window is placed by an edge: a NATIVE one took the edge and dropped it, as a FORMS one did
+WINDOW nativeWindowByEdge NATIVE BOTTOM;

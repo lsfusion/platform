@@ -371,8 +371,13 @@ public class ScriptingErrorLog {
 
 
     public void emitWindowPositionConflictError(ScriptParser parser, String name) throws SemanticErrorException {
-        emitSimpleError(parser, "both border position (LEFT, RIGHT, TOP or BOTTOM) and dock position (POSITION(x, y, width, height))" +
+        emitSimpleError(parser, "both border position (LEFT, RIGHT, TOP or BOTTOM) and dock position (POSITION(x, y, width, height)) " +
                 format("are specified for window '%s', only one of those should be used", name));
+    }
+
+    public void emitNativeWindowBorderPositionError(ScriptParser parser, String name, String kind) throws SemanticErrorException {
+        emitSimpleError(parser, format("%s window '%s' can't be placed by an edge (LEFT, RIGHT, TOP or BOTTOM), only a navigator window can: " +
+                "use dock position (POSITION(x, y, width, height)) instead", kind, name));
     }
 
     public void emitAddToSystemWindowError(ScriptParser parser, String neName, String windowName) throws SemanticErrorException {
