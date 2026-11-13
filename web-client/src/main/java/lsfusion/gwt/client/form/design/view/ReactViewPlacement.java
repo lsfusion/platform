@@ -81,8 +81,8 @@ abstract class ReactViewPlacement implements ReactRoot.Placement {
             return new FailedPlatformPlacement(new PlacedViews.Problem(
                     "'" + name + "' is not a grid property this view places per row",
                     "'" + name + "' is given a row, but it names no grid property the platform draws of a group the"
-                            + " React view of '" + state.scope.sID + "' draws - group, then integration name, as its column"
-                            + " entry is keyed -, so nothing is drawn per row for it here"));
+                            + " React view of '" + state.scope.sID + "' draws - named as its column entry is keyed in the"
+                            + " view's data -, so nothing is drawn per row for it here"));
         GGroupObjectValue rowKey = property.groupObject.getRowKey(key);
         if (rowKey == null)
             return new FailedPlatformPlacement(new PlacedViews.Problem(

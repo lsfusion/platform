@@ -93,8 +93,8 @@ public class UiReactPlacingIT extends UiTest {
                 "lsFusion custom view: 'i.qty' is a property the platform draws per row: its <Platform> is given the row"
                         + " it belongs to - <Platform name=\"i.qty\" row={row}/> -, since each row has a renderer of its own",
                 "lsFusion custom view: 'c.note' is given a row, but it names no grid property the platform draws of a"
-                        + " group the React view of 'uiRplBoardView' draws - group, then integration name, as its column"
-                        + " entry is keyed -, so nothing is drawn per row for it here",
+                        + " group the React view of 'uiRplBoardView' draws - named as its column entry is keyed in the"
+                        + " view's data -, so nothing is drawn per row for it here",
                 "lsFusion custom view: 'c.cCode' inside container 'uiRplBoardView' has no view of its own, so the view"
                         + " draws it from `data`: give it `custom = NULL` for the platform to draw it, and place it"
                         + " with <Platform>",

@@ -942,6 +942,8 @@ public class GReactFormData {
                 propertyEntry.putMember(member);
         }
         abstract JavaScriptObject edit();
+        // how a message names a member put here: the path to it from the controller the view is given
+        abstract String getMemberPrefix();
         abstract void fillController();
         // its object in a snapshot of the container's data, null where the snapshot has none
         abstract JavaScriptObject in(JavaScriptObject snapshot);
@@ -957,6 +959,9 @@ public class GReactFormData {
         }
         JavaScriptObject in(JavaScriptObject snapshot) {
             return snapshot;
+        }
+        String getMemberPrefix() {
+            return "";
         }
         void fillController() {
             putPropertyMembers(state.controller);
@@ -979,6 +984,10 @@ public class GReactFormData {
             this.name = name;
             this.groups = groups;
             this.member = state.createMember(name);
+        }
+        // under its name - none where the view's controller is the member itself
+        String getMemberPrefix() {
+            return member == state.controller ? "" : name + ".";
         }
         JavaScriptObject current() {
             return in(state.current());
@@ -1143,7 +1152,7 @@ public class GReactFormData {
         }
         @Override
         void putMember(JavaScriptObject ownerMember) {
-            setField(ownerMember, list.field, makeListMember(list, table, node.name + "." + list.field + ".change()"));
+            setField(ownerMember, list.field, makeListMember(list, table, node.getMemberPrefix() + list.field + ".change()"));
         }
         // an item on a property no item can be on is not listed: it would describe the rows by something nothing can
         // address - reported once per property
@@ -1841,7 +1850,7 @@ public class GReactFormData {
         // its member, the group's own: change(row)
         @Override
         void putMember(JavaScriptObject groupMember) {
-            addRowsVerbs(this, groupMember, node.name);
+            addRowsVerbs(this, groupMember, node.getMemberPrefix());
         }
         // the platform-drawn list property whose per-row renderers go into the rows drawn here, by its integration name
         GPropertyDraw getRowPlatformProperty(String integrationSID) {
@@ -2065,8 +2074,8 @@ public class GReactFormData {
         @Override
         void putMember(JavaScriptObject groupMember) {
             super.putMember(groupMember);
-            setField(groupMember, VIEW_FILTERS, makeViewFiltersMember(GReactFormData.this, node.group, node.name + "." + VIEW_FILTERS + ".change()"));
-            addGridVerbs(this, groupMember, node.name);
+            setField(groupMember, VIEW_FILTERS, makeViewFiltersMember(GReactFormData.this, node.group, node.getMemberPrefix() + VIEW_FILTERS + ".change()"));
+            addGridVerbs(this, groupMember, node.getMemberPrefix());
         }
         // ... and the conditions, as the form sends them, whoever states them - this view's member, the form's
         // controller - (GGroupController.changeViewFilters): shown at once, each as a condition of `filters` is
@@ -2923,7 +2932,7 @@ public class GReactFormData {
         // ===== its member, on its node's member as its entry is on its node. The member IS the address - it holds this
         // state - so a call through it names nothing but the row (PropertyMember)
         void putMember(JavaScriptObject owner) {
-            setField(owner, property.integrationSID, makePropertyMember(this, getName(property) + "."));
+            setField(owner, property.integrationSID, makePropertyMember(this, node.getMemberPrefix() + property.integrationSID + "."));
         }
         public GPropertyDraw getProperty() {
             return property;
@@ -3874,27 +3883,27 @@ public class GReactFormData {
 
     // the verb of a group whose rows are drawn here, on its member, named the way data.<group> names it: its current
     // object is chosen among its rows, so .change(row) is there, and only there
-    private static native void addRowsVerbs(RowsPart part, JavaScriptObject member, String sid) /*-{
+    private static native void addRowsVerbs(RowsPart part, JavaScriptObject member, String prefix) /*-{
         member.change = function (row, options) {
-            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.RowsPart::change(*)(sid + ".change()", row, options);
+            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.RowsPart::change(*)(prefix + "change()", row, options);
         };
     }-*/;
 
     // ... and on a GRID's group, what selects its columns and all of it, and its clipboard: properties.change(column[,
     // options]) makes a column current, selectAll() selects every row and column, copy() and paste(text) copy the
     // cells selected and paste into them
-    private static native void addGridVerbs(GridRowsPart part, JavaScriptObject member, String sid) /*-{
+    private static native void addGridVerbs(GridRowsPart part, JavaScriptObject member, String prefix) /*-{
         member.properties = {change: function (column, options) {
-            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridRowsPart::changeColumn(*)(sid + ".properties.change()", typeof column === 'string' ? column : null, options);
+            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridRowsPart::changeColumn(*)(prefix + "properties.change()", typeof column === 'string' ? column : null, options);
         }};
         member.selectAll = function () {
             return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridRowsPart::selectAll()();
         };
         member.copy = function () {
-            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridRowsPart::copy(*)(sid + ".copy()");
+            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridRowsPart::copy(*)(prefix + "copy()");
         };
         member.paste = function (text) {
-            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridRowsPart::paste(*)(sid + ".paste()", typeof text === 'string' ? text : null);
+            return part.@lsfusion.gwt.client.form.design.view.GReactFormData.GridRowsPart::paste(*)(prefix + "paste()", typeof text === 'string' ? text : null);
         };
     }-*/;
 
