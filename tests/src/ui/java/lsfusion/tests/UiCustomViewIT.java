@@ -302,6 +302,9 @@ public class UiCustomViewIT extends UiTest {
         Locator second = rows.nth(1);
         assertThat(second).hasAttribute("data-name-read-only", "true");
         assertThat(second.locator(".ui-custom-card-quantity")).hasAttribute("title", "Quantity");
+        // what no view of the platform's draws reaches the component too: the column's comment and its default value
+        assertThat(cards).hasAttribute("data-comment", "pcs");
+        assertThat(cards).hasAttribute("data-default", "pcs");
         second.getByText(items[1]).click();
         assertThat(second).hasAttribute("data-current", "true");
         second.locator(".ui-custom-card-quantity").click();
@@ -323,6 +326,35 @@ public class UiCustomViewIT extends UiTest {
         form.locator("button[lsfusion-container='PROPERTY(formApply())']").click();
         check("UiCustomView.uiCustomViewCheckQuantity", items[0], "101");
         check("UiCustomView.uiCustomViewCheckQuantity", items[1], "12");
+        close(form);
+    }
+
+    // the component of a group's CUSTOM follows what the form does to the group as a view of the form does: a property
+    // it draws, activated, gives the focus to the grid; a row removed goes, and the row beside it is the current one;
+    // the view filters the component states are read back from its data, and filter its rows
+    @Test
+    public void reactCustomGroupFollowsTheFormsFocusRemovalAndViewFilters() throws Exception {
+        String[] items = seed();
+        Locator form = open(FOLDER, "UiCustomView.uiCustomViewReactGroup");
+        Locator cards = form.locator(".ui-custom-cards");
+        Locator rows = cards.locator(".ui-custom-card");
+        assertThat(rows).hasCount(2);
+
+        form.locator("button[lsfusion-container='PROPERTY(uiCustomViewActivateQuantity())']").click();
+        assertThat(form.locator("[lsfusion-container='GRID(i)']:focus, [lsfusion-container='GRID(i)'] :focus")).hasCount(1);
+
+        assertThat(cards).hasAttribute("data-view-filters", "0");
+        rows.nth(1).getByText(items[1]).click();
+        assertThat(rows.nth(1)).hasAttribute("data-current", "true");
+        form.locator("button[lsfusion-container='PROPERTY(uiCustomViewRemove(i))']").click();
+        assertThat(rows).hasCount(1);
+        assertThat(rows.first()).hasAttribute("data-current", "true");
+        assertThat(rows.first()).containsText(items[0]);
+
+        cards.locator(".ui-custom-cards-filter").click();
+        assertThat(cards).hasAttribute("data-view-filters", "1");
+        assertThat(rows).hasCount(0);
+        form.locator("button[lsfusion-container='PROPERTY(formApply())']").click();
         close(form);
     }
 
@@ -377,16 +409,23 @@ public class UiCustomViewIT extends UiTest {
         assertThat(panel).hasAttribute("data-stable-controller", "true");
         assertThat(rows.first().locator(".ui-custom-react-cell")).hasText("1");
 
-        // the grid switched to the platform's table and back: the component's rows go with the editors placed in them,
-        // and come back with editors of their own - one of each in a row, none left of those before
-        form.locator("[title='Table']").click();
-        assertThat(rows).hasCount(0);
-        assertThat(form.locator("td[lsfusion-container='PROPERTY(standardQuantity)']")).hasCount(2);
-        form.locator("[title='Custom view']").click();
-        assertThat(rows).hasCount(2);
-        assertThat(rows.nth(1).locator(".ui-custom-react-cell")).hasText("22");
-        assertThat(rows.nth(1).locator(".ui-custom-standard-cell")).hasText("22");
-        assertThat(form.locator(".ui-custom-placed-grid .ui-custom-react-cell")).hasCount(2);
+        // the editor the platform draws in the current row takes the focus when its property is activated
+        form.locator("button[lsfusion-container='PROPERTY(uiCustomViewActivateStandard())']").click();
+        assertThat(rows.nth(1).locator(".ui-custom-standard-cell :focus")).hasCount(1);
+
+        // the grid switched to the platform's table and back, again and again: the component's rows go with the editors
+        // placed in them, and come back with editors of their own - one of each in a row, none left of those before
+        for (int round = 0; round < 3; round++) {
+            form.locator("[title='Table']").click();
+            assertThat(rows).hasCount(0);
+            assertThat(form.locator("td[lsfusion-container='PROPERTY(standardQuantity)']")).hasCount(2);
+            form.locator("[title='Custom view']").click();
+            assertThat(rows).hasCount(2);
+            assertThat(rows.nth(1).locator(".ui-custom-react-cell")).hasText("22");
+            assertThat(rows.nth(1).locator(".ui-custom-standard-cell")).hasText("22");
+            assertThat(form.locator(".ui-custom-placed-grid .ui-custom-react-cell")).hasCount(2);
+            assertThat(form.locator(".ui-custom-placed-grid .ui-custom-standard-cell")).hasCount(2);
+        }
 
         form.locator("button[lsfusion-container='PROPERTY(formApply())']").click();
         check("UiCustomView.uiCustomViewCheckQuantity", items[0], "1");

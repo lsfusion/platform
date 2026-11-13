@@ -192,8 +192,13 @@ function UiCustomViewCard({row, controller, caption}) {
 }
 lsfusion.custom.register('UiCustomViewCards', function ({data, controller}) {
     const h = React.createElement;
-    return h('div', {className: 'ui-custom-cards', 'data-properties': data.properties.join(','), 'data-theme': React.useContext(window.UiCustomViewTheme)},
+    return h('div', {className: 'ui-custom-cards', 'data-properties': data.properties.join(','), 'data-theme': React.useContext(window.UiCustomViewTheme),
+            'data-comment': data.uiCustomViewQuantity.comment || 'none',
+            'data-default': data.uiCustomViewQuantity.defaultValue || 'none', 'data-view-filters': String(data.viewFilters.length)},
         data.options && data.options.title,
+        // the view's own filter of its rows: the quantities over 1
+        h('button', {className: 'ui-custom-cards-filter',
+            onClick: () => controller.viewFilters.change([{property: 'uiCustomViewQuantity', compare: '>', value: 1}])}, 'Over 1'),
         h(lsfusion.List, {component: UiCustomViewCard, controller: controller, caption: data.uiCustomViewQuantity.caption}));
 }, 'reactView');
 

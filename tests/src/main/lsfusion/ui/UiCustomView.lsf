@@ -159,6 +159,24 @@ FORM uiCustomViewReactGroup 'React group'
     ORDERS uiCustomViewName(i)
 ;
 
+// ... its quantity with a comment and a default value the form computes, a row of it removed, and its quantity - which
+// the component draws - activated
+uiCustomViewHint () = 'pcs' IF uiCustomViewShowCells();
+uiCustomViewRemove 'Remove row' (UiCustomViewItem i) { DELETE i; }
+uiCustomViewActivateQuantity 'Activate quantity' () { ACTIVATE PROPERTY uiCustomViewReactGroup.uiCustomViewQuantity(i); }
+
+EXTEND FORM uiCustomViewReactGroup
+    PROPERTIES(i) uiCustomViewRemove
+    PROPERTIES() uiCustomViewActivateQuantity
+;
+
+DESIGN uiCustomViewReactGroup {
+    PROPERTY(uiCustomViewQuantity(i)) {
+        comment = uiCustomViewHint();
+        defaultValue = uiCustomViewHint();
+    }
+}
+
 // ... and the same group inside a React container (UiCustomViewCardsOuter): its grid stays the platform's, in its
 // CUSTOM view, and the container places it
 FORM uiCustomViewPlacedGroup 'Placed React group'
@@ -196,6 +214,13 @@ DESIGN uiCustomViewPlacedProperties {
         MOVE PROPERTY(panelQuantity);
     }
 }
+
+// ... and the quantity the platform draws in each row with its own editor, activated
+uiCustomViewActivateStandard 'Activate standard' () { ACTIVATE PROPERTY uiCustomViewPlacedProperties.standardQuantity; }
+
+EXTEND FORM uiCustomViewPlacedProperties
+    PROPERTIES() uiCustomViewActivateStandard
+;
 
 // a React container that places what the platform draws with React components: a table whose quantities a
 // component draws, a group a component draws the rows of, and a container with a component of its own, which places
