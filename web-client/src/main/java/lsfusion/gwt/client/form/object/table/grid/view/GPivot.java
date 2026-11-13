@@ -350,7 +350,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
         if(measures.length() == 0 && MainFrame.pivotOnlySelectedColumn) {
             for(GPropertyDraw property : properties) {
-                if (property.getRenderType(RendererType.PIVOT) instanceof GIntegralType && (property.sID.startsWith("PROPERTY(COUNT(") || property.equals(selectedProperty))) {
+                if (property.getRenderType(RendererType.PIVOT) instanceof GIntegralType && (isPropertyCount(property) || property.equals(selectedProperty))) {
                     measures.push(columnCaptionMap.get(property));
                 }
             }
@@ -378,6 +378,11 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         }
 
         config = getDefaultConfig(columns, splitCols, rows, splitRows, inclusions, sortCols, rendererName, aggregatorName, settings);
+    }
+
+    // the count the server adds to every list group, COUNT(<group>)
+    private static boolean isPropertyCount(GPropertyDraw property) {
+        return property.sID.startsWith("PROPERTY(COUNT(");
     }
 
     private boolean isDefaultPivot(ArrayList<ArrayList<GPropertyDrawOrPivotColumn>> pivotList) {
@@ -632,8 +637,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             columnKeys.add(aggrColumn.columnKey);
         }
 
-        //don't reset firstUpdateView if no one property is visible: in this case properties include only System.count
-        if(properties.size() > 1 && (firstUpdateView == null || !firstUpdateView)) { // we don't need to update server groups, since they should be already set
+        // don't reset firstUpdateView if no property is visible, when properties have only the group's own count; a
+        // single measure, with no rows or columns, is one, and its totals are asked for (#1980)
+        boolean visible = false;
+        for (GPropertyDraw property : properties)
+            if (!isPropertyCount(property)) {
+                visible = true;
+                break;
+            }
+        if(visible && (firstUpdateView == null || !firstUpdateView)) { // we don't need to update server groups, since they should be already set
             updateRendererState(true); // will wait until server will answer us if we need to change something
             grid.changeGroups(properties, columnKeys, aggrProps, firstUpdateView != null, getGroupType(aggregatorName.toUpperCase())); // we need to do "changeListViewType" if it's firstUpdateView
             firstUpdateView = null;

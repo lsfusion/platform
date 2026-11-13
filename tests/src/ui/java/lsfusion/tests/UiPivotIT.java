@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 // a group's pivot in the web client: what a group in manual update holds back once it is back from its pivot, the pivot
 // of a group whose design hides the XLS export button, a pivot switched on before a row change is answered, PIVOT LAST
-// quantities, and quantities with the same caption
+// quantities, quantities with the same caption, and a measure with no rows or columns
 public class UiPivotIT extends UiTest {
 
     private static final String RENDER_ERROR = "An error occurred rendering the PivotTable results.";
@@ -212,6 +212,32 @@ public class UiPivotIT extends UiTest {
         assertThat(cellOf(pivot, "1,200")).hasCount(0);
         assertThat(pivot.locator("th[title='Quantity (uiPivotQuantity)']")).hasCount(1);
         assertThat(attribute(form, "Quantity (uiPivotDouble)")).hasCount(0);
+        close(form);
+    }
+
+    // a pivot whose only measure is the quantity, with no rows or columns, opens with its total, 600: it opened with an
+    // empty cell under the quantity's caption, its values coming only once its layout was changed, since the client
+    // took a single measure for the group's count alone and did not ask the server for the totals (#1980) - the
+    // measure given by the property's MEASURE option ...
+    @Test
+    public void aMeasureWithNoRowsOrColumnsShowsItsTotal() throws Exception {
+        measureTotalIsShown("UiPivot.uiPivotMeasure");
+    }
+
+    // ... and by the MEASURES list of the form's PIVOT block (#1980)
+    @Test
+    public void aMeasuresListWithNoRowsOrColumnsShowsItsTotal() throws Exception {
+        measureTotalIsShown("UiPivot.uiPivotMeasures");
+    }
+
+    private void measureTotalIsShown(String formName) throws Exception {
+        seed();
+        List<String> errors = consoleErrors();
+        Locator form = open("UiPivot.uiPivot", formName);
+        Locator pivot = form.locator(".subtotalouterdiv");
+        assertThat(cellOf(pivot, "600")).hasCount(1);
+        assertThat(form.getByText(RENDER_ERROR)).hasCount(0);
+        assertEquals("the errors the page logged", "", String.join("\n", errors));
         close(form);
     }
 

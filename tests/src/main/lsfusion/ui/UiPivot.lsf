@@ -6,7 +6,8 @@ REQUIRE System, SystemEvents;
 // back to its table before an update there, on the platform's toolbar and on the toolbar a React view draws
 // (UiPivot.js), the pivot of a group whose design hides the XLS export button, a pivot switched on before a row
 // change is answered, pivots with a PIVOT LAST quantity by a name, a number and a date-time, one with the three of
-// them under the same caption, and ones with properties captioned alike -, and the action it seeds the items with
+// them under the same caption, ones with properties captioned alike, and ones with a measure and no rows or columns -,
+// and the action it seeds the items with
 
 CLASS UiPivotItem 'Item';
 uiPivotName 'Name' = DATA STRING[50] (UiPivotItem);
@@ -151,6 +152,21 @@ FORM uiPivotSameCaptionHidden 'Same captions, one hidden'
     FILTERS uiPivotShown(i)
 ;
 
+// a group opened as its pivot with its quantity as its only measure and no rows or columns: the pivot only totals it,
+// 600 - the measure given by the property's MEASURE option, and by the MEASURES list of the form's PIVOT block
+FORM uiPivotMeasure 'Measure, no rows'
+    OBJECTS i = UiPivotItem PIVOT
+    PROPERTIES(i) READONLY uiPivotName, uiPivotQuantity MEASURE
+    FILTERS uiPivotShown(i)
+;
+
+FORM uiPivotMeasures 'Measures list, no rows'
+    OBJECTS i = UiPivotItem PIVOT
+    PROPERTIES(i) READONLY uiPivotName, uiPivotQuantity
+    FILTERS uiPivotShown(i)
+    PIVOT i MEASURES uiPivotQuantity(i)
+;
+
 onWebClientInit() + {
     onWebClientInit('UiPivot.js') <- 1;
 }
@@ -169,6 +185,8 @@ NAVIGATOR {
         NEW uiPivotSameCaption;
         NEW uiPivotSameCaptionSum;
         NEW uiPivotSameCaptionHidden;
+        NEW uiPivotMeasure;
+        NEW uiPivotMeasures;
     }
 }
 
