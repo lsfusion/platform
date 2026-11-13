@@ -5,6 +5,8 @@ title: 'User classes'
 
 [Classes](Classes.md) that a developer can create and the instances of which a user can create are called *custom classes*. 
 
+Each object of a custom class has an internal identifier: a number assigned to it when it is [created](New_object_NEW.md). The identifier is not a property, and the platform declares no `id[Object]` or other identifier property common to all objects: an identifier shown to the user — `id`, `code`, `number` — is an ordinary property declared by the application for the classes that need it, [data](Data_properties_DATA.md) or calculated, and the internal identifier is given by [converting](Type_conversion.md) the object to a numeric or string class.
+
 ### Inheritance {#inheritance}
 
 When creating custom class `B` you can explicitly specify that its [parent](Classes.md) is class `A`. In this case, class `A` shall be called the *parent class* of class `B`.

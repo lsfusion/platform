@@ -21,8 +21,8 @@ title: 'Built-in classes'
 |`INTERVAL[DATE]`, `INTERVAL[DATETIME]`, `INTERVAL[TIME]`, `INTERVAL[ZDATETIME]`|Interval — a pair of boundary values (from / to) of the corresponding date / time class||
 |`STRING`, `STRING[ ]`|String data type with optional maximum length, case-sensitive|`'text'`, `'text with\nbreak'`|
 |`ISTRING`, `ISTRING[ ]`|String data type with optional maximum length, case-insensitive||
-|`BPSTRING`, `BPSTRING[ ]`|String data type with optional maximum length, case-sensitive, stored in the database as a fixed-length string||
-|`BPISTRING`, `BPISTRING[ ]`|String data type with optional maximum length, case-insensitive, stored in the database as a fixed-length string||
+|`BPSTRING`, `BPSTRING[ ]`|String data type with optional maximum length, case-sensitive (with a maximum length specified, values are stored in the database as fixed-length strings padded with spaces to that length and are read without trailing spaces)||
+|`BPISTRING`, `BPISTRING[ ]`|String data type with optional maximum length, case-insensitive (with a maximum length specified, values are stored in the database as fixed-length strings padded with spaces to that length and are read without trailing spaces)||
 |`TEXT`               |String data type of arbitrary length, case-insensitive||
 |`RICHTEXT`           |String data type of arbitrary length with formatting, case-insensitive||
 |`HTMLTEXT`           |String data type of arbitrary length with HTML markup, case-insensitive||
