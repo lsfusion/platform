@@ -376,6 +376,18 @@ public class UiCustomViewIT extends UiTest {
         assertThat(cell).hasAttribute("data-stable-controller", "true");
         assertThat(panel).hasAttribute("data-stable-controller", "true");
         assertThat(rows.first().locator(".ui-custom-react-cell")).hasText("1");
+
+        // the grid switched to the platform's table and back: the component's rows go with the editors placed in them,
+        // and come back with editors of their own - one of each in a row, none left of those before
+        form.locator("[title='Table']").click();
+        assertThat(rows).hasCount(0);
+        assertThat(form.locator("td[lsfusion-container='PROPERTY(standardQuantity)']")).hasCount(2);
+        form.locator("[title='Custom view']").click();
+        assertThat(rows).hasCount(2);
+        assertThat(rows.nth(1).locator(".ui-custom-react-cell")).hasText("22");
+        assertThat(rows.nth(1).locator(".ui-custom-standard-cell")).hasText("22");
+        assertThat(form.locator(".ui-custom-placed-grid .ui-custom-react-cell")).hasCount(2);
+
         form.locator("button[lsfusion-container='PROPERTY(formApply())']").click();
         check("UiCustomView.uiCustomViewCheckQuantity", items[0], "1");
         check("UiCustomView.uiCustomViewCheckQuantity", items[1], "22");

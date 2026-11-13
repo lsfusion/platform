@@ -2150,8 +2150,8 @@ table: where a view draws the rows, `listViews` is empty, `listView` is `null`, 
 rows a view draws has the default `GRID` list view type. The grid of a group the form gives another
 (`OBJECTS o = Order PIVOT`, and `MAP`, `CALENDAR`, `CUSTOM`) is drawn by the platform in that view type, and a React
 container around it places the grid with `<Platform name="GRID(o)"/>`, as it places a grid given `custom = NULL`. A
-React component of the grid itself (`GRID(o) { custom = 'OrderCards'; }`) is refused for such a group when the form is
-built, since the server starts the group as the platform's view of that kind needs it.
+`custom` of the grid itself (`GRID(o) { custom = 'OrderCards'; }`) is the group's `CUSTOM`, and puts the group in the
+`CUSTOM` view type ([A React component in `CUSTOM`](#form-custom)).
 
 The toolbar's `export()`, `update()`, `manual.change()` and `listView.change()` return the `Promise` of their request.
 Inside a [batch](How-to_Custom_view_controller.md#batch) the members that ask the server return a rejected `Promise` with the reason. The settings of
@@ -2251,7 +2251,7 @@ What the view draws itself the platform does not build: a `custom` on `BOX(o)` d
 
 ### A component's own view {#component-views}
 
-A table, a toolbar, filter controls, a filter group and a property's filter — `GRID(o)`, a tree's `GRID(TREE t)`,
+A tree's table, a toolbar, filter controls, a filter group and a property's filter — `GRID(TREE t)`,
 `TOOLBARSYSTEM`, `FILTERCONTROLS`, `FILTERGROUP(fg)` and `FILTER(<property>)` — take a React component in `custom` as a
 container does, and the component then draws, in their place, what they show of their object group or tree: the rows,
 the toolbar's buttons, the filter controls, the filter selected in the filter group, the property filter's condition.
@@ -2259,48 +2259,33 @@ The rest of the form stays as it is:
 
 ```lsf
 DESIGN items {
-    GRID(i) { custom = 'ItemCards'; } // the toolbar and the filters over the rows stay the platform's
+    GRID(TREE t) { custom = 'CategoryTree'; } // the toolbar and the filters over the rows stay the platform's
     TOOLBARSYSTEM(j) { custom = 'OrderToolbar'; } // over the platform's grid of j
 }
 ```
 
-The component gets what a container holding that component alone would get — `NEW cards { custom = 'ItemCards';
-MOVE GRID(i); }` —: the part of the group or of the tree on its node, under the same names ([the table at the
-top](#the-component)) — the rows and the sortings on `data.i` with `controller.i.change(row)`, the toolbar's state and
+The `custom` of the table of an object group, `GRID(i)`, is another thing: it is the group's `CUSTOM`, the render
+function of one of the views the platform shows the group's rows in ([A React component in `CUSTOM`](#form-custom)).
+
+The component gets what a container holding that component alone would get — `NEW bar { custom = 'OrderToolbar';
+MOVE TOOLBARSYSTEM(j); }` —: the part of the group or of the tree on its node, under the same names ([the table at the
+top](#the-component)) — the toolbar's state and
 members on `data.j` and `controller.j`, a tree's rows on its groups' nodes and its own on `data.<tree>`, a filter group
 on `data.<group>.<filterGroup>`, a property's filter on `data.<group>.filter.<property>`. Nothing else is on the top
-level:
-
-```jsx
-export function ItemCards({data, controller}) {
-    const items = data.i;
-    return <div className="cards">
-        {items.list.map(row =>
-            <div key={row.key} className={row.current ? 'current' : ''} onClick={() => controller.i.change(row)}>
-                {row.name.value}
-            </div>)}
-    </div>;
-}
-```
+level.
 
 The component's own design attributes are its view's, as they are of the platform's view of it: its size and its
 place in its container, its class, and its `SHOWIF`, which hides the view — so its data has no [entry](#display-options)
 of the component itself, which a container around it would have. Inside what a React container draws, the component
-has a view of its own, and the container places it with `<Platform name="GRID(i)"/>`, its entry in the container's
+has a view of its own, and the container places it with `<Platform name="TOOLBARSYSTEM(j)"/>`, its entry in the container's
 data, and its parts in the data of its own view. A property the platform draws in the rows it draws is placed per row
 with [`<Platform name row/>`](#live-editor); it places nothing else.
 
 Some combinations are refused when the form is built:
 
-- a component that shows nothing there — the table, the toolbar or the filter controls of a group in `PANEL` view,
+- a component that shows nothing there — the toolbar or the filter controls of a group in `PANEL` view,
   which has no rows, and a filter of its property, which has no user filters to be among; a toolbar hidden with
   `visible = FALSE`; a filter group with no filters or of no object — would give its component nothing to draw;
-- a table of a group in another list view type than `GRID` — `PIVOT`, `MAP`, `CALENDAR`, `CUSTOM` —, as any view of
-  its rows is ([Toolbar](#toolbar));
-- a table the design moves components into — `MOVE PROPERTY(note(i))` inside `GRID(i) { ... }`, the
-  [record](../paradigm/Form_design.md#record) a `CUSTOM`, `MAP` or `CALENDAR` view pops up for a row: its view places
-  no view of the platform's, so a container around the table, `NEW cards { custom = 'ItemCards'; MOVE GRID(i); }`,
-  draws or places what the record holds;
 - a value other than a component name: `''`, an HTML template and a property lay out the children of a container.
 
 The attributes of the platform's table — a table's `valueClass` given by a property, a tree's `hierarchicalCaption` —

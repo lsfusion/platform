@@ -8,10 +8,10 @@
     }
 
     // the rows as cards, a click making a row the current one
-    function cards(group, controller, content) {
+    function cards(group, member, content) {
         return group.list.map(function (row) {
             return e('div', {key: row.key, className: 'ui-keys-card' + (row.current ? ' ui-keys-current' : ''),
-                    onClick: function () { controller.i.change(row); }},
+                    onClick: function () { member.change(row); }},
                 e('span', null, row.uiKeysName.value), content && content(row));
         });
     }
@@ -53,7 +53,7 @@
         return e('div', {className: 'ui-keys-actions', tabIndex: 0},
             e('button', {onClick: function () { controller.uiKeysBump.exec(); }}, 'Bump'),
             e(window.lsfusion.Platform, {name: 'uiKeysBumpPlatform'}),
-            cards(props.data.i, controller));
+            cards(props.data.i, controller.i));
     };
 
     // the rows, the form's toolbar drawn by the view, which draws no button of it
@@ -77,12 +77,17 @@
             e('span', {className: 'ui-keys-said'}, call[0]));
     };
 
-    // the rows as cards, the platform's editor of the quantity placed in each by its name and its row
+    // the rows as cards - the component of the grid, given its group's node and member themselves -, the platform's
+    // editor of the quantity placed in each by its name and its row
     window.UiKeysCards = function (props) {
-        return e('div', {className: 'ui-keys-cards', tabIndex: 0}, cards(props.data.i, props.controller, function (row) {
-            return e(window.lsfusion.Platform, {name: 'i.uiKeysQty', row: row});
+        return e('div', {className: 'ui-keys-cards', tabIndex: 0}, cards(props.data, props.controller, function (row) {
+            return e(window.lsfusion.Platform, {name: 'uiKeysQty', row: row});
         }));
     };
+
+    // a grid's component is its group's CUSTOM, which the web client takes for a React component where it is
+    // registered as one
+    window.lsfusion.custom.register('UiKeysCards', window.UiKeysCards, 'reactView');
 
     // what the actions asking a value wrote in the form's log; a button of each calling its exec()
     window.UiKeysAskBoard = function (props) {

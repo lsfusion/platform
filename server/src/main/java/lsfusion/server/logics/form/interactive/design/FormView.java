@@ -974,10 +974,7 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
     // One that shows none here - of a group in PANEL view, which has no rows, toolbar or filter
     // controls; a toolbar hidden with visible = FALSE; a filter group with no filters or of no object;
     // a group's calculations, which React draws nothing of - would be drawn by a view given nothing,
-    // so it is refused. And so is a grid whose record holds anything - what the design moves into
-    // the grid, GRID(o) { MOVE ...; }, which a CUSTOM, MAP or CALENDAR view pops up for a row and rows React draws never
-    // show (checkReactRowsListView) -: such a view places no view of the platform's, as a container's places those it
-    // holds, so what the record holds is a React container's around the grid, to draw or to place
+    // so it is refused. The grid of a group is none of them: its custom is its group's CUSTOM (GridViewProxy)
     private void checkCustomReactComponents() {
         Set<ComponentView> scopes = new HashSet<>();
         for (GroupObjectView groupObject : getGroupObjectsIt())
@@ -993,13 +990,6 @@ public class FormView<This extends FormView<This>> extends IdentityView<This, Fo
                             + " shows of its group or its tree, and this one shows nothing (a group in PANEL view has no rows,"
                             + " toolbar or filter controls; a toolbar hidden with visible = FALSE and a filter group with no"
                             + " filters or of no object have nothing to show)");
-                ContainerView record = component instanceof GridView ? ((GridView) component).getRecord() : null;
-                if (record != null && !record.getChildrenList().isEmpty())
-                    throw new IllegalStateException(formErrorPrefix() + "'" + component.getSID() + "' is drawn by the React"
-                            + " component '" + component.getCustom() + "', and the design moves components into it - into"
-                            + " the record a CUSTOM, MAP or CALENDAR view pops up for a row -, which the React view of the"
-                            + " grid itself does not take; move them out, or draw the grid with a container: NEW board { custom = '"
-                            + component.getCustom() + "'; MOVE " + component.getSID() + "; }");
             }
     }
 

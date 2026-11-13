@@ -1,11 +1,34 @@
 package lsfusion.server.language.proxy;
 
+import lsfusion.interop.form.object.table.grid.ListViewType;
+import lsfusion.server.base.Custom;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 
 public class GridViewProxy extends GridPropertyViewProxy<GridView> {
     public GridViewProxy(GridView target) {
         super(target);
+    }
+
+    // a grid's custom is its group's own, as a property's is the property's (PropertyDrawViewProxy): a name says what
+    // CUSTOM 'name' says in OBJECTS - the group's rows shown in CUSTOM view by that render function, a classic one or a
+    // React component, which the web client tells apart; `custom = NULL` says the grid is the platform's, whatever view
+    // the form gives the group
+    @Override
+    public void setCustom(Object custom) {
+        Version version = getVersion();
+        if (isExplicitNull(custom))
+            target.setCustom(Custom.NOCUSTOM, version);
+        else if (custom instanceof LocalizedString && !Custom.isHtmlTemplate(custom.toString()) && !custom.toString().isEmpty()) {
+            GroupObjectEntity group = target.groupObject.entity;
+            group.setCustomRenderFunction(custom.toString(), version);
+            group.setListViewType(ListViewType.CUSTOM, version);
+        } else
+            throw new UnsupportedOperationException("custom of a grid is NULL, the platform's own views of the group's"
+                    + " rows, or the name of the group's CUSTOM render function, given as CUSTOM gives it in OBJECTS: a"
+                    + " template, '' and a property lay out the children of a container");
     }
 
     @SuppressWarnings("unused")

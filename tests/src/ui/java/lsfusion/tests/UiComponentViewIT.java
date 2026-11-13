@@ -32,8 +32,8 @@ public class UiComponentViewIT extends UiTest {
         Locator form = open(FOLDER, "UiComponentView.uiCvGrid");
         Locator names = form.locator(".ui-cv-name");
         assertThat(names).hasText(items);
-        assertEquals("i", drawnView("grid").eval("Object.keys(data).join()"));
-        assertEquals("true", drawnView("grid").eval("['list', 'byKey', 'keys', 'orders', 'name', 'price'].every(k => k in data.i)"));
+        assertEquals("true", drawnView("grid").eval("['list', 'byKey', 'keys', 'orders', 'name', 'price'].every(k => k in data)"));
+        assertEquals("true", drawnView("grid").eval("['change', 'orders', 'name', 'form', 'batch'].every(k => k in controller)"));
         assertThat(form.locator("[lsfusion-container='GRID(i)'] .ui-cv-grid")).isVisible();
         assertThat(form.locator("[lsfusion-container='TOOLBARSYSTEM(i)']")).isVisible();
         form.getByTitle("Number of Entries", new Locator.GetByTitleOptions().setExact(true)).click();
@@ -53,22 +53,6 @@ public class UiComponentViewIT extends UiTest {
         action(form, "uiCvRestyle").click();
         assertThat(value(form, "uiCvClass")).hasText("ui-cv-b");
         assertEquals(Collections.emptyList(), errors);
-        close(form);
-    }
-
-    // a grid's own view is given the base size the platform's grid of the same columns has: the view is made before the
-    // group's controllers, and the size is of the group's columns all the same (#1893)
-    @Test
-    public void aGridsOwnViewHasTheBaseSizeOfThePlatformsGrid() throws Exception {
-        String[] items = seed();
-        Locator form = open(FOLDER, "UiComponentView.uiCvGrid");
-        assertThat(form.locator(".ui-cv-name")).hasText(items);
-        List<String> own = size(form);
-        close(form);
-        form = open(FOLDER, "UiComponentView.uiCvToolbar");
-        assertThat(cell(form, "name", items[0])).isVisible();
-        assertEquals(size(form), own);
-        assertTrue(own.toString(), own.get(0).startsWith("calc("));
         close(form);
     }
 
@@ -194,12 +178,6 @@ public class UiComponentViewIT extends UiTest {
         category = "Fruit" + id;
         exec("UiComponentView.uiCvSeed", category, items[0], items[1]);
         return items;
-    }
-
-    // the base size the layout gives the grid, or the grid's own view, as its style says
-    @SuppressWarnings("unchecked")
-    private static List<String> size(Locator form) {
-        return (List<String>) form.locator("[lsfusion-container='GRID(i)']").evaluate("grid => [grid.style.width, grid.style.height]");
     }
 
     private static Locator value(Locator form, String property) {

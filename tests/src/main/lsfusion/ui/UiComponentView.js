@@ -12,12 +12,16 @@
     window.UiCvGrid = function (props) {
         var Platform = window.lsfusion.Platform, controller = props.controller;
         publish('grid', props);
-        return e('div', {className: 'ui-cv-grid'}, props.data.i.list.map(function (row) {
+        return e('div', {className: 'ui-cv-grid'}, props.data.list.map(function (row) {
             return e('div', {key: row.key, className: 'ui-cv-grid-row' + (row.current ? ' ui-cv-current' : '')},
-                e('span', {className: 'ui-cv-name', onClick: function () { controller.i.change(row); }}, row.name.value),
-                e(Platform, {name: 'i.price', row: row, className: 'ui-cv-price'}));
+                e('span', {className: 'ui-cv-name', onClick: function () { controller.change(row); }}, row.name.value),
+                e(Platform, {name: 'price', row: row, className: 'ui-cv-price'}));
         }));
     };
+
+    // a grid's component is its group's CUSTOM, which the web client takes for a React component where it is
+    // registered as one
+    window.lsfusion.custom.register('UiCvGrid', window.UiCvGrid, 'reactView');
 
     window.UiCvToolbar = function (props) {
         publish('toolbar', props);

@@ -207,10 +207,10 @@ window.UiCustomViewCardsOuter = function () {
 lsfusion.custom.register('UiCustomViewPlacedGrid', function ({data, controller}) {
     const h = React.createElement;
     return h('div', {className: 'ui-custom-placed-grid'},
-        data.i.list.map(row => h('div', {key: row.key, className: 'ui-custom-placed-row', 'data-current': String(row.current)},
-            h('button', {onClick: () => controller.i.change(row)}, row.uiCustomViewName.value),
-            h(lsfusion.Platform, {name: 'i.uiCustomViewQuantity', row: row}),
-            h(lsfusion.Platform, {name: 'i.standardQuantity', row: row, className: 'ui-custom-standard-cell'}))));
+        data.list.map(row => h('div', {key: row.key, className: 'ui-custom-placed-row', 'data-current': String(row.current)},
+            h('button', {onClick: () => controller.change(row)}, row.uiCustomViewName.value),
+            h(lsfusion.Platform, {name: 'uiCustomViewQuantity', row: row}),
+            h(lsfusion.Platform, {name: 'standardQuantity', row: row, className: 'ui-custom-standard-cell'}))));
 }, 'reactView');
 
 // ... and the container around it: the grid, and the quantity of the current item, under its theme

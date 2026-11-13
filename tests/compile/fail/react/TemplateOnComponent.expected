@@ -1,1 +1,1 @@
-custom of a component that is not a container is NULL, the standard view, or the name of a React component
+custom of a grid is NULL, the platform's own views of the group's rows, or the name of the group's CUSTOM render function
