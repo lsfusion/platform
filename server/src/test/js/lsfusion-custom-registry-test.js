@@ -422,6 +422,12 @@ console.log('List');
     try { w.lsfusion.List({ component: Row }); } catch (e) { nameless = e; }
     check('a <List> with no group throws, saying so', nameless !== null && nameless.message.indexOf('no group') > 0,
         String(nameless));
+
+    // ... but where the view is given one group's node itself - the component of a group's CUSTOM -: its rows
+    makeReact.__ctxValue = { view: null, store: { subscribe: () => () => {}, getSnapshot: () => formSnapshot.o } };
+    const own = w.lsfusion.List({ component: Row });
+    check('a <List> with no group draws the rows of the node the view is given', own.length === 3
+        && drawRow(own[1]).props.row === rowsOfO['2'], String(own.length));
 }
 
 console.log('BucketScope');

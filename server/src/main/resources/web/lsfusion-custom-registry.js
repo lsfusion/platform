@@ -431,7 +431,7 @@
         // one row of a <List>, read out of the root's own store by the group's name and the row's key, so that a change
         // of one row's values redraws that row alone
         var RowWrapper = React.memo(function (p) {
-            var row = ns.useData(function (s) { var g = s && s[p.group]; var bk = g && g.byKey; return bk ? bk[p.rowKey] : null; });
+            var row = ns.useData(function (s) { var g = nodeOf(s, p.group); var bk = g && g.byKey; return bk ? bk[p.rowKey] : null; });
             // a key the group does not hold - a row removed (about to unmount), or a subset naming a row that is not
             // there: either way no null row reaches the component
             if (row == null) return null;
@@ -442,11 +442,16 @@
             return React.createElement(p.component, rowProps);
         });
         var isGroupName = function (group) { return group !== undefined && group !== null && group !== ''; };
+        // the node a rows helper reads: the group's, by its name; given no group, what the view is given itself - the
+        // component of a group's CUSTOM is given its group's node, and names no group
+        var nodeOf = function (snapshot, group) {
+            return snapshot ? (isGroupName(group) ? snapshot[group] : snapshot) : null;
+        };
         // the node's `keys`, or undefined where this view does not draw the group's rows. Only an ARRAY is the rows':
         // where they are drawn elsewhere a panel property may take the name (FormView.getReservedNodeNames), and its
         // entry is an object
         var rowKeysOf = function (snapshot, group) {
-            var g = snapshot && isGroupName(group) ? snapshot[group] : null;
+            var g = nodeOf(snapshot, group);
             return g && Array.isArray(g.keys) ? g.keys : undefined;
         };
         // A group's rows are projected into the container that draws THEM, and nowhere else: a view that holds only a
@@ -457,10 +462,9 @@
         // The rows are drawn here exactly when the node carries the array `keys`, however many there are: a group with
         // no rows right now has `keys` = [], not no `keys` (rowKeysOf).
         var checkRowsDrawn = function (kind, group, drawn) {
-            if (!isGroupName(group))
-                throw new Error("<" + kind + "> is given no group, so it has no rows to draw: name the group, as group=\"o\"");
             if (!drawn)
-                throw new Error("<" + kind + "> is given the group '" + group + "', whose rows this view does not draw");
+                throw new Error(isGroupName(group) ? "<" + kind + "> is given the group '" + group + "', whose rows this view does not draw"
+                        : "<" + kind + "> is given no group, so it has no rows to draw: name the group, as group=\"o\"");
         };
         // <List group="o" component={Row} [keys={subset}]/>: the rows of a group, each through a memoized wrapper bound
         // to that one row. They are read out of the root's OWN store by the group's name - what BucketScope reads too -
@@ -720,7 +724,7 @@
             };
             var ensure = function () { // sync the index to the current snapshot
                 var s = formStore.getSnapshot();
-                var g = s ? s[groupSID] : null;
+                var g = nodeOf(s, groupSID);
                 if (g === lastNode) return;
                 var keys = (g && g.keys) || EMPTY, byKey = (g && g.byKey) || null;
                 var all = keys !== lastKeys, dirty = all ? null : Object.create(null), any = all;
