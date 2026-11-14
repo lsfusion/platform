@@ -22,7 +22,6 @@ import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
@@ -39,11 +38,11 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.physics.admin.Settings;
@@ -562,7 +561,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             });
 
             if(request.needNotificationId)
-                return new ResultExternalResponse(new ExternalRequest.Result[]{formatReturnValue(notificationId, IntegerClass.instance, null, null)}, new String[0], new String[0], new String[0], new String[0], HttpServletResponse.SC_OK);
+                return new ResultExternalResponse(new ExternalRequest.Result[]{formatReturnValue(notificationId, IntegerClass.instance, null, null, getContext().getConnectionContext())}, new String[0], new String[0], new String[0], new String[0], HttpServletResponse.SC_OK);
 
             int mode = Settings.get().getExternalUINotificationMode();
 
@@ -592,7 +591,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
                     executeExternal(property, request, actionPathInfo, dataSession, getStack());
 
-                    return readResult(request.returnNames, request.returnMultiType, property.action, dataSession, formatLogMessages(logProcessor.messages));
+                    return readResult(businessLogics, getContext().getConnectionContext(), request.returnNames, request.returnMultiType, property.action, dataSession, formatLogMessages(logProcessor.messages));
                 }
             } catch (Exception e) {
                 // Wrap with collected partial messages so callers (currently MCP) can include
@@ -722,16 +721,19 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    private ExternalResponse readResult(String[] returnNames, String returnMultiType, Action<?> action, DataSession dataSession, String[] logMessages) throws SQLException, SQLHandledException {
+    // Parameterized, as the gate is (checkAPIAccess), so that another request context - a form, for a controller's call
+    // that answers as an MCP tool does - answers as /exec /eval do instead of duplicating it: env is the session the
+    // action ran in
+    public static ExternalResponse readResult(BusinessLogics businessLogics, ConnectionContext context, String[] returnNames, String returnMultiType, Action<?> action, ExecutionEnvironment env, String[] logMessages) throws SQLException, SQLHandledException {
 
-        ImOrderMap<String, String> headers = CallHTTPAction.readPropertyValues(dataSession, businessLogics.LM.headersTo).toOrderMap();
+        ImOrderMap<String, String> headers = CallHTTPAction.readPropertyValues(env, businessLogics.LM.headersTo).toOrderMap();
         String[] headerNames = headers.keyOrderSet().toArray(new String[headers.size()]);
         String[] headerValues = headers.valuesList().toArray(new String[headers.size()]);
-        ImOrderMap<String, String> cookies = CallHTTPAction.readPropertyValues(dataSession, businessLogics.LM.cookiesTo).toOrderMap();
+        ImOrderMap<String, String> cookies = CallHTTPAction.readPropertyValues(env, businessLogics.LM.cookiesTo).toOrderMap();
         String[] cookieNames = cookies.keyOrderSet().toArray(new String[cookies.size()]);
         String[] cookieValues = cookies.valuesList().toArray(new String[cookies.size()]);
 
-        Integer statusHttp = (Integer) businessLogics.LM.statusHttpTo.read(dataSession);
+        Integer statusHttp = (Integer) businessLogics.LM.statusHttpTo.read(env);
 
         ExternalUtils.ResponseType responseType = ExternalUtils.getResponseType(returnMultiType, headerNames, headerValues);
         Charset charset = responseType.charset;
@@ -749,22 +751,15 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 returnProps[i] = returnProperty;
             }
             for (LP<?> returnProp : returnProps)
-                returns.add(formatReturnValue(returnProp.read(dataSession), returnProp.property, charset, returnProps.length > 1 ? returnProp.property.getName() : null));
+                returns.add(formatReturnValue(returnProp.read(env), returnProp.property.getType(), charset, returnProps.length > 1 ? returnProp.property.getName() : null, context));
         } else {
             Result<SessionDataProperty> resultProp = new Result<>();
-            Pair<String[], ObjectValue[]> result = readResult(action, dataSession, businessLogics.LM, resultProp);
+            Pair<String[], ObjectValue[]> result = readResult(action, env, businessLogics.LM, resultProp);
             for (int i = 0; i < result.second.length; i++)
-                returns.add(formatReturnValue(result.second[i].getValue(), resultProp.result, charset, result.first[i]));
+                returns.add(formatReturnValue(result.second[i].getValue(), resultProp.result.getType(), charset, result.first[i], context));
         }
 
         return new ResultExternalResponse(returns.toArray(new ExternalRequest.Result[0]), headerNames, headerValues, cookieNames, cookieValues, nvl(statusHttp, HttpServletResponse.SC_OK), logMessages);
-    }
-
-    private ExternalRequest.Result formatReturnValue(Object returnValue, Type type, Charset charset, String paramName) {
-        return formatReturnValue(returnValue, type, charset, paramName, getContext().getConnectionContext());
-    }
-    private ExternalRequest.Result formatReturnValue(Object returnValue, Property returnProperty, Charset charset, String paramName) {
-        return formatReturnValue(returnValue, returnProperty.getType(), charset, paramName);
     }
 
     protected abstract ExecSession getExecSession() throws SQLException, SQLHandledException;
