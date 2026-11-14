@@ -274,6 +274,15 @@ uiCustomViewFromNavigator 'From the navigator' () {
     INTERNAL CLIENT 'uiCustomViewFromNavigator' PARAMS 6;
 }
 
+// the quantity of the item shown under a name: returned by a script with the name left free, it is a value for each
+// name ...
+uiCustomViewShownQuantity (STRING[50] name) =
+    GROUP MAX uiCustomViewQuantity(UiCustomViewItem i) IF uiCustomViewShown(i) AND uiCustomViewName(i) = name;
+// ... which the JS function of this action of the navigator marks, every one with its name
+uiCustomViewResultsFromNavigator 'Results from the navigator' () {
+    INTERNAL CLIENT 'uiCustomViewResultsFromNavigator';
+}
+
 onWebClientInit() + {
     onWebClientInit('UiCustomView.js') <- 1;
 }
@@ -293,6 +302,7 @@ NAVIGATOR {
         NEW uiCustomViewClassicGroup;
         NEW uiCustomViewReactCells;
         NEW uiCustomViewFromNavigator;
+        NEW uiCustomViewResultsFromNavigator;
     }
 }
 

@@ -250,6 +250,14 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GControllerResultAction(type, value);
     }
 
+    @Converter(from = ControllerResultsClientAction.class)
+    public GControllerResultsAction convertAction(ControllerResultsClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
+        GControllerResultAction[] results = new GControllerResultAction[action.results.length];
+        for (int i = 0; i < results.length; i++)
+            results[i] = convertAction(action.results[i], formSessionObject, servlet);
+        return new GControllerResultsAction(action.names, results);
+    }
+
     @Converter(from = ControllerExceptionClientAction.class)
     public GControllerExceptionAction convertAction(ControllerExceptionClientAction action) {
         return new GControllerExceptionAction(action.message, action.cancelled);

@@ -185,6 +185,39 @@ public class UiCustomViewIT extends UiTest {
         check("UiCustomView.uiCustomViewCheckNavigatorMarks", "navigator number 42");
     }
 
+    // a script whose RETURN has a parameter left free answers with a value for each value of the parameter: the call
+    // resolves to all of them, each with its name - an array, whatever their number -, where a result without
+    // parameters is its value. It resolved to the first of the values, the others dropped without a sign
+    @Test
+    public void aResultWithParametersResolvesToEveryValue() throws Exception {
+        String[] items = seed();
+        Locator form = open(FOLDER, "UiCustomView.uiCustomViewCalls");
+        call(form, "eval");
+        assertThat(form.locator(".ui-custom-view-results li")).hasText(new String[] {"eval: number 42"});
+
+        String quantity = "UiCustomView.uiCustomViewShownQuantity(STRING[50] name)";
+        assertEquals("[{\"name\":\"" + items[0] + "\",\"value\":1},{\"name\":\"" + items[1] + "\",\"value\":2}]",
+                formEval("RETURN " + quantity + ";"));
+        assertEquals("[{\"name\":\"" + items[1] + "\",\"value\":2}]",
+                formEval("RETURN " + quantity + " IF UiCustomView.uiCustomViewShownQuantity(name) = 2;"));
+        assertEquals("[]", formEval("RETURN " + quantity + " IF UiCustomView.uiCustomViewShownQuantity(name) = 3;"));
+        assertEquals("2", formEval("RETURN UiCustomView.uiCustomViewShownQuantity('" + items[1] + "');"));
+    }
+
+    // what a script evaluated through the calls form's controller resolves to, as JSON, results in the order of their names
+    private String formEval(String body) {
+        return (String) page.evaluate("script => window.uiCustomViewCalls.form.eval(script).then(value => JSON.stringify("
+                + "Array.isArray(value) ? value.slice().sort((a, b) => a.name < b.name ? -1 : 1) : value))", "run() { " + body + " }");
+    }
+
+    // ... and so does a call of the navigator's controller
+    @Test
+    public void aResultWithParametersResolvesToEveryValueInTheNavigator() throws Exception {
+        String[] items = seed();
+        open(FOLDER, "UiCustomView.uiCustomViewResultsFromNavigator");
+        check("UiCustomView.uiCustomViewCheckNavigatorMarks", items[0] + " = 1 and " + items[1] + " = 2");
+    }
+
     // a custom cell renderer changes its property through its controller - the server has the value, which the form
     // shows in a property of its own - and reaches the form's controller from there, whose call resolves to what the
     // server answers

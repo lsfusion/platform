@@ -151,6 +151,11 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
+    public void execute(GControllerResultsAction action) {
+        gController.controllerCallbackResult(getDispatchingIndex(), GController.getResults(action));
+    }
+
+    @Override
     public void execute(GControllerExceptionAction action) {
         gController.controllerCallbackException(getDispatchingIndex(), action.message, action.cancelled);
     }

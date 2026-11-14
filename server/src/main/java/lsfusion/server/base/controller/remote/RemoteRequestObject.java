@@ -428,7 +428,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         return runControllerRequest(stack, (env, context) -> {
             dropResult(la.action, env, getControllerBL().LM); // persistent (form) session may carry a stale result; harmless no-op on a fresh (navigator) session
             la.execute(env, stack, bindParams(env, la, params));
-            return controllerResultAction(context, readControllerResult(env, la.action));
+            return readControllerResult(env, la.action, context);
         });
     }
 
@@ -475,13 +475,20 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         }
     }
 
-    private ObjectValue readControllerResult(ExecutionEnvironment env, Action<?> action) throws SQLException, SQLHandledException {
+    private ClientAction readControllerResult(ExecutionEnvironment env, Action<?> action, ConnectionContext context) throws SQLException, SQLHandledException, IOException {
         Result<SessionDataProperty> resultProp = new Result<>();
         Pair<String[], ObjectValue[]> result = readResult(action, env, getControllerBL().LM, resultProp);
-        return result.second.length > 0 ? result.second[0] : null;
+        if(resultProp.result.interfaces.isEmpty())
+            return controllerResultAction(context, result.second[0]);
+        // a result with parameters (RETURN f(a), a left free): every value with its name; nothing returned is one null without a name
+        boolean none = result.first.length == 1 && result.first[0] == null;
+        ControllerResultClientAction[] results = new ControllerResultClientAction[none ? 0 : result.second.length];
+        for(int i = 0; i < results.length; i++)
+            results[i] = controllerResultAction(context, result.second[i]);
+        return new ControllerResultsClientAction(none ? new String[0] : result.first, results);
     }
 
-    private ClientAction controllerResultAction(ConnectionContext context, ObjectValue result) throws IOException {
+    private ControllerResultClientAction controllerResultAction(ConnectionContext context, ObjectValue result) throws IOException {
         if(result == null || result.getValue() == null) // no export value / null value -> JS undefined
             return new ControllerResultClientAction(null, null);
         Object value = result.getValue();

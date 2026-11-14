@@ -36,6 +36,8 @@ public interface GActionDispatcher {
 
     void execute(GControllerResultAction action);
 
+    void execute(GControllerResultsAction action);
+
     void execute(GControllerExceptionAction action);
 
     void execute(GLogOutAction action);

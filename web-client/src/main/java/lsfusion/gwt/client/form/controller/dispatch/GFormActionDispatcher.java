@@ -10,6 +10,7 @@ import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.classes.view.GClassDialog;
 import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.form.controller.GController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
@@ -150,6 +151,11 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     @Override
     public void execute(GControllerResultAction action) {
         form.controllerCallbackResult(getDispatchingIndex(), JSValueConverter.convertToJSValue(action.type, null, false, PValue.convertFileValue(action.value)));
+    }
+
+    @Override
+    public void execute(GControllerResultsAction action) {
+        form.controllerCallbackResult(getDispatchingIndex(), GController.getResults(action));
     }
 
     @Override

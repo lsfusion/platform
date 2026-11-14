@@ -7,6 +7,7 @@ import java.io.IOException;
  * correlated by the dispatching response's requestIndex - no id is carried on the action (GFORM-CONTROLLER-EXEC-EVAL-PLAN §12.3/§12.4):
  *  - {@link ControllerResultClientAction} — a result (serialized {@code value}+{@code type}; {@code value == null}
  *    ⇒ no/undefined value) -> onResult;
+ *  - {@link ControllerResultsClientAction} — the results of a result with parameters, each with its name -> onResult;
  *  - {@link ControllerExceptionClientAction} — a business/property/cancel error -> onException.
  *
  * Web-only: produced by RemoteForm for browser-originated controller calls and converted to a GWT action via

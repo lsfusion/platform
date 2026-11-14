@@ -1,10 +1,12 @@
 package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import lsfusion.gwt.client.action.GControllerResultsAction;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher.ServerResponseCallback;
 import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
 import lsfusion.gwt.client.form.property.JSValueConverter;
+import lsfusion.gwt.client.form.property.PValue;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -129,6 +131,18 @@ public abstract class GController {
             controllerCallbackException(exceptionResult.requestIndex, "Request failed", false);
         }
     }
+
+    // what a call whose result has parameters resolves with: every value, converted as a result's one value is, with its name
+    public static JavaScriptObject getResults(GControllerResultsAction action) {
+        JavaScriptObject results = JavaScriptObject.createArray();
+        for (int i = 0; i < action.names.length; i++)
+            addResult(results, action.names[i], JSValueConverter.convertToJSValue(
+                    action.results[i].type, null, false, PValue.convertFileValue(action.results[i].value)));
+        return results;
+    }
+    private static native void addResult(JavaScriptObject results, String name, JavaScriptObject value) /*-{
+        results.push({ name: name, value: value == null ? undefined : value }); // as a value alone resolves
+    }-*/;
 
     public void controllerCallbackResult(long requestIndex, JavaScriptObject result) {
         resolveControllerCallback(controllerCallbacks, requestIndex, result);

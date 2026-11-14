@@ -274,3 +274,13 @@ window.uiCustomViewFromNavigator = function (a, controller, resolve, reject) {
         return controller.exec('UiCustomView.uiCustomViewNavigatorMark', 'navigator ' + typeof value + ' ' + value);
     }).then(resolve, reject);
 };
+
+// what the navigator's action uiCustomViewResultsFromNavigator runs: a script whose RETURN has a parameter left free
+// resolves to every result with its name, all of which it marks
+window.uiCustomViewResultsFromNavigator = function (controller, resolve, reject) {
+    controller.eval('run() { RETURN UiCustomView.uiCustomViewShownQuantity(STRING[50] name); }').then(function (results) {
+        return controller.exec('UiCustomView.uiCustomViewNavigatorMark', results.map(function (result) {
+            return result.name + ' = ' + result.value;
+        }).sort().join(' and '));
+    }).then(resolve, reject);
+};
