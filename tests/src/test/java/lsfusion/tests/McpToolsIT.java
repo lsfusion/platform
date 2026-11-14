@@ -203,10 +203,32 @@ public class McpToolsIT {
         Assert.assertTrue(kinds.toString(), kinds.getJSONObject(kinds.length() - 2).getJSONObject("properties").has("base64"));
     }
 
-    // params is the text of the JSON array, as a client writes it: org.json would write 21.0 as 21
+    // The server runs the script itself - `logics`, which an omitted context is here. Where the user works it is run by
+    // the application's page, so such a call is refused here - after what is wrong with the call itself, which the page
+    // sends here to be told
+    @Test
+    public void theEvalToolRunsItsScriptOnTheServer() throws Exception {
+        Assert.assertEquals("yes 22", value(eval(EVAL_NUMBER, "[21, true]", "logics")));
+        for (String context : new String[] {"navigator", "form"}) {
+            JSONObject refused = eval(EVAL_NUMBER, "[21, true]", context);
+            Assert.assertTrue(refused.toString(), refused.getBoolean("isError") && refused.toString().contains("only where the tool is called by the application's page"));
+            JSONObject noCall = eval(EVAL_NUMBER, "\"none\"", context);
+            Assert.assertTrue(noCall.toString(), noCall.getBoolean("isError") && noCall.toString().contains("`params` must be an array"));
+        }
+        JSONObject unknown = eval(EVAL_NUMBER, "[21, true]", "server");
+        Assert.assertTrue(unknown.toString(), unknown.getBoolean("isError") && unknown.toString().contains("`logics`, `navigator` or `form`; got `server`"));
+        Assert.assertEquals("[\"logics\",\"navigator\",\"form\"]",
+                tool("lsfusion_eval").getJSONObject("inputSchema").getJSONObject("properties").getJSONObject("context").getJSONArray("enum").toString());
+    }
+
     private static JSONObject eval(String script, String params) throws Exception {
+        return eval(script, params, null);
+    }
+
+    // params is the text of the JSON array, as a client writes it: org.json would write 21.0 as 21
+    private static JSONObject eval(String script, String params, String context) throws Exception {
         return answer(send("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"lsfusion_eval\",\"arguments\":"
-                + "{\"script\":" + JSONObject.quote(script) + ",\"params\":" + params + "}}}"));
+                + "{\"script\":" + JSONObject.quote(script) + ",\"params\":" + params + (context != null ? ",\"context\":" + JSONObject.quote(context) : "") + "}}}"));
     }
 
     private static String value(JSONObject result) {

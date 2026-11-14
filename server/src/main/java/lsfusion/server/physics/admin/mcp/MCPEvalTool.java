@@ -90,6 +90,16 @@ public class MCPEvalTool {
         }
         ExternalRequest.Param scriptParam = ExternalRequest.getUrlParam(script, UTF8, "script");
         ExternalRequest request = buildRequest(args, envelope);
+        // the last check: the application's page sends here what is no call of the tool, whatever its context, for
+        // the server to say what is wrong with it
+        String context = JsonToolArgs.getString(args, "context");
+        if (context != null && !context.equals("logics")) {
+            // where the user works the script is run by the application's page, through the controller of the form
+            // or of the navigator (WebMCP): a call that came here has no user at a page to run it for
+            throw new IllegalArgumentException(context.equals("navigator") || context.equals("form")
+                    ? "`context` `" + context + "` runs the script where the user works: it is there only where the tool is called by the application's page"
+                    : "`context` is `logics`, `navigator` or `form`; got `" + context + "`");
+        }
 
         ExternalResponse response = remoteLogics.eval(token, connectionInfo, /*action=*/ false, scriptParam, request);
         return toJson(response, files, placeholderId);
