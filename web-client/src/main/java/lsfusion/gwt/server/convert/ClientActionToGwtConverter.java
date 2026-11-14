@@ -245,17 +245,13 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = ControllerResultClientAction.class)
     public GControllerResultAction convertAction(ControllerResultClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
-        GType type = action.type != null ? typeConverter.convertOrCast(ClientTypeSerializer.deserializeClientType(action.type)) : null;
-        Serializable value = action.value != null ? (Serializable) deserializeServerValue(action.value, formSessionObject, servlet) : null;
-        return new GControllerResultAction(type, value);
-    }
-
-    @Converter(from = ControllerResultsClientAction.class)
-    public GControllerResultsAction convertAction(ControllerResultsClientAction action, FormSessionObject formSessionObject, MainDispatchServlet servlet) throws IOException {
-        GControllerResultAction[] results = new GControllerResultAction[action.results.length];
-        for (int i = 0; i < results.length; i++)
-            results[i] = convertAction(action.results[i], formSessionObject, servlet);
-        return new GControllerResultsAction(action.names, results);
+        GType[] types = new GType[action.types.length];
+        Serializable[] values = new Serializable[action.values.length];
+        for (int i = 0; i < values.length; i++) {
+            types[i] = action.types[i] != null ? typeConverter.convertOrCast(ClientTypeSerializer.deserializeClientType(action.types[i])) : null;
+            values[i] = action.values[i] != null ? (Serializable) deserializeServerValue(action.values[i], formSessionObject, servlet) : null;
+        }
+        return new GControllerResultAction(action.names, types, values);
     }
 
     @Converter(from = ControllerExceptionClientAction.class)

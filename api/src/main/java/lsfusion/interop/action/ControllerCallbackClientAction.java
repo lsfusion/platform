@@ -5,9 +5,8 @@ import java.io.IOException;
 /**
  * Base of the terminal actions delivering a form-controller exec/eval/change outcome back to the JS callback
  * correlated by the dispatching response's requestIndex - no id is carried on the action (GFORM-CONTROLLER-EXEC-EVAL-PLAN §12.3/§12.4):
- *  - {@link ControllerResultClientAction} — a result (serialized {@code value}+{@code type}; {@code value == null}
+ *  - {@link ControllerResultClientAction} — a result (its serialized {@code values}+{@code types}; a null value
  *    ⇒ no/undefined value) -> onResult;
- *  - {@link ControllerResultsClientAction} — the results of a result with parameters, each with its name -> onResult;
  *  - {@link ControllerExceptionClientAction} — a business/property/cancel error -> onException.
  *
  * Web-only: produced by RemoteForm for browser-originated controller calls and converted to a GWT action via

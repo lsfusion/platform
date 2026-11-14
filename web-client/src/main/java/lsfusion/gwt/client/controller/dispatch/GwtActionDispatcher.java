@@ -387,10 +387,6 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
-    public void execute(GControllerResultsAction action) {
-    }
-
-    @Override
     public void execute(GControllerExceptionAction action) {
     }
 

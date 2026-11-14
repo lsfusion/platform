@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.form.controller;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import lsfusion.gwt.client.action.GControllerResultsAction;
+import lsfusion.gwt.client.action.GControllerResultAction;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher.ServerResponseCallback;
 import lsfusion.gwt.client.form.controller.dispatch.ExceptionResult;
@@ -132,13 +132,17 @@ public abstract class GController {
         }
     }
 
-    // what a call whose result has parameters resolves with: every value, converted as a result's one value is, with its name
-    public static JavaScriptObject getResults(GControllerResultsAction action) {
+    // what a call resolves with: the value of a result without parameters, every value with its name of a result with them
+    public static JavaScriptObject getResult(GControllerResultAction action) {
+        if (action.names == null)
+            return getResult(action, 0);
         JavaScriptObject results = JavaScriptObject.createArray();
         for (int i = 0; i < action.names.length; i++)
-            addResult(results, action.names[i], JSValueConverter.convertToJSValue(
-                    action.results[i].type, null, false, PValue.convertFileValue(action.results[i].value)));
+            addResult(results, action.names[i], getResult(action, i));
         return results;
+    }
+    private static JavaScriptObject getResult(GControllerResultAction action, int i) {
+        return JSValueConverter.convertToJSValue(action.types[i], null, false, PValue.convertFileValue(action.values[i]));
     }
     private static native void addResult(JavaScriptObject results, String name, JavaScriptObject value) /*-{
         results.push({ name: name, value: value == null ? undefined : value }); // as a value alone resolves

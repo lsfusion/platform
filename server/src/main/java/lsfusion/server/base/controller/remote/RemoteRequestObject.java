@@ -436,7 +436,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         return runControllerRequest(stack, (env, context) -> {
             DataObject[] keys = bindKeys(env, lp, params);
             lp.change(bindObjectValue(env, lp.property.getValueClass(ClassType.editValuePolicy), value, lp, -1), env, keys);
-            return new ControllerResultClientAction(null, null); // change is a pure mutation, no value -> resolve(undefined)
+            return new ControllerResultClientAction(null, new byte[1][], new byte[1][]); // change is a pure mutation, no value -> resolve(undefined)
         });
     }
 
@@ -479,26 +479,29 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         Result<SessionDataProperty> resultProp = new Result<>();
         Pair<String[], ObjectValue[]> result = readResult(action, env, getControllerBL().LM, resultProp);
         if(resultProp.result.interfaces.isEmpty())
-            return controllerResultAction(context, result.second[0]);
+            return controllerResultAction(context, null, result.second);
         // a result with parameters (RETURN f(a), a left free): every value with its name; nothing returned is one null without a name
         boolean none = result.first.length == 1 && result.first[0] == null;
-        ControllerResultClientAction[] results = new ControllerResultClientAction[none ? 0 : result.second.length];
-        for(int i = 0; i < results.length; i++)
-            results[i] = controllerResultAction(context, result.second[i]);
-        return new ControllerResultsClientAction(none ? new String[0] : result.first, results);
+        return controllerResultAction(context, none ? new String[0] : result.first, none ? new ObjectValue[0] : result.second);
     }
 
-    private ControllerResultClientAction controllerResultAction(ConnectionContext context, ObjectValue result) throws IOException {
-        if(result == null || result.getValue() == null) // no export value / null value -> JS undefined
-            return new ControllerResultClientAction(null, null);
-        Object value = result.getValue();
-        Type<?> type = result.getType();
-        // a FILE result -> a download URL (NeedFile registers the file; the client maps the GFileType subtype to
-        // getAppDownloadURL, image -> src). Structured/native data is returned via VALUE classes (JSON/JSONTEXT/XML,
-        // string, number, ...) which aren't FileClass and serialize natively (e.g. GJSONType -> JSON.parse'd object).
-        FormChanges.ConvertData convertData = type instanceof FileClass ? new FormChanges.NeedFile(type) : null;
-        // the web reader ClientActionToGwtConverter.deserializeServerValue + convertToJSValue turn (serialized, type) into the JS value
-        return new ControllerResultClientAction(FormChanges.serializeConvertFileValue(convertData, value, context), TypeSerializer.serializeType(type));
+    private ClientAction controllerResultAction(ConnectionContext context, String[] names, ObjectValue[] results) throws IOException {
+        byte[][] values = new byte[results.length][];
+        byte[][] types = new byte[results.length][];
+        for(int i = 0; i < results.length; i++) {
+            Object value = results[i].getValue();
+            if(value == null) // no export value / null value -> JS undefined
+                continue;
+            Type<?> type = results[i].getType();
+            // a FILE result -> a download URL (NeedFile registers the file; the client maps the GFileType subtype to
+            // getAppDownloadURL, image -> src). Structured/native data is returned via VALUE classes (JSON/JSONTEXT/XML,
+            // string, number, ...) which aren't FileClass and serialize natively (e.g. GJSONType -> JSON.parse'd object).
+            FormChanges.ConvertData convertData = type instanceof FileClass ? new FormChanges.NeedFile(type) : null;
+            // the web reader ClientActionToGwtConverter.deserializeServerValue + convertToJSValue turn (serialized, type) into the JS value
+            values[i] = FormChanges.serializeConvertFileValue(convertData, value, context);
+            types[i] = TypeSerializer.serializeType(type);
+        }
+        return new ControllerResultClientAction(names, values, types);
     }
 
     private static String controllerMessage(Throwable t) {

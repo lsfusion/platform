@@ -14,7 +14,6 @@ import lsfusion.gwt.client.form.controller.GController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
-import lsfusion.gwt.client.form.property.JSValueConverter;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
@@ -150,12 +149,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(GControllerResultAction action) {
-        form.controllerCallbackResult(getDispatchingIndex(), JSValueConverter.convertToJSValue(action.type, null, false, PValue.convertFileValue(action.value)));
-    }
-
-    @Override
-    public void execute(GControllerResultsAction action) {
-        form.controllerCallbackResult(getDispatchingIndex(), GController.getResults(action));
+        form.controllerCallbackResult(getDispatchingIndex(), GController.getResult(action));
     }
 
     @Override
