@@ -103,6 +103,7 @@ public class McpToolsIT {
     }
 
     private static final String EVAL_JSON = "run(JSON j) { RETURN STRING(j); }";
+    private static final String EVAL_FILE = "run(FILE f) { RETURN f; }";
 
     @Test
     public void anArrayIsJsonDataAndAnObjectIsAFile() throws Exception {
@@ -116,6 +117,48 @@ public class McpToolsIT {
         Assert.assertEquals(text, 1, new JSONObject(text).getInt("a"));
         JSONObject object = eval(EVAL_JSON, "[{\"a\": 1}]");
         Assert.assertTrue(object.toString(), object.getBoolean("isError") && object.toString().contains("unknown field `a`"));
+    }
+
+    @Test
+    public void anObjectIsAFile() throws Exception {
+        JSONObject file = result(eval(EVAL_FILE, "[{\"text\": \"hello\", \"fileName\": \"h.txt\"}]"));
+        Assert.assertEquals(file.toString(), "hello", file.getString("text"));
+        Assert.assertEquals(file.toString(), "txt", file.getString("extension"));
+
+        // a string is the file's text, not its bytes in base64
+        JSONObject csv = result(eval("run(CSVFILE f) { RETURN f; }", "[\"a;b\"]"));
+        Assert.assertEquals(csv.toString(), "a;b", csv.getString("text"));
+        Assert.assertEquals(csv.toString(), "csv", csv.getString("extension"));
+
+        // the file is among the files of the request, as a number is among its params - the string of it
+        JSONObject requestFile = result(eval("run() { RETURN fileParams('', 0); }", "[{\"text\": \"hello\", \"fileName\": \"h.txt\"}]"));
+        Assert.assertEquals(requestFile.toString(), "hello", requestFile.getString("text"));
+        Assert.assertEquals("21", value(eval("run() { RETURN params('', 0); }", "[21]")));
+    }
+
+    // the content of a file is named in a result as in a parameter - text, base64 -, so a file that came out of a call
+    // is given to the next one as it came
+    @Test
+    public void aFileOfAResultIsAParameterAsItIs() throws Exception {
+        String named = "run(NAMEDFILE f) { RETURN f; }";
+        JSONObject text = result(eval(named, "[{\"text\": \"hello\", \"fileName\": \"report.v1.txt\"}]"));
+        Assert.assertEquals(text.toString(), new HashSet<>(Arrays.asList("type", "fileName", "extension", "mimeType", "size", "text")), text.keySet());
+        Assert.assertEquals(text.toString(), "report.v1.txt txt", text.getString("fileName") + " " + text.getString("extension")); // the name's own dot stays
+        JSONObject twice = result(eval(named, "[{\"text\": \"x\", \"fileName\": \"report.txt.txt\"}]")); // ... and its own extension
+        Assert.assertEquals(twice.toString(), "report.txt.txt", twice.getString("fileName"));
+        Assert.assertTrue(twice.toString(), twice.similar(result(eval(named, "[" + twice + "]"))));
+        Assert.assertTrue(text.toString(), text.similar(result(eval(named, "[" + text + "]"))));
+
+        String bytes = "AAEC/w=="; // 0, 1, 2, 255 - no text
+        JSONObject binary = result(eval(named, "[{\"base64\": \"" + bytes + "\", \"fileName\": \"b.bin\"}]"));
+        Assert.assertEquals(binary.toString(), bytes, binary.getString("base64"));
+        Assert.assertTrue(binary.toString(), binary.similar(result(eval(named, "[" + binary + "]"))));
+
+        JSONObject kind = eval(EVAL_FILE, "[{\"type\": \"image\", \"text\": \"x\"}]");
+        Assert.assertTrue(kind.toString(), kind.getBoolean("isError") && kind.toString().contains("type must be `file`"));
+        // a file with a link in place of its content is no file to give
+        JSONObject link = eval(EVAL_FILE, "[{\"type\": \"file\", \"extension\": \"pdf\", \"url\": \"/file/temp/mcp/x.pdf\"}]");
+        Assert.assertTrue(link.toString(), link.getBoolean("isError") && link.toString().contains("unknown field `url`"));
     }
 
     @Test

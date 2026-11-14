@@ -124,16 +124,19 @@ public abstract class FileClass<T> extends FileBasedClass<T> {
      * </ul>
      *
      * <p>Extension is resolved as: explicit {@code extension} field → extracted from
-     * {@code fileName} (if it has a dot) → fallback {@code "file"}. {@code fileName} is
-     * normalized through {@link BaseUtils#getFileName(String)}, so any directory prefix is
+     * {@code fileName} (if it has a dot) → fallback {@code "file"}. {@code fileName} is the
+     * file's name with its extension, as a result gives it, and any directory prefix is
      * stripped before reaching the script.
      */
     public static ExternalRequest.Param buildFileParam(JSONObject fp, String origin) {
         for (String key : fp.keySet()) {
-            if (!FILE_PARAM_KEYS.contains(key)) {
+            if (!FILE_PARAM_KEYS.contains(key) && !FILE_RESULT_KEYS.contains(key)) {
                 throw new IllegalArgumentException(origin + " has unknown field `" + key
                         + "`; allowed: " + FILE_PARAM_KEYS);
             }
+        }
+        if (fp.has("type") && !"file".equals(fp.opt("type"))) {
+            throw new IllegalArgumentException(origin + ".type must be `file`, got " + fp.opt("type"));
         }
         String b64 = JsonToolArgs.getStringAt(fp, "base64", origin + ".base64");
         String text = JsonToolArgs.getStringAt(fp, "text", origin + ".text");
@@ -154,8 +157,10 @@ public abstract class FileClass<T> extends FileBasedClass<T> {
         }
 
         // Resolve fileName + extension: explicit `extension` wins, else extracted from
-        // `fileName` (if it has a dot), else fallback "file"; fileName is normalized to its
-        // base name only (no directory part, no extension fragment).
+        // `fileName` (if it has a dot), else fallback "file"; fileName goes on as an http
+        // request carries it - the name with the extension, no directory part -, which the
+        // class takes the extension off (ExternalRequest.getNamedFile), once. So a name that
+        // has dots of its own keeps them.
         String rawFileName = nullIfEmpty(JsonToolArgs.getStringAt(fp, "fileName", origin + ".fileName"));
         String explicitExt = normalizeExtension(JsonToolArgs.getStringAt(fp, "extension", origin + ".extension"), origin);
         String extension = explicitExt;
@@ -164,7 +169,7 @@ public abstract class FileClass<T> extends FileBasedClass<T> {
             if (!fromName.isEmpty()) extension = fromName;
         }
         if (extension == null) extension = "file";
-        String fileName = rawFileName == null ? null : BaseUtils.getFileName(rawFileName);
+        String fileName = rawFileName == null ? null : BaseUtils.getFileNameAndExtension(rawFileName);
 
         // url=false ⇒ implicit; fills the next free run() interface slot in array order.
         // Empty `name` keeps the param strictly positional — it can't accidentally match a
@@ -175,6 +180,12 @@ public abstract class FileClass<T> extends FileBasedClass<T> {
 
     private static final Set<String> FILE_PARAM_KEYS = new LinkedHashSet<>(
             Arrays.asList("base64", "text", "fileName", "extension"));
+
+    // what else an entry of a result has (renderResult) - `type` is `file`, the rest is not read: a file that came
+    // as a result, with its content, is given as a parameter as it came. One with `url`, or without its content, is
+    // not a file to give - those fields stay unknown
+    private static final Set<String> FILE_RESULT_KEYS = new LinkedHashSet<>(
+            Arrays.asList("type", "mimeType", "size", "name"));
 
     private static String nullIfEmpty(String s) {
         return s == null || s.isEmpty() ? null : s;

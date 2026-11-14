@@ -17,7 +17,7 @@ import java.util.LinkedHashMap;
  * HTTP response.
  *
  * <p>Small binaries (under {@code MCPBinaryContent.MAX_INLINE_BINARY_BYTES} AND fitting the
- * per-call inline budget) are inlined as {@code valueBase64} directly inside {@link #json}
+ * per-call inline budget) are inlined as {@code base64} directly inside {@link #json}
  * and do <em>not</em> appear in {@link #files} — cheap to embed and visible to clients that
  * can't reuse the MCP connector's auth context for a secondary GET. Anything else — too big
  * to inline OR inline budget exhausted — flows through {@link #files}; binary is never

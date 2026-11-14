@@ -584,7 +584,7 @@ public class MCPDispatcher {
                                                 .put(new JSONObject().put("type", "array").put("items", new JSONObject()))
                                                 .put(new JSONObject().put("type", "null"))
                                                 .put(fileEntrySchema())))
-                                .put("description", "Values bound positionally to the script's `run(...)` interfaces (`params[0]` → first, `params[1]` → second, etc.). Each element is a JSON value, parsed by the class of its parameter: a string; a number, taken as the string of its digits is (`21` as `\"21\"`, and an integer written as `21.0` or `2.1e1` too); a boolean, taken as `\"true\"` / `\"false\"`; an array — JSON data, taken as the string of its text; `null` — `NULL` for that parameter (an empty file for a parameter declared without a class); an object — always a file `{base64|text, fileName?, extension?}`, so JSON data that is an object is passed as a string. Whole tool-call body capped at 16 MiB ⇒ ~12 MiB max raw binary after base64 inflation.")))
+                                .put("description", "Values bound positionally to the script's `run(...)` interfaces (`params[0]` → first, `params[1]` → second, etc.). Each element is a JSON value, parsed by the class of its parameter: a string; a number, taken as the string of its digits is (`21` as `\"21\"`, and an integer written as `21.0` or `2.1e1` too); a boolean, taken as `\"true\"` / `\"false\"`; an array — JSON data, taken as the string of its text; `null` — `NULL` for that parameter (an empty file for a parameter declared without a class); an object — always a file `{base64|text, fileName?, extension?}`, so JSON data that is an object is passed as a string; a file entry of `results[]` that carries its content (`text` / `base64`) can be given as it is. Whole tool-call body capped at 16 MiB ⇒ ~12 MiB max raw binary after base64 inflation.")))
                 .put("required", new JSONArray().put("script"))
                 .put("additionalProperties", false);
         return new JSONObject()
@@ -608,7 +608,7 @@ public class MCPDispatcher {
      * JSON-schema for {@code structuredContent} returned on the success path. Each
      * {@code results[]} entry has all common metadata fields at the top level (name, type,
      * fileName, extension, mimeType, size) plus exactly one payload-field group from
-     * {@code oneOf} (value / valueBase64 / url / resourceUri / truncated). Null file slots
+     * {@code oneOf} (value / text / base64 / url / resourceUri / truncated). Null file slots
      * are dropped from the array entirely — an absent entry IS the null signal, and an
      * AI-agent consumer can't act on the distinction between "slot was null" and "slot
      * wasn't there" anyway. Field descriptions explain when each appears, so a client
@@ -619,12 +619,13 @@ public class MCPDispatcher {
         JSONObject resultProps = new JSONObject()
                 .put("name", strProp("Optional identifier — set only on parameterized multi-key results, formatted as comma-joined key tuple. Absent for the typical case of a single value."))
                 .put("type", new JSONObject().put("const", "file").put("description", "Present only for file-typed values (FileData). Absent for plain scalars (String / Number / Date / Boolean / etc.)."))
-                .put("fileName", strProp("Original filename without directory part. May be absent."))
+                .put("fileName", strProp("Original filename, with its extension, without directory part. May be absent."))
                 .put("extension", strProp("File extension without the dot (e.g. `xlsx`, `pdf`, `json`)."))
                 .put("mimeType", strProp("Resolved via the lsFusion MIME catalog or `application/octet-stream` fallback."))
                 .put("size", intProp("Raw byte length of the file."))
-                .put("value", strProp("UTF-8 text representation. Set for plain scalars (lsFusion String / Text / Number / Date / Boolean / ...) and for text-classified files (.json, .csv, .txt, .lsf, etc.) under " + largeTextKiB + " KiB."))
-                .put("valueBase64", strProp("Base64-encoded raw bytes. Set for binary files under " + inlineBinKiB + " KiB that fit the per-call inline budget."))
+                .put("value", strProp("UTF-8 text representation of a plain scalar (lsFusion String / Text / Number / Date / Boolean / ...) under " + largeTextKiB + " KiB."))
+                .put("text", strProp("The text of a text-classified file (.json, .csv, .txt, .lsf, etc.) under " + largeTextKiB + " KiB. A file's content is named as in `params` - `text` / `base64` -, so an entry that carries it can be given to the next call as a parameter as it is."))
+                .put("base64", strProp("Base64-encoded raw bytes. Set for binary files under " + inlineBinKiB + " KiB that fit the per-call inline budget."))
                 .put("url", strProp("Path-absolute single-use download URL (e.g. `.../file/temp/mcp/<24-char-nonce>/<fileName>.<ext>`). Set for binary files ≥ " + inlineBinKiB + " KiB or when the inline budget is exhausted. Fetch with plain GET, no auth header — the nonce IS the credential."))
                 .put("resourceUri", strProp("URI of a sibling `resource` content entry on the same tool result. Set when text ≥ " + largeTextKiB + " KiB; the bytes are in `content[*].resource.text` of THIS response, NOT separately fetchable."))
                 .put("truncated", new JSONObject().put("const", true).put("description", "Set when text exceeded the per-call inline cap; bytes are NOT in the response."))
@@ -636,9 +637,10 @@ public class MCPDispatcher {
                 .put("totalLimit", intProp("Per-call inline total budget in bytes (currently " + textTotalMiB + " MiB)."));
 
         JSONArray variants = new JSONArray()
-                .put(new JSONObject().put("title", "Inline scalar or small text").put("required", new JSONArray().put("value")))
+                .put(new JSONObject().put("title", "Inline scalar").put("required", new JSONArray().put("value")))
+                .put(new JSONObject().put("title", "Inline text of a file").put("required", new JSONArray().put("type").put("text")))
                 .put(new JSONObject().put("title", "Large text → resource pointer").put("required", new JSONArray().put("resourceUri")))
-                .put(new JSONObject().put("title", "Inline binary").put("required", new JSONArray().put("type").put("valueBase64")))
+                .put(new JSONObject().put("title", "Inline binary").put("required", new JSONArray().put("type").put("base64")))
                 .put(new JSONObject().put("title", "URL-delivered binary").put("required", new JSONArray().put("type").put("url")))
                 .put(new JSONObject().put("title", "Truncated text").put("required", new JSONArray().put("truncated").put("omittedReason").put("omittedSize")));
 
@@ -670,7 +672,9 @@ public class MCPDispatcher {
      * shape before the request leaves it; {@code additionalProperties:false} matches the
      * server-side fail-fast validation in
      * {@code FileClass.buildFileParam} (unknown fields throw
-     * {@link IllegalArgumentException}).
+     * {@link IllegalArgumentException}). The other fields of a result's entry are taken too -
+     * {@code type} is {@code file}, the rest is not read -, so an entry that carries its
+     * content is a parameter as it is.
      */
     private static JSONObject fileEntrySchema() {
         return new JSONObject()
@@ -679,7 +683,11 @@ public class MCPDispatcher {
                         .put("base64", new JSONObject().put("type", "string").put("description", "Binary content, base64-encoded (xlsx/pdf/zip/png/…)."))
                         .put("text", new JSONObject().put("type", "string").put("description", "Text content as UTF-8 (csv/json/xml/…)."))
                         .put("fileName", new JSONObject().put("type", "string").put("description", "Original filename, e.g. \"report.xlsx\". Directory part and trailing extension are stripped before binding — script's `param.fileName` sees just the base name (\"report\"). Used to derive `extension` when omitted."))
-                        .put("extension", new JSONObject().put("type", "string").put("description", "Extension without the dot (\"xlsx\"). Drives `IMPORT XLSX FROM …` etc. Resolution: explicit → from `fileName` → \"file\".")))
+                        .put("extension", new JSONObject().put("type", "string").put("description", "Extension without the dot (\"xlsx\"). Drives `IMPORT XLSX FROM …` etc. Resolution: explicit → from `fileName` → \"file\"."))
+                        .put("type", new JSONObject().put("const", "file").put("description", "As in an entry of `results[]`."))
+                        .put("mimeType", new JSONObject().put("type", "string").put("description", "Not read: as in an entry of `results[]`."))
+                        .put("size", new JSONObject().put("type", "integer").put("description", "Not read: as in an entry of `results[]`."))
+                        .put("name", new JSONObject().put("type", "string").put("description", "Not read: as in an entry of `results[]`.")))
                 .put("oneOf", new JSONArray()
                         .put(new JSONObject().put("required", new JSONArray().put("base64")))
                         .put(new JSONObject().put("required", new JSONArray().put("text"))))

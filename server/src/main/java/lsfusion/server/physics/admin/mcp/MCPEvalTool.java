@@ -43,9 +43,9 @@ public class MCPEvalTool {
 
     /**
      * Hard cap on bytes inlined in a <em>single</em> eval text result (UTF-8 byte length of
-     * {@code value}). Above this the text is omitted and the slot is marked
+     * {@code value}, or of a file's {@code text}). Above this the text is omitted and the slot is marked
      * {@code truncated:true} with {@code omittedReason:"perFileCap"}. Binary results are
-     * <em>not</em> subject to this cap — they inline as {@code valueBase64} only when small
+     * <em>not</em> subject to this cap — they inline as {@code base64} only when small
      * (under {@link MCPBinaryContent#MAX_INLINE_BINARY_BYTES} AND inline budget allows),
      * otherwise they flow through the {@code /file/temp/mcp/...} URL path regardless of size.
      */
@@ -53,7 +53,7 @@ public class MCPEvalTool {
 
     /**
      * Hard cap on the <em>total</em> bytes inlined across all eval result slots in one call —
-     * counts text {@code value} and small-binary {@code valueBase64} together. Applied as a
+     * counts text ({@code value}, a file's {@code text}) and small-binary {@code base64} together. Applied as a
      * best-fit budget: a text payload that doesn't fit in the remaining budget gets dropped
      * with {@code truncated:true} + {@code omittedReason:"totalCap"}; a small-binary payload
      * that doesn't fit instead falls through to the URL path (URL bytes don't count against
@@ -196,7 +196,7 @@ public class MCPEvalTool {
             ResultExternalResponse r = (ResultExternalResponse) response;
             JSONArray results = new JSONArray();
             // Per-call running total — best-fit budget for INLINE payloads only (text values +
-            // small binary `valueBase64`). URL-delivered binaries don't count against this,
+            // small binary `base64`). URL-delivered binaries don't count against this,
             // since their bytes flow to disk via FileUtils.saveMCPFile, not through the
             // JSON-RPC envelope. Keeps multi-slot scripts from pushing hundreds of MiB of
             // base64 into one response while leaving the URL path unbounded by JSON budget.
@@ -222,7 +222,6 @@ public class MCPEvalTool {
                                            LinkedHashMap<String, NamedFileData> files, String placeholderId) {
         JSONObject item = new JSONObject();
         if (result.name != null) item.put("name", result.name);
-        if (result.fileName != null) item.put("fileName", result.fileName);
         Object value = result.value;
         if (value instanceof String) {
             inlineString(item, (String) value, inlineRemaining);
@@ -248,6 +247,9 @@ public class MCPEvalTool {
                 mimeType = MIMETypeUtils.MIMETypeForFileExtension(extKey);
             }
             item.put("type", "file");
+            if (result.fileName != null) { // with its extension, as a file's name is given in a parameter
+                item.put("fileName", extension.isEmpty() ? result.fileName : result.fileName + "." + extension);
+            }
             item.put("extension", extension);
             item.put("mimeType", mimeType);
             item.put("size", bytes != null ? bytes.length : 0);
@@ -265,7 +267,7 @@ public class MCPEvalTool {
 
     /**
      * Decide where a binary result goes: small ({@code <} {@link MCPBinaryContent#MAX_INLINE_BINARY_BYTES})
-     * AND fits inline budget → inline {@code valueBase64} (clients that can't reuse the MCP
+     * AND fits inline budget → inline {@code base64} (clients that can't reuse the MCP
      * connector's auth context for a secondary GET still see the bytes). Otherwise — too big to
      * inline OR inline budget exhausted — register the {@link NamedFileData} under a per-call
      * placeholder; web tier resolves it to a {@code /file/temp/mcp/...} URL via
@@ -279,7 +281,7 @@ public class MCPEvalTool {
                                        LinkedHashMap<String, NamedFileData> files, String placeholderId) {
         byte[] bytes = fd.getRawFile().getBytes();
         if (bytes.length < MCPBinaryContent.MAX_INLINE_BINARY_BYTES && bytes.length <= inlineRemaining[0]) {
-            item.put("valueBase64", Base64.getEncoder().encodeToString(bytes));
+            item.put("base64", Base64.getEncoder().encodeToString(bytes));
             inlineRemaining[0] -= bytes.length;
             return;
         }
@@ -309,8 +311,10 @@ public class MCPEvalTool {
     }
 
     /**
-     * Inline a text-classified file as {@code value} (UTF-8 string), with the same dual cap
-     * as {@link #inlineString} but charging the raw byte length we already have.
+     * Inline a text-classified file as {@code text} (UTF-8 string), with the same dual cap
+     * as {@link #inlineString} but charging the raw byte length we already have. The content
+     * of a file is named in a result as it is in a parameter ({@link FileClass#buildFileParam}) -
+     * {@code text}, {@code base64} -, so a result's file can be the next call's parameter.
      */
     private static void inlineFileText(JSONObject item, byte[] bytes, int[] inlineRemaining) {
         if (bytes.length > MAX_INLINE_FILE_BYTES) {
@@ -321,7 +325,7 @@ public class MCPEvalTool {
             markTruncated(item, REASON_TOTAL, bytes.length);
             return;
         }
-        item.put("value", new String(bytes, StandardCharsets.UTF_8));
+        item.put("text", new String(bytes, StandardCharsets.UTF_8));
         inlineRemaining[0] -= bytes.length;
     }
 

@@ -14,7 +14,7 @@ import java.net.URISyntaxException;
  *   <li>{@link #slimEval} / {@link #slimFileRead} — single-pass payload slimmer. Returns a
  *       {@link SlimResult} with (a) a slim copy of the payload for {@code content[0].text} +
  *       {@code structuredContent} and (b) a list of MCP {@code resource} content entries for
- *       large text. Eval binary delivery (small inline {@code valueBase64} or large URL
+ *       large text. Eval binary delivery (small inline {@code base64} or large URL
  *       placeholder) is owned by {@code MCPEvalTool} upstream — by the time payloads reach
  *       {@link #slimEval}, binary slots already carry their final shape and pass through
  *       unchanged. classpath binary reads (via {@link #slimFileRead}) still move to
@@ -46,7 +46,7 @@ final class MCPBinaryContent {
     static final int LARGE_TEXT_THRESHOLD_BYTES = 64 * 1024;
 
     /**
-     * Threshold below which an eval-result binary stays inline as {@code valueBase64} (when the
+     * Threshold below which an eval-result binary stays inline as {@code base64} (when the
      * per-call inline budget allows). Above this — or once the inline budget is exhausted —
      * {@link MCPEvalTool} routes the binary through the {@code /file/temp/mcp/...} download
      * URL path instead. MCP clients that can't reuse the connector's auth context for a
@@ -99,9 +99,10 @@ final class MCPBinaryContent {
                 slimResults.put(JSONObject.NULL);
                 continue;
             }
-            String text = r.optString("value", null);
+            String key = r.has("text") ? "text" : "value"; // a file's text, a plain value
+            String text = r.optString(key, null);
             if (text != null && utf8Length(text) >= LARGE_TEXT_THRESHOLD_BYTES) {
-                JSONObject slim = copyWithoutKeys(r, "value");
+                JSONObject slim = copyWithoutKeys(r, key);
                 String mimeType = r.optString("mimeType", "text/plain");
                 String fileName = pickFileName(r, i, "txt");
                 String uri = makeResourceUri("eval", "/" + i + "/" + fileName, null);
