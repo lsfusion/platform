@@ -579,8 +579,12 @@ public class MCPDispatcher {
                                 .put("items", new JSONObject()
                                         .put("oneOf", new JSONArray()
                                                 .put(new JSONObject().put("type", "string"))
+                                                .put(new JSONObject().put("type", "number"))
+                                                .put(new JSONObject().put("type", "boolean"))
+                                                .put(new JSONObject().put("type", "array").put("items", new JSONObject()))
+                                                .put(new JSONObject().put("type", "null"))
                                                 .put(fileEntrySchema())))
-                                .put("description", "Values bound positionally to the script's `run(...)` interfaces (`params[0]` → first, `params[1]` → second, etc.). Each element is either a plain string or a file `{base64|text, fileName?, extension?}`. Whole tool-call body capped at 16 MiB ⇒ ~12 MiB max raw binary after base64 inflation.")))
+                                .put("description", "Values bound positionally to the script's `run(...)` interfaces (`params[0]` → first, `params[1]` → second, etc.). Each element is a JSON value, parsed by the class of its parameter: a string; a number, taken as the string of its digits is (`21` as `\"21\"`, and an integer written as `21.0` or `2.1e1` too); a boolean, taken as `\"true\"` / `\"false\"`; an array — JSON data, taken as the string of its text; `null` — `NULL` for that parameter (an empty file for a parameter declared without a class); an object — always a file `{base64|text, fileName?, extension?}`, so JSON data that is an object is passed as a string. Whole tool-call body capped at 16 MiB ⇒ ~12 MiB max raw binary after base64 inflation.")))
                 .put("required", new JSONArray().put("script"))
                 .put("additionalProperties", false);
         return new JSONObject()

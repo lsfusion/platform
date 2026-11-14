@@ -1,0 +1,164 @@
+package lsfusion.tests;
+
+import lsfusion.base.remote.RMIUtils;
+import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ComputerInfo;
+import lsfusion.interop.connection.ConnectionInfo;
+import lsfusion.interop.connection.UserInfo;
+import lsfusion.interop.logics.remote.RemoteLogicsInterface;
+import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
+import lsfusion.interop.session.ExternalRequest;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.math.BigDecimal;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import static lsfusion.tests.TestServer.BASE;
+
+/** The MCP server's tools, on a server of its own. The web client's /mcp only carries a request's body to the
+ *  server's RemoteLogicsInterface.mcp, which is what this calls. */
+public class McpToolsIT {
+
+    private static final String DATABASE = "lsfusion_test_mcp_" + ProcessHandle.current().pid();
+
+    private static Process server;
+    private static RemoteLogicsInterface logics;
+
+    @BeforeClass
+    public static void startServer() throws Exception {
+        int[] ports = TestServer.freePorts(4);
+        Path log = BASE.resolve("target/server-mcp.log");
+        server = TestServer.start(DATABASE, ports, log, BASE.resolve("target/classes"),
+                "settings.enableAPI=2"); // the calls here are anonymous
+        TestServer.waitStarted(server, log);
+        logics = RMIUtils.<RemoteLogicsLoaderInterface>rmiLookup("localhost", ports[1], "default", "RemoteLogicsLoader").getLogics();
+    }
+
+    @AfterClass
+    public static void stopServer() throws Exception {
+        if (server != null)
+            TestServer.stop(server, DATABASE);
+    }
+
+    // the eval tool's params are JSON values, each given to the class of its parameter as an http request gives a string
+    private static final String EVAL_NUMBER = "run(INTEGER i, BOOLEAN b) { RETURN (IF b THEN 'yes ' ELSE 'no ') + STRING[10](i + 1); }";
+
+    @Test
+    public void theEvalToolTakesAJsonNumberAndABoolean() throws Exception {
+        Assert.assertEquals("yes 22", value(eval(EVAL_NUMBER, "[21, true]")));
+        Assert.assertEquals("no 22", value(eval(EVAL_NUMBER, "[21, false]")));
+        Assert.assertEquals("yes 22", value(eval(EVAL_NUMBER, "[\"21\", \"true\"]"))); // a string still is taken
+
+        String numeric = value(eval("run(NUMERIC[10,2] n) { RETURN n; }", "[1.25]"));
+        Assert.assertEquals(numeric, 0, new BigDecimal(numeric).compareTo(new BigDecimal("1.25")));
+        Assert.assertEquals("21", value(eval("run(STRING s) { RETURN s; }", "[21.0]"))); // and the string of it for a string
+    }
+
+    @Test
+    public void anIntegerWrittenWithAFractionOrAnExponentIsThatInteger() throws Exception {
+        Assert.assertEquals("yes 22", value(eval(EVAL_NUMBER, "[21.0, true]")));
+        Assert.assertEquals("yes 22", value(eval(EVAL_NUMBER, "[2.1e1, true]")));
+        Assert.assertEquals("yes 1001", value(eval(EVAL_NUMBER, "[1e3, true]")));
+        Assert.assertEquals("yes 1", value(eval(EVAL_NUMBER, "[0.000, true]")));
+        Assert.assertEquals("yes 1", value(eval(EVAL_NUMBER, "[0e19, true]")));
+        Assert.assertEquals("9223372036854775807", value(eval("run(LONG l) { RETURN l; }", "[9223372036854775807.0]")));
+        Assert.assertEquals("-0.0", value(eval("run(DOUBLE d) { RETURN d; }", "[-0.0]"))); // a DOUBLE has its own zeros
+
+        // a number that is no integer is refused, not cut to 21
+        JSONObject fraction = eval(EVAL_NUMBER, "[21.5, true]");
+        Assert.assertTrue(fraction.toString(), fraction.getBoolean("isError") && fraction.toString().contains("21.5"));
+        // and one of a billion digits is refused without writing them out
+        JSONObject huge = eval(EVAL_NUMBER, "[1e999999999, true]");
+        Assert.assertTrue(huge.toString(), huge.getBoolean("isError") && huge.toString().contains("1E+999999999"));
+    }
+
+    @Test
+    public void theEvalToolTakesNullForAParameter() throws Exception {
+        String script = "run(STRING a, INTEGER b, FILE c, STRING d) { RETURN (IF a THEN 'a' ELSE '-') + (IF b THEN 'b' ELSE '-') + (IF c THEN 'c' ELSE '-') + (IF d THEN 'd' ELSE '-'); }";
+        Assert.assertEquals("a--d", value(eval(script, "[\"x\", null, null, \"y\"]"))); // the parameters after a null are not shifted
+        Assert.assertEquals("-bc-", value(eval(script, "[null, 1, {\"text\": \"z\"}]")));
+    }
+
+    @Test
+    public void aBooleanIsTheLogicalClassesValue() throws Exception {
+        Assert.assertEquals("false", value(eval("run(TBOOLEAN t) { RETURN t; }", "[false]")));
+        Assert.assertEquals("true", value(eval("run(TBOOLEAN t) { RETURN t; }", "[true]")));
+        Assert.assertEquals("false", value(eval("run(STRING s) { RETURN s; }", "[false]"))); // its text for a string
+    }
+
+    @Test
+    public void anObjectsIdIsANumber() throws Exception {
+        String id = value(eval("run() { HttpUntypedParams.hupSeed(); RETURN (GROUP MAX HttpUntypedParams.HupOrder o IF HttpUntypedParams.hupNumber(o) = 'hup42'); }", "[]"));
+        String number = "run(HttpUntypedParams.HupOrder o) { RETURN HttpUntypedParams.hupNumber(o); }";
+        Assert.assertEquals("hup42", value(eval(number, "[" + id + "]")));
+        Assert.assertEquals("hup42", value(eval(number, "[\"" + id + "\"]"))); // a string still is taken
+    }
+
+    private static final String EVAL_JSON = "run(JSON j) { RETURN STRING(j); }";
+
+    @Test
+    public void anArrayIsJsonDataAndAnObjectIsAFile() throws Exception {
+        String array = value(eval(EVAL_JSON, "[[1, \"two\"]]"));
+        Assert.assertEquals(array, "[1,\"two\"]", new JSONArray(array).toString());
+        // an object is a file whatever its parameter is: JSON data that is an object is given as a string, or as the
+        // text of a file
+        String string = value(eval(EVAL_JSON, "[\"{\\\"a\\\": 1}\"]"));
+        Assert.assertEquals(string, 1, new JSONObject(string).getInt("a"));
+        String text = value(eval(EVAL_JSON, "[{\"text\": \"{\\\"a\\\": 1}\"}]"));
+        Assert.assertEquals(text, 1, new JSONObject(text).getInt("a"));
+        JSONObject object = eval(EVAL_JSON, "[{\"a\": 1}]");
+        Assert.assertTrue(object.toString(), object.getBoolean("isError") && object.toString().contains("unknown field `a`"));
+    }
+
+    @Test
+    public void theEvalToolsSchemaListsTheJsonValuesItTakes() throws Exception {
+        JSONArray kinds = tool("lsfusion_eval").getJSONObject("inputSchema").getJSONObject("properties").getJSONObject("params")
+                .getJSONObject("items").getJSONArray("oneOf");
+        Set<String> types = new HashSet<>();
+        for (int i = 0; i < kinds.length(); i++)
+            types.add(kinds.getJSONObject(i).getString("type"));
+        Assert.assertEquals(kinds.toString(), new HashSet<>(Arrays.asList("string", "number", "boolean", "array", "null", "object")), types);
+    }
+
+    // params is the text of the JSON array, as a client writes it: org.json would write 21.0 as 21
+    private static JSONObject eval(String script, String params) throws Exception {
+        return answer(send("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"lsfusion_eval\",\"arguments\":"
+                + "{\"script\":" + JSONObject.quote(script) + ",\"params\":" + params + "}}}"));
+    }
+
+    private static String value(JSONObject result) {
+        return result(result).getString("value");
+    }
+
+    // the one result of a call
+    private static JSONObject result(JSONObject result) {
+        Assert.assertFalse(result.toString(), result.getBoolean("isError"));
+        return result.getJSONObject("structuredContent").getJSONArray("results").getJSONObject(0);
+    }
+
+    private static JSONObject tool(String name) throws Exception {
+        JSONArray tools = answer(send(new JSONObject().put("jsonrpc", "2.0").put("id", 1).put("method", "tools/list").toString())).getJSONArray("tools");
+        for (int i = 0; i < tools.length(); i++)
+            if (tools.getJSONObject(i).getString("name").equals(name))
+                return tools.getJSONObject(i);
+        return null;
+    }
+
+    private static JSONObject answer(JSONObject response) {
+        Assert.assertTrue(response.toString(), response.has("result"));
+        return response.getJSONObject("result");
+    }
+
+    private static JSONObject send(String request) throws Exception {
+        return new JSONObject(logics.mcp(AuthenticationToken.ANONYMOUS, new ConnectionInfo(new ComputerInfo("localhost", "127.0.0.1"), UserInfo.NULL),
+                new ExternalRequest(new ExternalRequest.Param[0]), request).json);
+    }
+}

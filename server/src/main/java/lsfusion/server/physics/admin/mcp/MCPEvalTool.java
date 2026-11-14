@@ -15,6 +15,7 @@ import lsfusion.server.physics.admin.files.JsonToolArgs;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -107,15 +108,7 @@ public class MCPEvalTool {
         if (params instanceof JSONArray) {
             JSONArray arr = (JSONArray) params;
             for (int i = 0; i < arr.length(); i++) {
-                Object value = arr.opt(i);
-                if (value == null || JSONObject.NULL.equals(value)) {
-                    // Silently skipping would shift positional order — the third entry of
-                    // [a, null, b] would land at $2 instead of $3. Reject explicitly.
-                    throw new IllegalArgumentException(
-                            "params[" + i + "] is null; positional order would shift. "
-                                    + "Pass an explicit value (or restructure the script if the slot is unused).");
-                }
-                paramList.add(toImplicitParam(value, "params[" + i + "]"));
+                paramList.add(toImplicitParam(arr.opt(i), "params[" + i + "]"));
             }
         } else if (params != null && !JSONObject.NULL.equals(params)) {
             throw new IllegalArgumentException("`params` must be an array; got "
@@ -143,7 +136,7 @@ public class MCPEvalTool {
     }
 
     /**
-     * Turn one user-supplied value (string or file-object) into an implicit
+     * Turn one user-supplied JSON value into an implicit
      * {@link ExternalRequest.Param} bound STRICTLY positionally — never by name. We pick
      * {@code url=false} + empty name {@code ""} so:
      * <ul>
@@ -155,16 +148,45 @@ public class MCPEvalTool {
      *       "param names live INSIDE the script" contract holds even if the user picks
      *       awkward run-interface names like {@code run(p, x)}.</li>
      * </ul>
+     *
+     * <p>An object is a file. Any other value is given as an http request gives it, so that the
+     * parameter's class parses it as it parses the request's: a string as it is, a number as the
+     * string of it ({@link #numberString}), a boolean as {@code "true"} or {@code "false"}, an array
+     * as its JSON text, null as the null file, which is NULL for a parameter of a class.
      */
     private static ExternalRequest.Param toImplicitParam(Object value, String origin) {
-        if (value instanceof String) {
-            return new ExternalRequest.Param((String) value, /*url=*/ false, UTF8, /*name=*/ "");
-        }
         if (value instanceof JSONObject) {
             return FileClass.buildFileParam((JSONObject) value, origin);
         }
-        throw new IllegalArgumentException(origin + " must be a string or a file object, got "
-                + value.getClass().getSimpleName());
+        Object httpValue;
+        if (JSONObject.NULL.equals(value)) {
+            httpValue = FileData.NULL;
+        } else if (value instanceof Number) {
+            httpValue = numberString((Number) value);
+        } else {
+            httpValue = value.toString();
+        }
+        return new ExternalRequest.Param(httpValue, /*url=*/ false, UTF8, /*name=*/ "");
+    }
+
+    /**
+     * A JSON number as the string an http caller writes it as: an integer as its digits, however
+     * it is written ({@code 21.0} and {@code 2.1e1} are {@code "21"} - an integral class reads no
+     * fraction and no exponent), any other number as {@link BigDecimal#toString} writes it. Both
+     * are read back as the same number, by the JDK's contract, and neither writes an exponent
+     * out: {@code 1e999999999} stays {@code "1E+999999999"}.
+     */
+    private static String numberString(Number value) {
+        String string = value.toString();
+        BigDecimal number = value instanceof BigDecimal ? (BigDecimal) value : new BigDecimal(string);
+        if (number.signum() == 0) { // a DOUBLE has two zeros, and org.json reads -0 as one; 0e19 is no long for an early JDK 11
+            return string.startsWith("-") ? "-0" : "0";
+        }
+        try {
+            return Long.toString(number.longValueExact());
+        } catch (ArithmeticException e) { // a fraction, or beyond a long
+            return number.toString();
+        }
     }
 
     private static JSONObject toJson(ExternalResponse response,
