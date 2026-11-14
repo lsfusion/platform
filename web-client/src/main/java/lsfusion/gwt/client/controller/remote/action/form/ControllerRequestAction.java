@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 // base for the form controller's exec/eval/change requests — each runs in the form's session and delivers its
 // outcome to the JS callback registered under requestIndex (see GFORM-CONTROLLER-EXEC-EVAL-PLAN). params are the
-// positional canonical encoded values (Double / Boolean / String / ISO String) — action params for exec/eval,
+// positional canonical encoded values (Double / Boolean / the JSON text of anything else) — action params for exec/eval,
 // property keys for change.
 public abstract class ControllerRequestAction extends FormRequestCountingAction<ServerResponseResult> {
     public ArrayList<Serializable> params;

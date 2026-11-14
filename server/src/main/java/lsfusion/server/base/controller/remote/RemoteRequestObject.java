@@ -45,6 +45,8 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -440,8 +442,8 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         });
     }
 
-    // JSON-decoded canonical values (Number/String/Boolean/null/FileData; one per positional interface) -> typed
-    // values; binding (incl. offset-ISO dates) handled inside Type.parseJSON
+    // canonical values (Double/Boolean/null, the JSON text of anything else; one per positional interface) -> typed
+    // values; binding (incl. offset-ISO dates) handled inside Type.parseJSON, see bindObjectValue
     private ObjectValue[] bindParams(ExecutionEnvironment env, LAP<?, ?> property, Object[] params) throws SQLException, SQLHandledException, ParseException {
         ValueClass[] classes = property.getInterfaceClasses(ClassType.parsePolicy);
         ObjectValue[] values = new ObjectValue[classes.length];
@@ -468,7 +470,18 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         if(valueClass == null) // unconstrained interface -- getInterfaceClasses can return null entries
             throw new RuntimeException("Unconstrained parameter type is not supported by the controller (" + bindContext(property, index) + ")");
         try {
-            // raw == null -> parseJSON returns null -> getObjectValue returns NullValue; dates handled inside Type.parseJSON
+            // raw == null -> parseJSON returns null -> getObjectValue returns NullValue; dates handled inside Type.parseJSON.
+            // A string, an object and an array come as their JSON text (JSValueConverter.convertFromUnknownJSValue),
+            // so that one is told from another: an object or an array is JSON data - the text itself -, a string is
+            // what is in its quotes. A file is given as an MCP tool is given one: an object is the file's description
+            // (FileClass.parseJSON), a string the file's text - not its bytes in base64, which it is for a JSON import
+            if(raw instanceof String) {
+                String text = (String) raw;
+                boolean file = valueClass.getType() instanceof FileClass;
+                raw = text.startsWith("[") || text.startsWith("{") && !file ? text : new JSONTokener(text).nextValue();
+                if(file && raw instanceof String)
+                    raw = new JSONObject().put("text", raw);
+            }
             return env.getSession().getObjectValue(valueClass, valueClass.getType().parseJSON(raw));
         } catch (ParseException e) {
             throw ParseException.propagateWithMessage("(" + bindContext(property, index) + ")", e);

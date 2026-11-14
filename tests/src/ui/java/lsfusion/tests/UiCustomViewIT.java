@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 // what a custom view's controller does (UiCustomView.lsf, its views in UiCustomView.js): the places of a React view
 // that can hold no view - one outside the page, a second one of a row's editor -, a value a React view gives a member,
@@ -216,6 +217,57 @@ public class UiCustomViewIT extends UiTest {
         String[] items = seed();
         open(FOLDER, "UiCustomView.uiCustomViewResultsFromNavigator");
         check("UiCustomView.uiCustomViewCheckNavigatorMarks", items[0] + " = 1 and " + items[1] + " = 2");
+    }
+
+    // an argument reaches the server as JS has it - a number, a boolean, a string, an object told apart: false is a
+    // value and not none, a number is the number it is - a big one too -, an object and an array are JSON data
+    @Test
+    public void anArgumentOfACallIsWhatJsGave() throws Exception {
+        Locator form = open(FOLDER, "UiCustomView.uiCustomViewCalls");
+        call(form, "eval");
+        assertThat(form.locator(".ui-custom-view-results li")).hasText(new String[] {"eval: number 42"});
+
+        String next = "run(INTEGER i) { RETURN i + 1; }";
+        assertEquals("22", evalWith(next, "21"));
+        String string = evalWith(next, "'21'"); // a string is no number
+        assertTrue(string, string.startsWith("rejected: "));
+        assertEquals("\"-b\"", evalWith("run(STRING a, INTEGER b) { RETURN (IF a THEN 'a' ELSE '-') + (IF b THEN 'b' ELSE '-'); }", "null, 1"));
+
+        assertEquals("false", evalWith("run(TBOOLEAN t) { RETURN t; }", "false"));
+        String same = "run(STRING s) { RETURN s; }";
+        assertEquals("\"false\"", evalWith(same, "false"));
+        assertEquals("\"1000000000000000128\"", evalWith("run(LONG l) { RETURN STRING(l); }", "1000000000000000128")); // not its shortest decimal
+
+        assertEquals("{\"a\":1}", evalWith("run(JSON j) { RETURN j; }", "{a: 1}"));
+        assertEquals("[1,\"\u0451\"]", evalWith("run(JSON j) { RETURN j; }", "[1, '\u0451']"));
+        assertEquals("\"{\\\"a\\\":1}\"", evalWith(same, "{a: 1}")); // the text of it, as it is written
+    }
+
+    // a file is given to a call as it is given to an MCP tool: a string is the file's text - the text of a JSON file
+    // too, a string being no object -, and an object describes the file, with its name and extension, by its text or
+    // by its bytes in base64
+    @Test
+    public void aFileIsGivenToACallAsItsTextOrAsAnObject() throws Exception {
+        Locator form = open(FOLDER, "UiCustomView.uiCustomViewCalls");
+        call(form, "eval");
+        assertThat(form.locator(".ui-custom-view-results li")).hasText(new String[] {"eval: number 42"});
+
+        String content = "run(FILE f) { RETURN STRING(f); }";
+        assertEquals("\"a;b\"", evalWith(content, "'a;b'"));
+        assertEquals("\"{\\\"a\\\":1}\"", evalWith(content, "'{\"a\":1}'"));
+        assertEquals("\"bytes\"", evalWith(content, "{base64: btoa('bytes')}"));
+        assertEquals("\"a;b\"", evalWith(content, "{text: 'a;b', extension: 'csv'}"));
+        String link = evalWith("run(NAMEDFILE f) { RETURN f; }", "{text: 'named', fileName: 'note.txt'}");
+        assertTrue(link, link.contains("note.txt"));
+        String unknown = evalWith(content, "{content: 'x'}");
+        assertTrue(unknown, unknown.startsWith("rejected: ") && unknown.contains("unknown field `content`"));
+    }
+
+    // what a script evaluated through the calls form's controller with the arguments given, as JS writes them, resolves
+    // to, as JSON, or is rejected with
+    private String evalWith(String script, String arguments) {
+        return (String) page.evaluate("script => window.uiCustomViewCalls.form.eval(script, " + arguments + ").then("
+                + "value => value === undefined ? 'undefined' : JSON.stringify(value), error => 'rejected: ' + error.message)", script);
     }
 
     // a custom cell renderer changes its property through its controller - the server has the value, which the form

@@ -83,21 +83,21 @@ public class JSValueConverter {
     // JS-VALUE STRATEGY SEAM (V1 server-projection; V2 client-typed). Switch point.
     // Returns a PValue, symmetric with convertFromJSValue(type, ...): the form controller's exec/eval/change is
     // type-agnostic (no GType on the client), so for V1 the encoding is type-agnostic canonical
-    // (number -> Double, boolean -> Boolean, string -> String, Date -> offset-ISO String yyyy-MM-dd'T'HH:mm:ssXXX,
-    // object/array -> JSON String; null/undefined -> null) and the resolved server type projects it. A future V2
-    // would swap this body for a type-aware convertFromJSValue(fetchedType, ...) with no change to the callers.
+    // (number -> Double, boolean -> Boolean, null/undefined -> null, anything else -> its JSON text: a string in its
+    // quotes, a Date as the string of its offset-ISO yyyy-MM-dd'T'HH:mm:ssXXX, an object, an array - so the server
+    // tells a string from an object, which for a file parameter are the file's text and its description) and the
+    // resolved server type projects it. A future V2 would swap this body for a type-aware
+    // convertFromJSValue(fetchedType, ...) with no change to the callers.
     public static PValue convertFromUnknownJSValue(JavaScriptObject value) {
         if (GwtClientUtils.isUndefinedOrNull(value))
             return null;
         if (isBoolean(value))
-            return PValue.getPValue(toBoolean(value));
+            return PValue.getPValue((Boolean) toBoolean(value)); // the three-state one: false is a value, not none
         if (isNumber(value))
             return PValue.getPValue(toDouble(value));
         if (isDate(value))
-            return PValue.getPValue(formatJSDateOffsetISO(value));
-        if (GwtClientUtils.isJSString(value))
-            return PValue.getPValue(toString(value));
-        return PValue.getPValue(GwtClientUtils.jsonStringify(value)); // object / array
+            value = fromString(formatJSDateOffsetISO(value));
+        return PValue.getPValue(GwtClientUtils.jsonStringify(value)); // string / object / array
     }
     // PValue -> canonical wire value via convertFileValueBack (DisplayString -> rawString, else unwrap), the same
     // step GClientWebAction.onJSFunctionExecuted uses; for these type-agnostic values it is a plain unwrap today,

@@ -14,8 +14,9 @@ public interface RemoteRequestInterface extends PendingRemoteInterface {
 
     // JS controller (CUSTOM / INTERNAL CLIENT) exec(action) / eval(script) / change(property) — run in this request
     // object's context (form: persistent form session; navigator: a fresh session per call). params/value are
-    // JSON-decoded canonical values (String/Number/Boolean/null/FileData; dates as offset-bearing ISO strings),
-    // bound positionally per interface via Type.parseJSON. The result/exception is delivered by a terminal
+    // canonical values - a Double, a Boolean, null, and for anything else its JSON text (a string in its quotes, a date
+    // as an offset-bearing ISO string, an object, an array) -, bound positionally per interface via Type.parseJSON; a
+    // file is given as a string, its text, or as an object that describes it. The result/exception is delivered by a terminal
     // ControllerCallbackClientAction keyed by requestIndex. See GFORM-CONTROLLER-EXEC-EVAL-PLAN §5/§12.
 
     ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, String action, Object[] params) throws RemoteException;
