@@ -124,6 +124,7 @@ public class McpToolsIT {
         JSONObject file = result(eval(EVAL_FILE, "[{\"text\": \"hello\", \"fileName\": \"h.txt\"}]"));
         Assert.assertEquals(file.toString(), "hello", file.getString("text"));
         Assert.assertEquals(file.toString(), "txt", file.getString("extension"));
+        Assert.assertEquals(file.toString(), "text/plain", file.getString("mimeType")); // though the catalog of types has no txt
 
         // a string is the file's text, not its bytes in base64
         JSONObject csv = result(eval("run(CSVFILE f) { RETURN f; }", "[\"a;b\"]"));

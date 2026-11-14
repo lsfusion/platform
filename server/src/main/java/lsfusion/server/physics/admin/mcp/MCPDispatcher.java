@@ -621,7 +621,7 @@ public class MCPDispatcher {
                 .put("type", new JSONObject().put("const", "file").put("description", "Present only for file-typed values (FileData). Absent for plain scalars (String / Number / Date / Boolean / etc.)."))
                 .put("fileName", strProp("Original filename, with its extension, without directory part. May be absent."))
                 .put("extension", strProp("File extension without the dot (e.g. `xlsx`, `pdf`, `json`)."))
-                .put("mimeType", strProp("Resolved via the lsFusion MIME catalog or `application/octet-stream` fallback."))
+                .put("mimeType", strProp("Resolved via the lsFusion MIME catalog; for an extension it does not have - `text/plain` of a text file, `application/octet-stream` of any other."))
                 .put("size", intProp("Raw byte length of the file."))
                 .put("value", strProp("UTF-8 text representation of a plain scalar (lsFusion String / Text / Number / Date / Boolean / ...) under " + largeTextKiB + " KiB."))
                 .put("text", strProp("The text of a text-classified file (.json, .csv, .txt, .lsf, etc.) under " + largeTextKiB + " KiB. A file's content is named as in `params` - `text` / `base64` -, so an entry that carries it can be given to the next call as a parameter as it is."))

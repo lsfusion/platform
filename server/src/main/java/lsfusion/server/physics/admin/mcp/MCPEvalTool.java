@@ -255,6 +255,11 @@ public class MCPEvalTool {
             item.put("size", bytes != null ? bytes.length : 0);
             if (bytes == null) return item;
             if (FileContentUtils.isLikelyText(extension, bytes, 0, bytes.length)) {
+                // a text of an extension the catalog has no type for is a plain text, not unknown bytes: txt itself
+                // is not there - text/plain is what a plain string goes over http as, so it stands for no extension
+                if (mimeType.equals("application/octet-stream")) {
+                    item.put("mimeType", "text/plain");
+                }
                 inlineFileText(item, bytes, inlineRemaining);
             } else {
                 dispatchBinary(item, fd, result.fileName, index, inlineRemaining, files, placeholderId);
