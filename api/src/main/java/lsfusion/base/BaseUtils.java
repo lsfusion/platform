@@ -356,12 +356,12 @@ public class BaseUtils {
         int size = inStream.readInt();
         String[] prefixes = new String[size + 1];
         for(int i = 0; i < size + 1; i++) {
-            prefixes[i] = inStream.readUTF();
+            prefixes[i] = deserializeString(inStream);
         }
         Serializable[] files = new Serializable[size];
         for(int i = 0; i < size; i++)
             files[i] = (Serializable) deserializeObject(inStream);
-        String rawString = inStream.readUTF();
+        String rawString = deserializeString(inStream);
 
         return new StringWithFiles(prefixes, files, rawString);
     }
@@ -572,14 +572,16 @@ public class BaseUtils {
         throw new IOException();
     }// -------------------------------------- Сериализация классов -------------------------------------------- //
 
+    // the text between the files, and the whole of it, go in pieces, as a string does (serializeString): writeUTF holds
+    // 64 KiB, and a text with a file in it can be longer - an answer of the MCP eval tool with a big text beside a link
     private static void serializeStringWithFiles(DataOutputStream outStream, StringWithFiles stringWithFiles) throws IOException {
         outStream.writeInt(stringWithFiles.files.length);
         for(String prefix : stringWithFiles.prefixes) {
-            outStream.writeUTF(prefix);
+            serializeString(outStream, prefix);
         }
         for(Serializable data : stringWithFiles.files)
             serializeObject(outStream, data);
-        outStream.writeUTF(stringWithFiles.rawString);
+        serializeString(outStream, stringWithFiles.rawString);
     }
 
     public static byte[] serializeCustomObject(Object object) throws IOException {

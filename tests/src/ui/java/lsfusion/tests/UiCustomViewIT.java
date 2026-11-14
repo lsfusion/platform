@@ -326,6 +326,13 @@ public class UiCustomViewIT extends UiTest {
         assertEquals("file pdf 70000 false false 200 70000", resultOf(mcp + ".eval(script, 'x'.repeat(70000))", "run(TEXT t) { RETURN PDFFILE(FILE(t)); }",
                 fileOf("file => fetch(file.url).then(response => response.arrayBuffer().then(got =>"
                         + " [file.type, file.extension, file.size, 'text' in file, 'base64' in file, response.status, got.byteLength].join(' ')))")));
+        // ... beside a content longer than that piece: the text the link is in goes in pieces too
+        assertEquals("pdf 70000 200 70000, txt 70000 70000", resultOf(mcp + ".eval(script, {text: 'x'.repeat(70000), fileName: 'big.txt'},"
+                        + " {base64: btoa('x'.repeat(70000)), fileName: 'scan.pdf'})",
+                "run(NAMEDFILE a, NAMEDFILE b) { LOCAL g = NAMEDFILE (INTEGER); g(1) <- a; g(2) <- b; RETURN g(INTEGER i); }",
+                "answer => Promise.all(answer.results.map(file => 'text' in file ? [file.extension, file.size, file.text.length].join(' ')"
+                        + " : fetch(file.url).then(response => response.arrayBuffer().then(got =>"
+                        + " [file.extension, file.size, response.status, got.byteLength].join(' '))))).then(files => files.sort().join(', '))"));
         // the content is named as a file given to a call is, so what came out is a parameter of the next call as it is
         assertEquals("txt 6 a text", resultOf(mcp + ".eval(\"" + text + "\").then(answer => " + mcp + ".eval(script, answer.results[0]))",
                 "run(FILE f) { RETURN f; }", fileOf("file => [file.extension, file.size, file.text].join(' ')")));
