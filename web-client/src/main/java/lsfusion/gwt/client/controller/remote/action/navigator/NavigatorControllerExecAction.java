@@ -6,7 +6,7 @@ import java.util.ArrayList;
 // navigator controller exec(action, params...): runs a system action by canonical name in the navigator's session.
 public class NavigatorControllerExecAction extends NavigatorControllerRequestAction {
     public String action;
-    public String options; // of the call (controller.options): a JSON object's text, null for none
+    public String options; // of the call: a JSON object's text, null for none (controller.mcp gives the one there is)
 
     public NavigatorControllerExecAction() {
     }

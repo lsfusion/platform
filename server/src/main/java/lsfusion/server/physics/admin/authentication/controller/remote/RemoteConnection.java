@@ -22,6 +22,7 @@ import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
@@ -760,6 +761,11 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
 
         return new ResultExternalResponse(returns.toArray(new ExternalRequest.Result[0]), headerNames, headerValues, cookieNames, cookieValues, nvl(statusHttp, HttpServletResponse.SC_OK), logMessages);
+    }
+
+    private static ExternalRequest.Result formatReturnValue(Object returnValue, Type type, Charset charset, String paramName, ConnectionContext context) {
+        // response requires filename if the file is returned
+        return type.formatHTTP(returnValue, charset, true).convertFileValue(paramName, value -> FormChanges.convertFileValue(value, context));
     }
 
     protected abstract ExecSession getExecSession() throws SQLException, SQLHandledException;

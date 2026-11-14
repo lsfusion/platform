@@ -9,7 +9,7 @@ import java.util.ArrayList;
 public class NavigatorControllerEvalAction extends NavigatorControllerRequestAction {
     public String script;
     public boolean evalAction;
-    public String options; // of the call (controller.options): a JSON object's text, null for none
+    public String options; // of the call: a JSON object's text, null for none (controller.mcp gives the one there is)
 
     public NavigatorControllerEvalAction() {
     }

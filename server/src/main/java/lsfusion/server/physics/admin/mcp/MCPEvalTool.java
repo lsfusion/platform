@@ -26,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * MCP eval tool — runs an lsFusion script under the caller's auth context and renders the
@@ -108,17 +107,7 @@ public class MCPEvalTool {
      * selection (the script controls what comes back).
      */
     private static ExternalRequest buildRequest(JSONObject args, ExternalRequest envelope) {
-        List<ExternalRequest.Param> paramList = new ArrayList<>();
-        Object params = args.opt("params");
-        if (params instanceof JSONArray) {
-            JSONArray arr = (JSONArray) params;
-            for (int i = 0; i < arr.length(); i++) {
-                paramList.add(toImplicitParam(arr.opt(i), "params[" + i + "]"));
-            }
-        } else if (params != null && !JSONObject.NULL.equals(params)) {
-            throw new IllegalArgumentException("`params` must be an array; got "
-                    + params.getClass().getSimpleName());
-        }
+        ExternalRequest.Param[] params = getParams(args.opt("params"));
 
         // No `returnNames` here on purpose — the script controls what comes back via
         // `RETURN` (idiomatic) or, when a serialized export is needed, EXPORT / PRINT TO /
@@ -130,7 +119,7 @@ public class MCPEvalTool {
         // (RemoteConnection always pushes a log processor on the non-interactive path) and
         // surfaced to MCP clients via ResultExternalResponse.logMessages.
         return new ExternalRequest(/*returnNames=*/ new String[0],
-                paramList.toArray(new ExternalRequest.Param[0]),
+                params,
                 envelope.headerNames, envelope.headerValues, envelope.cookieNames, envelope.cookieValues,
                 envelope.appHost, envelope.appPort, envelope.exportName,
                 envelope.scheme, envelope.method, envelope.webHost, envelope.webPort,
@@ -138,6 +127,25 @@ public class MCPEvalTool {
                 envelope.contentType, envelope.sessionId, envelope.body,
                 envelope.signature, envelope.returnMultiType,
                 envelope.needNotificationId, envelope.isInteractiveClient);
+    }
+
+    /**
+     * The tool's {@code params} as the params of an http request, one per parameter of the
+     * script's {@code run}, in its order: for the call the tool makes itself, and for a JS
+     * controller's call made as the tool's ({@code controller.mcp}).
+     */
+    public static ExternalRequest.Param[] getParams(Object params) {
+        List<ExternalRequest.Param> paramList = new ArrayList<>();
+        if (params instanceof JSONArray) {
+            JSONArray arr = (JSONArray) params;
+            for (int i = 0; i < arr.length(); i++) {
+                paramList.add(toImplicitParam(arr.opt(i), "params[" + i + "]"));
+            }
+        } else if (params != null && !JSONObject.NULL.equals(params)) {
+            throw new IllegalArgumentException("`params` must be an array; got "
+                    + params.getClass().getSimpleName());
+        }
+        return paramList.toArray(new ExternalRequest.Param[0]);
     }
 
     /**
@@ -235,21 +243,31 @@ public class MCPEvalTool {
     }
 
     /**
-     * A file result as the tool gives it, for a caller that makes the file's link itself - a JS controller's call
-     * asked for it ({@code controller.options({fileResult: 'mcp'})}): the JSON text of
-     * {@code {type: "file", fileName, extension, mimeType, size}} with {@code text}, {@code base64} or {@code url}.
-     * Where the file is too big to inline, the text is cut at the placeholder of its url and the file put there - a
-     * string with files, which the web server saves and the page writes the link into, as the link of a file result
-     * is made. {@code inlineRemaining} is what is left of the bytes one call may inline.
+     * What the tool answers for what a script returned - {@code {results, status}} -, for a caller that makes the
+     * links of the files itself, a JS controller's call made as the tool's ({@code controller.mcp}): the JSON text of
+     * the answer. Where a file is too big to inline, the text is cut at the placeholder of its url and the file put
+     * there - a string with files, which the web server saves and the page writes the links into, as the link of a
+     * file result is made. The placeholders are in the text in the order the files were put, that of the results
+     * they are of.
      */
-    public static Object renderFile(ExternalRequest.Result file, int index, int[] inlineRemaining) {
+    public static Object render(ExternalResponse response) {
         LinkedHashMap<String, NamedFileData> files = new LinkedHashMap<>();
-        String json = String.valueOf(renderResult(file, index, inlineRemaining, files, BaseUtils.randomString(20)));
+        String json = toJson(response, files, BaseUtils.randomString(20)).toString();
         if (files.isEmpty()) {
             return json;
         }
-        Map.Entry<String, NamedFileData> link = files.entrySet().iterator().next(); // the one file
-        return new StringWithFiles(json.split(Pattern.quote(link.getKey()), -1), new Serializable[] {link.getValue()}, json);
+        String[] prefixes = new String[files.size() + 1];
+        Serializable[] links = new Serializable[files.size()];
+        int i = 0;
+        int start = 0;
+        for (Map.Entry<String, NamedFileData> file : files.entrySet()) {
+            int at = json.indexOf(file.getKey(), start);
+            prefixes[i] = json.substring(start, at);
+            links[i++] = file.getValue();
+            start = at + file.getKey().length();
+        }
+        prefixes[i] = json.substring(start);
+        return new StringWithFiles(prefixes, links, json);
     }
 
     private static JSONObject renderResult(ExternalRequest.Result result, int index, int[] inlineRemaining,

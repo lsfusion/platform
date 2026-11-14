@@ -285,10 +285,11 @@ window.uiCustomViewResultsFromNavigator = function (controller, resolve, reject)
     }).then(resolve, reject);
 };
 
-// what the navigator's action uiCustomViewFileFromNavigator runs: a script's file asked for as the MCP eval tool gives
-// one is the object with what the file holds, which it marks
+// what the navigator's action uiCustomViewFileFromNavigator runs: a call made as the MCP eval tool's resolves with the
+// tool's answer, where a script's file is the object with what the file holds, which it marks
 window.uiCustomViewFileFromNavigator = function (controller, resolve, reject) {
-    controller.options({ fileResult: 'mcp' }).eval("run() { RETURN TEXTFILE('a text'); }").then(function (file) {
+    controller.mcp.eval("run() { RETURN TEXTFILE('a text'); }").then(function (answer) {
+        var file = answer.results[0];
         return controller.exec('UiCustomView.uiCustomViewNavigatorMark', file.type + ' ' + file.extension + ' ' + file.text);
     }).then(resolve, reject);
 };

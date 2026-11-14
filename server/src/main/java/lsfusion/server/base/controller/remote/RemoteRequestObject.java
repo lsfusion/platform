@@ -3,6 +3,7 @@ package lsfusion.server.base.controller.remote;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.lambda.EFunction;
 import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
@@ -15,11 +16,11 @@ import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.mcp.MCPEvalTool;
+import lsfusion.server.physics.dev.integration.external.to.CallHTTPAction;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
-import lsfusion.interop.session.ExternalRequest;
-import lsfusion.interop.session.ExternalUtils;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -49,11 +50,11 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -432,26 +433,24 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
     }
 
     private ClientAction runControllerAction(LA<?> la, Object[] params, String options, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {
-        boolean mcpFile = isMCPFileResult(options);
+        // the call made as the MCP eval tool's - controller.mcp in JS -, by the tool's own code: the arguments are the
+        // tool's params, bound as an http request's are, and the call resolves with what the tool answers
+        boolean mcp = isMCP(options);
         return runControllerRequest(stack, (env, context) -> {
             dropResult(la.action, env, getControllerBL().LM); // persistent (form) session may carry a stale result; harmless no-op on a fresh (navigator) session
-            la.execute(env, stack, bindParams(env, la, params));
-            return readControllerResult(env, la.action, context, mcpFile);
+            la.execute(env, stack, mcp ? bindMCPParams(env, la, params) : bindParams(env, la, params));
+            return mcp ? readMCPResult(env, la.action, context) : readControllerResult(env, la.action, context);
         });
     }
 
-    // The options of a call - controller.options({...}) in JS -, a JSON object's text, null for none. fileResult:
-    // 'mcp' gives a file result as the MCP eval tool gives a file (MCPEvalTool.renderFile), 'link' - the default - as
-    // the link to the file alone
-    private static boolean isMCPFileResult(String options) {
+    // The options of a call, a JSON object's text, null for none. There is one: mcp: true - the call is made as the MCP
+    // eval tool's
+    private static boolean isMCP(String options) {
         JSONObject json = options != null ? new JSONObject(options) : new JSONObject();
         for(String option : json.keySet())
-            if(!option.equals("fileResult"))
+            if(!option.equals("mcp"))
                 throw new RuntimeException("Unknown option of a call: " + option);
-        Object fileResult = json.opt("fileResult");
-        if(fileResult != null && !fileResult.equals("mcp") && !fileResult.equals("link"))
-            throw new RuntimeException("The option fileResult is 'mcp' or 'link', not " + fileResult);
-        return "mcp".equals(fileResult);
+        return json.optBoolean("mcp");
     }
 
     private ClientAction runControllerChange(LP<?> lp, Object[] params, Object value, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {
@@ -460,6 +459,15 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             lp.change(bindObjectValue(env, lp.property.getValueClass(ClassType.editValuePolicy), value, lp, -1), env, keys);
             return new ControllerResultClientAction(null, new byte[1][], new byte[1][]); // change is a pure mutation, no value -> resolve(undefined)
         });
+    }
+
+    // The MCP eval tool's params -> typed values, as the tool binds them: as the params of an http request. The page
+    // sends them as one argument, the JSON text of them all (GController) - a string, which comes as its own JSON text,
+    // as every string argument does (JSValueConverter.convertFromUnknownJSValue) -, so that a number is read here as
+    // the tool reads one of its own, and not as the double the page has it as
+    private static ObjectValue[] bindMCPParams(ExecutionEnvironment env, LAP<?, ?> property, Object[] params) throws SQLException, SQLHandledException, ParseException {
+        JSONArray toolParams = new JSONArray((String) new JSONTokener((String) params[0]).nextValue());
+        return CallHTTPAction.getParams(env.getSession(), property, MCPEvalTool.getParams(toolParams));
     }
 
     // canonical values (Double/Boolean/null, the JSON text of anything else; one per positional interface) -> typed
@@ -508,32 +516,31 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         }
     }
 
-    private ClientAction readControllerResult(ExecutionEnvironment env, Action<?> action, ConnectionContext context, boolean mcpFile) throws SQLException, SQLHandledException, IOException {
+    private ClientAction readControllerResult(ExecutionEnvironment env, Action<?> action, ConnectionContext context) throws SQLException, SQLHandledException, IOException {
         Result<SessionDataProperty> resultProp = new Result<>();
         Pair<String[], ObjectValue[]> result = readResult(action, env, getControllerBL().LM, resultProp);
         if(resultProp.result.interfaces.isEmpty())
-            return controllerResultAction(context, null, result.second, mcpFile);
+            return controllerResultAction(context, null, result.second);
         // a result with parameters (RETURN f(a), a left free): every value with its name; nothing returned is one null without a name
         boolean none = result.first.length == 1 && result.first[0] == null;
-        return controllerResultAction(context, none ? new String[0] : result.first, none ? new ObjectValue[0] : result.second, mcpFile);
+        return controllerResultAction(context, none ? new String[0] : result.first, none ? new ObjectValue[0] : result.second);
     }
 
-    private ClientAction controllerResultAction(ConnectionContext context, String[] names, ObjectValue[] results, boolean mcpFile) throws IOException {
+    // What the MCP eval tool answers for what the action returned - every result as an external call has it, and the
+    // status. It is one structure, so it goes as a value of the JSON class, which the page parses into the object
+    private ClientAction readMCPResult(ExecutionEnvironment env, Action<?> action, ConnectionContext context) throws SQLException, SQLHandledException, IOException {
+        Object answer = MCPEvalTool.render(RemoteConnection.readResult(getControllerBL(), context, new String[0], null, action, env, null));
+        return new ControllerResultClientAction(null, new byte[][] {FormChanges.serializeConvertFileValue(answer, context)}, new byte[][] {TypeSerializer.serializeType(JSONClass.instance)});
+    }
+
+    private ClientAction controllerResultAction(ConnectionContext context, String[] names, ObjectValue[] results) throws IOException {
         byte[][] values = new byte[results.length][];
         byte[][] types = new byte[results.length][];
-        int[] inlineRemaining = { MCPEvalTool.MAX_INLINE_TOTAL_BYTES }; // of the files given by their content
         for(int i = 0; i < results.length; i++) {
             Object value = results[i].getValue();
             if(value == null) // no export value / null value -> JS undefined
                 continue;
-            Type type = results[i].getType();
-            if(mcpFile && type instanceof FileClass) {
-                // the file as the MCP eval tool gives one - an object that describes it, with its content or a link in
-                // it -, made by the tool's own code. It is no file for the page any more but a structure, so it goes
-                // as a value of the JSON class, which the page parses into the object (as it does a JSON result)
-                value = MCPEvalTool.renderFile(formatReturnValue(value, type, ExternalUtils.jsonCharset, null, context), i, inlineRemaining);
-                type = JSONClass.instance;
-            }
+            Type<?> type = results[i].getType();
             // a FILE result -> a download URL (NeedFile registers the file; the client maps the GFileType subtype to
             // getAppDownloadURL, image -> src). Structured/native data is returned via VALUE classes (JSON/JSONTEXT/XML,
             // string, number, ...) which aren't FileClass and serialize natively (e.g. GJSONType -> JSON.parse'd object).
@@ -543,13 +550,6 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             types[i] = TypeSerializer.serializeType(type);
         }
         return new ControllerResultClientAction(names, values, types);
-    }
-
-    // A returned value as an external call has it - a string, or a file with its name: what /exec, /eval and the MCP
-    // tools answer with (RemoteConnection.readResult), and what the tool's renderer makes a controller call's file of
-    protected static ExternalRequest.Result formatReturnValue(Object returnValue, Type type, Charset charset, String paramName, ConnectionContext context) {
-        // response requires filename if the file is returned
-        return type.formatHTTP(returnValue, charset, true).convertFileValue(paramName, value -> FormChanges.convertFileValue(value, context));
     }
 
     private static String controllerMessage(Throwable t) {
@@ -562,11 +562,14 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         return lm.getExportValueProperty().readFirstNotNull(env, resultProp, action);
     }
     // symmetric with readResult: drop the session changes of the SAME properties readResult would read (the action's
-    // RETURN result props, else the "export" holder). A fresh session (navigator, /exec /eval) starts with these null;
-    // a persistent session (the form controller) must drop them first or readResult returns a value left by a previous call.
+    // RETURN result props, else the "export" holder) - and of the response's status and headers, which the answer of a
+    // call made as the MCP eval tool's is read from too (RemoteConnection.readResult; a Content-Type sets the charset a
+    // result is written in). A fresh session (navigator, /exec /eval) starts with these null; a persistent session (the
+    // form controller) must drop them first or a call answers with what a previous call left.
     public static void dropResult(Action<?> action, ExecutionEnvironment env, BaseLogicsModule lm) throws SQLException, SQLHandledException {
         ImOrderSet<SessionDataProperty> resultProps = action.getResultProps();
-        env.getSession().dropSessionChanges((!resultProps.isEmpty() ? resultProps : lm.getExportValueProperty().getProps()).getSet());
+        env.getSession().dropSessionChanges((!resultProps.isEmpty() ? resultProps : lm.getExportValueProperty().getProps()).getSet()
+                .merge(SetFact.toSet((SessionDataProperty) lm.statusHttpTo.property, (SessionDataProperty) lm.headersTo.property)));
     }
 
     private Map<Long, SyncExecution> syncExecuteServerInvocationMap = MapFact.mAddRemoveMap();

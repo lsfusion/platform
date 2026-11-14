@@ -6,7 +6,7 @@ import java.util.ArrayList;
 // form controller exec(action, params...): runs a system action by canonical name in the form's session.
 public class ControllerExecAction extends ControllerRequestAction {
     public String action;
-    public String options; // of the call (controller.options): a JSON object's text, null for none
+    public String options; // of the call: a JSON object's text, null for none (controller.mcp gives the one there is)
 
     public ControllerExecAction() {
     }

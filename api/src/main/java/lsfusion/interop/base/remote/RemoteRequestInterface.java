@@ -18,9 +18,9 @@ public interface RemoteRequestInterface extends PendingRemoteInterface {
     // as an offset-bearing ISO string, an object, an array) -, bound positionally per interface via Type.parseJSON; a
     // file is given as a string, its text, or as an object that describes it. The result/exception is delivered by a terminal
     // ControllerCallbackClientAction keyed by requestIndex. See GFORM-CONTROLLER-EXEC-EVAL-PLAN §5/§12.
-    // options are the options of the call (controller.options({...}) in JS): a JSON object's text, null for none.
-    // fileResult: "mcp" gives a file result as the MCP eval tool gives a file - an object that describes it, with its
-    // content or a link in it -, "link" - the default - the link alone.
+    // options are the options of the call: a JSON object's text, null for none. mcp: true (controller.mcp in JS) makes
+    // the call as the MCP eval tool's: params is one string, the JSON text of the tool's params, bound as the tool binds
+    // them, and the result is what the tool answers - {results, status}.
 
     ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, String action, Object[] params, String options) throws RemoteException;
 

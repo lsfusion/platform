@@ -283,8 +283,8 @@ uiCustomViewResultsFromNavigator 'Results from the navigator' () {
     INTERNAL CLIENT 'uiCustomViewResultsFromNavigator';
 }
 
-// a file an action returns, which a call run by name gets - as the MCP eval tool gives one where it asks so, as the
-// JS function of this action of the navigator does of a script's file
+// a file an action returns, which a call run by name gets - as the MCP eval tool gives one where the call is made as
+// the tool's, as the JS function of this action of the navigator makes one for a script's file
 uiCustomViewTextFile () {
     RETURN TEXTFILE('a text');
 }
