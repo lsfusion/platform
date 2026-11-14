@@ -106,17 +106,29 @@ public class McpToolsIT {
     private static final String EVAL_FILE = "run(FILE f) { RETURN f; }";
 
     @Test
-    public void anArrayIsJsonDataAndAnObjectIsAFile() throws Exception {
+    public void anArrayAndAnObjectAreJsonData() throws Exception {
         String array = value(eval(EVAL_JSON, "[[1, \"two\"]]"));
         Assert.assertEquals(array, "[1,\"two\"]", new JSONArray(array).toString());
-        // an object is a file whatever its parameter is: JSON data that is an object is given as a string, or as the
-        // text of a file
-        String string = value(eval(EVAL_JSON, "[\"{\\\"a\\\": 1}\"]"));
+        // an object is JSON data as an array is: it was refused as a file that has no content, so JSON data that is
+        // an object had to be written as a string
+        String object = value(eval(EVAL_JSON, "[{\"a\": 1, \"b\": {\"fileName\": \"no file\"}}]"));
+        Assert.assertEquals(object, "1 no file", new JSONObject(object).getInt("a") + " " + new JSONObject(object).getJSONObject("b").getString("fileName"));
+        Assert.assertEquals("{\"a\":1}", value(eval("run(STRING s) { RETURN s; }", "[{\"a\": 1}]"))); // the text of it for a string, as of an array
+        Assert.assertEquals("{}", value(eval(EVAL_JSON, "[{}]")));
+        String nested = value(eval(EVAL_JSON, "[{\"file\": {\"text\": \"x\"}}]")); // what is inside it decides nothing
+        Assert.assertEquals(nested, "x", new JSONObject(nested).getJSONObject("file").getString("text"));
+        // for a file parameter it is, as a string given for one is, the file of that text
+        JSONObject file = result(eval(EVAL_FILE, "[{\"a\": 1}]"));
+        Assert.assertEquals(file.toString(), "{\"a\":1} file", file.getString("text") + " " + file.getString("extension"));
+        String string = value(eval(EVAL_JSON, "[\"{\\\"a\\\": 1}\"]")); // a string still is taken
         Assert.assertEquals(string, 1, new JSONObject(string).getInt("a"));
+
+        // ... unless it describes a file - it has the file's content, or says it is a file: whatever its parameter is,
+        // that is the file, so for a JSON parameter the text of the file is the JSON
         String text = value(eval(EVAL_JSON, "[{\"text\": \"{\\\"a\\\": 1}\"}]"));
         Assert.assertEquals(text, 1, new JSONObject(text).getInt("a"));
-        JSONObject object = eval(EVAL_JSON, "[{\"a\": 1}]");
-        Assert.assertTrue(object.toString(), object.getBoolean("isError") && object.toString().contains("unknown field `a`"));
+        JSONObject noContent = eval(EVAL_JSON, "[{\"type\": \"file\", \"fileName\": \"a.json\"}]");
+        Assert.assertTrue(noContent.toString(), noContent.getBoolean("isError") && noContent.toString().contains("needs either `base64` or `text`"));
     }
 
     @Test
@@ -183,6 +195,12 @@ public class McpToolsIT {
         for (int i = 0; i < kinds.length(); i++)
             types.add(kinds.getJSONObject(i).getString("type"));
         Assert.assertEquals(kinds.toString(), new HashSet<>(Arrays.asList("string", "number", "boolean", "array", "null", "object")), types);
+        // an object is a file or JSON data, never both: the object that is JSON data is one that describes no file
+        JSONObject data = kinds.getJSONObject(kinds.length() - 1);
+        Assert.assertEquals(data.toString(), "[{\"required\":[\"text\"]},{\"required\":[\"base64\"]}]",
+                new JSONArray().put(data.getJSONObject("not").getJSONArray("anyOf").get(0)).put(data.getJSONObject("not").getJSONArray("anyOf").get(1)).toString());
+        Assert.assertEquals(data.toString(), "file", data.getJSONObject("not").getJSONArray("anyOf").getJSONObject(2).getJSONObject("properties").getJSONObject("type").getString("const"));
+        Assert.assertTrue(kinds.toString(), kinds.getJSONObject(kinds.length() - 2).getJSONObject("properties").has("base64"));
     }
 
     // params is the text of the JSON array, as a client writes it: org.json would write 21.0 as 21

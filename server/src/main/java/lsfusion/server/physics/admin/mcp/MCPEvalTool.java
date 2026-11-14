@@ -154,13 +154,14 @@ public class MCPEvalTool {
      *       awkward run-interface names like {@code run(p, x)}.</li>
      * </ul>
      *
-     * <p>An object is a file. Any other value is given as an http request gives it, so that the
-     * parameter's class parses it as it parses the request's: a string as it is, a number as the
-     * string of it ({@link #numberString}), a boolean as {@code "true"} or {@code "false"}, an array
-     * as its JSON text, null as the null file, which is NULL for a parameter of a class.
+     * <p>An object that describes a file ({@link #isFile}) is that file. Any other value is given as
+     * an http request gives it, so that the parameter's class parses it as it parses the request's:
+     * a string as it is, a number as the string of it ({@link #numberString}), a boolean as
+     * {@code "true"} or {@code "false"}, an array and any other object as its JSON text, null as the
+     * null file, which is NULL for a parameter of a class.
      */
     private static ExternalRequest.Param toImplicitParam(Object value, String origin) {
-        if (value instanceof JSONObject) {
+        if (value instanceof JSONObject && isFile((JSONObject) value)) {
             return FileClass.buildFileParam((JSONObject) value, origin);
         }
         Object httpValue;
@@ -172,6 +173,16 @@ public class MCPEvalTool {
             httpValue = value.toString();
         }
         return new ExternalRequest.Param(httpValue, /*url=*/ false, UTF8, /*name=*/ "");
+    }
+
+    /**
+     * An object that describes a file: it carries the file's content, or says it is a file as an
+     * entry of {@code results[]} does - so one that came with a link in place of its content is
+     * refused as a file, and not taken as JSON data. The class of the parameter is not known here:
+     * the script is compiled later, by the call the params are made for.
+     */
+    private static boolean isFile(JSONObject object) {
+        return object.has("text") || object.has("base64") || "file".equals(object.opt("type"));
     }
 
     /**
