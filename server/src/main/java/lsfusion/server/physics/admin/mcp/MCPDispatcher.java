@@ -665,7 +665,7 @@ public class MCPDispatcher {
      * (exactly one of {@code base64} / {@code text}) so a strict MCP client can reject the
      * shape before the request leaves it; {@code additionalProperties:false} matches the
      * server-side fail-fast validation in
-     * {@link MCPEvalTool#buildFileParam(JSONObject, String)} (unknown fields throw
+     * {@code FileClass.buildFileParam} (unknown fields throw
      * {@link IllegalArgumentException}).
      */
     private static JSONObject fileEntrySchema() {
