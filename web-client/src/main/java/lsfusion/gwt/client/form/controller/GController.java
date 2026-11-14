@@ -42,38 +42,45 @@ public abstract class GController {
 
     private native JavaScriptObject initController() /*-{
         var thisObj = this;
-        return {
-            exec: function (action) { // exec(action, ...params) -> Promise
-                return thisObj.@GController::controllerExec(*)(action, Array.prototype.slice.call(arguments, 1));
-            },
-            eval: function (script) { // eval(script, ...params) -> Promise; script defines its own run action (typed params), result via return
-                return thisObj.@GController::controllerEval(*)(script, false, Array.prototype.slice.call(arguments, 1));
-            },
-            evalAction: function (script) { // evalAction(script, ...params) -> Promise; script is an action body, auto-wrapped into run(), result via return
-                return thisObj.@GController::controllerEval(*)(script, true, Array.prototype.slice.call(arguments, 1));
-            },
-            change: function (property) { // change(property, ...keyParams, value) -> Promise; value is the LAST argument
-                var args = Array.prototype.slice.call(arguments, 1);
-                var value = args.length > 0 ? args[args.length - 1] : null;
-                var keyParams = args.length > 0 ? args.slice(0, args.length - 1) : args;
-                return thisObj.@GController::controllerChange(*)(property, keyParams, value);
-            }
-        }
+        var calls = function (options) { // the calls with the options of a call: their JSON text, null - none
+            return {
+                exec: function (action) { // exec(action, ...params) -> Promise
+                    return thisObj.@GController::controllerExec(*)(action, Array.prototype.slice.call(arguments, 1), options);
+                },
+                eval: function (script) { // eval(script, ...params) -> Promise; script defines its own run action (typed params), result via return
+                    return thisObj.@GController::controllerEval(*)(script, false, Array.prototype.slice.call(arguments, 1), options);
+                },
+                evalAction: function (script) { // evalAction(script, ...params) -> Promise; script is an action body, auto-wrapped into run(), result via return
+                    return thisObj.@GController::controllerEval(*)(script, true, Array.prototype.slice.call(arguments, 1), options);
+                }
+            };
+        };
+        var controller = calls(null);
+        controller.change = function (property) { // change(property, ...keyParams, value) -> Promise; value is the LAST argument
+            var args = Array.prototype.slice.call(arguments, 1);
+            var value = args.length > 0 ? args[args.length - 1] : null;
+            var keyParams = args.length > 0 ? args.slice(0, args.length - 1) : args;
+            return thisObj.@GController::controllerChange(*)(property, keyParams, value);
+        };
+        controller.options = function (options) { // options({fileResult: 'mcp'}) -> exec / eval / evalAction of a call with the options
+            return calls(JSON.stringify(options));
+        };
+        return controller;
     }-*/;
 
-    public JavaScriptObject controllerExec(String action, JavaScriptObject params) {
+    public JavaScriptObject controllerExec(String action, JavaScriptObject params, String options) {
         String refusal = getRefusal("exec()");
         if (refusal != null) // reject BEFORE dispatch: a dispatched action on a closed context enqueues but never executes, leaking the queue entry / busy state
             return rejectedControllerPromise(refusal);
         ArrayList<Serializable> encoded = JSValueConverter.encodeUnknownJSValues(params);
-        return createControllerPromise(dispatchExec(action, encoded, new ControllerServerResponseCallback()));
+        return createControllerPromise(dispatchExec(action, encoded, options, new ControllerServerResponseCallback()));
     }
-    public JavaScriptObject controllerEval(String script, boolean evalAction, JavaScriptObject params) {
+    public JavaScriptObject controllerEval(String script, boolean evalAction, JavaScriptObject params, String options) {
         String refusal = getRefusal(evalAction ? "evalAction()" : "eval()");
         if (refusal != null)
             return rejectedControllerPromise(refusal);
         ArrayList<Serializable> encoded = JSValueConverter.encodeUnknownJSValues(params);
-        return createControllerPromise(dispatchEval(script, evalAction, encoded, new ControllerServerResponseCallback()));
+        return createControllerPromise(dispatchEval(script, evalAction, encoded, options, new ControllerServerResponseCallback()));
     }
     public JavaScriptObject controllerChange(String property, JavaScriptObject keyParams, JavaScriptObject value) {
         String refusal = getRefusal("change()");
@@ -97,8 +104,8 @@ public abstract class GController {
     }-*/;
 
     // context-specific transport: build the request action and dispatch it; returns the assigned requestIndex (the promise key)
-    protected abstract long dispatchExec(String action, ArrayList<Serializable> params, ServerResponseCallback callback);
-    protected abstract long dispatchEval(String script, boolean evalAction, ArrayList<Serializable> params, ServerResponseCallback callback);
+    protected abstract long dispatchExec(String action, ArrayList<Serializable> params, String options, ServerResponseCallback callback);
+    protected abstract long dispatchEval(String script, boolean evalAction, ArrayList<Serializable> params, String options, ServerResponseCallback callback);
     protected abstract long dispatchChange(String property, ArrayList<Serializable> keyParams, Serializable value, ServerResponseCallback callback);
     protected abstract boolean isClosed();
     // the GwtActionDispatcher that processes the response actions (form: the form action dispatcher; navigator: the navigator dispatcher)

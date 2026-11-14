@@ -44,17 +44,17 @@ public abstract class RemoteRequestObjectProxy<T extends RemoteRequestInterface>
     }
 
     @Override
-    public ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, String action, Object[] params) throws RemoteException {
+    public ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, String action, Object[] params, String options) throws RemoteException {
         logRemoteMethodStartVoidCall("exec");
-        ServerResponse result = target.exec(requestIndex, lastReceivedRequestIndex, action, params);
+        ServerResponse result = target.exec(requestIndex, lastReceivedRequestIndex, action, params, options);
         logRemoteMethodEndVoidCall("exec");
         return result;
     }
 
     @Override
-    public ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, String script, boolean evalAction, Object[] params) throws RemoteException {
+    public ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, String script, boolean evalAction, Object[] params, String options) throws RemoteException {
         logRemoteMethodStartVoidCall("eval");
-        ServerResponse result = target.eval(requestIndex, lastReceivedRequestIndex, script, evalAction, params);
+        ServerResponse result = target.eval(requestIndex, lastReceivedRequestIndex, script, evalAction, params, options);
         logRemoteMethodEndVoidCall("eval");
         return result;
     }

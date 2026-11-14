@@ -34,12 +34,12 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     // so isClosed() is always false. See NAVIGATOR-CONTROLLER-PLAN.
     private final GController gController = new GController() {
         @Override
-        protected long dispatchExec(String action, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
-            return MainFrame.navigatorDispatchAsync.asyncExecute(new NavigatorControllerExecAction(action, params), callback);
+        protected long dispatchExec(String action, ArrayList<Serializable> params, String options, GwtActionDispatcher.ServerResponseCallback callback) {
+            return MainFrame.navigatorDispatchAsync.asyncExecute(new NavigatorControllerExecAction(action, params, options), callback);
         }
         @Override
-        protected long dispatchEval(String script, boolean evalAction, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
-            return MainFrame.navigatorDispatchAsync.asyncExecute(new NavigatorControllerEvalAction(script, evalAction, params), callback);
+        protected long dispatchEval(String script, boolean evalAction, ArrayList<Serializable> params, String options, GwtActionDispatcher.ServerResponseCallback callback) {
+            return MainFrame.navigatorDispatchAsync.asyncExecute(new NavigatorControllerEvalAction(script, evalAction, params, options), callback);
         }
         @Override
         protected long dispatchChange(String property, ArrayList<Serializable> keyParams, Serializable value, GwtActionDispatcher.ServerResponseCallback callback) {

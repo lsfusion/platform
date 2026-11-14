@@ -15,8 +15,11 @@ import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.admin.mcp.MCPEvalTool;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
+import lsfusion.interop.session.ExternalRequest;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -39,6 +42,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.file.FileClass;
+import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.SessionDataProperty;
@@ -49,6 +53,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -353,7 +358,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
     // PERSISTENT session with a FormInstanceContext; navigator opens a FRESH session per call with the connection
     // context. See GFORM-CONTROLLER-EXEC-EVAL-PLAN.
 
-    public ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, String action, Object[] params) throws RemoteException {
+    public ServerResponse exec(long requestIndex, long lastReceivedRequestIndex, String action, Object[] params, String options) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             ClientAction terminal;
             try {
@@ -362,7 +367,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
                     throw new RuntimeException("Action was not found: " + action);
                 if(!resolved.formAuthorized) // an allow-listed form API entry skips the @api/enableAPI gate
                     controllerGate(resolved.lap.getActionOrProperty().hasAnnotation("api"));
-                terminal = runControllerAction((LA<?>) resolved.lap, params, stack);
+                terminal = runControllerAction((LA<?>) resolved.lap, params, options, stack);
             } catch (Exception e) { // business/property/parse/gate -> onException; non-Exception throwables propagate to the normal request-failure path
                 terminal = new ControllerExceptionClientAction(controllerMessage(e), false);
             }
@@ -370,7 +375,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         });
     }
 
-    public ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, String script, boolean evalAction, Object[] params) throws RemoteException {
+    public ServerResponse eval(long requestIndex, long lastReceivedRequestIndex, String script, boolean evalAction, Object[] params, String options) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             ClientAction terminal;
             try {
@@ -378,7 +383,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
                 LA<?> la = getControllerBL().evaluateRun(script, evalAction); // evalAction: true -> wrap body into run(); false -> script defines its own run (typed params)
                 if(la == null)
                     throw new RuntimeException("Eval 'run' action was not found");
-                terminal = runControllerAction(la, params, stack);
+                terminal = runControllerAction(la, params, options, stack);
             } catch (Exception e) {
                 terminal = new ControllerExceptionClientAction(controllerMessage(e), false);
             }
@@ -426,12 +431,27 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         return new ControllerResolved(action ? BL.findActionByName(name) : BL.findPropertyByName(name), false);
     }
 
-    private ClientAction runControllerAction(LA<?> la, Object[] params, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {
+    private ClientAction runControllerAction(LA<?> la, Object[] params, String options, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {
+        boolean mcpFile = isMCPFileResult(options);
         return runControllerRequest(stack, (env, context) -> {
             dropResult(la.action, env, getControllerBL().LM); // persistent (form) session may carry a stale result; harmless no-op on a fresh (navigator) session
             la.execute(env, stack, bindParams(env, la, params));
-            return readControllerResult(env, la.action, context);
+            return readControllerResult(env, la.action, context, mcpFile);
         });
+    }
+
+    // The options of a call - controller.options({...}) in JS -, a JSON object's text, null for none. fileResult:
+    // 'mcp' gives a file result as the MCP eval tool gives a file (MCPEvalTool.renderFile), 'link' - the default - as
+    // the link to the file alone
+    private static boolean isMCPFileResult(String options) {
+        JSONObject json = options != null ? new JSONObject(options) : new JSONObject();
+        for(String option : json.keySet())
+            if(!option.equals("fileResult"))
+                throw new RuntimeException("Unknown option of a call: " + option);
+        Object fileResult = json.opt("fileResult");
+        if(fileResult != null && !fileResult.equals("mcp") && !fileResult.equals("link"))
+            throw new RuntimeException("The option fileResult is 'mcp' or 'link', not " + fileResult);
+        return "mcp".equals(fileResult);
     }
 
     private ClientAction runControllerChange(LP<?> lp, Object[] params, Object value, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {
@@ -488,24 +508,32 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         }
     }
 
-    private ClientAction readControllerResult(ExecutionEnvironment env, Action<?> action, ConnectionContext context) throws SQLException, SQLHandledException, IOException {
+    private ClientAction readControllerResult(ExecutionEnvironment env, Action<?> action, ConnectionContext context, boolean mcpFile) throws SQLException, SQLHandledException, IOException {
         Result<SessionDataProperty> resultProp = new Result<>();
         Pair<String[], ObjectValue[]> result = readResult(action, env, getControllerBL().LM, resultProp);
         if(resultProp.result.interfaces.isEmpty())
-            return controllerResultAction(context, null, result.second);
+            return controllerResultAction(context, null, result.second, mcpFile);
         // a result with parameters (RETURN f(a), a left free): every value with its name; nothing returned is one null without a name
         boolean none = result.first.length == 1 && result.first[0] == null;
-        return controllerResultAction(context, none ? new String[0] : result.first, none ? new ObjectValue[0] : result.second);
+        return controllerResultAction(context, none ? new String[0] : result.first, none ? new ObjectValue[0] : result.second, mcpFile);
     }
 
-    private ClientAction controllerResultAction(ConnectionContext context, String[] names, ObjectValue[] results) throws IOException {
+    private ClientAction controllerResultAction(ConnectionContext context, String[] names, ObjectValue[] results, boolean mcpFile) throws IOException {
         byte[][] values = new byte[results.length][];
         byte[][] types = new byte[results.length][];
+        int[] inlineRemaining = { MCPEvalTool.MAX_INLINE_TOTAL_BYTES }; // of the files given by their content
         for(int i = 0; i < results.length; i++) {
             Object value = results[i].getValue();
             if(value == null) // no export value / null value -> JS undefined
                 continue;
-            Type<?> type = results[i].getType();
+            Type type = results[i].getType();
+            if(mcpFile && type instanceof FileClass) {
+                // the file as the MCP eval tool gives one - an object that describes it, with its content or a link in
+                // it -, made by the tool's own code. It is no file for the page any more but a structure, so it goes
+                // as a value of the JSON class, which the page parses into the object (as it does a JSON result)
+                value = MCPEvalTool.renderFile(formatReturnValue(value, type, ExternalUtils.jsonCharset, null, context), i, inlineRemaining);
+                type = JSONClass.instance;
+            }
             // a FILE result -> a download URL (NeedFile registers the file; the client maps the GFileType subtype to
             // getAppDownloadURL, image -> src). Structured/native data is returned via VALUE classes (JSON/JSONTEXT/XML,
             // string, number, ...) which aren't FileClass and serialize natively (e.g. GJSONType -> JSON.parse'd object).
@@ -515,6 +543,13 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             types[i] = TypeSerializer.serializeType(type);
         }
         return new ControllerResultClientAction(names, values, types);
+    }
+
+    // A returned value as an external call has it - a string, or a file with its name: what /exec, /eval and the MCP
+    // tools answer with (RemoteConnection.readResult), and what the tool's renderer makes a controller call's file of
+    protected static ExternalRequest.Result formatReturnValue(Object returnValue, Type type, Charset charset, String paramName, ConnectionContext context) {
+        // response requires filename if the file is returned
+        return type.formatHTTP(returnValue, charset, true).convertFileValue(paramName, value -> FormChanges.convertFileValue(value, context));
     }
 
     private static String controllerMessage(Throwable t) {

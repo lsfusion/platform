@@ -270,6 +270,61 @@ public class UiCustomViewIT extends UiTest {
                 + "value => value === undefined ? 'undefined' : JSON.stringify(value), error => 'rejected: ' + error.message)", script);
     }
 
+    // a call asked for a file as the MCP eval tool gives one - controller.options({fileResult: 'mcp'}) - gets the object
+    // the tool gives: the file's name, extension, type and size with its text, the bytes of a small binary in base64,
+    // or a link to a bigger one, which gives the file. Without the option, and with 'link', the file is the link it
+    // was; what is no file is what it was
+    @Test
+    public void aFileResultIsWhatTheMcpToolGivesWhereTheCallAsksForIt() throws Exception {
+        Locator form = open(FOLDER, "UiCustomView.uiCustomViewCalls");
+        call(form, "eval");
+        assertThat(form.locator(".ui-custom-view-results li")).hasText(new String[] {"eval: number 42"});
+
+        String text = "run() { RETURN TEXTFILE('a text'); }";
+        String mcp = "controller.options({fileResult: 'mcp'})";
+        assertEquals("file file.txt txt 6 a text", resultOf(mcp + ".eval(script)", text,
+                "file => [file.type, file.fileName, file.extension, file.size, file.text].join(' ')"));
+        assertEquals("file pdf application/pdf 5 a PDF", resultOf(mcp + ".eval(script)", "run() { RETURN PDFFILE(FILE('a PDF')); }",
+                "file => [file.type, file.extension, file.mimeType, file.size, atob(file.base64)].join(' ')"));
+        // a content longer than the 64 KiB one piece of a serialized string holds - a text, a binary in base64
+        String sized = "file => [file.extension, file.size, 'text' in file ? file.text.length : atob(file.base64).length].join(' ')";
+        assertEquals("txt 70000 70000", resultOf(mcp + ".eval(script, 'x'.repeat(70000))", "run(TEXT t) { RETURN TEXTFILE(t); }", sized));
+        assertEquals("pdf 50000 50000", resultOf(mcp + ".eval(script, 'x'.repeat(50000))", "run(TEXT t) { RETURN PDFFILE(FILE(t)); }", sized));
+        // too big to be in the answer, the file is a link in it
+        assertEquals("file pdf 70000 false false 200 70000", resultOf(mcp + ".eval(script, 'x'.repeat(70000))", "run(TEXT t) { RETURN PDFFILE(FILE(t)); }",
+                "file => fetch(file.url).then(response => response.arrayBuffer().then(got =>"
+                        + " [file.type, file.extension, file.size, 'text' in file, 'base64' in file, response.status, got.byteLength].join(' ')))"));
+        // the content is named as a file given to a call is, so what came out is a parameter of the next call as it is
+        assertEquals("txt 6 a text", resultOf(mcp + ".eval(\"" + text + "\").then(file => " + mcp + ".eval(script, file))",
+                "run(FILE f) { RETURN f; }", "file => [file.extension, file.size, file.text].join(' ')"));
+        // an action run by name, and a body of one
+        assertEquals("a text", resultOf(mcp + ".exec(script)", "UiCustomView.uiCustomViewTextFile", "file => file.text"));
+        assertEquals("a text", resultOf(mcp + ".evalAction(script)", "RETURN TEXTFILE('a text');", "file => file.text"));
+
+        String link = "value => typeof value + ' ' + /[.]txt/.test(value)";
+        assertEquals("string true", resultOf("controller.eval(script)", text, link));
+        assertEquals("string true", resultOf("controller.options({fileResult: 'link'}).eval(script)", text, link));
+        assertEquals("number 42", resultOf(mcp + ".eval(script)", "run() { RETURN 42; }", "value => typeof value + ' ' + value"));
+
+        assertEquals("rejected: Unknown option of a call: file", resultOf("controller.options({file: 'mcp'}).eval(script)", text, "value => value"));
+        assertEquals("rejected: The option fileResult is 'mcp' or 'link', not text", resultOf("controller.options({fileResult: 'text'}).eval(script)", text, "value => value"));
+    }
+
+    // what a call of the calls form's controller - `controller` in it, `script` what it is given - resolves to, read by
+    // the JS function, or is rejected with
+    private String resultOf(String call, String script, String read) {
+        return String.valueOf(page.evaluate("script => { const controller = window.uiCustomViewCalls.form; return " + call + ".then(" + read
+                + ", error => 'rejected: ' + error.message); }", script));
+    }
+
+    // ... and so does a call of the navigator's controller
+    @Test
+    public void aFileResultIsWhatTheMcpToolGivesWhereTheCallAsksForItInTheNavigator() throws Exception {
+        seed();
+        open(FOLDER, "UiCustomView.uiCustomViewFileFromNavigator");
+        check("UiCustomView.uiCustomViewCheckNavigatorMarks", "file txt a text");
+    }
+
     // a custom cell renderer changes its property through its controller - the server has the value, which the form
     // shows in a property of its own - and reaches the form's controller from there, whose call resolves to what the
     // server answers

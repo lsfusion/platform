@@ -370,12 +370,12 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // shared controller (exec/eval/change) machinery, dispatched in THIS form's session/pipeline
     private final GController gController = new GController() {
         @Override
-        protected long dispatchExec(String action, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
-            return asyncDispatch(new ControllerExecAction(action, params), callback);
+        protected long dispatchExec(String action, ArrayList<Serializable> params, String options, GwtActionDispatcher.ServerResponseCallback callback) {
+            return asyncDispatch(new ControllerExecAction(action, params, options), callback);
         }
         @Override
-        protected long dispatchEval(String script, boolean evalAction, ArrayList<Serializable> params, GwtActionDispatcher.ServerResponseCallback callback) {
-            return asyncDispatch(new ControllerEvalAction(script, evalAction, params), callback);
+        protected long dispatchEval(String script, boolean evalAction, ArrayList<Serializable> params, String options, GwtActionDispatcher.ServerResponseCallback callback) {
+            return asyncDispatch(new ControllerEvalAction(script, evalAction, params, options), callback);
         }
         @Override
         protected long dispatchChange(String property, ArrayList<Serializable> keyParams, Serializable value, GwtActionDispatcher.ServerResponseCallback callback) {

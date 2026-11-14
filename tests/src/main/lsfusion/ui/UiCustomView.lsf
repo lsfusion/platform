@@ -283,6 +283,15 @@ uiCustomViewResultsFromNavigator 'Results from the navigator' () {
     INTERNAL CLIENT 'uiCustomViewResultsFromNavigator';
 }
 
+// a file an action returns, which a call run by name gets - as the MCP eval tool gives one where it asks so, as the
+// JS function of this action of the navigator does of a script's file
+uiCustomViewTextFile () {
+    RETURN TEXTFILE('a text');
+}
+uiCustomViewFileFromNavigator 'A file from the navigator' () {
+    INTERNAL CLIENT 'uiCustomViewFileFromNavigator';
+}
+
 onWebClientInit() + {
     onWebClientInit('UiCustomView.js') <- 1;
 }
@@ -303,6 +312,7 @@ NAVIGATOR {
         NEW uiCustomViewReactCells;
         NEW uiCustomViewFromNavigator;
         NEW uiCustomViewResultsFromNavigator;
+        NEW uiCustomViewFileFromNavigator;
     }
 }
 

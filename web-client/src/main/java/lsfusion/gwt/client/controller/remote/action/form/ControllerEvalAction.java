@@ -9,13 +9,15 @@ import java.util.ArrayList;
 public class ControllerEvalAction extends ControllerRequestAction {
     public String script;
     public boolean evalAction;
+    public String options; // of the call (controller.options): a JSON object's text, null for none
 
     public ControllerEvalAction() {
     }
 
-    public ControllerEvalAction(String script, boolean evalAction, ArrayList<Serializable> params) {
+    public ControllerEvalAction(String script, boolean evalAction, ArrayList<Serializable> params, String options) {
         super(params);
         this.script = script;
         this.evalAction = evalAction;
+        this.options = options;
     }
 }

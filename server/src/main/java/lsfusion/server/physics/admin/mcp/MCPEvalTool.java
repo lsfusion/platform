@@ -1,8 +1,10 @@
 package lsfusion.server.physics.admin.mcp;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.MIMETypeUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.NamedFileData;
+import lsfusion.base.file.StringWithFiles;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.session.ExternalRequest;
@@ -15,6 +17,7 @@ import lsfusion.server.physics.admin.files.JsonToolArgs;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -22,6 +25,8 @@ import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * MCP eval tool — runs an lsFusion script under the caller's auth context and renders the
@@ -216,6 +221,24 @@ public class MCPEvalTool {
             out.put("results", new JSONArray());
         }
         return out;
+    }
+
+    /**
+     * A file result as the tool gives it, for a caller that makes the file's link itself - a JS controller's call
+     * asked for it ({@code controller.options({fileResult: 'mcp'})}): the JSON text of
+     * {@code {type: "file", fileName, extension, mimeType, size}} with {@code text}, {@code base64} or {@code url}.
+     * Where the file is too big to inline, the text is cut at the placeholder of its url and the file put there - a
+     * string with files, which the web server saves and the page writes the link into, as the link of a file result
+     * is made. {@code inlineRemaining} is what is left of the bytes one call may inline.
+     */
+    public static Object renderFile(ExternalRequest.Result file, int index, int[] inlineRemaining) {
+        LinkedHashMap<String, NamedFileData> files = new LinkedHashMap<>();
+        String json = String.valueOf(renderResult(file, index, inlineRemaining, files, BaseUtils.randomString(20)));
+        if (files.isEmpty()) {
+            return json;
+        }
+        Map.Entry<String, NamedFileData> link = files.entrySet().iterator().next(); // the one file
+        return new StringWithFiles(json.split(Pattern.quote(link.getKey()), -1), new Serializable[] {link.getValue()}, json);
     }
 
     private static JSONObject renderResult(ExternalRequest.Result result, int index, int[] inlineRemaining,

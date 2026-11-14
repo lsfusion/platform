@@ -74,6 +74,7 @@ Optional arguments are bracketed.
 | `form.exec(action, ...params)` | run a named action | `Promise` |
 | `form.eval(script, ...params)` | run an lsf script with a typed `run` | `Promise` |
 | `form.evalAction(script, ...params)` | run an action body (`$1`, `$2`, … params) | `Promise` |
+| `form.options(options)` | `exec`, `eval` and `evalAction` that make their call with the options — `{fileResult: 'mcp'}` gives a file result as the MCP server's eval tool gives one | the three calls |
 | `form.change(property, ...keyParams, value)` | set a global property | `Promise` |
 | `form.startEditing(element)` | declare that the user is editing in `element` | — |
 | `form.stopEditing(element)` | declare that they are not — only if `element` is the declared one | — |
@@ -283,6 +284,7 @@ The form's `exec`, `eval`, `evalAction` and `change` — `controller.form` in a 
 - `exec(action, ...params)` — runs a named action. Resolves to its `RETURN` value. `action` is the action's name — an entry of the form's `CUSTOMS` by the name it has there, or an action of the project by its [name](../language/IDs.md), with the namespace and the signature in brackets when they are needed to pick one: `runReport[Order]` among overloaded actions. Not the `saveFilters()` a script would write: that shape answers "Action was not found".
 - `eval(script, ...params)` — runs an lsf script that defines its own `run` action (typed parameters).
 - `evalAction(script, ...params)` — runs an action body wrapped into a `run` action, with parameters referenced as `$1`, `$2`, ….
+- `options(options)` — returns `exec`, `eval` and `evalAction` that make their call with the options given: `controller.form.options({ fileResult: 'mcp' }).eval(script, ...params)`. The option `fileResult` says what a file result is converted to: `'link'`, the default, — a download URL string, `'mcp'` — the object the MCP server's eval tool gives for a file, with its content or a link in it ([the result table](How-to_Custom_components_objects.md#calling-the-server)). An unknown option rejects the call.
 - `change(property, ...keyParams, value)` — changes a global property. The last argument is the value, the preceding ones are the keys. When the property's value is an object, the value is its id, and the platform assigns the object with that id — the object picker opens only for interactive editing.
 
 Parameters are passed as plain JS values (a number, string, boolean, `Date`, or an object/array for a `JSON` parameter); a file — as the string of its text or as the object `{base64, fileName, extension}`, with `text` in place of `base64` for a text file. An lsFusion object is passed as its numeric id. When an action parameter is typed by a class, the platform resolves the id to the object of that class — no manual lookup is needed. A row handle is not an object reference here: for a class-typed parameter the call fails, so pass the id.
@@ -330,7 +332,7 @@ A single key the view needs regardless of the editing state — a shortcut of it
 
 ### The navigator controller {#navigator-controller}
 
-An [`INTERNAL CLIENT`](../language/INTERNAL_operator.md) action placed in [`NAVIGATOR`](../language/NAVIGATOR_statement.md) receives a controller as well, but a navigator one: there is no form, so it has none of the form methods above. It has the four server calls — `exec`, `eval`, `evalAction`, `change` — which run in the navigator's own session, a new one per call that is never applied, so a `change` made here is not kept. Each returns a `Promise`. And it has `activate`:
+An [`INTERNAL CLIENT`](../language/INTERNAL_operator.md) action placed in [`NAVIGATOR`](../language/NAVIGATOR_statement.md) receives a controller as well, but a navigator one: there is no form, so it has none of the form methods above. It has the four server calls — `exec`, `eval`, `evalAction`, `change`, and `options` for the first three — which run in the navigator's own session, a new one per call that is never applied, so a `change` made here is not kept. Each returns a `Promise`. And it has `activate`:
 
 - `activate(canonicalName[, event])` — does what clicking that navigator element does: selects the folder, or runs the action, opening its form the same optimistic way. `canonicalName` is the element's [canonical name](../language/IDs.md). `event` is the event of the click, React's own or the browser's, and can be omitted when activating from code that has none.
 
