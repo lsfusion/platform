@@ -14,9 +14,11 @@ import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.language.ScriptedStringUtils;
 import lsfusion.server.logics.classes.data.ByteArrayClass;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.physics.admin.files.JsonToolArgs;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.net.util.Base64;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
@@ -109,6 +111,21 @@ public abstract class FileClass<T> extends FileBasedClass<T> {
 
     public T parseString(String s) {
         return getValue(new RawFileData(Base64.decodeBase64(s)));
+    }
+
+    // A file in JSON is the string of its bytes in base64, as formatJSON writes it - or the object {base64 | text,
+    // fileName?, extension?}, which carries its name and extension, or its text: what the MCP eval tool takes a file
+    // as, and gives one as (buildFileParam). The object is read as the file an http request would carry
+    @Override
+    public T parseJSON(Object value) throws ParseException, JSONException {
+        if (value instanceof JSONObject) {
+            try {
+                return parseHTTP(buildFileParam((JSONObject) value, "file"));
+            } catch (IllegalArgumentException e) { // the description is the value that does not parse
+                throw new ParseException(e.getMessage());
+            }
+        }
+        return super.parseJSON(value);
     }
 
     /**

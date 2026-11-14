@@ -162,6 +162,19 @@ public class McpToolsIT {
         Assert.assertTrue(link.toString(), link.getBoolean("isError") && link.toString().contains("unknown field `url`"));
     }
 
+    // a file in JSON is the string of its bytes in base64, and the object a tool takes a file as too: an import reads both
+    @Test
+    public void aJsonImportReadsAFileGivenAsAnObject() throws Exception {
+        String script = "run(JSONFILE j) { LOCAL f = NAMEDFILE (); IMPORT JSON FROM j TO() f; RETURN f(); }";
+        JSONObject object = result(eval(script, "[" + JSONObject.quote("{\"f\": {\"text\": \"hello\", \"fileName\": \"h.txt\"}}") + "]"));
+        Assert.assertEquals(object.toString(), "h.txt txt hello", object.getString("fileName") + " " + object.getString("extension") + " " + object.getString("text"));
+        JSONObject base64 = result(eval(script, "[" + JSONObject.quote("{\"f\": \"aGVsbG8=\"}") + "]"));
+        Assert.assertEquals(base64.toString(), 5, base64.getInt("size"));
+
+        JSONObject unknown = eval(script, "[" + JSONObject.quote("{\"f\": {\"content\": \"hello\"}}") + "]");
+        Assert.assertTrue(unknown.toString(), unknown.getBoolean("isError") && unknown.toString().contains("unknown field `content`"));
+    }
+
     @Test
     public void theEvalToolsSchemaListsTheJsonValuesItTakes() throws Exception {
         JSONArray kinds = tool("lsfusion_eval").getJSONObject("inputSchema").getJSONObject("properties").getJSONObject("params")
