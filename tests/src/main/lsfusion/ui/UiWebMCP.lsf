@@ -1,0 +1,27 @@
+MODULE UiWebMCP;
+
+REQUIRE TestUtils;
+
+// what the scripts of UiWebMCPIT read and change, in the form's session or in a session of the navigator
+
+uiWebMCPNote 'Note' = DATA STRING[100] ();
+
+FORM uiWebMCP 'WebMCP'
+    PROPERTIES() uiWebMCPNote
+;
+
+NAVIGATOR {
+    NEW FOLDER uiWebMCPFolder 'UI WebMCP' WINDOW toolbar {
+        NEW uiWebMCP;
+    }
+}
+
+// a property with a parameter: a script that returns it with the parameter left free answers with every value
+uiWebMCPMark 'Mark' = DATA INTEGER (STRING[10]);
+
+uiWebMCPSeed (STRING[100] note) {
+    uiWebMCPNote() <- note;
+    uiWebMCPMark('first') <- 1;
+    uiWebMCPMark('second') <- 2;
+    APPLY;
+}

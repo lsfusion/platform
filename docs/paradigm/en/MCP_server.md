@@ -106,3 +106,21 @@ The rules are generic: the captured path is the context path, so they work for `
 :::note
 Root-context deployments, where the application is served directly at `https://host` (as in the `https://erp.example.com` example above), do not need these rewrites: the host-root and in-context URLs collapse to the same `/.well-known/oauth-authorization-server`.
 :::
+
+### Browser agent: WebMCP {#webmcp}
+
+The AI agent built into the browser gets the same tools — through [WebMCP](https://webmachinelearning.github.io/webmcp/), in a browser that has `document.modelContext`. Nothing has to be turned on for that: as it opens, the page of the web client registers with the browser every tool the MCP server of the application lists, and the agent calls them on behalf of the user logged in to the application — in the user's web session, with no connection of its own and no OAuth. The agent's access to each tool is that of an external MCP client connected on behalf of this user (see [the `enableAPI` parameter](#enableapi)).
+
+A tool is the server's: its description, its parameters and its result are the ones `/mcp` gives, and it runs on the server, as when called through `/mcp`. The page does one thing itself: it runs the script of `lsfusion_eval` where the user works. Where the script runs is set by the `context` parameter of the tool:
+
+| `context` | Where the script runs | Change session |
+|---|---|---|
+| `logics` | On the server | A new one per call: the changes are discarded unless the script applies them itself |
+| `navigator` | In the navigator, as an action the user started | A new one per call: the changes are discarded unless the script applies them itself |
+| `form` | In the form the user is in, as an action the user started | The form's session: the script sees its unapplied changes, and its own changes are shown in the form and applied together with the form's changes |
+
+In `navigator` and `form`, a form the script shows opens in the user's browser, and a message or a dialog is shown to the user, the call waiting for the answer (a message shown with `NOWAIT` is not waited for). So there the script gives the agent a value as the result of the action, not in a message. In `logics` there is nobody to show a message to: the messages are returned in the tool's result.
+
+When `context` is not set, the page runs the script in the form the user is in, and in the navigator when there is no such form. `navigator` and `form` exist only on the page: through `/mcp` the script runs in `logics`, and a call with either of the two is refused.
+
+The parameters of the script and the result of the tool are the same in every context, but for a text of 64 KiB and more: in `logics` it is returned beside the result, as a resource, and in `navigator` and `form` in the result itself. In `navigator` and `form` the result also says where the script ran (`context`, and for a form its name, `form`), and the link of a file too big to be in the result works in the user's web session.

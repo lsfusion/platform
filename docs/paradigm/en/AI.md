@@ -10,4 +10,4 @@ A concise map of **lsFusion** elements — properties, actions, forms, and the c
 ### [Rules](../rules/Rules.md)
 The mandatory conventions for writing **lsFusion** code: how to structure modules, declare and name properties and actions, and which common mistakes to avoid. An AI assistant should read and follow these before generating `.lsf` code.
 ### [MCP server](MCP_server.md)
-How to run an lsFusion application itself as an MCP server (`enableAPI` + HTTPS) so external AI clients such as `claude.ai` can call its tools — including the OAuth `.well-known` discovery caveat for deployments that are not at the domain root.
+How to run an lsFusion application itself as an MCP server (`enableAPI` + HTTPS) so external AI clients such as `claude.ai` can call its tools — including the OAuth `.well-known` discovery caveat for deployments that are not at the domain root. In a browser that supports WebMCP, the page of the web client gives the same tools to the AI agent of the browser.

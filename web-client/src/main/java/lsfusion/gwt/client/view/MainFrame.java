@@ -30,6 +30,7 @@ import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.*;
 import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.form.controller.WebMCP;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.form.property.JSValueConverter;
@@ -646,6 +647,8 @@ public class MainFrame implements EntryPoint {
         GwtClientUtils.requestPushNotificationPermissions();
 
         GwtClientUtils.subscribePushManager(pushNotificationPublicKey, subscription -> updateServiceClientInfo(formsController, subscription, null));
+
+        WebMCP.register(GwtClientUtils.getPageUrlPreservingParameters("mcp"), navigatorController.getController());
 
         navigatorController.initializeNavigatorSchedulers(result.navigatorSchedulers);
     }
