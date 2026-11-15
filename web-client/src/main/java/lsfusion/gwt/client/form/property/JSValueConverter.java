@@ -16,6 +16,7 @@ import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 import lsfusion.gwt.client.form.property.cell.view.RendererType;
 
 import java.io.Serializable;
+import java.text.ParseException;
 import java.util.ArrayList;
 
 // A VALUE AS JS HAS IT - a view's or a renderer's function, a React view, a JS action, whoever draws the property -,
@@ -53,7 +54,7 @@ public class JSValueConverter {
         if(type instanceof GJSONType || (type == null && !(value instanceof Serializable))) // if type == null and incorrect value is passed, value will be not serializable and there will be an exception
             return PValue.getPValue(GwtClientUtils.jsonStringify(value));
         if (type instanceof GADateType)
-            return ((GADateType) type).fromJsDate((JsDate)value);
+            return fromJSDate((GADateType) type, value);
         // a color and an interval go out as strings of their own (convertToJSValue: the value's toString), and come
         // back as what they are - a string the server is handed for one is no color and no interval to it
         if (type instanceof GColorType) {
@@ -75,6 +76,20 @@ public class JSValueConverter {
         }
 
         return PValue.getPValue(toString(value));
+    }
+    // a date as JS gives one back: a Date, as it is projected, or the string a date input of the type has for its
+    // value, which the type reads as it reads its inputs' (GADateType.parseISOString) - strictly: a day its month does
+    // not have is no date
+    private static PValue fromJSDate(GADateType type, JavaScriptObject value) {
+        if (isDate(value))
+            return type.fromJsDate(value.<JsDate>cast());
+        String string = GwtClientUtils.isJSString(value) ? toString(value) : "";
+        try {
+            if (!string.isEmpty())
+                return type.parseISOString(string);
+        } catch (ParseException ignored) {
+        }
+        throw GwtClientUtils.refusal(GwtClientUtils.jsonStringify(value) + " is not a date: a date is given as a Date, or as its ISO string");
     }
     private static String notTakenBack(JavaScriptObject value, String what, String shape) {
         return GwtClientUtils.jsonStringify(value) + " is not " + what + ": " + what + " is given in the shape it is projected in, " + shape;

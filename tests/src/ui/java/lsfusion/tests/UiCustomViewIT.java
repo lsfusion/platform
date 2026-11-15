@@ -219,6 +219,36 @@ public class UiCustomViewIT extends UiTest {
         check("UiCustomView.uiCustomViewCheckNavigatorMarks", items[0] + " = 1 and " + items[1] + " = 2");
     }
 
+    // a date is taken back as the Date it is projected as, and as a string too: the one a date input of the class has
+    // for its value - a date, a time, a date and time, to the minute -, which the class reads as it
+    // reads its own inputs'. Any other string - one with a time zone, another class's -, and one that names a day no
+    // month has, is refused. It was read as a Date whatever it was, and failed as one
+    @Test
+    public void aDateIsTakenBackAsItsISOString() throws Exception {
+        Locator form = open(FOLDER, "UiCustomView.uiCustomViewCalls");
+        call(form, "eval");
+        assertThat(form.locator(".ui-custom-view-results li")).hasText(new String[] {"eval: number 42"});
+
+        String are = "RETURN TRUE IF UiCustomView.uiCustomViewDate() = %s AND UiCustomView.uiCustomViewTime() = %s AND UiCustomView.uiCustomViewDateTime() = %s;";
+        changeTimes("'2026-02-28'", "'10:30'", "'2026-02-28T10:30'");
+        assertEquals("true", formEval(String.format(are, "2026_02_28", "10:30", "2026_02_28_10:30")));
+        changeTimes("new Date(2026, 1, 27)", "'23:59'", "new Date(2026, 1, 27, 9, 5)");
+        assertEquals("true", formEval(String.format(are, "2026_02_27", "23:59", "2026_02_27_09:05")));
+
+        for (String none : new String[] {"'28.02.2026'", "'2026-02-30'", "'2026-02-30T10:30:00'", "'2026-02-28T10:30:00'", "'2026-02-28T10:30:00.000Z'", "'10:30'", "'2026-13-01'", "'5'", "''", "5"}) {
+            String refusal = (String) page.evaluate("() => { try { window.uiCustomViewCalls.form.changeProperty('uiCustomViewDate', " + none + ");"
+                    + " return 'changed'; } catch (e) { return e.message; } }");
+            assertTrue(refusal, refusal.endsWith(" is not a date: a date is given as a Date, or as its ISO string"));
+        }
+        assertEquals("true", formEval(String.format(are, "2026_02_27", "23:59", "2026_02_27_09:05")));
+    }
+
+    // the three time properties of the calls form, each changed to what a JS expression gives
+    private void changeTimes(String date, String time, String dateTime) {
+        page.evaluate("() => { const form = window.uiCustomViewCalls.form; return form.changeProperty('uiCustomViewDate', " + date + ")"
+                + ".then(() => form.changeProperty('uiCustomViewTime', " + time + ")).then(() => form.changeProperty('uiCustomViewDateTime', " + dateTime + ")).then(() => null); }");
+    }
+
     // an argument reaches the server as JS has it - a number, a boolean, a string, an object told apart: false is a
     // value and not none, a number is the number it is - a big one too -, an object and an array are JSON data
     @Test

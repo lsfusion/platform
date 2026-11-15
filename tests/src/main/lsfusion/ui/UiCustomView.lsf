@@ -80,9 +80,15 @@ uiCustomViewClose 'Close' () {
     formClose();
 }
 
+// ... and values of the time kinds, which a call of the form's controller gives as a Date or as its ISO string
+uiCustomViewDate 'Date' = DATA LOCAL DATE ();
+uiCustomViewTime 'Time' = DATA LOCAL TIME ();
+uiCustomViewDateTime 'Date and time' = DATA LOCAL DATETIME ();
+
 FORM uiCustomViewCalls 'Calls'
     PROPERTIES() READONLY uiCustomViewCount
     PROPERTIES() uiCustomViewTryClose, uiCustomViewClose
+    PROPERTIES() uiCustomViewDate, uiCustomViewTime, uiCustomViewDateTime
     CUSTOMS uiCustomViewDouble, uiCustomViewCount
 ;
 
