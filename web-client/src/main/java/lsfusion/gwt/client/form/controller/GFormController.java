@@ -259,6 +259,13 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
         formLayout = new GFormLayout(this, form.mainContainer);
         if (form.sID != null)
             formLayout.getElement().setAttribute("lsfusion-form", form.sID);
+        // ... and the rest of what ACTIVATE FORM addresses the form by, each that the form has: the page is where an
+        // agent of the browser reads the address of a form it runs a script in (WebMCP)
+        if (formId != null)
+            formLayout.getElement().setAttribute("lsfusion-form-label", formId);
+        String dockedWindow = formContainer.getDockedWindow();
+        if (dockedWindow != null)
+            formLayout.getElement().setAttribute("lsfusion-form-window", dockedWindow);
 
         this.editEvent = editEvent;
 

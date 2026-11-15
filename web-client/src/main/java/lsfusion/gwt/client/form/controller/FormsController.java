@@ -784,6 +784,25 @@ public abstract class FormsController {
         return found;
     }
 
+    // the ONE open form an address names, for a script an agent of the browser runs in it (WebMCP). ACTIVATE FORM takes
+    // the first of several, but a script that may change a form's data is not run in a form picked by order. The window
+    // is compared by the name the form carries: findForms takes a window it does not know for the main one, which suits
+    // a statement the server has checked, and not a name an agent gives. A form that has not arrived has no session yet
+    public GFormController findForm(String formId, String formCanonicalName, String windowCanonicalName) {
+        GFormController found = null;
+        int count = 0;
+        for (FormContainer formContainer : findForms(formId, formCanonicalName, null)) {
+            GFormController form = formContainer.getForm();
+            if (form != null && (windowCanonicalName == null || windowCanonicalName.equals(formContainer.getDockedWindow()))) {
+                found = form;
+                count++;
+            }
+        }
+        if (count != 1)
+            throw GwtClientUtils.refusal(count == 0 ? "no open form" : count + " open forms");
+        return found;
+    }
+
     // the label a form carries, compared exactly: an open asking about the form it is ABOUT to create means, with no
     // label, the form opened without one. A form that has not arrived carries none to compare
     private boolean hasFormId(FormContainer formContainer, String formId) {

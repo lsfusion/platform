@@ -8,7 +8,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 // that are the page's own, `navigator` and `form`: there the script runs where the user works, who sees what it shows
 public class WebMCP {
 
-    public static native void register(String url, JavaScriptObject navigatorController)/*-{
+    public static native void register(String url, FormsController formsController, JavaScriptObject navigatorController)/*-{
         // navigator.modelContext is where the API was first, and where a polyfill may put it
         var modelContext = $doc.modelContext || $wnd.navigator.modelContext;
         if (!modelContext)
@@ -38,27 +38,50 @@ public class WebMCP {
             });
         }
 
+        // an open form as ACTIVATE FORM addresses one - by its name, the label it was opened with, the window it was
+        // opened into, at least one: what the tool's `form` is, read as the server reads it (MCPEvalTool.isFormAddress)
+        function isFormAddress(form) {
+            return typeof form === 'object' && !Array.isArray(form) && Object.keys(form).every(function (part) {
+                return (part === 'name' || part === 'label' || part === 'window') && (form[part] == null || typeof form[part] === 'string');
+            }) && (form.name != null || form.label != null || form.window != null);
+        }
+
+        // the form a script is for: the one the address names, else the current one, which is the platform's - none
+        // under a modal popup, and a form embedded in a cell is the editor of the form the cell is in, which stays
+        // current
+        function getForm(address) {
+            if (address != null) {
+                try { // a part that is not given is null for Java, not undefined
+                    return formsController.@FormsController::findForm(*)(address.label == null ? null : address.label,
+                            address.name == null ? null : address.name, address.window == null ? null : address.window);
+                } catch (e) {
+                    throw new Error(e.message + ' at the address ' + JSON.stringify(address));
+                }
+            }
+            var container = @lsfusion.gwt.client.view.MainFrame::getCurrentForm()();
+            return container != null ? container.@lsfusion.gwt.client.form.view.FormContainer::getForm()() : null;
+        }
+
         // ... and the eval tool's run where the user works. A call for another context - `logics` -, and one that is
         // no call of the tool, are the server's: it runs the first and says what is wrong with the second
         function evalInContext(args) {
             var context = args != null ? args.context : null;
+            var address = args != null ? args.form : null;
             if (args == null || typeof args.script !== 'string' || !args.script
                     || (args.params != null && !Array.isArray(args.params))
-                    || (context != null && context !== 'navigator' && context !== 'form'))
+                    || (context != null && context !== 'navigator' && context !== 'form')
+                    || (address != null && (context === 'navigator' || !isFormAddress(address))))
                 return onServer('lsfusion_eval', args);
 
-            // the current form is the platform's: none under a modal popup, and a form embedded in a cell is the editor
-            // of the form the cell is in, which stays current
-            var container = context === 'navigator' ? null : @lsfusion.gwt.client.view.MainFrame::getCurrentForm()();
-            var form = container != null ? container.@lsfusion.gwt.client.form.view.FormContainer::getForm()() : null;
+            var form = context === 'navigator' ? null : getForm(address);
             if (form == null && context === 'form')
                 throw new Error("the user is in no form");
 
             // the controller's eval made as the tool's: the arguments are the tool's params and the result is its answer
-            var calls = (form != null ? form.@lsfusion.gwt.client.form.controller.GFormController::controller : navigatorController).mcp;
+            var calls = (form != null ? form.@GFormController::controller : navigatorController).mcp;
             return calls.eval.apply(calls, [args.script].concat(args.params || [])).then(function (answer) {
                 answer.context = form != null ? 'form' : 'navigator';
-                var formName = form != null ? form.@lsfusion.gwt.client.form.controller.GFormController::form.@lsfusion.gwt.client.GForm::canonicalName : null;
+                var formName = form != null ? form.@GFormController::form.@lsfusion.gwt.client.GForm::canonicalName : null;
                 if (formName != null)
                     answer.form = formName;
                 return answer;

@@ -15,6 +15,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.navigator.window.GDockedWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -66,6 +67,12 @@ public abstract class FormContainer {
     protected abstract void setContent(Widget widget);
 
     public abstract GWindowFormType getWindowType();
+
+    // the name of the FORMS window the form is docked into, null for a form in no such window - a float, a popup
+    public String getDockedWindow() {
+        GWindowFormType windowType = getWindowType();
+        return windowType instanceof GDockedWindowFormType ? ((GDockedWindowFormType) windowType).window : null;
+    }
 
     // whether a form opened as the window type and the sync type given goes in this container - a placeholder an async
     // open put up is of what the client predicted, which may be another branch of the action

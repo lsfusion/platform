@@ -90,9 +90,15 @@ public class MCPEvalTool {
         }
         ExternalRequest.Param scriptParam = ExternalRequest.getUrlParam(script, UTF8, "script");
         ExternalRequest request = buildRequest(args, envelope);
-        // the last check: the application's page sends here what is no call of the tool, whatever its context, for
+        // the last checks: the application's page sends here what is no call of the tool, whatever its context, for
         // the server to say what is wrong with it
         String context = JsonToolArgs.getString(args, "context");
+        if (isFormAddress(args.opt("form"))) {
+            if (context != null && !context.equals("form")) {
+                throw new IllegalArgumentException("`form` addresses the form the script runs in: `context` is then `form`, or omitted; got `" + context + "`");
+            }
+            context = "form";
+        }
         if (context != null && !context.equals("logics")) {
             // where the user works the script is run by the application's page, through the controller of the form
             // or of the navigator (WebMCP): a call that came here has no user at a page to run it for
@@ -103,6 +109,32 @@ public class MCPEvalTool {
 
         ExternalResponse response = remoteLogics.eval(token, connectionInfo, /*action=*/ false, scriptParam, request);
         return toJson(response, files, placeholderId);
+    }
+
+    /**
+     * Whether the tool's {@code form} addresses a form - false when there is none. An address is an object of the
+     * parts {@code ACTIVATE FORM} addresses an open form by - its name, the label it was opened with, the window it
+     * was opened into -, at least one. The application's page reads it by the same rule (WebMCP, {@code isFormAddress}).
+     */
+    private static boolean isFormAddress(Object form) {
+        if (form == null || JSONObject.NULL.equals(form)) {
+            return false;
+        }
+        if (!(form instanceof JSONObject)) {
+            throw new IllegalArgumentException("`form` must be an object; got " + form.getClass().getSimpleName());
+        }
+        JSONObject address = (JSONObject) form;
+        boolean addressed = false;
+        for (String part : address.keySet()) {
+            if (!(part.equals("name") || part.equals("label") || part.equals("window"))) {
+                throw new IllegalArgumentException("`form`: unknown field `" + part + "`; a form is addressed by `name`, `label`, `window`");
+            }
+            addressed |= JsonToolArgs.getStringAt(address, part, "`form." + part + "`") != null;
+        }
+        if (!addressed) {
+            throw new IllegalArgumentException("`form` must address a form: by `name`, `label` or `window`");
+        }
+        return true;
     }
 
     /**

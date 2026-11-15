@@ -128,6 +128,55 @@ public class UiWebMCPIT extends UiTest {
                 "answer => [].concat(answer.context || [], answer.results[0].value, answer.messages).join(' | ')"));
     }
 
+    // the agent addresses a form as ACTIVATE FORM does - by its name, the label it was opened with, the window - and
+    // the script runs in that one, whichever form the user is in. The address is to name one open form
+    @Test
+    public void evalRunsInTheFormTheAgentAddresses() throws Exception {
+        String saved = "saved " + System.nanoTime(), draft = "draft " + System.nanoTime();
+        exec("UiWebMCP.uiWebMCPSeed", saved);
+        loadWithAgent();
+        String mode = pinMode();
+        try {
+            pinMode(ALL_PINNED); // a second form is opened from the navigator
+            open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCP");
+            Locator other = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCPOther"); // the user is in this one now
+            assertThat(other.locator("[lsfusion-container='PROPERTY(uiWebMCPNote())'] input")).hasValue(saved);
+            // the page says a form's address on the form's element: this one was opened under no label
+            assertEquals("System.forms", other.getAttribute("lsfusion-form-window"));
+            assertEquals(null, other.getAttribute("lsfusion-form-label"));
+
+            String first = "\"form\":{\"name\":\"UiWebMCP.uiWebMCP\"}";
+            String read = "\"script\":\"run() { RETURN UiWebMCP.uiWebMCPNote(); }\"";
+            assertEquals("form | UiWebMCP.uiWebMCP",
+                    call("lsfusion_eval", "{\"script\":\"run(STRING[100] note) { UiWebMCP.uiWebMCPNote() <- note; }\",\"params\":[\"" + draft + "\"]," + first + "}", RAN));
+            assertEquals("form | UiWebMCP.uiWebMCP | " + draft, call("lsfusion_eval", "{" + read + "," + first + ",\"context\":\"form\"}", RAN));
+            assertEquals("form | UiWebMCP.uiWebMCPOther | " + saved, call("lsfusion_eval", "{" + read + "}", RAN));
+
+            // the first form again, under a label: the name alone names two forms now, the label one
+            open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCPLabelled");
+            Locator labelled = page.locator("[lsfusion-form='UiWebMCP.uiWebMCP'][lsfusion-form-label='labelled'][lsfusion-form-window='System.forms']");
+            assertThat(labelled).isVisible();
+            assertEquals("form | UiWebMCP.uiWebMCP | " + saved, call("lsfusion_eval", "{" + read + ",\"form\":{\"label\":\"labelled\"}}", RAN));
+            assertEquals("form | UiWebMCP.uiWebMCP | " + saved,
+                    call("lsfusion_eval", "{" + read + ",\"form\":{\"name\":\"UiWebMCP.uiWebMCP\",\"label\":\"labelled\",\"window\":\"System.forms\"}}", RAN));
+            assertEquals("lsfusion_eval error: 2 open forms at the address {\"name\":\"UiWebMCP.uiWebMCP\"}", call("lsfusion_eval", "{" + read + "," + first + "}"));
+            // ... and none: a form that is not open, a label no form has - the empty one too -, a window that is not there
+            for (String none : new String[] {"{\"name\":\"UiWebMCP.uiWebMCPNoSuchForm\"}", "{\"name\":\"UiWebMCP.uiWebMCPOther\",\"label\":\"\"}",
+                    "{\"name\":\"UiWebMCP.uiWebMCPOther\",\"window\":\"UiWebMCP.uiWebMCPNoSuchWindow\"}"})
+                assertEquals("lsfusion_eval error: no open form at the address " + none, call("lsfusion_eval", "{" + read + ",\"form\":" + none + "}"));
+
+            // what is no address, and an address beside another context, the server says
+            String string = call("lsfusion_eval", "{" + read + ",\"form\":\"UiWebMCP.uiWebMCP\"}");
+            assertTrue(string, string.startsWith("lsfusion_eval error: ") && string.contains("`form` must be an object"));
+            String unknown = call("lsfusion_eval", "{" + read + ",\"form\":{\"id\":\"1\"}}");
+            assertTrue(unknown, unknown.startsWith("lsfusion_eval error: ") && unknown.contains("unknown field `id`"));
+            String navigator = call("lsfusion_eval", "{" + read + "," + first + ",\"context\":\"navigator\"}");
+            assertTrue(navigator, navigator.startsWith("lsfusion_eval error: ") && navigator.contains("`context` is then `form`, or omitted"));
+        } finally {
+            pinMode(mode);
+        }
+    }
+
     private static final String PNG = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
 
     // what the tool is called with and what it answers are the server tool's, whatever runs it: the same call answers

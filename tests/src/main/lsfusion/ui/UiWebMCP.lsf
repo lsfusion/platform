@@ -10,9 +10,17 @@ FORM uiWebMCP 'WebMCP'
     PROPERTIES() uiWebMCPNote
 ;
 
+// what a script is run in by an address: another form, and the first one opened again under a label
+FORM uiWebMCPOther 'WebMCP other'
+    PROPERTIES() uiWebMCPNote
+;
+uiWebMCPLabelled 'WebMCP labelled' () { SHOW 'labelled' = uiWebMCP NOWAIT NEWSESSION; }
+
 NAVIGATOR {
     NEW FOLDER uiWebMCPFolder 'UI WebMCP' WINDOW toolbar {
         NEW uiWebMCP;
+        NEW uiWebMCPOther;
+        NEW uiWebMCPLabelled;
     }
 }
 

@@ -208,27 +208,39 @@ public class McpToolsIT {
     // sends here to be told
     @Test
     public void theEvalToolRunsItsScriptOnTheServer() throws Exception {
-        Assert.assertEquals("yes 22", value(eval(EVAL_NUMBER, "[21, true]", "logics")));
-        for (String context : new String[] {"navigator", "form"}) {
-            JSONObject refused = eval(EVAL_NUMBER, "[21, true]", context);
+        Assert.assertEquals("yes 22", value(eval(EVAL_NUMBER, "[21, true]", "\"context\":\"logics\"")));
+        for (String where : new String[] {"\"context\":\"navigator\"", "\"context\":\"form\"", "\"form\":{\"name\":\"A.b\"}", "\"context\":\"form\",\"form\":{\"label\":\"l\"}"}) {
+            JSONObject refused = eval(EVAL_NUMBER, "[21, true]", where);
             Assert.assertTrue(refused.toString(), refused.getBoolean("isError") && refused.toString().contains("only where the tool is called by the application's page"));
-            JSONObject noCall = eval(EVAL_NUMBER, "\"none\"", context);
+            JSONObject noCall = eval(EVAL_NUMBER, "\"none\"", where);
             Assert.assertTrue(noCall.toString(), noCall.getBoolean("isError") && noCall.toString().contains("`params` must be an array"));
         }
-        JSONObject unknown = eval(EVAL_NUMBER, "[21, true]", "server");
+        JSONObject unknown = eval(EVAL_NUMBER, "[21, true]", "\"context\":\"server\"");
         Assert.assertTrue(unknown.toString(), unknown.getBoolean("isError") && unknown.toString().contains("`logics`, `navigator` or `form`; got `server`"));
-        Assert.assertEquals("[\"logics\",\"navigator\",\"form\"]",
-                tool("lsfusion_eval").getJSONObject("inputSchema").getJSONObject("properties").getJSONObject("context").getJSONArray("enum").toString());
+        // a form is addressed as ACTIVATE FORM addresses one, and beside no other context
+        for (String[] address : new String[][] {
+                {"\"form\":\"A.b\"", "`form` must be an object"},
+                {"\"form\":{\"id\":\"1\"}", "unknown field `id`"},
+                {"\"form\":{\"name\":7}", "`form.name` must be a string"},
+                {"\"form\":{\"name\":null}", "`form` must address a form"},
+                {"\"form\":{\"name\":\"A.b\"},\"context\":\"logics\"", "`context` is then `form`, or omitted"}}) {
+            JSONObject refused = eval(EVAL_NUMBER, "[21, true]", address[0]);
+            Assert.assertTrue(refused.toString(), refused.getBoolean("isError") && refused.toString().contains(address[1]));
+        }
+        JSONObject properties = tool("lsfusion_eval").getJSONObject("inputSchema").getJSONObject("properties");
+        Assert.assertEquals("[\"logics\",\"navigator\",\"form\"]", properties.getJSONObject("context").getJSONArray("enum").toString());
+        Assert.assertEquals(new HashSet<>(Arrays.asList("name", "label", "window")), properties.getJSONObject("form").getJSONObject("properties").keySet());
     }
 
     private static JSONObject eval(String script, String params) throws Exception {
         return eval(script, params, null);
     }
 
-    // params is the text of the JSON array, as a client writes it: org.json would write 21.0 as 21
-    private static JSONObject eval(String script, String params, String context) throws Exception {
+    // params is the text of the JSON array, as a client writes it: org.json would write 21.0 as 21; where - the
+    // arguments that say where the script runs, as the text of their fields, null for none
+    private static JSONObject eval(String script, String params, String where) throws Exception {
         return answer(send("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"lsfusion_eval\",\"arguments\":"
-                + "{\"script\":" + JSONObject.quote(script) + ",\"params\":" + params + (context != null ? ",\"context\":" + JSONObject.quote(context) : "") + "}}}"));
+                + "{\"script\":" + JSONObject.quote(script) + ",\"params\":" + params + (where != null ? "," + where : "") + "}}}"));
     }
 
     private static String value(JSONObject result) {

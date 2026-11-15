@@ -648,7 +648,7 @@ public class MainFrame implements EntryPoint {
 
         GwtClientUtils.subscribePushManager(pushNotificationPublicKey, subscription -> updateServiceClientInfo(formsController, subscription, null));
 
-        WebMCP.register(GwtClientUtils.getPageUrlPreservingParameters("mcp"), navigatorController.getController());
+        WebMCP.register(GwtClientUtils.getPageUrlPreservingParameters("mcp"), formsController, navigatorController.getController());
 
         navigatorController.initializeNavigatorSchedulers(result.navigatorSchedulers);
     }
