@@ -27,6 +27,10 @@ NAVIGATOR {
 // a property with a parameter: a script that returns it with the parameter left free answers with every value
 uiWebMCPMark 'Mark' = DATA INTEGER (STRING[10]);
 
+// actions of the logic that a tool runs by name: one of a parameter, one that reads what a session holds
+uiWebMCPDouble 'Double' (INTEGER x) { RETURN x * 2; }
+uiWebMCPReadNote 'Read the note' () { RETURN uiWebMCPNote(); }
+
 uiWebMCPSeed (STRING[100] note) {
     uiWebMCPNote() <- note;
     uiWebMCPMark('first') <- 1;

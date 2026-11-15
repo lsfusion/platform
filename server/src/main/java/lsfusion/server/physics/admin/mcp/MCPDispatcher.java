@@ -61,6 +61,7 @@ public class MCPDispatcher {
     static final String TOOL_REPORT_FEEDBACK = "lsfusion_report_feedback";
 
     static final String TOOL_EVAL = "lsfusion_eval";
+    static final String TOOL_EXEC = "lsfusion_exec";
 
     // Tools handled by proxying to the public lsFusion MCP endpoint
     // (https://ai.lsfusion.org/mcp) via MCPRemoteClient. Sister tools
@@ -232,7 +233,8 @@ public class MCPDispatcher {
                     }
                     return rpcResult(jsonrpc, id, result);
                 }
-                case TOOL_EVAL: {
+                case TOOL_EVAL:
+                case TOOL_EXEC: {
                     // MCPEvalTool decides binary inline-vs-URL itself (it sees raw bytes BEFORE
                     // base64 inflation, so the inline-cap can be applied to the right number)
                     // and populates the side-map directly. slimEval afterwards only handles
@@ -245,7 +247,9 @@ public class MCPDispatcher {
                     // entries, which the web tier would still write to disk during
                     // resolveFiles() despite the JSON-RPC response containing an error result.
                     LinkedHashMap<String, NamedFileData> localFiles = new LinkedHashMap<>();
-                    JSONObject payload = MCPEvalTool.eval(args, remoteLogics, token, connectionInfo, request, localFiles, placeholderId);
+                    JSONObject payload = name.equals(TOOL_EXEC)
+                            ? MCPEvalTool.exec(args, remoteLogics, token, connectionInfo, request, localFiles, placeholderId)
+                            : MCPEvalTool.eval(args, remoteLogics, token, connectionInfo, request, localFiles, placeholderId);
                     JSONObject result = slimmedResult(MCPBinaryContent.slimEval(payload));
                     // Merge the eval side-map only AFTER the result is fully built — a throw above
                     // leaves the dispatcher-level `files` map clean (see localFiles rationale above).
@@ -357,6 +361,7 @@ public class MCPDispatcher {
         tools.put(getGuidanceDescriptor());
         tools.put(reportFeedbackDescriptor());
         tools.put(evalDescriptor());
+        tools.put(execDescriptor());
         return tools;
     }
 
@@ -568,8 +573,6 @@ public class MCPDispatcher {
         int inlineBinKiB = MCPBinaryContent.MAX_INLINE_BINARY_BYTES / 1024;
         int textPerFileMiB = MCPEvalTool.MAX_INLINE_FILE_BYTES / (1024 * 1024);
         int textTotalMiB = MCPEvalTool.MAX_INLINE_TOTAL_BYTES / (1024 * 1024);
-        int msgPerEntryKiB = MCPEvalTool.MAX_MESSAGE_BYTES / 1024;
-        int msgTotalKiB = MCPEvalTool.MAX_MESSAGES_TOTAL_BYTES / 1024;
         JSONObject input = new JSONObject()
                 .put("type", "object")
                 .put("properties", new JSONObject()
@@ -590,9 +593,9 @@ public class MCPDispatcher {
                                                         .put(new JSONObject().put("required", new JSONArray().put("base64")))
                                                         .put(new JSONObject().put("required", new JSONArray().put("type"))
                                                                 .put("properties", new JSONObject().put("type", new JSONObject().put("const", "file")))))))))
-                                .put("description", "Values bound positionally to the script's `run(...)` interfaces (`params[0]` → first, `params[1]` → second, etc.). Each element is a JSON value, parsed by the class of its parameter: a string; a number, taken as the string of its digits is (`21` as `\"21\"`, and an integer written as `21.0` or `2.1e1` too); a boolean, taken as `\"true\"` / `\"false\"`; an array or an object — JSON data, taken as the string of its text; `null` — `NULL` for that parameter (an empty file for a parameter declared without a class); a file — an object `{base64|text, fileName?, extension?}`: an object that has `text` or `base64`, or says `type: \"file\"`, is always read as a file, so JSON data that is such an object is passed as a string; a file entry of `results[]` that carries its content (`text` / `base64`) can be given as it is. Whole tool-call body capped at 16 MiB ⇒ ~12 MiB max raw binary after base64 inflation."))
+                                .put("description", "Values bound positionally to the parameters of the action that is run, the script's `run(...)` (`params[0]` → first, `params[1]` → second, etc.). Each element is a JSON value, parsed by the class of its parameter: a string; a number, taken as the string of its digits is (`21` as `\"21\"`, and an integer written as `21.0` or `2.1e1` too); a boolean, taken as `\"true\"` / `\"false\"`; an array or an object — JSON data, taken as the string of its text; `null` — `NULL` for that parameter (an empty file for a parameter declared without a class); a file — an object `{base64|text, fileName?, extension?}`: an object that has `text` or `base64`, or says `type: \"file\"`, is always read as a file, so JSON data that is such an object is passed as a string; a file entry of `results[]` that carries its content (`text` / `base64`) can be given as it is. Whole tool-call body capped at 16 MiB ⇒ ~12 MiB max raw binary after base64 inflation."))
                         .put("context", new JSONObject().put("type", "string").put("enum", arr("logics", "navigator", "form"))
-                                .put("description", "Where the script runs, see **Context** in the tool's description. Omitted: `logics` over `/mcp`; on the application's page, the form `form` addresses, else the form the user is in, or the navigator when there is none. `form` fails when there is no such form."))
+                                .put("description", "Where the action runs, see **Context** in the tool's description. Omitted: `logics` over `/mcp`; on the application's page, the form `form` addresses, else the form the user is in, or the navigator when there is none. `form` fails when there is no such form."))
                         .put("form", new JSONObject().put("type", "object")
                                 .put("properties", new JSONObject()
                                         .put("name", strProp("The form's name, `Namespace.form`."))
@@ -600,29 +603,57 @@ public class MCPDispatcher {
                                         .put("window", strProp("The name of the `FORMS` window the form is docked into; left out for a form that has no `lsfusion-form-window`.")))
                                 .put("minProperties", 1)
                                 .put("additionalProperties", false)
-                                .put("description", "The address of ONE open form to run the script in, by any of its `name`, `label` and `window`, as in `ACTIVATE FORM`: a failure when it names no form, or several. `context` is then `form`, or omitted. The page shows the address on the form's element, in the attributes `lsfusion-form` (the name), `lsfusion-form-label` and `lsfusion-form-window`, each that the form has; it does not mark the form the user is in - every window has a selected tab of its own.")))
+                                .put("description", "The address of ONE open form to run in, by any of its `name`, `label` and `window`, as in `ACTIVATE FORM`: a failure when it names no form, or several. `context` is then `form`, or omitted. The page shows the address on the form's element, in the attributes `lsfusion-form` (the name), `lsfusion-form-label` and `lsfusion-form-window`, each that the form has; it does not mark the form the user is in - every window has a selected tab of its own.")))
                 .put("required", new JSONArray().put("script"))
                 .put("additionalProperties", false);
         return new JSONObject()
                 .put("name", TOOL_EVAL)
                 .put("description",
                         "Run an lsFusion `run(...)` action under the caller's auth context. The tool does NOT read arbitrary properties — to surface a property value, do `RETURN expr;` for plain values (the idiomatic path) or `EXPORT FROM Module.someProp;` when you specifically need a serialized export (XLSX/CSV/JSON/...) in the script.\n\n" +
-                        "**Output algorithm (script-controlled):**\n" +
-                        "  1. If the action declares a `RETURN` value, that result property is read first; `export*` writes are ignored even when the RETURN expression evaluates to null (the null is formatted by the RETURN value's type).\n" +
-                        "  2. Otherwise, writes to lsFusion's `export*` slots — `EXPORT FROM ... [TO ...]`, `PRINT ... TO`, or direct (`exportFile() <- x;`). When multiple slots were written, the first non-null wins in this fixed order: files → strings → numbers → date/times → links → others.\n" +
-                        "  3. Without `RETURN` and without any `export*` write, `results[]` is empty.\n\n" +
-                        "Typically `results[]` has one entry; multi-entry only when the winning property is parameterized (e.g. `RETURN total(customer)` with `customer` left as a free interface). `EXPORT FROM` without an explicit format defaults to JSON. Null file slots are dropped from `results[]` entirely — an absent entry IS the null signal. See `outputSchema` for entry shape.\n\n" +
-                        "**Context.** `context` says where the script runs, and the rest of this description is the same for each but for what is said here:\n" +
-                        "  - `logics` — on the server, in a session of its own, discarded when the call ends unless the script applies it (`APPLY`). There is nobody to show anything to: MESSAGE output is collected into `messages`, and the script has the HTTP request of the call to read (both below).\n" +
-                        "  - `navigator` — where the user works, in the navigator: under the user's access rights, in a new session per call, as an action the user started. A form the script shows opens in the user's browser, and a `MESSAGE` or a dialog is shown to the user — the call waits for the user's answer, unless the message is a `MESSAGE ... NOWAIT`; so the answer has no `messages` (read values with `RETURN`), and the script has no HTTP request to read.\n" +
-                        "  - `form` — as `navigator`, but in a form — the one `form` addresses, else the form the user is in: in the form's own session, with its unsaved changes, kept when the form applies them.\n" +
-                        "`navigator` and `form` are there only where the tool is called by the application's page, by a browser's AI agent. The answer does not say where the script ran. There a big file's `url` is a link of the application's page, which needs the user's session, a large text stays in `results[]` rather than moving to a resource, and the 16 MiB cap of a call's body, which is `/mcp`'s, does not apply.\n\n" +
-                        "**HTTP envelope passthrough (`logics`).** The /mcp request's metadata (headers, cookies, body, URL components) reaches the script via the same lsFusion properties `/eval` populates — `headers[name]`, `cookies[name]`, etc.\n\n" +
-                        "**`messages` capture (`logics`).** MESSAGE / PRINT MESSAGE output is collected server-side and surfaced, when non-empty, as a `messages` array. Plain `MESSAGE` (the common case) appears as the raw text; explicit non-default forms keep a literal type prefix (`\"WARN: ...\"`, `\"ERROR: ...\"`, `\"INFO: ...\"`, `\"LOG: ...\"`, `\"SUCCESS: ...\"`). Capped at " + MCPEvalTool.MAX_MESSAGES_COUNT + " entries / " + msgTotalKiB + " KiB total / " + msgPerEntryKiB + " KiB per entry; overage replaced with a `\"... N more messages omitted\"` tail entry.\n\n" +
-                        "**Error path (tool-specific deviation from MCP defaults):** when the action threw, `structuredContent` is absent and any captured `messages` is attached at the result top level (next to `content` / `isError`) instead of inside `structuredContent`."
-                )
+                        runDescription())
                 .put("inputSchema", input)
                 .put("outputSchema", evalOutputSchema(largeTextKiB, inlineBinKiB, textPerFileMiB, textTotalMiB));
+    }
+
+    /**
+     * What the two tools that run an action - a script's (eval), one of the logic by its name (exec) - say alike in
+     * their descriptions: what the answer is made of, where the action runs, what it reads and what is collected.
+     */
+    private static String runDescription() {
+        int msgPerEntryKiB = MCPEvalTool.MAX_MESSAGE_BYTES / 1024;
+        int msgTotalKiB = MCPEvalTool.MAX_MESSAGES_TOTAL_BYTES / 1024;
+        return
+                "**Output algorithm (controlled by the action):**\n" +
+                "  1. If the action declares a `RETURN` value, that result property is read first; `export*` writes are ignored even when the RETURN expression evaluates to null (the null is formatted by the RETURN value's type).\n" +
+                "  2. Otherwise, writes to lsFusion's `export*` slots — `EXPORT FROM ... [TO ...]`, `PRINT ... TO`, or direct (`exportFile() <- x;`). When multiple slots were written, the first non-null wins in this fixed order: files → strings → numbers → date/times → links → others.\n" +
+                "  3. Without `RETURN` and without any `export*` write, `results[]` is empty.\n\n" +
+                "Typically `results[]` has one entry; multi-entry only when the winning property is parameterized (e.g. `RETURN total(customer)` with `customer` left as a free interface). `EXPORT FROM` without an explicit format defaults to JSON. Null file slots are dropped from `results[]` entirely — an absent entry IS the null signal. See `outputSchema` for entry shape.\n\n" +
+                "**Context.** `context` says where the action runs, and the rest of this description is the same for each but for what is said here:\n" +
+                "  - `logics` — on the server, in a session of its own, discarded when the call ends unless the action applies it (`APPLY`). There is nobody to show anything to: MESSAGE output is collected into `messages`, and the action has the HTTP request of the call to read (both below). An action meant for the user's interface (`@@ui`) is not run by such a call: it is queued for that interface, and the answer is empty.\n" +
+                "  - `navigator` — where the user works, in the navigator: under the user's access rights, in a new session per call, as an action the user started. A form the action shows opens in the user's browser, and a `MESSAGE` or a dialog is shown to the user — the call waits for the user's answer, unless the message is a `MESSAGE ... NOWAIT`; so the answer has no `messages` (read values with `RETURN`), and the action has no HTTP request to read.\n" +
+                "  - `form` — as `navigator`, but in a form — the one `form` addresses, else the form the user is in: in the form's own session, with its unsaved changes, kept when the form applies them.\n" +
+                "`navigator` and `form` are there only where the tool is called by the application's page, by a browser's AI agent. The answer does not say where the action ran. There a big file's `url` is a link of the application's page, which needs the user's session, a large text stays in `results[]` rather than moving to a resource, and the 16 MiB cap of a call's body, which is `/mcp`'s, does not apply.\n\n" +
+                "**HTTP envelope passthrough (`logics`).** The /mcp request's metadata (headers, cookies, body, URL components) reaches the action via the same lsFusion properties `/eval` populates — `headers[name]`, `cookies[name]`, etc.\n\n" +
+                "**`messages` capture (`logics`).** MESSAGE / PRINT MESSAGE output is collected server-side and surfaced, when non-empty, as a `messages` array. Plain `MESSAGE` (the common case) appears as the raw text; explicit non-default forms keep a literal type prefix (`\"WARN: ...\"`, `\"ERROR: ...\"`, `\"INFO: ...\"`, `\"LOG: ...\"`, `\"SUCCESS: ...\"`). Capped at " + MCPEvalTool.MAX_MESSAGES_COUNT + " entries / " + msgTotalKiB + " KiB total / " + msgPerEntryKiB + " KiB per entry; overage replaced with a `\"... N more messages omitted\"` tail entry.\n\n" +
+                "**Error path (tool-specific deviation from MCP defaults):** when the action threw, `structuredContent` is absent and any captured `messages` is attached at the result top level (next to `content` / `isError`) instead of inside `structuredContent`.";
+    }
+
+    /**
+     * The exec tool is the eval tool for an action that is in the logic: its descriptor is that tool's, with the name
+     * of the action in place of the script.
+     */
+    private static JSONObject execDescriptor() {
+        JSONObject descriptor = evalDescriptor();
+        JSONObject input = descriptor.getJSONObject("inputSchema");
+        input.getJSONObject("properties").remove("script");
+        input.getJSONObject("properties").put("action", strProp("The action's name, `Namespace.action` — with the classes of its parameters where the name alone names several: `Namespace.action[CLASS1,CLASS2]`."));
+        input.put("required", new JSONArray().put("action"));
+        return descriptor
+                .put("name", TOOL_EXEC)
+                .put("description",
+                        "Run an action of the application's logic by its name, under the caller's auth context, as `/exec` does — `" + TOOL_EVAL + "` for an action that is already there, with its `params` bound to the action's parameters. An action marked `@@api` is open to an authenticated caller where `enableAPI` closes the rest of the API; a script is not.\n\n" +
+                        "In the context `form` the name is looked up first among what the form exposes to its page (the form's `CUSTOMS`), by the name it is exposed under, and such an action is run whatever `enableAPI` is, as the form's own page runs it; then in the logic.\n\n" +
+                        runDescription());
     }
 
     /**

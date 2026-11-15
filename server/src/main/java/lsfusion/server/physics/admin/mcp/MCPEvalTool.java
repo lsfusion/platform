@@ -84,31 +84,31 @@ public class MCPEvalTool {
                                   AuthenticationToken token, ConnectionInfo connectionInfo,
                                   ExternalRequest envelope,
                                   LinkedHashMap<String, NamedFileData> files, String placeholderId) throws Exception {
-        String script = JsonToolArgs.getString(args, "script");
-        if (script == null || script.isEmpty()) {
-            throw new IllegalArgumentException("'script' is required (non-empty string)");
-        }
-        ExternalRequest.Param scriptParam = ExternalRequest.getUrlParam(script, UTF8, "script");
-        ExternalRequest request = buildRequest(args, envelope);
-        // the last checks: the application's page sends here what is no call of the tool, whatever its context, for
-        // the server to say what is wrong with it
-        String context = JsonToolArgs.getString(args, "context");
-        if (isFormAddress(args.opt("form"))) {
-            if (context != null && !context.equals("form")) {
-                throw new IllegalArgumentException("`form` addresses the form the script runs in: `context` is then `form`, or omitted; got `" + context + "`");
-            }
-            context = "form";
-        }
-        if (context != null && !context.equals("logics")) {
-            // where the user works the script is run by the application's page, through the controller of the form
-            // or of the navigator (WebMCP): a call that came here has no user at a page to run it for
-            throw new IllegalArgumentException(context.equals("navigator") || context.equals("form")
-                    ? "`context` `" + context + "` runs the script where the user works: it is there only where the tool is called by the application's page"
-                    : "`context` is `logics`, `navigator` or `form`; got `" + context + "`");
-        }
-
-        ExternalResponse response = remoteLogics.eval(token, connectionInfo, /*action=*/ false, scriptParam, request);
+        ExternalRequest.Param script = ExternalRequest.getUrlParam(getRun(args, "script"), UTF8, "script");
+        ExternalResponse response = remoteLogics.eval(token, connectionInfo, /*action=*/ false, script, buildRequest(args, envelope));
         return toJson(response, files, placeholderId);
+    }
+
+    /**
+     * The exec tool: {@link #eval} for an action that is in the logic, named by {@code action} - as {@code /exec} is
+     * {@code /eval} for one. The rest of the call and the answer are the same.
+     */
+    public static JSONObject exec(JSONObject args, RemoteLogics remoteLogics,
+                                  AuthenticationToken token, ConnectionInfo connectionInfo,
+                                  ExternalRequest envelope,
+                                  LinkedHashMap<String, NamedFileData> files, String placeholderId) throws Exception {
+        String action = getRun(args, "action");
+        ExternalResponse response = remoteLogics.exec(token, connectionInfo, action, buildRequest(args, envelope));
+        return toJson(response, files, placeholderId);
+    }
+
+    /** What a call is to run - a script, the name of an action: the argument of that name, which has to be there. */
+    private static String getRun(JSONObject args, String name) {
+        String run = JsonToolArgs.getString(args, name);
+        if (run == null || run.isEmpty()) {
+            throw new IllegalArgumentException("'" + name + "' is required (non-empty string)");
+        }
+        return run;
     }
 
     /**
@@ -150,6 +150,22 @@ public class MCPEvalTool {
      */
     private static ExternalRequest buildRequest(JSONObject args, ExternalRequest envelope) {
         ExternalRequest.Param[] params = getParams(args.opt("params"));
+        // the last checks: the application's page sends here what is no call of the tool, whatever its context, for
+        // the server to say what is wrong with it
+        String context = JsonToolArgs.getString(args, "context");
+        if (isFormAddress(args.opt("form"))) {
+            if (context != null && !context.equals("form")) {
+                throw new IllegalArgumentException("`form` addresses the form to run in: `context` is then `form`, or omitted; got `" + context + "`");
+            }
+            context = "form";
+        }
+        if (context != null && !context.equals("logics")) {
+            // where the user works a call is run by the application's page, through the controller of the form or
+            // of the navigator (WebMCP): a call that came here has no user at a page to run it for
+            throw new IllegalArgumentException(context.equals("navigator") || context.equals("form")
+                    ? "`context` `" + context + "` runs where the user works: it is there only where the tool is called by the application's page"
+                    : "`context` is `logics`, `navigator` or `form`; got `" + context + "`");
+        }
 
         // No `returnNames` here on purpose — the script controls what comes back via
         // `RETURN` (idiomatic) or, when a serialized export is needed, EXPORT / PRINT TO /

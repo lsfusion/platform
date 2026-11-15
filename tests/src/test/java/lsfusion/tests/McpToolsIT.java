@@ -232,15 +232,46 @@ public class McpToolsIT {
         Assert.assertEquals(new HashSet<>(Arrays.asList("name", "label", "window")), properties.getJSONObject("form").getJSONObject("properties").keySet());
     }
 
+    // The exec tool is the eval tool for an action that is in the logic: named, the action is run with the params and
+    // answers as a script's does - on the server, as the script
+    @Test
+    public void theExecToolRunsAnActionOfTheLogicByItsName() throws Exception {
+        Assert.assertEquals("42", value(exec("UiWebMCP.uiWebMCPDouble", "[21]", null)));
+        Assert.assertEquals("42", value(exec("UiWebMCP.uiWebMCPDouble", "[\"21\"]", "\"context\":\"logics\"")));
+        for (String[] refused : new String[][] {
+                {"UiWebMCP.uiWebMCPNoSuchAction", "[]", null, "uiWebMCPNoSuchAction"},
+                {"", "[]", null, "'action' is required"},
+                {"UiWebMCP.uiWebMCPDouble", "\"none\"", "\"context\":\"navigator\"", "`params` must be an array"},
+                {"UiWebMCP.uiWebMCPDouble", "[21]", "\"context\":\"navigator\"", "only where the tool is called by the application's page"},
+                {"UiWebMCP.uiWebMCPDouble", "[21]", "\"form\":{\"name\":\"A.b\"}", "only where the tool is called by the application's page"}}) {
+            JSONObject answer = exec(refused[0], refused[1], refused[2]);
+            Assert.assertTrue(answer.toString(), answer.getBoolean("isError") && answer.toString().contains(refused[3]));
+        }
+        // its descriptor is the eval tool's, with the action's name in place of the script
+        JSONObject input = tool("lsfusion_exec").getJSONObject("inputSchema");
+        Assert.assertEquals(new HashSet<>(Arrays.asList("action", "params", "context", "form")), input.getJSONObject("properties").keySet());
+        Assert.assertEquals("[\"action\"]", input.getJSONArray("required").toString());
+        Assert.assertEquals(tool("lsfusion_eval").getJSONObject("outputSchema").toString(), tool("lsfusion_exec").getJSONObject("outputSchema").toString());
+    }
+
     private static JSONObject eval(String script, String params) throws Exception {
         return eval(script, params, null);
     }
 
-    // params is the text of the JSON array, as a client writes it: org.json would write 21.0 as 21; where - the
-    // arguments that say where the script runs, as the text of their fields, null for none
     private static JSONObject eval(String script, String params, String where) throws Exception {
-        return answer(send("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"lsfusion_eval\",\"arguments\":"
-                + "{\"script\":" + JSONObject.quote(script) + ",\"params\":" + params + (where != null ? "," + where : "") + "}}}"));
+        return call("lsfusion_eval", "script", script, params, where);
+    }
+
+    private static JSONObject exec(String action, String params, String where) throws Exception {
+        return call("lsfusion_exec", "action", action, params, where);
+    }
+
+    // a call of a tool that runs `run` - a script, an action by its name. params is the text of the JSON array, as a
+    // client writes it: org.json would write 21.0 as 21; where - the arguments that say where it runs, as the text of
+    // their fields, null for none
+    private static JSONObject call(String tool, String run, String value, String params, String where) throws Exception {
+        return answer(send("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"" + tool + "\",\"arguments\":"
+                + "{\"" + run + "\":" + JSONObject.quote(value) + ",\"params\":" + params + (where != null ? "," + where : "") + "}}}"));
     }
 
     private static String value(JSONObject result) {
