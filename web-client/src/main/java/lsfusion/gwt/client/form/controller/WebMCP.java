@@ -79,13 +79,7 @@ public class WebMCP {
 
             // the controller's eval made as the tool's: the arguments are the tool's params and the result is its answer
             var calls = (form != null ? form.@GFormController::controller : navigatorController).mcp;
-            return calls.eval.apply(calls, [args.script].concat(args.params || [])).then(function (answer) {
-                answer.context = form != null ? 'form' : 'navigator';
-                var formName = form != null ? form.@GFormController::form.@lsfusion.gwt.client.GForm::canonicalName : null;
-                if (formName != null)
-                    answer.form = formName;
-                return answer;
-            });
+            return calls.eval.apply(calls, [args.script].concat(args.params || []));
         }
 
         request('tools/list').then(function (list) {

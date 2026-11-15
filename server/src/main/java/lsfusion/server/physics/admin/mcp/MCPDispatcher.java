@@ -616,7 +616,7 @@ public class MCPDispatcher {
                         "  - `logics` — on the server, in a session of its own, discarded when the call ends unless the script applies it (`APPLY`). There is nobody to show anything to: MESSAGE output is collected into `messages`, and the script has the HTTP request of the call to read (both below).\n" +
                         "  - `navigator` — where the user works, in the navigator: under the user's access rights, in a new session per call, as an action the user started. A form the script shows opens in the user's browser, and a `MESSAGE` or a dialog is shown to the user — the call waits for the user's answer, unless the message is a `MESSAGE ... NOWAIT`; so the answer has no `messages` (read values with `RETURN`), and the script has no HTTP request to read.\n" +
                         "  - `form` — as `navigator`, but in a form — the one `form` addresses, else the form the user is in: in the form's own session, with its unsaved changes, kept when the form applies them.\n" +
-                        "`navigator` and `form` are there only where the tool is called by the application's page, by a browser's AI agent. The answer then says where the script ran — `context`, and for a form `form`, the form's name —, a big file's `url` is a link of the application's page, which needs the user's session, a large text stays in `results[]` rather than moving to a resource, and the 16 MiB cap of a call's body, which is `/mcp`'s, does not apply.\n\n" +
+                        "`navigator` and `form` are there only where the tool is called by the application's page, by a browser's AI agent. The answer does not say where the script ran. There a big file's `url` is a link of the application's page, which needs the user's session, a large text stays in `results[]` rather than moving to a resource, and the 16 MiB cap of a call's body, which is `/mcp`'s, does not apply.\n\n" +
                         "**HTTP envelope passthrough (`logics`).** The /mcp request's metadata (headers, cookies, body, URL components) reaches the script via the same lsFusion properties `/eval` populates — `headers[name]`, `cookies[name]`, etc.\n\n" +
                         "**`messages` capture (`logics`).** MESSAGE / PRINT MESSAGE output is collected server-side and surfaced, when non-empty, as a `messages` array. Plain `MESSAGE` (the common case) appears as the raw text; explicit non-default forms keep a literal type prefix (`\"WARN: ...\"`, `\"ERROR: ...\"`, `\"INFO: ...\"`, `\"LOG: ...\"`, `\"SUCCESS: ...\"`). Capped at " + MCPEvalTool.MAX_MESSAGES_COUNT + " entries / " + msgTotalKiB + " KiB total / " + msgPerEntryKiB + " KiB per entry; overage replaced with a `\"... N more messages omitted\"` tail entry.\n\n" +
                         "**Error path (tool-specific deviation from MCP defaults):** when the action threw, `structuredContent` is absent and any captured `messages` is attached at the result top level (next to `content` / `isError`) instead of inside `structuredContent`."
@@ -683,10 +683,7 @@ public class MCPDispatcher {
                         .put("messages", new JSONObject()
                                 .put("type", "array")
                                 .put("description", "Captured `MESSAGE` / `PRINT MESSAGE` output.")
-                                .put("items", new JSONObject().put("type", "string")))
-                        .put("context", new JSONObject().put("type", "string").put("enum", arr("navigator", "form"))
-                                .put("description", "Where the script ran, when it ran where the user works."))
-                        .put("form", strProp("The name of the form the script ran in. Absent for a form that has no name.")));
+                                .put("items", new JSONObject().put("type", "string"))));
     }
 
     /**
