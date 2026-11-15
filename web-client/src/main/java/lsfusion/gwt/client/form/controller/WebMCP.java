@@ -226,7 +226,9 @@ public class WebMCP {
     // `property` a row of the property's group -, and where the controller's method takes the row in no place of its
     // own - with the value's, among its options -, `call` says how it is called. What takes an element
     // or a function is not here (startEditing, stopEditing, isEditing, batch), nor are the controller's calls of the
-    // logic (exec, eval, evalAction, change, mcp), which lsfusion_eval and lsfusion_exec are
+    // logic (exec, eval, evalAction, change, mcp), which lsfusion_eval and lsfusion_exec are, nor a view's own filters
+    // of the rows it draws (changeViewFilters), which the agent is no view to state: a table's user filters are its
+    // changeFilters
     private static native JavaScriptObject getFormMethods()/*-{
         // a lookup's answer: its last one - the server answers before it is sure of the form's unsaved changes, and
         // then again, in `more` -, each value as its strings, its `objects` being the handle of a row
@@ -235,10 +237,9 @@ public class WebMCP {
                 return { displayString: value.displayString, rawString: value.rawString };
             });
         }
-        var viewRows = "Where a React view draws the rows of the group, one not in a tree: ";
         return {
             changeObject: { takes: ['group', 'row', 'options'],
-                does: "Make `row` the current row of the group: the row `changeProperty` and `getValues` are of when they are given none. " + viewRows + "`row` is also `{to: 'home'}` or `{to: 'end'}`, the first or the last of them, and `options.selection` says what becomes of the rows selected: `start` (the default), `extend` or `keep`." },
+                does: "Make `row` the current row of the group: the row `changeProperty` and `getValues` are of when they are given none. Where the group's rows are shown as a grid - not a tree's, nor as a pivot or another view -, `row` is also `{to: 'home'}` or `{to: 'end'}`, the first or the last row, and `options.selection` says what becomes of the rows selected: `start` (the default) selects none, `extend` selects the rows up to this one, `keep` leaves them." },
             changeProperty: { takes: ['property', 'row', 'value'],
                 does: "Set the property's value in `row` - with no `row`, in the current row: `value`, `null` for none. With no `value`, start the property's change there as a click on it does: an action is run, a value may be asked of the user.",
                 // the controller's method takes (property, value) and (property, row, value): no row is no argument
@@ -293,15 +294,13 @@ public class WebMCP {
             expandTree: { takes: ['tree'],
                 does: "Open the tree from the current node's group down." },
             changeColumn: { takes: ['group', 'column', 'options'],
-                does: viewRows + "make `column`, a property of the rows by its name on the form, the current column; `options` as in `changeObject`, for the columns selected." },
+                does: "Make `column` the current column of the group's grid: a property of its rows, named as beside its `group`, which the grid shows now and the user can move to - a property the form groups in columns (`COLUMNS`) is refused. `options.selection` says what becomes of the columns selected: `start` (the default) selects this column alone, `extend` selects the columns up to it, `keep` leaves them." },
             selectAll: { takes: ['group'],
-                does: viewRows + "select every row and column." },
+                does: "Select every row and every column of the group's grid." },
             copy: { takes: ['group'],
-                does: viewRows + "the text of the cells selected, of the current one where none are: a row a line, tabs between its cells. Answers the text." },
+                does: "Answers the text of the cells selected in the group's grid: the rows selected, of all its rows, in the columns selected - the current row where the page shows no row as selected, the current column where no column is. A row a line, tabs between its cells. The column of an action, and those of a property the form groups in columns (`COLUMNS`), are none of the cells." },
             paste: { takes: ['group', 'text'],
-                does: viewRows + "paste such a text: one value into every cell selected, several from the current cell on, to the right and down." },
-            changeViewFilters: { takes: ['group', 'conditions'],
-                does: viewRows + "the view's own filters of them, an array of conditions as in `changeFilters`, none joined by `or`." }
+                does: "Paste such a text into those cells: one value into every one of them; several, into the cells from the current one on, to the right and down - none while the current column is none of the cells." }
         };
     }-*/;
 }

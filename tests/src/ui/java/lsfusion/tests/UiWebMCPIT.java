@@ -512,6 +512,40 @@ public class UiWebMCPIT extends UiTest {
                 callForm("changeObject", "{\"group\":\"i\",\"row\":0}"));
     }
 
+    // the selection of a table and its clipboard, the table's own where the platform draws it: a row and a column made
+    // current with what becomes of the rows and of the columns selected, the cells selected answered as a text - the
+    // current row's while no row is selected -, a value pasted into every one of them, every row and column selected
+    @Test
+    public void theClientToolSelectsCopiesAndPastes() throws Exception {
+        exec("UiWebMCP.uiWebMCPSeedItems");
+        loadWithAgent();
+        Locator form = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCPItems");
+        Locator rows = form.locator("tr[lsfusion-group='i']");
+        assertThat(rows).hasCount(3);
+        assertEquals("{}", callForm("changeOrders", "{\"table\":\"i\",\"orders\":[{\"property\":\"name\",\"desc\":false}]}"));
+        assertThat(form.locator("td[lsfusion-container='PROPERTY(name)']")).hasText(new String[] {"a", "b", "c"});
+        String first = rows.nth(0).getAttribute("lsfusion-row"), last = rows.nth(2).getAttribute("lsfusion-row");
+
+        assertEquals("{}", callForm("changeObject", "{\"group\":\"i\",\"row\":" + first + "}"));
+        assertEquals("{}", callForm("changeColumn", "{\"group\":\"i\",\"column\":\"name\"}"));
+        assertEquals("{}", callForm("changeColumn", "{\"group\":\"i\",\"column\":\"quantity\",\"options\":{\"selection\":\"extend\"}}"));
+        assertEquals("{\"result\":\"a\\t5\"}", callForm("copy", "{\"group\":\"i\"}"));
+        assertEquals("{}", callForm("changeObject", "{\"group\":\"i\",\"row\":" + last + ",\"options\":{\"selection\":\"extend\"}}"));
+        assertThat(form.locator("tr.table-select")).hasCount(3);
+        assertEquals("{\"result\":\"a\\t5\\nb\\t20\\nc\\t30\"}", callForm("copy", "{\"group\":\"i\"}"));
+
+        assertEquals("{}", callForm("changeColumn", "{\"group\":\"i\",\"column\":\"quantity\"}"));
+        assertEquals("{}", callForm("paste", "{\"group\":\"i\",\"text\":\"7\"}"));
+        assertThat(form.locator("td[lsfusion-container='PROPERTY(quantity)']")).hasText(new String[] {"7", "7", "7"});
+        assertEquals("{}", callForm("changeObject", "{\"group\":\"i\",\"row\":" + first + "}")); // a selection anew: no row
+        assertThat(form.locator("tr.table-select")).hasCount(0);
+        assertEquals("{\"result\":\"7\"}", callForm("copy", "{\"group\":\"i\"}"));
+        assertEquals("{}", callForm("selectAll", "{\"group\":\"i\"}"));
+        assertThat(form.locator("tr.table-select")).hasCount(3);
+        String all = callForm("copy", "{\"group\":\"i\"}");
+        assertTrue(all, all.startsWith("{\"result\":\"a\\t7\\t") && all.split("\\\\n").length == 3);
+    }
+
     // the form is the one the agent addresses, whichever form the user is in
     @Test
     public void theClientToolCallsTheFormTheAgentAddresses() throws Exception {
@@ -536,8 +570,8 @@ public class UiWebMCPIT extends UiTest {
     }
 
     // the methods the tool calls are the form controller's: every function of the controller is one of them, or one
-    // of those the tool leaves out - what takes an element or a function, and the calls of the logic, which other
-    // tools are. A method added to the controller is to be put in one of the two
+    // of those the tool leaves out - what takes an element or a function, the calls of the logic, which other tools
+    // are, and a view's own filters. A method added to the controller is to be put in one of the two
     @Test
     public void theClientToolsMethodsAreTheFormControllers() throws Exception {
         loadWithAgent();
@@ -546,7 +580,7 @@ public class UiWebMCPIT extends UiTest {
         // an INTERNAL CLIENT action's function is given the form's controller
         page.evaluate("() => { window.uiWebMCPKeep = controller => { window.uiWebMCPController = controller; }; }");
         assertEquals("", call("lsfusion_eval", "{\"script\":\"run() { INTERNAL CLIENT 'uiWebMCPKeep'; }\",\"context\":\"form\"}", VALUES));
-        List<String> leftOut = Arrays.asList("startEditing", "stopEditing", "isEditing", "batch", "exec", "eval", "evalAction", "change");
+        List<String> leftOut = Arrays.asList("startEditing", "stopEditing", "isEditing", "batch", "exec", "eval", "evalAction", "change", "changeViewFilters");
         assertEquals(page.evaluate("() => Object.keys(window.uiWebMCPController).filter(name => typeof window.uiWebMCPController[name] === 'function').sort().join()"),
                 page.evaluate("leftOut => window.uiWebMCPTools." + CLIENT_TOOL + ".inputSchema.properties.method.enum.concat(leftOut).sort().join()", leftOut));
         // ... and each is described, with what it takes
