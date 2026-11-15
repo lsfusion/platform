@@ -12,7 +12,8 @@ import static org.junit.Assert.assertTrue;
 
 // WebMCP: the page registers the tools of the application's MCP server with the browser's agent. A tool is the server's
 // - its description, what it is called with and what it answers -, and the page substitutes only the run of
-// lsfusion_eval where the user works: in the form the user is in or in the navigator. The agent is a stand-in here: a
+// lsfusion_eval where the user works: in the form the user is in or in the navigator. And a tool of its own,
+// lsfusion_client, which calls a method of a form's controller. The agent is a stand-in here: a
 // document.modelContext that keeps the tools registered with it, and refuses one as a browser does - a name taken or
 // not a name, no description, no run. The page registers its tools as it loads, so the stand-in is put there before,
 // and the page each test gets is loaded again
@@ -75,14 +76,16 @@ public class UiWebMCPIT extends UiTest {
         return requests(request -> request.postData().contains("\"method\":\"tools/call\""));
     }
 
-    // the tools are the server's, their descriptions too - the one of the tool the page runs itself among them
+    // the tools are the server's, their descriptions too - the one of the tool the page runs itself among them -, but
+    // the page's own
     @Test
     public void thePageRegistersTheToolsOfTheServer() {
         loadWithAgent();
         String described = "tools => tools.map(tool => tool.name + ': ' + tool.description + JSON.stringify(window.uiWebMCPShape(tool.inputSchema))).sort().join('\\n')";
         Object listed = page.evaluate("() => window.uiWebMCPServer('tools/list').then(list => (" + described + ")(list.tools))");
         assertTrue("the server lists lsfusion_eval among its tools: " + listed, String.valueOf(listed).contains("lsfusion_eval: "));
-        assertEquals(listed, page.evaluate("() => (" + described + ")(Object.keys(window.uiWebMCPTools).map(name => window.uiWebMCPTools[name]))"));
+        assertTrue("... and not the page's own: " + listed, !String.valueOf(listed).contains(CLIENT_TOOL + ": "));
+        assertEquals(listed, page.evaluate("() => (" + described + ")(Object.keys(window.uiWebMCPTools).filter(name => name !== '" + CLIENT_TOOL + "').map(name => window.uiWebMCPTools[name]))"));
         assertEquals("form,logics,navigator", page.evaluate("() => window.uiWebMCPTools.lsfusion_eval.inputSchema.properties.context.enum.slice().sort().join()"));
     }
 
@@ -303,6 +306,153 @@ public class UiWebMCPIT extends UiTest {
                 + "     [file.name, file.type, file.fileName, file.extension, file.mimeType, file.size, response.status,"
                 + "      new Uint8Array(got).every((value, i) => value === bytes[i]) ? got.byteLength : 'other bytes'].join(' '))))).then(files => files.sort().join(', '));"
                 + " }); }")));
+    }
+
+    private static final String CLIENT_TOOL = "lsfusion_client";
+
+    private String callForm(String method, String args) {
+        return call(CLIENT_TOOL, "{\"method\":\"" + method + "\",\"args\":" + args + "}");
+    }
+
+    // the page's own tool calls a method of the form the user is in, by the method's name, its arguments by theirs:
+    // what the form's toolbar, sortings, filters and cells do, which the form shows. A value is JSON, a date its string
+    @Test
+    public void theClientToolCallsAMethodOfTheForm() throws Exception {
+        exec("UiWebMCP.uiWebMCPSeedItems");
+        loadWithAgent();
+        assertEquals(CLIENT_TOOL + " error: the user is in no form", callForm("getCount", "{\"group\":\"i\"}"));
+        Locator form = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCPItems");
+        Locator names = form.locator("td[lsfusion-container='PROPERTY(name)']");
+        assertThat(names).hasCount(3);
+
+        // what the toolbar counts, the answer the method's
+        assertEquals("{\"result\":3}", callForm("getCount", "{\"group\":\"i\"}"));
+        assertEquals("{\"result\":55}", callForm("getSum", "{\"group\":\"i\",\"property\":\"quantity\"}"));
+
+        // the sortings: all of them, and one of them
+        assertEquals("{}", callForm("changeOrders", "{\"table\":\"i\",\"orders\":[{\"property\":\"quantity\",\"desc\":true}]}"));
+        assertThat(names).hasText(new String[] {"c", "b", "a"});
+        assertEquals("{}", callForm("changeOrders", "{\"table\":\"i\",\"orders\":{\"property\":\"quantity\",\"desc\":false}}"));
+        assertThat(names).hasText(new String[] {"a", "b", "c"});
+
+        // the user filters: all the conditions, one more - on a date, given as its string -, and none
+        assertEquals("{}", callForm("changeFilters", "{\"table\":\"i\",\"conditions\":[{\"property\":\"quantity\",\"compare\":\">\",\"value\":10}]}"));
+        assertThat(names).hasText(new String[] {"b", "c"});
+        assertEquals("{}", callForm("changeFilters", "{\"table\":\"i\",\"conditions\":{\"property\":\"date\",\"compare\":\">=\",\"value\":\"2026-03-01\"}}"));
+        assertThat(names).hasText(new String[] {"c"});
+        assertEquals("{\"result\":1}", callForm("getCount", "{\"group\":\"i\"}"));
+        assertEquals("{}", callForm("changeFilters", "{\"table\":\"i\",\"conditions\":[]}"));
+        assertThat(names).hasText(new String[] {"a", "b", "c"});
+
+        // a filter group's filter, selected and not
+        assertEquals("{}", callForm("changeFilterGroup", "{\"filterGroup\":\"many\",\"index\":0}"));
+        assertThat(names).hasText(new String[] {"b", "c"});
+        assertEquals("{}", callForm("changeFilterGroup", "{\"filterGroup\":\"many\",\"index\":null}"));
+        assertThat(names).hasText(new String[] {"a", "b", "c"});
+
+        // a property of the current row: its value set - a date's by its string -, and its change run, an action's
+        select(cell(form, "name", "b"));
+        Locator row = row(form, "name", "b");
+        assertEquals("{}", callForm("changeProperty", "{\"property\":\"i.quantity\",\"value\":21}"));
+        assertThat(row.locator("td[lsfusion-container='PROPERTY(quantity)']")).hasText("21");
+        assertEquals("{}", callForm("changeProperty", "{\"property\":\"i.date\",\"value\":\"2026-12-31\"}"));
+        assertEquals("1", call("lsfusion_eval", "{\"script\":\"run() { RETURN GROUP SUM 1 IF UiWebMCP.uiWebMCPDate(UiWebMCP.UiWebMCPItem i) = 2026_12_31; }\"}", VALUES));
+        Locator note = form.locator("[lsfusion-container='PROPERTY(uiWebMCPNote())'] input");
+        assertEquals("{}", callForm("changeProperty", "{\"property\":\"i.touch\"}"));
+        assertThat(note).hasValue("touched b");
+        // ... and one of no group, set and set to none
+        assertEquals("{}", callForm("changeProperty", "{\"property\":\"uiWebMCPNote\",\"value\":\"noted\"}"));
+        assertThat(note).hasValue("noted");
+        assertEquals("{}", callForm("changeProperty", "{\"property\":\"uiWebMCPNote\",\"value\":null}"));
+        assertThat(note).hasValue("");
+
+        // the values the form suggests for a property, each as its strings
+        assertEquals("[{\"displayString\":\"a\",\"rawString\":\"a\"},{\"displayString\":\"b\",\"rawString\":\"b\"},{\"displayString\":\"c\",\"rawString\":\"c\"}]",
+                call(CLIENT_TOOL, "{\"method\":\"getValues\",\"args\":{\"property\":\"i.name\",\"value\":\"\",\"options\":{\"mode\":\"values\"}}}",
+                        "answer => JSON.stringify(window.uiWebMCPShape(answer.result).sort((a, b) => a.rawString < b.rawString ? -1 : 1))")); // in the server's order
+
+        // a tree's group, opened to the last node and closed
+        Locator nodes = form.locator("td[lsfusion-container='PROPERTY(node)']");
+        assertThat(nodes).hasText(new String[] {"a", "b"});
+        assertEquals("{}", callForm("expandAll", "{\"group\":\"t\"}"));
+        assertThat(nodes).hasText(new String[] {"a", "c", "b"});
+        assertEquals("{}", callForm("collapseAll", "{\"group\":\"t\"}"));
+        assertThat(nodes).hasText(new String[] {"a", "b"});
+    }
+
+    // what is no call of the tool the page says, there being no server to say it; and what the form refuses is the
+    // tool's failure, with the form's reason
+    @Test
+    public void theClientToolSaysWhatIsWrongWithACall() throws Exception {
+        exec("UiWebMCP.uiWebMCPSeedItems");
+        loadWithAgent();
+        Locator form = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCPItems");
+        assertThat(form.locator("td[lsfusion-container='PROPERTY(name)']")).hasCount(3); // the user is in the form
+        String error = CLIENT_TOOL + " error: ";
+        assertEquals(error + "the call must be an object of method, args, form", call(CLIENT_TOOL, "null"));
+        assertEquals(error + "unknown field `group`: the call has method, args, form", call(CLIENT_TOOL, "{\"method\":\"getCount\",\"group\":\"i\"}"));
+        // a method that takes a row is not one of the tool's
+        String methods = call(CLIENT_TOOL, "{\"method\":\"expand\",\"args\":{\"group\":\"t\"}}");
+        assertTrue(methods, methods.startsWith(error + "`method` must be one of changeProperty, getValues, ") && !methods.contains(" expand,"));
+        assertEquals(error + "unknown field `table`: `args` of getCount has group", callForm("getCount", "{\"table\":\"i\"}"));
+        assertEquals(error + "`args` of getCount must be an object of group", callForm("getCount", "[\"i\"]"));
+        assertEquals(error + "`form` must be an object of name, label, window, at least one of them, each a string",
+                call(CLIENT_TOOL, "{\"method\":\"getCount\",\"args\":{\"group\":\"i\"},\"form\":\"UiWebMCP.uiWebMCPItems\"}"));
+
+        for (String[] refused : new String[][] {
+                {"getCount", "{\"group\":\"none\"}", "unknown object group or tree 'none'"},
+                {"getCount", "{}", "takes the name of an object group or of a tree, as a string"},
+                {"changeOrders", "{\"table\":\"i\",\"orders\":[{\"property\":\"none\",\"desc\":true}]}", "order 0: unknown property 'none' of object group 'i'"},
+                {"changeProperty", "{\"property\":\"i.date\",\"value\":\"31.12.2026\"}", "\"31.12.2026\" is not a date"},
+                {"changeProperty", "{\"property\":\"i.date\",\"value\":\"2026-02-30\"}", "\"2026-02-30\" is not a date"},
+                // the rows are the platform's to draw here: no view of them has a first row, or a selection
+                {"changeObject", "{\"group\":\"i\",\"row\":{\"to\":\"end\"}}", "'i' has no selection of a view's"},
+                {"selectAll", "{\"group\":\"i\"}", "'i' has no selection of a view's"}}) {
+            String refusal = callForm(refused[0], refused[1]);
+            assertTrue(refusal, refusal.startsWith(error) && refusal.contains(refused[2]));
+        }
+    }
+
+    // the form is the one the agent addresses, whichever form the user is in
+    @Test
+    public void theClientToolCallsTheFormTheAgentAddresses() throws Exception {
+        exec("UiWebMCP.uiWebMCPSeedItems");
+        loadWithAgent();
+        String mode = pinMode();
+        try {
+            pinMode(ALL_PINNED); // a second form is opened from the navigator
+            Locator items = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCPItems");
+            assertThat(items.locator("td[lsfusion-container='PROPERTY(name)']")).hasCount(3);
+            Locator other = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCPOther"); // the user is in this one now
+            assertThat(other.locator("[lsfusion-container='PROPERTY(uiWebMCPNote())'] input")).isVisible();
+            String count = "{\"method\":\"getCount\",\"args\":{\"group\":\"i\"}";
+            String here = call(CLIENT_TOOL, count + "}");
+            assertTrue(here, here.startsWith(CLIENT_TOOL + " error: ") && here.contains("unknown object group or tree 'i'"));
+            assertEquals("{\"result\":3}", call(CLIENT_TOOL, count + ",\"form\":{\"name\":\"UiWebMCP.uiWebMCPItems\"}}"));
+            assertEquals(CLIENT_TOOL + " error: no open form at the address {\"name\":\"UiWebMCP.uiWebMCPNoSuchForm\"}",
+                    call(CLIENT_TOOL, count + ",\"form\":{\"name\":\"UiWebMCP.uiWebMCPNoSuchForm\"}}"));
+        } finally {
+            pinMode(mode);
+        }
+    }
+
+    // the methods the tool calls are the form controller's: every function of the controller is one of them, or one
+    // of those the tool leaves out - what takes a row alone, an element or a function, and the calls of the logic,
+    // which other tools are. A method added to the controller is to be put in one of the two
+    @Test
+    public void theClientToolsMethodsAreTheFormControllers() throws Exception {
+        loadWithAgent();
+        Locator form = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCP");
+        assertThat(form.locator("[lsfusion-container='PROPERTY(uiWebMCPNote())'] input")).isVisible(); // the user is in the form
+        // an INTERNAL CLIENT action's function is given the form's controller
+        page.evaluate("() => { window.uiWebMCPKeep = controller => { window.uiWebMCPController = controller; }; }");
+        assertEquals("", call("lsfusion_eval", "{\"script\":\"run() { INTERNAL CLIENT 'uiWebMCPKeep'; }\",\"context\":\"form\"}", VALUES));
+        List<String> leftOut = Arrays.asList("expand", "collapse", "startEditing", "stopEditing", "isEditing", "batch", "exec", "eval", "evalAction", "change");
+        assertEquals(page.evaluate("() => Object.keys(window.uiWebMCPController).filter(name => typeof window.uiWebMCPController[name] === 'function').sort().join()"),
+                page.evaluate("leftOut => window.uiWebMCPTools." + CLIENT_TOOL + ".inputSchema.properties.method.enum.concat(leftOut).sort().join()", leftOut));
+        // ... and each is described, with what it takes
+        String description = (String) page.evaluate("() => window.uiWebMCPTools." + CLIENT_TOOL + ".description");
+        assertTrue(description, description.contains("- `changeOrders(table, orders)` — ") && description.contains("- `export(table)` — "));
     }
 
     @Test

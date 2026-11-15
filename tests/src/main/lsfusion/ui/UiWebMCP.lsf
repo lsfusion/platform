@@ -16,11 +16,31 @@ FORM uiWebMCPOther 'WebMCP other'
 ;
 uiWebMCPLabelled 'WebMCP labelled' () { SHOW 'labelled' = uiWebMCP NOWAIT NEWSESSION; }
 
+// what the methods of a form are called on: a list of items with a filter group, an action of a row, and their tree
+CLASS UiWebMCPItem 'Item';
+uiWebMCPName 'Name' = DATA STRING[50] (UiWebMCPItem);
+uiWebMCPQuantity 'Quantity' = DATA INTEGER (UiWebMCPItem);
+uiWebMCPDate 'Date' = DATA DATE (UiWebMCPItem);
+uiWebMCPParent 'Parent' = DATA UiWebMCPItem (UiWebMCPItem);
+uiWebMCPTouch 'Touch' (UiWebMCPItem i) { uiWebMCPNote() <- 'touched ' + uiWebMCPName(i); }
+
+FORM uiWebMCPItems 'WebMCP items'
+    PROPERTIES() uiWebMCPNote
+    OBJECTS i = UiWebMCPItem
+    PROPERTIES(i) name = uiWebMCPName, quantity = uiWebMCPQuantity, date = uiWebMCPDate, touch = uiWebMCPTouch
+    FILTERGROUP many
+        FILTER 'Many' uiWebMCPQuantity(i) > 10
+
+    TREE items t = UiWebMCPItem PARENT uiWebMCPParent(t)
+    PROPERTIES(t) READONLY node = uiWebMCPName
+;
+
 NAVIGATOR {
     NEW FOLDER uiWebMCPFolder 'UI WebMCP' WINDOW toolbar {
         NEW uiWebMCP;
         NEW uiWebMCPOther;
         NEW uiWebMCPLabelled;
+        NEW uiWebMCPItems;
     }
 }
 
@@ -35,5 +55,21 @@ uiWebMCPSeed (STRING[100] note) {
     uiWebMCPNote() <- note;
     uiWebMCPMark('first') <- 1;
     uiWebMCPMark('second') <- 2;
+    APPLY;
+}
+
+// three items: `a` with `c` under it, and `b`
+uiWebMCPSeedItems () {
+    DELETE UiWebMCPItem i WHERE i IS UiWebMCPItem;
+    NEW a = UiWebMCPItem {
+        uiWebMCPName(a) <- 'a'; uiWebMCPQuantity(a) <- 5; uiWebMCPDate(a) <- 2026_01_10;
+        NEW c = UiWebMCPItem {
+            uiWebMCPName(c) <- 'c'; uiWebMCPQuantity(c) <- 30; uiWebMCPDate(c) <- 2026_03_10; uiWebMCPParent(c) <- a;
+        }
+    }
+    NEW b = UiWebMCPItem {
+        uiWebMCPName(b) <- 'b'; uiWebMCPQuantity(b) <- 20; uiWebMCPDate(b) <- 2026_02_10;
+    }
+    uiWebMCPNote() <- NULL;
     APPLY;
 }
