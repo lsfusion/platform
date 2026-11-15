@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GGroupController;
 import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
@@ -27,6 +28,7 @@ import lsfusion.gwt.client.form.view.Column;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 // the CUSTOM view of a group's rows whose render function is a React component (ReactRoot.isReactView): what GCustom
 // is to a classic render function. The component is given what a React container that draws the group's rows is
@@ -240,6 +242,10 @@ public final class GReactCustom extends GPagedListView {
     @Override
     public int getRow(GGroupObjectValue key) {
         return getRows().getRow(key);
+    }
+    @Override
+    public void forEachRow(GGroupObject group, Consumer<GGroupObjectValue> row) {
+        getRows().forEachRow(group, row);
     }
     @Override
     public boolean containsProperty(GPropertyDraw property) {

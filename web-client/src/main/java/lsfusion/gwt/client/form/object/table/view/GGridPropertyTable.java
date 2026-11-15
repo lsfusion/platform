@@ -44,6 +44,7 @@ import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
+import lsfusion.gwt.client.form.design.view.GFormLayout;
 
 public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGridProperty, C extends GPlatformTableController<?, ?, ?>> extends GPropertyTable<T> implements GTableView {
     protected boolean columnsUpdated = true; //could be no properties on init
@@ -635,6 +636,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord, G extends GGr
 
     protected abstract GPropertyDraw getColumnPropertyDraw(int i);
     protected abstract GGroupObjectValue getColumnKey(int i);
+    // the group a row is a row of, null for a row that is none's: what the row's element says of it
+    // (GGridPropertyTableBuilder)
+    protected abstract GGroupObject getRowGroup(T row);
 
     protected void updateCaptions() {
         if (captionsUpdated) {
@@ -1020,6 +1024,7 @@ protected Double getUserFlex(int i) {
             element.setAttribute("lsfusion-container", property.sID);
         else
             element.removeAttribute("lsfusion-container");
+        GFormLayout.setPropertyName(element, property);
     }
 
     public GridPropertyColumn getGridColumn(int column) {

@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.design.view.ComponentViewWidget;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public class SizedWidget {
     public final Widget widget;
@@ -81,6 +82,10 @@ public class SizedWidget {
 
         public void setDebugInfo(String sID) {
             GFormLayout.setDebugInfo(widget, sID);
+        }
+
+        public void setPropertyName(GPropertyDraw property) {
+            GFormLayout.setPropertyName(widget.getElement(), property);
         }
 
         // CUSTOM container usages

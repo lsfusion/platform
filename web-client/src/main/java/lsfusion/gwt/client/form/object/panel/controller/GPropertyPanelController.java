@@ -156,6 +156,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     public ComponentViewWidget addPanelRenderer(GGroupObjectValue rendererKey, Result<CaptionWidget> caption) {
         PanelRenderer newRenderer = property.createPanelRenderer(form, GPropertyPanelController.this, panelController.getColumnKey(rendererKey), panelController.getRowKey(rendererKey), caption);
         ComponentViewWidget component = newRenderer.getComponentViewWidget();
+        component.setPropertyName(property); // wherever it is put: by the form's layout, or into a row a React view draws
         renderers.put(rendererKey, newRenderer);
         return component;
     }

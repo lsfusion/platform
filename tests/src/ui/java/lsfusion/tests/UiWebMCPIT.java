@@ -391,9 +391,9 @@ public class UiWebMCPIT extends UiTest {
         String error = CLIENT_TOOL + " error: ";
         assertEquals(error + "the call must be an object of method, args, form", call(CLIENT_TOOL, "null"));
         assertEquals(error + "unknown field `group`: the call has method, args, form", call(CLIENT_TOOL, "{\"method\":\"getCount\",\"group\":\"i\"}"));
-        // a method that takes a row is not one of the tool's
-        String methods = call(CLIENT_TOOL, "{\"method\":\"expand\",\"args\":{\"group\":\"t\"}}");
-        assertTrue(methods, methods.startsWith(error + "`method` must be one of changeProperty, getValues, ") && !methods.contains(" expand,"));
+        // a method that takes an element is not one of the tool's
+        String methods = call(CLIENT_TOOL, "{\"method\":\"startEditing\",\"args\":{}}");
+        assertTrue(methods, methods.startsWith(error + "`method` must be one of changeObject, changeProperty, getValues, ") && !methods.contains("startEditing"));
         assertEquals(error + "unknown field `table`: `args` of getCount has group", callForm("getCount", "{\"table\":\"i\"}"));
         assertEquals(error + "`args` of getCount must be an object of group", callForm("getCount", "[\"i\"]"));
         assertEquals(error + "`form` must be an object of name, label, window, at least one of them, each a string",
@@ -411,6 +411,105 @@ public class UiWebMCPIT extends UiTest {
             String refusal = callForm(refused[0], refused[1]);
             assertTrue(refusal, refusal.startsWith(error) && refusal.contains(refused[2]));
         }
+    }
+
+    // what the agent names it reads on the page: a property by the name on what shows it, a row by the group and the
+    // key on its element. A row it sees it makes the current one, whose properties it then changes, and a node of a
+    // tree it opens and closes; a key that is no row the form has of the group is refused
+    @Test
+    public void theClientToolTakesARowAsThePageShowsIt() throws Exception {
+        exec("UiWebMCP.uiWebMCPSeedItems");
+        loadWithAgent();
+        Locator form = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCPItems");
+        Locator names = form.locator("td[lsfusion-container='PROPERTY(name)']");
+        assertThat(names).hasCount(3);
+
+        // a property's name as the methods take it, on its cells, on its column's header and on its field
+        assertThat(names.first()).hasAttribute("lsfusion-property", "i.name");
+        assertThat(form.locator("th[lsfusion-property='i.quantity']")).hasCount(1);
+        assertThat(form.locator("td[lsfusion-property='t.node']")).hasCount(2);
+        Locator note = form.locator("[lsfusion-property='uiWebMCPNote'] input");
+        assertThat(note).hasCount(1);
+
+        // a row of the grid made the current one, by its key - a string as the page has it, and the number it is
+        Locator b = row(form, "name", "b"), c = row(form, "name", "c");
+        assertThat(b).hasAttribute("lsfusion-group", "i");
+        String cKey = c.getAttribute("lsfusion-row");
+        assertEquals("{}", callForm("changeObject", "{\"group\":\"i\",\"row\":\"" + b.getAttribute("lsfusion-row") + "\"}"));
+        assertEquals("{}", callForm("changeProperty", "{\"property\":\"i.touch\"}"));
+        assertThat(note).hasValue("touched b");
+        assertEquals("{}", callForm("changeObject", "{\"group\":\"i\",\"row\":" + cKey + "}"));
+        assertEquals("{}", callForm("changeProperty", "{\"property\":\"i.quantity\",\"value\":31}"));
+        assertThat(c.locator("td[lsfusion-container='PROPERTY(quantity)']")).hasText("31");
+        // ... and a property changed in a row that is not the current one, by the row's key beside the property: its
+        // value set, its change run, its suggestions asked - the current row staying the one it was
+        String bKey = b.getAttribute("lsfusion-row");
+        assertEquals("{}", callForm("changeProperty", "{\"property\":\"i.quantity\",\"row\":" + bKey + ",\"value\":22}"));
+        assertThat(b.locator("td[lsfusion-container='PROPERTY(quantity)']")).hasText("22");
+        assertThat(c.locator("td[lsfusion-container='PROPERTY(quantity)']")).hasText("31");
+        assertEquals("{}", callForm("changeProperty", "{\"property\":\"i.touch\",\"row\":\"" + bKey + "\"}"));
+        assertThat(note).hasValue("touched b");
+        assertEquals("{}", callForm("changeProperty", "{\"property\":\"i.touch\"}")); // the current row is still c
+        assertThat(note).hasValue("touched c");
+        String suggested = call(CLIENT_TOOL, "{\"method\":\"getValues\",\"args\":{\"property\":\"i.name\",\"row\":" + bKey + ",\"value\":\"\",\"options\":{\"mode\":\"values\"}}}",
+                "answer => JSON.stringify(answer.result.map(value => value.rawString).sort())");
+        assertEquals("[\"a\",\"b\",\"c\"]", suggested);
+        // ... the key staying the row's as its element is used for another row: the rows sorted the other way round
+        assertEquals("{}", callForm("changeOrders", "{\"table\":\"i\",\"orders\":[{\"property\":\"name\",\"desc\":true}]}"));
+        assertThat(names).hasText(new String[] {"c", "b", "a"});
+        assertThat(form.locator("tr[lsfusion-group='i']").first()).hasAttribute("lsfusion-row", cKey);
+        assertThat(c).hasAttribute("lsfusion-row", cKey);
+
+        // a node of the tree: a row of its group once the form has it - not before its node is opened, nor after that
+        // is closed
+        Locator nodes = form.locator("td[lsfusion-container='PROPERTY(node)']");
+        assertThat(nodes).hasText(new String[] {"a", "b"});
+        Locator a = row(form, "node", "a");
+        assertThat(a).hasAttribute("lsfusion-group", "t");
+        String aKey = a.getAttribute("lsfusion-row");
+        String error = CLIENT_TOOL + " error: ";
+        String noRow = error + "'" + cKey + "' is no row the form has of group 't': a row is named by the `lsfusion-row` of its element";
+        assertEquals(noRow, callForm("changeObject", "{\"group\":\"t\",\"row\":" + cKey + "}"));
+        assertEquals("{}", callForm("expand", "{\"group\":\"t\",\"row\":" + aKey + "}"));
+        assertThat(nodes).hasText(new String[] {"a", "c", "b"});
+        assertThat(row(form, "node", "c")).hasAttribute("lsfusion-row", cKey);
+        assertEquals("{}", callForm("changeObject", "{\"group\":\"t\",\"row\":" + cKey + "}"));
+        assertEquals("{}", callForm("collapse", "{\"group\":\"t\",\"row\":" + aKey + "}"));
+        assertThat(nodes).hasText(new String[] {"a", "b"});
+        assertEquals(noRow, callForm("changeObject", "{\"group\":\"t\",\"row\":" + cKey + "}"));
+
+        // ... and what the method says of the row, and of a group that is none
+        for (String[] refused : new String[][] {
+                {"expand", "{\"group\":\"i\",\"row\":" + cKey + "}", "'i' is not a group of a tree"},
+                {"changeObject", "{\"group\":\"none\",\"row\":" + cKey + "}", "unknown object group 'none'"},
+                {"changeObject", "{\"group\":\"i\"}", "expects a row of 'i'"},
+                // ... beside a property: a key that is no row of the property's group, and a property that has no rows
+                {"changeProperty", "{\"property\":\"i.quantity\",\"row\":0,\"value\":1}", "'0' is no row the form has of group 'i'"},
+                {"getValues", "{\"property\":\"i.name\",\"row\":0,\"value\":\"\"}", "'0' is no row the form has of group 'i'"},
+                {"changeProperty", "{\"property\":\"uiWebMCPNote\",\"row\":" + cKey + ",\"value\":\"x\"}", "'uiWebMCPNote' names a property of the form level, which has no rows"},
+                // ... with no value too, where the key would be taken for the value
+                {"changeProperty", "{\"property\":\"uiWebMCPNote\",\"row\":" + cKey + "}", "'uiWebMCPNote' names a property of the form level, which has no rows"},
+                // ... and a row that is no key: taken for the value too
+                {"changeProperty", "{\"property\":\"i.quantity\",\"row\":{\"to\":\"end\"}}", "`row` must be the key of a row, a string or a number"},
+                {"getValues", "{\"property\":\"i.name\",\"row\":" + cKey + ",\"value\":\"\",\"options\":[]}", "the options argument must be an object"}}) {
+            String refusal = callForm(refused[0], refused[1]);
+            assertTrue(refusal, refusal.startsWith(error) && refusal.contains(refused[2]));
+        }
+    }
+
+    // ... and a row a React view draws, which has the key in its rows: the tool finds it among the rows the form has,
+    // whoever draws them
+    @Test
+    public void theClientToolTakesARowAReactViewDraws() throws Exception {
+        exec("UiReactGrid.uiRgSeed", "5");
+        loadWithAgent();
+        open("UiReactGrid.uiRg", "UiReactGrid.uiRgGrid");
+        View view = view("window.uiRgView", "const rows = data && data.i ? data.i.list : [], current = rows.find(row => row.current);");
+        view.waitFor("current && current.number.value === 1");
+        assertEquals("{}", callForm("changeObject", "{\"group\":\"i\",\"row\":" + view.value("String(rows[2].key)") + "}"));
+        view.waitFor("current.number.value === 3");
+        assertEquals(CLIENT_TOOL + " error: '0' is no row the form has of group 'i': a row is named by the `lsfusion-row` of its element",
+                callForm("changeObject", "{\"group\":\"i\",\"row\":0}"));
     }
 
     // the form is the one the agent addresses, whichever form the user is in
@@ -437,8 +536,8 @@ public class UiWebMCPIT extends UiTest {
     }
 
     // the methods the tool calls are the form controller's: every function of the controller is one of them, or one
-    // of those the tool leaves out - what takes a row alone, an element or a function, and the calls of the logic,
-    // which other tools are. A method added to the controller is to be put in one of the two
+    // of those the tool leaves out - what takes an element or a function, and the calls of the logic, which other
+    // tools are. A method added to the controller is to be put in one of the two
     @Test
     public void theClientToolsMethodsAreTheFormControllers() throws Exception {
         loadWithAgent();
@@ -447,7 +546,7 @@ public class UiWebMCPIT extends UiTest {
         // an INTERNAL CLIENT action's function is given the form's controller
         page.evaluate("() => { window.uiWebMCPKeep = controller => { window.uiWebMCPController = controller; }; }");
         assertEquals("", call("lsfusion_eval", "{\"script\":\"run() { INTERNAL CLIENT 'uiWebMCPKeep'; }\",\"context\":\"form\"}", VALUES));
-        List<String> leftOut = Arrays.asList("expand", "collapse", "startEditing", "stopEditing", "isEditing", "batch", "exec", "eval", "evalAction", "change");
+        List<String> leftOut = Arrays.asList("startEditing", "stopEditing", "isEditing", "batch", "exec", "eval", "evalAction", "change");
         assertEquals(page.evaluate("() => Object.keys(window.uiWebMCPController).filter(name => typeof window.uiWebMCPController[name] === 'function').sort().join()"),
                 page.evaluate("leftOut => window.uiWebMCPTools." + CLIENT_TOOL + ".inputSchema.properties.method.enum.concat(leftOut).sort().join()", leftOut));
         // ... and each is described, with what it takes

@@ -1900,6 +1900,10 @@ public class GReactFormData {
             Integer position = key != null ? positions.get(key) : null;
             return position != null ? position : -1;
         }
+        @Override
+        public void forEachRow(GGroupObject group, Consumer<GGroupObjectValue> row) {
+            rows.forEach(row);
+        }
         // the rows as the view has them, its own add or remove included - the part's own list, which is replaced and
         // never changed (setRows)
         public ArrayList<GGroupObjectValue> getRows() {

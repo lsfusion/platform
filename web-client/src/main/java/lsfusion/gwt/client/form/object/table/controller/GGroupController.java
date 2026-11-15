@@ -10,6 +10,7 @@ import lsfusion.gwt.client.form.property.PValue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 // THE FORM'S CONTROLLER OF A GROUP, settled once where the design says who draws its rows
 // (GFormController.groupControllers): the platform's grid or tree, or the rows' part where React draws them - all the
@@ -20,6 +21,11 @@ public interface GGroupController {
     // the row a key is at, -1 for none: where a row removed before the server answers goes back if the server keeps it
     // (GFormController.asyncAddRemove)
     int getRow(GGroupObjectValue key);
+    // the rows it has of the group, each by its key - the group its own, or one of those of the tree it draws -: what
+    // the key the page shows of a row names it among (GFormController.readRow). None where there are no rows, of a
+    // group in PANEL view
+    default void forEachRow(GGroupObject group, Consumer<GGroupObjectValue> row) {
+    }
     void modifyGroupObject(GGroupObjectValue key, boolean add, int position);
     void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex);
     void updateCurrentKey(GGroupObjectValue currentKey);

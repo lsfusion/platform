@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public class GFormLayout extends SizedFlexPanel {
 
@@ -383,6 +384,17 @@ public class GFormLayout extends SizedFlexPanel {
 
     public static void setDebugInfo(Widget widget, String debugInfo) {
         widget.getElement().setAttribute("lsfusion-container", debugInfo);
+    }
+    // ... and a PROPERTY'S NAME on what shows the property - each of its views in a panel
+    // (GPropertyPanelController.addPanelRenderer), its cells and its column's header in a table -, for what reads the
+    // page: the name the form's controller's methods take (GReactFormData.getName), which the browser's agent names
+    // the property to the page's tool by (WebMCP); none for a property that has no such name
+    public static void setPropertyName(Element element, GPropertyDraw property) {
+        String name = property != null ? GReactFormData.getName(property) : null;
+        if (name != null)
+            element.setAttribute("lsfusion-property", name);
+        else
+            element.removeAttribute("lsfusion-property");
     }
 
     public void add(GComponent key, ComponentWidget view, DefaultFocusReceiver focusReceiver) {

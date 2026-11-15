@@ -38,6 +38,7 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
@@ -989,9 +990,22 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord, GTreeGroup, 
         return tree.getExpandNodeByRecord(getCurrentRowValue());
     }
 
+    // the rows of a group of the tree: its nodes
+    @Override
+    public void forEachRow(GGroupObject group, Consumer<GGroupObjectValue> row) {
+        tree.getGroupNodes(group).foreachKey(row::accept);
+    }
+
     @Override
     protected boolean isRowSelect(GTreeGridRecord row) {
         return false;
+    }
+
+    // a node's row is a row of the node's group; the row that stands for a node being opened is no row of a group,
+    // though it carries that node's key
+    @Override
+    protected GGroupObject getRowGroup(GTreeGridRecord row) {
+        return row instanceof GTreeObjectGridRecord ? row.getGroup() : null;
     }
 
     // what a new filter condition starts on - the property of the selected column, else of the first one past the

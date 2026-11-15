@@ -9,6 +9,7 @@ import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.SizedWidget;
 
 import java.util.ArrayList;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public class InlineComponentViewWidget implements ComponentViewWidget {
 
@@ -68,6 +69,12 @@ public class InlineComponentViewWidget implements ComponentViewWidget {
     public void setDebugInfo(String sID) {
         for (int i = 0, widgetsSize = widgets.size(); i < widgetsSize; i++)
             widgets.get(i).setDebugInfo(getInnerSID(sID, i));
+    }
+
+    @Override
+    public void setPropertyName(GPropertyDraw property) {
+        for (ComponentViewWidget widget : widgets)
+            widget.setPropertyName(property);
     }
 
     @Override

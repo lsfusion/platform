@@ -14,6 +14,7 @@ import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
+import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridController;
@@ -28,6 +29,7 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 // view with state, without incremental updates
 public abstract class GStateTableView extends GPagedListView {
@@ -111,6 +113,12 @@ public abstract class GStateTableView extends GPagedListView {
         this.keys = keys;
 
         dataUpdated = true;
+    }
+
+    @Override
+    public void forEachRow(GGroupObject group, Consumer<GGroupObjectValue> row) {
+        if (keys != null)
+            keys.forEach(row);
     }
 
     @Override

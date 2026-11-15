@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.SizedWidget;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public interface ComponentViewWidget {
 
@@ -22,6 +23,8 @@ public interface ComponentViewWidget {
     boolean isVisible();
 
     void setDebugInfo(String sID);
+
+    void setPropertyName(GPropertyDraw property); // of a property's view in a panel (GFormLayout.setPropertyName)
 
     // CUSTOM HTML container usages
 

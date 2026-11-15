@@ -1711,6 +1711,33 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     public GComponentController getComponentController(GComponent component) {
         return componentControllers.get(component);
     }
+    // a ROW of a group named by its KEY as the page shows it - on the row's element (lsfusion-row), and a React view
+    // in its rows (GGroupObjectValue.toKeyString) -: the row of that key among the rows the form has of the group,
+    // whoever draws them. A key is not read, it is looked up, as a view's is among its own rows
+    // (GReactFormData.RowsPart.resolveRow), so one that is none of them is refused; null for what is no group of the
+    // form's, which the method the row is given to says. What the page's tool reads a row by (WebMCP)
+    public GGroupObjectValue readRow(String groupSID, String key) {
+        GGroupObject group = form.getGroupObject(groupSID);
+        if (group == null)
+            return null;
+        lsfusion.gwt.client.base.Result<GGroupObjectValue> found = new lsfusion.gwt.client.base.Result<>();
+        getGroupController(group).forEachRow(group, row -> {
+            if (row.toKeyString().equals(key))
+                found.set(row);
+        });
+        if (found.result == null)
+            throw GwtClientUtils.refusal("'" + key + "' is no row the form has of group '" + groupSID + "': a row is named by"
+                    + " the `lsfusion-row` of its element");
+        return found.result;
+    }
+    // ... and a row of a property's group, the property named as the classic changeProperty names one
+    // (readClassicProperty): a property of the form level has no rows
+    public GGroupObjectValue readPropertyRow(String name, String key) {
+        GPropertyDraw property = readClassicProperty(form, "", name);
+        if (property.groupObject == null)
+            throw noRowsOfFormLevel("", name);
+        return readRow(property.groupObject.getSID(), key);
+    }
 
     // the controller drawing this platform-drawn property, for whoever is placing one of its per-row renderers
     public GPlatformRowsPanelController getRowsPanelController(GPropertyDraw property) {

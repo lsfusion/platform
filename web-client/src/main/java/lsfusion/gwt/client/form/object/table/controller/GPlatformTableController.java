@@ -24,6 +24,7 @@ import lsfusion.gwt.client.form.view.Column;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 public abstract class GPlatformTableController<P extends GGridProperty, V extends GTableView, B extends GToolbarController<?>> extends GPlatformPropertyController implements GTableController, GGroupController, GUserOrdersController {
     // the TABLE it draws, as its toolbar has it (GPlatformToolbarController.table): a list group's grid, or a tree, one
@@ -408,6 +409,11 @@ public abstract class GPlatformTableController<P extends GGridProperty, V extend
     // ... and the row a key is at (GTableView.getRow)
     public int getRow(GGroupObjectValue key) {
         return view.getRow(key);
+    }
+    // ... and the rows it has of a group (GTableView.forEachRow)
+    @Override
+    public void forEachRow(GGroupObject group, Consumer<GGroupObjectValue> row) {
+        view.forEachRow(group, row);
     }
     public void updateAttribute(GGroupObjectPropertyReader reader, NativeHashMap<GGroupObjectValue, PValue> values, boolean partial) {
         reader.updatePlatform(this, values, partial);

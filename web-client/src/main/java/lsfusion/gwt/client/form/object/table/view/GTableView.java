@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
+import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableComponent;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -13,6 +14,7 @@ import lsfusion.gwt.client.form.property.PValue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 // THE VIEW the platform draws a TABLE's rows in (GPlatformTableController.view): a grid's - the list view it shows
 // (GListView) -, or a tree (GTreeTable). What the form sends for the table's rows and properties goes to it, a
@@ -34,6 +36,8 @@ public interface GTableView extends TableComponent {
     default int getRow(GGroupObjectValue key) {
         return -1;
     }
+    // ... and the rows it has of a group, each by its key (GGroupController.forEachRow)
+    void forEachRow(GGroupObject group, Consumer<GGroupObjectValue> row);
 
     // columns
     void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, PValue> values); // add or update

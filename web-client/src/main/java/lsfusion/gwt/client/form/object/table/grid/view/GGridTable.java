@@ -44,6 +44,7 @@ import lsfusion.gwt.client.form.view.Column;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Consumer;
 
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.valueOf;
@@ -621,6 +622,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
         return row.isRowSelect();
     }
 
+    @Override
+    protected GGroupObject getRowGroup(GridDataRecord row) {
+        return groupObject;
+    }
+
     public GridColumn getGridColumn(int column) {
         return (GridColumn) super.getGridColumn(column);
     }
@@ -945,6 +951,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
     @Override
     public int getRow(GGroupObjectValue key) {
         return rowKeys.indexOf(key);
+    }
+    @Override
+    public void forEachRow(GGroupObject group, Consumer<GGroupObjectValue> row) {
+        rowKeys.forEach(row);
     }
 
     @Override

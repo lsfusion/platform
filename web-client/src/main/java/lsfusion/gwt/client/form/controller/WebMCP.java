@@ -125,6 +125,22 @@ public class WebMCP {
                     throw new Error("unknown field `" + field + "`: " + what + " has " + taken.join(', '));
             });
         }
+        // a ROW is given by its key, a string or a number, as the page shows it on the row's element; the method takes
+        // the row, a handle JSON has none of: the row of that key among the rows the form has of the `group` given
+        // beside it (GFormController.readRow), or of the `property`'s group (readPropertyRow). Beside a group what is no
+        // key is the method's to read - an edge of the rows -, and so is a key beside what is no group of the form's,
+        // for the method to say; beside a property it is refused, the classic changeProperty taking it for the value
+        function readRow(form, given) {
+            var key = given.row;
+            if (typeof key !== 'string' && typeof key !== 'number') {
+                if (key != null && typeof given.property === 'string')
+                    throw new Error("`row` must be the key of a row, a string or a number");
+                return key;
+            }
+            var row = typeof given.group === 'string' ? form.@GFormController::readRow(Ljava/lang/String;Ljava/lang/String;)(given.group, '' + key)
+                    : typeof given.property === 'string' ? form.@GFormController::readPropertyRow(Ljava/lang/String;Ljava/lang/String;)(given.property, '' + key) : null;
+            return row != null ? row : key;
+        }
         function callClientMethod(args) {
             checkFields(args, ['method', 'args', 'form'], "the call");
             if (typeof args.method !== 'string' || !formMethods.hasOwnProperty(args.method))
@@ -140,10 +156,11 @@ public class WebMCP {
                 throw new Error("the user is in no form");
 
             // the method takes its arguments in their order; what it refuses - a name that names nothing, a value that
-            // is none of the property's - it throws, or rejects its Promise with, and that is the tool's failure
-            var controller = form.@GFormController::controller;
-            return $wnd.Promise.resolve(controller[args.method].apply(controller, method.takes.map(function (name) {
-                return given[name];
+            // is none of the property's - it throws, or rejects its Promise with, and that is the tool's failure. A
+            // method of the controller's, but where the catalog says how it is called (`call`)
+            var controller = form.@GFormController::controller, row = readRow(form, given);
+            return $wnd.Promise.resolve(method.call != null ? method.call(form, controller, given, row) : controller[args.method].apply(controller, method.takes.map(function (name) {
+                return name === 'row' ? row : given[name];
             }))).then(method.answer).then(function (answer) {
                 return { result: answer };
             });
@@ -152,7 +169,8 @@ public class WebMCP {
             name: 'lsfusion_client',
             description: "Call a method of an open form of the application's page: what the user does with the form's tables, sortings, filters and values, done in the form the user sees.\n\n" +
                 "`method` names the method and `args` gives its arguments by their names, as listed below; `form` is the form — the one it addresses, else the form the user is in. The answer is `{result}`: what the method answers with, nothing for a method that only changes the form. A call the form refuses is an error, with the reason; one that starts what the user is asked about — a value, a confirmation — waits for the user's answer.\n\n" +
-                "**Names.** `group` is an object group of the form, by its name; `tree`, a tree by its name; `table`, the table of an object group's rows, by the group's name, or a tree, by its name; `filterGroup`, a filter group by its name. A `property` given beside its `group`, and one in the sortings and conditions of a group's `table`, is named by its name on the form; any other — one in a tree's sortings and conditions too — by its group's name and its own, `group.property`, and a property of no group by its own name.\n\n" +
+                "**Names.** `group` is an object group of the form, by its name; `tree`, a tree by its name; `table`, the table of an object group's rows, by the group's name, or a tree, by its name; `filterGroup`, a filter group by its name. The page shows them in `lsfusion-container`: `GRID(group)` on a group's table, `GRID(TREE tree)` on a tree, `FILTERGROUP(filterGroup)` on a filter group. A `property` is named as the page shows it in `lsfusion-property`, on the property's cells, its column's header and its field: `group.property`, and `property` alone for a property of no group. Beside its `group`, and in the sortings and conditions of a group's `table`, it is the part after the group, `property`; in a tree's sortings and conditions it is whole.\n\n" +
+                "**Rows.** `row` is a row of `group` that the form shows: the `lsfusion-row` of a table's or a tree's row element, a string or a number, whose `lsfusion-group` is the group. Beside a `property` it is a row of the property's group.\n\n" +
                 "**Values.** A value is given as JSON: a number, a string, `true` or `false`, an object or an array for a JSON property, `null` for no value; a date or a time as its ISO string with no time zone, as the form shows it — `2026-11-15`, `10:30`, `2026-11-15T10:30`.\n\n" +
                 "**Methods.**\n" + Object.keys(formMethods).map(function (name) {
                     return "- `" + name + "(" + formMethods[name].takes.join(', ') + ")` — " + formMethods[name].does;
@@ -203,11 +221,12 @@ public class WebMCP {
     // THE FORM'S METHODS lsfusion_client calls - the form's controller's (GReactFormData.addFormMethods,
     // GFormController.addFormVerbs) that JSON can call: each with the names of its arguments, in the order the method
     // takes them, and what it does, as the tool's description says it of each; `answer`, what the tool makes of what
-    // the method answers with, where that is no JSON. A row is a handle a view has, and JSON has none: a method that
-    // takes one beside the rest is called with none here - for the current row, and the current row's own change for
-    // an edge of the rows -, and one that takes a row alone (expand, collapse) is not here. Nor is what takes an
-    // element or a function (startEditing, stopEditing, isEditing, batch), nor the controller's calls of the logic
-    // (exec, eval, evalAction, change, mcp), which lsfusion_eval and lsfusion_exec are
+    // the method answers with, where that is no JSON. A row is a handle a view has, and JSON has none: a `row` is
+    // given by its key, which the page shows, and read here (readRow) - beside a `group` a row of the group, beside a
+    // `property` a row of the property's group -, and where the controller's method takes the row in no place of its
+    // own - with the value's, among its options -, `call` says how it is called. What takes an element
+    // or a function is not here (startEditing, stopEditing, isEditing, batch), nor are the controller's calls of the
+    // logic (exec, eval, evalAction, change, mcp), which lsfusion_eval and lsfusion_exec are
     private static native JavaScriptObject getFormMethods()/*-{
         // a lookup's answer: its last one - the server answers before it is sure of the form's unsaved changes, and
         // then again, in `more` -, each value as its strings, its `objects` being the handle of a row
@@ -218,10 +237,21 @@ public class WebMCP {
         }
         var viewRows = "Where a React view draws the rows of the group, one not in a tree: ";
         return {
-            changeProperty: { takes: ['property', 'value'],
-                does: "Set the property's value in the current row: `value`, `null` for none. With no `value`, start the property's change as a click on it does: an action is run, a value may be asked of the user." },
-            getValues: { takes: ['property', 'value', 'options'], answer: lookupAnswer,
-                does: "The values the form suggests for the property in the current row, by the text `value`, `''` for any. `options`, any of `{mode, count}`: `mode` is `objects`, the objects the property's value is picked among (the default), `values`, the values the property has, or `change`, what its change suggests; `count`, how many more than the server suggests at once. Answers `[{displayString, rawString}]`, each value as it is shown and as it is typed." },
+            changeObject: { takes: ['group', 'row', 'options'],
+                does: "Make `row` the current row of the group: the row `changeProperty` and `getValues` are of when they are given none. " + viewRows + "`row` is also `{to: 'home'}` or `{to: 'end'}`, the first or the last of them, and `options.selection` says what becomes of the rows selected: `start` (the default), `extend` or `keep`." },
+            changeProperty: { takes: ['property', 'row', 'value'],
+                does: "Set the property's value in `row` - with no `row`, in the current row: `value`, `null` for none. With no `value`, start the property's change there as a click on it does: an action is run, a value may be asked of the user.",
+                // the controller's method takes (property, value) and (property, row, value): no row is no argument
+                call: function (form, controller, given, row) {
+                    return row != null ? controller.changeProperty(given.property, row, given.value) : controller.changeProperty(given.property, given.value);
+                } },
+            getValues: { takes: ['property', 'row', 'value', 'options'], answer: lookupAnswer,
+                // ... and this one the row among its options - options of another shape the controller refuses
+                call: function (form, controller, given, row) {
+                    var options = given.options, isOptions = options == null || @lsfusion.gwt.client.base.GwtClientUtils::isJSObject(*)(options);
+                    return controller.getValues(given.property, given.value, row != null && isOptions ? Object.assign({}, options, { row: row }) : options);
+                },
+                does: "The values the form suggests for the property in `row` - with no `row`, in the current row -, by the text `value`, `''` for any. `options`, any of `{mode, count}`: `mode` is `objects`, the objects the property's value is picked among (the default), `values`, the values the property has, or `change`, what its change suggests; `count`, how many more than the server suggests at once. Answers `[{displayString, rawString}]`, each value as it is shown and as it is typed." },
             changeOrders: { takes: ['table', 'orders'],
                 does: "The table's sortings. An array `[{property, desc}]` states them all, in the order of their priority, `[]` none. One `{property, desc}`, not in an array, changes the sorting by that property, and with no `desc` removes it." },
             changeFilters: { takes: ['table', 'conditions'],
@@ -250,6 +280,10 @@ public class WebMCP {
                 does: "Show the group's table as another view of those it has: `grid`, `pivot`, `map`, `calendar`, `custom`." },
             'export': { takes: ['table'],
                 does: "Export the table's rows to a file, which the user gets." },
+            expand: { takes: ['group', 'row'],
+                does: "Open `row`, a node of a tree's group." },
+            collapse: { takes: ['group', 'row'],
+                does: "Close it." },
             expandAll: { takes: ['group'],
                 does: "Open every node of a tree's group that is shown, and every node below them." },
             collapseAll: { takes: ['group'],
@@ -258,8 +292,6 @@ public class WebMCP {
                 does: "Open the tree's current node and every node under it." },
             expandTree: { takes: ['tree'],
                 does: "Open the tree from the current node's group down." },
-            changeObject: { takes: ['group', 'row', 'options'],
-                does: viewRows + "make the first of them (`row`: `{to: 'home'}`) or the last (`{to: 'end'}`) the current row. `options.selection` says what becomes of the rows selected: `start` (the default), `extend` or `keep`." },
             changeColumn: { takes: ['group', 'column', 'options'],
                 does: viewRows + "make `column`, a property of the rows by its name on the form, the current column; `options` as in `changeObject`, for the columns selected." },
             selectAll: { takes: ['group'],

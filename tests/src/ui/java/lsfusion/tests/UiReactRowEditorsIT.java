@@ -20,6 +20,8 @@ public class UiReactRowEditorsIT extends UiTest {
         String s = seed(3);
         Locator form = openRows();
         assertEditors(form, names(s, 1, 2, 3), 10, 20, 30);
+        // ... which says its property by the name the form's methods take, as a field the form lays out does
+        assertThat(row(form, s + "-2").locator("[lsfusion-property='i.qty']").first()).isVisible();
         close(form);
     }
 
