@@ -75,6 +75,8 @@ import lsfusion.gwt.client.form.object.table.controller.GPropertyController;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GGridSelectionController;
+import lsfusion.gwt.client.form.object.table.grid.view.GGridSelection;
 import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.property.JSValueConverter;
@@ -1134,6 +1136,9 @@ public class GReactFormDataTest extends GWTTestCase {
         int buttonsAsked;
         public void addToolbarButtons(GGridController.Toolbar toolbar) { buttonsAsked++; }
         public GListViewController getListViewController() { return views; }
+        // ... and their selection, a test's - none: a table that shows its rows as another view than the grid
+        GGridSelectionController selection;
+        public GGridSelectionController getSelectionController() { return selection; }
     }
     // the platform's tree, as far as its toolbar asks it here: what it was asked to open, in order - the fixture asks
     // it nothing else -, what a view's part of the toolbar opens through members of its own, itself, and, for its
@@ -6656,15 +6661,17 @@ public class GReactFormDataTest extends GWTTestCase {
         for (JavaScriptObject[] arguments : new JavaScriptObject[][] {{tree.row(tree.cat, tree.c2), parse("{\"selection\": \"start\"}")}, {parse("{\"to\": \"end\"}"), null}})
             assertEquals("controller.cat.change(): takes a row of 'cat': the first and the last row and a selection are a grid's",
                     refusedWith(cat, "change", arguments[0], arguments[1]));
-        assertEquals("controller.form.selectAll('cat'): 'cat' has no selection of a view's: a view selects among the rows it draws, of a"
-                + " list group not in a tree", refusedWith(field(tree.sa.controller, "form"), "selectAll", "cat"));
+        assertEquals("controller.form.selectAll('cat'): 'cat' has no selection: a selection is of the rows of a list group not in a tree,"
+                + " where a view draws them or the platform's table shows them as a grid", refusedWith(field(tree.sa.controller, "form"), "selectAll", "cat"));
         assertTrue(tree.verbs.asked.isEmpty());
         call(cat, "change", tree.row(tree.cat, tree.c2), parse("{\"selection\": \"keep\"}")); // ... what keeps it changes none
         assertEquals(1, tree.verbs.asked.size());
 
+        // ... nor has a table of the platform's that shows its rows as another view than the grid
         Fixture platform = new Fixture(Fixture::rowsByThePlatform);
         JavaScriptObject form = field(platform.sb.controller, "form");
-        String refusal = "'items' has no selection of a view's: a view selects among the rows it draws, of a list group not in a tree";
+        String refusal = "'items' has no selection: a selection is of the rows of a list group not in a tree, where a view draws them or the"
+                + " platform's table shows them as a grid";
         assertEquals("controller.form.changeObject('items'): " + refusal, refusedWith(form, "changeObject", "items", field(form, "END")));
         assertEquals("controller.form.changeObject('items'): " + refusal,
                 refusedWith(form, "changeObject", "items", objects(platform.two), parse("{\"selection\": \"start\"}")));
@@ -6673,6 +6680,67 @@ public class GReactFormDataTest extends GWTTestCase {
         assertEquals("controller.form.copy('items'): " + refusal, refusedWith(form, "copy", "items"));
         assertEquals("controller.form.paste('items'): " + refusal, refusedWith(form, "paste", "items", "7"));
         assertTrue(platform.edits.isEmpty());
+        call(form, "changeObject", "items", objects(platform.two)); // ... a row alone it takes, the rows selected staying
+        assertEquals("current 2", lastOf(platform.edits));
+    }
+
+    // ... and where the platform's table shows the rows as a grid, the selection is the table's own
+    // (GGridSelectionController): the calls are the same ones, asking the table what they ask a view's rows - here a
+    // table of two rows, the first the current one, which the server has as selected and the table shows none as
+    // such, and two columns, both selected. The form's controller reads the call - the row, what becomes of the
+    // selection, 'start' when not given, as a view's member reads it -, the table is told what the move changes of
+    // its rows, which the form sends with the move, and an edge of the rows is the form's request as it is for a
+    // view's
+    public void testTheFormsControllerStatesTheSelectionOfThePlatformsTable() {
+        Fixture f = new Fixture(Fixture::rowsByThePlatform);
+        List<String> asked = new ArrayList<>();
+        GPropertyDraw[] columns = {f.price, f.quantity};
+        NativeHashMap<GGroupObjectValue, PValue> selected = new NativeHashMap<>();
+        selected.put(f.one, PValue.getPValue(true));
+        GGridSelectionController table = new GGridSelectionController() {
+            public int getRowCount() { return 2; }
+            public GGroupObjectValue getRowKey(int row) { return row == 0 ? f.one : f.two; }
+            public int getRow(GGroupObjectValue key) { return key.equals(f.one) ? 0 : 1; }
+            public int getCurrentRow() { return 0; }
+            public boolean hasRowSelection() { return false; }
+            public NativeHashMap<GGroupObjectValue, PValue> getRowSelectValues() { return selected; }
+            public void updateRowSelectValues(NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) { asked.add("shown" + describeRows(values)); }
+            public int getColumnCount() { return columns.length; }
+            public GPropertyDraw getProperty(int column) { return columns[column]; }
+            public int readColumn(String errorPrefix, String name) { return name.equals("price") ? 0 : 1; }
+            public int getSelectedColumn() { return 0; }
+            public void updateCurrentColumn(int column) { asked.add("column " + column); }
+            public int getStartSelectColumn() { return 0; }
+            public int getEndSelectColumn() { return 1; }
+            public ArrayList<GGridTable.ColumnSelection> updateColumnSelection(int newStart, int newEnd) { asked.add("columns " + newStart + ".." + newEnd); return new ArrayList<>(); }
+            public boolean isClipboardColumn(int column) { return true; }
+            public String getCopy(int row, int column) { return columns[column].integrationSID + row; }
+            public String getPattern(int row, int column) { return "#" + row + column; }
+        };
+        f.platform.selection = table;
+        String anew = describeRows(GGridSelection.getRowChanges(selected, table::getRowKey, 1, 0, GChangeSelection.MOVE)),
+                runOn = describeRows(GGridSelection.getRowChanges(selected, table::getRowKey, 1, 0, GChangeSelection.MOVEEND));
+        JavaScriptObject form = field(f.sb.controller, "form");
+        assertSame(f.requestPromise, call(form, "changeObject", "items", objects(f.two)));
+        assertEquals("current 2" + describe(GChangeSelection.MOVE) + anew, lastOf(f.edits));
+        call(form, "changeObject", "items", objects(f.two), parse("{\"selection\": \"extend\"}"));
+        assertEquals("current 2" + describe(GChangeSelection.MOVEEND) + runOn, lastOf(f.edits));
+        call(form, "changeObject", "items", objects(f.two), parse("{\"selection\": \"keep\"}")); // the table not asked
+        assertEquals("current 2", lastOf(f.edits));
+        call(form, "changeObject", "items", field(form, "END"), parse("{\"selection\": \"extend\"}"));
+        assertEquals("end" + describe(GChangeSelection.MOVEEND), lastOf(f.edits));
+        assertSame(f.requestPromise, call(form, "changeColumn", "items", "quantity", parse("{\"selection\": \"extend\"}")));
+        assertEquals("column quantity", lastOf(f.edits));
+        call(form, "changeColumn", "items", "price", parse("{\"selection\": \"keep\"}"));
+        assertSame(f.requestPromise, call(form, "selectAll", "items"));
+        assertEquals("selectAll" + describeRows(GGridSelection.getAllRowChanges(selected, table::getRowKey, 2)), lastOf(f.edits));
+        assertSame(f.requestPromise, call(form, "copy", "items"));
+        assertEquals("copy 'price0\tquantity0'", lastOf(f.edits)); // no row selected: the current row's, the table's own text
+        assertSame(f.requestPromise, call(form, "paste", "items", "7"));
+        assertEquals("paste price quantity [[7, 7]] by [[#00, #01]]", lastOf(f.edits));
+        assertEquals(Arrays.asList("shown" + anew, "shown" + runOn, "column 1", "columns 0..1", "column 0", "columns 0..1"), asked);
+        assertEquals("controller.form.changeColumn('items'): 'selection' must be 'start', 'extend' or 'keep'",
+                refusedWith(form, "changeColumn", "items", "price", parse("{\"selection\": \"all\"}")));
     }
 
     // ... and a name that names nothing the call reaches is refused, saying why - unknown, of another kind, no string -,

@@ -1,17 +1,21 @@
 package lsfusion.tests;
 
+import com.microsoft.playwright.Locator;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 // the selection of a grid whose rows a React view draws (UiReactGrid.lsf, its view UiReactGrid.js), made through the
 // members of the view's controller as the platform's table makes its own: the rows selected a range the server keeps,
 // over the rows the view has not read too, the columns the view's, the form reading both - and copied and pasted as
-// the table copies and pastes its own (#1675)
+// the table copies and pastes its own (#1675). And the selection of a grid whose rows the platform's table draws, the
+// table's own, made by the same calls through the form's controller
 public class UiReactGridIT extends UiTest {
 
     private static final String FOLDER = "UiReactGrid.uiRg";
@@ -120,5 +124,64 @@ public class UiReactGridIT extends UiTest {
         view.answer("i.viewFilters.change([])");
         view.waitFor("rows.length > 0");
         assertEquals(items, view.value("data.items.value"));
+    }
+
+    // where the platform's table draws the grid's rows, the selection is the table's own, and the form's controller
+    // states it by the same calls: a column made current and a range of columns run on, which the form reads and the
+    // table shows, a column's move selecting no row; a range of rows run on to the last row of the whole list, which
+    // the server finds, the columns selected staying; the cells selected copied, the rows the table has not read too -
+    // and, with no row selected, the current row's, with no request; one value pasted into every cell selected, a
+    // table into the cells from the current one on; every row and column selected
+    @Test
+    public void theFormsControllerStatesTheSelectionOfThePlatformsTable() throws Exception {
+        exec("UiReactGrid.uiRgSeed", "500");
+        Locator form = open(FOLDER, "UiReactGrid.uiRgTable");
+        View table = view("window.uiRgTableView", "const form = controller && controller.form;");
+        table.waitFor("data.selectedCount.value === 1"); // the current row, while none is selected
+        assertThat(row(form, "number", "1")).hasCount(1);
+
+        table.answer("form.changeColumn('i', 'qty')");
+        table.waitFor("data.qtySelected.value === true && data.qtyActive.value === true && data.nameSelected.value !== true");
+        table.answer("form.changeColumn('i', 'name', {selection: 'extend'})");
+        table.waitFor("data.nameSelected.value === true && data.qtySelected.value === true && data.qtyActive.value !== true && data.selectedCount.value === 1");
+        assertThat(form.locator("tr.table-select")).hasCount(0);
+        List<String> requests = requests(request -> request.method().equals("POST"));
+        assertEquals("item 1\t1", table.eval("form.copy('i')")); // the current row's, the table's own text
+        assertEquals(0, count(requests, "CopyExternalTable"));
+
+        table.answer("form.changeObject('i', form.END, {selection: 'extend'})");
+        table.waitFor("data.selectedCount.value === 500 && data.nameSelected.value === true && data.qtySelected.value === true");
+        Locator last = row(form, "number", "500");
+        assertThat(last).hasClass(Pattern.compile("table-select"));
+        assertThat(last.locator("td[lsfusion-container='PROPERTY(qty)']")).hasClass(Pattern.compile("column-select"));
+        assertThat(last.locator("td[lsfusion-container='PROPERTY(number)']")).not().hasClass(Pattern.compile("column-select"));
+        String selected = table.eval("form.copy('i')");
+        assertEquals(500, selected.split("\n").length);
+        assertTrue(selected, selected.startsWith("item 1\t1\nitem 2\t2\n") && selected.endsWith("\nitem 500\t500"));
+        assertEquals(1, count(requests, "CopyExternalTable"));
+
+        table.answer("form.changeObject('i', form.HOME)"); // a range anew: no row selected
+        table.waitFor("data.selectedCount.value === 1 && data.nameSelected.value === true");
+        assertThat(form.locator("tr.table-select")).hasCount(0);
+        table.answer("form.paste('i', '70')"); // into the current row's cells of the columns selected
+        assertThat(row(form, "number", "1").locator("td[lsfusion-container='PROPERTY(name)']")).hasText("70");
+        assertThat(row(form, "number", "1").locator("td[lsfusion-container='PROPERTY(qty)']")).hasText("70");
+        assertThat(row(form, "number", "2").locator("td[lsfusion-container='PROPERTY(qty)']")).hasText("2");
+
+        table.answer("form.changeColumn('i', 'number')"); // read only: a paste leaves it as it is
+        table.answer("form.paste('i', '900\\ta\\t91\\n901\\tb\\t92')");
+        assertThat(row(form, "number", "1").locator("td[lsfusion-container='PROPERTY(name)']")).hasText("a");
+        assertThat(row(form, "number", "1").locator("td[lsfusion-container='PROPERTY(qty)']")).hasText("91");
+        assertThat(row(form, "number", "2").locator("td[lsfusion-container='PROPERTY(name)']")).hasText("b");
+        assertThat(row(form, "number", "2").locator("td[lsfusion-container='PROPERTY(qty)']")).hasText("92");
+        assertThat(row(form, "number", "3").locator("td[lsfusion-container='PROPERTY(qty)']")).hasText("3");
+
+        table.answer("form.selectAll('i')");
+        table.waitFor("data.selectedCount.value === 500 && data.nameSelected.value === true && data.qtySelected.value === true");
+        String all = table.eval("form.copy('i')");
+        assertEquals(500, all.split("\n").length);
+        assertTrue(all, all.startsWith("1\ta\t91\n2\tb\t92\n3\titem 3\t3\n"));
+        assertEquals("controller.form.changeColumn('i'): 'nope' is no column of 'i' to make current: a property the table shows in its"
+                + " rows now, focusable and not grouped in columns", table.syncRefusal("form.changeColumn('i', 'nope')"));
     }
 }

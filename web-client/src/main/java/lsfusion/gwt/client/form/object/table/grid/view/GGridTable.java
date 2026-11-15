@@ -29,6 +29,7 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
+import lsfusion.gwt.client.form.object.table.grid.controller.GGridSelectionController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GPlatformGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
@@ -50,7 +51,7 @@ import static java.lang.Boolean.TRUE;
 import static java.lang.String.valueOf;
 import static lsfusion.gwt.client.base.GwtSharedUtils.*;
 
-public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatformGridController> implements GListView {
+public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatformGridController> implements GListView, GGridSelectionController {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final double QUICK_SEARCH_MAX_DELAY = 2000;
 
@@ -217,7 +218,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
         return updateColumnSelection(GGridSelection.getStartColumn(startSelectColumn, newEnd, changeSelection), newEnd);
     }
 
-    private ArrayList<ColumnSelection> updateColumnSelection(int newStart, int newEnd) {
+    @Override
+    public ArrayList<ColumnSelection> updateColumnSelection(int newStart, int newEnd) {
         ArrayList<ColumnSelection> changes = new ArrayList<>();
         if (newEnd == endSelectColumn && newStart == startSelectColumn) return changes;
 
@@ -235,6 +237,66 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord, GGrid, GPlatf
         GPropertyDraw property = getProperty(column);
         if(property.hasSelectProperty)
             changeSelectionColumns.add(new ColumnSelection(property, getColumnKey(column), set));
+    }
+
+    // ===== ITS SELECTION AS A CALL STATES IT (GGridSelectionController) - the form's controller's, of a view that
+    // draws another container: what the calls ask of the rows a React view draws (GReactFormData.GridRowsPart), of
+    // the table. A call changes what it names alone, the rows selected or the columns', where a user's move changes
+    // both (updateRowColumn), and the rows it selects are drawn at the table's next update: it may be made while the
+    // table is being drawn
+    @Override
+    public GGroupObjectValue getRowKey(int row) {
+        return getRowValue(row).getKey();
+    }
+    @Override
+    public NativeHashMap<GGroupObjectValue, PValue> getRowSelectValues() {
+        return rowSelectValues;
+    }
+    @Override
+    public boolean hasRowSelection() {
+        return getSelectedRowCount() > 0;
+    }
+    // the column a call names, by its property's name: one the table shows now and lets the user move to - of a
+    // property not grouped in columns, which a name tells no column of apart
+    @Override
+    public int readColumn(String errorPrefix, String name) {
+        for (int i = 0, size = getColumnCount(); i < size; i++) {
+            GPropertyDraw property = getProperty(i);
+            if (name != null && name.equals(property.integrationSID) && !property.hasColumnGroupObjects() && isFocusable(i))
+                return i;
+        }
+        throw GwtClientUtils.refusal(errorPrefix + (name == null ? "takes the name of the column, as a string"
+                : "'" + name + "' is no column of '" + groupObject.getSID() + "' to make current: a property the table shows in its rows now,"
+                + " focusable and not grouped in columns"));
+    }
+    @Override
+    public void updateCurrentColumn(int column) {
+        setSelectedColumn(column);
+    }
+    @Override
+    public int getStartSelectColumn() {
+        return startSelectColumn;
+    }
+    @Override
+    public int getEndSelectColumn() {
+        return endSelectColumn;
+    }
+    // its cells as a call's clipboard takes them: not an action's, which has no value, nor those of a property
+    // grouped in columns, which a call's requests, naming a column by its property alone, tell no column of apart
+    @Override
+    public boolean isClipboardColumn(int column) {
+        GPropertyDraw property = getProperty(column);
+        return !property.isAction() && !property.hasColumnGroupObjects();
+    }
+    @Override
+    public String getCopy(int row, int column) {
+        GPropertyDraw property = getProperty(column);
+        return property.formatCopy(getValueAt(row, column), property.getPasteType(), getPatternAt(row, column));
+    }
+    @Override
+    public String getPattern(int row, int column) {
+        String pattern = getPatternAt(row, column);
+        return pattern != null ? pattern : getProperty(column).getPattern();
     }
 
     public void update(Boolean updateState) {

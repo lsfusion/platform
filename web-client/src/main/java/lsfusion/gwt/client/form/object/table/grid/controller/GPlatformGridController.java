@@ -234,6 +234,10 @@ public final class GPlatformGridController extends GPlatformTableController<GGri
     public GListViewController getListViewController() {
         return this;
     }
+    // ... and the selection of its rows: the table's own while it shows them as a grid (GGridTable)
+    public GGridSelectionController getSelectionController() {
+        return view instanceof GGridSelectionController ? (GGridSelectionController) view : null;
+    }
 
     public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex) {
         view.setKeys(keys);

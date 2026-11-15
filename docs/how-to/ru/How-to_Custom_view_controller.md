@@ -198,8 +198,8 @@ controller.batch(() => {
 | метод | делает то же, что этот член | имя |
 | --- | --- | --- |
 | `changeObject(group, row[, {selection}])` | `<group>.change(row[, {selection}])` | SID группы |
-| `changeColumn(group, column[, {selection}])` / `selectAll(group)` | `<group>.properties.change(column[, {selection}])` / `<group>.selectAll()` — [выделение](How-to_Custom_React_views.md#selection) строк, которые рисует другой контейнер; там, где их рисует платформа, отклоняется | SID списочной группы вне дерева |
-| `copy(group)` / `paste(group, text)` | `<group>.copy()` / `<group>.paste(text)` — [буфер обмена](How-to_Custom_React_views.md#clipboard) строк, которые рисует другой контейнер; там, где их рисует платформа, отклоняется | SID списочной группы вне дерева |
+| `changeColumn(group, column[, {selection}])` / `selectAll(group)` | `<group>.properties.change(column[, {selection}])` / `<group>.selectAll()` — [выделение](How-to_Custom_React_views.md#selection) строк, которые рисует другой контейнер, или таблицы платформы | SID списочной группы вне дерева |
+| `copy(group)` / `paste(group, text)` | `<group>.copy()` / `<group>.paste(text)` — [буфер обмена](How-to_Custom_React_views.md#clipboard) строк, которые рисует другой контейнер, или таблицы платформы | SID списочной группы вне дерева |
 | `expand(group, row)` / `collapse(group, row)` / `expandAll(group)` / `collapseAll(group)` | `<group>.expand(row)` / `.collapse(row)` / `.expandAll()` / `.collapseAll()` | SID группы дерева |
 | `expandCurrent(tree)` / `expandTree(tree)` | `<tree>.expandCurrent()` / `expandTree()` его тулбара | имя дерева |
 | `changeOrders(table, order)` / `changeOrders(table, orders)` | `<table>.orders.change(…)` | SID списочной группы или имя дерева |

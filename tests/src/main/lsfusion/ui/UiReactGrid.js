@@ -18,3 +18,11 @@ window.UiRgView = function (props) {
         return React.createElement('div', {key: row.key}, [row.number.value, row.name.value, row.qty.value].join(' | '));
     }));
 };
+
+// ... and the view of the form whose rows the platform's table draws (uiRgTable): it draws nothing of the rows, and
+// hands the test its data - what the form reads of the selection - and its controller, whose `form` states the
+// table's selection
+window.UiRgTableView = function (props) {
+    window.uiRgTableView = props;
+    return React.createElement('div', {className: 'ui-rg-table-view'});
+};

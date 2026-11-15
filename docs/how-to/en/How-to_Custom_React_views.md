@@ -1586,9 +1586,11 @@ leaves its selection.
 
 The selection is the view's that draws the rows. Another container changes it through the form's controller —
 `controller.form.changeObject('<group>', row, {selection})`, `changeColumn('<group>', column, {selection})` and
-`selectAll('<group>')` ([across containers](How-to_Custom_view_controller.md#across-containers)); for a group whose
-rows the platform draws a change of the selection is refused — the platform's table keeps a selection of its own —,
-as it is for a group of a tree: `changeObject` takes a row there, with no `selection` but `'keep'`.
+`selectAll('<group>')` ([across containers](How-to_Custom_view_controller.md#across-containers)). Where the platform's
+table draws the rows, the same calls change the table's own selection: a column is made current where the table shows
+it now and lets the user move to it, and a property grouped in columns has no column of that name. While the table
+shows the rows as another view — a pivot, a map, a calendar, a custom view — the calls are refused, as they are for a
+group of a tree: `changeObject` takes a row there, with no `selection` but `'keep'`.
 
 ### Clipboard {#clipboard}
 
@@ -1640,7 +1642,9 @@ The view takes the browser's `copy` and `paste` events itself and gives the text
 ```
 
 Another container copies and pastes through the form's controller, `controller.form.copy('<group>')` and
-`paste('<group>', text)`, which are refused where the selection's calls are.
+`paste('<group>', text)`, which are refused where the selection's calls are. On the platform's table a column of an
+action, and of a property grouped in columns, is none of the cells, and several values are not pasted while such a
+column is the current one.
 
 ### Filters {#filters}
 

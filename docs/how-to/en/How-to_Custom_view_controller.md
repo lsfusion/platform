@@ -198,8 +198,8 @@ What another container draws, or the platform, a view changes through the form's
 | method | does what this member does | named by |
 | --- | --- | --- |
 | `changeObject(group, row[, {selection}])` | `<group>.change(row[, {selection}])` | a group's SID |
-| `changeColumn(group, column[, {selection}])` / `selectAll(group)` | `<group>.properties.change(column[, {selection}])` / `<group>.selectAll()` — the [selection](How-to_Custom_React_views.md#selection) of the rows another container draws; refused where the platform draws them | the SID of a list group not in a tree |
-| `copy(group)` / `paste(group, text)` | `<group>.copy()` / `<group>.paste(text)` — the [clipboard](How-to_Custom_React_views.md#clipboard) of the rows another container draws; refused where the platform draws them | the SID of a list group not in a tree |
+| `changeColumn(group, column[, {selection}])` / `selectAll(group)` | `<group>.properties.change(column[, {selection}])` / `<group>.selectAll()` — the [selection](How-to_Custom_React_views.md#selection) of the rows another container draws, or of the platform's table | the SID of a list group not in a tree |
+| `copy(group)` / `paste(group, text)` | `<group>.copy()` / `<group>.paste(text)` — the [clipboard](How-to_Custom_React_views.md#clipboard) of the rows another container draws, or of the platform's table | the SID of a list group not in a tree |
 | `expand(group, row)` / `collapse(group, row)` / `expandAll(group)` / `collapseAll(group)` | `<group>.expand(row)` / `.collapse(row)` / `.expandAll()` / `.collapseAll()` | the SID of a group of a tree |
 | `expandCurrent(tree)` / `expandTree(tree)` | `<tree>.expandCurrent()` / its toolbar's `expandTree()` | a tree's name |
 | `changeOrders(table, order)` / `changeOrders(table, orders)` | `<table>.orders.change(…)` | a list group's SID, or a tree's name |

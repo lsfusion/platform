@@ -741,7 +741,7 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
             call.onSuccess(requestIndex);
         });
     }
-    // ===== the clipboard of a grid whose rows a view draws (GReactFormData.GridRowsPart). Its cells selected - the
+    // ===== the clipboard of a grid as a call states it (GReactFormData.copyGridSelection). Its cells selected - the
     // rows the server has as selected, in these columns - copied as the platform's grid copies a range, the Promise of
     // the text: the values as the form formats them, a row a line, tabs between its cells ...
     @Override

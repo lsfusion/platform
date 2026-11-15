@@ -19,6 +19,9 @@ public interface GGridController extends GTableController {
     // ... and the views its rows can be shown as, which a view's part of the toolbar switches: a table's own, none
     // where React draws the rows
     GListViewController getListViewController();
+    // ... and the selection of its rows, which a call states (GGridSelectionController): the rows' own where React
+    // draws them, the table's while it shows them as a grid - none while it shows them as another view
+    GGridSelectionController getSelectionController();
 
     // the platform's toolbar, as the rows put their buttons on it (GPlatformGridToolbarController): a table's view
     // switch, a tool of the rows' own, the count of the group's rows - a button for a group of the rows' -, the export,

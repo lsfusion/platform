@@ -56,6 +56,36 @@ DESIGN uiRgGrid {
     }
 }
 
+// ... and the same items in a grid whose rows the platform's table draws, its selection stated through the form's
+// controller: the form's view draws only what the form reads of the selection (UiRgTableView)
+FORM uiRgTable 'Selection of the table'
+    OBJECTS i = UiRgItem
+    PROPERTIES(i) READONLY number = uiRgNumber
+    PROPERTIES(i) name = uiRgName, qty = uiRgQty
+    FILTERS uiRgShown(i)
+    ORDERS number
+;
+
+uiRgTableSelected () = GROUP SUM 1 IF [ SELECT uiRgTable.i](UiRgItem i);
+uiRgTableNameSelected () = [ SELECT PROPERTY uiRgTable.name]();
+uiRgTableQtySelected () = [ SELECT PROPERTY uiRgTable.qty]();
+uiRgTableQtyActive = ACTIVE PROPERTY uiRgTable.qty;
+
+EXTEND FORM uiRgTable
+    PROPERTIES() selectedCount = uiRgTableSelected, nameSelected = uiRgTableNameSelected, qtySelected = uiRgTableQtySelected,
+                 qtyActive = uiRgTableQtyActive
+;
+
+DESIGN uiRgTable {
+    NEW view FIRST {
+        custom = 'UiRgTableView';
+        MOVE PROPERTY(selectedCount);
+        MOVE PROPERTY(nameSelected);
+        MOVE PROPERTY(qtySelected);
+        MOVE PROPERTY(qtyActive);
+    }
+}
+
 onWebClientInit() + {
     onWebClientInit('UiReactGrid.js') <- 1;
 }
@@ -63,6 +93,7 @@ onWebClientInit() + {
 NAVIGATOR {
     NEW FOLDER uiRg 'UI React grid' WINDOW toolbar {
         NEW uiRgGrid;
+        NEW uiRgTable;
     }
 }
 

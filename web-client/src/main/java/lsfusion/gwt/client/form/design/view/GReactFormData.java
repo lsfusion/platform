@@ -41,6 +41,7 @@ import lsfusion.gwt.client.form.object.table.controller.GGridToolbarController;
 import lsfusion.gwt.client.form.object.table.controller.GListViewController;
 import lsfusion.gwt.client.form.object.table.controller.GToolbarController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.object.table.grid.controller.GGridSelectionController;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeController;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -2059,7 +2060,7 @@ public class GReactFormData {
     // filter them by, its own: beside the table's user filters, which a user changes and a FILTER states, and applied
     // with them; what the grid's toolbar and filter input controller ask of the grid as a whole is its table's
     // (GridTablePart)
-    private final class GridRowsPart extends RowsPart {
+    private final class GridRowsPart extends RowsPart implements GGridSelectionController {
         // its COLUMNS (getColumns), each by its place among them, and what is the grid's own of them, as the platform's
         // grid keeps its columns' (DataGrid): the current one, and the range selected, between the column it starts
         // from and the one it ends on - -1: none. The rows selected are the server's (updateRowSelection)
@@ -2103,39 +2104,42 @@ public class GReactFormData {
         }
         // ... as the form's controller's changeObject names it too, a row read as it reads one (readRow)
         JavaScriptObject changeCurrentObject(String errorPrefix, JavaScriptObject target, JavaScriptObject options, RowKey readRow) {
-            GChangeSelection selection = readSelection(errorPrefix, options);
-            if (isEdge(target))
-                return verbs.scrollCurrentObject(node.group, readToEnd(errorPrefix, target), selection);
-            GGroupObjectValue key = readRow.read(target);
-            return verbs.changeCurrentObject(node.group, key, selection, selection != null ? updateRowSelection(getRow(key), getRow(currentKey), selection) : null);
+            return changeGridObject(errorPrefix, node.group, this, target, options, readRow);
         }
         // the rows selected are the server's, each row saying it (GRID_ROW) - and, as the platform's table keeps its
-        // own (GGridTable.updateRowSelection), changed here at once by the move that changes them, of the rows the
-        // view has: what the move changes (GGridSelection.getRowChanges), which the form holds against the server's
-        // until the move's request is answered (GFormController.pendingChangeGroupObject). A range run on from a row
-        // the view has not, or up to one, changes none here: the server's answer says what it takes in
-        NativeHashMap<GGroupObjectValue, PValue> updateRowSelection(int row, int prevRow, GChangeSelection changeSelection) {
-            NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows = changeSelection == GChangeSelection.MOVEEND && (row < 0 || prevRow < 0) ? new NativeHashMap<>()
-                    : GGridSelection.getRowChanges(getRowSelectValues(), rows::get, row, prevRow, changeSelection);
-            updateAttribute(node.group.rowSelectReader, changeSelectionRows, true);
-            return changeSelectionRows;
-        }
-        NativeHashMap<GGroupObjectValue, PValue> getRowSelectValues() {
+        // own, changed here at once by the move that changes them (updateRowSelection)
+        @Override
+        public NativeHashMap<GGroupObjectValue, PValue> getRowSelectValues() {
             NativeHashMap<GGroupObjectValue, PValue> rowSelectValues = values.get(node.group.rowSelectReader);
             return rowSelectValues != null ? rowSelectValues : new NativeHashMap<>();
+        }
+        @Override
+        public void updateRowSelectValues(NativeHashMap<GGroupObjectValue, PValue> rowSelectValues, boolean updateKeys) {
+            updateAttribute(node.group.rowSelectReader, rowSelectValues, updateKeys);
+        }
+        // ... and its rows by their places, as the calls ask them of what draws the rows (GGridSelectionController)
+        @Override
+        public int getRowCount() {
+            return rows.size();
+        }
+        @Override
+        public GGroupObjectValue getRowKey(int row) {
+            return rows.get(row);
+        }
+        @Override
+        public int getCurrentRow() {
+            return getRow(currentKey);
         }
         // ... properties.change(column[, {selection}]): the current column, and what becomes of the columns selected,
         // as a row's change says it of the rows: 'start' leaves the column alone selected, 'extend' the range from the
         // column the range starts from up to it (GGridSelection.getStartColumn)
         JavaScriptObject changeColumn(String surface, String name, JavaScriptObject options) {
             String errorPrefix = controllerPrefix(surface);
-            int column = readColumn(errorPrefix, name);
-            GChangeSelection selection = readSelection(errorPrefix, options);
-            updateCurrentColumn(column);
-            return verbs.changeActiveProperty(node.group, getColumns().get(column).property, selection != null ? updateColumnSelection(column, selection) : new ArrayList<>());
+            return changeGridColumn(errorPrefix, node.group, this, name, options);
         }
         // the column a call names, one the form shows now, by the name its entry has on the group's node
-        int readColumn(String errorPrefix, String name) {
+        @Override
+        public int readColumn(String errorPrefix, String name) {
             ArrayList<ReactColumnPropertyEntry> columns = getColumns();
             for (int i = 0; i < columns.size(); i++)
                 if (columns.get(i).name.equals(name)) {
@@ -2149,9 +2153,7 @@ public class GReactFormData {
         // form told which of them are not selected yet (GGridSelection.getAllRowChanges) - and every column; the
         // current row and the current column stay (GGridTable.selectAllCells)
         JavaScriptObject selectAll() {
-            int columnCount = getColumns().size();
-            return verbs.selectAllRows(node.group, GGridSelection.getAllRowChanges(getRowSelectValues(), rows::get, rows.size()),
-                    updateColumnSelection(columnCount > 0 ? 0 : -1, columnCount - 1));
+            return selectGridAll(node.group, this);
         }
         // its columns: the list properties React draws in these rows, with a value - an action has none -, in the
         // form's order, as data.<group>.properties lists them
@@ -2162,9 +2164,30 @@ public class GReactFormData {
                     columns.add((ReactColumnPropertyEntry) propertyEntry);
             return columns;
         }
+        @Override
+        public int getColumnCount() {
+            return getColumns().size();
+        }
+        @Override
+        public GPropertyDraw getProperty(int column) {
+            return getColumns().get(column).property;
+        }
+        @Override
+        public int getSelectedColumn() {
+            return currentColumn;
+        }
+        @Override
+        public int getStartSelectColumn() {
+            return startSelectColumn;
+        }
+        @Override
+        public int getEndSelectColumn() {
+            return endSelectColumn;
+        }
         // the current column from now on: the entry of the one that was and of the one that is rebuilt, each saying it
         // (emitColumn)
-        void updateCurrentColumn(int current) {
+        @Override
+        public void updateCurrentColumn(int current) {
             ArrayList<ReactColumnPropertyEntry> columns = getColumns(), changed = new ArrayList<>();
             for (int i : new int[] {currentColumn, current})
                 if (current != currentColumn && i >= 0)
@@ -2173,14 +2196,11 @@ public class GReactFormData {
             for (ReactColumnPropertyEntry column : changed)
                 column.updateEntry();
         }
-        // ... and the range of columns selected, as the platform's table sets its own: once a move makes a column its
-        // end (GGridTable.updateColumnSelection) ...
-        ArrayList<GGridTable.ColumnSelection> updateColumnSelection(int newEnd, GChangeSelection changeSelection) {
-            return updateColumnSelection(GGridSelection.getStartColumn(startSelectColumn, newEnd, changeSelection), newEnd);
-        }
-        // ... and between two columns: the entry of every column it changes rebuilt, each saying it (emitColumn) - and
-        // what it changes for the server (addSelectedColumn)
-        ArrayList<GGridTable.ColumnSelection> updateColumnSelection(int newStart, int newEnd) {
+        // ... and the range of columns selected, between two columns, as the platform's table sets its own
+        // (GGridTable.updateColumnSelection): the entry of every column it changes rebuilt, each saying it
+        // (emitColumn) - and what it changes for the server (addSelectedColumn)
+        @Override
+        public ArrayList<GGridTable.ColumnSelection> updateColumnSelection(int newStart, int newEnd) {
             ArrayList<GGridTable.ColumnSelection> changes = new ArrayList<>();
             if (newEnd == endSelectColumn && newStart == startSelectColumn) return changes;
 
@@ -2219,14 +2239,7 @@ public class GReactFormData {
         // selected, having those the view has not too, as the platform's table copies a range; of the current row the
         // view has it itself, a line of its cells
         JavaScriptObject copy(String surface) {
-            ArrayList<ReactColumnPropertyEntry> columns = getSelectedColumns();
-            if (hasRowSelection() && !columns.isEmpty())
-                return verbs.copySelection(surface, getProperties(columns));
-            List<String> cells = new ArrayList<>();
-            if (getRow(currentKey) >= 0)
-                for (ReactColumnPropertyEntry column : columns)
-                    cells.add(column.getCopy(currentKey));
-            return verbs.copyText(surface, GwtClientUtils.getClipboardTable(Collections.singletonList(cells))); // written as the server's rows are
+            return copyGridSelection(surface, this);
         }
         // ... paste(text): a text pasted as the platform's table pastes one - one value into every one of those
         // cells, by a group change over the rows selected, else into the current row's; a table of them into the cells
@@ -2234,59 +2247,29 @@ public class GReactFormData {
         // the current one on. Each value is read by the pattern of its cell, of a row the view has (getPattern).
         // Nothing is pasted from an empty text, nor where the view has no current row
         JavaScriptObject paste(String surface, String text) {
-            if (text == null)
-                throw refusal(controllerPrefix(surface) + "takes the text to paste, as a string");
-            List<List<String>> table = GwtClientUtils.getClipboardTable(text);
-            int width = 0;
-            for (List<String> row : table)
-                width = Math.max(width, row.size());
-            int current = getRow(currentKey);
-            boolean single = table.size() == 1 && width == 1;
-            ArrayList<ReactColumnPropertyEntry> columns = text.isEmpty() || current < 0 ? new ArrayList<>()
-                    : single ? getSelectedColumns() : getColumnsFromCurrent(width);
-            if (single)
-                table = Collections.singletonList(Collections.nCopies(columns.size(), table.get(0).get(0)));
-            List<List<String>> patterns = new ArrayList<>();
-            for (int i = 0; i < table.size(); i++) {
-                GGroupObjectValue key = current >= 0 && current + i < rows.size() ? rows.get(current + i) : null;
-                List<String> rowPatterns = new ArrayList<>();
-                for (ReactColumnPropertyEntry column : columns)
-                    rowPatterns.add(column.getPattern(key));
-                patterns.add(rowPatterns);
-            }
-            return verbs.pasteSelection(surface, getProperties(columns), table, patterns, single && hasRowSelection());
+            return pasteGridSelection(surface, this, text);
         }
         // whether the view shows a row as selected, of the rows it has
-        boolean hasRowSelection() {
+        @Override
+        public boolean hasRowSelection() {
             NativeHashMap<GGroupObjectValue, PValue> rowSelectValues = getRowSelectValues();
             for (GGroupObjectValue row : rows)
                 if (GridDataRecord.isRowSelect(rowSelectValues.get(row)))
                     return true;
             return false;
         }
-        // the columns of the cells: those of the range that the form shows now - with no range, the current one
-        ArrayList<ReactColumnPropertyEntry> getSelectedColumns() {
-            ArrayList<ReactColumnPropertyEntry> columns = getColumns(), selected = new ArrayList<>();
-            for (int i = 0; i < columns.size(); i++)
-                if (columns.get(i).isShown() && (startSelectColumn >= 0 ? GGridSelection.isColumnSelected(startSelectColumn, endSelectColumn, i) : i == currentColumn))
-                    selected.add(columns.get(i));
-            return selected;
+        // its cells as the clipboard takes them: those of a column the form shows now
+        @Override
+        public boolean isClipboardColumn(int column) {
+            return getColumns().get(column).isShown();
         }
-        // ... and those a table is pasted into: from the current one on, as many as the table is wide, of those the
-        // form shows now - none where it does not show the current one
-        ArrayList<ReactColumnPropertyEntry> getColumnsFromCurrent(int count) {
-            ArrayList<ReactColumnPropertyEntry> columns = getColumns(), fromCurrent = new ArrayList<>();
-            if (currentColumn >= 0 && columns.get(currentColumn).isShown())
-                for (int i = currentColumn; i < columns.size() && fromCurrent.size() < count; i++)
-                    if (columns.get(i).isShown())
-                        fromCurrent.add(columns.get(i));
-            return fromCurrent;
+        @Override
+        public String getCopy(int row, int column) {
+            return getColumns().get(column).getCopy(rows.get(row));
         }
-        ArrayList<GPropertyDraw> getProperties(ArrayList<ReactColumnPropertyEntry> columns) {
-            ArrayList<GPropertyDraw> properties = new ArrayList<>();
-            for (ReactColumnPropertyEntry column : columns)
-                properties.add(column.property);
-            return properties;
+        @Override
+        public String getPattern(int row, int column) {
+            return getColumns().get(column).getPattern(row < rows.size() ? rows.get(row) : null);
         }
     }
     private static final String VIEW_FILTERS = "viewFilters";
@@ -2581,6 +2564,10 @@ public class GReactFormData {
         }
         public GListViewController getListViewController() {
             return null;
+        }
+        // ... and their selection, the rows' part's own (GridRowsPart)
+        public GGridSelectionController getSelectionController() {
+            return currentPart();
         }
     }
     // ... of a TREE, one for all its groups: the rows' parts of its groups, each kept as it is made (TreeRowsPart), and
@@ -3549,43 +3536,141 @@ public class GReactFormData {
     // given the call as a message names it (surface) by what puts it on the controller, as a member's is
     // (addFormMethods)
 
-    // the current object of a group: a row of it - the row, or its `objects` handle -; of a grid whose rows a view
-    // draws, an edge of the rows too, and what becomes of the rows selected (GridRowsPart.changeCurrentObject)
+    // the current object of a group: a row of it - the row, or its `objects` handle -; of a grid's group, an edge of
+    // the rows too, and what becomes of the rows selected (changeGridObject)
     private JavaScriptObject changeObject(String surface, String name, JavaScriptObject objectOrKey, JavaScriptObject options) {
         String errorPrefix = controllerPrefix(surface);
         GGroupObject group = readGroup(form, errorPrefix, name);
-        if (hasGridRows(group) || isSelectionChange(errorPrefix, options) || isEdge(objectOrKey))
-            return readGridRows(errorPrefix, group).changeCurrentObject(errorPrefix, objectOrKey, options, row -> readFormRow(errorPrefix, group, row));
+        if (getGridRows(group) != null || isSelectionChange(errorPrefix, options) || isEdge(objectOrKey))
+            return changeGridObject(errorPrefix, group, readGridRows(errorPrefix, group), objectOrKey, options, row -> readFormRow(errorPrefix, group, row));
         return verbs.changeCurrentObject(group, readFormRow(errorPrefix, group, objectOrKey), null, null);
     }
     // ... such a grid's current column, and every row and column of it selected
     private JavaScriptObject changeColumn(String surface, String name, String column, JavaScriptObject options) {
-        return readGridRows(surface, name).changeColumn(surface, column, options);
+        String errorPrefix = controllerPrefix(surface);
+        GGroupObject group = readGroup(form, errorPrefix, name);
+        return changeGridColumn(errorPrefix, group, readGridRows(errorPrefix, group), column, options);
     }
     private JavaScriptObject selectAll(String surface, String name) {
-        return readGridRows(surface, name).selectAll();
+        String errorPrefix = controllerPrefix(surface);
+        GGroupObject group = readGroup(form, errorPrefix, name);
+        return selectGridAll(group, readGridRows(errorPrefix, group));
     }
     // ... and its clipboard
     private JavaScriptObject copy(String surface, String name) {
-        return readGridRows(surface, name).copy(surface);
+        return copyGridSelection(surface, readGridRows(surface, name));
     }
     private JavaScriptObject paste(String surface, String name, String text) {
-        return readGridRows(surface, name).paste(surface, text);
+        return pasteGridSelection(surface, readGridRows(surface, name), text);
     }
-    // ... the selection and its clipboard being the grid's own where a view draws its rows: a group of a tree has
-    // none, and a table of the platform's keeps its own (gridRows)
-    private GridRowsPart readGridRows(String surface, String name) {
+    // ... the selection and its clipboard being the grid's own where a view draws its rows, and the platform's
+    // table's where it shows them as a grid (GGridSelectionController): a group of a tree has none (gridRows)
+    private GGridSelectionController readGridRows(String surface, String name) {
         String errorPrefix = controllerPrefix(surface);
         return readGridRows(errorPrefix, readGroup(form, errorPrefix, name));
     }
-    private GridRowsPart readGridRows(String errorPrefix, GGroupObject group) {
-        if (!hasGridRows(group))
-            throw refusal(errorPrefix + "'" + group.getSID() + "' has no selection of a view's: a view selects among the rows it"
-                    + " draws, of a list group not in a tree");
-        return ((GridTablePart) gridRows.get(group.grid)).currentPart();
+    private GGridSelectionController readGridRows(String errorPrefix, GGroupObject group) {
+        GGridSelectionController rows = getGridRows(group);
+        if (rows == null)
+            throw refusal(errorPrefix + "'" + group.getSID() + "' has no selection: a selection is of the rows of a list group not in"
+                    + " a tree, where a view draws them or the platform's table shows them as a grid");
+        return rows;
+    }
+    private GGridSelectionController getGridRows(GGroupObject group) {
+        GGridController rows = group.isInTree() ? null : gridRows.get(group.grid);
+        return rows != null ? rows.getSelectionController() : null;
     }
     private boolean hasGridRows(GGroupObject group) {
         return !group.isInTree() && gridRows.get(group.grid) instanceof GridTablePart;
+    }
+    // ... and the calls themselves, a view's member's (GridRowsPart) and the form's controller's alike, over what
+    // draws the rows (grid). The current object: a row, read as the call reads one (readRow), or an edge of the rows
+    private JavaScriptObject changeGridObject(String errorPrefix, GGroupObject group, GGridSelectionController grid, JavaScriptObject target, JavaScriptObject options, RowKey readRow) {
+        GChangeSelection selection = readSelection(errorPrefix, options);
+        if (isEdge(target))
+            return verbs.scrollCurrentObject(group, readToEnd(errorPrefix, target), selection);
+        GGroupObjectValue key = readRow.read(target);
+        return verbs.changeCurrentObject(group, key, selection, selection != null ? updateRowSelection(grid, grid.getRow(key), grid.getCurrentRow(), selection) : null);
+    }
+    // ... the rows selected, changed at once by the move that changes them, of the rows what draws them has: what the
+    // move changes (GGridSelection.getRowChanges), which the form holds against the server's until the move's request
+    // is answered (GFormController.pendingChangeGroupObject). A range run on from a row it has not, or up to one,
+    // changes none here: the server's answer says what it takes in
+    private static NativeHashMap<GGroupObjectValue, PValue> updateRowSelection(GGridSelectionController grid, int row, int prevRow, GChangeSelection changeSelection) {
+        NativeHashMap<GGroupObjectValue, PValue> changeSelectionRows = changeSelection == GChangeSelection.MOVEEND && (row < 0 || prevRow < 0) ? new NativeHashMap<>()
+                : GGridSelection.getRowChanges(grid.getRowSelectValues(), grid::getRowKey, row, prevRow, changeSelection);
+        grid.updateRowSelectValues(changeSelectionRows, true);
+        return changeSelectionRows;
+    }
+    private JavaScriptObject changeGridColumn(String errorPrefix, GGroupObject group, GGridSelectionController grid, String name, JavaScriptObject options) {
+        int column = grid.readColumn(errorPrefix, name);
+        GChangeSelection selection = readSelection(errorPrefix, options);
+        grid.updateCurrentColumn(column);
+        return verbs.changeActiveProperty(group, grid.getProperty(column), selection != null
+                ? grid.updateColumnSelection(GGridSelection.getStartColumn(grid.getStartSelectColumn(), column, selection), column) : new ArrayList<>());
+    }
+    private JavaScriptObject selectGridAll(GGroupObject group, GGridSelectionController grid) {
+        int columnCount = grid.getColumnCount();
+        return verbs.selectAllRows(group, GGridSelection.getAllRowChanges(grid.getRowSelectValues(), grid::getRowKey, grid.getRowCount()),
+                grid.updateColumnSelection(columnCount > 0 ? 0 : -1, columnCount - 1));
+    }
+    private JavaScriptObject copyGridSelection(String surface, GGridSelectionController grid) {
+        ArrayList<Integer> columns = getSelectedColumns(grid);
+        if (grid.hasRowSelection() && !columns.isEmpty())
+            return verbs.copySelection(surface, getProperties(grid, columns));
+        List<String> cells = new ArrayList<>();
+        if (grid.getCurrentRow() >= 0)
+            for (int column : columns)
+                cells.add(grid.getCopy(grid.getCurrentRow(), column));
+        return verbs.copyText(surface, GwtClientUtils.getClipboardTable(Collections.singletonList(cells))); // written as the server's rows are
+    }
+    private JavaScriptObject pasteGridSelection(String surface, GGridSelectionController grid, String text) {
+        if (text == null)
+            throw refusal(controllerPrefix(surface) + "takes the text to paste, as a string");
+        List<List<String>> table = GwtClientUtils.getClipboardTable(text);
+        int width = 0;
+        for (List<String> row : table)
+            width = Math.max(width, row.size());
+        int current = grid.getCurrentRow();
+        boolean single = table.size() == 1 && width == 1;
+        ArrayList<Integer> columns = text.isEmpty() || current < 0 ? new ArrayList<>()
+                : single ? getSelectedColumns(grid) : getColumnsFromCurrent(grid, width);
+        if (single)
+            table = Collections.singletonList(Collections.nCopies(columns.size(), table.get(0).get(0)));
+        List<List<String>> patterns = new ArrayList<>();
+        for (int i = 0; i < table.size(); i++) {
+            List<String> rowPatterns = new ArrayList<>();
+            for (int column : columns)
+                rowPatterns.add(grid.getPattern(current + i, column));
+            patterns.add(rowPatterns);
+        }
+        return verbs.pasteSelection(surface, getProperties(grid, columns), table, patterns, single && grid.hasRowSelection());
+    }
+    // the columns of the cells: those of the range that the clipboard takes - with no range, the current one
+    private static ArrayList<Integer> getSelectedColumns(GGridSelectionController grid) {
+        ArrayList<Integer> selected = new ArrayList<>();
+        int startSelectColumn = grid.getStartSelectColumn(), endSelectColumn = grid.getEndSelectColumn(), currentColumn = grid.getSelectedColumn();
+        for (int i = 0; i < grid.getColumnCount(); i++)
+            if (grid.isClipboardColumn(i) && (startSelectColumn >= 0 ? GGridSelection.isColumnSelected(startSelectColumn, endSelectColumn, i) : i == currentColumn))
+                selected.add(i);
+        return selected;
+    }
+    // ... and those a table is pasted into: from the current one on, as many as the table is wide, of those the
+    // clipboard takes - none where it does not take the current one
+    private static ArrayList<Integer> getColumnsFromCurrent(GGridSelectionController grid, int count) {
+        ArrayList<Integer> fromCurrent = new ArrayList<>();
+        int currentColumn = grid.getSelectedColumn();
+        if (currentColumn >= 0 && grid.isClipboardColumn(currentColumn))
+            for (int i = currentColumn; i < grid.getColumnCount() && fromCurrent.size() < count; i++)
+                if (grid.isClipboardColumn(i))
+                    fromCurrent.add(i);
+        return fromCurrent;
+    }
+    private static ArrayList<GPropertyDraw> getProperties(GGridSelectionController grid, ArrayList<Integer> columns) {
+        ArrayList<GPropertyDraw> properties = new ArrayList<>();
+        for (int column : columns)
+            properties.add(grid.getProperty(column));
+        return properties;
     }
     // ... a node of a tree's group, opened or closed, and every node of it and of the groups below it
     private JavaScriptObject expand(String surface, String name, JavaScriptObject objectOrKey) {

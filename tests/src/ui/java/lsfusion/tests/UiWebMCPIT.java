@@ -405,9 +405,9 @@ public class UiWebMCPIT extends UiTest {
                 {"changeOrders", "{\"table\":\"i\",\"orders\":[{\"property\":\"none\",\"desc\":true}]}", "order 0: unknown property 'none' of object group 'i'"},
                 {"changeProperty", "{\"property\":\"i.date\",\"value\":\"31.12.2026\"}", "\"31.12.2026\" is not a date"},
                 {"changeProperty", "{\"property\":\"i.date\",\"value\":\"2026-02-30\"}", "\"2026-02-30\" is not a date"},
-                // the rows are the platform's to draw here: no view of them has a first row, or a selection
-                {"changeObject", "{\"group\":\"i\",\"row\":{\"to\":\"end\"}}", "'i' has no selection of a view's"},
-                {"selectAll", "{\"group\":\"i\"}", "'i' has no selection of a view's"}}) {
+                // a tree has no first row to move to, and no selection
+                {"changeObject", "{\"group\":\"t\",\"row\":{\"to\":\"end\"}}", "'t' has no selection"},
+                {"selectAll", "{\"group\":\"t\"}", "'t' has no selection"}}) {
             String refusal = callForm(refused[0], refused[1]);
             assertTrue(refusal, refusal.startsWith(error) && refusal.contains(refused[2]));
         }

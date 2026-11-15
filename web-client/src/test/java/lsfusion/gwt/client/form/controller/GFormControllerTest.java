@@ -147,6 +147,7 @@ import lsfusion.gwt.client.form.object.table.controller.GPlatformTableController
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.GGridProperty;
 import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
+import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.cell.classes.view.HTMLTextCellRenderer;
@@ -2334,6 +2335,175 @@ public class GFormControllerTest extends GWTTestCase {
         columns.hide("a");
         assertEquals("b..d", columns.range());
     }
+    // A grid's SELECTION where the platform's table draws its rows is the table's own, stated by the same calls of the
+    // form's controller as where a view draws them (GGridSelectionController), each the table's own request: a column
+    // made current - the form's active property -, a range of columns started from it, run on to another or kept, the
+    // rows selected left as they are; a row with what becomes of the rows selected, which the table shows at once, the
+    // columns' range left as it is - a user's move in the table changes both; every row and every column. A column the
+    // table does not make current is refused: one that does not take the focus, one it does not show now, no column
+    public void testACallStatesTheSelectionOfThePlatformsTable() {
+        ColumnsForm columns = new ColumnsForm("a", "b", "c", "-d");
+        columns.form.sessionID = "tableSelection" + (++asksForms);
+        columns.property("b").hasSelectProperty = true;
+        GFormController controller = columns.controller;
+        Server requests = new Server(controller) {
+            @Override
+            boolean takes(Action<?> action) {
+                return action instanceof FormRequestCountingAction && controller.getForm().sessionID.equals(((FormAction<?>) action).formSessionID);
+            }
+        };
+        server = requests;
+        JavaScriptObject form = controller.controller;
+        GGroupObjectValue one = new GGroupObjectValue(columns.group.ID, 1), two = new GGroupObjectValue(columns.group.ID, 2);
+        try {
+            call(form, "changeColumn", "r", "b");
+            assertEquals("b", columns.selected());
+            assertEquals("b..b", columns.range());
+            ChangePropertyActive column = (ChangePropertyActive) requests.actions.get(0);
+            assertEquals(columns.property("b").ID, column.propertyId);
+            assertTrue(Arrays.equals(new int[] {columns.property("b").ID}, column.changeSelectionProps) && column.changeSelectionValues[0]);
+            call(form, "changeColumn", "r", "c", parse("{\"selection\": \"extend\"}"));
+            assertEquals("c", columns.selected());
+            assertEquals("b..c", columns.range());
+            call(form, "changeColumn", "r", "a", parse("{\"selection\": \"keep\"}"));
+            assertEquals("a", columns.selected());
+            assertEquals("b..c", columns.range());
+            assertEquals("", rowsSelected(columns.grid())); // a column's move selects no row
+
+            // a row's move draws nothing when it is made - here while the table is being drawn, by a renderer of its
+            // own -: the rows it selects are the table's at once, and shown with the row it moves to
+            resolving(columns.grid(), true);
+            try {
+                call(form, "changeObject", "r", objects(two), parse("{\"selection\": \"extend\"}"));
+            } finally {
+                resolving(columns.grid(), false);
+            }
+            ChangeGroupObject row = (ChangeGroupObject) requests.actions.get(requests.actions.size() - 1);
+            assertEquals(two, row.keyValues);
+            assertEquals(GChangeSelection.MOVEEND, row.changeSelection);
+            assertEquals("1,2", rowsSelected(columns.grid())); // at once
+            assertEquals("b..c", columns.range()); // ... and a row's move leaves the columns
+            call(form, "changeObject", "r", objects(one)); // a range anew: no row selected
+            assertEquals(GChangeSelection.MOVE, ((ChangeGroupObject) requests.actions.get(requests.actions.size() - 1)).changeSelection);
+            assertEquals("", rowsSelected(columns.grid()));
+            call(form, "changeObject", "r", objects(two), parse("{\"selection\": \"keep\"}"));
+            assertNull(((ChangeGroupObject) requests.actions.get(requests.actions.size() - 1)).changeSelection);
+            call(form, "changeObject", "r", field(form, "HOME"));
+            ScrollToEnd home = (ScrollToEnd) requests.actions.get(requests.actions.size() - 1);
+            assertTrue(!home.toEnd && home.changeSelection == GChangeSelection.MOVE);
+            requests.answer(requests.actions.size() - 1, false); // a request the form waits for: the next one goes after it
+
+            call(form, "selectAll", "r");
+            SelectAll all = (SelectAll) requests.actions.get(requests.actions.size() - 1);
+            assertEquals(0, all.changeSelectionProps.length); // b is selected already: not said again
+            requests.answer(requests.actions.size() - 1, false);
+            assertEquals("a..d", columns.range());
+            assertEquals("a", columns.selected());
+
+            String refusal = "' is no column of 'r' to make current: a property the table shows in its rows now, focusable and not grouped in columns";
+            assertEquals("controller.form.changeColumn('r'): 'd" + refusal, refusalOf(() -> call(form, "changeColumn", "r", "d")));
+            assertEquals("controller.form.changeColumn('r'): 'x" + refusal, refusalOf(() -> call(form, "changeColumn", "r", "x")));
+            columns.hide("c");
+            assertEquals("controller.form.changeColumn('r'): 'c" + refusal, refusalOf(() -> call(form, "changeColumn", "r", "c")));
+            assertEquals("controller.form.changeColumn('r'): 'selection' must be 'start', 'extend' or 'keep'",
+                    refusalOf(() -> call(form, "changeColumn", "r", "b", parse("{\"selection\": \"all\"}"))));
+            assertEquals("a", columns.selected());
+        } finally {
+            DeferredRunner.get().commitDelayedGroupObjectChange(columns.group);
+        }
+    }
+    // ... and its CLIPBOARD, by the same calls. With no row selected it is the current row's, in the columns selected:
+    // copy is the Promise of the text the table has, with no request and nothing put on the system clipboard, and a
+    // value is pasted into those cells of it. With rows selected copy asks
+    // the server for the cells selected (CopyExternalTable); a value is pasted into every one of them by a group
+    // change, and a table of values into the cells from the current one on (PasteExternalTable), in one request and
+    // with no question asked. An action's column has no value: it is none of the cells, and no table is pasted from it
+    public void testACallCopiesAndPastesTheSelectionOfThePlatformsTable() {
+        ColumnsForm columns = new ColumnsForm("a", "b", "c", "run");
+        columns.form.sessionID = "tableClipboard" + (++asksForms);
+        columns.property("run").valueType = GActionType.instance;
+        GFormController controller = columns.controller;
+        GGroupObjectValue one = new GGroupObjectValue(columns.group.ID, 1), two = new GGroupObjectValue(columns.group.ID, 2);
+        GFormChanges values = new GFormChanges();
+        for (String name : new String[] {"a", "b", "c"}) {
+            NativeHashMap<GGroupObjectValue, PValue> cells = new NativeHashMap<>();
+            cells.put(one, PValue.getPValue(name.charAt(0) - 'a' + 1));
+            cells.put(two, PValue.getPValue(name.charAt(0) - 'a' + 11));
+            values.properties.put(columns.property(name), cells);
+        }
+        controller.applyRemoteChanges(values, 2);
+        Server requests = new Server(controller) {
+            @Override
+            boolean takes(Action<?> action) {
+                return (action instanceof CopyExternalTable || action instanceof PasteExternalTable || action instanceof ChangeGroupObject) && controller.getForm().sessionID.equals(((FormAction<?>) action).formSessionID);
+            }
+        };
+        server = requests;
+        JavaScriptObject form = controller.controller;
+        ArrayList<String> settled = new ArrayList<>();
+        try {
+            call(form, "changeColumn", "r", "b"); // a range anew: the column alone
+            then((JavaScriptObject) call(form, "copy", "r"), text -> settled.add("copied '" + text + "'"), error -> fail(error));
+            call(form, "changeColumn", "r", "a");
+            call(form, "changeColumn", "r", "run", parse("{\"selection\": \"extend\"}")); // a..run: the action's is none of the cells
+            then((JavaScriptObject) call(form, "copy", "r"), text -> settled.add("copied '" + text + "'"), error -> fail(error));
+            assertTrue(requests.actions.isEmpty()); // the current row: the table has it
+            call(form, "paste", "r", "7");
+            PasteExternalTable cells = (PasteExternalTable) requests.actions.get(0);
+            assertEquals(Arrays.asList(columns.property("a").ID, columns.property("b").ID, columns.property("c").ID), cells.propertyIdList);
+            assertEquals(Collections.singletonList(Arrays.asList(7, 7, 7)), cells.values);
+            assertFalse(cells.forceGroupChange);
+            requests.answer(0, false);
+
+            call(form, "changeObject", "r", objects(two), parse("{\"selection\": \"extend\"}")); // both rows
+            then((JavaScriptObject) call(form, "copy", "r"), text -> settled.add("copied '" + text + "'"), error -> fail(error));
+            CopyExternalTable copy = (CopyExternalTable) requests.actions.get(2);
+            assertEquals(Arrays.asList(columns.property("a").ID, columns.property("b").ID, columns.property("c").ID), copy.propertyIdList);
+            call(form, "paste", "r", "8");
+            PasteExternalTable every = (PasteExternalTable) requests.actions.get(3);
+            assertEquals(Collections.singletonList(Arrays.asList(8, 8, 8)), every.values);
+            assertTrue(every.forceGroupChange);
+            requests.answer(3, false);
+            call(form, "changeColumn", "r", "b", parse("{\"selection\": \"keep\"}"));
+            call(form, "paste", "r", "1\t2\t3\n4");
+            PasteExternalTable table = (PasteExternalTable) requests.actions.get(4);
+            assertEquals(Arrays.asList(columns.property("b").ID, columns.property("c").ID), table.propertyIdList); // from the current column on
+            assertEquals(Arrays.asList(Arrays.asList(1, 2), Arrays.asList(4, null)), table.values);
+            assertFalse(table.forceGroupChange);
+            requests.answer(4, false);
+            then((JavaScriptObject) call(form, "paste", "r", ""), answer -> settled.add("pasted nothing"), error -> fail(error));
+            // ... from the current CELL on: none where its column is none of the cells - an action's now -, not from b
+            columns.property("a").valueType = GActionType.instance;
+            call(form, "changeColumn", "r", "a", parse("{\"selection\": \"keep\"}"));
+            then((JavaScriptObject) call(form, "paste", "r", "1\t2"), answer -> settled.add("pasted no table"), error -> fail(error));
+            assertEquals(5, requests.actions.size());
+            assertEquals("controller.form.paste('r'): takes the text to paste, as a string", refusalOf(() -> call(form, "paste", "r", 7.0)));
+        } finally {
+            DeferredRunner.get().commitDelayedGroupObjectChange(columns.group);
+        }
+        delayTestFinish(5000);
+        inTurn(() -> {
+            assertEquals(Arrays.asList("copied '2'", "copied '1\t2\t3'", "pasted nothing", "pasted no table"), settled);
+            finishTest();
+        });
+    }
+    // the rows a platform grid has as selected, by their keys
+    private static String rowsSelected(GGridTable grid) {
+        ArrayList<String> selected = new ArrayList<>();
+        rowSelectValues(grid).foreachEntry((key, value) -> {
+            if (GridDataRecord.isRowSelect(value))
+                selected.add(key.toKeyString());
+        });
+        Collections.sort(selected);
+        return String.join(",", selected);
+    }
+    private static native NativeHashMap<GGroupObjectValue, PValue> rowSelectValues(GGridTable grid) /*-{
+        return grid.@lsfusion.gwt.client.form.object.table.grid.view.GGridTable::rowSelectValues;
+    }-*/;
+    // ... and a grid as it is while its DOM is being updated, when nothing of what it draws may change
+    private static native void resolving(GGridTable grid, boolean resolving) /*-{
+        grid.@lsfusion.gwt.client.base.view.grid.DataGrid::isResolvingState = resolving;
+    }-*/;
     // a form of one grid the platform draws, of two rows, the first current, with a column of each property named -
     // FOCUSABLE FALSE where the name starts with "-" -, each one with a SHOWIF of its own; the grid not on the page, the
     // form's requests sent through a dispatch of its own
