@@ -141,6 +141,36 @@ public class UiWebMCPIT extends UiTest {
                 "answer => (" + VALUES + ")(answer) + ' | ' + answer.messages.join()"));
     }
 
+    // the exec tool is the eval tool for an action that is in the logic, and so on the page: the page runs the action
+    // where the user works, in the navigator or in a form, and sends the server what is the server's
+    @Test
+    public void execRunsAnActionOfTheLogicWhereTheUserWorks() throws Exception {
+        String saved = "saved " + System.nanoTime(), draft = "draft " + System.nanoTime();
+        exec("UiWebMCP.uiWebMCPSeed", saved);
+        loadWithAgent();
+        List<String> onServer = toolCalls();
+        assertEquals("42", call("lsfusion_exec", "{\"action\":\"UiWebMCP.uiWebMCPDouble\",\"params\":[21]}", VALUES));
+
+        Locator form = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCP");
+        assertThat(form.locator("[lsfusion-container='PROPERTY(uiWebMCPNote())'] input")).hasValue(saved);
+        call("lsfusion_eval", "{\"script\":\"run(STRING[100] note) { UiWebMCP.uiWebMCPNote() <- note; }\",\"params\":[\"" + draft + "\"]}");
+        String read = "\"action\":\"UiWebMCP.uiWebMCPReadNote\"";
+        assertEquals(draft, call("lsfusion_exec", "{" + read + "}", VALUES)); // in the form's session
+        assertEquals(draft, call("lsfusion_exec", "{" + read + ",\"form\":{\"name\":\"UiWebMCP.uiWebMCP\"}}", VALUES));
+        assertEquals(saved, call("lsfusion_exec", "{" + read + ",\"context\":\"navigator\"}", VALUES));
+        assertTrue(onServer.toString(), onServer.isEmpty()); // the page ran them itself
+        assertEquals(saved, call("lsfusion_exec", "{" + read + ",\"context\":\"logics\"}", VALUES));
+        assertEquals(onServer.toString(), 1, onServer.size()); // ... and sent this one to the server
+
+        // what is no call of the tool the server says; an action that is not there is refused where it was to run
+        String noAction = call("lsfusion_exec", "{\"params\":[]}");
+        assertTrue(noAction, noAction.startsWith("lsfusion_exec error: ") && noAction.contains("'action' is required"));
+        for (String context : new String[] {"form", "navigator", "logics"}) {
+            String unknown = call("lsfusion_exec", "{\"action\":\"UiWebMCP.uiWebMCPNoSuchAction\",\"context\":\"" + context + "\"}");
+            assertTrue(unknown, unknown.startsWith("lsfusion_exec error: ") && unknown.contains("uiWebMCPNoSuchAction"));
+        }
+    }
+
     // the agent addresses a form as ACTIVATE FORM does - by its name, the label it was opened with, the window - and
     // the script runs in that one, whichever form the user is in. The address is to name one open form
     @Test

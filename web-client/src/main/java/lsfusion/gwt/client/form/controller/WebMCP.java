@@ -4,8 +4,9 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 // WebMCP: the page hands the browser's AI agent the tools of the application's MCP server (/mcp, at url), through
 // document.modelContext where the browser has one. A tool is the server's - its description, what it is called with
-// and what it answers -, and so is its run. The page substitutes one thing, the run of lsfusion_eval in the contexts
-// that are the page's own, `navigator` and `form`: there the script runs where the user works, who sees what it shows
+// and what it answers -, and so is its run. The page substitutes one thing, the run of lsfusion_eval and of
+// lsfusion_exec in the contexts that are the page's own, `navigator` and `form`: there the script, or the action, runs
+// where the user works, who sees what it shows
 public class WebMCP {
 
     public static native void register(String url, FormsController formsController, JavaScriptObject navigatorController)/*-{
@@ -46,7 +47,14 @@ public class WebMCP {
             }) && (form.name != null || form.label != null || form.window != null);
         }
 
-        // the form a script is for: the one the address names, else the current one, which is the platform's - none
+        // the tools whose run the page substitutes where the user works: the controller's call that runs each, and the
+        // argument that names what is run
+        var inContext = {
+            lsfusion_eval: { call: 'eval', run: 'script' },
+            lsfusion_exec: { call: 'exec', run: 'action' }
+        };
+
+        // the form a call is for: the one the address names, else the current one, which is the platform's - none
         // under a modal popup, and a form embedded in a cell is the editor of the form the cell is in, which stays
         // current
         function getForm(address) {
@@ -62,40 +70,41 @@ public class WebMCP {
             return container != null ? container.@lsfusion.gwt.client.form.view.FormContainer::getForm()() : null;
         }
 
-        // ... and the eval tool's run where the user works. A call for another context - `logics` -, and one that is
-        // no call of the tool, are the server's: it runs the first and says what is wrong with the second
-        function evalInContext(args) {
+        // ... and such a tool's run where the user works. A call for another context - `logics` -, and one that is no
+        // call of the tool, are the server's: it runs the first and says what is wrong with the second
+        function runInContext(name, args) {
+            var tool = inContext[name];
             var context = args != null ? args.context : null;
             var address = args != null ? args.form : null;
-            if (args == null || typeof args.script !== 'string' || !args.script
+            if (args == null || typeof args[tool.run] !== 'string' || !args[tool.run]
                     || (args.params != null && !Array.isArray(args.params))
                     || (context != null && context !== 'navigator' && context !== 'form')
                     || (address != null && (context === 'navigator' || !isFormAddress(address))))
-                return onServer('lsfusion_eval', args);
+                return onServer(name, args);
 
             var form = context === 'navigator' ? null : getForm(address);
             if (form == null && context === 'form')
                 throw new Error("the user is in no form");
 
-            // the controller's eval made as the tool's: the arguments are the tool's params and the result is its answer
+            // the controller's call made as the tool's: the arguments are the tool's params and the result is its answer
             var calls = (form != null ? form.@GFormController::controller : navigatorController).mcp;
-            return calls.eval.apply(calls, [args.script].concat(args.params || []));
+            return calls[tool.call].apply(calls, [args[tool.run]].concat(args.params || []));
         }
 
         request('tools/list').then(function (list) {
             list.tools.forEach(function (tool) {
                 var name = tool.name;
-                var inContext = name === 'lsfusion_eval';
+                var own = inContext.hasOwnProperty(name);
                 // a tool's failure is its answer, an MCP tool result as the server's failures are: what a tool throws
                 // does not reach the agent, which is told only that the call failed
                 tool.execute = function (args) {
                     return new $wnd.Promise(function (resolve) {
-                        resolve(inContext ? evalInContext(args) : onServer(name, args));
+                        resolve(own ? runInContext(name, args) : onServer(name, args));
                     }).then(null, function (e) {
                         return { content: [{ type: 'text', text: name + ' error: ' + e.message }], isError: true };
                     });
                 };
-                if (inContext) { // a script can save what it changes: the agent is to ask the user before a call that it cannot take back.
+                if (own) { // what is run can save what it changes: the agent is to ask the user before a call that it cannot take back.
                     // The one thing added to a descriptor: the hint is WebMCP's own, an MCP server has no name for it
                     tool.annotations = tool.annotations || {};
                     tool.annotations.consequentialHint = true;
