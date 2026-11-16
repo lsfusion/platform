@@ -21,7 +21,7 @@ SELECT PROPERTY formPropertyId
 
 The `FILTER`, `VIEW`, `ORDER`, and `SELECT` operators create properties that accept the same number of parameters as the number of objects in the object group. Object group operators cannot be used inside [expressions](Expression.md).
 
-The `FILTER` operator creates a property which value is `TRUE` when the object collection passed as parameters meets all the [filtering](../paradigm/Form_structure.md#filters) conditions on the form, otherwise the property value will be `NULL`.
+The `FILTER` operator creates a property which value is `TRUE` when the object collection passed as parameters meets all the [filtering](../paradigm/Form_structure.md#filters) conditions on the form, otherwise the property value will be `NULL`. It accounts for the form's filters and class restrictions, the filters selected in its filter groups, the user filters and the view filters. Only applied conditions are included: changes waiting for the manual filter apply are not.
 
 The `VIEW` operator creates a property which value is `TRUE` if the object collection passed as parameters is currently displayed on the form, otherwise, the property value will be `NULL`.
 

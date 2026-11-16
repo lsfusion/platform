@@ -3,7 +3,7 @@ slug: "/Filter_FILTER"
 title: 'Filter (FILTER)'
 ---
 
-The *filter* operator creates a [property](Properties.md), defined on the objects of an object group, that returns `TRUE` when their object collection is included in the group's current [filter](Form_structure.md#filters), and `NULL` otherwise.
+The *filter* operator creates a [property](Properties.md), defined on the objects of an object group, that returns `TRUE` when their object collection is included in the group's current [filter](Form_structure.md#filters), and `NULL` otherwise. It accounts for the form's filters and class restrictions, the filters selected in its filter groups, the user filters and the view filters. Only applied conditions are included: changes waiting for the manual filter apply are not.
 
 ### Language
 
