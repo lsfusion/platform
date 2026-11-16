@@ -1,0 +1,19 @@
+MODULE UiTabbedWindows;
+
+REQUIRE SystemEvents;
+
+// UiTabbedWindowsIT's application, on a test server of its own: a window declared with the POSITION of System.toolbar,
+// which makes the two tabs of one place, and a window is on every page of its application - in the suite's, it would be
+// on the page of every other browser test too
+
+WINDOW uiTabbedWindowsBeside 'Beside the toolbar' VERTICAL POSITION(0, 6, 20, 94);
+
+FORM uiTabbedWindowsForm 'Beside form';
+
+NAVIGATOR {
+    // PARENT: the section is drawn in its window together with its item, so the window has something to draw from the
+    // start, whichever section the navigator selects
+    NEW FOLDER uiTabbedWindowsSection 'Beside section' WINDOW uiTabbedWindowsBeside PARENT {
+        NEW uiTabbedWindowsForm;
+    }
+}

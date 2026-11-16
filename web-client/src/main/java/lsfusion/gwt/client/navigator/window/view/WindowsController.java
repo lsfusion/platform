@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
@@ -32,6 +33,19 @@ public abstract class WindowsController {
     public void updateElementClass(GAbstractWindow window) {
         Widget windowView = getWindowView(window);
         String elementClass = window.elementClass;
+
+        // popping out is how a window beside the forms is drawn while the navigator is not pinned: it takes no room of
+        // its own and draws its items over its neighbour. A window in a tab has no neighbour to draw over, and taking no
+        // room there it is a tab of no size, its items drawn over the tab, or over the tabs' bar and the top of the page
+        // (#1977). So it is drawn as any window in a tab, as when the navigator is pinned
+        WindowElement windowElement = windowElementsMapping.get(window);
+        if (elementClass != null && windowElement != null && windowElement.parent instanceof TabbedWindowElement) {
+            StringBuilder kept = new StringBuilder();
+            for (String className : GwtClientUtils.splitUnquotedSpace(elementClass))
+                if (!className.equals(NAVBAR_POPUP_SELECTED_HOVER) && !className.equals(NAVBAR_POPUP_OVER_SELECTED_HOVER))
+                    kept.append(kept.length() > 0 ? " " : "").append(className);
+            elementClass = kept.toString();
+        }
 
 //        we still need NEED_MARGINS for formscontroller, so it's a question if it's right
 //        we still need bg_ to HAS (however here we should use paddings ???) be converted to respect margins ???
