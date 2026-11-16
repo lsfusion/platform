@@ -3,6 +3,8 @@ slug: "/How-to_Custom_components_objects"
 title: 'How-to: Custom Components (objects)'
 ---
 
+This article describes classic JavaScript views for existing code. For a new view, use a React component in a `custom` container or registered as `reactView` for `CUSTOM` ([How-to: Custom React views](How-to_Custom_React_views.md)).
+
 By default, each object on a form with GRID view is displayed on the form as a flat table with columns.
 However, it is possible to create your own components in the platform to visualize the list of objects.
 
