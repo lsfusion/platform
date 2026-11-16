@@ -107,7 +107,8 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     }
 
     // the shared exec/eval/change plus activate, which is not on the base GController since a form has no navigator
-    // elements to activate
+    // elements to activate.
+    // The page's WebMCP tool lists them by hand: a change here goes with its catalog (web-client/AGENTS.md)
     private final JavaScriptObject controller = initController();
     private native JavaScriptObject initController() /*-{
         var thisObj = this;

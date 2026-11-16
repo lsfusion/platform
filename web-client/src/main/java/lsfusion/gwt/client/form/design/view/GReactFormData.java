@@ -4125,7 +4125,8 @@ public class GReactFormData {
 
     // CONTROLLER.FORM's methods, on it: each takes the names of what it reaches first, as strings - anything else is
     // no name, and is refused (null) -, then what the member it stands for takes; each is given the call as a message
-    // names it (surface), quoting the first name. `export` is set by a string, as a toolbar's member is
+    // names it (surface), quoting the first name. `export` is set by a string, as a toolbar's member is.
+    // The page's WebMCP tool lists them by hand: a change here goes with its catalog (web-client/AGENTS.md)
     private static native void addFormMethods(GReactFormData projection, JavaScriptObject controller) /*-{
         var name = function (value) {
             return typeof value === 'string' ? value : null;

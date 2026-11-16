@@ -458,7 +458,8 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     // guessing would be wrong exactly where this is used.
     // ... the batch: the form's, whoever begins it - a React view through its own controller, any surface through the
     // form's (batch) -, and a property changed, or its change event run, by its name: the classic changeProperty, the
-    // same function, by the same rule (classicChangeProperty)
+    // same function, by the same rule (classicChangeProperty).
+    // The page's WebMCP tool lists them by hand: a change here goes with its catalog (web-client/AGENTS.md)
     private native JavaScriptObject addFormVerbs(JavaScriptObject controller)/*-{
         var thisObj = this;
         controller.startEditing = function (element) {
