@@ -86,7 +86,7 @@ public class UiWebMCPIT extends UiTest {
         assertTrue("the server lists lsfusion_eval among its tools: " + listed, String.valueOf(listed).contains("lsfusion_eval: "));
         assertTrue("... and not the page's own: " + listed, !String.valueOf(listed).contains(CLIENT_TOOL + ": "));
         assertEquals(listed, page.evaluate("() => (" + described + ")(Object.keys(window.uiWebMCPTools).filter(name => name !== '" + CLIENT_TOOL + "').map(name => window.uiWebMCPTools[name]))"));
-        assertEquals("form,logics,navigator", page.evaluate("() => window.uiWebMCPTools.lsfusion_eval.inputSchema.properties.context.enum.slice().sort().join()"));
+        assertEquals("form,params,script", page.evaluate("() => Object.keys(window.uiWebMCPTools.lsfusion_eval.inputSchema.properties).sort().join()"));
     }
 
     // the browser refuses a tool whose name another script of the page has taken: the page's other tools are registered
@@ -108,22 +108,22 @@ public class UiWebMCPIT extends UiTest {
         assertTrue(files, files.contains("/ui/UiWebMCP.lsf\""));
     }
 
+    // the page runs the script itself, where the user works: with no `form`, in the navigator
     @Test
-    public void evalRunsInTheNavigatorWhenTheUserIsInNoForm() {
+    public void evalRunsInTheNavigator() {
         loadWithAgent();
         List<String> onServer = toolCalls();
         assertEquals("42", call("lsfusion_eval", "{\"script\":\"run(INTEGER x) { RETURN x * 2; }\",\"params\":[21]}", VALUES));
         assertEquals("42", call("lsfusion_eval", "{\"script\":\"run(INTEGER x) { RETURN x * 2; }\",\"params\":[\"21\"]}", VALUES));
         assertEquals("", call("lsfusion_eval", "{\"script\":\"run() { }\"}", VALUES));
-        assertTrue(onServer.toString(), onServer.isEmpty()); // the page ran them itself
-        assertEquals("42", call("lsfusion_eval", "{\"script\":\"run(INTEGER x) { RETURN x * 2; }\",\"params\":[21],\"context\":\"logics\"}", VALUES));
-        assertEquals(onServer.toString(), 1, onServer.size()); // ... and sent this one to the server
         // the answer is the tool's, as the server gives it: the page adds nothing to it
         assertEquals("results,status", call("lsfusion_eval", "{\"script\":\"run() { }\"}", "answer => Object.keys(answer).sort().join()"));
+        assertTrue(onServer.toString(), onServer.isEmpty()); // the server ran none of them
     }
 
-    // the form's session holds what the script changed and did not apply, and the form shows it; a session of the
-    // navigator reads what is saved
+    // with `form`, in a form - `{}` is the form the user is in: its session holds what the script changed and did not
+    // apply, and the form shows it. With no `form` the script is the navigator's, whatever form the user is in: a
+    // session of its own, which reads what is saved, and a message it shows is shown to the user
     @Test
     public void evalRunsInTheFormTheUserIsIn() throws Exception {
         String saved = "saved " + System.nanoTime(), draft = "draft " + System.nanoTime();
@@ -134,18 +134,20 @@ public class UiWebMCPIT extends UiTest {
         assertThat(note).hasValue(saved);
 
         String read = "run() { RETURN UiWebMCP.uiWebMCPNote(); }";
+        List<String> onServer = toolCalls();
         assertEquals("",
-                call("lsfusion_eval", "{\"script\":\"run(STRING[100] note) { UiWebMCP.uiWebMCPNote() <- note; }\",\"params\":[\"" + draft + "\"]}", VALUES));
+                call("lsfusion_eval", "{\"script\":\"run(STRING[100] note) { UiWebMCP.uiWebMCPNote() <- note; }\",\"params\":[\"" + draft + "\"],\"form\":{}}", VALUES));
         assertThat(note).hasValue(draft);
-        assertEquals(draft, call("lsfusion_eval", "{\"script\":\"" + read + "\",\"context\":\"form\"}", VALUES));
-        assertEquals(saved, call("lsfusion_eval", "{\"script\":\"" + read + "\",\"context\":\"navigator\"}", VALUES));
-        // ... and so does the server, where nobody is shown a message: it is in the answer
-        assertEquals(saved + " | said", call("lsfusion_eval", "{\"script\":\"run() { MESSAGE 'said'; RETURN UiWebMCP.uiWebMCPNote(); }\",\"context\":\"logics\"}",
-                "answer => (" + VALUES + ")(answer) + ' | ' + answer.messages.join()"));
+        assertEquals(draft, call("lsfusion_eval", "{\"script\":\"" + read + "\",\"form\":{}}", VALUES));
+        assertEquals(saved, call("lsfusion_eval", "{\"script\":\"" + read + "\"}", VALUES));
+        // ... a message of the script is the user's to see, so the answer has none
+        assertEquals(saved + " | none", call("lsfusion_eval", "{\"script\":\"run() { MESSAGE 'said' NOWAIT; RETURN UiWebMCP.uiWebMCPNote(); }\"}",
+                "answer => (" + VALUES + ")(answer) + ' | ' + (answer.messages ? answer.messages.join() : 'none')"));
+        assertTrue(onServer.toString(), onServer.isEmpty()); // the server ran none of them
     }
 
     // the exec tool is the eval tool for an action that is in the logic, and so on the page: the page runs the action
-    // where the user works, in the navigator or in a form, and sends the server what is the server's
+    // where the user works, in the navigator or with `form` in a form
     @Test
     public void execRunsAnActionOfTheLogicWhereTheUserWorks() throws Exception {
         String saved = "saved " + System.nanoTime(), draft = "draft " + System.nanoTime();
@@ -156,22 +158,22 @@ public class UiWebMCPIT extends UiTest {
 
         Locator form = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCP");
         assertThat(form.locator("[lsfusion-container='PROPERTY(uiWebMCPNote())'] input")).hasValue(saved);
-        call("lsfusion_eval", "{\"script\":\"run(STRING[100] note) { UiWebMCP.uiWebMCPNote() <- note; }\",\"params\":[\"" + draft + "\"]}");
+        call("lsfusion_eval", "{\"script\":\"run(STRING[100] note) { UiWebMCP.uiWebMCPNote() <- note; }\",\"params\":[\"" + draft + "\"],\"form\":{}}");
         String read = "\"action\":\"UiWebMCP.uiWebMCPReadNote\"";
-        assertEquals(draft, call("lsfusion_exec", "{" + read + "}", VALUES)); // in the form's session
+        assertEquals(draft, call("lsfusion_exec", "{" + read + ",\"form\":{}}", VALUES)); // in the form's session
         assertEquals(draft, call("lsfusion_exec", "{" + read + ",\"form\":{\"name\":\"UiWebMCP.uiWebMCP\"}}", VALUES));
-        assertEquals(saved, call("lsfusion_exec", "{" + read + ",\"context\":\"navigator\"}", VALUES));
+        assertEquals(saved, call("lsfusion_exec", "{" + read + "}", VALUES)); // in the navigator's
         assertTrue(onServer.toString(), onServer.isEmpty()); // the page ran them itself
-        assertEquals(saved, call("lsfusion_exec", "{" + read + ",\"context\":\"logics\"}", VALUES));
-        assertEquals(onServer.toString(), 1, onServer.size()); // ... and sent this one to the server
 
         // what is no call of the tool the server says; an action that is not there is refused where it was to run
         String noAction = call("lsfusion_exec", "{\"params\":[]}");
         assertTrue(noAction, noAction.startsWith("lsfusion_exec error: ") && noAction.contains("'action' is required"));
-        for (String context : new String[] {"form", "navigator", "logics"}) {
-            String unknown = call("lsfusion_exec", "{\"action\":\"UiWebMCP.uiWebMCPNoSuchAction\",\"context\":\"" + context + "\"}");
+        assertEquals(onServer.toString(), 1, onServer.size());
+        for (String where : new String[] {",\"form\":{}", ""}) {
+            String unknown = call("lsfusion_exec", "{\"action\":\"UiWebMCP.uiWebMCPNoSuchAction\"" + where + "}");
             assertTrue(unknown, unknown.startsWith("lsfusion_exec error: ") && unknown.contains("uiWebMCPNoSuchAction"));
         }
+        assertEquals(onServer.toString(), 1, onServer.size());
     }
 
     // the agent addresses a form as ACTIVATE FORM does - by its name, the label it was opened with, the window - and
@@ -195,8 +197,8 @@ public class UiWebMCPIT extends UiTest {
             String read = "\"script\":\"run() { RETURN UiWebMCP.uiWebMCPNote(); }\"";
             assertEquals("",
                     call("lsfusion_eval", "{\"script\":\"run(STRING[100] note) { UiWebMCP.uiWebMCPNote() <- note; }\",\"params\":[\"" + draft + "\"]," + first + "}", VALUES));
-            assertEquals(draft, call("lsfusion_eval", "{" + read + "," + first + ",\"context\":\"form\"}", VALUES));
-            assertEquals(saved, call("lsfusion_eval", "{" + read + "}", VALUES)); // the form the user is in has no draft
+            assertEquals(draft, call("lsfusion_eval", "{" + read + "," + first + "}", VALUES));
+            assertEquals(saved, call("lsfusion_eval", "{" + read + ",\"form\":{}}", VALUES)); // the form the user is in has no draft
 
             // the first form again, under a label: the name alone names two forms now, the label one
             open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCPLabelled");
@@ -211,13 +213,14 @@ public class UiWebMCPIT extends UiTest {
                     "{\"name\":\"UiWebMCP.uiWebMCPOther\",\"window\":\"UiWebMCP.uiWebMCPNoSuchWindow\"}"})
                 assertEquals("lsfusion_eval error: no open form at the address " + none, call("lsfusion_eval", "{" + read + ",\"form\":" + none + "}"));
 
-            // what is no address, and an address beside another context, the server says
-            String string = call("lsfusion_eval", "{" + read + ",\"form\":\"UiWebMCP.uiWebMCP\"}");
-            assertTrue(string, string.startsWith("lsfusion_eval error: ") && string.contains("`form` must be an object"));
-            String unknown = call("lsfusion_eval", "{" + read + ",\"form\":{\"id\":\"1\"}}");
-            assertTrue(unknown, unknown.startsWith("lsfusion_eval error: ") && unknown.contains("unknown field `id`"));
-            String navigator = call("lsfusion_eval", "{" + read + "," + first + ",\"context\":\"navigator\"}");
-            assertTrue(navigator, navigator.startsWith("lsfusion_eval error: ") && navigator.contains("`context` is then `form`, or omitted"));
+            // what is no address the page says itself: the server takes no `form`
+            List<String> onServer = toolCalls();
+            assertEquals("lsfusion_eval error: `form` must be an object of name, label, window, each a string - `{}` for the form the user is in",
+                    call("lsfusion_eval", "{" + read + ",\"form\":\"UiWebMCP.uiWebMCP\"}"));
+            assertEquals("lsfusion_eval error: `form`: unknown field `id`; a form is addressed by `name`, `label`, `window`",
+                    call("lsfusion_eval", "{" + read + ",\"form\":{\"id\":\"1\"}}"));
+            assertEquals("lsfusion_eval error: `form.name` must be a string", call("lsfusion_eval", "{" + read + ",\"form\":{\"name\":7}}"));
+            assertTrue(onServer.toString(), onServer.isEmpty());
         } finally {
             pinMode(mode);
         }
@@ -281,7 +284,7 @@ public class UiWebMCPIT extends UiTest {
 
     // what the page's run of the tool, in the navigator, answers, when the server's run of it answers the same
     private String answersAsTheServer(String arguments) {
-        String onThePage = call("lsfusion_eval", arguments.replaceFirst("\\{", "{\"context\":\"navigator\","));
+        String onThePage = call("lsfusion_eval", arguments);
         assertEquals(arguments, onServer(arguments), onThePage);
         return onThePage;
     }
@@ -356,7 +359,7 @@ public class UiWebMCPIT extends UiTest {
         assertEquals("{}", callForm("changeProperty", "{\"property\":\"i.quantity\",\"value\":21}"));
         assertThat(row.locator("td[lsfusion-container='PROPERTY(quantity)']")).hasText("21");
         assertEquals("{}", callForm("changeProperty", "{\"property\":\"i.date\",\"value\":\"2026-12-31\"}"));
-        assertEquals("1", call("lsfusion_eval", "{\"script\":\"run() { RETURN GROUP SUM 1 IF UiWebMCP.uiWebMCPDate(UiWebMCP.UiWebMCPItem i) = 2026_12_31; }\"}", VALUES));
+        assertEquals("1", call("lsfusion_eval", "{\"script\":\"run() { RETURN GROUP SUM 1 IF UiWebMCP.uiWebMCPDate(UiWebMCP.UiWebMCPItem i) = 2026_12_31; }\",\"form\":{}}", VALUES));
         Locator note = form.locator("[lsfusion-container='PROPERTY(uiWebMCPNote())'] input");
         assertEquals("{}", callForm("changeProperty", "{\"property\":\"i.touch\"}"));
         assertThat(note).hasValue("touched b");
@@ -396,7 +399,7 @@ public class UiWebMCPIT extends UiTest {
         assertTrue(methods, methods.startsWith(error + "`method` must be one of changeObject, changeProperty, getValues, ") && !methods.contains("startEditing"));
         assertEquals(error + "unknown field `table`: `args` of getCount has group", callForm("getCount", "{\"table\":\"i\"}"));
         assertEquals(error + "`args` of getCount must be an object of group", callForm("getCount", "[\"i\"]"));
-        assertEquals(error + "`form` must be an object of name, label, window, at least one of them, each a string",
+        assertEquals(error + "`form` must be an object of name, label, window, each a string - `{}` for the form the user is in",
                 call(CLIENT_TOOL, "{\"method\":\"getCount\",\"args\":{\"group\":\"i\"},\"form\":\"UiWebMCP.uiWebMCPItems\"}"));
 
         for (String[] refused : new String[][] {
@@ -451,7 +454,7 @@ public class UiWebMCPIT extends UiTest {
         assertThat(note).hasValue("touched b");
         assertEquals("{}", callForm("changeProperty", "{\"property\":\"i.touch\"}")); // the current row is still c
         assertThat(note).hasValue("touched c");
-        String suggested = call(CLIENT_TOOL, "{\"method\":\"getValues\",\"args\":{\"property\":\"i.name\",\"row\":" + bKey + ",\"value\":\"\",\"options\":{\"mode\":\"values\"}}}",
+        String suggested = call(CLIENT_TOOL, "{\"method\":\"getValues\",\"args\":{\"property\":\"i.name\",\"row\":" + bKey + ",\"value\":\"\",\"options\":{\"mode\":\"values\"}},\"form\":{}}",
                 "answer => JSON.stringify(answer.result.map(value => value.rawString).sort())");
         assertEquals("[\"a\",\"b\",\"c\"]", suggested);
         // ... the key staying the row's as its element is used for another row: the rows sorted the other way round
@@ -579,7 +582,7 @@ public class UiWebMCPIT extends UiTest {
         assertThat(form.locator("[lsfusion-container='PROPERTY(uiWebMCPNote())'] input")).isVisible(); // the user is in the form
         // an INTERNAL CLIENT action's function is given the form's controller
         page.evaluate("() => { window.uiWebMCPKeep = controller => { window.uiWebMCPController = controller; }; }");
-        assertEquals("", call("lsfusion_eval", "{\"script\":\"run() { INTERNAL CLIENT 'uiWebMCPKeep'; }\",\"context\":\"form\"}", VALUES));
+        assertEquals("", call("lsfusion_eval", "{\"script\":\"run() { INTERNAL CLIENT 'uiWebMCPKeep'; }\",\"form\":{}}", VALUES));
         List<String> leftOut = Arrays.asList("startEditing", "stopEditing", "isEditing", "batch", "exec", "eval", "evalAction", "change", "changeViewFilters");
         assertEquals(page.evaluate("() => Object.keys(window.uiWebMCPController).filter(name => typeof window.uiWebMCPController[name] === 'function').sort().join()"),
                 page.evaluate("leftOut => window.uiWebMCPTools." + CLIENT_TOOL + ".inputSchema.properties.method.enum.concat(leftOut).sort().join()", leftOut));
@@ -599,12 +602,12 @@ public class UiWebMCPIT extends UiTest {
     @Test
     public void aFailureIsAnAnswer() {
         loadWithAgent();
-        assertEquals("lsfusion_eval error: the user is in no form", call("lsfusion_eval", "{\"script\":\"run() { }\",\"context\":\"form\"}"));
+        assertEquals("lsfusion_eval error: the user is in no form", call("lsfusion_eval", "{\"script\":\"run() { }\",\"form\":{}}"));
         String unknown = call("lsfusion_eval", "{\"script\":\"run() { RETURN UiWebMCP.uiWebMCPNoSuchProperty(); }\"}");
         assertTrue(unknown, unknown.startsWith("lsfusion_eval error: ") && unknown.contains("uiWebMCPNoSuchProperty"));
-        // what is no context, and what is no call at all, the server says
-        String context = call("lsfusion_eval", "{\"script\":\"run() { }\",\"context\":\"server\"}");
-        assertTrue(context, context.startsWith("lsfusion_eval error: ") && context.contains("`logics`, `navigator` or `form`"));
+        // a field the tool does not take - the `context` it had - the page says, and what is no call at all, the server
+        assertEquals("lsfusion_eval error: unknown field `context`: the call has script, params, form",
+                call("lsfusion_eval", "{\"script\":\"run() { }\",\"context\":\"navigator\"}"));
         String noArguments = call("lsfusion_eval", "null");
         assertTrue(noArguments, noArguments.startsWith("lsfusion_eval error: ") && noArguments.contains("'script' is required"));
         String missing = call("lsfusion_files_read", "{\"path\":\"/ui/UiWebMCPNoSuchFile.lsf\"}");

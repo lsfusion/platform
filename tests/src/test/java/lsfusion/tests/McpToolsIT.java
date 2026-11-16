@@ -203,33 +203,31 @@ public class McpToolsIT {
         Assert.assertTrue(kinds.toString(), kinds.getJSONObject(kinds.length() - 2).getJSONObject("properties").has("base64"));
     }
 
-    // The server runs the script itself - `logics`, which an omitted context is here. Where the user works it is run by
-    // the application's page, so such a call is refused here - after what is wrong with the call itself, which the page
-    // sends here to be told
+    // The server runs the script itself. Where the user works - in the navigator, or with `form` in a form - it is run
+    // by the application's page: a `form` is refused here, whatever it is - the call is not run elsewhere -, and so is
+    // the `context` the tool had; each after what is wrong with the call itself, which the page sends here to be told
     @Test
     public void theEvalToolRunsItsScriptOnTheServer() throws Exception {
-        Assert.assertEquals("yes 22", value(eval(EVAL_NUMBER, "[21, true]", "\"context\":\"logics\"")));
-        for (String where : new String[] {"\"context\":\"navigator\"", "\"context\":\"form\"", "\"form\":{\"name\":\"A.b\"}", "\"context\":\"form\",\"form\":{\"label\":\"l\"}"}) {
-            JSONObject refused = eval(EVAL_NUMBER, "[21, true]", where);
-            Assert.assertTrue(refused.toString(), refused.getBoolean("isError") && refused.toString().contains("only where the tool is called by the application's page"));
-            JSONObject noCall = eval(EVAL_NUMBER, "\"none\"", where);
+        Assert.assertEquals("yes 22", value(eval(EVAL_NUMBER, "[21, true]", null)));
+        Assert.assertEquals("yes 22", value(eval(EVAL_NUMBER, "[21, true]", "\"form\":null")));
+        String change = "run(STRING[100] note) { UiWebMCP.uiWebMCPNote() <- note; APPLY; }", read = "run() { RETURN UiWebMCP.uiWebMCPNote(); }";
+        eval(change, "[\"as it was\"]", null);
+        for (String[] where : new String[][] {
+                {"\"form\":{\"name\":\"A.b\"}", "`form` is a form of the application's page"},
+                {"\"form\":{}", "`form` is a form of the application's page"},
+                {"\"form\":\"A.b\"", "`form` is a form of the application's page"},
+                {"\"context\":\"navigator\"", "`context` is no parameter of the tool"},
+                {"\"context\":\"logics\"", "`context` is no parameter of the tool"}}) {
+            JSONObject refused = eval(change, "[\"changed by a call that was refused\"]", where[0]);
+            Assert.assertTrue(refused.toString(), refused.getBoolean("isError") && refused.toString().contains(where[1]));
+            JSONObject noCall = eval(EVAL_NUMBER, "\"none\"", where[0]);
             Assert.assertTrue(noCall.toString(), noCall.getBoolean("isError") && noCall.toString().contains("`params` must be an array"));
         }
-        JSONObject unknown = eval(EVAL_NUMBER, "[21, true]", "\"context\":\"server\"");
-        Assert.assertTrue(unknown.toString(), unknown.getBoolean("isError") && unknown.toString().contains("`logics`, `navigator` or `form`; got `server`"));
-        // a form is addressed as ACTIVATE FORM addresses one, and beside no other context
-        for (String[] address : new String[][] {
-                {"\"form\":\"A.b\"", "`form` must be an object"},
-                {"\"form\":{\"id\":\"1\"}", "unknown field `id`"},
-                {"\"form\":{\"name\":7}", "`form.name` must be a string"},
-                {"\"form\":{\"name\":null}", "`form` must address a form"},
-                {"\"form\":{\"name\":\"A.b\"},\"context\":\"logics\"", "`context` is then `form`, or omitted"}}) {
-            JSONObject refused = eval(EVAL_NUMBER, "[21, true]", address[0]);
-            Assert.assertTrue(refused.toString(), refused.getBoolean("isError") && refused.toString().contains(address[1]));
-        }
+        Assert.assertEquals("as it was", value(eval(read, "[]", null))); // a call that is refused is not run
         JSONObject properties = tool("lsfusion_eval").getJSONObject("inputSchema").getJSONObject("properties");
-        Assert.assertEquals("[\"logics\",\"navigator\",\"form\"]", properties.getJSONObject("context").getJSONArray("enum").toString());
+        Assert.assertEquals(new HashSet<>(Arrays.asList("script", "params", "form")), properties.keySet());
         Assert.assertEquals(new HashSet<>(Arrays.asList("name", "label", "window")), properties.getJSONObject("form").getJSONObject("properties").keySet());
+        Assert.assertFalse(properties.getJSONObject("form").has("minProperties")); // `{}` is the form the user is in
     }
 
     // The exec tool is the eval tool for an action that is in the logic: named, the action is run with the params and
@@ -237,19 +235,19 @@ public class McpToolsIT {
     @Test
     public void theExecToolRunsAnActionOfTheLogicByItsName() throws Exception {
         Assert.assertEquals("42", value(exec("UiWebMCP.uiWebMCPDouble", "[21]", null)));
-        Assert.assertEquals("42", value(exec("UiWebMCP.uiWebMCPDouble", "[\"21\"]", "\"context\":\"logics\"")));
+        Assert.assertEquals("42", value(exec("UiWebMCP.uiWebMCPDouble", "[\"21\"]", null)));
         for (String[] refused : new String[][] {
                 {"UiWebMCP.uiWebMCPNoSuchAction", "[]", null, "uiWebMCPNoSuchAction"},
                 {"", "[]", null, "'action' is required"},
-                {"UiWebMCP.uiWebMCPDouble", "\"none\"", "\"context\":\"navigator\"", "`params` must be an array"},
-                {"UiWebMCP.uiWebMCPDouble", "[21]", "\"context\":\"navigator\"", "only where the tool is called by the application's page"},
-                {"UiWebMCP.uiWebMCPDouble", "[21]", "\"form\":{\"name\":\"A.b\"}", "only where the tool is called by the application's page"}}) {
+                {"UiWebMCP.uiWebMCPDouble", "\"none\"", "\"form\":{}", "`params` must be an array"},
+                {"UiWebMCP.uiWebMCPDouble", "[21]", "\"context\":\"navigator\"", "`context` is no parameter of the tool"},
+                {"UiWebMCP.uiWebMCPDouble", "[21]", "\"form\":{\"name\":\"A.b\"}", "`form` is a form of the application's page"}}) {
             JSONObject answer = exec(refused[0], refused[1], refused[2]);
             Assert.assertTrue(answer.toString(), answer.getBoolean("isError") && answer.toString().contains(refused[3]));
         }
         // its descriptor is the eval tool's, with the action's name in place of the script
         JSONObject input = tool("lsfusion_exec").getJSONObject("inputSchema");
-        Assert.assertEquals(new HashSet<>(Arrays.asList("action", "params", "context", "form")), input.getJSONObject("properties").keySet());
+        Assert.assertEquals(new HashSet<>(Arrays.asList("action", "params", "form")), input.getJSONObject("properties").keySet());
         Assert.assertEquals("[\"action\"]", input.getJSONArray("required").toString());
         Assert.assertEquals(tool("lsfusion_eval").getJSONObject("outputSchema").toString(), tool("lsfusion_exec").getJSONObject("outputSchema").toString());
     }

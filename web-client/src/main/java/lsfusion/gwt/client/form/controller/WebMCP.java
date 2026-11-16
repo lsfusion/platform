@@ -5,9 +5,9 @@ import com.google.gwt.core.client.JavaScriptObject;
 // WebMCP: the page hands the browser's AI agent its tools, through document.modelContext where the browser has one.
 // The tools of the application's MCP server (/mcp, at url): a tool is the server's - its description, what it is called
 // with and what it answers -, and so is its run. The page substitutes one thing, the run of lsfusion_eval and of
-// lsfusion_exec in the contexts that are the page's own, `navigator` and `form`: there the script, or the action, runs
-// where the user works, who sees what it shows. And a tool of the page's own, lsfusion_client: a method of a form's
-// controller, called by its name
+// lsfusion_exec: the script, or the action, runs where the user works, who sees what it shows - in the navigator, or
+// in the form the call's `form` says. And a tool of the page's own, lsfusion_client: a method of a form's controller,
+// called by its name
 public class WebMCP {
 
     public static native void register(String url, FormsController formsController, JavaScriptObject navigatorController)/*-{
@@ -60,14 +60,6 @@ public class WebMCP {
             });
         }
 
-        // an open form as ACTIVATE FORM addresses one - by its name, the label it was opened with, the window it was
-        // opened into, at least one: what a tool's `form` is, read as the server reads it (MCPEvalTool.isFormAddress)
-        function isFormAddress(form) {
-            return typeof form === 'object' && !Array.isArray(form) && Object.keys(form).every(function (part) {
-                return (part === 'name' || part === 'label' || part === 'window') && (form[part] == null || typeof form[part] === 'string');
-            }) && (form.name != null || form.label != null || form.window != null);
-        }
-
         // the tools whose run the page substitutes where the user works: the controller's call that runs each, and the
         // argument that names what is run
         var inContext = {
@@ -75,48 +67,8 @@ public class WebMCP {
             lsfusion_exec: { call: 'exec', run: 'action' }
         };
 
-        // the form a call is for: the one the address names, else the current one, which is the platform's - none
-        // under a modal popup, and a form embedded in a cell is the editor of the form the cell is in, which stays
-        // current
-        function getForm(address) {
-            if (address != null) {
-                try { // a part that is not given is null for Java, not undefined
-                    return formsController.@FormsController::findForm(*)(address.label == null ? null : address.label,
-                            address.name == null ? null : address.name, address.window == null ? null : address.window);
-                } catch (e) {
-                    throw new Error(e.message + ' at the address ' + JSON.stringify(address));
-                }
-            }
-            var container = @lsfusion.gwt.client.view.MainFrame::getCurrentForm()();
-            return container != null ? container.@lsfusion.gwt.client.form.view.FormContainer::getForm()() : null;
-        }
-
-        // ... and such a tool's run where the user works. A call for another context - `logics` -, and one that is no
-        // call of the tool, are the server's: it runs the first and says what is wrong with the second
-        function runInContext(name, args) {
-            var tool = inContext[name];
-            var context = args != null ? args.context : null;
-            var address = args != null ? args.form : null;
-            if (args == null || typeof args[tool.run] !== 'string' || !args[tool.run]
-                    || (args.params != null && !Array.isArray(args.params))
-                    || (context != null && context !== 'navigator' && context !== 'form')
-                    || (address != null && (context === 'navigator' || !isFormAddress(address))))
-                return onServer(name, args);
-
-            var form = context === 'navigator' ? null : getForm(address);
-            if (form == null && context === 'form')
-                throw new Error("the user is in no form");
-
-            // the controller's call made as the tool's: the arguments are the tool's params and the result is its answer
-            var calls = (form != null ? form.@GFormController::controller : navigatorController).mcp;
-            return calls[tool.call].apply(calls, [args[tool.run]].concat(args.params || []));
-        }
-
-        // THE PAGE'S OWN TOOL, lsfusion_client: a method of a form's controller (GFormController.controller) - of the
-        // form its `form` addresses, else of the current one -, called by its name, the method's arguments given by
-        // theirs. The call is the page's to check, there being no server to say what is wrong with it, and the browser
-        // checking no call against a tool's schema: a field it does not take is said with those it does
-        var formMethods = @WebMCP::getFormMethods()();
+        // what a call is checked by where the page checks it, the browser checking no call against a tool's schema: a
+        // field it does not take is said with those it does
         function checkFields(given, taken, what) {
             if (given == null || typeof given !== 'object' || Array.isArray(given))
                 throw new Error(what + " must be an object of " + taken.join(', '));
@@ -125,6 +77,60 @@ public class WebMCP {
                     throw new Error("unknown field `" + field + "`: " + what + " has " + taken.join(', '));
             });
         }
+
+        // THE FORM A CALL IS FOR, as its `form` says - one rule for every tool that is run where the user works. None
+        // given: no form, the call is the navigator's. Given, it addresses an open form as ACTIVATE FORM does - by its
+        // name, the label it was opened with, the window it was opened into -, which is to be one; with none of the
+        // parts, `{}`, it is the current form, which is the platform's - none under a modal popup, and a form embedded
+        // in a cell is the editor of the form the cell is in, which stays current
+        function readForm(address) {
+            if (address == null)
+                return null;
+            if (typeof address !== 'object' || Array.isArray(address))
+                throw new Error("`form` must be an object of name, label, window, each a string - `{}` for the form the user is in");
+            Object.keys(address).forEach(function (part) {
+                if (part !== 'name' && part !== 'label' && part !== 'window')
+                    throw new Error("`form`: unknown field `" + part + "`; a form is addressed by `name`, `label`, `window`");
+                if (address[part] != null && typeof address[part] !== 'string')
+                    throw new Error("`form." + part + "` must be a string");
+            });
+            var form;
+            if (address.name == null && address.label == null && address.window == null) {
+                var container = @lsfusion.gwt.client.view.MainFrame::getCurrentForm()();
+                form = container != null ? container.@lsfusion.gwt.client.form.view.FormContainer::getForm()() : null;
+            } else {
+                try { // a part that is not given is null for Java, not undefined
+                    form = formsController.@FormsController::findForm(*)(address.label == null ? null : address.label,
+                            address.name == null ? null : address.name, address.window == null ? null : address.window);
+                } catch (e) {
+                    throw new Error(e.message + ' at the address ' + JSON.stringify(address));
+                }
+            }
+            if (form == null)
+                throw new Error("the user is in no form");
+            return form;
+        }
+
+        // ... and such a tool's run where the user works, which every run of it by the page is: in the navigator, or
+        // with `form` in a form. What is no call of the tool - nothing to run, params that are no list - the server
+        // says, which runs no such call; a `form` that is none, and a field the tool does not take, the page says
+        // itself: the server takes no `form`, and a call it can run it would run
+        function runInContext(name, args) {
+            var tool = inContext[name];
+            if (args == null || typeof args[tool.run] !== 'string' || !args[tool.run] || (args.params != null && !Array.isArray(args.params)))
+                return onServer(name, args);
+            checkFields(args, [tool.run, 'params', 'form'], "the call");
+            var form = readForm(args.form);
+
+            // the controller's call made as the tool's: the arguments are the tool's params and the result is its answer
+            var calls = (form != null ? form.@GFormController::controller : navigatorController).mcp;
+            return calls[tool.call].apply(calls, [args[tool.run]].concat(args.params || []));
+        }
+
+        // THE PAGE'S OWN TOOL, lsfusion_client: a method of a form's controller (GFormController.controller) - of the
+        // form its `form` addresses, else of the current one -, called by its name, the method's arguments given by
+        // theirs. The call is the page's to check, there being no server to say what is wrong with it (checkFields)
+        var formMethods = @WebMCP::getFormMethods()();
         // a ROW is given by its key, a string or a number, as the page shows it on the row's element; the method takes
         // the row, a handle JSON has none of: the row of that key among the rows the form has of the `group` given
         // beside it (GFormController.readRow), or of the `property`'s group (readPropertyRow). Beside a group what is no
@@ -148,12 +154,7 @@ public class WebMCP {
             var method = formMethods[args.method];
             var given = args.args != null ? args.args : {};
             checkFields(given, method.takes, "`args` of " + args.method);
-            if (args.form != null && !isFormAddress(args.form))
-                throw new Error("`form` must be an object of name, label, window, at least one of them, each a string");
-
-            var form = getForm(args.form);
-            if (form == null)
-                throw new Error("the user is in no form");
+            var form = readForm(args.form != null ? args.form : {});
 
             // the method takes its arguments in their order; what it refuses - a name that names nothing, a value that
             // is none of the property's - it throws, or rejects its Promise with, and that is the tool's failure. A
@@ -187,9 +188,8 @@ public class WebMCP {
                             label: { type: 'string', description: "The label the form was opened with." },
                             window: { type: 'string', description: "The name of the `FORMS` window the form is docked into; left out for a form that has no `lsfusion-form-window`." }
                         },
-                        minProperties: 1,
                         additionalProperties: false,
-                        description: "The address of ONE open form, by any of its `name`, `label` and `window`: a failure when it names no form, or several. Omitted: the form the user is in. The page shows the address on the form's element, in the attributes `lsfusion-form` (the name), `lsfusion-form-label` and `lsfusion-form-window`, each that the form has."
+                        description: "The address of ONE open form, by any of its `name`, `label` and `window`: a failure when it names no form, or several. Omitted, or `{}`: the form the user is in. The page shows the address on the form's element, in the attributes `lsfusion-form` (the name), `lsfusion-form-label` and `lsfusion-form-window`, each that the form has."
                     }
                 },
                 required: ['method'],
