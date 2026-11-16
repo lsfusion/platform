@@ -3,6 +3,7 @@ package lsfusion.tests;
 import com.microsoft.playwright.Locator;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,8 +13,8 @@ import static org.junit.Assert.assertTrue;
 
 // WebMCP: the page registers the tools of the application's MCP server with the browser's agent. A tool is the server's
 // - its description, what it is called with and what it answers -, and the page substitutes only the run of
-// lsfusion_eval where the user works: in the form the user is in or in the navigator. And a tool of its own,
-// lsfusion_client, which calls a method of a form's controller. The agent is a stand-in here: a
+// lsfusion_eval where the user works: in the navigator, or in the form the call's `form` says. And a tool of its own,
+// lsfusion_client, which calls a method of a form's controller, or of the navigator's. The agent is a stand-in here: a
 // document.modelContext that keeps the tools registered with it, and refuses one as a browser does - a name taken or
 // not a name, no description, no run. The page registers its tools as it loads, so the stand-in is put there before,
 // and the page each test gets is loaded again
@@ -313,8 +314,9 @@ public class UiWebMCPIT extends UiTest {
 
     private static final String CLIENT_TOOL = "lsfusion_client";
 
+    // a method of the form the user is in
     private String callForm(String method, String args) {
-        return call(CLIENT_TOOL, "{\"method\":\"" + method + "\",\"args\":" + args + "}");
+        return call(CLIENT_TOOL, "{\"method\":\"" + method + "\",\"args\":" + args + ",\"form\":{}}");
     }
 
     // the page's own tool calls a method of the form the user is in, by the method's name, its arguments by theirs:
@@ -371,7 +373,7 @@ public class UiWebMCPIT extends UiTest {
 
         // the values the form suggests for a property, each as its strings
         assertEquals("[{\"displayString\":\"a\",\"rawString\":\"a\"},{\"displayString\":\"b\",\"rawString\":\"b\"},{\"displayString\":\"c\",\"rawString\":\"c\"}]",
-                call(CLIENT_TOOL, "{\"method\":\"getValues\",\"args\":{\"property\":\"i.name\",\"value\":\"\",\"options\":{\"mode\":\"values\"}}}",
+                call(CLIENT_TOOL, "{\"method\":\"getValues\",\"args\":{\"property\":\"i.name\",\"value\":\"\",\"options\":{\"mode\":\"values\"}},\"form\":{}}",
                         "answer => JSON.stringify(window.uiWebMCPShape(answer.result).sort((a, b) => a.rawString < b.rawString ? -1 : 1))")); // in the server's order
 
         // a tree's group, opened to the last node and closed
@@ -395,8 +397,13 @@ public class UiWebMCPIT extends UiTest {
         assertEquals(error + "the call must be an object of method, args, form", call(CLIENT_TOOL, "null"));
         assertEquals(error + "unknown field `group`: the call has method, args, form", call(CLIENT_TOOL, "{\"method\":\"getCount\",\"group\":\"i\"}"));
         // a method that takes an element is not one of the tool's
-        String methods = call(CLIENT_TOOL, "{\"method\":\"startEditing\",\"args\":{}}");
+        String methods = callForm("startEditing", "{}");
         assertTrue(methods, methods.startsWith(error + "`method` must be one of changeObject, changeProperty, getValues, ") && !methods.contains("startEditing"));
+        // ... and whose a method is, the form says: a form's method with no form, the navigator's with one
+        assertEquals(error + "`getCount` is a method of a form: it is called with `form` - `{}` for the form the user is in",
+                call(CLIENT_TOOL, "{\"method\":\"getCount\",\"args\":{\"group\":\"i\"}}"));
+        assertEquals(error + "`activate` is a method of the navigator: it is called with no `form`", callForm("activate", "{\"element\":\"UiWebMCP.uiWebMCP\"}"));
+        assertEquals(error + "`method` must be one of activate - or, with `form`, a method of a form", call(CLIENT_TOOL, "{\"method\":\"startEditing\"}"));
         assertEquals(error + "unknown field `table`: `args` of getCount has group", callForm("getCount", "{\"table\":\"i\"}"));
         assertEquals(error + "`args` of getCount must be an object of group", callForm("getCount", "[\"i\"]"));
         assertEquals(error + "`form` must be an object of name, label, window, each a string - `{}` for the form the user is in",
@@ -562,7 +569,7 @@ public class UiWebMCPIT extends UiTest {
             Locator other = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCPOther"); // the user is in this one now
             assertThat(other.locator("[lsfusion-container='PROPERTY(uiWebMCPNote())'] input")).isVisible();
             String count = "{\"method\":\"getCount\",\"args\":{\"group\":\"i\"}";
-            String here = call(CLIENT_TOOL, count + "}");
+            String here = call(CLIENT_TOOL, count + ",\"form\":{}}");
             assertTrue(here, here.startsWith(CLIENT_TOOL + " error: ") && here.contains("unknown object group or tree 'i'"));
             assertEquals("{\"result\":3}", call(CLIENT_TOOL, count + ",\"form\":{\"name\":\"UiWebMCP.uiWebMCPItems\"}}"));
             assertEquals(CLIENT_TOOL + " error: no open form at the address {\"name\":\"UiWebMCP.uiWebMCPNoSuchForm\"}",
@@ -572,20 +579,44 @@ public class UiWebMCPIT extends UiTest {
         }
     }
 
-    // the methods the tool calls are the form controller's: every function of the controller is one of them, or one
-    // of those the tool leaves out - what takes an element or a function, the calls of the logic, which other tools
-    // are, and a view's own filters. A method added to the controller is to be put in one of the two
+    // with no form the method is the navigator's: an element of the navigator activated by its name, which the page
+    // shows on it (`lsfusion-container`, what a test opens a form by), as a click on it does - here a form's, opened
     @Test
-    public void theClientToolsMethodsAreTheFormControllers() throws Exception {
+    public void theClientToolCallsAMethodOfTheNavigator() {
+        loadWithAgent();
+        assertThat(page.locator("[lsfusion-form='UiWebMCP.uiWebMCP']")).hasCount(0);
+        assertEquals("{}", call(CLIENT_TOOL, "{\"method\":\"activate\",\"args\":{\"element\":\"UiWebMCP.uiWebMCP\"}}"));
+        assertThat(page.locator("[lsfusion-form='UiWebMCP.uiWebMCP']")).isVisible();
+        assertEquals(CLIENT_TOOL + " error: Navigator element 'UiWebMCP.uiWebMCPNoSuchElement' not found",
+                call(CLIENT_TOOL, "{\"method\":\"activate\",\"args\":{\"element\":\"UiWebMCP.uiWebMCPNoSuchElement\"}}"));
+        assertEquals(CLIENT_TOOL + " error: unknown field `form`: `args` of activate has element",
+                call(CLIENT_TOOL, "{\"method\":\"activate\",\"args\":{\"form\":\"UiWebMCP.uiWebMCP\"}}"));
+    }
+
+    // the methods the tool calls are the controllers': every function of the form's controller, and of the
+    // navigator's, is one of them, or one of those the tool leaves out - what takes an element or a function, the calls
+    // of the logic, which other tools are, and a view's own filters. A method added to a controller is to be put in one
+    // of the two
+    @Test
+    public void theClientToolsMethodsAreTheControllers() throws Exception {
         loadWithAgent();
         Locator form = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCP");
         assertThat(form.locator("[lsfusion-container='PROPERTY(uiWebMCPNote())'] input")).isVisible(); // the user is in the form
         // an INTERNAL CLIENT action's function is given the form's controller
         page.evaluate("() => { window.uiWebMCPKeep = controller => { window.uiWebMCPController = controller; }; }");
         assertEquals("", call("lsfusion_eval", "{\"script\":\"run() { INTERNAL CLIENT 'uiWebMCPKeep'; }\",\"form\":{}}", VALUES));
-        List<String> leftOut = Arrays.asList("startEditing", "stopEditing", "isEditing", "batch", "exec", "eval", "evalAction", "change", "changeViewFilters");
-        assertEquals(page.evaluate("() => Object.keys(window.uiWebMCPController).filter(name => typeof window.uiWebMCPController[name] === 'function').sort().join()"),
-                page.evaluate("leftOut => window.uiWebMCPTools." + CLIENT_TOOL + ".inputSchema.properties.method.enum.concat(leftOut).sort().join()", leftOut));
+        String functions = "() => Object.keys(window.uiWebMCPController).filter(name => typeof window.uiWebMCPController[name] === 'function').sort().join()";
+        String methods = "([heading, leftOut]) => { const description = window.uiWebMCPTools." + CLIENT_TOOL + ".description, from = description.indexOf(heading);"
+                + " const till = description.indexOf('\\n\\n', from);"
+                + " return (description.slice(from, till < 0 ? undefined : till).match(/^- `\\w+/gm) || []).map(name => name.slice(3)).concat(leftOut).sort().join(); }";
+        List<String> logic = Arrays.asList("exec", "eval", "evalAction", "change");
+        List<String> leftOut = new ArrayList<>(Arrays.asList("startEditing", "stopEditing", "isEditing", "batch", "changeViewFilters"));
+        leftOut.addAll(logic);
+        assertEquals(page.evaluate(functions), page.evaluate(methods, Arrays.asList("**Methods of a form.**", leftOut)));
+        // ... the navigator's controller is what the function gets from a script run with no form
+        assertEquals("", call("lsfusion_eval", "{\"script\":\"run() { INTERNAL CLIENT 'uiWebMCPKeep'; }\"}", VALUES));
+        assertEquals(page.evaluate(functions), page.evaluate(methods, Arrays.asList("**Methods of the navigator.**", logic)));
+        assertEquals("activate,changeColumn", page.evaluate("() => window.uiWebMCPTools." + CLIENT_TOOL + ".inputSchema.properties.method.enum.filter(name => name === 'activate' || name === 'changeColumn').sort().join()"));
         // ... and each is described, with what it takes
         String description = (String) page.evaluate("() => window.uiWebMCPTools." + CLIENT_TOOL + ".description");
         assertTrue(description, description.contains("- `changeOrders(table, orders)` — ") && description.contains("- `export(table)` — "));

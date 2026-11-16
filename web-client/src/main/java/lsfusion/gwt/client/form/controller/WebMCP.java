@@ -6,8 +6,8 @@ import com.google.gwt.core.client.JavaScriptObject;
 // The tools of the application's MCP server (/mcp, at url): a tool is the server's - its description, what it is called
 // with and what it answers -, and so is its run. The page substitutes one thing, the run of lsfusion_eval and of
 // lsfusion_exec: the script, or the action, runs where the user works, who sees what it shows - in the navigator, or
-// in the form the call's `form` says. And a tool of the page's own, lsfusion_client: a method of a form's controller,
-// called by its name
+// in the form the call's `form` says. And a tool of the page's own, lsfusion_client: a method of the client's, called by
+// its name - of a form's controller, or of the navigator's
 public class WebMCP {
 
     public static native void register(String url, FormsController formsController, JavaScriptObject navigatorController)/*-{
@@ -127,10 +127,12 @@ public class WebMCP {
             return calls[tool.call].apply(calls, [args[tool.run]].concat(args.params || []));
         }
 
-        // THE PAGE'S OWN TOOL, lsfusion_client: a method of a form's controller (GFormController.controller) - of the
-        // form its `form` addresses, else of the current one -, called by its name, the method's arguments given by
-        // theirs. The call is the page's to check, there being no server to say what is wrong with it (checkFields)
-        var formMethods = @WebMCP::getFormMethods()();
+        // THE PAGE'S OWN TOOL, lsfusion_client: a method of the client's, where the user works, called by its name, the
+        // method's arguments given by theirs - with `form`, a method of that form's controller
+        // (GFormController.controller); with none, of the navigator's (GNavigatorActionDispatcher.controller), as the
+        // tools that run an action read it (readForm). So a name may be both a form's method and the navigator's.
+        // The call is the page's to check, there being no server to say what is wrong with it (checkFields)
+        var formMethods = @WebMCP::getFormMethods()(), navigatorMethods = @WebMCP::getNavigatorMethods()();
         // a ROW is given by its key, a string or a number, as the page shows it on the row's element; the method takes
         // the row, a handle JSON has none of: the row of that key among the rows the form has of the `group` given
         // beside it (GFormController.readRow), or of the `property`'s group (readPropertyRow). Beside a group what is no
@@ -149,37 +151,47 @@ public class WebMCP {
         }
         function callClientMethod(args) {
             checkFields(args, ['method', 'args', 'form'], "the call");
-            if (typeof args.method !== 'string' || !formMethods.hasOwnProperty(args.method))
-                throw new Error("`method` must be one of " + Object.keys(formMethods).join(', '));
-            var method = formMethods[args.method];
+            var form = readForm(args.form);
+            // the methods of what the call is for; a name that is one of the other's is said so, with what to do
+            var methods = form != null ? formMethods : navigatorMethods, others = form != null ? navigatorMethods : formMethods;
+            if (typeof args.method !== 'string' || !methods.hasOwnProperty(args.method))
+                throw new Error(typeof args.method === 'string' && others.hasOwnProperty(args.method)
+                        ? "`" + args.method + "` is a method of " + (form != null ? "the navigator: it is called with no `form`" : "a form: it is called with `form` - `{}` for the form the user is in")
+                        : "`method` must be one of " + Object.keys(methods).join(', ') + (form != null ? "" : " - or, with `form`, a method of a form"));
+            var method = methods[args.method];
             var given = args.args != null ? args.args : {};
             checkFields(given, method.takes, "`args` of " + args.method);
-            var form = readForm(args.form != null ? args.form : {});
 
             // the method takes its arguments in their order; what it refuses - a name that names nothing, a value that
             // is none of the property's - it throws, or rejects its Promise with, and that is the tool's failure. A
             // method of the controller's, but where the catalog says how it is called (`call`)
-            var controller = form.@GFormController::controller, row = readRow(form, given);
+            var controller = form != null ? form.@GFormController::controller : navigatorController, row = readRow(form, given);
             return $wnd.Promise.resolve(method.call != null ? method.call(form, controller, given, row) : controller[args.method].apply(controller, method.takes.map(function (name) {
                 return name === 'row' ? row : given[name];
             }))).then(method.answer).then(function (answer) {
                 return { result: answer };
             });
         }
+        function describeMethods(methods) {
+            return Object.keys(methods).map(function (name) {
+                return "- `" + name + "(" + methods[name].takes.join(', ') + ")` — " + methods[name].does;
+            }).join('\n');
+        }
         registerTool({
             name: 'lsfusion_client',
-            description: "Call a method of an open form of the application's page: what the user does with the form's tables, sortings, filters and values, done in the form the user sees.\n\n" +
-                "`method` names the method and `args` gives its arguments by their names, as listed below; `form` is the form — the one it addresses, else the form the user is in. The answer is `{result}`: what the method answers with, nothing for a method that only changes the form. A call the form refuses is an error, with the reason; one that starts what the user is asked about — a value, a confirmation — waits for the user's answer.\n\n" +
-                "**Names.** `group` is an object group of the form, by its name; `tree`, a tree by its name; `table`, the table of an object group's rows, by the group's name, or a tree, by its name; `filterGroup`, a filter group by its name. The page shows them in `lsfusion-container`: `GRID(group)` on a group's table, `GRID(TREE tree)` on a tree, `FILTERGROUP(filterGroup)` on a filter group. A `property` is named as the page shows it in `lsfusion-property`, on the property's cells, its column's header and its field: `group.property`, and `property` alone for a property of no group. Beside its `group`, and in the sortings and conditions of a group's `table`, it is the part after the group, `property`; in a tree's sortings and conditions it is whole.\n\n" +
+            description: "Call a method of the application's client, where the user works: of an open form — what the user does with the form's tables, sortings, filters and values —, or of the navigator; done in what the user sees.\n\n" +
+                "`method` names the method and `args` gives its arguments by their names, as listed below. `form` says whose method it is: with `form`, a form's — of the form it addresses, `{}` being the form the user is in; with no `form`, the navigator's. The answer is `{result}`: what the method answers with, nothing for a method that only changes what the user sees. A call that is refused is an error, with the reason. A form's method that starts what the user is asked about — a value, a confirmation — waits for the user's answer.\n\n" +
+                "**Names in a form.** `group` is an object group of the form, by its name; `tree`, a tree by its name; `table`, the table of an object group's rows, by the group's name, or a tree, by its name; `filterGroup`, a filter group by its name. The page shows them in `lsfusion-container`: `GRID(group)` on a group's table, `GRID(TREE tree)` on a tree, `FILTERGROUP(filterGroup)` on a filter group. A `property` is named as the page shows it in `lsfusion-property`, on the property's cells, its column's header and its field: `group.property`, and `property` alone for a property of no group. Beside its `group`, and in the sortings and conditions of a group's `table`, it is the part after the group, `property`; in a tree's sortings and conditions it is whole.\n\n" +
                 "**Rows.** `row` is a row of `group` that the form shows: the `lsfusion-row` of a table's or a tree's row element, a string or a number, whose `lsfusion-group` is the group. Beside a `property` it is a row of the property's group.\n\n" +
                 "**Values.** A value is given as JSON: a number, a string, `true` or `false`, an object or an array for a JSON property, `null` for no value; a date or a time as its ISO string with no time zone, as the form shows it — `2026-11-15`, `10:30`, `2026-11-15T10:30`.\n\n" +
-                "**Methods.**\n" + Object.keys(formMethods).map(function (name) {
-                    return "- `" + name + "(" + formMethods[name].takes.join(', ') + ")` — " + formMethods[name].does;
-                }).join('\n'),
+                "**Methods of a form.**\n" + describeMethods(formMethods) + "\n\n" +
+                "**Methods of the navigator.**\n" + describeMethods(navigatorMethods),
             inputSchema: {
                 type: 'object',
                 properties: {
-                    method: { type: 'string', 'enum': Object.keys(formMethods), description: "The method to call." },
+                    method: { type: 'string', 'enum': Object.keys(formMethods).concat(Object.keys(navigatorMethods).filter(function (name) {
+                        return !formMethods.hasOwnProperty(name);
+                    })), description: "The method to call." },
                     args: { type: 'object', description: "The method's arguments, by their names; one the method can do without may be left out." },
                     form: {
                         type: 'object',
@@ -189,7 +201,7 @@ public class WebMCP {
                             window: { type: 'string', description: "The name of the `FORMS` window the form is docked into; left out for a form that has no `lsfusion-form-window`." }
                         },
                         additionalProperties: false,
-                        description: "The address of ONE open form, by any of its `name`, `label` and `window`: a failure when it names no form, or several. Omitted, or `{}`: the form the user is in. The page shows the address on the form's element, in the attributes `lsfusion-form` (the name), `lsfusion-form-label` and `lsfusion-form-window`, each that the form has."
+                        description: "The form whose method is called: the address of ONE open form, by any of its `name`, `label` and `window` — a failure when it names no form, or several —, or `{}`, the form the user is in — a failure when the user is in none. Omitted: the method is the navigator's. The page shows the address on the form's element, in the attributes `lsfusion-form` (the name), `lsfusion-form-label` and `lsfusion-form-window`, each that the form has."
                     }
                 },
                 required: ['method'],
@@ -301,6 +313,15 @@ public class WebMCP {
                 does: "Answers the text of the cells selected in the group's grid: the rows selected, of all its rows, in the columns selected - the current row where the page shows no row as selected, the current column where no column is. A row a line, tabs between its cells. The column of an action, and those of a property the form groups in columns (`COLUMNS`), are none of the cells." },
             paste: { takes: ['group', 'text'],
                 does: "Paste such a text into those cells: one value into every one of them; several, into the cells from the current one on, to the right and down - none while the current column is none of the cells." }
+        };
+    }-*/;
+
+    // ... and THE NAVIGATOR'S METHODS it calls with no form - the navigator's controller's own
+    // (GNavigatorActionDispatcher.controller): its calls of the logic are lsfusion_eval and lsfusion_exec, as a form's are
+    private static native JavaScriptObject getNavigatorMethods()/*-{
+        return {
+            activate: { takes: ['element'],
+                does: "Activate an element of the navigator, as a click on it does: its form is opened, its action run, its folder shown. `element` is the element's name, as the page shows it in the `lsfusion-container` of the element. The call answers at once, before the form is open or the action done; what the action fails with is not this call's error." }
         };
     }-*/;
 }
