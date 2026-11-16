@@ -402,7 +402,9 @@ public class UiWebMCPIT extends UiTest {
         // ... and whose a method is, the form says: a form's method with no form, the navigator's with one
         assertEquals(error + "`getCount` is a method of a form: it is called with `form` - `{}` for the form the user is in",
                 call(CLIENT_TOOL, "{\"method\":\"getCount\",\"args\":{\"group\":\"i\"}}"));
-        assertEquals(error + "`activate` is a method of the navigator: it is called with no `form`", callForm("activate", "{\"element\":\"UiWebMCP.uiWebMCP\"}"));
+        // ... a name both have, `activate`, by the argument that is the other's
+        assertEquals(error + "`activate` with `element` is a method of the navigator: it is called with no `form`", callForm("activate", "{\"element\":\"UiWebMCP.uiWebMCP\"}"));
+        assertEquals(error + "unknown field `group`: `args` of close has no fields", callForm("close", "{\"group\":\"i\"}"));
         assertEquals(error + "`method` must be one of activate - or, with `form`, a method of a form", call(CLIENT_TOOL, "{\"method\":\"startEditing\"}"));
         assertEquals(error + "unknown field `table`: `args` of getCount has group", callForm("getCount", "{\"table\":\"i\"}"));
         assertEquals(error + "`args` of getCount must be an object of group", callForm("getCount", "[\"i\"]"));
@@ -579,6 +581,42 @@ public class UiWebMCPIT extends UiTest {
         }
     }
 
+    // the form itself: made the current one - the form the user is in from then on - and closed, the one the agent
+    // addresses and the one the user is in
+    @Test
+    public void theClientToolActivatesAndClosesAForm() throws Exception {
+        exec("UiWebMCP.uiWebMCPSeedItems");
+        loadWithAgent();
+        String mode = pinMode();
+        try {
+            pinMode(ALL_PINNED); // a second form is opened from the navigator
+            Locator items = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCPItems");
+            assertThat(items.locator("td[lsfusion-container='PROPERTY(name)']")).hasCount(3);
+            Locator other = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCPOther"); // the user is in this one now
+            assertThat(other.locator("[lsfusion-container='PROPERTY(uiWebMCPNote())'] input")).isVisible();
+            String count = "{\"method\":\"getCount\",\"args\":{\"group\":\"i\"},\"form\":{}}";
+            String here = call(CLIENT_TOOL, count);
+            assertTrue(here, here.contains("unknown object group or tree 'i'"));
+
+            assertEquals("{}", call(CLIENT_TOOL, "{\"method\":\"activate\",\"form\":{\"name\":\"UiWebMCP.uiWebMCPItems\"}}"));
+            assertEquals("{\"result\":3}", call(CLIENT_TOOL, count)); // at once: the next call is for it
+            assertThat(items.locator("td[lsfusion-container='PROPERTY(name)']").first()).isVisible();
+
+            assertEquals("{}", call(CLIENT_TOOL, "{\"method\":\"close\",\"form\":{\"name\":\"UiWebMCP.uiWebMCPOther\"}}"));
+            assertThat(other).hasCount(0);
+            assertEquals("{\"result\":3}", call(CLIENT_TOOL, count)); // the user is still in the first one
+            // ... with an edit under way in it: the editor is committed first - the form would wait for it to end
+            Locator quantity = row(items, "name", "b").locator("td[lsfusion-container='PROPERTY(quantity)']");
+            quantity.dblclick();
+            assertThat(quantity.locator("input")).isVisible();
+            assertEquals("{}", callForm("close", "{}"));
+            assertThat(items).hasCount(0);
+            assertEquals(CLIENT_TOOL + " error: the user is in no form", call(CLIENT_TOOL, count));
+        } finally {
+            pinMode(mode);
+        }
+    }
+
     // with no form the method is the navigator's: an element of the navigator activated by its name, which the page
     // shows on it (`lsfusion-container`, what a test opens a form by), as a click on it does - here a form's, opened
     @Test
@@ -606,9 +644,11 @@ public class UiWebMCPIT extends UiTest {
         page.evaluate("() => { window.uiWebMCPKeep = controller => { window.uiWebMCPController = controller; }; }");
         assertEquals("", call("lsfusion_eval", "{\"script\":\"run() { INTERNAL CLIENT 'uiWebMCPKeep'; }\",\"form\":{}}", VALUES));
         String functions = "() => Object.keys(window.uiWebMCPController).filter(name => typeof window.uiWebMCPController[name] === 'function').sort().join()";
+        // ... but what the client does with the form itself, which is no method of its controller
         String methods = "([heading, leftOut]) => { const description = window.uiWebMCPTools." + CLIENT_TOOL + ".description, from = description.indexOf(heading);"
-                + " const till = description.indexOf('\\n\\n', from);"
-                + " return (description.slice(from, till < 0 ? undefined : till).match(/^- `\\w+/gm) || []).map(name => name.slice(3)).concat(leftOut).sort().join(); }";
+                + " const till = description.indexOf('\\n\\n', from), own = heading.includes('form') ? ['activate', 'close'] : [];"
+                + " return (description.slice(from, till < 0 ? undefined : till).match(/^- `\\w+/gm) || []).map(name => name.slice(3))"
+                + "   .filter(name => !own.includes(name)).concat(leftOut).sort().join(); }";
         List<String> logic = Arrays.asList("exec", "eval", "evalAction", "change");
         List<String> leftOut = new ArrayList<>(Arrays.asList("startEditing", "stopEditing", "isEditing", "batch", "changeViewFilters"));
         leftOut.addAll(logic);

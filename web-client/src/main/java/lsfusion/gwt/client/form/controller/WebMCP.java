@@ -70,11 +70,12 @@ public class WebMCP {
         // what a call is checked by where the page checks it, the browser checking no call against a tool's schema: a
         // field it does not take is said with those it does
         function checkFields(given, taken, what) {
+            var fields = taken.length > 0 ? taken.join(', ') : "no fields";
             if (given == null || typeof given !== 'object' || Array.isArray(given))
-                throw new Error(what + " must be an object of " + taken.join(', '));
+                throw new Error(what + " must be an object of " + fields);
             Object.keys(given).forEach(function (field) {
                 if (taken.indexOf(field) < 0)
-                    throw new Error("unknown field `" + field + "`: " + what + " has " + taken.join(', '));
+                    throw new Error("unknown field `" + field + "`: " + what + " has " + fields);
             });
         }
 
@@ -152,14 +153,21 @@ public class WebMCP {
         function callClientMethod(args) {
             checkFields(args, ['method', 'args', 'form'], "the call");
             var form = readForm(args.form);
-            // the methods of what the call is for; a name that is one of the other's is said so, with what to do
+            // the methods of what the call is for. A name that is one of the other's is said so, with what to do - and
+            // so is a name both have, called with an argument that is the other's
             var methods = form != null ? formMethods : navigatorMethods, others = form != null ? navigatorMethods : formMethods;
+            var other = typeof args.method === 'string' && others.hasOwnProperty(args.method) ? others[args.method] : null;
+            var whose = " is a method of " + (form != null ? "the navigator: it is called with no `form`" : "a form: it is called with `form` - `{}` for the form the user is in");
             if (typeof args.method !== 'string' || !methods.hasOwnProperty(args.method))
-                throw new Error(typeof args.method === 'string' && others.hasOwnProperty(args.method)
-                        ? "`" + args.method + "` is a method of " + (form != null ? "the navigator: it is called with no `form`" : "a form: it is called with `form` - `{}` for the form the user is in")
+                throw new Error(other != null ? "`" + args.method + "`" + whose
                         : "`method` must be one of " + Object.keys(methods).join(', ') + (form != null ? "" : " - or, with `form`, a method of a form"));
             var method = methods[args.method];
             var given = args.args != null ? args.args : {};
+            if (other != null && given != null && typeof given === 'object')
+                Object.keys(given).forEach(function (field) {
+                    if (method.takes.indexOf(field) < 0 && other.takes.indexOf(field) >= 0)
+                        throw new Error("`" + args.method + "` with `" + field + "`" + whose);
+                });
             checkFields(given, method.takes, "`args` of " + args.method);
 
             // the method takes its arguments in their order; what it refuses - a name that names nothing, a value that
@@ -180,7 +188,7 @@ public class WebMCP {
         registerTool({
             name: 'lsfusion_client',
             description: "Call a method of the application's client, where the user works: of an open form — what the user does with the form's tables, sortings, filters and values —, or of the navigator; done in what the user sees.\n\n" +
-                "`method` names the method and `args` gives its arguments by their names, as listed below. `form` says whose method it is: with `form`, a form's — of the form it addresses, `{}` being the form the user is in; with no `form`, the navigator's. The answer is `{result}`: what the method answers with, nothing for a method that only changes what the user sees. A call that is refused is an error, with the reason. A form's method that starts what the user is asked about — a value, a confirmation — waits for the user's answer.\n\n" +
+                "`method` names the method and `args` gives its arguments by their names, as listed below. `form` says whose method it is: with `form`, a form's — of the form it addresses, `{}` being the form the user is in; with no `form`, the navigator's. The answer is `{result}`: what the method answers with, nothing for a method that only changes what the user sees. A call that is refused is an error, with the reason.\n\n" +
                 "**Names in a form.** `group` is an object group of the form, by its name; `tree`, a tree by its name; `table`, the table of an object group's rows, by the group's name, or a tree, by its name; `filterGroup`, a filter group by its name. The page shows them in `lsfusion-container`: `GRID(group)` on a group's table, `GRID(TREE tree)` on a tree, `FILTERGROUP(filterGroup)` on a filter group. A `property` is named as the page shows it in `lsfusion-property`, on the property's cells, its column's header and its field: `group.property`, and `property` alone for a property of no group. Beside its `group`, and in the sortings and conditions of a group's `table`, it is the part after the group, `property`; in a tree's sortings and conditions it is whole.\n\n" +
                 "**Rows.** `row` is a row of `group` that the form shows: the `lsfusion-row` of a table's or a tree's row element, a string or a number, whose `lsfusion-group` is the group. Beside a `property` it is a row of the property's group.\n\n" +
                 "**Values.** A value is given as JSON: a number, a string, `true` or `false`, an object or an array for a JSON property, `null` for no value; a date or a time as its ISO string with no time zone, as the form shows it — `2026-11-15`, `10:30`, `2026-11-15T10:30`.\n\n" +
@@ -240,7 +248,9 @@ public class WebMCP {
     // or a function is not here (startEditing, stopEditing, isEditing, batch), nor are the controller's calls of the
     // logic (exec, eval, evalAction, change, mcp), which lsfusion_eval and lsfusion_exec are, nor a view's own filters
     // of the rows it draws (changeViewFilters), which the agent is no view to state: a table's user filters are its
-    // changeFilters
+    // changeFilters. And two that are no method of the controller - `call`, what is called in its place -: the form
+    // made the current one, and closed, which the client does with the form (GFormController.activate, close), where
+    // code of the application runs an operator
     private static native JavaScriptObject getFormMethods()/*-{
         // a lookup's answer: its last one - the server answers before it is sure of the form's unsaved changes, and
         // then again, in `more` -, each value as its strings, its `objects` being the handle of a row
@@ -253,7 +263,7 @@ public class WebMCP {
             changeObject: { takes: ['group', 'row', 'options'],
                 does: "Make `row` the current row of the group: the row `changeProperty` and `getValues` are of when they are given none. Where the group's rows are shown as a grid - not a tree's, nor as a pivot or another view -, `row` is also `{to: 'home'}` or `{to: 'end'}`, the first or the last row, and `options.selection` says what becomes of the rows selected: `start` (the default) selects none, `extend` selects the rows up to this one, `keep` leaves them." },
             changeProperty: { takes: ['property', 'row', 'value'],
-                does: "Set the property's value in `row` - with no `row`, in the current row: `value`, `null` for none. With no `value`, start the property's change there as a click on it does: an action is run, a value may be asked of the user.",
+                does: "Set the property's value in `row` - with no `row`, in the current row: `value`, `null` for none. With no `value`, start the property's change there as a click on it does: an action is run, a value may be asked of the user — the call then waits for the user's answer.",
                 // the controller's method takes (property, value) and (property, row, value): no row is no argument
                 call: function (form, controller, given, row) {
                     return row != null ? controller.changeProperty(given.property, row, given.value) : controller.changeProperty(given.property, given.value);
@@ -312,7 +322,17 @@ public class WebMCP {
             copy: { takes: ['group'],
                 does: "Answers the text of the cells selected in the group's grid: the rows selected, of all its rows, in the columns selected - the current row where the page shows no row as selected, the current column where no column is. A row a line, tabs between its cells. The column of an action, and those of a property the form groups in columns (`COLUMNS`), are none of the cells." },
             paste: { takes: ['group', 'text'],
-                does: "Paste such a text into those cells: one value into every one of them; several, into the cells from the current one on, to the right and down - none while the current column is none of the cells." }
+                does: "Paste such a text into those cells: one value into every one of them; several, into the cells from the current one on, to the right and down - none while the current column is none of the cells." },
+            activate: { takes: [],
+                does: "Make the form the current one, the form the user is in, as a click on its tab does. Only a form docked into a `FORMS` window - one that has `lsfusion-form-window` - is made the current one.",
+                call: function (form) {
+                    form.@GFormController::activate()();
+                } },
+            close: { takes: [],
+                does: "Close the form, as the close button of its tab does: a form docked into a `FORMS` window. An edit under way in it is committed first. The call answers at once: a form with unsaved changes asks the user first, and may stay open.",
+                call: function (form) {
+                    form.@GFormController::close()();
+                } }
         };
     }-*/;
 

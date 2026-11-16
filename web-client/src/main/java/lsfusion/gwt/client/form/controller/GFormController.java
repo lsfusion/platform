@@ -1711,6 +1711,35 @@ public class GFormController implements EditManager, GReactFormData.Verbs, GReac
     public GComponentController getComponentController(GComponent component) {
         return componentControllers.get(component);
     }
+    // THE FORM ITSELF as a call of the browser's agent asks of it (WebMCP: lsfusion_client) - what ACTIVATE FORM and
+    // CLOSE FORM do of the forms their address names (FormsController), for this one: what a click on its tab does,
+    // and on the tab's close button. So of a form a forms window holds: what is in none - a float, a popup, an
+    // in-place editor, a form in a container of another - has no tab, and what closes it is where it is shown
+    private FormDockable getDockable(String asked) {
+        if (!(formContainer instanceof FormDockable))
+            throw GwtClientUtils.refusal("the form is in no FORMS window: only a form docked into one is " + asked + " by this call");
+        return (FormDockable) formContainer;
+    }
+    // ... made the current one - and said not to be where its window did not make it so: a window that is not shown,
+    // a form that one opened from it blocks, a modal popup over the page
+    public void activate() {
+        FormDockable dockable = getDockable("made the current one");
+        formsController.setCurrentForm(dockable);
+        if (MainFrame.getCurrentForm() != dockable)
+            throw GwtClientUtils.refusal("the form is not made the current one: its FORMS window is not shown, a form opened from it blocks it, or a"
+                    + " modal popup is open");
+    }
+    // ... and closed, by the ordinary close - a request: a form with unsaved changes asks the user, and may stay. An
+    // edit under way in it is committed first, as a key of the form's commits it (checkCommitEditing): the answer to
+    // the close would wait for the editor to end. A form that one opened from it blocks is not closed while that one
+    // is open: its tab offers no close then
+    public void close() {
+        FormDockable dockable = getDockable("closed");
+        if (dockable.hasBlockingForm())
+            throw GwtClientUtils.refusal("the form is blocked by a form opened from it, and is not closed while that one is open");
+        checkCommitEditing();
+        dockable.closePressed();
+    }
     // a ROW of a group named by its KEY as the page shows it - on the row's element (lsfusion-row), and a React view
     // in its rows (GGroupObjectValue.toKeyString) -: the row of that key among the rows the form has of the group,
     // whoever draws them. A key is not read, it is looked up, as a view's is among its own rows
