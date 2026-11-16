@@ -25,12 +25,15 @@ title: 'Rules: custom views'
 
 2. A custom view is one of three things, and the assistant
    MUST pick by what it draws:
-   - the `CUSTOM` option of a form property — a render
-     function over ONE value of ONE object (a custom editor,
-     a widget for a field);
-   - the `CUSTOM` view of an object group — a JS
+   - the `CUSTOM` option of a form property — a classic render
+     function or a React component registered as `reactView`,
+     over ONE value of ONE object (a custom editor, a widget
+     for a field);
+   - the `CUSTOM` view of an object group — a classic JS
      `render` / `update` pair over the rows of ONE group,
-     with the controller's `diff`, view filters and page size;
+     with the controller's `diff`, view filters and page size,
+     or a React component registered as `reactView`
+     ([A React component in CUSTOM](../how-to/How-to_Custom_React_views.md#form-custom));
    - a `DESIGN` container with the `custom` attribute — a
      React component (a name matching `[A-Z][A-Za-z0-9_$]*`)
      that draws the container's whole subtree from the
@@ -39,6 +42,10 @@ title: 'Rules: custom views'
      filter controls or a filter group take a React
      component the same way, which draws what that
      component shows of its group, in its place.
+
+   For a new view the assistant SHOULD use a React component:
+   a `custom` container, or `CUSTOM` registered as `reactView`.
+   Classic render functions are for existing code.
 
    All three are web client only: the desktop client renders
    the standard views and the container's regular subtree.
@@ -63,8 +70,10 @@ title: 'Rules: custom views'
    of the data it is built from changes, its size is unbounded,
    and the platform cannot page it (`PAGESIZE`,
    `useSeekOnScroll`), filter it on the server (form `FILTERS`
-   and `FILTERGROUP`, the `setBooleanViewFilter` /
-   `setDateIntervalViewFilter` filters of a `CUSTOM` view) or
+   and `FILTERGROUP`, the group's user filters — including a
+   property's `FILTER` — and its view filters: `filters` /
+   `viewFilters` of a React view, `setBooleanViewFilter` /
+   `setDateIntervalViewFilter` of a classic `CUSTOM` view) or
    apply the per-property security policy to its fields — so
    every column of every row reaches every user allowed to
    view that one property, whatever the policy on the
@@ -106,7 +115,7 @@ title: 'Rules: custom views'
    with `INPUT f = JSON DO IMPORT JSON FROM f` to dispatch
    events. When a property view has to show several values,
    the view is the wrong kind: the assistant switches to a
-   `CUSTOM` object-group view or a React container.
+   React container or a React `CUSTOM` object-group view.
 
 3. A page is split into `custom` containers by region — a
    list, a detail panel, a filter bar, a cart — and the
@@ -140,28 +149,56 @@ title: 'Rules: custom views'
    `Changing what another container draws`), and never
    through JavaScript state the components share.
 
-4. Selecting, ordering and totals belong to the form, not to
-   the component. Every piece of UI state that decides which
-   rows are shown — the chosen section or tab, a category,
-   the search text, the opened record — MUST belong to the
-   form: as the current object of a group
-   (`<group>.change(row)`) when a record or a category is
-   chosen from a list, and otherwise as a form property
-   (normally `DATA LOCAL`) changed through the controller, and
-   the rows MUST be selected by the form's `FILTERS` /
-   `FILTERGROUP` and ordered by `ORDERS` over it. The
-   component MUST NOT filter, search, sort, count or sum the
-   projected rows, nor compute a value from two rows of them:
-   a count or a total over the rows that pass the form's
-   filter is a property
-   (`GROUP SUM 1 IF [ FILTER orders.o](Order o)`, the how-to),
-   a heading is a property, the section of a row in a flat
-   list is a property of the row. Only the number of rows
-   already read is `list.length`. Placing the rows the server
-   selected into visual blocks by such a server-computed value
-   is rendering (the `bucketOf` of the how-to) and is allowed.
-   Only presentation state — an expanded card, an open sheet,
-   an input draft — lives in React state.
+4. Selecting, ordering and totals belong to the server.
+   The component MUST NOT filter, search, sort, count or sum
+   the projected rows, nor compute a value from two rows of
+   them. Which rows are read MUST be stated through the
+   controller, by the mechanism that fits the state:
+   - a record or a category chosen from a list — the current
+     object of a group (`<group>.change(row)`);
+   - a search the user types — by default a property declared
+     `FILTER`, changed by `controller.<g>.filter.<p>.change(...)`.
+     One field searching several properties MAY use one
+     property combining them, declared `FILTER` (concatenation
+     also matches across field boundaries), or adjacent
+     property filters joined by `or` and stated together in
+     one `batch` (the how-to, `Property filters`);
+   - conditions built by the view's filter editor — the group's
+     user filters (`controller.<g>.filters.change(...)`);
+   - a sorting the user picks — the group's sortings
+     (`controller.<g>.orders.change(...)`);
+   - a fixed set of named selections (active / archived,
+     sections) — a `FILTERGROUP`;
+   - a condition the view imposes and the user must not see or
+     reset, such as the period a calendar shows — the view
+     filters (`controller.<g>.viewFilters.change(...)`), which
+     apply to the whole group;
+   - a value other form logic reads — a property, an action,
+     a constraint, ordering by rank —, an empty value that
+     must select nothing, or a predicate the user filters
+     cannot state — a form property (normally `DATA LOCAL`)
+     changed through the controller, with `FILTERS` / `ORDERS`
+     over it.
+
+   The assistant SHOULD NOT add a `DATA LOCAL` property and
+   a `FILTERS` condition over it only to carry a search text
+   or a user's sorting. Which region or tab is shown MAY live
+   in React state: this does not select rows. `<Platform>` /
+   `useShown` tells the platform which regions are shown.
+   A count or a total kept
+   current over the rows that pass the filters MUST be a
+   property over `[FILTER form.o]`, which includes the applied
+   user filters and view filters
+   (`GROUP SUM 1 IF [ FILTER orders.o](Order o)`, the how-to).
+   A one-off count or sum MAY use the group's `getCount()` /
+   `getSum(property)`; these use only the marked rows when the
+   user has marked any. A heading is a property, the section
+   of a row in a flat list is a property of the row. Only the
+   number of rows already read is `list.length`. Placing the
+   rows the server selected into visual blocks by such a
+   server-computed value is rendering (the `bucketOf` of the
+   how-to) and is allowed. Presentation state — an expanded
+   card, an open sheet, an input draft — MAY live in React state.
 
 ## Projection and editing
 
@@ -210,13 +247,15 @@ title: 'Rules: custom views'
 3. A change made through the controller is made in the form's
    change session, like an edit in the standard table: the
    view sees the new value in the next projection at once,
-   and it reaches the database when the form applies. A result
-   the user must keep seeing MUST be put into a form property,
-   not kept only in DOM nodes or component state: a classic
-   `update` that rebuilds its elements from the new `list`
+   and it reaches the database when the form applies. In a
+   classic view, a result the user must keep seeing MUST be
+   put into a form property, not kept only in DOM nodes or
+   component state: a classic `update` that rebuilds its elements from the new `list`
    instead of applying the change incrementally through
    `controller.diff` discards it on the next change of the
-   list.
+   list. In a React view the result MAY stay in component
+   state; it MUST be a form property when the form's logic
+   reads it.
 
 ## Container sizing
 
@@ -267,8 +306,9 @@ title: 'Rules: custom views'
    only applies the pending update of a group in manual
    update mode. A form refreshed this way reads only what is
    shown: rows outside the current section, search or
-   selection are excluded by the form's filters (data path
-   rule 4), not hidden by the component, and the view SHOULD
+   selection are excluded on the server — by the form's
+   filters, the user filters or the view filters (data path
+   rule 4) — not hidden by the component, and the view SHOULD
    read through `List`, memoized rows and `useData` so that a
    changed value does not re-render every row of the view.
 

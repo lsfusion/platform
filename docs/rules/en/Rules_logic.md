@@ -122,9 +122,9 @@ title: 'Rules: domain logic'
    `isScheduled(o) = IF scheduledAt(o) THEN TRUE` for a
    `DATETIME`, `hasDepartment(e) = IF department(e) THEN TRUE`
    for an object-valued property,
-   `NOT query() OR name(o) LIKE ('%' + query() + '%')`
-   for a search filter that passes everything while the query
-   is empty (`NOT` and `OR` do not propagate `NULL`, rule 3).
+   `NOT minSum() OR sum(o) >= minSum()`
+   for a bound that passes everything while unset (`NOT` and
+   `OR` do not propagate `NULL`, rule 3).
 
    The assistant MUST NOT compare with the `NULL` literal:
    `expr = NULL`, `expr == NULL` and `expr != NULL` are

@@ -225,7 +225,7 @@ The [`FORMULA` operator](../language/FORMULA_operator.md) creates a property com
 FORMULA [NULL] [className [valueId]] implList [( paramList )] [NULL]
 ```
 
-`CUSTOM` hands rendering to a JavaScript function in the client: on an object group as `CUSTOM renderFunction [OPTIONS optionsExpr]` ([object blocks](../language/Object_blocks.md)), on a property as `CUSTOM renderFunction [CHANGE [editFunction]]` ([properties and actions block](../language/Properties_and_actions_block.md)). The function is given the view's own local controller, which reads and changes what this view shows. The form controller — and with it the server calls — is reached from it as `controller.form` ([How-to: Custom Components](../how-to/How-to_Custom_components_objects.md)).
+`CUSTOM` hands rendering in the client to a classic JavaScript function or a React component registered as `reactView` ([React in CUSTOM](../how-to/How-to_Custom_React_views.md#form-custom)): on an object group as `CUSTOM renderFunction [OPTIONS optionsExpr]` ([object blocks](../language/Object_blocks.md)), on a property as `CUSTOM renderFunction [CHANGE [editFunction]]` ([properties and actions block](../language/Properties_and_actions_block.md)). The function or component is given the view's own local controller, which reads and changes what this view shows. The form controller — and with it the server calls — is reached from it as `controller.form` ([How-to: Custom Components](../how-to/How-to_Custom_components_objects.md)).
 
 The [`JSON` and `JSONTEXT` operators](../language/JSON_operator.md) create a property building JSON out of a list of properties or out of a form.
 

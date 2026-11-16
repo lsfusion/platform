@@ -119,8 +119,8 @@ title: 'Rules: domain logic'
    `isScheduled(o) = IF scheduledAt(o) THEN TRUE` для
    `DATETIME`, `hasDepartment(e) = IF department(e) THEN TRUE`
    для свойства со значением-объектом,
-   `NOT query() OR name(o) LIKE ('%' + query() + '%')`
-   для поискового фильтра, пропускающего всё, пока запрос пуст
+   `NOT minSum() OR sum(o) >= minSum()`
+   для границы, пропускающей всё, пока она не задана
    (`NOT` и `OR` не распространяют `NULL`, правило 3).
 
    Ассистент НЕ ДОЛЖЕН сравнивать с литералом `NULL`:
