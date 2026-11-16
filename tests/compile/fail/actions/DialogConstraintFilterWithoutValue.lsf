@@ -1,0 +1,19 @@
+MODULE DialogConstraintFilterWithoutValue;
+
+REQUIRE System;
+
+// an object of DIALOG with CONSTRAINTFILTER and neither an expression nor an initial value to filter by is reported
+// at load: it used to stop the start with a NullPointerException (#1979)
+
+CLASS Store;
+name = DATA STRING[50] (Store);
+
+FORM stores
+    OBJECTS s = Store
+    PROPERTIES(s) name
+;
+
+chooseStore () {
+    DIALOG stores OBJECTS s INPUT CONSTRAINTFILTER DO
+        MESSAGE name(s);
+}

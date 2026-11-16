@@ -2522,6 +2522,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if (changeProp == null)
             changeProp = oldValue;
+        // a parameter (INPUT s = (x)) has no property either; the filter is applied only to an object input
+        if ((changeProp == null || changeProp.getLP() == null) && (assign || (constraintFilter && requestValueClass instanceof CustomClass)))
+            errLog.emitInputNothingToChangeError(parser);
 
         if(assign && doAction == null) // we will need to add change props, temporary will make this action empty to avoid extra null checks 
             doAction = new LAWithParams(baseLM.getEmpty(), new ArrayList<Integer>());
@@ -4371,6 +4374,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                 LPWithParams changeProp = objectProp.changeProp;
                 if(changeProp == null)
                     changeProp = objectProp.in;
+                // a parameter (OBJECTS s = x) has no property either
+                if((changeProp == null || changeProp.getLP() == null) && (objectProp.constraintFilter || objectProp.assign))
+                    errLog.emitDialogObjectNothingToChangeError(parser, object instanceof ObjectEntity ? ((ObjectEntity) object).getSID() : null);
 
                 if(objectProp.constraintFilter)
                     mConstraintContextFilters.add(new CCCF<O>(changeProp, object, oldContext.size() + contextObjects.indexOf(object)));

@@ -837,6 +837,18 @@ public class ScriptingErrorLog {
         }
     }
 
+    // objectName is null for the form of a class, which has no OBJECTS
+    public void emitDialogObjectNothingToChangeError(ScriptParser parser, String objectName) throws SemanticErrorException {
+        emitSimpleError(parser, format("%s of DIALOG has no property to change or to filter by: give CHANGE or CONSTRAINTFILTER " +
+                "a property (= f(...)), or, with no expression there, give the object an initial value that is a property (%s = f(...))",
+                objectName != null ? "object '" + objectName + "'" : "the object", objectName != null ? "OBJECTS " + objectName : "DIALOG LIST/EDIT Class"));
+    }
+
+    public void emitInputNothingToChangeError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "INPUT has no property to change or to filter by: give CHANGE a property (CHANGE = f(...)), " +
+                "or, with no expression there, give the input an initial value that is a property (INPUT alias = f(...))");
+    }
+
     public void emitNotPrimitiveTypeInListError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "The action in LIST can only be used for built-in types");
     }

@@ -123,7 +123,7 @@ The operator runs synchronously (waits for the form to close) whenever the input
 
 - `CHANGE`
 
-    Keyword. Like `INPUT`, but additionally writes the returned value back to a property. By default the written-to property is the one supplied as the initial value (`expr`). To use a different one, give `changeExpr` after `CHANGE`. Also, by default `CHANGE` adds a filter to the form so that only those object values are selectable that would not break any existing [constraint](../paradigm/Constraints.md) when assigned.
+    Keyword. Like `INPUT`, but additionally writes the returned value back to a property. By default the written-to property is the one supplied as the initial value (`expr`). To use a different one, give `changeExpr` after `CHANGE`. Also, by default `CHANGE` adds a filter to the form so that only those object values are selectable that would not break any existing [constraint](../paradigm/Constraints.md) when assigned. Unless both the filter and the write-back are turned off (`NOCONSTRAINTFILTER NOCHANGE`), `changeExpr`, or `expr` when `changeExpr` is not given, must be an expression with a property, not just a parameter; otherwise the platform reports an error when the module is loaded.
 
 - `NOCONSTRAINTFILTER`
 
@@ -147,7 +147,7 @@ The operator runs synchronously (waits for the form to close) whenever the input
 
 - `CONSTRAINTFILTER`
 
-    Keyword. Enables the constraint-respecting filter described under `CHANGE`. After `INPUT` the filter is off by default and `CONSTRAINTFILTER` turns it on. After `CHANGE` the filter is on by default, so the keyword keeps it on — including when `NOCONSTRAINTFILTER` was also given, in which case `CONSTRAINTFILTER` re-enables the filter. The `changeExpr` sets the property used by the filter, and with `CHANGE` this same property also replaces the `CHANGE` target (a single property is shared between the constraint check and the write-back).
+    Keyword. Enables the constraint-respecting filter described under `CHANGE`. After `INPUT` the filter is off by default and `CONSTRAINTFILTER` turns it on. After `CHANGE` the filter is on by default, so the keyword keeps it on — including when `NOCONSTRAINTFILTER` was also given, in which case `CONSTRAINTFILTER` re-enables the filter. The `changeExpr` sets the property used by the filter, and with `CHANGE` this same property also replaces the `CHANGE` target (a single property is shared between the constraint check and the write-back). Without `changeExpr` the filter uses the property given as the initial value (`expr`). The one of the two that is used must be an expression with a property, not just a parameter; otherwise the platform reports an error when the module is loaded.
 
 - `listExpr`
 

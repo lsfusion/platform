@@ -73,7 +73,7 @@ Interactive input of a built-in class value is performed in the editor of the fo
 
 - `changeExpr`
 
-    An expression that determines the property to which the input result is written. By default, the property specified as the initial input value is used.
+    An expression that determines the property to which the input result is written. By default, the property specified as the initial input value is used. Unless the write-back is turned off by `NOCHANGE` and, for an input of a custom class, the filter by `NOCONSTRAINTFILTER`, the one of the two that is used must be an expression with a property, not just a parameter; otherwise the platform reports an error when the module is loaded.
 
 - `NOCONSTRAINTFILTER`
 
