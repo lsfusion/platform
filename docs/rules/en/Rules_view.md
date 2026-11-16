@@ -17,16 +17,16 @@ title: 'Rules: view logic'
    the assistant SHOULD combine them into one object group
    using brackets.
 
-2. In a `FORM ... ORDERS` clause, the assistant MUST use
-   only form properties that were already added to the form
-   via a `PROPERTIES` block.
+2. For a sorting the user sees or changes, in a
+   `FORM ... ORDERS` clause the assistant MUST use only form
+   properties already added via a `PROPERTIES` block.
 
-   In `ORDERS`, the assistant MUST specify either:
+   For such a sorting, the assistant MUST specify either:
    - the form property name with its parameters, if no explicit alias was given
    - the explicit form property alias, if such an alias was specified
 
-   Raw expressions, objects, or properties not added to the form
-   MUST NOT be placed into `ORDERS`.
+   An expression MAY be placed into `ORDERS` as a fixed
+   sorting the user neither sees nor changes.
 
 3. The assistant MUST NOT use `INPUT` inside actions
    added directly to a form through `PROPERTIES`,
@@ -280,6 +280,9 @@ title: 'Rules: view logic'
    containers for tables first.
 
    `GRID(...)` SHOULD be used only when absolutely necessary.
+   In a `custom` container, only `GRID(<g>)` SHOULD be moved
+   when React draws the rows and the platform keeps the
+   filters and toolbar.
 
 5. If possible, the assistant SHOULD avoid form designs
    with more than two tables stacked vertically
