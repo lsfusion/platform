@@ -1,0 +1,35 @@
+MODULE TryInterrupt;
+
+REQUIRE TestUtils, Utils;
+
+// an interrupt of the thread - a scheduler task's timeout, a cancel in the process monitor - went into CATCH as an
+// ordinary error, and sleep, which the interrupt broke, had taken it off the thread, so a loop around TRY ran on to its
+// end (#1993). The interrupt now goes through TRY, with FINALLY run on the way
+
+tiSteps = DATA LOCAL INTEGER ();
+tiCaught = DATA LOCAL BOOLEAN ();
+tiFinally = DATA LOCAL BOOLEAN ();
+tiInterrupted = DATA LOCAL BOOLEAN ();
+
+tiRunInterrupted INTERNAL 'lsfusion.tests.RunInterruptedAction' (STRING, LONG, STRING);
+
+// the interrupt comes after 500 ms, while the loop, almost all of it sleep, takes 2 s; tiFinally is reset at each step,
+// so it tells whether FINALLY ran after the step the interrupt broke
+tiLoop () {
+    FOR iterate(INTEGER i, 1, 20) ORDER i DO
+        TRY {
+            tiFinally() <- NULL;
+            sleep(100);
+            tiSteps() <- tiSteps() (+) 1;
+        }
+        CATCH { tiCaught() <- TRUE; }
+        FINALLY { tiFinally() <- TRUE; }
+}
+
+testTryInterrupted 'An interrupt of the thread inside TRY skips CATCH, runs FINALLY and stops the loop around it' () {
+    tiRunInterrupted('tiLoop[]', 500, 'tiInterrupted[]');
+    assertTrue(tiInterrupted(), 'the interrupt did not come out of TRY');
+    assertNull(tiCaught(), 'CATCH caught the interrupt');
+    assertNull(tiSteps() >= 20, 'the loop ran on after the interrupt');
+    assertTrue(tiFinally(), 'FINALLY did not run');
+}
