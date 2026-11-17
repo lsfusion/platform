@@ -258,6 +258,19 @@ uiFormsWindowLauncherKey 'Launcher key' () { uiFormsWindowMark('launcher key'); 
 uiFormsWindowSecondIntoForms 'Second into forms' () { SHOW uiFormsWindowSecond WINDOW NOWAIT; }
 EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowLowerFloating, uiFormsWindowLauncherKey, uiFormsWindowSecondIntoForms;
 
+// a form shown in a tab of a container of the launcher, and its CLOSE FORM from the launcher
+FORM uiFormsWindowGuest 'Guest'
+    PROPERTIES() uiFormsWindowText
+;
+DESIGN uiFormsWindowLauncher {
+    NEW guestPane {
+        tabbed = TRUE;
+    }
+}
+uiFormsWindowGuestIntoLauncher 'Guest into launcher' () { SHOW uiFormsWindowGuest IN uiFormsWindowLauncher.guestPane NOWAIT; }
+uiFormsWindowCloseGuest 'Close guest' () { CLOSE FORM uiFormsWindowGuest; }
+EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowGuestIntoLauncher, uiFormsWindowCloseGuest;
+
 // a form a React view draws (UiFormsWindowCounter), opened from the launcher in System.forms, the window the full screen
 // draws alone
 FORM uiFormsWindowCounter 'Counter';

@@ -26,7 +26,7 @@ public class UiFormsWindowIT extends UiTest {
 
     private static final String FOLDER = "UiFormsWindow.uiFormsWindow";
     private static final String FIRST = "UiFormsWindow.uiFormsWindowFirst", SECOND = "UiFormsWindow.uiFormsWindowSecond",
-            ITEMS = "UiFormsWindow.uiFormsWindowItems";
+            ITEMS = "UiFormsWindow.uiFormsWindowItems", GUEST = "UiFormsWindow.uiFormsWindowGuest";
 
     // a window of one form closes the form it displaces at once - on the server too -, which is what it does with no
     // CLOSE said, and shows nothing of its own around the form it draws: no tab strip (#1842)
@@ -485,6 +485,18 @@ public class UiFormsWindowIT extends UiTest {
         assertThat(second).isVisible();
         close(lower);
         assertThat(second.locator(":focus")).hasCount(1);
+    }
+
+    // a form shown in a tab of a container of the launcher is drawn there, and CLOSE FORM takes it out. The client made
+    // the form's component with no alignment, and the container's layout failed on it - the form was never drawn
+    @Test
+    public void aFormInAContainerIsDrawnThere() throws Exception {
+        Locator launcher = launcher(), guest = form(GUEST);
+        action(launcher, "uiFormsWindowGuestIntoLauncher").click();
+        assertThat(launcher.locator("[lsfusion-form='" + GUEST + "']")).isVisible();
+
+        action(launcher, "uiFormsWindowCloseGuest").click();
+        assertThat(guest).hasCount(0);
     }
 
     // a floating form not waited for whose answer comes after the client's placeholder - the window the client shows
