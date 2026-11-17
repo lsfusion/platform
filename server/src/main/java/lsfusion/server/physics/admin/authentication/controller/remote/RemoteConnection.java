@@ -50,8 +50,10 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import lsfusion.server.physics.dev.id.resolve.ExternalLAPResolver;
 import lsfusion.server.physics.dev.integration.external.to.CallHTTPAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
@@ -96,6 +98,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     // the module of the code that customizes the application for the connection's user, null when there is no code
     protected EvalScriptingLogicsModule customizeLM;
+    // the code that module is of, or that failed
+    private String customizeCode;
 
     public RemoteConnection(int port, String sID, LogicsInstance logicsInstance, AuthenticationToken token, SessionInfo sessionInfo, ExecutionStack upStack) throws RemoteException, SQLException, SQLHandledException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         super(port, upStack, sID, SyncType.NOSYNC);
@@ -136,6 +140,9 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     protected void initCustomize(DataSession session) throws SQLException, SQLHandledException {
         String code = readCustomizeCode(session);
+        if (Objects.equals(code, customizeCode)) // the module is of the code's text alone, whoever the user
+            return;
+
         EvalScriptingLogicsModule customizeLM = null;
         if (code != null) {
             try {
@@ -149,10 +156,20 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             }
         }
         this.customizeLM = customizeLM;
+        // a compile the thread was interrupted in says nothing of the code : it is compiled again the next time
+        this.customizeCode = customizeLM == null && Thread.currentThread().isInterrupted() ? null : code;
     }
 
     private String readCustomizeCode(DataSession session) throws SQLException, SQLHandledException {
         return (String) businessLogics.systemEventsLM.extendCodeUser.read(session, user);
+    }
+
+    // the code saved for the user is the one the module is of, or that failed : a session of the pool with the request's
+    // context is taken as it is only then (RemoteLogics.runInNewSession) - the code may have been saved since, by the
+    // previous request of that very user, say. Read from the server's memory as a rule (SystemEvents.extendCode[User] is
+    // LAZY), and a broken code is not compiled, nor logged, again on every request
+    protected boolean isCustomizeActual(DataSession session) throws SQLException, SQLHandledException {
+        return Objects.equals(readCustomizeCode(session), customizeCode);
     }
 
     // a client tells its user what the code failed with, a call of the program interface has only the log
@@ -454,8 +471,10 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                     LA action;
                     String findActionName = actionName;
                     String actionPathInfo = "";
+                    // in a connection that a code customized, what the code declares is looked for too
+                    ExternalLAPResolver resolver = EvalUtils.getExternalLAPResolver(businessLogics, getCustomizeLM());
                     while (true) { // we're doing greedy search for all subpathes to find appropriate "endpoint" action
-                        if ((action = businessLogics.findActionByName(findActionName)) != null)
+                        if ((action = resolver.findActionByName(findActionName)) != null)
                             break;
 
                         int lastSlash = findActionName.lastIndexOf('/'); // if it is url
@@ -788,6 +807,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             returnProps = new LP[returnNames.length];
             for (int i = 0; i < returnNames.length; i++) {
                 String returnName = returnNames[i];
+                // the logics' only, not what the code of a customization declares : a property is read here with no
+                // check of its own, after an action that may be open to everyone (@@noauth)
                 LP returnProperty = businessLogics.findPropertyByCompoundName(returnName);
                 if (returnProperty == null)
                     throw new RuntimeException(String.format("Return property %s was not found", returnName));

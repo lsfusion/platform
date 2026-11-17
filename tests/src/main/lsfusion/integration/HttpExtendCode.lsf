@@ -1,0 +1,103 @@
+MODULE HttpExtendCode;
+
+REQUIRE TestUtils, SystemEvents;
+
+// a call through the Action API is a connection of its user as a client is, so the code that customizes the application
+// for the user (SystemEvents.dataExtendCode[]) customizes the call : an action the code declares is called by its name,
+// and a script the call sends sees what the code declares. A call without a session takes the code as it is saved at
+// the moment, though the session it gets from the pool was initialized before that
+
+// an action the code of the test declares under the same name : called by the bare name it is neither, with the
+// namespace this one
+hecLogics (INTEGER a) { RETURN a; }
+
+// the code for all users : the calls of a test are anonymous. Open to them on a server that lets only an authenticated
+// call in as well (ExternalApiAccessIT)
+hecSet (TEXT code) {
+    dataExtendCode() <- code;
+    APPLY;
+} @@noauth;
+hecReset () { hecSet(NULL); } @@noauth;
+// an action of the logics such a server lets an anonymous call run
+hecNothing () { } @@noauth;
+
+// what the server answers a call, or what the call fails with. A call waits for the session of the call before it to
+// get back to the pool - the server returns it after it has answered -, so that it is that session the call gets : one
+// that was initialized, and has read the code, before the code was changed
+hecResponse = DATA LOCAL STRING ();
+hecGet (STRING request) {
+    hecResponse() <- NULL;
+    sleep(500);
+    TRY {
+        EXTERNAL HTTP GET origin() + request TO hecResponse;
+    } CATCH {
+        hecResponse() <- messageCaughtException();
+    }
+}
+hecEval (STRING script) {
+    hecResponse() <- NULL;
+    sleep(500);
+    TRY {
+        EXTERNAL HTTP POST origin() + '/eval' PARAMS script TO hecResponse;
+    } CATCH {
+        hecResponse() <- messageCaughtException();
+    }
+}
+
+hecAnswered (STRING answer, STRING call) {
+    assertTrue(hecResponse() = answer, call + ' answered ' + (OVERRIDE hecResponse(), 'nothing'));
+}
+hecFailed (STRING failure, STRING call) {
+    assertTrue(hecResponse() LIKE '%' + failure + '%', call + ' answered ' + (OVERRIDE hecResponse(), 'nothing'));
+}
+
+hecCode () = 'hecTwice(INTEGER a) \{ RETURN a * 2; \}\n'
+    + 'hecAnswer() = 42;\n'
+    + 'hecLogics(INTEGER a) \{ RETURN a + 100; \}';
+
+testCallSeesExtendCode 'A call through the Action API sees what the code of the application customization declares' () {
+    hecSet(hecCode());
+    TRY {
+        hecGet('/exec?action=hecTwice&p=21');
+        hecAnswered('42', 'An action of the code');
+
+        hecEval('run() \{ RETURN hecAnswer(); \}');
+        hecAnswered('42', 'A script');
+
+        // a property is returned with no check of its own, so it is the application's only
+        hecGet('/exec?action=hecTwice&p=21&return=hecAnswer');
+        hecFailed('Return property hecAnswer was not found', 'A property of the code as the result');
+
+        // no priority, as in a script evaluated in a client
+        hecGet('/exec?action=hecLogics&p=1');
+        hecFailed('Ambiguous element \'hecLogics\'', 'A name both declare');
+        hecGet('/exec?action=HttpExtendCode.hecLogics&p=1');
+        hecAnswered('1', 'That name with the namespace');
+    } FINALLY {
+        hecSet(NULL);
+    }
+
+    // the code is dropped : the next call does not find what it declared - and finds it again as the code is back
+    hecGet('/exec?action=hecTwice&p=21');
+    hecFailed('hecTwice was not found', 'An action of the dropped code');
+
+    hecSet(hecCode());
+    TRY {
+        hecGet('/exec?action=hecTwice&p=21');
+        hecAnswered('42', 'An action of the code that is back');
+    } FINALLY {
+        hecSet(NULL);
+    }
+}
+
+testCallIgnoresBrokenExtendCode 'A call through the Action API goes on without a customization code that does not compile' () {
+    hecSet('hecTwice(INTEGER a) \{ RETURN a * 2; \}\nNAVIGATOR \{ hecNoSuchElement \'Renamed\'; \}');
+    TRY {
+        hecGet('/exec?action=HttpExtendCode.hecLogics&p=1');
+        hecAnswered('1', 'An action of the application');
+        hecGet('/exec?action=hecTwice&p=21');
+        hecFailed('hecTwice was not found', 'An action of the broken code');
+    } FINALLY {
+        hecSet(NULL);
+    }
+}

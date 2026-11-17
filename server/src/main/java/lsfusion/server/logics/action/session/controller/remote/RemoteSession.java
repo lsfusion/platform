@@ -69,6 +69,11 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         }
     }
 
+    // the session is taken from the pool by its context first, and only then - its own, nobody else's - asked of the code
+    public boolean isCustomizeActual() throws SQLException, SQLHandledException {
+        return isCustomizeActual(dataSession);
+    }
+
     // the client context is not persisted for the API sessions : the API user is usually shared by many clients / threads
     // (and the session context is reinitialized on almost every request), so persisting it would update the same user row
     // on every request with different values (which leads to update conflicts)
