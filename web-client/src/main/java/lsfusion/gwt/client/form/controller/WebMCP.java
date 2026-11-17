@@ -216,8 +216,9 @@ public class WebMCP {
             // a call that throws ends the batch: what the calls before it changed is sent, the calls after it are not
             // made. A failure on the server is the request's - of a change, or of what the server runs as it reads the
             // form after them (an ON ORDER) -: what the server made before it stays done
-            var failed = null;
+            var failed = null, made = false;
             var batch = form.@GFormController::controller.batch(function () {
+                made = true;
                 for (var index = 0; index < calls.length && failed == null; index++)
                     try {
                         invokeMethod(form, calls[index]);
@@ -238,6 +239,8 @@ public class WebMCP {
                     throw new Error(local("The calls before it were made, in one request."));
                 return {};
             }, function (e) {
+                if (!made) // the batch refused before any call is made - a form closed -: the refusal is the answer
+                    throw e;
                 var stopped = "What the server made before the failure stays done, nothing is taken back.";
                 throw new Error(failed != null ? local("The calls before it were sent, in one request, which the server failed: " + e.message + ". " + stopped)
                         : "The server failed the calls' request: " + e.message + ". " + stopped);
@@ -258,7 +261,7 @@ public class WebMCP {
             name: 'lsfusion_client',
             description: "Call a method of the application's client, where the user works: of an open form — what the user does with the form's tables, sortings, filters and values —, or of the navigator; done in what the user sees.\n\n" +
                 "`method` names the method and `args` gives its arguments by their names, as listed below. `form` says whose method it is: with `form`, a form's — of the form it addresses, `{}` being the form the user is in; with no `form`, the navigator's. The answer is `{result}`: what the method answers with, nothing for a method that only changes what the user sees. A call that is refused is an error, with the reason.\n\n" +
-                "`batch`, given with `form` in place of `method` and `args`, contains several calls of the form's methods, `[{method, args}]`, whose changes are sent to the server in one request, made in their order; the answer is `{}`. A call sees what the calls before it changed as the page has it before the server answers: a row is one the form showed before, and a row the server finds — `changeObject` to `{to}` — is not yet the current one. Methods that answer something are not made in `batch`: " + aloneMethods + ". The first call that fails on the page stops the calls, and the error says which one it is; the changes of the calls before it are sent. A failure on the server is the request's. What was made before a failure stays done, nothing is taken back.\n\n" +
+                "`batch`, given with `form` in place of `method` and `args`, contains several calls of the form's methods, `[{method, args}]`, whose changes are sent to the server in one request, made in their order; the answer is `{}`. A call sees what the calls before it changed as the page has it before the server answers: a row is one the form showed before, and a row the server finds — `changeObject` to `{to}` — is not yet the current one. These methods are called alone, not in `batch`, as they answer something, or the client does them with the form itself: " + aloneMethods + ". A call the page refuses stops the calls after it, and the error says which one it is; the changes of the calls before it are sent. A failure on the server is the request's. What was made before a failure stays done, nothing is taken back.\n\n" +
                 "**Names in a form.** `group` is an object group of the form, by its name; `tree`, a tree by its name; `table`, the table of an object group's rows, by the group's name, or a tree, by its name; `filterGroup`, a filter group by its name. The page shows them in `lsfusion-container`: `GRID(group)` on a group's table, `GRID(TREE tree)` on a tree, `FILTERGROUP(filterGroup)` on a filter group. A `property` is named as the page shows it in `lsfusion-property`, on the property's cells, its column's header and its field: `group.property`, and `property` alone for a property of no group. Beside its `group`, and in the sortings and conditions of a group's `table`, it is the part after the group, `property`; in a tree's sortings and conditions it is whole.\n\n" +
                 "**Rows.** `row` is a row of `group` that the form shows: the `lsfusion-row` of a table's or a tree's row element, a string or a number, whose `lsfusion-group` is the group. Beside a `property` it is a row of the property's group.\n\n" +
                 "**Values.** A value is given as JSON: a number, a string, `true` or `false`, an object or an array for a JSON property, `null` for no value; a date or a time as its ISO string with no time zone, as the form shows it — `2026-11-15`, `10:30`, `2026-11-15T10:30`.\n\n" +

@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -460,7 +461,9 @@ public class UiWebMCPIT extends UiTest {
         assertThat(names).hasText(new String[] {"c", "b"});
         assertThat(row(form, "name", "b").locator("td[lsfusion-container='PROPERTY(quantity)']")).hasText("21");
         assertEquals(1, count(requests, "ExecuteBatch"));
-        assertEquals(requests.toString(), 0, requests.stream().filter(body -> body.contains("action.form.") && !body.contains(signature("ExecuteBatch"))).count());
+        // ... none of the four apart from it - a request the form makes of itself, as a page size after a resize, may go
+        assertEquals(requests.toString(), 0, requests.stream().filter(body -> !body.contains(signature("ExecuteBatch")) && Stream.of("SetUserFilters",
+                "SetPropertyOrders", "ChangeGroupObject", "ExecuteEventAction").anyMatch(kind -> body.contains(signature(kind)))).count());
         assertEquals("{\"result\":51}", callForm("getSum", "{\"group\":\"i\",\"property\":\"quantity\"}")); // the one call, as it was
 
         // a call that is none, or that answers something, is refused before any is made: the sorting is not changed back
