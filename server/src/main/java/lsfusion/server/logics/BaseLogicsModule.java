@@ -13,8 +13,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
-import lsfusion.interop.form.FormActivateType;
-import lsfusion.interop.form.DockedWindowFormType;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.navigator.NavigatorScheduler;
@@ -66,7 +64,6 @@ import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.action.change.FormAddObjectAction;
-import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.RequestResult;
 import lsfusion.server.logics.form.interactive.action.userevent.*;
 import lsfusion.server.logics.form.stat.SelectTop;
@@ -1211,7 +1208,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @IdentityStrongLazy
     public LA getFormNavigatorAction(FormEntity form) {
-        LA<?> result = addIFAProp(null, LocalizedString.NONAME, form, SetFact.EMPTYORDER(), FormSessionScope.OLDSESSION, false, new DockedWindowFormType(FormsWindow.DEFAULT_DOCKED_WINDOW_NAME), FormActivateType.USER);
+        LA<?> result = addNavigatorFormAction(form);
 
         if(form.getCanonicalName() != null) {
             String name = "_NAVIGATORFORM" + getFormPrefix(form);
@@ -1479,5 +1476,13 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @IdentityLazy
     public Pair<LA, EvalScriptingLogicsModule> evaluateRun(String script, Set<EvalScriptingLogicsModule> parentLMs, boolean action) {
         return EvalUtils.evaluateAndFindAction(BL, parentLMs, script, action);
+    }
+
+    // a code is compiled once, kept by its text and what it is compiled under : a script that is run, and the code that
+    // customizes the application - the connections one code customizes share one module, and the clients among them one
+    // copy of the navigator
+    @IdentityLazy
+    public EvalScriptingLogicsModule evaluate(String script, Set<EvalScriptingLogicsModule> parentLMs, boolean changesNavigator) {
+        return EvalUtils.evaluate(BL, parentLMs, null, null, null, null, false, script, changesNavigator);
     }
 }

@@ -14,6 +14,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.file.AppImage;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.MessageClientType;
+import lsfusion.interop.form.DockedWindowFormType;
 import lsfusion.interop.form.FormActivateType;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.WindowFormType;
@@ -119,6 +120,7 @@ import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.NavigatorEntity;
 import lsfusion.server.logics.navigator.NavigatorFolder;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
+import lsfusion.server.logics.navigator.window.FormsWindow;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
@@ -2478,6 +2480,10 @@ public abstract class LogicsModule {
 
     protected LA<?> getNavigatorAction(FormEntity form) {
         return baseLM.getFormNavigatorAction(form);
+    }
+
+    protected LA<?> addNavigatorFormAction(FormEntity form) {
+        return addIFAProp(null, LocalizedString.NONAME, form, SetFact.EMPTYORDER(), FormSessionScope.OLDSESSION, false, new DockedWindowFormType(FormsWindow.DEFAULT_DOCKED_WINDOW_NAME), FormActivateType.USER);
     }
 
     protected NavigatorElement createNavigatorForm(FormEntity form, String canonicalName) {

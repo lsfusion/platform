@@ -18,6 +18,13 @@ testEvalNavigatorSchedulerIsRefused 'A navigator scheduler declared in EVAL is r
     assertTrue(messageCaughtException() LIKE '%NAVIGATOR statement cannot be used in EVAL module%', 'a navigator scheduler failed with ' + messageCaughtException());
 }
 
+// the component that lays the navigator's windows out is the whole server's as well
+testEvalNavigatorCustomIsRefused 'NAVIGATOR CUSTOM in EVAL is refused' () {
+    ecrEval('NAVIGATOR CUSTOM \'EcrLayout\'; run() \{ \}');
+    assertNotNull(messageCaughtException(), 'NAVIGATOR CUSTOM was not refused');
+    assertTrue(messageCaughtException() LIKE '%NAVIGATOR CUSTOM option cannot be used in EVAL module%', 'NAVIGATOR CUSTOM failed with ' + messageCaughtException());
+}
+
 testEvalNavigatorElementChangeIsRefused 'A change of a navigator element in EVAL is refused' () {
     ecrEval('NAVIGATOR \{ System.administration \'ecr\'; \} run() \{ \}');
     assertNotNull(messageCaughtException(), 'a change of a navigator element was not refused');
@@ -34,6 +41,18 @@ testEvalHideWindowIsRefused 'HIDE WINDOW in EVAL is refused' () {
     ecrEval('HIDE WINDOW System.toolbar; run() \{ \}');
     assertNotNull(messageCaughtException(), 'HIDE WINDOW was not refused');
     assertTrue(messageCaughtException() LIKE '%HIDE WINDOW statement cannot be used in EVAL module%', 'HIDE WINDOW failed with ' + messageCaughtException());
+}
+
+testEvalExtendWindowFormsIsRefused 'EXTEND WINDOW ... FORMS in EVAL is refused' () {
+    ecrEval('EXTEND WINDOW System.forms FORMS NOTABBED; run() \{ \}');
+    assertNotNull(messageCaughtException(), 'EXTEND WINDOW ... FORMS was not refused');
+    assertTrue(messageCaughtException() LIKE '%WINDOW statement cannot be used in EVAL module%', 'EXTEND WINDOW ... FORMS failed with ' + messageCaughtException());
+}
+
+testEvalWindowCustomIsRefused 'EXTEND WINDOW ... CUSTOM in EVAL is refused' () {
+    ecrEval('EXTEND WINDOW System.toolbar CUSTOM \'EcrMenu\'; run() \{ \}');
+    assertNotNull(messageCaughtException(), 'EXTEND WINDOW ... CUSTOM was not refused');
+    assertTrue(messageCaughtException() LIKE '%CUSTOM option of a WINDOW statement cannot be used in EVAL module%', 'EXTEND WINDOW ... CUSTOM failed with ' + messageCaughtException());
 }
 
 ecrTarget () { }

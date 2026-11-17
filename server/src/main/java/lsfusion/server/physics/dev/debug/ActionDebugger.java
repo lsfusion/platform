@@ -425,7 +425,7 @@ public class ActionDebugger implements DebuggerService {
 
         watchHack.set(false);
 
-        LA la = EvalUtils.evaluateAndFindAction(bl, null, namespace, require, priorities, locals, prevEventScope, script, "evalStub").first;
+        LA la = EvalUtils.findAction(EvalUtils.evaluate(bl, null, namespace, require, priorities, locals, prevEventScope, script, false), "evalStub");
 
         boolean forExHack = watchHack.get();
         watchHack.set(null);

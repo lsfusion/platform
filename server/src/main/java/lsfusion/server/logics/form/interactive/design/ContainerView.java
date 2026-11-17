@@ -472,8 +472,10 @@ public class ContainerView<AddParent extends IdentityView<AddParent, ?>> extends
     public AppServerImage.Reader getImage() {
         return image.get();
     }
+    // of a navigator element made for the form : the customization of a connection makes one for a form of the logics,
+    // which is final by then, so the final image is read too
     public AppServerImage.Reader getNFImage(Version version) {
-        return image.getNF(version);
+        return image.getNF(version, true);
     }
     public void setName(AppServerImage.Reader value, Version version) {
         image.set(value, version);

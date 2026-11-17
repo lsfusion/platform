@@ -28,7 +28,8 @@ public class EvalUtils {
     public static Pair<LA, EvalScriptingLogicsModule> evaluateAndFindAction(BusinessLogics BL, Set<EvalScriptingLogicsModule> parentLMs, String script, boolean action) {
         if(script != null && script.startsWith("\uFEFF"))
             script = script.substring(1);
-        return evaluateAndFindAction(BL, parentLMs, null, null, null, null, false, action ? EvalActionParser.parse(script) : script, "run");
+        EvalScriptingLogicsModule module = BL.LM.evaluate(action ? EvalActionParser.parse(script) : script, parentLMs, false);
+        return new Pair<>(findAction(module, "run"), module);
     }
     
     private static class WrapResult {
@@ -41,7 +42,7 @@ public class EvalUtils {
         }
     }
 
-    public static Pair<LA, EvalScriptingLogicsModule> evaluateAndFindAction(BusinessLogics BL, Set<EvalScriptingLogicsModule> parentLMs, String namespace, String require, String priorities, final ImSet<Pair<LP, LogicsModule.LocalPropertyData>> locals, boolean prevEventScope, String script, String action) {
+    public static EvalScriptingLogicsModule evaluate(BusinessLogics BL, Set<EvalScriptingLogicsModule> parentLMs, String namespace, String require, String priorities, final ImSet<Pair<LP, LogicsModule.LocalPropertyData>> locals, boolean prevEventScope, String script, boolean changesNavigator) {
         String name = getUniqueName();
         Set<String> parentModules = new HashSet<>();
         if(parentLMs != null)
@@ -49,7 +50,7 @@ public class EvalUtils {
         WrapResult wrapResult = wrapScript(BL, parentModules, namespace, require, priorities, script, name);
         
         String code = wrapResult.code;
-        EvalScriptingLogicsModule module = new EvalScriptingLogicsModule(BL.LM, BL, parentLMs, code);
+        EvalScriptingLogicsModule module = new EvalScriptingLogicsModule(BL.LM, BL, parentLMs, code, changesNavigator);
         module.getErrLog().setLineNumberShift(wrapResult.additionalLines);
         // the module gets its name from its header, so an error before the header is parsed would have no module to point to
         module.getErrLog().setModuleId(name);
@@ -71,10 +72,11 @@ public class EvalUtils {
                 property.finalizeInit(); // needed at least for lazy properties
                 property.finalizeLazyInit();
             }
-            // finalize forms task (other elements can't be created in script)
+            // finalize forms task (other elements can't be created in script, but the navigator's, in a copy of the navigator)
             module.markFormsForFinalization();
             for(FormEntity form : module.getAllModuleForms())
                 form.finalizeAndPreread();
+            module.finalizeAndCheckNavigator();
             // an evaluated script is the only thing that could add a cyclic property dependency after checkRecursionsTask has already run, and then
             // getRecDepends would recurse until the stack ends instead of naming anything. it can't today : events are rejected here, and an abstract
             // is unusable in an eval module (its cases are never finalized, so reading them fails) - which is why there is no check around this.
@@ -85,9 +87,12 @@ public class EvalUtils {
             if(prevEventScope)
                 module.dropPrevScope(Event.SESSION);
         }
+        return module;
+    }
 
+    public static LA findAction(EvalScriptingLogicsModule module, String action) {
         try {
-            return new Pair<>(module.findAction(module.getNamespace() + '.' + action), module);
+            return module.findAction(module.getNamespace() + '.' + action);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new UnsupportedOperationException(); // should not be since there is no currentParser in module
         } catch (ScriptErrorException e) {  // we don't need stack for ScriptErrorException, since it is obvious, so will convert it to scriptParsingException

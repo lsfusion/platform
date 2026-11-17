@@ -5570,7 +5570,7 @@ navigatorStatement
 				}
 			}
 		)?
-		navigatorElementStatementBody[self.baseLM.root]
+		navigatorElementStatementBody[self.getNavigator().getRoot()]
 	;
 
 navigatorElementStatementBody[NavigatorElement parentElement]

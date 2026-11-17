@@ -19,8 +19,10 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.stat.SelectTop;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.navigator.NavigatorElement;
+import lsfusion.server.logics.navigator.NavigatorEntity;
 import lsfusion.server.logics.property.LazyProperty;
 import lsfusion.server.logics.property.cases.CaseUnionProperty;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -33,11 +35,27 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+// a module made of a text while the server runs, after the logics is final : what it declares is its own, and what would
+// change the logics is refused
 public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     private Set<EvalScriptingLogicsModule> parentLMs;
-    public EvalScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL, Set<EvalScriptingLogicsModule> parentLMs, String code) {
+
+    // whether the code changes the navigator - a copy of its own : the code that customizes the application does, a script
+    // that is run (EVAL, the code that customizes a form) does not - nothing would keep its change. The caller says it,
+    // until a code can declare a navigator of its own as it declares a form (FORM ... EXTEND FORMS)
+    private final boolean changesNavigator;
+
+    // the copy, made as the code first names the navigator, an element of it or a window - the root is asked for by the
+    // first pass over a NAVIGATOR statement already, it is the argument of a rule; the module has its place among the
+    // modules by then, and a copy is made at it. A code that names none - one that only declares what a call through the
+    // Action API runs, say - copies nothing. Only the compile of the code makes it, in the thread that compiles : once the
+    // code is compiled the module's navigator is settled (finalizeAndCheckNavigator) and is only read, by every thread
+    private NavigatorEntity navigator;
+
+    public EvalScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL, Set<EvalScriptingLogicsModule> parentLMs, String code, boolean changesNavigator) {
         super(code, baseModule, BL);
         this.parentLMs = parentLMs;
+        this.changesNavigator = changesNavigator;
     }
 
     @Override
@@ -74,6 +92,40 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
 
     public void addScriptedLoggable(List<NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         emitEvalError("LOGGABLE statement");
+    }
+
+    // the statements of a code that changes the navigator write into its copy of the logics' navigator, which is final and
+    // would refuse them. And every name they give is found in the copy : the element a statement changes or moves, the one
+    // it puts another before or after, the window it hides or turns over, the one an element is put into. So none gets
+    // what is the logics'. Once the code is compiled the copy is what a client the code customizes draws.
+    // A script changes nothing of the navigator : it finds the window it names in the navigator of the code it is run
+    // under - a parent or a parent's parent, which the code that customizes the application changed -, or in the logics'
+    @Override
+    public NavigatorEntity getNavigator() {
+        if (changesNavigator) {
+            if (navigator == null)
+                navigator = new NavigatorEntity(BL.getNavigator(), getVersion());
+            return navigator;
+        }
+
+        NavigatorEntity logicsNavigator = super.getNavigator();
+        if(parentLMs != null) {
+            for (EvalScriptingLogicsModule parentLM : parentLMs) {
+                NavigatorEntity navigator = parentLM.getNavigator();
+                if (navigator != logicsNavigator)
+                    return navigator;
+            }
+        }
+        return logicsNavigator;
+    }
+
+    // the copy is checked as the logics' own navigator is as the server starts; a code that did not touch the navigator
+    // leaves the logics' own to the module
+    public void finalizeAndCheckNavigator() {
+        if (navigator != null)
+            navigator.finalizeAndCheck(baseLM);
+        else
+            navigator = BL.getNavigator();
     }
 
     @Override
@@ -211,44 +263,71 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
         return super.addScriptedDProp(returnClass, paramClasses, true, innerProp, isLocalScope, nestedType);
     }
     
-    // the navigator, the windows and what other modules' properties and actions run are the whole server's : a script would change
-    // them for every user, and what it puts there - a scheduler's action, an element's or a window's property, an ASON handler, a
-    // BEFORE / AFTER aspect - would run in their sessions
+    // the navigator's schedulers and layout, what draws a window, and what other modules' properties and actions run are
+    // the whole server's : a script would change them for every user, and what it puts there - a scheduler's action, a
+    // window's property, an ASON handler, a BEFORE / AFTER aspect - would run in their sessions. The navigator's elements
+    // and windows are the whole server's as well : a NAVIGATOR or a WINDOW statement is refused unless the code changes a
+    // copy of its own (changesNavigator)
+    @Override
+    public void setWindowCustom(String name, String custom, LPWithParams customProperty) throws ScriptingErrorLog.SemanticErrorException {
+        emitEvalError("CUSTOM option of a WINDOW statement");
+    }
+
+    // a new window's CUSTOM option, as an existing window's : the standard windows are styled by what draws the logics' ones
     @Override
     public void addScriptedWindow(boolean isNative, boolean isForms, boolean single, Integer closeDelay, String name, LocalizedString captionStr, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
-        emitEvalError("WINDOW statement");
+        if (!changesNavigator)
+            emitEvalError("WINDOW statement");
+        if (options.custom != null || options.customProperty != null)
+            emitEvalError("CUSTOM option of a WINDOW statement");
+
+        super.addScriptedWindow(isNative, isForms, single, closeDelay, name, captionStr, options);
     }
 
     @Override
     public void setWindowFormsKind(String name, Boolean single, Integer closeDelay) throws ScriptingErrorLog.SemanticErrorException {
-        emitEvalError("WINDOW statement");
-    }
-
-    @Override
-    public void setWindowCustom(String name, String custom, LPWithParams customProperty) throws ScriptingErrorLog.SemanticErrorException {
-        emitEvalError("WINDOW statement");
+        if (!changesNavigator)
+            emitEvalError("WINDOW statement");
+        super.setWindowFormsKind(name, single, closeDelay);
     }
 
     @Override
     public void hideWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
-        emitEvalError("HIDE WINDOW statement");
+        if (!changesNavigator)
+            emitEvalError("HIDE WINDOW statement");
+        super.hideWindow(name);
     }
 
     @Override
     public NavigatorElement createScriptedNavigatorElement(String name, LocalizedString caption, DebugInfo.DebugPoint point,
                                                            NamedPropertyUsage actionUsage, String formName, boolean isAction) throws ScriptingErrorLog.SemanticErrorException {
-        emitEvalError("NAVIGATOR statement");
-        return null;
+        if (!changesNavigator)
+            emitEvalError("NAVIGATOR statement");
+        return super.createScriptedNavigatorElement(name, caption, point, actionUsage, formName, isAction);
     }
 
     @Override
     public void setupNavigatorElement(NavigatorElement element, LocalizedString caption, NavigatorElement parentElement, NavigatorElementOptions options, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
-        emitEvalError("NAVIGATOR statement");
+        if (!changesNavigator)
+            emitEvalError("NAVIGATOR statement");
+        super.setupNavigatorElement(element, caption, parentElement, options, isEditOperation);
+    }
+
+    @Override
+    public void setNavigatorCustom(String custom, LPWithParams customProperty) throws ScriptingErrorLog.SemanticErrorException {
+        emitEvalError("NAVIGATOR CUSTOM option");
     }
 
     @Override
     public void addNavigatorScheduler(LA action, NavigatorScheduler scheduler) throws ScriptingErrorLog.SemanticErrorException {
-        emitEvalError("NAVIGATOR statement");
+        emitEvalError("SCHEDULE in a NAVIGATOR statement");
+    }
+
+    // the logics' base module keeps the action that opens a form from the navigator, one for a form and for as long as
+    // the server runs. An element an evaluated code declares gets an action of its own : its form can be the code's
+    @Override
+    protected LA<?> getNavigatorAction(FormEntity form) {
+        return addNavigatorFormAction(form);
     }
 
     @Override
@@ -263,7 +342,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
         emitEvalError(before ? "BEFORE statement" : "AFTER statement");
     }
 
-    private void emitEvalError(String errorPrefix) throws ScriptingErrorLog.SemanticErrorException {
+    protected void emitEvalError(String errorPrefix) throws ScriptingErrorLog.SemanticErrorException {
         errLog.emitEvalModuleError(parser, errorPrefix);
     }
 }
