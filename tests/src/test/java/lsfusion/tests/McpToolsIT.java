@@ -1,5 +1,6 @@
 package lsfusion.tests;
 
+import com.sun.net.httpserver.HttpServer;
 import lsfusion.base.remote.RMIUtils;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ComputerInfo;
@@ -15,11 +16,19 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static lsfusion.tests.TestServer.BASE;
 
@@ -32,12 +41,52 @@ public class McpToolsIT {
     private static Process server;
     private static RemoteLogicsInterface logics;
 
+    // a stand-in for the central MCP server (ai.lsfusion.org), which the server's tools lsfusion_get_guidance,
+    // lsfusion_retrieve_docs and lsfusion_report_feedback are run by: it answers with the query of the request -
+    // initialize with instructions and a session of its own, a tool with its text -, and keeps every request as
+    // "<method> <query> <session>", the method a JSON-RPC one or DELETE, the end of a session
+    private static HttpServer center;
+    private static final List<String> centerRequests = new CopyOnWriteArrayList<>();
+    private static final AtomicInteger centerSessions = new AtomicInteger();
+    private static volatile boolean centerDown;
+
     @BeforeClass
     public static void startServer() throws Exception {
+        center = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+        center.createContext("/mcp", exchange -> {
+            String method = exchange.getRequestMethod().equals("POST")
+                    ? new JSONObject(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8)).getString("method")
+                    : exchange.getRequestMethod();
+            String query = exchange.getRequestURI().getRawQuery();
+            String session = exchange.getRequestHeaders().getFirst("mcp-session-id");
+            JSONObject result = null;
+            if (method.equals("initialize")) {
+                session = "s" + centerSessions.incrementAndGet();
+                exchange.getResponseHeaders().set("mcp-session-id", session);
+                result = new JSONObject().put("protocolVersion", "2024-11-05").put("capabilities", new JSONObject())
+                        .put("serverInfo", new JSONObject().put("name", "center").put("version", "0")).put("instructions", "instructions " + query);
+            } else if (method.equals("tools/call"))
+                result = new JSONObject().put("content", new JSONArray().put(new JSONObject().put("type", "text").put("text", "called " + query)));
+            centerRequests.add(method + " " + query + " " + session);
+            if (centerDown) {
+                exchange.sendResponseHeaders(503, -1);
+                exchange.close();
+                return;
+            }
+            byte[] body = new JSONObject().put("jsonrpc", "2.0").put("id", 1).put("result", result).toString().getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, body.length);
+            try (OutputStream out = exchange.getResponseBody()) {
+                out.write(body);
+            }
+        });
+        center.start();
+
         int[] ports = TestServer.freePorts(4);
         Path log = BASE.resolve("target/server-mcp.log");
         server = TestServer.start(DATABASE, ports, log, BASE.resolve("target/classes"),
-                "settings.enableAPI=2"); // the calls here are anonymous
+                "settings.enableAPI=2", // the calls here are anonymous
+                "lsfusion.server.mcpCenterUrl=http://localhost:" + center.getAddress().getPort() + "/mcp");
         TestServer.waitStarted(server, log);
         logics = RMIUtils.<RemoteLogicsLoaderInterface>rmiLookup("localhost", ports[1], "default", "RemoteLogicsLoader").getLogics();
     }
@@ -46,6 +95,60 @@ public class McpToolsIT {
     public static void stopServer() throws Exception {
         if (server != null)
             TestServer.stop(server, DATABASE);
+        if (center != null)
+            center.stop(0);
+    }
+
+    // The center gives each path an agent reaches it by its own guidance, so the server names the path in every request
+    // to the center: the page's WebMCP, which says so by `via=webapp` in the query of its request to /mcp, or else the
+    // application's MCP. The session with the center is one for both, opened by the first call
+    @Test
+    public void theCenterIsToldThePathOfEveryRequest() throws Exception {
+        centerRequests.clear();
+        Assert.assertEquals("called via=webapp", remoteText("via=webapp"));
+        Assert.assertEquals("called via=app", remoteText(null));
+        Assert.assertEquals("called via=webapp", remoteText("port=7652&via=webapp")); // the page's own query stays before it
+        Assert.assertEquals("called via=app", remoteText("via=ide")); // a path the server does not serve is the application's
+        List<String> calls = new ArrayList<>(centerRequests);
+        String session = calls.get(0).split(" ")[2];
+        if (calls.get(0).startsWith("initialize ")) // the first call of the class's server opens the session
+            Assert.assertEquals(centerRequests.toString(), "initialize via=webapp " + session, calls.remove(0));
+        Assert.assertEquals(centerRequests.toString(), Arrays.asList("tools/call via=webapp " + session, "tools/call via=app " + session,
+                "tools/call via=webapp " + session, "tools/call via=app " + session), calls);
+    }
+
+    // the server's initialize gives the client the center's instructions for its path, and ends the session it opened
+    // for them; with no center to give them, none - the initialize does not fail
+    @Test
+    public void initializeGivesTheCentersInstructionsForThePath() throws Exception {
+        for (String[] path : new String[][] {{null, "via=app"}, {"via=webapp", "via=webapp"}}) {
+            centerRequests.clear();
+            Assert.assertEquals("instructions " + path[1], initialize(path[0]).getString("instructions"));
+            String session = centerRequests.get(0).split(" ")[2];
+            Assert.assertEquals(Arrays.asList("initialize " + path[1] + " " + session, "DELETE " + path[1] + " " + session), centerRequests);
+        }
+        centerDown = true;
+        try {
+            JSONObject result = initialize(null);
+            Assert.assertFalse(result.toString(), result.has("instructions"));
+            Assert.assertEquals("lsfusion-server", result.getJSONObject("serverInfo").getString("name"));
+        } finally {
+            centerDown = false;
+        }
+    }
+
+    private static JSONObject initialize(String query) throws Exception {
+        return answer(send(new JSONObject().put("jsonrpc", "2.0").put("id", 1).put("method", "initialize")
+                .put("params", new JSONObject().put("protocolVersion", "2025-06-18").put("capabilities", new JSONObject())
+                        .put("clientInfo", new JSONObject().put("name", "test").put("version", "0"))).toString(), query));
+    }
+
+    // the text of lsfusion_get_guidance, which the center runs, called with `query` in the request to /mcp
+    private static String remoteText(String query) throws Exception {
+        JSONObject result = answer(send(new JSONObject().put("jsonrpc", "2.0").put("id", 1).put("method", "tools/call")
+                .put("params", new JSONObject().put("name", "lsfusion_get_guidance").put("arguments", new JSONObject())).toString(), query));
+        Assert.assertFalse(result.toString(), result.getBoolean("isError"));
+        return result.getJSONArray("content").getJSONObject(0).getString("text");
     }
 
     // the eval tool's params are JSON values, each given to the class of its parameter as an http request gives a string
@@ -330,7 +433,12 @@ public class McpToolsIT {
     }
 
     private static JSONObject send(String request) throws Exception {
+        return send(request, null);
+    }
+
+    // `query` - of the request to /mcp, as the web client passes it on
+    private static JSONObject send(String request, String query) throws Exception {
         return new JSONObject(logics.mcp(AuthenticationToken.ANONYMOUS, new ConnectionInfo(new ComputerInfo("localhost", "127.0.0.1"), UserInfo.NULL),
-                new ExternalRequest(new ExternalRequest.Param[0]), request).json);
+                new ExternalRequest(new ExternalRequest.Param[0], null, null, null, null, null, null, null, null, null, null, null, query, null, null), request).json);
     }
 }

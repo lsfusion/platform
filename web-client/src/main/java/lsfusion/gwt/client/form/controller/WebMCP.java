@@ -36,8 +36,10 @@ public class WebMCP {
             });
         }
 
+        // the page's requests say they are the page's: the server names the path to the central lsFusion MCP server by it
+        var pageUrl = url + (url.indexOf('?') < 0 ? '?' : '&') + 'via=webapp';
         function request(method, params) {
-            return $wnd.fetch(url, {
+            return $wnd.fetch(pageUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: method, params: params })

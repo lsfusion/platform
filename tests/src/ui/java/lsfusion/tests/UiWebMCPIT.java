@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -90,6 +91,24 @@ public class UiWebMCPIT extends UiTest {
         assertTrue("... and not the page's own: " + listed, !String.valueOf(listed).contains(CLIENT_TOOL + ": "));
         assertEquals(listed, page.evaluate("() => (" + described + ")(Object.keys(window.uiWebMCPTools).filter(name => name !== '" + CLIENT_TOOL + "').map(name => window.uiWebMCPTools[name]))"));
         assertEquals("form,params,script", page.evaluate("() => Object.keys(window.uiWebMCPTools.lsfusion_eval.inputSchema.properties).sort().join()"));
+    }
+
+    // the page's requests to /mcp say they are the page's - `via=webapp` in their query -, which the server tells the
+    // central MCP server the tools it runs come from (McpToolsIT)
+    @Test
+    public void thePageNamesItselfInItsRequests() {
+        List<String> urls = new CopyOnWriteArrayList<>();
+        page.onRequest(request -> {
+            String body = request.postData();
+            if (body != null && body.contains("\"jsonrpc\""))
+                urls.add(request.url());
+        });
+        loadWithAgent(); // tools/list
+        String files = call("lsfusion_files_search", "{\"regex\":\"MODULE UiWebMCP;\",\"pathPattern\":\"**/UiWebMCP.lsf\"}"); // tools/call
+        assertTrue(files, files.contains("/ui/UiWebMCP.lsf\""));
+        assertTrue(urls.toString(), urls.size() >= 2);
+        for (String url : urls)
+            assertTrue(urls.toString(), url.contains("/mcp?") && url.endsWith("via=webapp"));
     }
 
     // the browser refuses a tool whose name another script of the page has taken: the page's other tools are registered

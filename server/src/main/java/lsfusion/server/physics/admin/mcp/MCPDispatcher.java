@@ -11,9 +11,12 @@ import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConn
 import lsfusion.server.physics.admin.files.ClasspathFileTools;
 import lsfusion.server.physics.admin.files.JsonToolArgs;
 import lsfusion.server.physics.admin.log.ServerLoggers;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.net.URLEncodedUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -164,7 +167,7 @@ public class MCPDispatcher {
 
         try {
             switch (method) {
-                case "initialize":  return handleInitialize(jsonrpc, id);
+                case "initialize":  return handleInitialize(jsonrpc, id, accessPath(request));
                 case "tools/list":  return rpcResult(jsonrpc, id, new JSONObject().put("tools", buildToolsList()));
                 case "tools/call":  return handleToolsCall(jsonrpc, id, params, token, connectionInfo, request, files, placeholderId);
                 default:            return rpcError(jsonrpc, id, -32601, "Method not found: " + method, null);
@@ -178,7 +181,9 @@ public class MCPDispatcher {
         }
     }
 
-    private JSONObject handleInitialize(String jsonrpc, Object id) {
+    // the instructions are the center's, for the path the client came by: a client reads them once, at initialize.
+    // A center that does not answer leaves the server's initialize without them
+    private JSONObject handleInitialize(String jsonrpc, Object id, MCPAccessPath path) {
         JSONObject result = new JSONObject()
                 .put("protocolVersion", PROTOCOL_VERSION)
                 .put("serverInfo", new JSONObject()
@@ -186,7 +191,25 @@ public class MCPDispatcher {
                         .put("version", "1.0.0"))
                 .put("capabilities", new JSONObject()
                         .put("tools", new JSONObject().put("listChanged", false)));
+        try {
+            String instructions = MCPRemoteClient.instructions(path);
+            if (instructions != null)
+                result.put("instructions", instructions);
+        } catch (Exception e) {
+            ServerLoggers.systemLogger.warn("MCP initialize: no instructions from the central MCP server", e);
+        }
         return rpcResult(jsonrpc, id, result);
+    }
+
+    // the page's WebMCP says it is the page by `via=webapp` in the query of its requests; any other request is the
+    // application's MCP client's
+    private static MCPAccessPath accessPath(ExternalRequest request) {
+        String query = request != null ? request.query : null;
+        if (query != null)
+            for (NameValuePair param : URLEncodedUtils.parse(query, StandardCharsets.UTF_8))
+                if ("via".equals(param.getName()) && MCPAccessPath.WEBAPP.via().equals(param.getValue()))
+                    return MCPAccessPath.WEBAPP;
+        return MCPAccessPath.APP;
     }
 
     private JSONObject handleToolsCall(String jsonrpc, Object id, JSONObject params,
@@ -258,7 +281,7 @@ public class MCPDispatcher {
                 }
                 default:
                     if (REMOTE_TOOLS.contains(name)) {
-                        return rpcResult(jsonrpc, id, remoteToolResult(name, args));
+                        return rpcResult(jsonrpc, id, remoteToolResult(name, args, accessPath(request)));
                     }
                     return rpcError(jsonrpc, id, -32601, "Unknown tool: " + name, null);
             }
@@ -280,8 +303,8 @@ public class MCPDispatcher {
         }
     }
 
-    private JSONObject remoteToolResult(String toolName, JSONObject args) {
-        String payload = MCPRemoteClient.callRemoteTool(toolName, args);
+    private JSONObject remoteToolResult(String toolName, JSONObject args, MCPAccessPath path) {
+        String payload = MCPRemoteClient.callRemoteTool(toolName, args, path);
         JSONObject result = new JSONObject()
                 .put("content", new JSONArray().put(new JSONObject()
                         .put("type", "text")

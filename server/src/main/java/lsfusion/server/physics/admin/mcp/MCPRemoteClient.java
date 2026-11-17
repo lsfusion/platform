@@ -20,11 +20,18 @@ import java.nio.charset.StandardCharsets;
  * Response bodies may be plain JSON or {@code text/event-stream}; the helpers below select
  * the right reader from the upstream {@code Content-Type} so a long-lived stream cannot
  * stall us until the read timeout.
+ *
+ * <p>Every request names the path the agent came by ({@code ?via=}, see {@link MCPAccessPath}):
+ * the session is one per JVM, shared by both paths, so the path is a parameter of the request.
  */
 public class MCPRemoteClient {
 
-    private static final String URL_STR = "https://ai.lsfusion.org/mcp";
+    // -Dlsfusion.server.mcpCenterUrl points the server at another center: a local one, being developed, or a stub
+    private static final String URL_STR = System.getProperty("lsfusion.server.mcpCenterUrl", "https://ai.lsfusion.org/mcp");
     private static final int DEFAULT_TIMEOUT_SECONDS = 30;
+    // a client waits for the initialize of the server the instructions come with, so a center that does not answer
+    // holds it up for no longer than this
+    private static final int INSTRUCTIONS_TIMEOUT_SECONDS = 5;
 
     private static final Object LOCK = new Object();
     private static volatile String sessionId;
@@ -33,11 +40,7 @@ public class MCPRemoteClient {
      * Calls a remote tool and returns the text from its first content item. An error result
      * ({@code isError}) is thrown as a {@link RuntimeException} carrying that text.
      */
-    public static String callRemoteTool(String toolName, JSONObject arguments) {
-        return callRemoteTool(toolName, arguments, DEFAULT_TIMEOUT_SECONDS);
-    }
-
-    public static String callRemoteTool(String toolName, JSONObject arguments, int timeoutSeconds) {
+    public static String callRemoteTool(String toolName, JSONObject arguments, MCPAccessPath path) {
         JSONObject body = new JSONObject()
                 .put("jsonrpc", "2.0")
                 .put("id", 1)
@@ -46,15 +49,43 @@ public class MCPRemoteClient {
                         .put("name", toolName)
                         .put("arguments", arguments));
 
-        String sid = ensureSessionId(timeoutSeconds);
+        String sid = ensureSessionId(path);
         String response;
         try {
-            response = doPostJson(body.toString(), timeoutSeconds, sid);
+            response = doPostJson(body.toString(), path, sid);
         } catch (SessionExpiredException e) {
-            sid = ensureSessionId(timeoutSeconds);
-            response = doPostJson(body.toString(), timeoutSeconds, sid);
+            sid = ensureSessionId(path);
+            response = doPostJson(body.toString(), path, sid);
         }
         return resultText(response);
+    }
+
+    /**
+     * The center's instructions for the path - what its {@code initialize} answers an MCP client with -, null if it
+     * gives none. Each call is an {@code initialize} of the center's, the session of which is ended right away: the
+     * tools are called in the one session of the JVM, which its first call opens.
+     */
+    public static String instructions(MCPAccessPath path) {
+        Initialized initialized = initialize(path, INSTRUCTIONS_TIMEOUT_SECONDS);
+        try {
+            JSONObject result = new JSONObject(initialized.response).optJSONObject("result");
+            return result != null ? result.optString("instructions", null) : null;
+        } finally {
+            terminate(path, initialized.sessionId);
+        }
+    }
+
+    // MCP's end of a session, so that the center does not keep it. A failure is let go: the session then stays until
+    // the center drops it
+    private static void terminate(MCPAccessPath path, String session) {
+        HttpURLConnection conn = null;
+        try {
+            conn = openConnection("DELETE", path, INSTRUCTIONS_TIMEOUT_SECONDS, session);
+            conn.getResponseCode();
+        } catch (IOException ignored) {
+        } finally {
+            if (conn != null) conn.disconnect();
+        }
     }
 
     static String resultText(String response) {
@@ -78,53 +109,66 @@ public class MCPRemoteClient {
         return text;
     }
 
-    private static String ensureSessionId(int timeoutSeconds) {
+    private static String ensureSessionId(MCPAccessPath path) {
         String existing = sessionId;
         if (existing != null && !existing.isEmpty()) return existing;
         synchronized (LOCK) {
             if (sessionId != null && !sessionId.isEmpty()) return sessionId;
-
-            JSONObject body = new JSONObject()
-                    .put("jsonrpc", "2.0")
-                    .put("id", 1)
-                    .put("method", "initialize")
-                    .put("params", new JSONObject()
-                            .put("protocolVersion", "2024-11-05")
-                            .put("capabilities", new JSONObject())
-                            .put("clientInfo", new JSONObject()
-                                    .put("name", "lsfusion-server")
-                                    .put("version", "0")));
-
-            HttpURLConnection conn = null;
-            try {
-                conn = openConnection(timeoutSeconds, null);
-                writeBody(conn, body.toString());
-                int code = conn.getResponseCode();
-                if (code < 200 || code >= 300) {
-                    throw new RuntimeException("Remote MCP initialize failed with " + code + ": " + readError(conn));
-                }
-                // Drain via the same SSE-aware reader: a server that answers initialize over
-                // text/event-stream and keeps the channel open would otherwise block readAll
-                // until the read timeout.
-                readSuccessfulBody(conn);
-                String headerSession = conn.getHeaderField("mcp-session-id");
-                if (headerSession == null || headerSession.isEmpty()) {
-                    throw new RuntimeException("Remote MCP initialize did not return 'mcp-session-id'");
-                }
-                sessionId = headerSession;
-                return headerSession;
-            } catch (IOException e) {
-                throw new RuntimeException("Remote MCP initialize I/O error: " + e.getMessage(), e);
-            } finally {
-                if (conn != null) conn.disconnect();
-            }
+            sessionId = initialize(path, DEFAULT_TIMEOUT_SECONDS).sessionId;
+            return sessionId;
         }
     }
 
-    private static String doPostJson(String body, int timeoutSeconds, String session) {
+    private static class Initialized {
+        final String sessionId;
+        final String response; // its body, which instructions() reads: a tool's call takes only the session
+
+        Initialized(String sessionId, String response) {
+            this.sessionId = sessionId;
+            this.response = response;
+        }
+    }
+
+    private static Initialized initialize(MCPAccessPath path, int timeoutSeconds) {
+        JSONObject body = new JSONObject()
+                .put("jsonrpc", "2.0")
+                .put("id", 1)
+                .put("method", "initialize")
+                .put("params", new JSONObject()
+                        .put("protocolVersion", "2024-11-05")
+                        .put("capabilities", new JSONObject())
+                        .put("clientInfo", new JSONObject()
+                                .put("name", "lsfusion-server")
+                                .put("version", "0")));
+
         HttpURLConnection conn = null;
         try {
-            conn = openConnection(timeoutSeconds, session);
+            conn = openConnection("POST", path, timeoutSeconds, null);
+            writeBody(conn, body.toString());
+            int code = conn.getResponseCode();
+            if (code < 200 || code >= 300) {
+                throw new RuntimeException("Remote MCP initialize failed with " + code + ": " + readError(conn));
+            }
+            // Read via the same SSE-aware reader: a server that answers initialize over
+            // text/event-stream and keeps the channel open would otherwise block readAll
+            // until the read timeout.
+            String response = readSuccessfulBody(conn);
+            String headerSession = conn.getHeaderField("mcp-session-id");
+            if (headerSession == null || headerSession.isEmpty()) {
+                throw new RuntimeException("Remote MCP initialize did not return 'mcp-session-id'");
+            }
+            return new Initialized(headerSession, response);
+        } catch (IOException e) {
+            throw new RuntimeException("Remote MCP initialize I/O error: " + e.getMessage(), e);
+        } finally {
+            if (conn != null) conn.disconnect();
+        }
+    }
+
+    private static String doPostJson(String body, MCPAccessPath path, String session) {
+        HttpURLConnection conn = null;
+        try {
+            conn = openConnection("POST", path, DEFAULT_TIMEOUT_SECONDS, session);
             writeBody(conn, body);
             int code = conn.getResponseCode();
             if (code >= 200 && code < 300) {
@@ -181,14 +225,14 @@ public class MCPRemoteClient {
         return err.toLowerCase(java.util.Locale.ROOT).contains("session not found");
     }
 
-    private static HttpURLConnection openConnection(int timeoutSeconds, String session) throws IOException {
+    private static HttpURLConnection openConnection(String method, MCPAccessPath path, int timeoutSeconds, String session) throws IOException {
         int safeTimeout = Math.max(1, timeoutSeconds) * 1000;
-        URL url = new URL(URL_STR);
+        URL url = new URL(URL_STR + (URL_STR.contains("?") ? "&" : "?") + "via=" + path.via());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("POST");
+        conn.setRequestMethod(method);
         conn.setConnectTimeout(safeTimeout);
         conn.setReadTimeout(safeTimeout);
-        conn.setDoOutput(true);
+        conn.setDoOutput("POST".equals(method));
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setRequestProperty("Accept", "application/json, text/event-stream");
         if (session != null) {
