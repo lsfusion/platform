@@ -13,7 +13,6 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.LazyProperty;
-import lsfusion.server.physics.dev.id.resolve.ExternalLAPResolver;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -32,11 +31,6 @@ public class EvalUtils {
     public static EvalScriptingLogicsModule getCustomizeLM(FormEntity form, EvalScriptingLogicsModule userLM) {
         EvalScriptingLogicsModule formLM = form != null ? form.getCustomizeLM() : null;
         return formLM != null ? formLM : userLM;
-    }
-
-    // what a name that comes from outside the code is looked for in : that module, or - with none - the logics
-    public static ExternalLAPResolver getExternalLAPResolver(BusinessLogics BL, EvalScriptingLogicsModule customizeLM) {
-        return customizeLM != null ? customizeLM : BL;
     }
 
     // that module as the parents of a script evaluated with it (an EVAL inside a script adds the module of that script)

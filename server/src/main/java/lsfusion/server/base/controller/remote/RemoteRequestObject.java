@@ -16,7 +16,6 @@ import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
-import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.mcp.MCPEvalTool;
@@ -424,10 +423,9 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         ClientAction run(ExecutionEnvironment env, ConnectionContext context) throws SQLException, SQLHandledException, ParseException, IOException;
     }
 
-    // controller exec/change resolution: by default a plain global resolve (by compound name, else external id), via
-    // BusinessLogics or - with a customization - its module (ExternalLAPResolver), gated by @api/enableAPI
-    // (formAuthorized false). RemoteForm overrides this to consult the form API allow-list first and skip the gate when
-    // matched. action selects the kind (exec -> action, change ->
+    // controller exec/change resolution: by default a plain global resolve (by compound name, else external id, via
+    // getExternalLAPResolver), gated by @api/enableAPI (formAuthorized false). RemoteForm overrides this to consult the form
+    // API allow-list first and skip the gate when matched. action selects the kind (exec -> action, change ->
     // property); lap is the resolved LA (action) or LP (property), narrowed at the run boundary in exec/change.
     protected static class ControllerResolved {
         public final LAP<?,?> lap; // null if unresolved; an LA when action, an LP otherwise
@@ -435,9 +433,15 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         public ControllerResolved(LAP<?,?> lap, boolean formAuthorized) { this.lap = lap; this.formAuthorized = formAuthorized; }
     }
     protected ControllerResolved resolveController(String name, boolean action) {
-        // on a form, or in a connection, that a code customized, what the code declares is looked for too
-        ExternalLAPResolver resolver = EvalUtils.getExternalLAPResolver(getControllerBL(), getCustomizeLM());
+        ExternalLAPResolver resolver = getExternalLAPResolver();
         return new ControllerResolved(action ? resolver.findActionByName(name) : resolver.findPropertyByName(name), false);
+    }
+
+    // what a name a caller gives is looked for in : on a form, or in a connection, that a code customized, the code's
+    // module - what the code declares as well -, else the logics
+    protected ExternalLAPResolver getExternalLAPResolver() {
+        EvalScriptingLogicsModule customizeLM = getCustomizeLM();
+        return customizeLM != null ? customizeLM : getControllerBL();
     }
 
     private ClientAction runControllerAction(LA<?> la, Object[] params, String options, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {

@@ -50,10 +50,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
-import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
-import lsfusion.server.physics.dev.id.resolve.ExternalLAPResolver;
 import lsfusion.server.physics.dev.integration.external.to.CallHTTPAction;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
@@ -476,10 +474,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                     LA action;
                     String findActionName = actionName;
                     String actionPathInfo = "";
-                    // in a connection that a code customized, what the code declares is looked for too
-                    ExternalLAPResolver resolver = EvalUtils.getExternalLAPResolver(businessLogics, getCustomizeLM());
                     while (true) { // we're doing greedy search for all subpathes to find appropriate "endpoint" action
-                        if ((action = resolver.findActionByName(findActionName)) != null)
+                        if ((action = getExternalLAPResolver().findActionByName(findActionName)) != null)
                             break;
 
                         int lastSlash = findActionName.lastIndexOf('/'); // if it is url
