@@ -516,8 +516,8 @@ public class ClasspathFileTools {
      * <p>Supported syntax:
      * <ul>
      *   <li>{@code *} — any chars except {@code /}</li>
-     *   <li>{@code **} — any chars including {@code /}; immediately following {@code /} is
-     *       optional, so {@code **}/{@code foo} matches both {@code /foo} and {@code /a/b/foo}</li>
+     *   <li>{@code **} — any chars including {@code /}; followed by {@code /}, zero or more whole
+     *       directories, so {@code **}/{@code foo} matches {@code /foo} and {@code /a/b/foo}, not {@code /afoo}</li>
      *   <li>{@code ?} — one char except {@code /}</li>
      *   <li>{@code [abc]}, {@code [a-z]}, {@code [!abc]} — character classes (with negation)</li>
      *   <li>{@code {a,b,c}} — alternation between literal branches</li>
@@ -536,8 +536,10 @@ public class ClasspathFileTools {
         if (glob.startsWith("/")) {
             sb.append('/');
             glob = glob.substring(1);
-        } else {
-            // Allow any prefix ending at a path separator, plus the empty prefix.
+        } else if (!glob.startsWith("**")) {
+            // Allow any prefix ending at a path separator, plus the empty prefix. A leading ** is
+            // such a prefix itself: adding this one before it makes two ways to split every path,
+            // and the matcher tries them all on each path that does not match.
             sb.append("(?:.*/)?");
         }
         int n = glob.length();
@@ -545,13 +547,27 @@ public class ClasspathFileTools {
             char c = glob.charAt(i);
             if (c == '*') {
                 if (i + 1 < n && glob.charAt(i + 1) == '*') {
-                    // ** — match any chars (including /). If immediately followed by /, make
-                    // the slash optional so `**/foo` matches `/foo` (zero intermediate dirs).
-                    sb.append(".*");
+                    // ** — match any chars (including /). A whole segment followed by /, it is
+                    // any number of whole directories, none included, so `**/foo` matches `/foo` and `/a/b/foo`
+                    // but not `/afoo`. Writing it `.*/?` instead let `.*` end inside a name, and
+                    // with the `[^/]*` that usually follows gave the matcher a cubic number of
+                    // ways to fail on every path (seconds over a classpath's ~80k paths).
+                    // A run of stars and a **/ repeated right after one mean no more than one
+                    // **, and each copy would be one more way for the matcher to split a path.
+                    boolean wholeSegment = i == 0 || glob.charAt(i - 1) == '/';
                     i += 2;
-                    if (i < n && glob.charAt(i) == '/') {
-                        sb.append("/?");
+                    while (i < n && glob.charAt(i) == '*') i++;
+                    while (wholeSegment && i < n && glob.charAt(i) == '/') {
+                        int next = i + 1;
+                        while (next < n && glob.charAt(next) == '*') next++;
+                        if (next - i - 1 < 2 || (next < n && glob.charAt(next) != '/')) break;
+                        i = next;
+                    }
+                    if (wholeSegment && i < n && glob.charAt(i) == '/') {
+                        sb.append("(?:.*/)?");
                         i++;
+                    } else {
+                        sb.append(".*");
                     }
                 } else {
                     sb.append("[^/]*");

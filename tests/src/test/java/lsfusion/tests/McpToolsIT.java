@@ -252,6 +252,40 @@ public class McpToolsIT {
         Assert.assertEquals(tool("lsfusion_eval").getJSONObject("outputSchema").toString(), tool("lsfusion_exec").getJSONObject("outputSchema").toString());
     }
 
+    // the default glob was compiled to a regex that took seconds to fail on each of the classpath's ~80k paths, so a
+    // search with the default arguments spent its whole default time limit choosing the files, and answered no hits
+    // and timedOut - which an agent reads as "not found"
+    @Test
+    public void theFilesSearchToolFindsALineWithItsDefaults() throws Exception {
+        JSONObject search = files("lsfusion_files_search", new JSONObject().put("regex", "^MODULE HttpUntypedParams;"));
+        Assert.assertFalse(search.toString(), search.getBoolean("timedOut"));
+        JSONArray hits = search.getJSONArray("hits");
+        Assert.assertEquals(search.toString(), 1, hits.length());
+        Assert.assertEquals("/integration/HttpUntypedParams.lsf", hits.getJSONObject(0).getString("path"));
+    }
+
+    @Test
+    public void aDoubleStarSlashInAGlobIsWholeDirectories() throws Exception {
+        Assert.assertEquals("[\"/integration/HttpUntypedParams.lsf\"]", list("**/integration/**/HttpUntypedParams.lsf"));
+        Assert.assertEquals("[\"/integration/HttpUntypedParams.lsf\"]", list("/**/HttpUntypedParams.lsf"));
+        Assert.assertEquals("[\"/integration/HttpUntypedParams.lsf\"]", list("**/**/integration/***/HttpUntypedParams.lsf"));
+        // ** ended inside a name: this matched /integration/HttpUntypedParams.lsf
+        Assert.assertEquals("[]", list("**/integration/**/Params.lsf"));
+    }
+
+    private static String list(String pathPattern) throws Exception {
+        JSONObject list = files("lsfusion_files_list", new JSONObject().put("pathPattern", pathPattern));
+        Assert.assertFalse(list.toString(), list.getBoolean("timedOut"));
+        return list.getJSONArray("files").toString();
+    }
+
+    private static JSONObject files(String tool, JSONObject arguments) throws Exception {
+        JSONObject result = answer(send(new JSONObject().put("jsonrpc", "2.0").put("id", 1).put("method", "tools/call")
+                .put("params", new JSONObject().put("name", tool).put("arguments", arguments)).toString()));
+        Assert.assertFalse(result.toString(), result.optBoolean("isError"));
+        return result.getJSONObject("structuredContent");
+    }
+
     private static JSONObject eval(String script, String params) throws Exception {
         return eval(script, params, null);
     }
