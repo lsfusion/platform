@@ -74,3 +74,20 @@ testGroupOffsetAllValues 'GROUP ... OFFSET without TOP, read for all its values'
         }
     }
 }
+
+// TOP and OFFSET together, read for all the values of the property (#1837: it failed with Set operation is incorrect)
+
+gofTopAfterFirst (GroupOffsetTeam t) = GROUP SUM gofGoals(GroupOffsetGame g) IF gofTeam(g) = t ORDER gofDate(g), g TOP 2 OFFSET 1;
+gofTopAfter (GroupOffsetTeam t, INTEGER n, INTEGER m) = GROUP SUM gofGoals(GroupOffsetGame g) IF gofTeam(g) = t ORDER gofDate(g), g TOP n OFFSET m;
+gofTopAfterFirstBy (GroupOffsetTeam t) = GROUP SUM gofGoals(GroupOffsetGame g) ORDER gofDate(g), g TOP 2 OFFSET 1 BY gofTeam(g);
+
+testGroupTopOffsetAllValues 'GROUP ... TOP ... OFFSET, read for all its values' () {
+    NEW t = GroupOffsetTeam {
+        NEW other = GroupOffsetTeam {
+            gofNewGames(t, other);
+            assertEquals((GROUP SUM gofTopAfterFirst(GroupOffsetTeam x)), 25, 'SUM ... TOP 2 OFFSET 1 of every team');
+            assertEquals((GROUP SUM gofTopAfter(GroupOffsetTeam x, 2, 1)), 25, 'SUM ... TOP n OFFSET m of every team');
+            assertEquals((GROUP SUM gofTopAfterFirstBy(GroupOffsetTeam x)), 25, 'SUM ... TOP 2 OFFSET 1 BY of every team');
+        }
+    }
+}

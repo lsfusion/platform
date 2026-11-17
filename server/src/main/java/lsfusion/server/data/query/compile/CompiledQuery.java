@@ -938,30 +938,35 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         }
 
         public static Where pushWhere(ImMap<KeyExpr, ? extends Expr> mapKeys, boolean pushLargeDepth, Where groupWhere, Cost costPerStat, Cost costMax, DebugInfoWriter debugInfoWriter) {
-            if(mapKeys.isEmpty()) {
-                if(costMax.equals(Cost.ONE))
-                    return null;
-                if(costPerStat.lessEquals(costMax)) // здесь, как и в общем случае действуем пессимистично - если cost * stat = costMax проталкиваем
-                    return Where.TRUE();
-                else {
-                    assert false;
-                    return null;
-                }
-            }
+            if(mapKeys.isEmpty())
+                return getNoKeysPushWhere(costPerStat, costMax);
 
             ImCol<GroupExprJoinsWhere<KeyExpr>> groupJoinsWheres = groupWhere.getGroupExprJoinsWheres(mapKeys, StatType.GROUP_SPLIT, Settings.get().isGroupStatExprWhereJoins());// не уверен, что не просто false последний параметр
 
             Where result = Where.FALSE();
             for(GroupExprJoinsWhere<KeyExpr> groupJoinsWhere : groupJoinsWheres) {
-                LastJoin lastJoin = new LastJoin(costPerStat, costMax, groupJoinsWhere.mapExprs);
+                // a TOP / OFFSET equal to a constant is the same for all the groups, so it is not looked for among them
+                ImMap<KeyExpr, BaseExpr> windowValues = groupJoinsWhere.mapExprs.filterFn((key, expr) -> expr.isValue() && WindowExpr.is(mapKeys.get(key)));
+                ImMap<KeyExpr, BaseExpr> lastKeys = groupJoinsWhere.mapExprs.removeIncl(windowValues.keys());
 
                 GroupJoinsWhere joinsWhere = groupJoinsWhere.joinsWhere;
-                Where pushWhere = joinsWhere.getCostPushWhere(lastJoin, pushLargeDepth, StatType.PUSH_OUTER(), debugInfoWriter);
+                Where pushWhere = lastKeys.isEmpty() ? getNoKeysPushWhere(costPerStat, costMax) : joinsWhere.getCostPushWhere(new LastJoin(costPerStat, costMax, lastKeys), pushLargeDepth, StatType.PUSH_OUTER(), debugInfoWriter);
                 if(pushWhere == null)
                     return null;
-                result = result.or(pushWhere);
+                result = result.or(pushWhere.and(CompareWhere.compare(windowValues)));
             }
             return result;
+        }
+
+        private static Where getNoKeysPushWhere(Cost costPerStat, Cost costMax) {
+            if(costMax.equals(Cost.ONE))
+                return null;
+            if(costPerStat.lessEquals(costMax)) // здесь, как и в общем случае действуем пессимистично - если cost * stat = costMax проталкиваем
+                return Where.TRUE();
+            else {
+                assert false;
+                return null;
+            }
         }
 
         // получает условия следующие из логики inner join'ов SQL
