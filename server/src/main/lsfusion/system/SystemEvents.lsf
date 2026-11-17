@@ -1209,6 +1209,15 @@ customize(STRING sid, STRING code) {
     }
 }
 
+// the application as a whole is customized for a user the way a form is, and its code is named as a form's, with no
+// form among the parameters. The code is compiled for a connection of the user as it is made - a client, say -, its
+// NAVIGATOR statements over a copy of the navigator, so it takes effect when the client is started again
+dataExtendCode = DATA TEXT ();
+dataExtendCode = DATA TEXT (User);
+// a line break between the two, as in a form's. Every connection of a user reads it, so it is kept in memory (LAZY) -
+// and let go as a code is applied (WAIT), for a connection made right after that to take the code that was saved
+extendCode (User user) = CONCAT '\n', dataExtendCode(), dataExtendCode(user) LAZY WAIT;
+
 // customizations are written by the users themselves, so the administrator needs a way to see and drop them
 // without impersonating every user (customizeForm always edits the code of currentUser())
 

@@ -1,0 +1,24 @@
+MODULE UiConnectionCustomize;
+
+REQUIRE SystemEvents;
+
+FORM uiCcForm 'UI connection customize: form';
+FORM uiCcOther 'UI connection customize: other';
+
+NAVIGATOR {
+    NEW FOLDER uiConnectionCustomize 'UI connection customize' WINDOW toolbar {
+        NEW uiCcForm;
+        NEW uiCcOther;
+    }
+}
+
+// the code for all users, so that it does not matter which user the browser is
+uiCcSet (TEXT code) {
+    dataExtendCode() <- code;
+    APPLY;
+}
+
+uiCcReset () {
+    dataExtendCode() <- NULL;
+    APPLY;
+}

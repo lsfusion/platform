@@ -620,14 +620,18 @@ public abstract class UiTest {
     // a form is open, the panel does not come out on a click under automation (GwtClientUtils.isAutomated), so a test
     // closes its form before it opens another one
     protected Locator open(String folder, String element) {
-        Locator item = page.locator("[lsfusion-container='" + element + "']");
+        open(folder, page.locator("[lsfusion-container='" + element + "']"));
+        return form(element);
+    }
+
+    // an element that is not named after a form
+    protected void open(String folder, Locator item) {
         if (!inViewport(item)) {
             page.locator("[lsfusion-container='" + folder + "']").click();
             assertThat(item).isInViewport();
         }
         item.click();
         page.mouse().move(640, 400); // the folder's panel stays out over the form while the mouse is on it
-        return form(element);
     }
 
     // a timeout of 0 would wait forever : a check of the moment is a timeout of 1 ms

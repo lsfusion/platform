@@ -25,6 +25,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -93,6 +94,9 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     public SecurityPolicy securityPolicy;
 
+    // the module of the code that customizes the application for the connection's user, null when there is no code
+    protected EvalScriptingLogicsModule customizeLM;
+
     public RemoteConnection(int port, String sID, LogicsInstance logicsInstance, AuthenticationToken token, SessionInfo sessionInfo, ExecutionStack upStack) throws RemoteException, SQLException, SQLHandledException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         super(port, upStack, sID, SyncType.NOSYNC);
 
@@ -125,7 +129,34 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             initUser(token, connectionInfo.userInfo, session.dataSession, stack);
 
             initComputer(stack, connectionInfo.computerInfo, session.dataSession);
+
+            initCustomize(session.dataSession);
         }
+    }
+
+    protected void initCustomize(DataSession session) throws SQLException, SQLHandledException {
+        String code = readCustomizeCode(session);
+        EvalScriptingLogicsModule customizeLM = null;
+        if (code != null) {
+            try {
+                customizeLM = businessLogics.LM.evaluate(code, Collections.emptySet(), true);
+            } catch (RuntimeException e) {
+                // the code is written by the users, and a client that cannot get its navigator cannot start : there would
+                // be no way back to the code from it. Whatever the code fails with - its own errors, a check of the
+                // navigator it made - the connection goes on without the code
+                ServerLoggers.systemLogger.error("Application customization code is broken and was ignored", e);
+                customizeFailed(nvl(e.getMessage(), e.toString()));
+            }
+        }
+        this.customizeLM = customizeLM;
+    }
+
+    private String readCustomizeCode(DataSession session) throws SQLException, SQLHandledException {
+        return (String) businessLogics.systemEventsLM.extendCodeUser.read(session, user);
+    }
+
+    // a client tells its user what the code failed with, a call of the program interface has only the log
+    protected void customizeFailed(String error) {
     }
 
     private void initUser(AuthenticationToken token, UserInfo userInfo, DataSession session, ExecutionStack stack) throws SQLException, SQLHandledException {

@@ -58,6 +58,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LA<?> shareAction;
 
     public LP extendCode;
+    public LP extendCodeUser;
     public LA<?> customize;
 
     public LA<?> initCurrentSize;
@@ -188,6 +189,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         shareAction = findAction("shareAction[STRING]");
 
         extendCode = findProperty("extendCode[STRING]");
+        extendCodeUser = findProperty("extendCode[User]");
         customize = findAction("customize[STRING,TEXT]");
 
         initCurrentSize = findAction("initCurrentSize[]");

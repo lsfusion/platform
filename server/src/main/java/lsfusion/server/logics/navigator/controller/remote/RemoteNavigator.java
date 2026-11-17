@@ -16,6 +16,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.ProcessNavigatorChangesClientAction;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.RemoteMessageException;
@@ -41,6 +42,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
@@ -95,6 +97,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 import static lsfusion.base.BaseUtils.nvl;
@@ -117,6 +120,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     private boolean isMobile;
 
     private DataObject connection;
+
+    // what a customization that was not taken failed with, until the user is told : the requests of a navigator run at
+    // once, and one of them tells. It is set as the super constructor initializes the connection's context, so it has no
+    // initializer, which would run after that
+    private AtomicReference<String> customizeError;
 
     private ClientCallBackController client;
     
@@ -164,6 +172,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session) != null;
         contentWordWrap = businessLogics.systemEventsLM.contentWordWrap.read(session) != null;
         highlightDuplicateValue = businessLogics.systemEventsLM.highlightDuplicateValue.read(session) != null;
+    }
+
+    @Override
+    protected void customizeFailed(String error) {
+        customizeError = new AtomicReference<>(error);
     }
 
     @Override
@@ -568,7 +581,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             refreshData();
             dataStream.write(getNavigatorChangesByteArray());
 
-            businessLogics.LM.baseWindows.log.serialize(dataStream);
+            getNavigator().getEx(businessLogics.LM.baseWindows.log).serialize(dataStream);
 
             // every window that holds forms, System.forms among them rather than beside them - it is one of the kind,
             // and which one it is the clients read off its name, the way they already do for the navigator's own
@@ -599,12 +612,19 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         super.deactivateAndCloseLater(confirmedClient);
     }
 
+    // the navigator this client draws : that of the module of its user's customization, or of the logics'. The code of
+    // the customization is read once for a client, as it starts, so what the client clicks is found in what it was sent
+    private NavigatorEntity getNavigator() {
+        LogicsModule module = customizeLM != null ? customizeLM : businessLogics.LM;
+        return module.getNavigator();
+    }
+
     private ImOrderMap<NavigatorElement, List<String>> getNavigatorTreeObjects() {
-        return businessLogics.LM.root.getChildrenMap(securityPolicy);
+        return getNavigator().getRoot().getChildrenMap(securityPolicy);
     }
 
     private ImOrderSet<AbstractWindow> getWindows() {
-        return businessLogics.getWindows();
+        return getNavigator().getWindows();
     }
 
     @Override
@@ -658,6 +678,11 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents, boolean paused) {
         if (!paused && getInvocationsCount() <= 1)
             pendingActions.add(0, getNavigatorChangesAction());
+
+        // the code is read as the connection is initialized, when there is no answer to put a message into yet
+        String error = customizeError != null ? customizeError.getAndSet(null) : null;
+        if (error != null)
+            pendingActions.add(new MessageClientAction(ThreadLocalContext.localize("{logics.customize.error}") + "\n" + error, ThreadLocalContext.localize("{logics.customize}")));
 
         ServerResponse result = new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), paused);
         pendingActions.clear();
@@ -831,7 +856,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     private void runAction(DataSession session, String canonicalName, boolean isNavigatorAction, byte[] pushAsyncResult, ExecutionStack stack) throws SQLException, SQLHandledException {
         final Action<?> action;
         if (isNavigatorAction) {
-            final NavigatorElement element = businessLogics.findNavigatorElement(canonicalName);
+            final NavigatorElement element = getNavigator().getElement(canonicalName);
 
             if (!(element instanceof NavigatorAction)) {
                 throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.action.not.found}"));
