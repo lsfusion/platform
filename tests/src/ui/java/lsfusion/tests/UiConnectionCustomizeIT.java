@@ -327,6 +327,20 @@ public class UiConnectionCustomizeIT extends UiTest {
         assertTrue("a name declared twice was answered with " + rejection, rejection.startsWith("Ambiguous element '" + name + "'"));
     }
 
+    // an entry of a form's list of what a page may call names an action the form's own code declares : by the entry's
+    // name, and by the action's own
+    @Test
+    public void aFormsCodeListsItsOwnActionForThePage() throws Exception {
+        exec("UiConnectionCustomize.uiCcSetForm", CALLS,
+                "uiCcListed(INTEGER a) { RETURN a * 3; }\n" +
+                "EXTEND FORM uiCustomViewCalls CUSTOMS uiCcTriple = uiCcListed;");
+
+        View calls = openCalls();
+        assertEquals("42", calls.answer("controller.exec('uiCcTriple', 14)"));
+        assertEquals("42", calls.answer("controller.exec('uiCcListed', 14)"));
+        closeCalls();
+    }
+
     // a client makes its navigator as its page is loaded
     private void restart() {
         page.reload();

@@ -1235,8 +1235,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         if(entry != null) {
             if(entry.isAction() != action)
                 throw new RuntimeException("Form API entry '" + name + "' is " + (entry.isAction() ? "an action; use exec" : "a property; use change"));
-            String canonical = entry.property.getCanonicalName();
-            return new ControllerResolved(action ? form.BL.findAction(canonical) : form.BL.findProperty(canonical), true);
+            return new ControllerResolved(entry.lap, true);
         }
         ControllerResolved global = super.resolveController(name, action);
         if(global.lap != null && form.entity.hasAPI(global.lap.getActionOrProperty()))

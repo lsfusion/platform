@@ -203,14 +203,14 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     // ACTIVE operator (object-parameter mapping is phase 2, #1651).
     public static class FormAPIEntry implements MappingInterface<FormAPIEntry> {
         public final String localName; // the form-local call name: the alias if declared, else the target's simple name
-        public final ActionOrProperty<?> property; // the allowed action/property; resolved to its LA/LP at call time
+        public final LAP<?, ?> lap; // the allowed action/property, itself : one the form's customization declares is not in the logics to be found again
 
-        public FormAPIEntry(String localName, ActionOrProperty<?> property) {
+        public FormAPIEntry(String localName, LAP<?, ?> lap) {
             this.localName = localName;
-            this.property = property;
+            this.lap = lap;
         }
         public boolean isAction() {
-            return property instanceof Action;
+            return lap instanceof LA;
         }
         @Override
         public FormAPIEntry get(ObjectMapping mapping) {
@@ -242,7 +242,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     // doesn't encode the kind).
     @IdentityLazy
     public ImSet<ActionOrProperty> getAPIProperties() {
-        return apiList.getList().getCol().mapMergeSetValues(entry -> entry.property); // merge: two aliases may point to one target
+        return apiList.getList().getCol().mapMergeSetValues(entry -> entry.lap.getActionOrProperty()); // merge: two aliases may point to one target
     }
     public FormAPIEntry getAPIByLocalName(String localName) {
         return getAPILocalNameMap().get(localName);
