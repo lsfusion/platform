@@ -320,7 +320,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     castTypes = null;
             }
 
-            final String alias = "UALIAS";
+            final String alias = subcontext.wrapAlias("UALIAS");
             keySelect = keyNames.mapValues(value -> alias + "." + value);
             propertySelect = propertyNames.mapValues(value -> alias + "." + value);
             from = "(" + fromString + ") "+alias;
@@ -1490,7 +1490,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 Query<String,Expr> subQuery = new Query<>(group, getExprs().toMap(), innerJoin.getWhere().and(valueWhere));
 
-                final CompiledQuery<String, Expr> compiled = subQuery.compile(innerJoin.getOrders(), new CompileOptions<>(syntax, LimitOptions.get(new LimitOffset(1, valueOffset != null ? 1 : 0)), subQueryContext, debugInfoWriter != null));
+                final CompiledQuery<String, Expr> compiled = subQuery.compile(innerJoin.getOrders(), new CompileOptions<>(syntax, LimitOptions.get(new LimitOffset(valueLimit != null ? 1 : 0, valueOffset != null ? 1 : 0)), subQueryContext, debugInfoWriter != null));
                 rBaseCost.set(rBaseCost.result.or(compiled.sql.baseCost));
 
                 return new Pair<>((subQueryParams) -> {

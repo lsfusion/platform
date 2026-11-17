@@ -1,0 +1,40 @@
+MODULE PartitionOffset;
+
+REQUIRE GroupOffset;
+
+// PARTITION with TOP and OFFSET, read for all the values of the property while its records are unsaved changes (#1837):
+// TOP and OFFSET select the records of a partition that get a value, which is counted from its first record
+
+pofTop (GroupOffsetGame g) = PARTITION SUM gofGoals(g) ORDER gofDate(g), g TOP 2 BY gofTeam(g);
+pofAfterFirst (GroupOffsetGame g) = PARTITION SUM gofGoals(g) ORDER gofDate(g), g OFFSET 1 BY gofTeam(g);
+pofTopAfterFirst (GroupOffsetGame g) = PARTITION SUM gofGoals(g) ORDER gofDate(g), g TOP 2 OFFSET 1 BY gofTeam(g);
+
+testPartitionTop 'PARTITION ... TOP, read for all its values' () {
+    NEW t = GroupOffsetTeam {
+        NEW other = GroupOffsetTeam {
+            gofNewGames(t, other);
+            assertEquals((GROUP CONCAT STRING(gofGoals(GroupOffsetGame g)) + ':' + STRING(pofTop(g)), ',' ORDER gofDate(g), g),
+                         '1:1,2:3,10:10,20:30', 'the goals of the games that get a value : the value');
+        }
+    }
+}
+
+testPartitionOffset 'PARTITION ... OFFSET without TOP, read for all its values' () {
+    NEW t = GroupOffsetTeam {
+        NEW other = GroupOffsetTeam {
+            gofNewGames(t, other);
+            assertEquals((GROUP CONCAT STRING(gofGoals(GroupOffsetGame g)) + ':' + STRING(pofAfterFirst(g)), ',' ORDER gofDate(g), g),
+                         '2:3,3:6,4:10,20:30', 'the goals of the games that get a value : the value');
+        }
+    }
+}
+
+testPartitionTopOffset 'PARTITION ... TOP ... OFFSET, read for all its values' () {
+    NEW t = GroupOffsetTeam {
+        NEW other = GroupOffsetTeam {
+            gofNewGames(t, other);
+            assertEquals((GROUP CONCAT STRING(gofGoals(GroupOffsetGame g)) + ':' + STRING(pofTopAfterFirst(g)), ',' ORDER gofDate(g), g),
+                         '2:3,3:6,20:30', 'the goals of the games that get a value : the value');
+        }
+    }
+}
