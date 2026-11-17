@@ -4169,6 +4169,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         CFEWithParams<O> contextEntities = getContextFilterEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters), initAction);
 
         ImList<O> objects = mObjects.immutableList();
+        // SHOW '' = form opens the form with no label - the form an address names by the label ''
+        if (formId != null && formId.isEmpty())
+            formId = null;
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
                 formSessionScope, manageSession, noCancel,
                 contextEntities.orderInterfaces, contextEntities.filters,

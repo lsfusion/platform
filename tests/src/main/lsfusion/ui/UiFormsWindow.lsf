@@ -126,6 +126,14 @@ uiFormsWindowLabelledIntoKeep 'Labelled into kept' () {
 uiFormsWindowAIntoKeep 'A into kept' () {
     SHOW 'a' = uiFormsWindowItem OBJECTS i = uiFormsWindowFirstItem() WINDOW uiFormsWindowKeep NOWAIT;
 }
+// one instance under a label, the other under none - which the label '' names
+uiFormsWindowAAndNoneIntoKeep 'A and none into kept' () {
+    SHOW 'a' = uiFormsWindowItem OBJECTS i = uiFormsWindowFirstItem() WINDOW uiFormsWindowKeep NOWAIT;
+    SHOW uiFormsWindowItem OBJECTS i = uiFormsWindowSecondItem() WINDOW uiFormsWindowKeep NOWAIT;
+}
+uiFormsWindowEmptyIntoKeep 'Empty label into kept' () {
+    SHOW '' = uiFormsWindowItem OBJECTS i = uiFormsWindowSecondItem() WINDOW uiFormsWindowKeep NOWAIT;
+}
 
 uiFormsWindowFirstIntoBoard 'First into board' () { SHOW uiFormsWindowFirst WINDOW uiFormsWindowBoard NOWAIT; }
 uiFormsWindowSecondIntoBoard 'Second into board' () { SHOW uiFormsWindowSecond WINDOW uiFormsWindowBoard NOWAIT; }
@@ -135,11 +143,13 @@ uiFormsWindowActivateFirst 'Activate first' () { ACTIVATE FORM uiFormsWindowFirs
 uiFormsWindowActivateSecond 'Activate second' () { ACTIVATE FORM uiFormsWindowSecond; }
 uiFormsWindowActivateItems 'Activate items' () { ACTIVATE FORM uiFormsWindowItems; }
 uiFormsWindowActivateA 'Activate a' () { ACTIVATE FORM 'a'; }
+uiFormsWindowActivateNone 'Activate none' () { ACTIVATE FORM '' = uiFormsWindowItem; }
 uiFormsWindowCloseFirst 'Close first' () { CLOSE FORM uiFormsWindowFirst; }
 uiFormsWindowCloseSecond 'Close second' () { CLOSE FORM uiFormsWindowSecond; }
 uiFormsWindowCloseItems 'Close items' () { CLOSE FORM uiFormsWindowItems; }
 uiFormsWindowCloseKept 'Close kept' () { CLOSE FORM 'kept'; }
 uiFormsWindowCloseA 'Close a' () { CLOSE FORM 'a'; }
+uiFormsWindowCloseNone 'Close none' () { CLOSE FORM '' = uiFormsWindowItem; }
 uiFormsWindowCloseEveryItem 'Close every item' () { CLOSE FORM uiFormsWindowItem; }
 
 // an open that reuses the form already there, with a statement and an aspect after it, which the server runs whether
@@ -195,7 +205,8 @@ FORM uiFormsWindowLauncher 'Launcher'
                  uiFormsWindowFirstIntoOne, uiFormsWindowSecondIntoOne, uiFormsWindowBothIntoOne, uiFormsWindowItemsIntoOne,
                  uiFormsWindowSecondIntoOneWait, uiFormsWindowThirdFloating, uiFormsWindowSecondFloating,
                  uiFormsWindowFirstIntoKeep, uiFormsWindowSecondIntoKeep, uiFormsWindowKeptIntoKeep, uiFormsWindowLabelledIntoKeep,
-                 uiFormsWindowAIntoKeep,
+                 uiFormsWindowAIntoKeep, uiFormsWindowAAndNoneIntoKeep, uiFormsWindowEmptyIntoKeep, uiFormsWindowActivateNone,
+                 uiFormsWindowCloseNone,
                  uiFormsWindowFirstIntoBoard, uiFormsWindowSecondIntoBoard, uiFormsWindowItemsIntoBoard,
                  uiFormsWindowActivateFirst, uiFormsWindowActivateSecond, uiFormsWindowActivateItems, uiFormsWindowActivateA,
                  uiFormsWindowCloseFirst, uiFormsWindowCloseSecond, uiFormsWindowCloseItems, uiFormsWindowCloseKept,

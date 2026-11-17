@@ -29,7 +29,7 @@ The address names a form by any combination of the label it was opened with, its
 
 - `formLabel`
 
-    A [string literal](Literals.md#strliteral) — the label the form was given when it was opened by the [`SHOW` operator](SHOW_operator.md). Several open forms may carry the same label, and all of them are closed. If it is not specified, forms are closed whatever label they carry.
+    A [string literal](Literals.md#strliteral) — the label the form was given when it was opened by the [`SHOW` operator](SHOW_operator.md). Several open forms may carry the same label, and all of them are closed. The empty label `''` names the forms opened without a label. If it is not specified, forms are closed whatever label they carry.
 
 - `formName`
 

@@ -813,8 +813,8 @@ public abstract class FormsController {
         GFormController form = formContainer.getForm();
 
         // the label is the form's, so a form that has not arrived yet carries none, and an address that names one
-        // cannot mean it
-        if (formId != null && (form == null || !formId.equals(form.formId)))
+        // cannot mean it. The label '' names the forms opened with none
+        if (formId != null && (form == null || !formId.equals(form.formId != null ? form.formId : "")))
             return false;
 
         if (formCanonicalName == null)

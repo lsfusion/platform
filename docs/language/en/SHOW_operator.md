@@ -57,7 +57,7 @@ The `SHOW` operator creates an action that opens the specified form. The `OBJECT
 
 - `formId`
 
-    [String literal](Literals.md#strliteral) - the label the opened form carries, by which later actions address it: [`ACTIVATE FORM`](ACTIVATE_operator.md) and [`CLOSE FORM`](CLOSE_FORM_operator.md). Several open forms may carry the same label: `CLOSE FORM` requests that each of them close, while `ACTIVATE FORM` activates the first one it finds in the `FORMS` windows. By default, the opened form carries none.
+    [String literal](Literals.md#strliteral) - the label the opened form carries, by which later actions address it: [`ACTIVATE FORM`](ACTIVATE_operator.md) and [`CLOSE FORM`](CLOSE_FORM_operator.md). Several open forms may carry the same label: `CLOSE FORM` requests that each of them close, while `ACTIVATE FORM` activates the first one it finds in the `FORMS` windows. By default, the opened form carries none; the empty label `''` is the same as none.
 
 - `formName`
 

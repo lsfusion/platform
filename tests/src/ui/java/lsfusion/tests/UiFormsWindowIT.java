@@ -153,6 +153,34 @@ public class UiFormsWindowIT extends UiTest {
         check("UiFormsWindow.uiFormsWindowCheckItemClosed", "2,1");
     }
 
+    // the label '' names the instance opened with none, beside one opened under a label, and SHOW '' = opens one with
+    // none
+    @Test
+    public void theEmptyLabelNamesAFormOpenedWithNone() throws Exception {
+        String[] items = seed();
+        Locator launcher = launcher(), keep = window("keep");
+        action(launcher, "uiFormsWindowAAndNoneIntoKeep").click();
+        Locator forms = in(keep, "uiFormsWindowItem");
+        assertThat(forms).hasCount(2);
+        action(launcher, "uiFormsWindowActivateA").click();
+        assertThat(text(keep, items[0])).isVisible();
+
+        action(launcher, "uiFormsWindowActivateNone").click();
+        assertThat(text(keep, items[1])).isVisible();
+        assertThat(text(keep, items[0])).isHidden();
+        action(launcher, "uiFormsWindowCloseNone").click();
+        assertThat(forms).hasCount(1);
+        assertThat(text(keep, items[0])).isVisible();
+        check("UiFormsWindow.uiFormsWindowCheckItemClosed", "0,1");
+
+        action(launcher, "uiFormsWindowEmptyIntoKeep").click();
+        assertThat(forms).hasCount(2);
+        assertThat(keep.locator("[lsfusion-form-label]")).hasCount(1); // 'a' alone carries a label
+        action(launcher, "uiFormsWindowCloseNone").click();
+        assertThat(forms).hasCount(1);
+        check("UiFormsWindow.uiFormsWindowCheckItemClosed", "0,2");
+    }
+
     // a docked-modal child opened into the window its opener is in keeps the opener, though the window closes a form
     // it displaces at once, and the window draws the opener again once the child is closed
     @Test

@@ -597,7 +597,7 @@ public class MCPDispatcher {
                         .put("form", new JSONObject().put("type", "object")
                                 .put("properties", new JSONObject()
                                         .put("name", strProp("The form's name, `Namespace.form`."))
-                                        .put("label", strProp("The label the form was opened with."))
+                                        .put("label", strProp("The label the form was opened with, `''` for a form opened without one."))
                                         .put("window", strProp("The name of the `FORMS` window the form is docked into; left out for a form that has no `lsfusion-form-window`.")))
                                 .put("additionalProperties", false)
                                 .put("description", "Only where the tool is called by the application's page, see **Where the action runs** in the tool's description; over `/mcp` it is refused. The form to run in: the address of ONE open form, by any of its `name`, `label` and `window`, as in `ACTIVATE FORM` — a failure when it names no form, or several —, or `{}`, the form the user is in — a failure when the user is in none. Omitted: the navigator. The page shows the address on the form's element, in the attributes `lsfusion-form` (the name), `lsfusion-form-label` and `lsfusion-form-window`, each that the form has.")))

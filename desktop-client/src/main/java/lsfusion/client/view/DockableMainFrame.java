@@ -693,9 +693,11 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     // a part of the address that is absent does not narrow it. The window part is not tested at all: the desktop
-    // client draws System.forms alone, so it holds there the forms every other window would have held
+    // client draws System.forms alone, so it holds there the forms every other window would have held.
+    // The label '' names the forms opened with none; a form that has not arrived carries no label yet, so an address
+    // that names one cannot mean it
     private boolean matches(ClientDockable openedForm, String formId, String formCanonicalName) {
-        return (formId == null || formId.equals(openedForm.formId)) &&
+        return (formId == null || !openedForm.async && formId.equals(openedForm.formId != null ? openedForm.formId : "")) &&
                 (formCanonicalName == null || formCanonicalName.equals(openedForm.getCanonicalName()));
     }
 

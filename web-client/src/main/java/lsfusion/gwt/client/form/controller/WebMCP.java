@@ -290,7 +290,7 @@ public class WebMCP {
                         type: 'object',
                         properties: {
                             name: { type: 'string', description: "The form's name, `Namespace.form`." },
-                            label: { type: 'string', description: "The label the form was opened with." },
+                            label: { type: 'string', description: "The label the form was opened with, `''` for a form opened without one." },
                             window: { type: 'string', description: "The name of the `FORMS` window the form is docked into; left out for a form that has no `lsfusion-form-window`." }
                         },
                         additionalProperties: false,

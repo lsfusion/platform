@@ -44,7 +44,7 @@ The `ACTIVATE ... formObjectId = expr` and `ACTIVATE ... formGroupObjectId [OBJE
 
 - `formLabel`
 
-    A [string literal](Literals.md#strliteral) — the label the form was given when it was opened by the [`SHOW` operator](SHOW_operator.md). If it is not specified, a form is activated whatever label it carries.
+    A [string literal](Literals.md#strliteral) — the label the form was given when it was opened by the [`SHOW` operator](SHOW_operator.md). The empty label `''` names a form opened without a label. If it is not specified, a form is activated whatever label it carries.
 
 - `formName`
 
