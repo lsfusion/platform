@@ -1,6 +1,7 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.assertions.LocatorAssertions;
 import org.junit.After;
 import org.junit.Test;
 
@@ -10,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 // The customization of a connection (SystemEvents.dataExtendCode[]): its code is compiled as a connection is made, its
 // NAVIGATOR statements over a copy of the navigator, so a page loaded after the code is saved draws the navigator the
 // code made, and the navigator of the logics is back once the code is dropped (UiConnectionCustomize.lsf).
+// The code is written in the dialog a form's code is written in (SystemEvents.customizeForm).
 public class UiConnectionCustomizeIT extends UiTest {
 
     private static final String FOLDER = "UiConnectionCustomize.uiConnectionCustomize";
@@ -142,6 +144,63 @@ public class UiConnectionCustomizeIT extends UiTest {
         closeDialog("Application customization code is broken");
         assertThat(element(FOLDER)).containsText("UI connection customize");
         close(open(FOLDER, FORM));
+    }
+
+    // the editor of the code is the dialog a form's code is written in, opened for the connection's code from the administration.
+    // The code written there for the user is saved and the client reloaded, so the navigator is the code's at once
+    @Test
+    public void theEditorSavesTheCodeAndReloads() {
+        open("System.administration", element("SystemEvents.customize"));
+        Locator editor = form("SystemEvents.customizeForm");
+        type(editor, "NAVIGATOR {\n    " + FOLDER + " 'Folder of the editor';\n}");
+        action(editor, "formOk").click();
+
+        assertThat(element(FOLDER)).containsText("Folder of the editor", new LocatorAssertions.ContainsTextOptions().setTimeout(60_000));
+    }
+
+    // and it customizes a form from the form's toolbar : the code written for the user extends the form, which is opened
+    // anew with it
+    @Test
+    public void theEditorCustomizesAForm() {
+        action(open(FOLDER, FORM), "formCustomize").click();
+        Locator editor = form("SystemEvents.customizeForm");
+        type(editor, "EXTEND FORM uiCcForm PROPERTIES() uiCcAdded;");
+        action(editor, "formOk").click();
+
+        // the customized form is a form of the module its code is compiled into, as an element the code adds is
+        Locator customized = page.locator("[lsfusion-form$='.uiCcForm']");
+        assertThat(customized.locator("[lsfusion-container='PROPERTY(uiCcAdded())']")).isVisible();
+        close(customized);
+    }
+
+    // and what is written in it and then left by closing the dialog is dropped : the editor opened again keeps nothing
+    // of it, and its OK opens the form anew without it
+    @Test
+    public void closingTheEditorDropsWhatWasWritten() {
+        Locator form = open(FOLDER, FORM);
+        action(form, "formCustomize").click();
+        Locator editor = form("SystemEvents.customizeForm");
+        type(editor, "EXTEND FORM uiCcForm PROPERTIES() uiCcAdded;");
+        close(editor);
+
+        action(form, "formCustomize").click();
+        Locator reopened = form("SystemEvents.customizeForm");
+        answered(0, () -> action(reopened, "formOk").click());
+
+        Locator recreated = page.locator("[lsfusion-form$='.uiCcForm']");
+        assertThat(recreated).isVisible();
+        assertThat(recreated.locator("[lsfusion-container='PROPERTY(uiCcAdded())']")).isHidden();
+        close(recreated);
+    }
+
+    // the code written into the editor's "For me" : the editor sends its text a moment after it changes, and the dialog
+    // is closed once the server has it
+    private void type(Locator editor, String code) {
+        Locator ace = editor.locator("[lsfusion-container='PROPERTY(extendCodeCurrentUser)'] .ace_editor");
+        answered(0, () -> {
+            ace.evaluate("(ace, code) => ace.parentElement.aceEditor.setValue(code, 1)", code);
+            page.waitForCondition(() -> code.equals(ace.evaluate("ace => ace.parentElement.currentValue")));
+        });
     }
 
     // a client makes its navigator as its page is loaded

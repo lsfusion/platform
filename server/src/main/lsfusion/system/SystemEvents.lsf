@@ -1134,25 +1134,36 @@ recreate = DATA LOCAL BOOLEAN();
 
 nullEmpty(STRING s) = IF s == '' THEN NULL ELSE s;
 
+// the code the dialog edits, of a form or of the application, the caller's on OK only : closing the dialog leaves the
+// caller's code as it was. And only what was edited is written back - another one may have saved the rest meanwhile
+extendCodeAll = DATA LOCAL TEXT ();
+extendCodeCurrentUser = DATA LOCAL TEXT ();
+extendCodeAllEdited = DATA LOCAL BOOLEAN ();
+extendCodeCurrentUserEdited = DATA LOCAL BOOLEAN ();
+
 FORM customizeForm '{action.form.customize}' IMAGE 'settings'
-    PROPERTIES() enableOriginalCode, enableExtendCodeAll, enableExtendCodeCurrentUser
-    OBJECTS sid = STRING PANEL, code = TEXT PANEL
-    PROPERTIES sid = VALUE(sid),
+    OBJECTS code = TEXT PANEL, defaultCode = TEXT PANEL
+    PROPERTIES() enableOriginalCode SHOWIF code, enableExtendCodeAll, enableExtendCodeCurrentUser
+    PROPERTIES
         code '{action.form.customize.base}' = jsonCode(code) CUSTOM 'interpreter' SHOWIF enableOriginalCode() DISABLE,
-        extendCodeAll '{action.form.customize.all.users}' = jsonCode(dataExtendCode(form(sid))) CUSTOM 'interpreter' SHOWIF enableExtendCodeAll() ON CHANGE {
+        extendCodeAll '{action.form.customize.all.users}' = jsonCode(extendCodeAll()) CUSTOM 'interpreter' SHOWIF enableExtendCodeAll() ON CHANGE {
             INPUT s = TEXT DO {
-                dataExtendCode(form(sid)) <- nullEmpty(fieldText(JSON((s)), 'text'));
+                extendCodeAll() <- nullEmpty(fieldText(JSON((s)), 'text'));
+                extendCodeAllEdited() <- TRUE;
             }
         },
-        extendCodeCurrentUser '{action.form.customize.current.user}' = jsonCode(dataExtendCode(form(sid), currentUser())) CUSTOM 'interpreter' SHOWIF enableExtendCodeCurrentUser() ON CHANGE {
+        extendCodeCurrentUser '{action.form.customize.current.user}' = jsonCode(extendCodeCurrentUser()) CUSTOM 'interpreter' SHOWIF enableExtendCodeCurrentUser() ON CHANGE {
             INPUT s = TEXT DO {
-                dataExtendCode(form(sid), currentUser()) <- nullEmpty(fieldText(JSON((s)), 'text'));
+                extendCodeCurrentUser() <- nullEmpty(fieldText(JSON((s)), 'text'));
+                extendCodeCurrentUserEdited() <- TRUE;
             }
         }
     ON INIT {
-        enableOriginalCode() <- TRUE;
-        enableExtendCodeAll() <- TRUE IF dataExtendCode(form(sid));
+        enableOriginalCode() <- TRUE IF code;
+        enableExtendCodeAll() <- TRUE IF extendCodeAll();
         enableExtendCodeCurrentUser() <- TRUE; 
+        extendCodeAllEdited() <- NULL;
+        extendCodeCurrentUserEdited() <- NULL;
     }
 ;
 
@@ -1186,25 +1197,28 @@ DESIGN customizeForm {
                 charWidth = 50;
             }
             MOVE PROPERTY(extendCodeAll) {
-                defaultValue = defaultExtendCode(form(sid));
+                defaultValue = defaultCode;
                 captionVertical = TRUE;
                 charHeight = 30;
                 charWidth = 50;
             }
             MOVE PROPERTY(extendCodeCurrentUser) {
-                defaultValue = defaultExtendCode(form(sid));
+                defaultValue = defaultCode;
                 captionVertical = TRUE;
                 charHeight = 30;
                 charWidth = 50;
             }
         }
     }
-    REMOVE PROPERTY(sid);
 }
 
 formRecreate INTERNAL 'lsfusion.server.logics.form.interactive.action.FormRecreateAction' ();
 customize(STRING sid, STRING code) {
-    DIALOG customizeForm OBJECTS sid = sid, code = code NOMANAGESESSION DO {
+    extendCodeAll() <- dataExtendCode(form(sid));
+    extendCodeCurrentUser() <- dataExtendCode(form(sid), currentUser());
+    DIALOG customizeForm OBJECTS code = code, defaultCode = defaultExtendCode(form(sid)) NOMANAGESESSION DO {
+        dataExtendCode(form(sid)) <- extendCodeAll() WHERE extendCodeAllEdited();
+        dataExtendCode(form(sid), currentUser()) <- extendCodeCurrentUser() WHERE extendCodeCurrentUserEdited();
         formRecreate();
     }
 }
@@ -1218,8 +1232,28 @@ dataExtendCode = DATA TEXT (User);
 // and let go as a code is applied (WAIT), for a connection made right after that to take the code that was saved
 extendCode (User user) = CONCAT '\n', dataExtendCode(), dataExtendCode(user) LAZY WAIT;
 
+// the code is saved before the client is reloaded : the client then makes its navigator anew, of the saved code
+customize '{logics.customize}' () {
+    extendCodeAll() <- dataExtendCode();
+    extendCodeCurrentUser() <- dataExtendCode(currentUser());
+    DIALOG customizeForm OBJECTS defaultCode = 'NAVIGATOR \{\n\}' NOMANAGESESSION DO {
+        dataExtendCode() <- extendCodeAll() WHERE extendCodeAllEdited();
+        dataExtendCode(currentUser()) <- extendCodeCurrentUser() WHERE extendCodeCurrentUserEdited();
+        APPLY;
+        IF NOT canceled() THEN
+            reload();
+    }
+} IMAGE 'settings.png';
+
+// in the web client only : the code is written in its editor, and the client is reloaded to take it
+NAVIGATOR {
+    system {
+        NEW customize[] BEFORE performance SHOWIF isWeb();
+    }
+}
+
 // customizations are written by the users themselves, so the administrator needs a way to see and drop them
-// without impersonating every user (customizeForm always edits the code of currentUser())
+// without impersonating every user (customize always edits the code of currentUser())
 
 hasExtendCodeAll '{action.form.customize.has.all.users}' (Form f) = TRUE IF dataExtendCode(f);
 countExtendCode '{action.form.customize.users}' (Form f) = GROUP SUM 1 IF dataExtendCode(f, User u);

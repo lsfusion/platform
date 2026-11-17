@@ -5,6 +5,9 @@ REQUIRE SystemEvents;
 FORM uiCcForm 'UI connection customize: form';
 FORM uiCcOther 'UI connection customize: other';
 
+// what the code written in the editor adds to the form
+uiCcAdded 'Added by the code' = DATA LOCAL STRING[20] ();
+
 NAVIGATOR {
     NEW FOLDER uiConnectionCustomize 'UI connection customize' WINDOW toolbar {
         NEW uiCcForm;
@@ -18,7 +21,10 @@ uiCcSet (TEXT code) {
     APPLY;
 }
 
+// with what the editor saved for a user : the browser's user is not known here
 uiCcReset () {
     dataExtendCode() <- NULL;
+    dataExtendCode(User u) <- NULL WHERE u IS User;
+    dataExtendCode(form('UiConnectionCustomize.uiCcForm'), User u) <- NULL WHERE u IS User;
     APPLY;
 }
