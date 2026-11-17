@@ -271,6 +271,13 @@ uiFormsWindowGuestIntoLauncher 'Guest into launcher' () { SHOW uiFormsWindowGues
 uiFormsWindowCloseGuest 'Close guest' () { CLOSE FORM uiFormsWindowGuest; }
 EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowGuestIntoLauncher, uiFormsWindowCloseGuest;
 
+// and from a floating form not waited for, the current form then, not the launcher
+FORM uiFormsWindowGuestCloser 'Guest closer'
+    PROPERTIES() uiFormsWindowCloseGuest
+;
+uiFormsWindowGuestCloserFloating 'Guest closer, floating' () { SHOW uiFormsWindowGuestCloser FLOAT NOWAIT; }
+EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowGuestCloserFloating;
+
 // a form a React view draws (UiFormsWindowCounter), opened from the launcher in System.forms, the window the full screen
 // draws alone
 FORM uiFormsWindowCounter 'Counter';

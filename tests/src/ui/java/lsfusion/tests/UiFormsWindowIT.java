@@ -499,6 +499,21 @@ public class UiFormsWindowIT extends UiTest {
         assertThat(guest).hasCount(0);
     }
 
+    // a form shown in a container of the launcher, closed by CLOSE FORM from a floating form - the current form then:
+    // it leaves the launcher's container. It was taken out of the current form's layout, where it is not, and stayed
+    @Test
+    public void aFormInAContainerClosedFromAnotherFormLeavesItsContainer() throws Exception {
+        Locator launcher = launcher(), guest = form(GUEST), closer = form("UiFormsWindow.uiFormsWindowGuestCloser");
+        action(launcher, "uiFormsWindowGuestIntoLauncher").click();
+        assertThat(launcher.locator("[lsfusion-form='" + GUEST + "']")).isVisible();
+        action(launcher, "uiFormsWindowGuestCloserFloating").click();
+        assertThat(closer).isVisible();
+
+        action(closer, "uiFormsWindowCloseGuest").click();
+        assertThat(guest).hasCount(0);
+        assertThat(closer).isVisible();
+    }
+
     // a floating form not waited for whose answer comes after the client's placeholder - the window the client shows
     // for an open it predicts, 100 ms after the click, which the form then arrives in -: the placeholder and the form
     // in it are a window not waited for - no backdrop, the page around it in use, a floating form the launcher under it

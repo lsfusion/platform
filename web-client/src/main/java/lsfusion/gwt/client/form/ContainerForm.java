@@ -9,11 +9,9 @@ import lsfusion.gwt.client.form.design.view.ComponentWidget;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.design.view.TabbedContainerView;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
-import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
-import lsfusion.gwt.client.view.MainFrame;
 
 public class ContainerForm extends WidgetForm {
     private final GContainerWindowFormType windowType;
@@ -38,21 +36,17 @@ public class ContainerForm extends WidgetForm {
 
     @Override
     public void hide(EndReason editFormCloseReason) {
-        FormContainer formContainer = MainFrame.getCurrentForm();
-        if(formContainer != null) {
-            GFormController formController = formContainer.getForm();
-            assert formController.equals(this.contextForm); // ?? to remove later
+        // out of the form it is shown in, not the current one: a CLOSE FORM another form runs, or a modal popup open,
+        // leaves another form current, or none
+        contextForm.removeContainerForm(this);
 
-            formController.removeContainerForm(this);
-
-            GFormLayout layout = formController.getFormLayout();
-            layout.removeBaseComponent(innerComponent);
-            inContainer.removeFromChildren(innerComponent);
-            if(inContainer.tabbed) {
-                TabbedContainerView containerView = ((TabbedContainerView)layout.getContainerView(inContainer));
-                if(containerView != null) {
-                    containerView.activateLastTab();
-                }
+        GFormLayout layout = contextForm.getFormLayout();
+        layout.removeBaseComponent(innerComponent);
+        inContainer.removeFromChildren(innerComponent);
+        if(inContainer.tabbed) {
+            TabbedContainerView containerView = ((TabbedContainerView)layout.getContainerView(inContainer));
+            if(containerView != null) {
+                containerView.activateLastTab();
             }
         }
     }
