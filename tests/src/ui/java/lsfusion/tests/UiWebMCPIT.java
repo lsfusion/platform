@@ -394,8 +394,8 @@ public class UiWebMCPIT extends UiTest {
         Locator form = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCPItems");
         assertThat(form.locator("td[lsfusion-container='PROPERTY(name)']")).hasCount(3); // the user is in the form
         String error = CLIENT_TOOL + " error: ";
-        assertEquals(error + "the call must be an object of method, args, form", call(CLIENT_TOOL, "null"));
-        assertEquals(error + "unknown field `group`: the call has method, args, form", call(CLIENT_TOOL, "{\"method\":\"getCount\",\"group\":\"i\"}"));
+        assertEquals(error + "the call must be an object of method, args, batch, form", call(CLIENT_TOOL, "null"));
+        assertEquals(error + "unknown field `group`: the call has method, args, batch, form", call(CLIENT_TOOL, "{\"method\":\"getCount\",\"group\":\"i\"}"));
         // a method that takes an element is not one of the tool's
         String methods = callForm("startEditing", "{}");
         assertTrue(methods, methods.startsWith(error + "`method` must be one of changeObject, changeProperty, getValues, ") && !methods.contains("startEditing"));
@@ -423,6 +423,83 @@ public class UiWebMCPIT extends UiTest {
             String refusal = callForm(refused[0], refused[1]);
             assertTrue(refusal, refusal.startsWith(error) && refusal.contains(refused[2]));
         }
+    }
+
+    // several calls of methods of the form the user is in, in one: `methodsAndArgs` is a method's name, then its arguments
+    private String callFormMethods(String... methodsAndArgs) {
+        List<String> calls = new ArrayList<>();
+        for (int i = 0; i < methodsAndArgs.length; i += 2)
+            calls.add("{\"method\":\"" + methodsAndArgs[i] + "\",\"args\":" + methodsAndArgs[i + 1] + "}");
+        return call(CLIENT_TOOL, "{\"batch\":[" + String.join(",", calls) + "],\"form\":{}}");
+    }
+
+    // several calls in one, `batch`: made in the form's batch, their changes sent in one request in their order, each
+    // seeing what the calls before it changed as the page has it - a row made the current one is the row of a change
+    // given none. Every call is checked before any is made - a method that answers something is called alone -, and the
+    // first one that fails stops them: on the page - a throw -, what the calls before it changed is sent, the calls
+    // after it are not made; on the server, what the server made before the failure stays in the form's session
+    @Test
+    public void theClientToolMakesCallsInOneBatch() throws Exception {
+        exec("UiWebMCP.uiWebMCPSeedItems");
+        loadWithAgent();
+        Locator form = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCPItems");
+        Locator names = form.locator("td[lsfusion-container='PROPERTY(name)']");
+        assertThat(names).hasCount(3);
+        String error = CLIENT_TOOL + " error: ";
+        String desc = "{\"table\":\"i\",\"orders\":[{\"property\":\"quantity\",\"desc\":true}]}";
+        String many = "{\"table\":\"i\",\"conditions\":[{\"property\":\"quantity\",\"compare\":\">\",\"value\":10}]}";
+
+        // a filter and a sorting, a row made the current one and a value changed in it: one request
+        String b = row(form, "name", "b").getAttribute("lsfusion-row");
+        List<String> requests = requests(request -> request.method().equals("POST"));
+        assertEquals("{}", callFormMethods(
+                "changeFilters", many,
+                "changeOrders", desc,
+                "changeObject", "{\"group\":\"i\",\"row\":\"" + b + "\"}",
+                "changeProperty", "{\"property\":\"i.quantity\",\"value\":21}"));
+        assertThat(names).hasText(new String[] {"c", "b"});
+        assertThat(row(form, "name", "b").locator("td[lsfusion-container='PROPERTY(quantity)']")).hasText("21");
+        assertEquals(1, count(requests, "ExecuteBatch"));
+        assertEquals(requests.toString(), 0, requests.stream().filter(body -> body.contains("action.form.") && !body.contains(signature("ExecuteBatch"))).count());
+        assertEquals("{\"result\":51}", callForm("getSum", "{\"group\":\"i\",\"property\":\"quantity\"}")); // the one call, as it was
+
+        // a call that is none, or that answers something, is refused before any is made: the sorting is not changed back
+        assertEquals(error + "`batch[1]`: `getCount` is not made in `batch`, which carries changes only: it is called alone, with `method`",
+                callFormMethods("changeOrders", "{\"table\":\"i\",\"orders\":[]}", "getCount", "{\"group\":\"i\"}"));
+        assertEquals(error + "`batch[1]`: unknown field `table`: `args` of expandAll has group",
+                callFormMethods("changeOrders", "{\"table\":\"i\",\"orders\":[]}", "expandAll", "{\"table\":\"i\"}"));
+        assertEquals(error + "`batch[0]`: unknown field `form`: a call has method, args",
+                call(CLIENT_TOOL, "{\"batch\":[{\"method\":\"update\",\"args\":{\"group\":\"i\"},\"form\":{}}],\"form\":{}}"));
+        assertThat(names).hasText(new String[] {"c", "b"});
+        assertEquals(error + "the call has `method` and `args`, or `batch`, not both",
+                call(CLIENT_TOOL, "{\"method\":\"update\",\"batch\":[],\"form\":{}}"));
+        assertEquals(error + "`batch` must be a non-empty array of calls, each an object of method, args", call(CLIENT_TOOL, "{\"batch\":[],\"form\":{}}"));
+        assertEquals(error + "`batch` contains calls of a form's methods: it is given with `form` - `{}` for the form the user is in",
+                call(CLIENT_TOOL, "{\"batch\":[{\"method\":\"update\",\"args\":{\"group\":\"i\"}}]}"));
+
+        // a call that throws - which the controller's method does with a property the group has not: the calls before
+        // it sent, the one after it not made - the sorting is not changed
+        page.evaluate("() => { window.uiWebMCPKeep = controller => { window.uiWebMCPController = controller; }; }");
+        assertEquals("", call("lsfusion_eval", "{\"script\":\"run() { INTERNAL CLIENT 'uiWebMCPKeep'; }\",\"form\":{}}", VALUES));
+        assertEquals("thrown", page.evaluate("() => { try { window.uiWebMCPController.changeOrders('i', [{property: 'none', desc: true}]); return 'not thrown'; }"
+                + " catch (e) { return 'thrown'; } }"));
+        String thrown = callFormMethods(
+                "changeFilters", "{\"table\":\"i\",\"conditions\":[]}",
+                "changeOrders", "{\"table\":\"i\",\"orders\":[{\"property\":\"none\",\"desc\":true}]}",
+                "changeOrders", "{\"table\":\"i\",\"orders\":[]}");
+        assertTrue(thrown, thrown.startsWith(error + "`batch[1]` (changeOrders) failed: ") && thrown.contains("unknown property 'none'")
+                && thrown.endsWith(". The calls before it were made, in one request. The calls after it were not made."));
+        assertThat(names).hasText(new String[] {"c", "b", "a"});
+
+        // a request the server fails: what it made before the failure stays done
+        String failed = callFormMethods(
+                "changeProperty", "{\"property\":\"uiWebMCPNote\",\"value\":\"before the failure\"}",
+                "changeProperty", "{\"property\":\"uiWebMCPCrash\"}");
+        assertTrue(failed, failed.startsWith(error + "The server failed the calls' request: ") && failed.contains("uiWebMCPCrash: the action failed")
+                && failed.endsWith(". What the server made before the failure stays done, nothing is taken back."));
+        closeDialog("uiWebMCPCrash: the action failed");
+        reported("uiWebMCPCrash: the action failed");
+        assertEquals("before the failure", call("lsfusion_eval", "{\"script\":\"run() { RETURN UiWebMCP.uiWebMCPNote(); }\",\"form\":{}}", VALUES));
     }
 
     // what the agent names it reads on the page: a property by the name on what shows it, a row by the group and the
@@ -657,6 +734,9 @@ public class UiWebMCPIT extends UiTest {
         assertEquals("", call("lsfusion_eval", "{\"script\":\"run() { INTERNAL CLIENT 'uiWebMCPKeep'; }\"}", VALUES));
         assertEquals(page.evaluate(functions), page.evaluate(methods, Arrays.asList("**Methods of the navigator.**", logic)));
         assertEquals("activate,changeColumn", page.evaluate("() => window.uiWebMCPTools." + CLIENT_TOOL + ".inputSchema.properties.method.enum.filter(name => name === 'activate' || name === 'changeColumn').sort().join()"));
+        // ... a call of a sequence names the same methods
+        assertEquals(true, page.evaluate("() => { const properties = window.uiWebMCPTools." + CLIENT_TOOL + ".inputSchema.properties;"
+                + " return JSON.stringify(properties.batch.items.properties.method) === JSON.stringify(properties.method); }"));
         // ... and each is described, with what it takes
         String description = (String) page.evaluate("() => window.uiWebMCPTools." + CLIENT_TOOL + ".description");
         assertTrue(description, description.contains("- `changeOrders(table, orders)` — ") && description.contains("- `export(table)` — "));

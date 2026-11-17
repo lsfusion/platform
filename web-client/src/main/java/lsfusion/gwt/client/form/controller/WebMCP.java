@@ -132,7 +132,8 @@ public class WebMCP {
         // method's arguments given by theirs - with `form`, a method of that form's controller
         // (GFormController.controller); with none, of the navigator's (GNavigatorActionDispatcher.controller), as the
         // tools that run an action read it (readForm). So a name may be both a form's method and the navigator's.
-        // The call is the page's to check, there being no server to say what is wrong with it (checkFields)
+        // Or several methods of a form, in one request (`batch`). The call is the page's to check, there being no server
+        // to say what is wrong with it (checkFields)
         var formMethods = @WebMCP::getFormMethods()(), navigatorMethods = @WebMCP::getNavigatorMethods()();
         // a ROW is given by its key, a string or a number, as the page shows it on the row's element; the method takes
         // the row, a handle JSON has none of: the row of that key among the rows the form has of the `group` given
@@ -150,34 +151,96 @@ public class WebMCP {
                     : typeof given.property === 'string' ? form.@GFormController::readPropertyRow(Ljava/lang/String;Ljava/lang/String;)(given.property, '' + key) : null;
             return row != null ? row : key;
         }
-        function callClientMethod(args) {
-            checkFields(args, ['method', 'args', 'form'], "the call");
-            var form = readForm(args.form);
-            // the methods of what the call is for. A name that is one of the other's is said so, with what to do - and
-            // so is a name both have, called with an argument that is the other's
+        // a call of a method, `{method, args}`, as the page checks it before the method is called: the method one of
+        // those of what the call is for, its arguments those it takes
+        function readCall(form, call) {
+            // A name that is one of the other's is said so, with what to do - and so is a name both have, called with an
+            // argument that is the other's
             var methods = form != null ? formMethods : navigatorMethods, others = form != null ? navigatorMethods : formMethods;
-            var other = typeof args.method === 'string' && others.hasOwnProperty(args.method) ? others[args.method] : null;
+            var other = typeof call.method === 'string' && others.hasOwnProperty(call.method) ? others[call.method] : null;
             var whose = " is a method of " + (form != null ? "the navigator: it is called with no `form`" : "a form: it is called with `form` - `{}` for the form the user is in");
-            if (typeof args.method !== 'string' || !methods.hasOwnProperty(args.method))
-                throw new Error(other != null ? "`" + args.method + "`" + whose
+            if (typeof call.method !== 'string' || !methods.hasOwnProperty(call.method))
+                throw new Error(other != null ? "`" + call.method + "`" + whose
                         : "`method` must be one of " + Object.keys(methods).join(', ') + (form != null ? "" : " - or, with `form`, a method of a form"));
-            var method = methods[args.method];
-            var given = args.args != null ? args.args : {};
+            var method = methods[call.method];
+            var given = call.args != null ? call.args : {};
             if (other != null && given != null && typeof given === 'object')
                 Object.keys(given).forEach(function (field) {
                     if (method.takes.indexOf(field) < 0 && other.takes.indexOf(field) >= 0)
-                        throw new Error("`" + args.method + "` with `" + field + "`" + whose);
+                        throw new Error("`" + call.method + "` with `" + field + "`" + whose);
                 });
-            checkFields(given, method.takes, "`args` of " + args.method);
-
-            // the method takes its arguments in their order; what it refuses - a name that names nothing, a value that
-            // is none of the property's - it throws, or rejects its Promise with, and that is the tool's failure. A
-            // method of the controller's, but where the catalog says how it is called (`call`)
+            checkFields(given, method.takes, "`args` of " + call.method);
+            return { name: call.method, method: method, given: given };
+        }
+        // ... and the method called, with what it returns. The method takes its arguments in their order; what it
+        // refuses - a name that names nothing, a value that is none of the property's - it throws, or rejects its
+        // Promise with. A method of the controller's, but where the catalog says how it is called (`call`)
+        function invokeMethod(form, call) {
+            var method = call.method, given = call.given;
             var controller = form != null ? form.@GFormController::controller : navigatorController, row = readRow(form, given);
-            return $wnd.Promise.resolve(method.call != null ? method.call(form, controller, given, row) : controller[args.method].apply(controller, method.takes.map(function (name) {
+            return method.call != null ? method.call(form, controller, given, row) : controller[call.name].apply(controller, method.takes.map(function (name) {
                 return name === 'row' ? row : given[name];
-            }))).then(method.answer).then(function (answer) {
-                return { result: answer };
+            }));
+        }
+        function callClientMethod(args) {
+            checkFields(args, ['method', 'args', 'batch', 'form'], "the call");
+            var form = readForm(args.form);
+            if (!args.hasOwnProperty('batch')) { // one call, answered with what the method answers: `{result}`
+                var call = readCall(form, args);
+                return $wnd.Promise.resolve(invokeMethod(form, call)).then(call.method.answer).then(function (answer) {
+                    return { result: answer };
+                });
+            }
+
+            // A BATCH, `batch`: calls of the form's methods made in its batch (controller.batch), their changes sent in
+            // one request when the last one is made - so a call sees what those before it changed as the page has it
+            // before the server's answer. A batch carries changes only: a method that answers something, or asks the
+            // server for it, is called alone (`alone`), and every call is checked so before any is made
+            if (form == null)
+                throw new Error("`batch` contains calls of a form's methods: it is given with `form` - `{}` for the form the user is in");
+            if (args.hasOwnProperty('method') || args.hasOwnProperty('args'))
+                throw new Error("the call has `method` and `args`, or `batch`, not both");
+            if (!Array.isArray(args.batch) || args.batch.length === 0)
+                throw new Error("`batch` must be a non-empty array of calls, each an object of method, args");
+            var calls = args.batch.map(function (given, index) {
+                try {
+                    checkFields(given, ['method', 'args'], "a call");
+                    var call = readCall(form, given);
+                    if (call.method.alone)
+                        throw new Error("`" + call.name + "` is not made in `batch`, which carries changes only: it is called alone, with `method`");
+                    return call;
+                } catch (e) {
+                    throw new Error("`batch[" + index + "]`: " + e.message);
+                }
+            });
+            // a call that throws ends the batch: what the calls before it changed is sent, the calls after it are not
+            // made. A failure on the server is the request's - of a change, or of what the server runs as it reads the
+            // form after them (an ON ORDER) -: what the server made before it stays done
+            var failed = null;
+            var batch = form.@GFormController::controller.batch(function () {
+                for (var index = 0; index < calls.length && failed == null; index++)
+                    try {
+                        invokeMethod(form, calls[index]);
+                    } catch (e) {
+                        failed = { index: index, message: e.message };
+                    }
+            });
+            function local(sent) {
+                var said = ["`batch[" + failed.index + "]` (" + calls[failed.index].name + ") failed: " + failed.message + "."];
+                if (failed.index > 0)
+                    said.push(sent);
+                if (failed.index + 1 < calls.length)
+                    said.push("The calls after it were not made.");
+                return said.join(' ');
+            }
+            return batch.then(function () {
+                if (failed != null)
+                    throw new Error(local("The calls before it were made, in one request."));
+                return {};
+            }, function (e) {
+                var stopped = "What the server made before the failure stays done, nothing is taken back.";
+                throw new Error(failed != null ? local("The calls before it were sent, in one request, which the server failed: " + e.message + ". " + stopped)
+                        : "The server failed the calls' request: " + e.message + ". " + stopped);
             });
         }
         function describeMethods(methods) {
@@ -185,10 +248,17 @@ public class WebMCP {
                 return "- `" + name + "(" + methods[name].takes.join(', ') + ")` — " + methods[name].does;
             }).join('\n');
         }
+        var aloneMethods = Object.keys(formMethods).filter(function (name) {
+            return formMethods[name].alone;
+        }).join(', ');
+        var methodSchema = { type: 'string', 'enum': Object.keys(formMethods).concat(Object.keys(navigatorMethods).filter(function (name) {
+            return !formMethods.hasOwnProperty(name);
+        })), description: "The method to call." };
         registerTool({
             name: 'lsfusion_client',
             description: "Call a method of the application's client, where the user works: of an open form — what the user does with the form's tables, sortings, filters and values —, or of the navigator; done in what the user sees.\n\n" +
                 "`method` names the method and `args` gives its arguments by their names, as listed below. `form` says whose method it is: with `form`, a form's — of the form it addresses, `{}` being the form the user is in; with no `form`, the navigator's. The answer is `{result}`: what the method answers with, nothing for a method that only changes what the user sees. A call that is refused is an error, with the reason.\n\n" +
+                "`batch`, given with `form` in place of `method` and `args`, contains several calls of the form's methods, `[{method, args}]`, whose changes are sent to the server in one request, made in their order; the answer is `{}`. A call sees what the calls before it changed as the page has it before the server answers: a row is one the form showed before, and a row the server finds — `changeObject` to `{to}` — is not yet the current one. Methods that answer something are not made in `batch`: " + aloneMethods + ". The first call that fails on the page stops the calls, and the error says which one it is; the changes of the calls before it are sent. A failure on the server is the request's. What was made before a failure stays done, nothing is taken back.\n\n" +
                 "**Names in a form.** `group` is an object group of the form, by its name; `tree`, a tree by its name; `table`, the table of an object group's rows, by the group's name, or a tree, by its name; `filterGroup`, a filter group by its name. The page shows them in `lsfusion-container`: `GRID(group)` on a group's table, `GRID(TREE tree)` on a tree, `FILTERGROUP(filterGroup)` on a filter group. A `property` is named as the page shows it in `lsfusion-property`, on the property's cells, its column's header and its field: `group.property`, and `property` alone for a property of no group. Beside its `group`, and in the sortings and conditions of a group's `table`, it is the part after the group, `property`; in a tree's sortings and conditions it is whole.\n\n" +
                 "**Rows.** `row` is a row of `group` that the form shows: the `lsfusion-row` of a table's or a tree's row element, a string or a number, whose `lsfusion-group` is the group. Beside a `property` it is a row of the property's group.\n\n" +
                 "**Values.** A value is given as JSON: a number, a string, `true` or `false`, an object or an array for a JSON property, `null` for no value; a date or a time as its ISO string with no time zone, as the form shows it — `2026-11-15`, `10:30`, `2026-11-15T10:30`.\n\n" +
@@ -197,10 +267,22 @@ public class WebMCP {
             inputSchema: {
                 type: 'object',
                 properties: {
-                    method: { type: 'string', 'enum': Object.keys(formMethods).concat(Object.keys(navigatorMethods).filter(function (name) {
-                        return !formMethods.hasOwnProperty(name);
-                    })), description: "The method to call." },
+                    method: methodSchema,
                     args: { type: 'object', description: "The method's arguments, by their names; one the method can do without may be left out." },
+                    batch: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                method: methodSchema,
+                                args: { type: 'object', description: "Its arguments, as `args` are." }
+                            },
+                            required: ['method'],
+                            additionalProperties: false
+                        },
+                        minItems: 1,
+                        description: "With `form`, in place of `method` and `args`: calls of the form's methods whose changes are sent in one request."
+                    },
                     form: {
                         type: 'object',
                         properties: {
@@ -212,7 +294,6 @@ public class WebMCP {
                         description: "The form whose method is called: the address of ONE open form, by any of its `name`, `label` and `window` — a failure when it names no form, or several —, or `{}`, the form the user is in — a failure when the user is in none. Omitted: the method is the navigator's. The page shows the address on the form's element, in the attributes `lsfusion-form` (the name), `lsfusion-form-label` and `lsfusion-form-window`, each that the form has."
                     }
                 },
-                required: ['method'],
                 additionalProperties: false
             },
             // a property's change runs what the form's author wrote for it, which can save: the agent is to ask the
@@ -250,7 +331,9 @@ public class WebMCP {
     // of the rows it draws (changeViewFilters), which the agent is no view to state: a table's user filters are its
     // changeFilters. And two that are no method of the controller - `call`, what is called in its place -: the form
     // made the current one, and closed, which the client does with the form (GFormController.activate, close), where
-    // code of the application runs an operator
+    // code of the application runs an operator. `alone`: a method that is not made in a batch (`batch`) - it answers
+    // something, which it asks the server for (GFormController.getBatchOrClosedRefusal), or it is what the client does
+    // with the form (activate, close), whose requests a batch does not carry
     private static native JavaScriptObject getFormMethods()/*-{
         // a lookup's answer: its last one - the server answers before it is sure of the form's unsaved changes, and
         // then again, in `more` -, each value as its strings, its `objects` being the handle of a row
@@ -268,7 +351,7 @@ public class WebMCP {
                 call: function (form, controller, given, row) {
                     return row != null ? controller.changeProperty(given.property, row, given.value) : controller.changeProperty(given.property, given.value);
                 } },
-            getValues: { takes: ['property', 'row', 'value', 'options'], answer: lookupAnswer,
+            getValues: { alone: true, takes: ['property', 'row', 'value', 'options'], answer: lookupAnswer,
                 // ... and this one the row among its options - options of another shape the controller refuses
                 call: function (form, controller, given, row) {
                     var options = given.options, isOptions = options == null || @lsfusion.gwt.client.base.GwtClientUtils::isJSObject(*)(options);
@@ -291,9 +374,9 @@ public class WebMCP {
                 does: "Show (`true`) or hide (`false`) the table's filter controls." },
             changeFilterGroup: { takes: ['filterGroup', 'index'],
                 does: "Select a filter of the filter group by its index, from 0; `null` for none, where the group may have none selected." },
-            getCount: { takes: ['group'],
+            getCount: { alone: true, takes: ['group'],
                 does: "The number of rows in the group's table, as its filters leave them — of the rows the user has marked, where any are. Answers a number." },
-            getSum: { takes: ['group', 'property'],
+            getSum: { alone: true, takes: ['group', 'property'],
                 does: "The sum of a number property over the same rows. Answers a number." },
             changeManual: { takes: ['group', 'manual'],
                 does: "Turn the manual update of the group's table on (`true`) or off (`false`): on, its rows are read again only by `update`." },
@@ -301,7 +384,7 @@ public class WebMCP {
                 does: "Read the rows of the group's table again now." },
             changeListView: { takes: ['group', 'view'],
                 does: "Show the group's table as another view of those it has: `grid`, `pivot`, `map`, `calendar`, `custom`." },
-            'export': { takes: ['table'],
+            'export': { alone: true, takes: ['table'],
                 does: "Export the table's rows to a file, which the user gets." },
             expand: { takes: ['group', 'row'],
                 does: "Open `row`, a node of a tree's group." },
@@ -319,16 +402,16 @@ public class WebMCP {
                 does: "Make `column` the current column of the group's grid: a property of its rows, named as beside its `group`, which the grid shows now and the user can move to - a property the form groups in columns (`COLUMNS`) is refused. `options.selection` says what becomes of the columns selected: `start` (the default) selects this column alone, `extend` selects the columns up to it, `keep` leaves them." },
             selectAll: { takes: ['group'],
                 does: "Select every row and every column of the group's grid." },
-            copy: { takes: ['group'],
+            copy: { alone: true, takes: ['group'],
                 does: "Answers the text of the cells selected in the group's grid: the rows selected, of all its rows, in the columns selected - the current row where the page shows no row as selected, the current column where no column is. A row a line, tabs between its cells. The column of an action, and those of a property the form groups in columns (`COLUMNS`), are none of the cells." },
-            paste: { takes: ['group', 'text'],
+            paste: { alone: true, takes: ['group', 'text'],
                 does: "Paste such a text into those cells: one value into every one of them; several, into the cells from the current one on, to the right and down - none while the current column is none of the cells." },
-            activate: { takes: [],
+            activate: { alone: true, takes: [],
                 does: "Make the form the current one, the form the user is in, as a click on its tab does. Only a form docked into a `FORMS` window - one that has `lsfusion-form-window` - is made the current one.",
                 call: function (form) {
                     form.@GFormController::activate()();
                 } },
-            close: { takes: [],
+            close: { alone: true, takes: [],
                 does: "Close the form, as the close button of its tab does: a form docked into a `FORMS` window. An edit under way in it is committed first. The call answers at once: a form with unsaved changes asks the user first, and may stay open.",
                 call: function (form) {
                     form.@GFormController::close()();

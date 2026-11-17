@@ -23,9 +23,11 @@ uiWebMCPQuantity 'Quantity' = DATA INTEGER (UiWebMCPItem);
 uiWebMCPDate 'Date' = DATA DATE (UiWebMCPItem);
 uiWebMCPParent 'Parent' = DATA UiWebMCPItem (UiWebMCPItem);
 uiWebMCPTouch 'Touch' (UiWebMCPItem i) { uiWebMCPNote() <- 'touched ' + uiWebMCPName(i); }
+// ... and one the server fails
+uiWebMCPCrash 'Crash' INTERNAL <{ if (true) throw new Error("uiWebMCPCrash: the action failed"); }>;
 
 FORM uiWebMCPItems 'WebMCP items'
-    PROPERTIES() uiWebMCPNote
+    PROPERTIES() uiWebMCPNote, uiWebMCPCrash
     OBJECTS i = UiWebMCPItem
     PROPERTIES(i) name = uiWebMCPName, quantity = uiWebMCPQuantity, date = uiWebMCPDate, touch = uiWebMCPTouch
     FILTERGROUP many
