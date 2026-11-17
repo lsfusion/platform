@@ -21,9 +21,9 @@ hecReset () { hecSet(NULL); } @@noauth;
 // an action of the logics such a server lets an anonymous call run
 hecNothing () { } @@noauth;
 
-// what the server answers a call, or what the call fails with. A call waits for the session of the call before it to
-// get back to the pool - the server returns it after it has answered -, so that it is that session the call gets : one
-// that was initialized, and has read the code, before the code was changed
+// what the server answers a call, or what the call fails with. A call waits a while first : the server returns the
+// session of the call before it to the pool after it has answered, and the call should rather get that session - one
+// that read the code before the code was changed - than a new one
 hecResponse = DATA LOCAL STRING ();
 hecGet (STRING request) {
     hecResponse() <- NULL;
@@ -34,6 +34,7 @@ hecGet (STRING request) {
         hecResponse() <- messageCaughtException();
     }
 }
+// a script is sent as the body : in a parameter of the address a ';' would end it
 hecEval (STRING script) {
     hecResponse() <- NULL;
     sleep(500);
