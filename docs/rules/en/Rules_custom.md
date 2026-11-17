@@ -244,7 +244,11 @@ title: 'Rules: custom views'
    member's `change` takes what is picked — an option or its
    value, of several values the array of them.
 
-3. A change made through the controller is made in the form's
+3. A property or action used per row in a React view MUST be
+   in `GRID` view, in an object group in `GRID` view. Actions
+   default to `PANEL`; specify `GRID` for row actions.
+
+4. A change made through the controller is made in the form's
    change session, like an edit in the standard table: the
    view sees the new value in the next projection at once,
    and it reaches the database when the form applies. In a

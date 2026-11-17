@@ -288,8 +288,9 @@ title: 'Rules: view logic'
    with more than two tables stacked vertically
    and more than two tables placed horizontally.
 
-6. Custom actions added to a grid form (status changes,
-   document generation, bulk operations) MUST be given an
+6. Custom actions added to a grid form over the current object
+   or the selection (status changes, document generation, bulk
+   operations) MUST be given an
    explicit `TOOLBAR` view, e.g. `PROPERTIES(o) confirmDoc TOOLBAR`.
    Actions default to the `PANEL` view, so without `TOOLBAR` the
    custom button is drawn as a separate group below the table
@@ -298,7 +299,10 @@ title: 'Rules: view logic'
    same `TOOLBAR` view — so they share the `TOOLBAR` container
    with it, not the `TOOLBARSYSTEM` one, which is where a
    `MOVE` or `REMOVE` of the wrong container goes astray. The property / action views are
-   `GRID`, `TOOLBAR`, `PANEL`, and `POPUP`.
+   `GRID`, `TOOLBAR`, `PANEL`, and `POPUP`. An action a React
+   view calls for a row is in `GRID` view instead: `TOOLBAR` is a
+   panel view (see projection and editing rule 3 in the
+   [custom view rules](Rules_custom.md)).
 
 7. A `TEXT`-typed property displayed as a grid column is
    rendered as a multi-line row four lines tall by default,

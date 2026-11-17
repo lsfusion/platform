@@ -86,6 +86,8 @@ A property grouped in columns (`COLUMNS`) cannot be projected: its values are ad
 
 A member takes a row only where the group's rows are drawn — `<group>.change(row)`, and the member of a list property, which lives there — and there it takes the row object, its `objects` handle, or the **key** string the projection gave it, looked up in this view's `byKey`. A panel property's member and a member of the empty group take no row: they act on the current objects. [Row identity](How-to_Custom_view_controller.md#row-identity-contract) says what each of the three means.
 
+For `controller.<g>.<p>.exec(row)`, `.change(value, row)` or `.getValues(query, {row})`, the property or action must be in `GRID` view, in a group in `GRID` view. Add a row action as `PROPERTIES(i) addToCart GRID`: actions default to `PANEL`. `PANEL`, `TOOLBAR` and `POPUP` properties refer to the current object, have no cells in `list` / `byKey`, and refuse member calls naming a row at runtime with `'<p>' is a panel property`. [Per-row editors](#live-editor) placed with `<Platform name row/>` or `usePlatform(name, {row})` also require a `GRID` property.
+
 A property's `value` is converted to a JS value depending on the property's class:
 
 | Property class | JS value |
