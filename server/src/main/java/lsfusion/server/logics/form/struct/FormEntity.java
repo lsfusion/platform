@@ -1807,13 +1807,13 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
             String extendCode = session != null ? (String) BL.systemEventsLM.extendCode.read(session, new DataObject(canonicalName)) : null;
             if (extendCode != null) {
                 try {
-                    String script = "FORM " + name + " EXTEND FORMS " + canonicalName + ";\n" + extendCode + ";\nrun{}";
+                    String script = "FORM " + name + " EXTEND FORMS " + canonicalName + ";\n" + extendCode + ";";
                     // read in a connection the application is customized for, the code sees what that customization declares
-                    Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateRun(script, EvalUtils.getParentLMs(session.user.getCustomizeLM()), false);
+                    EvalScriptingLogicsModule customizeLM = BL.LM.evaluate(script, EvalUtils.getParentLMs(session.user.getCustomizeLM()), false);
 
-                    FormEntity copyForm = evalResult.second.findForm(name);
+                    FormEntity copyForm = customizeLM.findForm(name);
                     copyForm.customizeForm = this;
-                    copyForm.customizeLM = evalResult.second;
+                    copyForm.customizeLM = customizeLM;
 
                     return new Pair<>(copyForm, getObjects().mapRevKeys((ObjectEntity obj) -> copyForm.getExEntity(obj)));
                 } catch (ScriptingErrorLog.SemanticErrorException | ScriptParsingException | ScriptErrorException e) {
@@ -1828,7 +1828,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
     private static void reportCustomizeError(String canonicalName, Exception e) {
         // the compilation error already carries the line and column inside the customization code, and the java stack
-        // is always the same getForm - evaluateRun path, so it is not logged: the code stays saved until someone fixes
+        // is always the same getForm - evaluate path, so it is not logged: the code stays saved until someone fixes
         // it, and the form is reopened with it again and again
         String message = ThreadLocalContext.localize("{form.customize.error}") + " " + canonicalName + "\n" + e.getMessage();
         ServerLoggers.systemLogger.error(message);
