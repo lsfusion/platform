@@ -134,12 +134,12 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
             initComputer(stack, connectionInfo.computerInfo, session.dataSession);
 
-            initCustomize(session.dataSession);
+            initCustomize();
         }
     }
 
-    protected void initCustomize(DataSession session) throws SQLException, SQLHandledException {
-        String code = readCustomizeCode(session);
+    protected void initCustomize() throws SQLException, SQLHandledException {
+        String code = readCustomizeCode();
         if (Objects.equals(code, customizeCode)) // the module is of the code's text alone, whoever the user
             return;
 
@@ -160,16 +160,21 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         this.customizeCode = customizeLM == null && Thread.currentThread().isInterrupted() ? null : code;
     }
 
-    private String readCustomizeCode(DataSession session) throws SQLException, SQLHandledException {
-        return (String) businessLogics.systemEventsLM.extendCodeUser.read(session, user);
+    // SystemEvents.extendCode[User] is LAZY WAIT : the server keeps its value, and an apply that saves a code drops it. So it
+    // is read where a session would read it, with no session : a session of the pool is asked of it before it is taken
+    private String readCustomizeCode() throws SQLException, SQLHandledException {
+        LP extendCode = businessLogics.systemEventsLM.extendCodeUser;
+        return (String) dbManager.readLazyValue(extendCode.property, extendCode.getMapValues(user)).getValue();
     }
 
-    // the code saved for the user is the one the module is of, or that failed : a session of the pool with the request's
-    // context is taken as it is only then (RemoteLogics.runInNewSession) - the code may have been saved since, by the
-    // previous request of that very user, say. Read from the server's memory as a rule (SystemEvents.extendCode[User] is
-    // LAZY), and a broken code is not compiled, nor logged, again on every request
-    protected boolean isCustomizeActual(DataSession session) throws SQLException, SQLHandledException {
-        return Objects.equals(readCustomizeCode(session), customizeCode);
+    // the code saved for the user is still the one the module is of, or that failed - a broken code is not compiled, nor
+    // logged, again on every call (RemoteSession.equalsConnectionContext)
+    protected boolean isCustomizeActual() {
+        try {
+            return Objects.equals(readCustomizeCode(), customizeCode);
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     // a client tells its user what the code failed with, a call of the program interface has only the log

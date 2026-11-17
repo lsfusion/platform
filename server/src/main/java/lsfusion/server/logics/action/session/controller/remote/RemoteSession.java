@@ -53,7 +53,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
             } catch (AuthenticationException e) {
                 return false;
             }
-            return true;
+            return isCustomizeActual(); // and the code of the customization, which may have been saved since
         }
         return false;
     }
@@ -67,11 +67,6 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
             authException = e;
             super.initConnectionContext(AuthenticationToken.ANONYMOUS, connectionInfo, stack);
         }
-    }
-
-    // the session is taken from the pool by its context first, and only then - its own, nobody else's - asked of the code
-    public boolean isCustomizeActual() throws SQLException, SQLHandledException {
-        return isCustomizeActual(dataSession);
     }
 
     // the client context is not persisted for the API sessions : the API user is usually shared by many clients / threads

@@ -169,9 +169,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         try {
             if(!Settings.get().isReinitAPISession())
                 session = popSession(poolSession -> poolSession.equalsConnectionContext(token, connectionInfo));
-            if(session == null || !session.isCustomizeActual()) { // of another context, or of a code of the customization saved since
-                if(session == null)
-                    session = popSession(poolSession -> true);
+            if(session == null) {
+                session = popSession(poolSession -> true);
                 if(session != null)
                     session.initConnectionContext(token, connectionInfo, getStack());
             }
