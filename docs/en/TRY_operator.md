@@ -18,6 +18,8 @@ An operator form without the `FINALLY` keyword creates an action that executes a
 
 An operator form with the `FINALLY` keyword creates an action that executes another action, intercepts errors that occur, then, regardless of whether an error was thrown or not, executes the action specified in the `FINALLY` block, and then, if an error was thrown and there was no `CATCH` block, passes this error to the top action in the stack.
 
+An interruption of execution — when a [scheduler](Scheduler.md) task runs out of time, or when a process is canceled in the [process monitor](Process_monitor.md) — is not treated as an error: the `CATCH` block is not executed for it, the `FINALLY` block is, and the interruption is passed to the top action in the stack even if there is a `CATCH` block or no `FINALLY` block. This way an interruption also stops a loop that contains `TRY`.
+
 ### Parameters
 
 - `action`
