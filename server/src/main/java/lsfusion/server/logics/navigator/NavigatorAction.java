@@ -17,6 +17,18 @@ public class NavigatorAction extends NavigatorElement {
         this.form = form;
     }
 
+    private NavigatorAction(NavigatorAction src, NavigatorMapping mapping) {
+        super(src, mapping);
+
+        this.action = src.action;
+        this.form = src.form;
+    }
+
+    @Override
+    public NavigatorElement copy(NavigatorMapping mapping) {
+        return new NavigatorAction(this, mapping);
+    }
+
     @Override
     public String getDefaultIcon() {
         boolean top = isParentRoot();

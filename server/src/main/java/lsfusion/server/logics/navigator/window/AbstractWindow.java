@@ -7,6 +7,8 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFProperty;
+import lsfusion.server.logics.navigator.NavigatorMapping;
+import lsfusion.server.logics.navigator.NavigatorMappingInterface;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
@@ -14,7 +16,7 @@ import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class AbstractWindow {
+public class AbstractWindow implements NavigatorMappingInterface<AbstractWindow> {
     private String canonicalName;
     
     public LocalizedString caption = LocalizedString.NONAME;
@@ -87,7 +89,9 @@ public class AbstractWindow {
         return Custom.isReactComponent(custom.get());
     }
 
-    // the final window : a React component draws it itself, so no property computes its template (see setCustoms)
+    // the final window : a React component draws it itself, so no property computes its template (see setCustoms). Checked
+    // once every module has run : two modules that do not require each other can give one window a React component and a
+    // property, which no statement of either sees
     public void checkCustoms() {
         if (isReact() && getPropertyCustom() != null)
             throw new RuntimeException("CUSTOM of window " + getCanonicalName() + " is both the React component " + custom.get()
@@ -112,6 +116,34 @@ public class AbstractWindow {
     public AbstractWindow(String canonicalName, LocalizedString caption) {
         this.canonicalName = canonicalName;
         this.caption = caption;
+    }
+
+    // a copy keeps the name of its source - a client names a window by it - and what the source was given
+    protected AbstractWindow(AbstractWindow src, NavigatorMapping mapping) {
+        this.canonicalName = src.canonicalName;
+        this.caption = src.caption;
+
+        this.drawScrollBars = src.drawScrollBars;
+        this.position = src.position;
+        this.x = src.x;
+        this.y = src.y;
+        this.width = src.width;
+        this.height = src.height;
+        this.borderConstraint = src.borderConstraint;
+        this.titleShown = src.titleShown;
+        this.visible = src.visible;
+        this.propertyElementClass = src.propertyElementClass;
+        this.elementClass = src.elementClass;
+        this.vertical = src.vertical;
+        this.autoSize = src.autoSize;
+
+        mapping.sets(custom, src.custom);
+        mapping.sets(propertyCustom, src.propertyCustom);
+    }
+
+    // the window the code of a customization changes instead of this one (NavigatorEntity)
+    public AbstractWindow copy(NavigatorMapping mapping) {
+        return new AbstractWindow(this, mapping);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

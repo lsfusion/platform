@@ -31,8 +31,8 @@ public class SetNavigatorOptionsInModuleOrderAction extends AtOnceAction {
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             LogicsModule[] modules = independentModules(context.getBL(), LM);
-            NavigatorWindow earlierWindow = (NavigatorWindow) context.getBL().findWindow("System.root");
-            NavigatorWindow laterWindow = (NavigatorWindow) context.getBL().findWindow("System.toolbar");
+            NavigatorWindow earlierWindow = context.getBL().LM.baseWindows.root;
+            NavigatorWindow laterWindow = context.getBL().LM.baseWindows.toolbar;
             Property<?> earlierImage = findProperty("noEarlierImage[]").property;
             Property<?> laterImage = findProperty("noLaterImage[]").property;
 

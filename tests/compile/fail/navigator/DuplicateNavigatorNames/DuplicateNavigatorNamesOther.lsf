@@ -1,0 +1,11 @@
+MODULE DuplicateNavigatorNamesOther;
+
+REQUIRE System;
+
+NAMESPACE DuplicateNavigatorNames;
+
+WINDOW duplicateWindow 'Second window' HORIZONTAL BOTTOM;
+
+NAVIGATOR {
+    NEW FOLDER duplicateFolder 'Second folder';
+}

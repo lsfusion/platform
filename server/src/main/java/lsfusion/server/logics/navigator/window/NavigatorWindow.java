@@ -1,5 +1,6 @@
 package lsfusion.server.logics.navigator.window;
 
+import lsfusion.server.logics.navigator.NavigatorMapping;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
@@ -36,6 +37,24 @@ public class NavigatorWindow extends AbstractWindow {
         super(canonicalName, caption);
 
         setType(type);
+    }
+
+    private NavigatorWindow(NavigatorWindow src, NavigatorMapping mapping) {
+        super(src, mapping);
+
+        this.type = src.type;
+        this.showSelect = src.showSelect;
+        this.verticalTextPosition = src.verticalTextPosition;
+        this.horizontalTextPosition = src.horizontalTextPosition;
+        this.verticalAlignment = src.verticalAlignment;
+        this.horizontalAlignment = src.horizontalAlignment;
+        this.alignmentY = src.alignmentY;
+        this.alignmentX = src.alignmentX;
+    }
+
+    @Override
+    public NavigatorWindow copy(NavigatorMapping mapping) {
+        return new NavigatorWindow(this, mapping);
     }
 
     private void setType(int type) {

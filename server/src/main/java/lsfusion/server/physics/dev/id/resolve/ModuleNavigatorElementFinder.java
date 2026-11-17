@@ -1,11 +1,17 @@
 package lsfusion.server.physics.dev.id.resolve;
 
+import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.navigator.NavigatorElement;
+import lsfusion.server.logics.navigator.NavigatorEntity;
 
-public class ModuleNavigatorElementFinder extends ModuleSingleElementFinder<NavigatorElement, Object> {
+public final class ModuleNavigatorElementFinder extends ModuleNavigatorFinder<NavigatorElement> {
+    public ModuleNavigatorElementFinder(LogicsModule startModule) {
+        super(startModule);
+    }
+
     @Override
-    protected NavigatorElement getElement(LogicsModule module, String simpleName, Object param) {
-        return module.getNavigatorElement(simpleName);
+    protected NavigatorElement getNF(NavigatorEntity navigator, String canonicalName, Version version) {
+        return navigator.getNFElement(canonicalName, version);
     }
 }

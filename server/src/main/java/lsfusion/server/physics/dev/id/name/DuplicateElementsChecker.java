@@ -6,7 +6,6 @@ import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.physics.dev.id.resolve.NamespaceElementFinder.FoundItem;
 import lsfusion.server.physics.exec.db.table.ImplementTable;
 
@@ -29,7 +28,6 @@ public class DuplicateElementsChecker {
         String errText = checkForDuplicateElement(new DuplicatePropertyChecker())
                 + checkForDuplicateElement(new DuplicateActionChecker())
                 + checkForDuplicateElement(new DuplicateCustomClassChecker())
-                + checkForDuplicateElement(new DuplicateNavigatorElementChecker())
                 + checkForDuplicateElement(new DuplicateFormChecker())
                 + checkForDuplicateElement(new DuplicateTableChecker());
 
@@ -123,22 +121,6 @@ public class DuplicateElementsChecker {
         @Override
         public String getCanonicalName(CustomClass cls) {
             return cls.getCanonicalName();
-        }
-    }
-
-    private class DuplicateNavigatorElementChecker extends Checker<NavigatorElement> {
-        public DuplicateNavigatorElementChecker() {
-            super("navigator element");
-        }
-
-        @Override
-        public Iterable<NavigatorElement> getElements(LogicsModule module) {
-            return module.getNavigatorElements();
-        }
-
-        @Override
-        public String getCanonicalName(NavigatorElement element) {
-            return element.getCanonicalName();
         }
     }
 

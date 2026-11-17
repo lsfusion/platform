@@ -9,6 +9,15 @@ public class NavigatorFolder extends NavigatorElement {
         super(canonicalName);
     }
 
+    private NavigatorFolder(NavigatorFolder src, NavigatorMapping mapping) {
+        super(src, mapping);
+    }
+
+    @Override
+    public NavigatorElement copy(NavigatorMapping mapping) {
+        return new NavigatorFolder(this, mapping);
+    }
+
     @Override
     public String getDefaultIcon() {
         return isParentRoot() ? AppServerImage.OPENTOP : AppServerImage.OPEN;

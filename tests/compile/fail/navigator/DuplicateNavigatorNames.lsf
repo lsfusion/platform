@@ -1,0 +1,12 @@
+MODULE DuplicateNavigatorNames;
+
+REQUIRE System;
+
+// a client names an element and a window of the navigator by the canonical name, so the navigator has one of a name :
+// two modules that do not see each other declare both in one namespace (DuplicateNavigatorNamesOther), and the start
+// stops. A window had no such check : the client kept the one it was sent last
+WINDOW duplicateWindow 'First window' HORIZONTAL BOTTOM;
+
+NAVIGATOR {
+    NEW FOLDER duplicateFolder 'First folder';
+}

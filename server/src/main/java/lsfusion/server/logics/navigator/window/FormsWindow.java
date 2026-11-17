@@ -3,6 +3,7 @@ package lsfusion.server.logics.navigator.window;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFProperty;
+import lsfusion.server.logics.navigator.NavigatorMapping;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 // WINDOW ... FORMS: a window that holds forms - what System.forms is, declared by an application wherever it wants
@@ -32,6 +33,18 @@ public class FormsWindow extends AbstractWindow {
         super(canonicalName, caption);
         this.single.set(single, version);
         this.closeDelay.set(closeDelay, version);
+    }
+
+    private FormsWindow(FormsWindow src, NavigatorMapping mapping) {
+        super(src, mapping);
+
+        mapping.sets(single, src.single);
+        mapping.sets(closeDelay, src.closeDelay);
+    }
+
+    @Override
+    public FormsWindow copy(NavigatorMapping mapping) {
+        return new FormsWindow(this, mapping);
     }
 
     // each half given, as an EXTEND WINDOW ... FORMS says it

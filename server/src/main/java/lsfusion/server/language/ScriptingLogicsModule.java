@@ -5942,7 +5942,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         // the literal is the markup the window starts with, the property recomputes it. Only one combination is not a
         // pair: a React component draws the window itself and would never be handed a computed template - refused here
         // when one statement carries both, and in the final window, once every module has run, when the two come from
-        // two statements, of two modules maybe (CheckWindowsTask). Each half is written by the statement that brought
+        // two statements, of two modules maybe (AbstractWindow.checkCustoms). Each half is written by the statement that brought
         // it, so a statement carrying both keeps both, and a literal is what the window is drawn from until the property
         // computes its first value
         String reactComponent = window.setCustoms(custom != null ? resolveWindowTemplate(name, custom) : null,

@@ -77,6 +77,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.AbstractNode;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.navigator.NavigatorElement;
+import lsfusion.server.logics.navigator.NavigatorEntity;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.property.AggregateProperty;
@@ -115,7 +116,6 @@ import lsfusion.server.physics.dev.i18n.ResourceBundleGenerator;
 import lsfusion.server.physics.dev.i18n.ReversedI18NDictionary;
 import lsfusion.server.physics.dev.icon.IconLogicsModule;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
-import lsfusion.server.physics.dev.id.name.CompoundNameUtils;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.DuplicateElementsChecker;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
@@ -2089,14 +2089,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return findElementByCanonicalName(this, canonicalName, null, new ModuleTableFinder());
     }
 
-    @IdentityLazy
-    public AbstractWindow findWindow(String canonicalName) {
-        return findElementByCanonicalName(this, canonicalName, null, new ModuleWindowFinder());
-    }
-
-    @IdentityLazy
     public NavigatorElement findNavigatorElement(String canonicalName) {
-        return findElementByCanonicalName(this, canonicalName, null, new ModuleNavigatorElementFinder());
+        return getNavigator().getElement(canonicalName);
     }
 
     @IdentityLazy
@@ -2146,24 +2140,18 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return mResult.immutable();
     }
 
-    public ImSet<NavigatorElement> getNavigatorElements() {
-        MExclSet<NavigatorElement> mResult = SetFact.mExclSet();
-        for(LogicsModule logicsModule : modules.all()) {
-            for(NavigatorElement entry : logicsModule.getNavigatorElements())
-                mResult.exclAdd(entry);            
-        }
-        return mResult.immutable();
+    // the logics' navigator : every module writes what it declares into it, so it is whole once they are all read
+    public NavigatorEntity getNavigator() {
+        return LM.navigator;
     }
 
-    // ordered, unlike the sets above it: modules.all() is the topological order the modules were sorted into, and
-    // a module keeps its windows in the order they were declared, so this is "the window declared first comes first"
+    public ImSet<NavigatorElement> getNavigatorElements() {
+        return getNavigator().getElements();
+    }
+
+    // in the order the windows are declared : the modules' order, then the order in a module
     public ImOrderSet<AbstractWindow> getWindows() {
-        MOrderExclSet<AbstractWindow> mResult = SetFact.mOrderExclSet();
-        for(LogicsModule logicsModule : modules.all()) {
-            for(AbstractWindow entry : logicsModule.getWindows())
-                mResult.exclAdd(entry);
-        }
-        return mResult.immutableOrder();
+        return getNavigator().getWindows();
     }
 
     public void markFormsForFinalization() {

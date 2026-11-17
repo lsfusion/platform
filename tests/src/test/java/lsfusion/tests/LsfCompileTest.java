@@ -27,7 +27,8 @@ import static org.junit.Assert.fail;
 /** The compile corpus. The server runs with dryRun, which compiles the logic and exits before it opens
  *  a database connection. compile/ok has to compile; every compile/fail module has to fail with the lines its
  *  .expected lists. The ok modules go in one run, a failing one needs a run of its own - the log then holds the
- *  errors of that module and nothing else. The runs do not depend on each other, so they go several at a time: each
+ *  errors of that module and nothing else. A failing case of several modules keeps the others in a folder of its
+ *  name, next to it: they are compiled with it, and are no cases of their own. The runs do not depend on each other, so they go several at a time: each
  *  case's server starts as soon as the corpus is read, and its test only waits for it. */
 @RunWith(Parameterized.class)
 public class LsfCompileTest {
@@ -55,12 +56,19 @@ public class LsfCompileTest {
         Path fail = BASE.resolve("compile/fail");
         try (Stream<Path> modules = Files.walk(fail)) {
             for (Path module : (Iterable<Path>) modules.filter(path -> path.toString().endsWith(".lsf")).sorted()::iterator) {
+                if (isCaseFolder(module.getParent()))
+                    continue;
                 String file = fail.relativize(module).toString().replace('\\', '/');
                 String name = file.substring(0, file.length() - ".lsf".length()); // the case is the .lsf and its .expected together
-                cases.add(new Object[]{"fail/" + name, compile("fail/" + name, "/fail/" + file), expectedLines(fail.resolve(name + ".expected"))});
+                String includePaths = "/fail/" + file + (Files.isDirectory(fail.resolve(name)) ? ";/fail/" + name + "/*" : "");
+                cases.add(new Object[]{"fail/" + name, compile("fail/" + name, includePaths), expectedLines(fail.resolve(name + ".expected"))});
             }
         }
         return cases;
+    }
+
+    private static boolean isCaseFolder(Path folder) {
+        return Files.exists(folder.resolveSibling(folder.getFileName() + ".lsf"));
     }
 
     private static List<String> expectedLines(Path expected) throws IOException {

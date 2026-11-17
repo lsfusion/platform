@@ -252,11 +252,11 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkDuplicateWindow(String windowName) throws ScriptingErrorLog.SemanticErrorException {
-        checkDuplicateElement(windowName, "window", new ModuleWindowFinder());
+        checkDuplicateElement(windowName, "window", new ModuleWindowFinder(LM));
     }
 
     public void checkDuplicateNavigatorElement(String navigatorElementName) throws ScriptingErrorLog.SemanticErrorException {
-        checkDuplicateElement(navigatorElementName, "navigator element", new ModuleNavigatorElementFinder());
+        checkDuplicateElement(navigatorElementName, "navigator element", new ModuleNavigatorElementFinder(LM));
     }
 
     public void checkDuplicateForm(String formName) throws ScriptingErrorLog.SemanticErrorException {

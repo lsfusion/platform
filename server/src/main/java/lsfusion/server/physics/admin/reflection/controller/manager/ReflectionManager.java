@@ -282,7 +282,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         ImportField parentNameField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
         ImportField numberField = new ImportField(reflectionLM.numberNavigatorElement);
 
-        List<List<Object>> dataParents = getRelations(LM.root, getElementWithChildren(LM.root));
+        List<List<Object>> dataParents = getRelations(LM.navigator.getRoot(), getElementWithChildren(LM.navigator.getRoot()));
 
         ImportKey<?> keyElement = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementCanonicalName.getMapping(nameField));
         ImportKey<?> keyParent = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementCanonicalName.getMapping(parentNameField));

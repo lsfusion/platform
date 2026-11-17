@@ -27,7 +27,9 @@ public class SecurityPolicy {
     }
 
     public boolean checkNavigatorPermission(NavigatorElement navigatorElement) {
-        return checkPermission(policy -> policy.checkNavigatorPermission(navigatorElement));
+        // a permission is given to an element of the logics, and a client whose navigator is customized draws and runs copies of them
+        NavigatorElement permissionElement = navigatorElement.getCustomizeElement();
+        return checkPermission(policy -> policy.checkNavigatorPermission(permissionElement));
     }
 
     /** True iff this policy lets the user open the {@code System.interpreter} form (from

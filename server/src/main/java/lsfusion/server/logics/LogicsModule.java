@@ -116,6 +116,7 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.navigator.NavigatorAction;
 import lsfusion.server.logics.navigator.NavigatorElement;
+import lsfusion.server.logics.navigator.NavigatorEntity;
 import lsfusion.server.logics.navigator.NavigatorFolder;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.property.*;
@@ -252,11 +253,6 @@ public abstract class LogicsModule {
     
     protected final Map<String, Group> groups = new HashMap<>();
     protected final Map<String, CustomClass> classes = new HashMap<>();
-    // in declaration order, unlike the maps around it: they are read by name, and what is read in an order -
-    // properties, navigator elements - is read off the tree it was declared into. A window is in no tree, and
-    // a client searches the windows that hold forms in the order they arrive, so this map is that order
-    protected final Map<String, AbstractWindow> windows = new LinkedHashMap<>();
-    protected final Map<String, NavigatorElement> navigatorElements = new HashMap<>();
     protected final Map<String, FormEntity> namedForms = new HashMap<>();
     protected final Map<String, ImplementTable> tables = new HashMap<>();
     protected final Map<Pair<String, Integer>, MetaCodeFragment> metaCodeFragments = new HashMap<>();
@@ -423,18 +419,14 @@ public abstract class LogicsModule {
         tables.put(name, table);
     }
 
+    // the navigator this module declares its elements and windows in, and finds in what its code names : the logics'
+    public NavigatorEntity getNavigator() {
+        return baseLM.navigator;
+    }
+
     protected <T extends AbstractWindow> T addWindow(T window) {
-        assert !windows.containsKey(window.getName());
-        windows.put(window.getName(), window);
+        getNavigator().addWindow(window, getVersion());
         return window;
-    }
-
-    public AbstractWindow getWindow(String name) {
-        return windows.get(name);
-    }
-
-    public Collection<AbstractWindow> getWindows() {
-        return windows.values();
     }
 
     public MetaCodeFragment getMetaCodeFragment(String name, int paramCnt) {
@@ -2492,10 +2484,6 @@ public abstract class LogicsModule {
         return new NavigatorAction(getNavigatorAction(form).action, canonicalName, form);
     }
     
-    public Collection<NavigatorElement> getNavigatorElements() {
-        return navigatorElements.values();
-    }
-
     public Collection<FormEntity> getNamedForms() {
         return namedForms.values();
     } 
@@ -2520,10 +2508,6 @@ public abstract class LogicsModule {
     private boolean propsFinalized;
     public void markPropsForFinalization() {
         propsFinalized = true;
-    }
-
-    public NavigatorElement getNavigatorElement(String name) {
-        return navigatorElements.get(name);
     }
 
     public FormEntity getForm(String name) {
@@ -2562,8 +2546,7 @@ public abstract class LogicsModule {
     }
     
     protected void addNavigatorElement(NavigatorElement element) {
-        assert !navigatorElements.containsKey(element.getName());
-        navigatorElements.put(element.getName(), element);
+        getNavigator().addElement(element, getVersion());
     }
 
     public LA getAddFormAction(FormEntity contextForm, ObjectEntity contextObject, CustomClass explicitClass) {

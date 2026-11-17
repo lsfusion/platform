@@ -59,9 +59,9 @@ public class ResolveManager {
         indirectLAPResolver = new LAPResolver<>(LM, new ModuleIndirectLAFinder(), false, false);
         
         groupResolver = new ElementResolver<>(LM, new ModuleGroupFinder());
-        navigatorResolver = new ElementResolver<>(LM, new ModuleNavigatorElementFinder());
+        navigatorResolver = new ElementResolver<>(LM, new ModuleNavigatorElementFinder(LM));
         formResolver = new ElementResolver<>(LM, new ModuleFormFinder());
-        windowResolver = new ElementResolver<>(LM, new ModuleWindowFinder());
+        windowResolver = new ElementResolver<>(LM, new ModuleWindowFinder(LM));
         tableResolver = new ElementResolver<>(LM, new ModuleTableFinder());
         classResolver = new ElementResolver<>(LM, new ModuleClassFinder());
         metaCodeFragmentResolver = new ElementResolver<>(LM, new ModuleMetaCodeFragmentFinder());

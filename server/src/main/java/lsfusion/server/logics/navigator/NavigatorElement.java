@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.interop.form.event.InputBindingEvent;
 import lsfusion.server.base.AppServerImage;
+import lsfusion.server.base.Custom;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
@@ -18,6 +19,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ConnectionContext;
+import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.Settings;
@@ -36,7 +38,7 @@ import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.base.col.MapFact.mergeOrderMapsExcl;
 import static lsfusion.base.col.MapFact.singletonOrder;
 
-public abstract class NavigatorElement {
+public abstract class NavigatorElement implements NavigatorMappingInterface<NavigatorElement> {
 
     public void addOrMove(NavigatorElement element, ComplexLocation location, Version version) {
         removeFromParent(element, version);
@@ -68,7 +70,9 @@ public abstract class NavigatorElement {
     private final NFProperty<Supplier<LocalizedString>> caption = NFFact.property();
 
     private final NFProperty<Property> propertyImage = NFFact.property();
-    private final NFProperty<AppServerImage.Reader> image = NFFact.property();
+    // the path, and not the reader made of it : the reader is of the element it is read for (an image chosen by the
+    // caption is chosen by this element's), so a copy of the element reads its own
+    private final NFProperty<String> image = NFFact.property();
     public AppServerImage.Reader defaultImage; // the element's own module's, set as it is made
 
     private final NFProperty<Property> propertyElementClass = NFFact.property();
@@ -85,10 +89,52 @@ public abstract class NavigatorElement {
     private NFProperty<NavigatorElement> parent = NFFact.property();
     private NFComplexOrderSet<NavigatorElement> children = NFFact.complexOrderSet();
 
+    // the logics' element this one is a copy of, null for an element that is no copy. The customization of a connection
+    // works on a copy of the logics' navigator (NavigatorEntity), as a customization of a form works on a copy of the
+    // form (FormEntity.customizeForm)
+    private final NavigatorElement customizeElement;
+
     protected NavigatorElement(String canonicalName) {
         assert canonicalName != null;
         this.canonicalName = canonicalName;
         this.ID = BaseLogicsModule.generateStaticNewID();
+        this.customizeElement = null;
+    }
+
+    // a copy keeps the name of its source - a client names an element by it - and what the source was given, and its
+    // parent, children and window are the copies of the source's
+    protected NavigatorElement(NavigatorElement src, NavigatorMapping mapping) {
+        this.canonicalName = src.canonicalName;
+        this.ID = BaseLogicsModule.generateStaticNewID();
+        this.customizeElement = src;
+
+        this.debugPoint = src.debugPoint;
+        this.defaultImage = src.defaultImage;
+
+        mapping.set(window, src.window);
+        mapping.sets(parentWindow, src.parentWindow);
+        mapping.sets(headerProperty, src.headerProperty);
+        mapping.sets(showIfProperty, src.showIfProperty);
+        mapping.sets(custom, src.custom);
+        mapping.sets(caption, src.caption);
+        mapping.sets(propertyImage, src.propertyImage);
+        mapping.sets(image, src.image);
+        mapping.sets(propertyElementClass, src.propertyElementClass);
+        mapping.sets(elementClass, src.elementClass);
+        mapping.sets(changeKey, src.changeKey);
+        mapping.sets(showChangeKey, src.showChangeKey);
+        mapping.sets(changeMouse, src.changeMouse);
+        mapping.sets(showChangeMouse, src.showChangeMouse);
+
+        mapping.set(parent, src.parent);
+        mapping.add(children, src.children);
+    }
+
+    public abstract NavigatorElement copy(NavigatorMapping mapping);
+
+    // the element a permission is given to : the logics' own
+    public NavigatorElement getCustomizeElement() {
+        return nvl(customizeElement, this);
     }
 
     public boolean isParentRoot() {
@@ -102,9 +148,9 @@ public abstract class NavigatorElement {
     }
 
     public AppServerImage getImage(ConnectionContext context) {
-        AppServerImage.Reader image = this.image.get();
+        String image = this.image.get();
         if(image != null)
-            return image.get(context);
+            return AppServerImage.createNavigatorImage(image, this).get(context);
 
         if(defaultImage != null)
             return defaultImage.get(context);
@@ -260,6 +306,30 @@ public abstract class NavigatorElement {
         return !isLeafElement() && isParentRoot() && getWindow() == null;
     }
 
+    // what is checked of an element once its navigator is complete (NavigatorEntity.check)
+    public void check(Iterable<AbstractWindow> windows, Map<NavigatorWindow, Set<String>> templatePlaces) {
+        if (isTopFolderWithoutWindow()) {
+            throw new RuntimeException("Navigator folder " + this + " in the top NAVIGATOR must specify a WINDOW for its children");
+        }
+
+        // a place in a window's TEMPLATE names an element by its canonical name, resolved when the module was read - but
+        // WHICH window draws that element is only settled once every module has run, since an extending one may move it.
+        // So it is asked here: a place naming an element another window draws is never filled, and the browser is a late
+        // place to find that out about a literal the server has been holding all along
+        NavigatorWindow window = getDrawWindow();
+        for (AbstractWindow any : windows) {
+            if (any == window || !(any instanceof NavigatorWindow) || any.isReact())
+                continue;
+
+            NavigatorWindow other = (NavigatorWindow) any;
+            String custom = other.getCustom();
+            if (custom != null && templatePlaces.computeIfAbsent(other, w -> Custom.places(custom)).contains(getCanonicalName()))
+                throw new RuntimeException("the template of window " + other.getCanonicalName() + " gives a place to navigator element "
+                        + this + ", which is drawn in window " + (window != null ? window.getCanonicalName() : "none")
+                        + ", so nothing would ever be placed there");
+        }
+    }
+
     public NavigatorWindow getWindow() {
         return window.get();
     }
@@ -306,7 +376,7 @@ public abstract class NavigatorElement {
     // a path (AppServerImage.AUTO, NULL or a file), and the property computing the image, if any
     public void setImage(String imagePath, Property imageProperty, Version version) {
         this.propertyImage.set(imageProperty, version);
-        this.image.set(AppServerImage.createNavigatorImage(imagePath, this), version);
+        this.image.set(imagePath, version);
     }
 
     public void setPropertyElementClass(Property elementClassProperty, Version version) {

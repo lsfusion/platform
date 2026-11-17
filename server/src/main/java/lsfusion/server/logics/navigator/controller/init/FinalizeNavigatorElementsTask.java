@@ -1,11 +1,12 @@
 package lsfusion.server.logics.navigator.controller.init;
 
-import lsfusion.server.logics.navigator.NavigatorElement;
+import lsfusion.server.logics.controller.init.SimpleBLTask;
+import org.apache.log4j.Logger;
 
-public class FinalizeNavigatorElementsTask extends GroupNavigatorElementsTask {
+public class FinalizeNavigatorElementsTask extends SimpleBLTask {
 
-    protected void runTask(NavigatorElement ne) {
-        ne.finalizeAroundInit(getBL().LM);
+    public void run(Logger logger) {
+        getBL().getNavigator().finalizeAroundInit(getBL().LM);
     }
 
     public String getCaption() {

@@ -77,6 +77,7 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
+import lsfusion.server.logics.navigator.NavigatorEntity;
 import lsfusion.server.logics.navigator.NavigatorFolder;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.navigator.window.FormsWindow;
@@ -533,6 +534,14 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @Override
     public void initMetaAndClasses() throws RecognitionException {
         baseClass = addBaseClass(elementCanonicalName("Object"), LocalizedString.create("{logics.object}"), elementCanonicalName("StaticObject"), LocalizedString.create("{classes.static.object.class}"));
+
+        // the navigator and its root, before the first pass over the code : the root is the argument of a rule of the
+        // NAVIGATOR statement, asked for in every pass, and every module writes what it declares into the navigator
+        NavigatorElement root = new NavigatorFolder("System.root");
+        root.setCaption(() -> LocalizedString.NONAME, getVersion());
+        navigator = new NavigatorEntity(root);
+        addNavigatorElement(root);
+
         super.initMetaAndClasses();
         initNativeGroups();
     }
@@ -593,11 +602,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         // need it before initMainLogic because it is used in constraints
         cancel = addCancelAProp(null, LocalizedString.NONAME, SetFact.EMPTY());
-
-        // navigator elements (before parsing because root is used there)
-        root = new NavigatorFolder("System.root");
-        root.setCaption(() -> LocalizedString.NONAME, getVersion());
-        addNavigatorElement(root);
 
         super.initMainLogic();
         initGroups();
@@ -827,8 +831,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     public Windows baseWindows;
 
-    // Навигаторы
-    public NavigatorElement root;
+    // the logics' navigator : every module writes the elements and the windows it declares into it
+    public NavigatorEntity navigator;
 
     public NavigatorElement administration;
 
@@ -872,7 +876,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         baseWindows.root = (NavigatorWindow) findWindow("root");
         baseWindows.root.autoSize = true;
-        root.setWindow(baseWindows.root, false, getVersion());
+        navigator.getRoot().setWindow(baseWindows.root, false, getVersion());
 
         baseWindows.system = (NavigatorWindow) findWindow("system");
         baseWindows.system.autoSize = true;
