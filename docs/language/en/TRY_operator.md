@@ -19,6 +19,8 @@ Without the `FINALLY` keyword, errors raised by the main action are intercepted 
 
 With the `FINALLY` keyword, `finallyAction` runs after the main action regardless of whether an error was raised. If an error was raised and no `CATCH` block is present, the error is re-raised to the surrounding action after `finallyAction` runs.
 
+An interruption of execution — when a [scheduler](../paradigm/Scheduler.md) task runs out of time, or when a process is canceled in the [process monitor](../paradigm/Process_monitor.md) — is not treated as an error: `catchAction` does not run for it, `finallyAction` does, and the interruption is passed on to the surrounding action even if a `CATCH` block is present or there is no `FINALLY` block. This way an interruption also stops a loop that contains `TRY`.
+
 ### Parameters
 
 - `action`

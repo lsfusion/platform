@@ -13,6 +13,8 @@ The operator has up to three parts:
 
 If the main action raises an error and no recovery action is specified: when no cleanup action is specified either, the error is consumed silently; when a cleanup action is specified, the cleanup action runs and the error is then re-raised to the surrounding action.
 
+An interruption of execution — when a [scheduler](Scheduler.md) task runs out of time, or when a process is canceled in the [process monitor](Process_monitor.md) — is not treated as an error and is not consumed: the recovery action does not run for it, the cleanup action does, and the interruption is passed on to the surrounding action. So the interrupted action stops as a whole, including a loop that contains the operator.
+
 Inside the recovery action, the error that triggered it is available through the system properties `messageCaughtException[]`, `javaStackTraceCaughtException[]`, and `lsfStackTraceCaughtException[]` — the error message, the Java stack trace, and the lsFusion stack trace, respectively.
 
 ### Language

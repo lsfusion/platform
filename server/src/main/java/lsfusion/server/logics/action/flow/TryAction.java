@@ -110,11 +110,19 @@ public class TryAction extends KeepContextAction {
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         
         FlowResult result;
+        boolean interrupted = false;
 
         try {
             // since we want to catch all exceptions
             result = tryAction.execute(context.override(true));
         } catch(Throwable e) {
+            // an interrupt of the thread (a scheduler task's timeout, a cancel in the process monitor) is not an error to recover from, so it skips CATCH
+            Thread thread = Thread.currentThread();
+            if(!ThreadUtils.isFinallyMode(thread) && (thread.isInterrupted() || ExceptionUtils.getRootCause(e) instanceof InterruptedException)) {
+                interrupted = true;
+                throw Throwables.propagate(e);
+            }
+
             if(catchAction == null && finallyAction != null)
                 throw Throwables.propagate(e);
 
@@ -132,13 +140,20 @@ public class TryAction extends KeepContextAction {
             } else
                 result = FlowResult.FINISH;
         } finally {
-            if (finallyAction != null) {
-                ThreadUtils.setFinallyMode(Thread.currentThread(), true);
-                try {
-                    finallyAction.execute(context);
-                } finally {
-                    ThreadUtils.setFinallyMode(Thread.currentThread(), false);
+            try {
+                if (finallyAction != null) {
+                    ThreadUtils.setFinallyMode(Thread.currentThread(), true);
+                    try {
+                        finallyAction.execute(context);
+                    } finally {
+                        ThreadUtils.setFinallyMode(Thread.currentThread(), false);
+                    }
                 }
+            } finally {
+                // Thread.sleep and the like take the interrupt off the thread when they throw, so it is put back for the actions after TRY to stop too,
+                // but only after FINALLY, so that blocking calls of FINALLY are not broken by it
+                if (interrupted)
+                    Thread.currentThread().interrupt();
             }
         }
 
