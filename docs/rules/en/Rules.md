@@ -125,44 +125,7 @@ the name in the first column.
    The assistant MUST NOT jump straight into actions or forms
    before clarifying the module / class / property context.
 
-2. TOOL USAGE (MANDATORY)
-   For lsFusion tasks, the assistant MUST actively use
-   ALL of the following categories:
-   - how-to guidance / examples / analogies
-   - documentation lookup
-   - structured element search in the project
-     (mandatory only when such tools are available)
-
-3. IDE / VALIDATION RULE (MANDATORY)
-   If IDE diagnostics or error checking are available,
-   the assistant MUST use them.
-
-   Pure syntax validation is acceptable only as a fallback
-   when IDE diagnostics or execution checks are unavailable.
-
-   An IDE diagnostics call that is cancelled or aborted right
-   after a file was created or changed outside the IDE is not
-   necessarily a user cancel: repeat it after a pause before
-   falling back.
-
-   A diagnostics call cut off by the client's own time limit
-   (the inspections of a large project can outlast it, whatever
-   timeout the call asks for) means the file was NOT checked, not
-   that it is clean: repeat it after indexing settles, and if it
-   still does not return, check the file by a dry run or a server
-   start before presenting the result.
-
-   If the IDE cannot resolve an element declared by a metacode
-   usage, expand that usage in its file — the file where the
-   metacode is applied, possibly in a required module —
-   (`lsfusion_set_meta_visibility`, `show`) and repeat the
-   diagnostics: the IDE sees such declarations only in expanded
-   code. A dry run or a server start checks them as well.
-   Collapse the usage (`hide`) before committing.
-
-   Run the diagnostics before the edit as well and compare the
-   two results: a large module can carry problems that are not
-   caused by the edit.
+For development workflow, code checks and project search, follow the articles in the [access-kind table](#family-and-path-rules).
 
 ## Rules for using lsFusion tools
 
@@ -187,16 +150,10 @@ GENERAL QUERY SCOPE
 
 A. HOW-TO AND EXAMPLES
 
-1. For any code-related lsFusion task, the assistant MUST
-   retrieve how-tos or examples first.
-
-2. The assistant MUST decompose the task into small sub-tasks
-   that each produce a small amount of code.
-
-3. The assistant SHOULD prefer how-to style reasoning
+1. The assistant SHOULD prefer how-to style reasoning
    over speculative large rewrites.
 
-4. The assistant SHOULD reuse platform patterns from examples
+2. The assistant SHOULD reuse platform patterns from examples
    before inventing custom structure.
 
 B. DOCUMENTATION LOOKUP
@@ -213,29 +170,7 @@ B. DOCUMENTATION LOOKUP
 4. Community retrieval SHOULD be used only when docs
    and how-tos are insufficient for a deep or ambiguous task.
 
-C. ELEMENT SEARCH
-
-1. The assistant SHOULD prefer structured element search
-   over plain text search.
-
-2. Before searching, the assistant MUST determine
-   the needed element types, modules, and classes.
-
-3. The assistant MUST try to find the required elements
-   in one structured search call with the correct filters.
-
-4. If the target cannot be found, the assistant MUST do
-   at least one fallback:
-   - minimal-filter search to get a project brief
-   - related-element search from already found elements
-
-5. The assistant SHOULD prefer keyword-based search
-   over regex when possible.
-
-6. The assistant MUST estimate and set output size
-   and timeout intentionally based on task complexity.
-
-D. FEEDBACK / REPORTING (`lsfusion_report_feedback`)
+C. FEEDBACK / REPORTING (`lsfusion_report_feedback`)
 
 1. This tool submits ONE depersonalized report that helps
    improve lsFusion docs, RAG, or `eval` diagnostics, or
