@@ -169,7 +169,7 @@ import static lsfusion.server.physics.admin.log.ServerLoggers.startLog;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCanonicalName;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCompoundName;
 
-public abstract class BusinessLogics extends LifecycleAdapter implements InitializingBean, SessionEvents {
+public abstract class BusinessLogics extends LifecycleAdapter implements InitializingBean, SessionEvents, ExternalLAPResolver {
     protected final static Logger logger = ServerLoggers.systemLogger;
     protected final static Logger allocatedBytesLogger = ServerLoggers.allocatedBytesLogger;
 
@@ -2031,10 +2031,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @IdentityLazy
+    @Override
     public LA<?> findActionByExtId(String extId) {
         return BusinessLogicsResolvingUtils.findActionByExtId(this, extId);
     }
 
+    @Override
     public LP<?> findPropertyByExtId(String extId) {
         return BusinessLogicsResolvingUtils.findPropertyByExtId(this, extId);
     }
@@ -2052,29 +2054,20 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     // compound name (slashes -> underscores), falling back to external id; used by the JS controller and the external
     // HTTP exec to resolve an action/property by the name a caller supplies. Property names carry no path slashes, so
     // only the action lookup translates them.
+    @Override
     @IdentityLazy
     public LA<?> findActionByName(String name) {
-        LA<?> action;
-        try {
-            action = findActionByCompoundName(name.replace('/', '_'));
-        } catch (CompoundNameUtils.ParseException e) {
-            action = null;
-        }
-        return action != null ? action : findActionByExtId(name);
+        return BusinessLogicsResolvingUtils.findActionByName(this, name);
     }
 
+    @Override
     @IdentityLazy
     public LP<?> findPropertyByName(String name) {
-        LP<?> property;
-        try {
-            property = findPropertyByCompoundName(name);
-        } catch (CompoundNameUtils.ParseException e) {
-            property = null;
-        }
-        return property != null ? property : findPropertyByExtId(name);
+        return BusinessLogicsResolvingUtils.findPropertyByName(this, name);
     }
 
     @IdentityLazy
+    @Override
     public CustomClass findClassByCompoundName(String compoundName) {
         return findElementByCompoundName(this, compoundName, null, new ModuleClassFinder());
     }
@@ -2108,10 +2101,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return findElementByCanonicalName(this, canonicalName, paramCnt, new ModuleMetaCodeFragmentFinder());
     }
 
+    @Override
     public Collection<String> getNamespacesList() {
         return namespaceToModules.keySet();
     }
     
+    @Override
     public List<LogicsModule> getNamespaceModules(String namespace) {
         return namespaceToModules.getOrDefault(namespace, Collections.emptyList());
     }

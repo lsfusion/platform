@@ -31,6 +31,11 @@ uiCcSetForm (STRING name, TEXT code) {
 uiCcEvaluate 'Evaluate' () { EVAL ACTION 'uiCcSay();'; }
 EXTEND FORM uiCcOther PROPERTIES() uiCcEvaluate;
 
+// an action and a property the code of a test declares under the same names : called by the bare name, each is
+// neither; with the namespace, this one
+uiCcLogics (INTEGER a) { RETURN a; }
+uiCcLogicsNote = DATA LOCAL STRING[20] ();
+
 // with what the editor saved for a user : the browser's user is not known here
 uiCcReset () {
     dataExtendCode() <- NULL;

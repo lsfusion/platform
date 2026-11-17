@@ -3,11 +3,11 @@ package lsfusion.server.physics.dev.id.name;
 import com.google.common.base.Throwables;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.physics.dev.id.name.CompoundNameUtils.ParseException;
+import lsfusion.server.physics.dev.id.resolve.ExternalLAPResolver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,15 +41,15 @@ public class PropertyCompoundNameParser extends AbstractPropertyNameParser {
         }
     }
 
-    public static class BLCompoundNameClassFinder implements ClassFinder {
-        private BusinessLogics BL;
-        public BLCompoundNameClassFinder(BusinessLogics BL) {
-            this.BL = BL;
+    public static class ResolverCompoundNameClassFinder implements ClassFinder {
+        private ExternalLAPResolver resolver;
+        public ResolverCompoundNameClassFinder(ExternalLAPResolver resolver) {
+            this.resolver = resolver;
         }
 
         @Override
         public CustomClass findCustomClass(String name) {
-            return BL.findClassByCompoundName(name);
+            return resolver.findClassByCompoundName(name);
         }
 
         @Override
@@ -62,8 +62,8 @@ public class PropertyCompoundNameParser extends AbstractPropertyNameParser {
         this(name, new ModulePropertyUsageClassFinder(module));
     }
 
-    public PropertyCompoundNameParser(BusinessLogics BL, String name) {
-        this(name, new BLCompoundNameClassFinder(BL));
+    public PropertyCompoundNameParser(ExternalLAPResolver resolver, String name) {
+        this(name, new ResolverCompoundNameClassFinder(resolver));
     }
 
     public PropertyCompoundNameParser(String name, ClassFinder finder) {

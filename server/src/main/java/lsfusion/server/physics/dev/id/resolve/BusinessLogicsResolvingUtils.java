@@ -143,35 +143,57 @@ public class BusinessLogicsResolvingUtils {
         return null;
     }
 
-    public static <L extends LAP<?,?>> L findLAPByCompoundName(BusinessLogics BL, String compoundName, ModuleLAPFinder<L> moduleLAPFinder) {
-        PropertyCompoundNameParser parser = new PropertyCompoundNameParser(BL, compoundName);
-        return findLAP(BL, parser.getNamespace(), parser.getName(), parser.getSignature(), compoundName, moduleLAPFinder);
+    // a name a caller gives (ExternalLAPResolver) : a compound name - in an action's a path's slashes are underscores,
+    // a property's carries no path -, else an external id, which is the logics' alone
+    public static LA<?> findActionByName(ExternalLAPResolver resolver, String name) {
+        LA<?> action;
+        try {
+            action = findLAPByCompoundName(resolver, name.replace('/', '_'), new ModuleLAFinder());
+        } catch (CompoundNameUtils.ParseException e) {
+            action = null;
+        }
+        return action != null ? action : resolver.findActionByExtId(name);
+    }
+
+    public static LP<?> findPropertyByName(ExternalLAPResolver resolver, String name) {
+        LP<?> property;
+        try {
+            property = findLAPByCompoundName(resolver, name, new ModuleLPFinder());
+        } catch (CompoundNameUtils.ParseException e) {
+            property = null;
+        }
+        return property != null ? property : resolver.findPropertyByExtId(name);
+    }
+
+    public static <L extends LAP<?,?>> L findLAPByCompoundName(ExternalLAPResolver resolver, String compoundName, ModuleLAPFinder<L> moduleLAPFinder) {
+        PropertyCompoundNameParser parser = new PropertyCompoundNameParser(resolver, compoundName);
+        return findLAP(resolver, parser.getNamespace(), parser.getName(), parser.getSignature(), compoundName, moduleLAPFinder);
     }
     
-    private static <L extends LAP<?, ?>> L findLAP(BusinessLogics BL, String namespace, String name, List<ResolveClassSet> signature, String sourceName, ModuleLAPFinder<L> moduleLAPFinder) {
-        Collection<String> namespaces = getPropertyConsideredNamespaces(BL, namespace);
+    private static <L extends LAP<?, ?>> L findLAP(ExternalLAPResolver resolver, String namespace, String name, List<ResolveClassSet> signature, String sourceName, ModuleLAPFinder<L> moduleLAPFinder) {
+        Collection<String> namespaces = getPropertyConsideredNamespaces(resolver, namespace);
 
         List<FoundItem<L>> foundItems = new ArrayList<>();
         for (String namespaceName : namespaces) {
-            foundItems.addAll(findProperties(BL, namespaceName, name, signature, moduleLAPFinder));
+            foundItems.addAll(findProperties(resolver, namespaceName, name, signature, moduleLAPFinder));
         }
 
         List<FoundItem<L>> filteredResult = NamespaceLAPFinder.filterFoundProperties(foundItems);
         return findElementResult(sourceName, filteredResult);
     }
     
-    private static Collection<String> getPropertyConsideredNamespaces(BusinessLogics BL, String namespace) {
+    private static Collection<String> getPropertyConsideredNamespaces(ExternalLAPResolver resolver, String namespace) {
         if (namespace != null) {
             return Collections.singletonList(namespace);
         } else {
-            return BL.getNamespacesList();
+            return resolver.getNamespacesList();
         }
     }
     
-    private static <L extends LAP<?, ?>> List<FoundItem<L>> findProperties(BusinessLogics BL, String namespace, String name,
+    private static <L extends LAP<?, ?>> List<FoundItem<L>> findProperties(ExternalLAPResolver resolver, String namespace, String name,
                                                                            List<ResolveClassSet> classes,
                                                                            ModulePropertyOrActionFinder<L> finder) {
-        NamespaceLAPFinder<L> nsFinder = new NamespaceLAPFinder<>(finder, BL.getNamespaceModules(namespace));
+        NamespaceLAPFinder<L> nsFinder = new NamespaceLAPFinder<>(finder, resolver.getNamespaceModules(namespace));
         return nsFinder.findInNamespace(namespace, name, classes);
     }
 }

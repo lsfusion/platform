@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 // code made, and the navigator of the logics is back once the code is dropped (UiConnectionCustomize.lsf).
 // The code is written in the dialog a form's code is written in (SystemEvents.customizeForm).
 // What the code declares, a script evaluated in that client sees.
+// And a call by its name, made in that client, finds.
 public class UiConnectionCustomizeIT extends UiTest {
 
     private static final String FOLDER = "UiConnectionCustomize.uiConnectionCustomize";
@@ -275,6 +276,55 @@ public class UiConnectionCustomizeIT extends UiTest {
     // a controller the code of a page keeps, for a test to call as that code would
     private View controller(String kept) {
         return new View("const controller = " + kept + ";", "!!controller", "", "null").drawn();
+    }
+
+    // and what the code of a connection, or of a form, declares is called by its name : the code of a page runs an
+    // action and changes a property of the code through the controller - the form's, or the navigator's, which an action
+    // of the connection's code hands to a function of the page. A name is looked for among what the logics and the code
+    // declare, in every namespace alike : one the logics, or the other code, declares as well is nobody's until a
+    // namespace says whose - and a form's code is that form's only, the navigator's controller does not see it
+    @Test
+    public void aCallByNameFindsWhatTheCodeDeclares() throws Exception {
+        exec("UiConnectionCustomize.uiCcSet",
+                "uiCcTwice(INTEGER a) { RETURN a * 2; }\n" +
+                "uiCcNote = DATA LOCAL STRING[20] ();\n" +
+                "uiCcLogics(INTEGER a) { RETURN a + 100; }\n" +
+                "uiCcLogicsNote = DATA LOCAL STRING[20] ();\n" +
+                "uiCcBoth(INTEGER a) { RETURN a; }\n" +
+                "uiCcKeep 'Keep the controller' () { INTERNAL CLIENT 'uiCcKeepController'; }\n" +
+                "NAVIGATOR {\n" +
+                "    " + FOLDER + " {\n" +
+                "        NEW uiCcKeep;\n" +
+                "    }\n" +
+                "}");
+        exec("UiConnectionCustomize.uiCcSetForm", CALLS,
+                "uiCcFormTwice(INTEGER a) { RETURN a * 2 + 1; }\n" +
+                "uiCcBoth(INTEGER a) { }");
+        restart();
+
+        page.evaluate("() => { window.uiCcKeepController = controller => { window.uiCcController = controller; }; }");
+        open(FOLDER, added("uiCcKeep"));
+        View connection = controller("window.uiCcController");
+        assertEquals("42", connection.answer("controller.exec('uiCcTwice', 21)"));
+        assertAmbiguous(connection, "exec('uiCcLogics', 1)", "uiCcLogics");
+        assertEquals("7", connection.answer("controller.exec('uiCcBoth', 7)"));
+
+        View calls = openCalls();
+        assertEquals("42", calls.answer("controller.exec('uiCcTwice', 21)"));
+        assertEquals("42", calls.answer("controller.exec('uiCcTwice[INTEGER]', 21)"));
+        assertEquals("43", calls.answer("controller.exec('uiCcFormTwice', 21)"));
+        assertAmbiguous(calls, "exec('uiCcLogics', 1)", "uiCcLogics");
+        assertAmbiguous(calls, "exec('uiCcBoth', 1)", "uiCcBoth");
+        assertAmbiguous(calls, "change('uiCcLogicsNote', 'noted')", "uiCcLogicsNote");
+        assertEquals("1", calls.answer("controller.exec('UiConnectionCustomize.uiCcLogics', 1)"));
+        assertEquals("noted", calls.answer("controller.change('uiCcNote', 'noted').then(() => controller.eval('run() { RETURN uiCcNote(); }'))"));
+        closeCalls();
+        assertEquals("7", connection.answer("controller.exec('uiCcBoth', 7)"));
+    }
+
+    private static void assertAmbiguous(View controller, String call, String name) {
+        String rejection = controller.rejection("controller." + call);
+        assertTrue("a name declared twice was answered with " + rejection, rejection.startsWith("Ambiguous element '" + name + "'"));
     }
 
     // a client makes its navigator as its page is loaded

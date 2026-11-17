@@ -49,6 +49,7 @@ import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.data.SessionDataProperty;
+import lsfusion.server.physics.dev.id.resolve.ExternalLAPResolver;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -423,9 +424,10 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         ClientAction run(ExecutionEnvironment env, ConnectionContext context) throws SQLException, SQLHandledException, ParseException, IOException;
     }
 
-    // controller exec/change resolution: by default a plain global resolve (by compound name, else external id, via
-    // BusinessLogics), gated by @api/enableAPI (formAuthorized false). RemoteForm overrides this to consult the form
-    // API allow-list first and skip the gate when matched. action selects the kind (exec -> action, change ->
+    // controller exec/change resolution: by default a plain global resolve (by compound name, else external id), via
+    // BusinessLogics or - with a customization - its module (ExternalLAPResolver), gated by @api/enableAPI
+    // (formAuthorized false). RemoteForm overrides this to consult the form API allow-list first and skip the gate when
+    // matched. action selects the kind (exec -> action, change ->
     // property); lap is the resolved LA (action) or LP (property), narrowed at the run boundary in exec/change.
     protected static class ControllerResolved {
         public final LAP<?,?> lap; // null if unresolved; an LA when action, an LP otherwise
@@ -433,8 +435,9 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         public ControllerResolved(LAP<?,?> lap, boolean formAuthorized) { this.lap = lap; this.formAuthorized = formAuthorized; }
     }
     protected ControllerResolved resolveController(String name, boolean action) {
-        BusinessLogics BL = getControllerBL();
-        return new ControllerResolved(action ? BL.findActionByName(name) : BL.findPropertyByName(name), false);
+        // on a form, or in a connection, that a code customized, what the code declares is looked for too
+        ExternalLAPResolver resolver = EvalUtils.getExternalLAPResolver(getControllerBL(), getCustomizeLM());
+        return new ControllerResolved(action ? resolver.findActionByName(name) : resolver.findPropertyByName(name), false);
     }
 
     private ClientAction runControllerAction(LA<?> la, Object[] params, String options, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException, IOException {

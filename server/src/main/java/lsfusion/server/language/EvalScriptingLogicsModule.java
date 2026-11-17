@@ -3,6 +3,7 @@ package lsfusion.server.language;
 import lsfusion.base.Pair;
 import lsfusion.interop.navigator.NavigatorScheduler;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.data.table.IndexType;
 import lsfusion.server.language.action.ActionSettings;
 import lsfusion.server.language.action.LA;
@@ -16,6 +17,7 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.flow.ListCaseAction;
 import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.stat.SelectTop;
@@ -30,14 +32,18 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils;
+import lsfusion.server.physics.dev.id.resolve.ExternalLAPResolver;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 // a module made of a text while the server runs, after the logics is final : what it declares is its own, and what would
 // change the logics is refused
-public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
+public class EvalScriptingLogicsModule extends ScriptingLogicsModule implements ExternalLAPResolver {
     private Set<EvalScriptingLogicsModule> parentLMs;
 
     // whether the code changes the navigator - a copy of its own : the code that customizes the application does, a script
@@ -340,6 +346,49 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     @Override
     public void addScriptedAspect(NamedPropertyUsage mainPropUsage, List<TypedParameter> mainPropParams, LAWithParams action, boolean before) throws ScriptingErrorLog.SemanticErrorException {
         emitEvalError(before ? "BEFORE statement" : "AFTER statement");
+    }
+
+    // a name a caller gives, by the rules of such a name (BusinessLogicsResolvingUtils.findActionByName : every namespace
+    // alike, no priority of a module's own) among the modules this one sees : the logics', the ones it is compiled under
+    // (a form's code under the code of the application) and itself - so what the logics and a code both declare is
+    // ambiguous until a namespace says whose
+    @Override
+    @IdentityLazy
+    public LA<?> findActionByName(String name) {
+        return BusinessLogicsResolvingUtils.findActionByName(this, name);
+    }
+
+    @Override
+    @IdentityLazy
+    public LP<?> findPropertyByName(String name) {
+        return BusinessLogicsResolvingUtils.findPropertyByName(this, name);
+    }
+
+    @Override
+    public Collection<String> getNamespacesList() {
+        return namespaceToModules.keySet();
+    }
+
+    @Override
+    public List<LogicsModule> getNamespaceModules(String namespace) {
+        return namespaceToModules.getOrDefault(namespace, Collections.emptyList());
+    }
+
+    // the classes and the external ids are the logics' : an evaluated code declares no class (CLASS is refused), and an
+    // external id is looked for in the logics alone, as before - one a code declares is not found by it
+    @Override
+    public CustomClass findClassByCompoundName(String compoundName) {
+        return BL.findClassByCompoundName(compoundName);
+    }
+
+    @Override
+    public LA<?> findActionByExtId(String extId) {
+        return BL.findActionByExtId(extId);
+    }
+
+    @Override
+    public LP<?> findPropertyByExtId(String extId) {
+        return BL.findPropertyByExtId(extId);
     }
 
     protected void emitEvalError(String errorPrefix) throws ScriptingErrorLog.SemanticErrorException {
