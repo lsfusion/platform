@@ -1,0 +1,23 @@
+MODULE InputParamInitialValue;
+
+REQUIRE System;
+
+CLASS Sample 'Sample';
+
+// an INPUT of a builtin type whose initial value is a bare parameter of the action stopped the start
+// with a NullPointerException: the builtin branch took the initial value for a property, and a bare
+// parameter has none; the INPUT of a custom class has always taken a parameter there (fixed for #1994)
+inputInteger 'Input integer' (INTEGER n) {
+    INPUT i = (n) DO
+        MESSAGE i;
+}
+
+inputString 'Input string' (STRING s) {
+    INPUT t = (s) DO
+        MESSAGE t;
+}
+
+inputSample 'Input sample' (Sample x) {
+    INPUT s = (x) DO
+        MESSAGE s;
+}
