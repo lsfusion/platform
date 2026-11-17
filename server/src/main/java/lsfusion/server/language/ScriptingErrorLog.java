@@ -526,6 +526,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("WHERE clause is forbidden with '%s' grouping type", groupType));
     }
 
+    public void emitTopInnerParamGPropError(ScriptParser parser, String paramName) throws SemanticErrorException {
+        emitSimpleError(parser, format("TOP / OFFSET cannot use parameter '%s' declared inside GROUP: they are the same for the whole group", paramName));
+    }
+
     public void emitDifferentObjsNPropsQuantityError(ScriptParser parser, int numberOfObjects) throws SemanticErrorException {
         emitSimpleError(parser, format("number of properties specified after PARENT should be equal to number of objects (%d)", numberOfObjects));
     }

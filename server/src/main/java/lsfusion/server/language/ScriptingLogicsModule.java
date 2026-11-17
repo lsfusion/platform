@@ -3493,7 +3493,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             } else {
                 for(int i = 0; i < allGroupProps.size(); i++)
                     mapping.add(new LPWithParams(i));
-                mapping.addAll(mapParamsToPositions(selectTop.getParams(), allGroupProps));
+                mapping.addAll(mapParamsToPositions(selectTop.getParams(), allGroupProps, newContext));
             }
 
             LPWithParams lgp = addScriptedJProp(gProp, mapping);
@@ -3506,7 +3506,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPContextIndependent(gProp, getParamClassesByParamProperties(allGroupProps, newContext), resultInterfaces);
     }
 
-    private static List<LPWithParams> mapParamsToPositions(List<LPWithParams> props, List<LPWithParams> allGroupProps) {
+    private List<LPWithParams> mapParamsToPositions(List<LPWithParams> props, List<LPWithParams> allGroupProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
         Map<Integer, Integer> positions = new HashMap<>();
         for(int i = 0; i < allGroupProps.size(); i++) {
             LPWithParams groupProp = allGroupProps.get(i);
@@ -3517,8 +3517,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LPWithParams> result = new ArrayList<>();
         for(LPWithParams prop : props) {
             List<Integer> usedPositions = new ArrayList<>();
-            for(int param : prop.usedParams)
-                usedPositions.add(positions.get(param));
+            for(int param : prop.usedParams) {
+                Integer position = positions.get(param);
+                if(position == null)
+                    errLog.emitTopInnerParamGPropError(parser, context.get(param).paramName);
+                usedPositions.add(position);
+            }
             result.add(new LPWithParams(prop.getLP(), usedPositions));
         }
         return result;

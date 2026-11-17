@@ -1,0 +1,14 @@
+MODULE GroupTopByInnerParameter;
+
+REQUIRE System;
+
+// a parameter declared inside a GROUP with BY and used in its TOP is reported at load: it failed with a
+// NullPointerException (#1706)
+
+CLASS Team;
+CLASS Game;
+hostTeam = DATA Team (Game);
+date = DATA DATE (Game);
+hostGoals = DATA INTEGER (Game);
+
+lastGoals (Team t) = GROUP SUM hostGoals(Game game) ORDER DESC date(game), game TOP hostGoals(game) BY hostTeam(game);
