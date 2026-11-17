@@ -639,7 +639,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     private void evaluateRun(String script) throws SQLException, SQLHandledException {
         try (DataSession session = createSession()) {
-            LA runAction = businessLogics.evaluateRun(script, false);
+            LA runAction = businessLogics.evaluateRun(script, getCustomizeLM(), false);
             if (runAction != null) {
                 runAction.execute(session, getStack());
             }

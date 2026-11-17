@@ -159,6 +159,12 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     protected void customizeFailed(String error) {
     }
 
+    // what that code declares is seen by what looks a name up in the connection (EvalUtils.getCustomizeLM)
+    @Override
+    public EvalScriptingLogicsModule getCustomizeLM() {
+        return customizeLM;
+    }
+
     private void initUser(AuthenticationToken token, UserInfo userInfo, DataSession session, ExecutionStack stack) throws SQLException, SQLHandledException {
         this.token = token;
         user = securityManager.getUser(securityManager.parseToken(token), session);
@@ -230,6 +236,11 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         public Long getCurrentUserRole() {
             RemoteConnection remoteConnection = weakThis.get();
             return remoteConnection == null ? null : remoteConnection.userRole;
+        }
+
+        public EvalScriptingLogicsModule getCustomizeLM() {
+            RemoteConnection remoteConnection = weakThis.get();
+            return remoteConnection == null ? null : remoteConnection.getCustomizeLM();
         }
     }
 
@@ -470,7 +481,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
         return logFromExternalSystemRequest(() -> {
             if (script != null) {
-                LA<?> runAction = businessLogics.evaluateRun(script, action);
+                LA<?> runAction = businessLogics.evaluateRun(script, getCustomizeLM(), action);
                 if(runAction != null) {
                     return executeExternal(runAction, paramScript.value, null, true, request);
                 } else {

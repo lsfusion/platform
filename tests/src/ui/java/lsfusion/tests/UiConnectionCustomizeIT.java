@@ -6,12 +6,14 @@ import org.junit.After;
 import org.junit.Test;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 // The customization of a connection (SystemEvents.dataExtendCode[]): its code is compiled as a connection is made, its
 // NAVIGATOR statements over a copy of the navigator, so a page loaded after the code is saved draws the navigator the
 // code made, and the navigator of the logics is back once the code is dropped (UiConnectionCustomize.lsf).
 // The code is written in the dialog a form's code is written in (SystemEvents.customizeForm).
+// What the code declares, a script evaluated in that client sees.
 public class UiConnectionCustomizeIT extends UiTest {
 
     private static final String FOLDER = "UiConnectionCustomize.uiConnectionCustomize";
@@ -201,6 +203,78 @@ public class UiConnectionCustomizeIT extends UiTest {
             ace.evaluate("(ace, code) => ace.parentElement.aceEditor.setValue(code, 1)", code);
             page.waitForCondition(() -> code.equals(ace.evaluate("ace => ace.parentElement.currentValue")));
         });
+    }
+
+    // a form of another test, whose view keeps its controller for a page's code to call (UiCustomView.js)
+    private static final String CALLS = "UiCustomView.uiCustomViewCalls";
+
+    // a property and an action the code declares, for the scripts evaluated in the client - one of them an action of the
+    // code's own, an element of the navigator
+    private static String declarations(int answer) {
+        return "uiCcAnswer 'Answer of the code' () = " + answer + ";\n" +
+               "uiCcSay() { MESSAGE 'Said by the code'; }\n" +
+               "uiCcAsk 'Evaluate in the navigator' () { EVAL ACTION 'uiCcSay();'; }\n" +
+               "NAVIGATOR {\n" +
+               "    " + FOLDER + " {\n" +
+               "        NEW uiCcAsk;\n" +
+               "    }\n" +
+               "}";
+    }
+
+    // a script evaluated anywhere in a client sees what the code of its connection declares
+    @Test
+    public void aScriptEvaluatedInTheClientSeesTheCode() throws Exception {
+        exec("UiConnectionCustomize.uiCcSet", declarations(42));
+        exec("UiConnectionCustomize.uiCcSetForm", FORM, "EXTEND FORM uiCcForm PROPERTIES() uiCcAnswer;");
+        exec("UiConnectionCustomize.uiCcSetForm", CALLS, "uiCcFormAnswer() = 7;");
+        restart();
+
+        // one an action of the navigator evaluates
+        open(FOLDER, added("uiCcAsk"));
+        closeDialog("Said by the code");
+
+        // one an action of a form opened in the client does
+        Locator other = open(FOLDER, OTHER);
+        action(other, "uiCcEvaluate").click();
+        closeDialog("Said by the code");
+        close(other);
+
+        // the code that customizes a form
+        assertAnswerOnTheForm("42");
+
+        // one the code of a page sends : evaluated on a customized form, it sees what that form's code declares as well
+        assertEquals("49", openCalls().answer("controller.eval('run() { RETURN uiCcAnswer() + uiCcFormAnswer(); }')"));
+        closeCalls();
+
+        // the code of the form is the same, the connection's is another : the form is compiled for the connection it is
+        // opened in
+        exec("UiConnectionCustomize.uiCcSet", declarations(43));
+        restart();
+        assertAnswerOnTheForm("43");
+    }
+
+    // the property of the connection's code the form's code put on the form
+    private void assertAnswerOnTheForm(String answer) {
+        open(FOLDER, element(FORM));
+        Locator customized = page.locator("[lsfusion-form$='.uiCcForm']");
+        String container = "[lsfusion-container='PROPERTY(uiCcAnswer())']";
+        assertThat(customized.locator(container + ".panel-renderer-value, " + container + " .panel-renderer-value")).hasText(answer);
+        close(customized);
+    }
+
+    // the form whose view keeps its controller, customized by a test or not, and that controller
+    private View openCalls() {
+        open("UiCustomView.uiCustomView", element(CALLS));
+        return controller("window.uiCustomViewCalls && window.uiCustomViewCalls.form");
+    }
+
+    private void closeCalls() {
+        close(page.locator("[lsfusion-form$='uiCustomViewCalls']"));
+    }
+
+    // a controller the code of a page keeps, for a test to call as that code would
+    private View controller(String kept) {
+        return new View("const controller = " + kept + ";", "!!controller", "", "null").drawn();
     }
 
     // a client makes its navigator as its page is loaded

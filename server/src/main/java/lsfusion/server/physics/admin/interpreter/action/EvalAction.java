@@ -22,11 +22,11 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.Set;
 
 public class EvalAction<P extends PropertyInterface> extends SystemAction {
@@ -83,14 +83,9 @@ public class EvalAction<P extends PropertyInterface> extends SystemAction {
         String script = getScript(context);
 
         ExecutionStack stack = context.stack;
-        Set<EvalScriptingLogicsModule> parentLMs = new HashSet<>();
-
         FormInstance formInstance = context.getFormInstance(false, false);
-        if(formInstance != null) {
-            EvalScriptingLogicsModule customizeEvalLM = formInstance.entity.getCustomizeLM();
-            if (customizeEvalLM != null)
-                parentLMs.add(customizeEvalLM);
-        }
+        // the code of the form it runs on, else of the application, for the user of the session it runs in
+        Set<EvalScriptingLogicsModule> parentLMs = EvalUtils.getParentLMs(EvalUtils.getCustomizeLM(formInstance != null ? formInstance.entity : null, context.getSession().user.getCustomizeLM()));
         EvalScriptingLogicsModule stackEvalLM = stack.getEvalLM();
         if (stackEvalLM != null)
             parentLMs.add(stackEvalLM);

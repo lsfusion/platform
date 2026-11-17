@@ -21,10 +21,22 @@ uiCcSet (TEXT code) {
     APPLY;
 }
 
+// the code of a form, for all users as well
+uiCcSetForm (STRING name, TEXT code) {
+    dataExtendCode(form(name)) <- code;
+    APPLY;
+}
+
+// evaluates a script that names what only the code of the application's customization declares
+uiCcEvaluate 'Evaluate' () { EVAL ACTION 'uiCcSay();'; }
+EXTEND FORM uiCcOther PROPERTIES() uiCcEvaluate;
+
 // with what the editor saved for a user : the browser's user is not known here
 uiCcReset () {
     dataExtendCode() <- NULL;
     dataExtendCode(User u) <- NULL WHERE u IS User;
     dataExtendCode(form('UiConnectionCustomize.uiCcForm'), User u) <- NULL WHERE u IS User;
+    dataExtendCode(form('UiConnectionCustomize.uiCcForm')) <- NULL;
+    dataExtendCode(form('UiCustomView.uiCustomViewCalls')) <- NULL;
     APPLY;
 }

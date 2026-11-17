@@ -25,6 +25,22 @@ public class EvalUtils {
         return "UNIQUE" + uniqueNameCounter.incrementAndGet() + "NSNAME";
     }
 
+    // the module whose names are seen here besides the logics' : of the code that customized the form, or - with none -
+    // of the code that customizes the application for the user (the session's, UserController.getCustomizeLM). The former
+    // is itself compiled under the latter (FormEntity.getForm), so the nearest one sees what both declare
+    public static EvalScriptingLogicsModule getCustomizeLM(FormEntity form, EvalScriptingLogicsModule userLM) {
+        EvalScriptingLogicsModule formLM = form != null ? form.getCustomizeLM() : null;
+        return formLM != null ? formLM : userLM;
+    }
+
+    // that module as the parents of a script evaluated with it (an EVAL inside a script adds the module of that script)
+    public static Set<EvalScriptingLogicsModule> getParentLMs(EvalScriptingLogicsModule customizeLM) {
+        Set<EvalScriptingLogicsModule> parentLMs = new HashSet<>();
+        if (customizeLM != null)
+            parentLMs.add(customizeLM);
+        return parentLMs;
+    }
+
     public static Pair<LA, EvalScriptingLogicsModule> evaluateAndFindAction(BusinessLogics BL, Set<EvalScriptingLogicsModule> parentLMs, String script, boolean action) {
         if(script != null && script.startsWith("\uFEFF"))
             script = script.substring(1);

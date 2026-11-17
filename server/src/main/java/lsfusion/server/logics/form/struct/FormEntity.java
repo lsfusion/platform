@@ -90,6 +90,7 @@ import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
+import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -1807,7 +1808,8 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
             if (extendCode != null) {
                 try {
                     String script = "FORM " + name + " EXTEND FORMS " + canonicalName + ";\n" + extendCode + ";\nrun{}";
-                    Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateRun(script, Collections.emptySet(), false);
+                    // read in a connection the application is customized for, the code sees what that customization declares
+                    Pair<LA, EvalScriptingLogicsModule> evalResult = BL.LM.evaluateRun(script, EvalUtils.getParentLMs(session.user.getCustomizeLM()), false);
 
                     FormEntity copyForm = evalResult.second.findForm(name);
                     copyForm.customizeForm = this;

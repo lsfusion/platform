@@ -12,9 +12,11 @@ import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteO
 import lsfusion.server.base.controller.remote.ui.RemotePausableInvocation;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.SyncType;
+import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.mcp.MCPEvalTool;
@@ -381,7 +383,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             ClientAction terminal;
             try {
                 controllerGate(false); // gate BEFORE evaluateRun, no @api for a dynamic script
-                LA<?> la = getControllerBL().evaluateRun(script, evalAction); // evalAction: true -> wrap body into run(); false -> script defines its own run (typed params)
+                LA<?> la = getControllerBL().evaluateRun(script, getCustomizeLM(), evalAction); // evalAction: true -> wrap body into run(); false -> script defines its own run (typed params)
                 if(la == null)
                     throw new RuntimeException("Eval 'run' action was not found");
                 terminal = runControllerAction(la, params, options, stack);
@@ -411,6 +413,9 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
 
     // hooks: form -> persistent form.session + FormInstanceContext; navigator -> fresh createSession() + connection context
     protected abstract BusinessLogics getControllerBL();
+    // the module of the code that customized what a request to this object is about (EvalUtils.getCustomizeLM) : a
+    // form's, else the one of the application for the user; null with none
+    protected abstract EvalScriptingLogicsModule getCustomizeLM();
     protected abstract void controllerGate(boolean apiAnnotation);
     protected abstract ClientAction runControllerRequest(ExecutionStack stack, ControllerBody body) throws SQLException, SQLHandledException, ParseException, IOException;
 

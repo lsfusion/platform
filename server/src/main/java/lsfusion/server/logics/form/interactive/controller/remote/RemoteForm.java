@@ -40,6 +40,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
@@ -81,6 +82,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
@@ -1205,6 +1207,12 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     @Override
     protected BusinessLogics getControllerBL() {
         return form.BL;
+    }
+
+    // of the code that customized the form, else of the one that customizes the application for the user of its session
+    @Override
+    protected EvalScriptingLogicsModule getCustomizeLM() {
+        return EvalUtils.getCustomizeLM(form.entity, form.session.user.getCustomizeLM());
     }
 
     // API gate, delegating to the single core impl in RemoteConnection (enableAPI / @api / canDeriveAPIAccess +

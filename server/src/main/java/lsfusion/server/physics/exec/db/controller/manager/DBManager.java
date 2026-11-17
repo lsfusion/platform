@@ -66,6 +66,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.language.MigrationScriptLexer;
 import lsfusion.server.language.MigrationScriptParser;
 import lsfusion.server.language.property.LP;
@@ -1130,6 +1131,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                     @Override
                     public Long getCurrentUserRole() {
+                        return null;
+                    }
+
+                    @Override
+                    public EvalScriptingLogicsModule getCustomizeLM() {
                         return null;
                     }
                 }, new NavigatorRefreshController() {
