@@ -17,6 +17,8 @@ The database stores [data (`DATA`) properties](../paradigm/Data_properties_DATA.
 
 A property can be materialized if and only if the number of object sets with a non-`NULL` value is finite. Materialization moves the cost from reading to writing: the value is not computed on every read, but is updated on every change of the source data. The mechanism is described in [materializations](../paradigm/Materializations.md).
 
+Tables, indexes and materializations are declared in source modules. [Eval code](../paradigm/Eval_EVAL.md) cannot introduce them, and its `DATA` properties are session-scoped.
+
 ```lsf
 sum = GROUP SUM sum(OrderDetail od) BY order(od) MATERIALIZED;
 ```
@@ -167,6 +169,8 @@ An abstract property or action is a declared extension point: the base module se
 Structurally this is the deferred assembly of an ordinary operator: for a property, of a [selection operator](../paradigm/Property_extension.md); for an action, of a [branching or sequence operator](../paradigm/Action_extension.md). The implementations are kept in an ordered list, and a new one is added at its start or at its end.
 
 Hence the main modularity technique: the base module declares the extension point, the modules depending on it add behaviour, and no reverse dependency appears.
+
+[Eval code](../paradigm/Eval_EVAL.md) cannot extend an existing abstract property or action, or use the `BEFORE` / `AFTER` statements to attach behavior to existing elements.
 
 ### Extending forms
 

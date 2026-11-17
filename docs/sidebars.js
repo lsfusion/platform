@@ -665,6 +665,19 @@ module.exports = {
             'brief/Brief_view',
             'brief/Brief_physical',
             'brief/Brief_integration',
+            'brief/Brief_operation',
+            {
+              type: 'category',
+              label: 'Development',
+              link: {type: 'doc', id: 'brief/Brief_via_dev'},
+              items: ['brief/Brief_via_idedev'],
+            },
+            {
+              type: 'category',
+              label: 'Application',
+              link: {type: 'doc', id: 'brief/Brief_via_app'},
+              items: ['brief/Brief_via_webapp'],
+            },
           ]
         },
         {
@@ -677,6 +690,18 @@ module.exports = {
             'rules/Rules_custom',
             'rules/Rules_physical',
             'rules/Rules_integration',
+            {
+              type: 'category',
+              label: 'Development',
+              link: {type: 'doc', id: 'rules/Rules_via_dev'},
+              items: ['rules/Rules_via_idedev'],
+            },
+            {
+              type: 'category',
+              label: 'Application',
+              link: {type: 'doc', id: 'rules/Rules_via_app'},
+              items: ['rules/Rules_via_webapp'],
+            },
           ]
         },
         {type: 'doc', id: 'paradigm/MCP_server'},

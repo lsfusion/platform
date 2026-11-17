@@ -19,6 +19,8 @@ everything else is typed by: the signature of a property or an action is the
 classes of its parameters, and a form's objects each have one. Classes may
 inherit, including from several parents at once.
 
+New classes are declared in source modules. [Eval code](../paradigm/Eval_EVAL.md) uses classes already loaded.
+
 ```
 CLASS [ABSTRACT] name [caption] [: parent1, ..., parentN];
 CLASS [NATIVE] name [caption] [{ objectName1 [objectCaption1], ... }] [: parent1, ..., parentN];
@@ -98,6 +100,8 @@ These operators work with objects rather than with values.
 
 The [`AGGR` operator](../language/AGGR_operator.md) goes further: it creates the object itself when the aggregated expression becomes not `NULL`, and deletes it when the expression becomes `NULL` again, filling in the properties that map the object back to the parameters. The mechanism is described in [aggregations](../paradigm/Aggregations.md).
 
+`AGGR`, `GROUP AGGR` and `GROUP EQUAL` belong to source modules and cannot be declared in [eval code](../paradigm/Eval_EVAL.md).
+
 ```lsf
 countryName = GROUP AGGR Country c BY name(c);
 shipment (Invoice i) = AGGR ShipmentInvoice WHERE createShipment(i);
@@ -131,6 +135,8 @@ level (Group child) = GROUP SUM 1 IF isParent(child, Group parent);             
 ### Abstract properties (ABSTRACT)
 
 The [`ABSTRACT` operator](../language/ABSTRACT_operator.md) declares a property without an implementation: the base module sets the value class and the parameter classes, and other modules add implementations with the [`+=` statement](../language/plus_equals_statement.md). From them the platform assembles a selection operator — this is [property extension](../paradigm/Property_extension.md), a way to remove a dependency between modules and to get property polymorphism.
+
+[Eval code](../paradigm/Eval_EVAL.md) cannot add implementations to abstract properties or actions outside the script, or declare and use an abstract element of its own.
 
 Which implementation is chosen, and what is required of the implementations, is set by options — `MULTI`, `CASE`, `VALUE`, `EXCLUSIVE`, `OVERRIDE`, `FULL` — and is described in [property extension](../paradigm/Property_extension.md).
 
@@ -251,6 +257,8 @@ ACTIVATE [seekDirection] formGroupObjectId [OBJECTS formObject1 = expr1, ..., fo
 ### Data events (WHEN)
 
 An [event](../paradigm/Events.md) runs a given action — its *handler* — on a data change. The [event description block](../language/Event_description_block.md) says whether the event is global or local — for the whole database, or within a [change session](../paradigm/Change_sessions.md) — with `GLOBAL` and `LOCAL`, restricts it to given forms with `FORMS`, and orders its handler against others with `AFTER`.
+
+Global events and constraints belong to source modules and cannot be declared in [eval code](../paradigm/Eval_EVAL.md).
 
 Three statements create an event on a data change:
 

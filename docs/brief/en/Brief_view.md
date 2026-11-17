@@ -120,6 +120,8 @@ Which container a property component lands in is determined by its view on the f
 
 The [navigator](../paradigm/Navigator.md) is the tree the user starts working with the application from. Its elements come in three types: a *folder* groups other elements, a *form element* opens a [form](Brief_view.md#forms) in the interactive view, and an *action element* runs an action that takes no arguments. The root is the `System.root` folder. **Analogy**: the application menu together with its routing.
 
+`NAVIGATOR` and `WINDOW` declarations belong to source modules and cannot appear in [eval code](../paradigm/Eval_EVAL.md).
+
 The navigator is filled by the [`NAVIGATOR` statement](../language/NAVIGATOR_statement.md) as nested blocks: `NEW FOLDER`, `NEW FORM` and `NEW ACTION` create an element as a child of the current one, `MOVE` moves an existing one, and an element name with a block edits it. The position is `FIRST`, `LAST`, `BEFORE`, `AFTER`. The element options are: `WINDOW` — the [window](../paradigm/Navigator_design.md) for its children (with `PARENT`, for the element itself as well), `HEADER` — a caption from a property, `SHOWIF` — visibility, `IMAGE` / `NOIMAGE` — the [icon](../paradigm/Icons.md), `CHANGEKEY` and `CHANGEMOUSE` — a hot key and a mouse binding, `CLASS` — a CSS class. The `SCHEDULE PERIOD` statement creates a scheduler that runs an action with the given period in seconds — on the client, for the whole connection (see [periodic execution](Brief_logic.md#periodic-execution)).
 
 ```lsf

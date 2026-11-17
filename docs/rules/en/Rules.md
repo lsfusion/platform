@@ -36,6 +36,19 @@ the name in the first column.
 | `physical` | `TABLE`, `MATERIALIZED`, `INDEX`, `RECALCULATE`, how to split modules, `REQUIRE` and coupling, `migration.script`, `STORED PROPERTY` vs `PROPERTY` | adding a `TABLE`, an `INDEX` or `MATERIALIZED`; acting on a slow form or query or on a `TOO LONG QUERY` error; creating a module or moving a declaration between modules; renaming or re-namespacing ANY existing property, action or class — omitting this silently destroys stored data |
 | `integration` | flat `IMPORT` vs form import, `EXTID`, staging properties, `EXPORT FROM` vs `EXPORT <form>`, formats, `WHERE`, column ids | writing any `IMPORT`, `EXPORT` or `JSON FROM`; building JSON text; exchanging data with anything outside the application |
 
+<a className="lsdoc-anchor" id="family-and-path-rules"/>
+
+## The access kinds — what to read and when
+
+1. The first answer carries only the articles of the kind of the connection that answered. Before working through another kind's tools, the assistant MUST read the missing articles of that kind and of its ancestor, in both `brief` and `rules`, by name through any connection. With the IntelliJ plugin's tools (`lsfusion_find_elements`, under any client prefix) these are `via_dev` and `via_idedev`; with the `lsfusion-ai-skills` skills, `via_dev`.
+
+| name | extends | read it when |
+|---|---|---|
+| `via_dev` | none | working on `.lsf` source through skills or a direct documentation-server connection |
+| `via_idedev` | `via_dev` | using the IntelliJ plugin's project search or diagnostics |
+| `via_app` | none | working in a running application through its `/mcp` |
+| `via_webapp` | `via_app` | using the browser's tools on the application's page, in the user's client |
+
 ## Reading an area's rules (MANDATORY)
 
 1. The table is only an index used to select an article. The assistant
@@ -155,20 +168,22 @@ the name in the first column.
 
 GENERAL QUERY SCOPE
 
-1. When querying lsFusion tools, the assistant MUST ask
+1. When querying the documentation tools
+   (`lsfusion_retrieve_docs`, `lsfusion_get_guidance`), the assistant MUST ask
    only abstract or technical questions,
    such as syntax, semantics, platform behavior,
    patterns, examples, constraints, or element lookup.
 
-2. The assistant MUST NOT ask lsFusion tools
+2. The assistant MUST NOT ask the documentation tools
    about concrete business logic,
    business rules, domain meanings,
    or project-specific business decisions.
 
 3. Concrete business logic for the current project
-   MUST be derived from the repository,
+   MUST be derived from the project's source
+   (the repository or deployed source through the application's tools),
    the user, and explicit project context,
-   not from lsFusion tool queries.
+   not from documentation tool queries.
 
 A. HOW-TO AND EXAMPLES
 

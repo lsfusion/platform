@@ -19,6 +19,8 @@ title: 'Brief: domain logic'
 классы его параметров, а у каждого объекта формы есть свой класс. Классы
 могут наследоваться, в том числе от нескольких родителей сразу.
 
+Новые классы объявляются в исходных модулях. [Код eval](../paradigm/Eval_EVAL.md) использует уже загруженные классы.
+
 ```
 CLASS [ABSTRACT] name [caption] [: parent1, ..., parentN];
 CLASS [NATIVE] name [caption] [{ objectName1 [objectCaption1], ... }] [: parent1, ..., parentN];
@@ -38,14 +40,14 @@ CLASS [NATIVE] name [caption] [{ objectName1 [objectCaption1], ... }] [: parent1
 свойств. Свойство, объявленное без явного `TABLE`, попадает в таблицу, чьи
 классы ключей ему подходят. То есть соответствие классов таблицам — следствие
 того, как объявлены свойства, а не решение объявления класса. См.
-[Brief: физическая модель](Brief_physical.md#execution).
+[Brief: физическая модель](Brief_physical.md#исполнение).
 
 ### Полиморфизм
 
 Поведение специализируется по классу через `ABSTRACT`-свойства и действия с
 реализациями `+=`, а также через `MULTI`. См.
-[абстрактные свойства](#properties) и
-[расширение классов](Brief_physical.md#extensions).
+[абстрактные свойства](#свойства) и
+[расширение классов](Brief_physical.md#расширения).
 
 ## Свойства
 
@@ -98,6 +100,8 @@ place (Team t) = PARTITION SUM 1 ORDER DESC points(t), t BY conference(t);
 
 [Оператор `AGGR`](../language/AGGR_operator.md) идет дальше: он сам создает объект, когда агрегируемое выражение становится не `NULL`, и удаляет, когда оно снова `NULL`, заполняя свойства-отображения на параметры. Механизм — [агрегации](../paradigm/Aggregations.md).
 
+`AGGR`, `GROUP AGGR` и `GROUP EQUAL` относятся к исходным модулям и не могут объявляться в [коде eval](../paradigm/Eval_EVAL.md).
+
 ```lsf
 countryName = GROUP AGGR Country c BY name(c);
 shipment (Invoice i) = AGGR ShipmentInvoice WHERE createShipment(i);
@@ -131,6 +135,8 @@ level (Group child) = GROUP SUM 1 IF isParent(child, Group parent);             
 ### Абстрактные свойства (ABSTRACT)
 
 [Оператор `ABSTRACT`](../language/ABSTRACT_operator.md) объявляет свойство без реализации: базовый модуль задает класс значения и классы параметров, а другие модули добавляют реализации [инструкцией `+=`](../language/plus_equals_statement.md). Из них платформа собирает оператор выбора — это [расширение свойств](../paradigm/Property_extension.md), способ снять зависимость между модулями и получить полиморфизм свойств.
+
+[Код eval](../paradigm/Eval_EVAL.md) не может добавлять реализации абстрактных свойств или действий, объявленных вне скрипта, либо объявлять и использовать собственный абстрактный элемент.
 
 Какая реализация выбирается и что требуется от реализаций, задается опциями — `MULTI`, `CASE`, `VALUE`, `EXCLUSIVE`, `OVERRIDE`, `FULL` — и описано в [расширении свойств](../paradigm/Property_extension.md).
 
@@ -251,6 +257,8 @@ ACTIVATE [seekDirection] formGroupObjectId [OBJECTS formObject1 = expr1, ..., fo
 ### События данных (WHEN)
 
 [Событие](../paradigm/Events.md) выполняет заданное действие — свою *обработку* — при изменении данных. [Блок описания события](../language/Event_description_block.md) задает, глобальное событие или локальное — для всей базы или в пределах [сессии изменений](../paradigm/Change_sessions.md) — ключевыми словами `GLOBAL` и `LOCAL`, ограничивает событие заданными формами через `FORMS` и упорядочивает его обработку относительно других через `AFTER`.
+
+Глобальные события и ограничения относятся к исходным модулям и не могут объявляться в [коде eval](../paradigm/Eval_EVAL.md).
 
 Событие на изменение данных создают три инструкции:
 

@@ -38,7 +38,8 @@ on them:
   properties.
 - The system modules are a library of ordinary properties and actions, not
   built-in language operators. Only `System` is implicit, and the rest need
-  `REQUIRE` before their declarations are reachable.
+  `REQUIRE` in source modules before their declarations are reachable.
+  An [eval module](../paradigm/Eval_EVAL.md) automatically depends on every loaded module.
 - `.lsf` is not a shell around code in another language. The application —
   its model, computations, checks, reactions to changes, forms and access
   rights — is written in these elements. Java and JavaScript enter it only
@@ -47,16 +48,17 @@ on them:
 
 ## The brief articles — which one to open
 
-Four articles, read whole with `lsfusion_get_guidance(brief='<name>')`. Match
+Five articles, read whole with `lsfusion_get_guidance(brief='<name>')`. Match
 on either column: the intent describes the task in the user's terms, the
 anchors are what the code looks like.
 
-| name | open it when the task is to | language anchors |
+| name | open it when the task is to | language / system anchors |
 |---|---|---|
 | `logic` | compute, store, change, aggregate, constrain or react to data | `CLASS`, `DATA`, `=`, `GROUP`, `PARTITION`, `AGGR`, `<-`, `NEW`, `FOR`, `WHILE`, `WHEN`, `<- WHEN`, `CONSTRAINT`, `NEWSESSION`, `APPLY` |
 | `view` | show data to a person — a form, its layout, a menu, a report — or localize what they read | `FORM`, `OBJECTS`, `PROPERTIES`, `FILTERS`, `SHOW`, `DIALOG`, `DESIGN`, `PRINT`, `NAVIGATOR`, `WINDOW`, `{id}` captions |
 | `physical` | control storage or speed, organize modules, extend or generate declarations, or rename something that already exists | `TABLE`, `MATERIALIZED`, `INDEX`, `MODULE`, `REQUIRE`, `NAMESPACE`, `EXTEND`, `META`, `@`, `migration.script` |
 | `integration` | move data in or out, or let another system call in | `IMPORT`, `EXPORT`, `JSON FROM`, `EXTERNAL`, `INTERNAL`, `FORMULA`, HTTP endpoints |
+| `operation` | configure or administer a running system: user preferences, saved form customization, access, scheduled tasks, backups or diagnosis | `EVAL`, `APPLY`, `dataExtendCode`, `Service`, `Security`, `Scheduler`, `Backup`, `ProcessMonitor`, `Profiler`, `Chat` |
 
 Where they overlap — read both:
 
@@ -69,10 +71,17 @@ Where they overlap — read both:
 - extending an element is `physical` for the mechanism and the area of the
   extended element for the meaning.
 
-Running the result — launch settings, the user interface, the
-[security policy](../paradigm/Security_policy.md), the scheduler, backups,
-monitoring, logs, the profiler — has no brief article. Search the `paradigm`
-branch for it.
+## Access kinds
+
+The first answer carries the caller's kind chain, ancestor first. The skills plugin connects as `dev`; the `with=skills` it also sends does not change the answer.
+Read an article by name with `lsfusion_get_guidance(brief='<name>')`; the [rules map](../rules/Rules.md#family-and-path-rules) governs supplemental reading.
+
+| name | extends | covers |
+|---|---|---|
+| `via_dev` | none | source development, code checks and lsFusion skills |
+| `via_idedev` | `via_dev` | IntelliJ project search, diagnostics and metacode visibility |
+| `via_app` | none | deployed source, live execution and saved form customization |
+| `via_webapp` | `via_app` | page tools, the user's session and recreating forms |
 
 ## Mini map for AI
 
