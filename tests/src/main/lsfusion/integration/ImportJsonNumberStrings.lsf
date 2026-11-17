@@ -1,0 +1,23 @@
+MODULE ImportJsonNumberStrings;
+
+REQUIRE TestUtils;
+
+// A number given in JSON as a string is read as an http request's number is: "21" for an INTEGER was refused with
+// "Number is required", though an API often gives a NUMERIC or a LONG as a string, to keep the digits a JSON number loses
+
+ijnsJson () = JSONFILE('\{"i": "21", "n": "2.50", "l": "9007199254740993", "e": "", "x": 7\}');
+
+ijnsInteger = DATA LOCAL INTEGER ();
+ijnsNumeric = DATA LOCAL NUMERIC[10,2] ();
+ijnsLong = DATA LOCAL LONG ();
+ijnsEmpty = DATA LOCAL INTEGER ();
+ijnsNumber = DATA LOCAL INTEGER ();
+
+testImportNumberStrings 'IMPORT JSON reads a number given as a string' () {
+    IMPORT JSON FROM ijnsJson() TO () ijnsInteger = 'i', ijnsNumeric = 'n', ijnsLong = 'l', ijnsEmpty = 'e', ijnsNumber = 'x';
+    assertEquals(ijnsInteger(), 21, 'INTEGER "21" is not 21');
+    assertEquals(ijnsNumeric(), 2.50, 'NUMERIC "2.50" is not 2.50');
+    assertEquals(ijnsLong(), 9007199254740993l, 'LONG "9007199254740993" lost a digit');
+    assertNull(ijnsEmpty(), 'INTEGER "" is not NULL');
+    assertEquals(ijnsNumber(), 7, 'INTEGER 7 is not 7');
+}

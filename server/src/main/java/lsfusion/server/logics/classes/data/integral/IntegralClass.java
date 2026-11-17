@@ -179,6 +179,10 @@ public abstract class IntegralClass<T extends Number> extends FormatClass<T> imp
     public T parseJSON(Object value) throws JSONException, ParseException {
         if(value == null || value == JSONObject.NULL || (value instanceof String && (value.equals("NaN") || value.equals("Infinity") || value.equals("-NaN") || value.equals("-Infinity"))))
             return null;
+        // a number given as a string - as an http request gives every number, and as an API often gives a NUMERIC or
+        // a LONG, to keep digits a JSON number would lose - is read as that string is: by parseString
+        if(value instanceof String)
+            return parseString((String) value);
         if(!(value instanceof Number))
             throw new ParseException("Number is required");
         return readJSON(value);
