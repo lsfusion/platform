@@ -1255,7 +1255,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     orders = Query.reverseOrder(orders);
                 }
 
-                final CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(orders, new CompileOptions<>(syntax, LimitOptions.get(new LimitOffset(1, offsetValue != null ? 1 : 0)), subQueryContext, debugInfoWriter != null));
+                final CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(orders, new CompileOptions<>(syntax, LimitOptions.get(new LimitOffset(hasLimit && limitValue == null ? 0 : 1, offsetValue != null ? 1 : 0)), subQueryContext, debugInfoWriter != null));
                 rBaseCost.set(rBaseCost.result.or(compiled.sql.baseCost));
                 optAdjustLimit.set(optAdjustLimit.result || compiled.sql.optAdjustLimit);
 

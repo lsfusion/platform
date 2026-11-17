@@ -1,0 +1,76 @@
+MODULE GroupOffset;
+
+REQUIRE TestUtils;
+
+// GROUP with OFFSET and no TOP aggregates all the records after the offset (#1837: reading it failed with
+// column "limitparam" does not exist)
+
+CLASS GroupOffsetTeam 'Team';
+CLASS GroupOffsetGame 'Game';
+gofTeam 'Team' = DATA GroupOffsetTeam (GroupOffsetGame);
+gofDate 'Date' = DATA DATE (GroupOffsetGame);
+gofGoals 'Goals' = DATA INTEGER (GroupOffsetGame);
+
+gofAfterFirst (GroupOffsetTeam t) = GROUP SUM gofGoals(GroupOffsetGame g) IF gofTeam(g) = t ORDER gofDate(g), g OFFSET 1;
+gofAfter (GroupOffsetTeam t, INTEGER n) = GROUP SUM gofGoals(GroupOffsetGame g) IF gofTeam(g) = t ORDER gofDate(g), g OFFSET n;
+gofListAfterFirst (GroupOffsetTeam t) = GROUP CONCAT STRING(gofGoals(GroupOffsetGame g)) IF gofTeam(g) = t, ',' ORDER gofDate(g), g OFFSET 1;
+gofLastAfterFirst (GroupOffsetTeam t) = GROUP LAST gofGoals(GroupOffsetGame g) IF gofTeam(g) = t ORDER gofDate(g), g OFFSET 1;
+
+gofAfterFirstBy (GroupOffsetTeam t) = GROUP SUM gofGoals(GroupOffsetGame g) ORDER gofDate(g), g OFFSET 1 BY gofTeam(g);
+gofAfterBy (GroupOffsetTeam t, INTEGER n) = GROUP SUM gofGoals(GroupOffsetGame g) ORDER gofDate(g), g OFFSET n BY gofTeam(g);
+
+gofNewGame (GroupOffsetTeam t, DATE d, INTEGER goals) {
+    NEW g = GroupOffsetGame {
+        gofTeam(g) <- t;
+        gofDate(g) <- d;
+        gofGoals(g) <- goals;
+    }
+}
+
+// a team with four games scoring 1 to 4 goals in the order of their dates, and one with two games scoring 10 and 20
+gofNewGames (GroupOffsetTeam t, GroupOffsetTeam other) {
+    gofNewGame(t, 2026_01_01, 1);
+    gofNewGame(t, 2026_01_02, 2);
+    gofNewGame(t, 2026_01_03, 3);
+    gofNewGame(t, 2026_01_04, 4);
+    gofNewGame(other, 2026_01_05, 10);
+    gofNewGame(other, 2026_01_06, 20);
+}
+
+testGroupOffset 'GROUP ... OFFSET without TOP' () {
+    NEW t = GroupOffsetTeam {
+        NEW other = GroupOffsetTeam {
+            gofNewGames(t, other);
+            assertEquals(gofAfterFirst(t), 9, 'SUM ... OFFSET 1: all the games but the first one');
+            assertEquals(gofAfterFirst(other), 20, 'SUM ... OFFSET 1 of another team');
+            assertEquals(gofAfter(t, 3), 4, 'SUM ... OFFSET n');
+            assertNull(gofAfter(other, 2), 'SUM ... OFFSET n: no games after the offset');
+            assertEquals(gofListAfterFirst(t), '2,3,4', 'CONCAT ... OFFSET 1');
+            assertEquals(gofLastAfterFirst(t), 4, 'LAST ... OFFSET 1');
+        }
+    }
+}
+
+testGroupOffsetBy 'GROUP ... OFFSET without TOP, with BY' () {
+    NEW t = GroupOffsetTeam {
+        NEW other = GroupOffsetTeam {
+            gofNewGames(t, other);
+            assertEquals(gofAfterFirstBy(t), 9, 'SUM ... OFFSET 1 BY: all the games but the first one');
+            assertEquals(gofAfterFirstBy(other), 20, 'SUM ... OFFSET 1 BY of another team');
+            assertEquals(gofAfterBy(t, 3), 4, 'SUM ... OFFSET n BY');
+            assertNull(gofAfterBy(other, 2), 'SUM ... OFFSET n BY: no games after the offset');
+        }
+    }
+}
+
+testGroupOffsetAllValues 'GROUP ... OFFSET without TOP, read for all its values' () {
+    NEW t = GroupOffsetTeam {
+        NEW other = GroupOffsetTeam {
+            gofNewGames(t, other);
+            assertEquals((GROUP SUM gofAfterFirst(GroupOffsetTeam x)), 29, 'SUM ... OFFSET 1 of every team');
+            assertEquals((GROUP SUM gofAfter(GroupOffsetTeam x, 1)), 29, 'SUM ... OFFSET n of every team');
+            assertEquals((GROUP SUM gofAfterFirstBy(GroupOffsetTeam x)), 29, 'SUM ... OFFSET 1 BY of every team');
+            assertEquals((GROUP SUM gofAfterBy(GroupOffsetTeam x, 1)), 29, 'SUM ... OFFSET n BY of every team');
+        }
+    }
+}
