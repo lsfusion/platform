@@ -9,6 +9,15 @@
         <welcome-file>main</welcome-file>
     </welcome-file-list>
 
+    <!-- the session's cookie is SameSite=Lax: a page of another site gets its request sent without it, except a
+         top-level navigation by GET - a link, a GET form. Jetty reads it from the comment, each time it sets the cookie;
+         other containers, which drop a comment, get it from LSFSessionCookieFilter -->
+    <session-config>
+        <cookie-config>
+            <comment>__SAME_SITE_LAX__</comment>
+        </cookie-config>
+    </session-config>
+
     <context-param>
         <description>Application registry server</description>
         <param-name>host</param-name>
@@ -221,7 +230,8 @@
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
 
-    <!-- a response sets the site cookie, see the filter -->
+    <!-- a response sets the site cookie, and in a container other than Jetty the session's cookie gets SameSite=Lax
+         unless it has a SameSite; it stands first, see the filter -->
     <filter>
         <filter-name>LSFSessionCookieFilter</filter-name>
         <filter-class>lsfusion.http.authentication.LSFSessionCookieFilter</filter-class>

@@ -21,6 +21,7 @@ import java.util.Base64;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 // The API requests of a browser logged in to the web client run as the user from the web client's own pages, not from
 // a page of another site. "Another site" is a page server of the test's own: on
@@ -225,5 +226,22 @@ public class UiCsrfIT extends UiTest {
         assertEquals(401, page.context().request().get(webClient() + evalLink(wrong), RequestOptions.create().setHeader("Authorization", basic("wrong"))).status());
         ranAs(right, "admin");
         ranAs(wrong, "none");
+    }
+
+    // the session's cookie is SameSite=Lax, the one a session is created with and the one the login changes it to: a
+    // form another site posts gets no cookie, even right after the login, so the request runs as the anonymous user the
+    // test server lets in
+    @Test
+    public void otherSitePostGetsNoCookie() throws Exception {
+        page.navigate(pages("127.0.0.1")); // no page of the web client is left open without its session
+        page.context().clearCookies();
+        String created = sessionCookie(page.context().request().get(webClient() + "/main", RequestOptions.create().setMaxRedirects(0)));
+        assertTrue("a new session's cookie: " + created, created.toLowerCase().contains("samesite=lax"));
+        String cookie = login();
+        assertTrue("the session's cookie: " + cookie, cookie.toLowerCase().contains("samesite=lax"));
+        String post = tag("post");
+        page.waitForResponse(response -> response.url().contains(post), () -> page.evaluate("url => { const form = document.createElement('form');"
+                + " form.method = 'POST'; form.action = url; document.body.appendChild(form); form.submit(); }", webClient() + record(post)));
+        ranAs(post, "anonymous");
     }
 }

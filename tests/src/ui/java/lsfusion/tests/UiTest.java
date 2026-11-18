@@ -157,14 +157,17 @@ public abstract class UiTest {
                 "-Dapp.server=localhost", "-Dapp.port=" + ports[1]));
         if (WEB_CONTAINER.equals("tomcat")) {
             // the distribution as the client's docker image runs it, the war as ROOT, only on our port and in an appBase
-            // without the distribution's manager, docs and examples
+            // without the distribution's manager, docs and examples; with a context file of the war's own, as the
+            // installers set it up, which Tomcat reads instead of the war's META-INF/context.xml
             Path home = Paths.get(System.getProperty("ui.tomcat"));
             Path webapps = Files.createDirectories(UI.resolve("tomcat-webapps"));
             Files.copy(Paths.get(System.getProperty("ui.war")), webapps.resolve("ROOT.war"), StandardCopyOption.REPLACE_EXISTING);
+            Path contexts = Files.createDirectories(UI.resolve("tomcat-contexts"));
+            Files.writeString(contexts.resolve("ROOT.xml"), "<Context/>");
             Path config = UI.resolve("tomcat-server.xml");
             Files.write(config, new String(Files.readAllBytes(home.resolve("conf/server.xml")), StandardCharsets.UTF_8)
                     .replace("port=\"8005\"", "port=\"-1\"").replace("port=\"8080\"", "port=\"" + webPort + "\"")
-                    .replace("appBase=\"webapps\"", "appBase=\"" + webapps + "\"").getBytes(StandardCharsets.UTF_8));
+                    .replace("appBase=\"webapps\"", "appBase=\"" + webapps + "\" xmlBase=\"" + contexts + "\"").getBytes(StandardCharsets.UTF_8));
             command.addAll(Arrays.asList("-Dcatalina.home=" + home, "-Dcatalina.base=" + home,
                     "-cp", home.resolve("bin/bootstrap.jar") + File.pathSeparator + home.resolve("bin/tomcat-juli.jar"),
                     "org.apache.catalina.startup.Bootstrap", "-config", config.toString(), "start"));
