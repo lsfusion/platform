@@ -287,11 +287,11 @@ title: 'Rules: custom views'
    (`FLOAT`; the default location for `DIALOG`), the assistant
    MUST give the container a base size — `size = (w, h)` or
    the separate `width` and `height` attributes: the
-   window size is computed from the content at the moment of
-   opening, when the component has not drawn anything yet, so
-   without it a window with a single such container collapses
-   to the caption and the system buttons, and the content
-   drawn later pushes the OK / Close buttons past the window's
+   window size is computed at the moment of opening from the
+   component's first drawing, of the form's first data, and
+   does not change afterwards, so without it what the
+   component draws later — more rows, data that arrives
+   afterwards — pushes the OK / Close buttons past the window's
    edge. For a form with no tables and content of moderate
    height, the assistant MAY instead leave the container
    without a base size and set `size = (-1, -1)` on the main
