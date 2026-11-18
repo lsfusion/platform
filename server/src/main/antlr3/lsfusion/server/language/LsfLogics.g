@@ -5794,10 +5794,10 @@ componentSelector returns [ComponentView component]
     ;
     
 formComponentSelector[ScriptingFormView formView] returns [ComponentView component]
-	:	'PARENT' '(' child=componentSelector ')'
+	:	'PARENT' '(' child=formComponentSelector[formView] ')'
 		{
 			if (inMainParseState()) {
-				formView.getParentContainer($child.component, self.getVersion());
+				$component = formView.getParentContainer($child.component, self.getVersion());
 			}
 		}
 	|	'PROPERTY' '(' prop=propertySelector[formView] ')' { $component = $prop.propertyView; }

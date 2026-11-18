@@ -1,0 +1,55 @@
+MODULE DesignParentSelector;
+
+REQUIRE System;
+
+// PARENT(selector) gives the container the component is in, whether the component is in its default place or was
+// moved there, in a DESIGN as in a form component reference (fixed for #1999). A component goes BEFORE another only
+// in the container that other is in, so each NEW ... BEFORE below also checks which container PARENT gave
+CLASS DesignParentItem;
+designParentName = DATA STRING[50] (DesignParentItem);
+
+FORM designParentDefault
+    OBJECTS i = DesignParentItem
+    PROPERTIES(i) designParentName
+;
+
+DESIGN designParentDefault {
+    PARENT(BOX(i)) {
+        caption = 'Items';
+        NEW designParentDefaultFirst BEFORE BOX(i);
+    }
+}
+
+FORM designParentMoved
+    OBJECTS i = DesignParentItem
+    PROPERTIES(i) designParentName
+;
+
+DESIGN designParentMoved {
+    NEW designParentTabs {
+        tabbed = TRUE;
+        NEW designParentBox {
+            MOVE BOX(i);
+        }
+    }
+    PARENT(BOX(i)) {
+        caption = 'Items';
+        NEW designParentBoxFirst BEFORE BOX(i);
+    }
+    PARENT(PARENT(BOX(i))) {
+        caption = 'Tabs';
+        NEW designParentTabFirst BEFORE designParentBox;
+    }
+}
+
+designParentActiveTab = ACTIVE TAB designParentMoved.PARENT(BOX(i));
+designParentActivateTab () {
+    ACTIVATE TAB designParentMoved.PARENT(BOX(i));
+}
+designParentShowIn () {
+    SHOW designParentDefault IN designParentMoved.PARENT(BOX(i));
+}
+
+EXTEND FORM designParentMoved
+    EVENTS ON TAB PARENT(BOX(i)) designParentActivateTab()
+;
