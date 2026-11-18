@@ -11,6 +11,8 @@ When the main action consists of assignments, the platform may execute each of t
 
 By default, object collections are iterated in arbitrary order. The developer can explicitly define this order by specifying a list of properties used as sort keys: object collections are compared by the value of the first property, ties are broken by the second property, and so on. The whole list is used in ascending order by default. The developer can request descending order, in which case it applies to the entire list.
 
+If several iterated object collections write a value into the same property for the same arguments, the value written for the last of them in the iteration order remains, `NULL` included.
+
 As for other [set operations](Set_operations.md), the condition must be such that the operation is [correct](Set_operations.md#correct).
 
 Inside the main action, the [interruption operator](Interruption_BREAK.md) exits this loop, the [next iteration operator](Next_iteration_CONTINUE.md) moves to the next object collection in the same set, and the [exit operator](Exit_RETURN.md) propagates outward, exiting the surrounding action call.

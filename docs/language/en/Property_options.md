@@ -103,7 +103,9 @@ annotationSetting
 
 - `COMPLEX | NOCOMPLEX`
 
-    Keywords marking the property's calculation as complex (`COMPLEX`) or explicitly not (`NOCOMPLEX`). A complex property is always read in advance. If neither is specified, the property is complex only when it depends, directly or transitively, on a complex property.
+    Keywords marking the property's calculation as complex (`COMPLEX`) or explicitly not (`NOCOMPLEX`). If neither is specified, the property is complex only when it depends on a complex property, so the mark is inherited along a chain of dependencies up to a property marked `NOCOMPLEX`. For a complex property the platform itself does not turn on the automatic caching of changes (see `HINT` below) while the value of at least one of its parameters is known in advance (see `limitHintIncrementValueComplexity` in the [working parameters](../paradigm/Working_parameters.md)). An explicit `HINT` still forces it.
+
+    A property marked `COMPLEX` is, in addition, always read in advance, as with the `PREREAD` option: a query that needs its value for known values of all its parameters gets that value from a separate query executed first. When the values of not all its parameters are known, the property is computed by a separate subquery of the query that reads it as soon as its complexity exceeds the working parameter `limitComplexWrapComplexity` instead of the general `limitWrapComplexity`. A condition or an order by the value of the property is then applied to the result of the subquery, and the definition of the property is not expanded into them.
 
 - `PREREAD`
 
