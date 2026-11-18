@@ -269,24 +269,25 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule implements 
         return super.addScriptedDProp(returnClass, paramClasses, true, innerProp, isLocalScope, nestedType);
     }
     
-    // the navigator's schedulers and layout, what draws a window, and what other modules' properties and actions run are
-    // the whole server's : a script would change them for every user, and what it puts there - a scheduler's action, a
-    // window's property, an ASON handler, a BEFORE / AFTER aspect - would run in their sessions. The navigator's elements
-    // and windows are the whole server's as well : a NAVIGATOR or a WINDOW statement is refused unless the code changes a
-    // copy of its own (changesNavigator)
+    // the navigator - its elements and windows, what draws a window and lays the windows out, the actions its clients run
+    // periodically - is the whole server's, and so is what other modules' properties and actions run : a script would
+    // change them for every user, and what it puts there - a scheduler's action, a window's property, an ASON handler, a
+    // BEFORE / AFTER aspect - would run in their sessions. A NAVIGATOR or a WINDOW statement is refused unless the code
+    // changes a copy of its own (changesNavigator) : a client the code customizes draws that copy and runs what it schedules.
+    // The helper classes SystemEvents adds to the windows' classes by System.customNavigator / customWindow, written at start
+    // from the logics' navigator, still follow the React components the logics' navigator gives, whatever the copy draws the
+    // windows with (sacrificed : the copy's values would have to reach the session the navigator reads the classes in)
     @Override
     public void setWindowCustom(String name, String custom, LPWithParams customProperty) throws ScriptingErrorLog.SemanticErrorException {
-        emitEvalError("CUSTOM option of a WINDOW statement");
+        if (!changesNavigator)
+            emitEvalError("CUSTOM option of a WINDOW statement");
+        super.setWindowCustom(name, custom, customProperty);
     }
 
-    // a new window's CUSTOM option, as an existing window's : the standard windows are styled by what draws the logics' ones
     @Override
     public void addScriptedWindow(boolean isNative, boolean isForms, boolean single, Integer closeDelay, String name, LocalizedString captionStr, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
         if (!changesNavigator)
             emitEvalError("WINDOW statement");
-        if (options.custom != null || options.customProperty != null)
-            emitEvalError("CUSTOM option of a WINDOW statement");
-
         super.addScriptedWindow(isNative, isForms, single, closeDelay, name, captionStr, options);
     }
 
@@ -321,12 +322,16 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule implements 
 
     @Override
     public void setNavigatorCustom(String custom, LPWithParams customProperty) throws ScriptingErrorLog.SemanticErrorException {
-        emitEvalError("NAVIGATOR CUSTOM option");
+        if (!changesNavigator)
+            emitEvalError("NAVIGATOR CUSTOM option");
+        super.setNavigatorCustom(custom, customProperty);
     }
 
     @Override
     public void addNavigatorScheduler(LA action, NavigatorScheduler scheduler) throws ScriptingErrorLog.SemanticErrorException {
-        emitEvalError("SCHEDULE in a NAVIGATOR statement");
+        if (!changesNavigator)
+            emitEvalError("SCHEDULE in a NAVIGATOR statement");
+        super.addNavigatorScheduler(action, scheduler);
     }
 
     // the logics' base module keeps the action that opens a form from the navigator, one for a form and for as long as

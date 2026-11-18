@@ -15,6 +15,7 @@ import static org.junit.Assert.assertTrue;
 // NAVIGATOR statements over a copy of the navigator, so a page loaded after the code is saved draws the navigator the
 // code made, and the navigator of the logics is back once the code is dropped (UiConnectionCustomize.lsf).
 // The code is written in the dialog a form's code is written in (SystemEvents.customizeForm).
+// What draws its windows and lays them out, and what it schedules, are the copy's too.
 // What the code declares, a script evaluated in that client sees.
 // And a call by its name, made in that client, finds.
 public class UiConnectionCustomizeIT extends UiTest {
@@ -128,15 +129,50 @@ public class UiConnectionCustomizeIT extends UiTest {
         assertThat(added("uiCcWindow")).hasCount(0);
     }
 
-    // what draws a window stays the logics' : the standard windows are styled by it
-    @Test
-    public void aCodeCannotSayWhatDrawsAWindow() throws Exception {
-        for (String code : new String[]{"WINDOW uiCcDrawn 'Drawn' HORIZONTAL BOTTOM CUSTOM 'UiCcDrawn';", "EXTEND WINDOW System.toolbar CUSTOM 'UiCcDrawn';"}) {
-            exec("UiConnectionCustomize.uiCcSetBroken", code);
-            restart();
+    // a window of the code's own drawn by a component, a window of the logics turned over to it, the log turned over to
+    // another - the log of the copy, which a component alone draws -, and the windows laid out by a third
+    // (UiConnectionCustomize.js)
+    private static final String DRAWN =
+            "WINDOW uiCcDrawn 'Drawn' HORIZONTAL BOTTOM HIDETITLE CUSTOM 'UiCcDrawn';\n" +
+            "EXTEND WINDOW System.logo CUSTOM 'UiCcDrawn';\n" +
+            "EXTEND WINDOW System.log CUSTOM 'UiCcLog';\n" +
+            "NAVIGATOR CUSTOM 'UiCcLayout';\n" +
+            "NAVIGATOR {\n" +
+            "    NEW FOLDER uiCcDrawnSection 'Drawn section' WINDOW uiCcDrawn PARENT {\n" +
+            "        NEW FORM uiCcDrawnForm 'Drawn form' = " + FORM + ";\n" +
+            "    }\n" +
+            "}";
 
-            closeDialog("CUSTOM option of a WINDOW statement cannot be used in EVAL module");
-        }
+    // what draws a window and what lays the windows out are the copy's as the rest of it is, and the logics' drawing is
+    // back once the code is dropped
+    @Test
+    public void aCodeSaysWhatDrawsTheWindows() throws Exception {
+        exec("UiConnectionCustomize.uiCcSet", DRAWN);
+        restart();
+
+        Locator layout = page.locator(".ui-cc-layout");
+        assertThat(layout.locator(addedSelector("uiCcDrawn") + " .ui-cc-drawn")).containsText("Drawn section");
+        assertThat(layout.locator(selector("System.logo") + " .ui-cc-drawn")).isVisible();
+        assertThat(layout.locator(".ui-cc-log")).hasCount(1);
+
+        exec("UiConnectionCustomize.uiCcReset");
+        restart();
+        assertThat(layout).hasCount(0);
+        assertThat(page.locator(".ui-cc-drawn, .ui-cc-log")).hasCount(0);
+    }
+
+    // what the code schedules a client the code customizes runs, every period - and one started after the code is
+    // dropped does not (UiConnectionCustomize.js counts the calls)
+    @Test
+    public void aCodeSchedulesAnAction() throws Exception {
+        exec("UiConnectionCustomize.uiCcSet", "NAVIGATOR {\n    SCHEDULE PERIOD 1 { INTERNAL CLIENT 'uiCcTick'; }\n}");
+        restart();
+        page.waitForFunction("() => window.uiCcTicks >= 2");
+
+        exec("UiConnectionCustomize.uiCcReset");
+        restart();
+        page.waitForTimeout(2500);
+        assertEquals(null, page.evaluate("() => window.uiCcTicks"));
     }
 
     // a client cannot start without a navigator, so a code that cannot be compiled leaves the navigator of the logics,

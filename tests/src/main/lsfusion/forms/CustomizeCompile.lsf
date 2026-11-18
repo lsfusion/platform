@@ -134,8 +134,8 @@ testCcApplicationSave () {
     ccRefused('ccNoSuchForm', 'a broken application code for all users');
     ccSaveUser(NULL, 'NAVIGATOR \{ NEW FOLDER ccTop; \}');
     ccRefused('must specify a WINDOW for its children', 'a code the navigator check refuses');
-    ccSaveAll(NULL, 'EXTEND WINDOW System.toolbar CUSTOM \'CcDrawn\';');
-    ccRefused('CUSTOM option of a WINDOW statement cannot be used in EVAL module', 'a code saying what draws a window');
+    ccSaveAll(NULL, 'CLASS CcClass;');
+    ccRefused('CLASS statement cannot be used in EVAL module', 'a code declaring a class');
     assertNull(dataExtendCode(), 'the broken application code for all users is stored');
     assertNull(dataExtendCode(currentUser()), 'the broken personal application code is stored');
 

@@ -5916,8 +5916,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         // a FORMS window (System.forms included) and log are the windows a component can draw, and only a component:
         // what they show is made while the application runs - the forms opened in one, the messages logged in the
-        // other - so a template would have nothing to name and a computed value nothing to compute
-        checks.checkNativeWindowCustom(name, !(window instanceof FormsWindow) && window != baseLM.baseWindows.log);
+        // other - so a template would have nothing to name and a computed value nothing to compute. The log is the one of
+        // the navigator the module changes - a copy, for the code of a customization
+        checks.checkNativeWindowCustom(name, !(window instanceof FormsWindow) && window != getNavigator().getEx(baseLM.baseWindows.log));
         checks.checkComponentOnlyCustom("window", name, custom, customProperty != null);
 
         window.setCustom(custom, getVersion());

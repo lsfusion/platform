@@ -15,6 +15,12 @@ NAVIGATOR {
     }
 }
 
+// what the codes of the tests name of the page - the components that draw a window and lay the windows out, and the
+// function what a code schedules calls (UiConnectionCustomize.js) : a code brings no page code of its own
+onWebClientInit() + {
+    onWebClientInit('UiConnectionCustomize.js') <- 1;
+}
+
 // the code for all users, so that it does not matter which user the browser is
 uiCcSet (TEXT code) {
     dataExtendCode() <- code;
