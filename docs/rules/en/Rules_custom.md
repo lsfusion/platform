@@ -68,8 +68,20 @@ title: 'Rules: custom views'
    (the navigator, forms and log windows, the window layout) —
    all in one `lsfusion_retrieve_docs` call,
    `How-to_Custom_React_views` included for worked scenarios;
-   before a classic view, `How-to_Custom_components_objects` or
-   `How-to_Custom_components_properties`. These rules do not
+   before a classic view, `Render_functions` (the render
+   function, an object group's rows and controller, a
+   property's value and controller), together with the
+   articles the task needs: `Edit_functions` (the edit
+   function, the editor's controller),
+   `Form_and_navigator_controllers` (`controller.form`,
+   calling the server) and `Client_JavaScript_modules` (where
+   the files go, without the build, named exports and
+   auto-registration) — in one call as well, the how-to of the
+   task included for worked scenarios:
+   `How-to_Custom_components_objects`,
+   `How-to_Custom_components_properties`,
+   `How-to_Custom_components_server_calls` or
+   `How-to_Custom_client_JS_modules`. These rules do not
    describe the component API and MUST NOT be used instead
    of those articles.
 

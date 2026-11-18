@@ -85,7 +85,7 @@ image [KEYPRESS key] [TOOLBAR [quickAccess1 ... quickAccessN]] action
 
 - `editorFunction`
 
-    [Строковый литерал](Literals.md#strliteral) с именем клиентской функции, которая отрисовывает пользовательский редактор ввода вместо стандартного.
+    [Строковый литерал](Literals.md#strliteral) с именем [клиентской функции](Edit_functions.md#custom-editor), которая отрисовывает пользовательский редактор ввода вместо стандартного.
 
 - `listExpr`
 

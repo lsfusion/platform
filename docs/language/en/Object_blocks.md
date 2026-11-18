@@ -205,19 +205,17 @@ A single `OBJECTS` block can contain several comma-delimited declarations of [ob
 
         - `renderFunction`
 
-            A string literal specifying the name of the JavaScript function that is responsible for displaying the data. This function must be located in a .js file included in the project resources and loaded for use on the client. It should return a JavaScript object that contains three functions: 
+            A string literal specifying the name of the [JavaScript function](Render_functions.md#render-function) that is responsible for displaying the data. This function must be located in a .js file included in the project resources and loaded for use on the client. It should return a JavaScript object that contains three functions: 
       
             - `render(element, controller)`
             - `update(element, controller, list, options)`
             - `clear(element, controller)` (optional)
 
-            A more detailed description of the mechanism can be found in the article [How-to: Custom Components (Objects)](../how-to/How-to_Custom_components_objects.md).
-
             The name can also be that of a [React component](React_component_views.md#form-custom) registered on the client with the kind `reactView`. The web client then displays the data with the component: it is given the rows of the object group with the values of its properties as `props.data.list`, the options as `props.data.options`, and a controller of the object group as `props.controller`.
 
 - `OPTIONS optionsExpr`
 
-    Specifying additional settings of the view type. The option is specified after the view type `viewType`. The value is used by the *custom* view type (passed as the `options` argument of the `update` function, or to a React component as `props.data.options`) and the *map* view type (map settings).
+    Specifying additional settings of the view type. The option is specified after the view type `viewType`. The value is used by the *custom* view type (passed as the [`options` argument of the `update` function](Render_functions.md#object-group), or to a React component as `props.data.options`) and the *map* view type (map settings).
 
     - `optionsExpr`
 

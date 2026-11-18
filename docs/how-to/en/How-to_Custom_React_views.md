@@ -5,7 +5,7 @@ title: 'How-to: Custom React views'
 
 This article collects typical tasks solved with React views, each with its solution. The views are specified in the Language articles, starting with [React views](../language/React_views.md): the data a component receives is described in [Form projection](../language/React_projection.md), and what it calls in [React view controller](../language/React_view_controller.md).
 
-The components of the examples are written in JSX, each in a `.jsx` module ([The component](../language/React_views.md#the-component)). How the module is compiled and registered is covered in [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md). The classic (non-React) custom container is described in [How-to: Custom Components (objects)](How-to_Custom_components_objects.md).
+The components of the examples are written in JSX, each in a `.jsx` module ([The component](../language/React_views.md#the-component)). How the module is compiled and registered is covered in [Client JavaScript modules](../language/Client_JavaScript_modules.md). The classic (non-React) custom container is described in the [`DESIGN` statement](../language/DESIGN_statement.md#containerprops).
 
 ### "N of M": a count under the form's filter {#filtered-count}
 

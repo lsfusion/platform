@@ -74,9 +74,19 @@ title: 'Rules: custom views'
    (окно навигатора, окно форм, окно сообщений, расположение
    окон), — все одним вызовом `lsfusion_retrieve_docs`,
    включая `How-to_Custom_React_views` с готовыми сценариями;
-   перед классическим —
-   `How-to_Custom_components_objects` либо
-   `How-to_Custom_components_properties`. Эти правила не
+   перед классическим — статью `Render_functions` (функция
+   отображения, строки и контроллер группы объектов, значение
+   и контроллер свойства) вместе со статьями, которые нужны
+   задаче: `Edit_functions` (функция редактирования,
+   контроллер редактора), `Form_and_navigator_controllers`
+   (`controller.form`, вызов сервера) и
+   `Client_JavaScript_modules` (где размещаются файлы, без
+   сборки, именованные экспорты и автоматическая
+   регистрация), — тоже одним вызовом, включая how-to задачи
+   с готовыми сценариями: `How-to_Custom_components_objects`,
+   `How-to_Custom_components_properties`,
+   `How-to_Custom_components_server_calls` или
+   `How-to_Custom_client_JS_modules`. Эти правила не
    описывают API компонента и НЕ ДОЛЖНЫ использоваться
    вместо тех статей.
 

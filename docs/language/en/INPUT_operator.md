@@ -85,7 +85,7 @@ Interactive input of a built-in class value is performed in the editor of the fo
 
 - `editorFunction`
 
-    A [string literal](Literals.md#strliteral) with the name of a client-side function that renders a custom input editor instead of the default one.
+    A [string literal](Literals.md#strliteral) with the name of a [client-side function](Edit_functions.md#custom-editor) that renders a custom input editor instead of the default one.
 
 - `listExpr`
 

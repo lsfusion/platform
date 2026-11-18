@@ -19,3 +19,4 @@ title: 'How-to: Interactive forms'
 12. [Custom client JS modules](How-to_Custom_client_JS_modules.md). Bundling and auto-registering your own browser JavaScript (and React) kept under `src/main/web`.
 13. [Custom React views](How-to_Custom_React_views.md). Rendering a form container with a React component via `DESIGN custom`, and a navigator window, the forms window, the log window and the window layout via `CUSTOM`.
 14. [Custom view controller API](How-to_Custom_view_controller.md). Reading and changing form state from a custom view (and `INTERNAL CLIENT`) through the controller.
+15. [Custom components (server calls)](How-to_Custom_components_server_calls.md). Calling actions and properties on the server from your own visual components written in JavaScript.

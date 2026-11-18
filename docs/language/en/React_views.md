@@ -37,7 +37,7 @@ DESIGN orders {
 }
 ```
 
-The value form selects the renderer: a string literal matching `[A-Z][A-Za-z0-9_$]*` names a React component, while an empty string `''`, an HTML template string, or a property gives the classic (non-React) custom container. Here the object `o` is rendered by the `OrderBoard` React component instead of the standard table. A component that is not a container takes a React component name alone — see [A component's own view](React_component_views.md#component-views).
+The value form selects the renderer: a string literal matching `[A-Z][A-Za-z0-9_$]*` names a React component, while an empty string `''`, an HTML template string, or a property gives the [classic (non-React) custom container](DESIGN_statement.md#containerprops). Here the object `o` is rendered by the `OrderBoard` React component instead of the standard table. A component that is not a container takes a React component name alone — see [A component's own view](React_component_views.md#component-views).
 
 ### Window size and base size {#base-size}
 
@@ -49,7 +49,7 @@ The base size also bounds the height of the container itself, wherever the form 
 
 ### The component {#the-component}
 
-`OrderBoard` is a named export from a `.jsx` module under `src/main/web`. The examples of the React articles use JSX. For a project without the build, ship the same component as a `.jsx` file — it is transformed on the server when served. `import` and `export` are not available there, so the `export` keyword is dropped and the component works against the platform-provided `window.React` — or write it with `React.createElement` in a plain `.js`. Either file is placed under `src/main/resources/web/init` (auto-loaded) or under `src/main/resources/web` and registered with `onWebClientInit`.
+`OrderBoard` is a named export from a `.jsx` [module](Client_JavaScript_modules.md) under `src/main/web`. The examples of the React articles use JSX. For a project [without the build](Client_JavaScript_modules.md#without-the-build), ship the same component as a `.jsx` file — it is transformed on the server when served. `import` and `export` are not available there, so the `export` keyword is dropped and the component works against the platform-provided `window.React` — or write it with `React.createElement` in a plain `.js`. Either file is placed under `src/main/resources/web/init` (auto-loaded) or under `src/main/resources/web` and registered with `onWebClientInit`.
 
 The component is a plain function that receives `props.data` and `props.controller`:
 

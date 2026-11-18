@@ -265,7 +265,7 @@ In the current platform implementation, `=` is required before an expression or 
     - `CUSTOM renderFunction [CHANGE [editFunction]]`
     - `CUSTOM CHANGE [editFunction]`
 
-        Specifying the JavaScript functions responsible for displaying (`renderFunction`) and editing (`editFunction`) the property value. Each function is specified with a [string literal](Literals.md#strliteral) containing its name. If no function is specified after the `CHANGE` keyword, the default editing mechanism is used.
+        Specifying the JavaScript functions responsible for [displaying](Render_functions.md#property) (`renderFunction`) and [editing](Edit_functions.md#custom-editor) (`editFunction`) the property value. Each function is specified with a [string literal](Literals.md#strliteral) containing its name. If no function is specified after the `CHANGE` keyword, the default editing mechanism is used.
 
         `renderFunction` can also be the name of a [React component](React_component_views.md#form-custom) registered on the client with the kind `reactView`. The web client then displays each cell of the property — in a table or on a panel — with the component, which is given the cell's data as `props.data` and the cell's controller as `props.controller`. The component changes the value by the controller's calls only: a click on such a cell or typing in it does not start the default editing mechanism or `editFunction`.
 

@@ -255,7 +255,7 @@ The `FORM` statement declares a new form and adds it to the current [module](../
 
 - `CUSTOMS apiItem1, ..., apiItemN`
 
-    Defines the list of properties and actions that are allowed to be called from the client JavaScript code of the form regardless of the general [API access](../paradigm/Access_from_an_external_system.md) settings (the `enableAPI` setting, the `@@api` annotation). Each element is available under the `apiName` name or, if it is not specified, under the property's (action's) own name without the namespace. The element names must be unique within the form.
+    Defines the list of properties and actions that are [allowed to be called](Form_and_navigator_controllers.md#access) from the client JavaScript code of the form regardless of the general [API access](../paradigm/Access_from_an_external_system.md) settings (the `enableAPI` setting, the `@@api` annotation). Each element is available under the `apiName` name or, if it is not specified, under the property's (action's) own name without the namespace. The element names must be unique within the form.
 
     - `apiName`
 
