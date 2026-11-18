@@ -250,7 +250,9 @@ public class UiCustomViewIT extends UiTest {
     }
 
     // an argument reaches the server as JS has it - a number, a boolean, a string, an object told apart: false is a
-    // value and not none, a number is the number it is - a big one too -, an object and an array are JSON data
+    // value and not none, a number is the number it is - a big one too -, an object and an array are JSON data. A
+    // string given for a number is the number it holds, as an http request's parameter is (#2001), so an object's id
+    // may be given as a key read out of data.<group>.keys, which is a string; a string that holds no number is rejected
     @Test
     public void anArgumentOfACallIsWhatJsGave() throws Exception {
         Locator form = open(FOLDER, "UiCustomView.uiCustomViewCalls");
@@ -259,8 +261,11 @@ public class UiCustomViewIT extends UiTest {
 
         String next = "run(INTEGER i) { RETURN i + 1; }";
         assertEquals("22", evalWith(next, "21"));
-        String string = evalWith(next, "'21'"); // a string is no number
+        assertEquals("22", evalWith(next, "'21'"));
+        String string = evalWith(next, "'abc'");
         assertTrue(string, string.startsWith("rejected: "));
+        String id = formEval("NEW i = UiCustomView.UiCustomViewItem { UiCustomView.uiCustomViewQuantity(i) <- 7; RETURN LONG(i); }");
+        assertEquals("7", evalWith("run(UiCustomView.UiCustomViewItem i) { RETURN UiCustomView.uiCustomViewQuantity(i); }", "'" + id + "'"));
         assertEquals("\"-b\"", evalWith("run(STRING a, INTEGER b) { RETURN (IF a THEN 'a' ELSE '-') + (IF b THEN 'b' ELSE '-'); }", "null, 1"));
 
         assertEquals("false", evalWith("run(TBOOLEAN t) { RETURN t; }", "false"));
