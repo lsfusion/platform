@@ -23,4 +23,4 @@ For example, showing only unposted invoices is a filter of the form, set with `l
 
 2. To recreate the form it is working in, the assistant SHOULD call `SystemEvents.formRecreate[]` through `lsfusion_exec` with `form` addressing that form: recreating that one form is enough. It MUST NOT use this action to recreate another form from the navigator: it recreates the form in whose context it runs.
 
-3. Before calling `System.reload[]` — which a change of the application's customization written directly to `dataExtendCode` needs — the assistant MUST ask the user: it reloads the whole page without the leave confirmation, so unsaved edits in every open form, the current one included, are lost.
+3. Before calling `System.reload[]`, the assistant MUST ask the user: it reloads the whole page without the leave confirmation, so unsaved edits in every open form, the current one included, are lost.

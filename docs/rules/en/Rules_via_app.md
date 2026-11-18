@@ -17,7 +17,7 @@ title: 'Rules: running application'
 
 1. The assistant MUST distinguish executing actions, saving supported settings and changing source logic. It MUST use source editing and deployment for durable changes to source logic: eval code cannot change the project's persistent structure.
 
-2. Where saved [customization](../paradigm/System_SystemEvents.md) — of a form, or of the application's navigator and windows — covers the request, the assistant SHOULD prefer it and establish whether it is for one or all users. It MUST verify the result on opening the form or starting the client again and check reported customization errors. It MUST NOT treat a successful write alone as proof that the customization compiled and took effect.
+2. Where saved [customization](../paradigm/System_SystemEvents.md) — of a form, or of the application's navigator and windows — covers the request, the assistant SHOULD prefer it and establish whether it is for one or all users. It MUST verify the result on opening the form or starting the client again and check reported customization errors. It MUST NOT treat a successful write alone as proof that the customization compiled and took effect. Before writing a fragment, it MUST read it and keep the code the change does not concern: a write replaces the whole fragment.
 
 ## A call over `/mcp`
 
