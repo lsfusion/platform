@@ -205,7 +205,11 @@ All of the above options, as well as defining the form structure, can be done us
 
 The `inputlist` and `noinputlist` annotations of the asynchronous value list are written among the [property options](../language/Property_options.md) in the declaration of the property.
 
+The `CUSTOM` option of an object group or a property can name a JavaScript function that draws [the group's rows](../language/Render_functions.md#object-group) or [the property's value](../language/Render_functions.md#property), respectively. The group function uses [the object group's controller](../language/Render_functions.md#controller-methods) to change current objects and property values and ask for suggestion lists. The property function uses [the property's controller](../language/Render_functions.md#property-controller) to change its value and ask for suggestion lists. In a property's `CUSTOM` option, the JavaScript function named after `CHANGE` supplies [the property's editor](../language/Edit_functions.md#custom-editor).
+
 ### React
+
+A React component can [draw the rows of an object group](../language/React_component_views.md#form-custom) in the group's custom list view.
 
 A React component that draws a part of the form receives [the state of that part](../language/React_projection.md): its object groups with their rows and current objects, and its properties with their values, including the options of a property shown as a selection element. Through [its controller](../language/React_view_controller.md) it changes current objects and property values and runs actions, and it asks the server for [the asynchronous value list](../language/Form_and_navigator_controllers.md#looking-up-values) of a property. It can also draw [object trees](../language/React_trees_sortings_selection.md#trees), the [orders](../language/React_trees_sortings_selection.md#orders) of an object group, and its [user filters, filter groups and toolbar](../language/React_filters_and_toolbar.md), and change them as the user does.
 

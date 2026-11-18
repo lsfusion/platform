@@ -3,7 +3,7 @@ slug: "/React_views"
 title: 'React views'
 ---
 
-A *React view* is a part of a form's [interactive view](../paradigm/Interactive_view.md) or of the [navigator design](../paradigm/Navigator_design.md) that a React component draws in the web client instead of the platform. The articles of this section describe what such a component receives and what it calls.
+A *React view* is a [custom view](../paradigm/Custom_views.md) drawn by a React component in the web client instead of the platform, as part of a form's [interactive view](../paradigm/Interactive_view.md) or of the [navigator design](../paradigm/Navigator_design.md). The articles of this section describe what such a component receives and what it calls.
 
 A [`DESIGN`](DESIGN_statement.md) container can be rendered by a React component instead of the standard layout. The component receives a projection of the form state and draws the container's whole subtree itself. A table, a toolbar, filter controls, a filter group and a property's filter can be drawn by a React component of their own the same way, instead of the platform's view of them ([A component's own view](React_component_views.md#component-views)). Outside a form, a React component can draw [a navigator window](React_windows.md#navigator-window), [the forms window](React_windows.md#forms-window), [the log window](React_windows.md#log-window) and [the window layout](React_windows.md#window-layout).
 

@@ -314,6 +314,7 @@ module.exports = {
                     'paradigm/Navigator_design', 
                   ]
                 },
+                'paradigm/Custom_views',
               ]
             },
           ]

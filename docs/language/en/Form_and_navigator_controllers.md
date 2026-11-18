@@ -3,7 +3,7 @@ slug: "/Form_and_navigator_controllers"
 title: 'Form and navigator controllers'
 ---
 
-JavaScript code works with a form open in the [interactive view](../paradigm/Interactive_view.md) through the form controller, and with the [navigator](../paradigm/Navigator.md) through the navigator controller.
+The JavaScript code of a [custom view](../paradigm/Custom_views.md), or other client JavaScript code, works with a form open in the [interactive view](../paradigm/Interactive_view.md) through the form controller, and with the [navigator](../paradigm/Navigator.md) through the navigator controller.
 
 A custom view written in JavaScript communicates with the form through a *controller* object — with it the view sets the current object of a group, changes property values, looks up suggestions, and calls actions or scripts on the server. There are three kinds of custom view. A React view gets the controller of its own projection — the [members](React_view_controller.md#members), beside the `props.data` they mirror — and the form's controller as its `form`; a classic view finds the form's controller as `controller.form`, and an `INTERNAL CLIENT` action is given it as an argument. The form's controller carries the server calls (`exec` / `eval` / `evalAction` / `change`), the [methods](#across-containers) that do what a view's members do to what another container or the platform draws (`changeOrders('i', …)`, `changeObject('i', row)`, …), the [editing declaration](#editing) (`startEditing` / `stopEditing` / `isEditing`) and the [batch](#batch).
 

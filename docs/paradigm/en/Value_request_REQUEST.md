@@ -48,6 +48,8 @@ Note that all [value input](Value_input.md) operators can be automatically "wrap
 
 The syntax of the value request operator is described by the [`REQUEST` operator](../language/REQUEST_operator.md).
 
+A value the JavaScript function named in a property's `CUSTOM` option passes through [the property's controller](../language/Render_functions.md#property-controller) is substituted for the user's input in the value request of the property's `ON CHANGE` action.
+
 ### React
 
 A value that a React component passes when it changes a property through [its controller](../language/React_view_controller.md#changing-values) is pushed as the request value instead of the user's input, and the user is not asked for a value.

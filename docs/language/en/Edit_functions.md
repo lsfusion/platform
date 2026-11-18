@@ -3,7 +3,7 @@ slug: "/Edit_functions"
 title: 'Edit functions'
 ---
 
-An *edit function* is a JavaScript function responsible for editing a value in the web client, as a [render function](Render_functions.md) is for displaying it. Its name is given in a property's [`CUSTOM` option](Properties_and_actions_block.md#options), after the `CHANGE` keyword, and in the `CUSTOM` block of the [`INPUT` operator](INPUT_operator.md), for the value that operator [requests from the user](../paradigm/Primitive_input_INPUT.md). In the desktop client the value is edited by the standard mechanism.
+An *edit function* is a JavaScript function responsible for editing a value in a [custom view](../paradigm/Custom_views.md) in the web client, as a [render function](Render_functions.md) is for displaying it. Its name is given in a property's [`CUSTOM` option](Properties_and_actions_block.md#options), after the `CHANGE` keyword, and in the `CUSTOM` block of the [`INPUT` operator](INPUT_operator.md), for the value that operator [requests from the user](../paradigm/Primitive_input_INPUT.md). In the desktop client the value is edited by the standard mechanism.
 
 ### The edit function {#custom-editor}
 
