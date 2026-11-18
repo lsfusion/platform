@@ -88,7 +88,9 @@ printOrder (Order o) { PRINT printOrder OBJECTS o = o XLSX TO orderFile; }
 
 Иерархию меняет [инструкция `DESIGN`](../language/DESIGN_statement.md): `NEW` создает контейнер, `MOVE` переносит компонент, `REMOVE` убирает его, имя компонента с блоком редактирует его, `propertyName = value` задает свойство. Компонент выбирается по имени или конструкциями `PROPERTY(...)`, `GRID(...)`, `BOX(...)`, `PANEL(...)`, `TOOLBARBOX`, `GROUP(...)`, `PARENT(...)`. Позиция вставки — `FIRST`, `LAST`, `BEFORE`, `AFTER`.
 
-Раскладку потомков задают опции контейнера `horizontal`, `tabbed`, `lines` (вместе с `grid`), внешний вид — `caption`, `image` ([иконки](../paradigm/Icons.md)), `border`, `collapsible` (из кода такой контейнер сворачивают действия [`EXPAND` и `COLLAPSE`](../paradigm/Container_visibility_EXPAND_COLLAPSE.md)), `popup`, `showIf` и `custom` — React-компонент или HTML-шаблон, только веб-клиент. Данные попадают в пользовательское представление через группы объектов — строки группы в `props.data.<g>.list` для React-контейнера, `props.data.list` для React-компонента в `CUSTOM`, зарегистрированного как `reactView` ([React в CUSTOM](../language/React_component_views.md#form-custom)), список `update` для классического `CUSTOM`-представления группы объектов — с серверным листанием и фильтрами. Свойство JSON несёт значение одного объекта.
+Раскладку потомков задают опции контейнера `horizontal`, `tabbed`, `lines` (вместе с `grid`), внешний вид — `caption`, `image` ([иконки](../paradigm/Icons.md)), `border`, `collapsible` (из кода такой контейнер сворачивают действия [`EXPAND` и `COLLAPSE`](../paradigm/Container_visibility_EXPAND_COLLAPSE.md)), `popup` и `showIf`.
+
+Представления контейнеров (`custom`), компонентов и окон, которые рисует клиентский код, описаны в [Brief: пользовательские представления](Brief_custom.md).
 
 ```lsf
 DESIGN order {
@@ -138,11 +140,11 @@ NAVIGATOR {
 
 ### Окна и расположение
 
-[Дизайн навигатора](../paradigm/Navigator_design.md) — набор *окон*, участков экрана, каждый из которых показывает свои элементы навигатора. Окно объявляет [инструкция `WINDOW`](../language/WINDOW_statement.md): `VERTICAL` или `HORIZONTAL` задает ориентацию тулбара, `POSITION(x, y, width, height)` — место на рабочем столе размером `100` на `100` точек, а `LEFT`, `RIGHT`, `TOP` и `BOTTOM` прижимают окно к краю. Есть также `HIDETITLE`, `HIDESCROLLBARS`, выравнивания `HALIGN`, `VALIGN`, `TEXTHALIGN`, `TEXTVALIGN`, `CLASS` и `CUSTOM` — пользовательское представление окна, отрисовываемое React-компонентом или HTML-шаблоном. Рисует его только десктопный веб-клиент: мобильный веб-клиент и десктопный клиент оставляют стандартное меню.
+[Дизайн навигатора](../paradigm/Navigator_design.md) — набор *окон*, участков экрана, каждый из которых показывает свои элементы навигатора. Окно объявляет [инструкция `WINDOW`](../language/WINDOW_statement.md): `VERTICAL` или `HORIZONTAL` задает ориентацию тулбара, `POSITION(x, y, width, height)` — место на рабочем столе размером `100` на `100` точек, а `LEFT`, `RIGHT`, `TOP` и `BOTTOM` прижимают окно к краю. Есть также `HIDETITLE`, `HIDESCROLLBARS`, выравнивания `HALIGN`, `VALIGN`, `TEXTHALIGN`, `TEXTVALIGN` и `CLASS`.
 
 В каком окне рисуется элемент, задает опция `WINDOW` его родительской папки. Элемент, попавший в окно, отличное от окна своей папки, показывается только тогда, когда эта папка [выбрана](../paradigm/Navigator_design.md#selectedfolder) пользователем в своем окне, — так папка переключает содержимое соседнего окна.
 
-[Системные окна](../paradigm/Navigator_design.md#systemwindows) создает платформа: `System.forms` — окно, в котором открываются формы, `System.log` — сообщения пользователю, `System.root` и `System.toolbar` — горизонтальный и вертикальный тулбары навигатора, `System.system` — системные кнопки, `System.logo` — логотип. Инструкция `EXTEND WINDOW ... CUSTOM` меняет отрисовщик уже объявленного окна, `HIDE WINDOW` скрывает его. Отрисовщик принимают окно `System.log` из `NATIVE`-окон и окна `FORMS` — `System.forms` и объявленные приложением, — и только React-компонент: ему передается то, что держит окно, вместо элементов навигатора. Остальные `NATIVE`-окна не содержат элементов навигатора и не принимают ни компонента, ни шаблона.
+[Системные окна](../paradigm/Navigator_design.md#systemwindows) создает платформа: `System.forms` — окно, в котором открываются формы, `System.log` — сообщения пользователю, `System.root` и `System.toolbar` — горизонтальный и вертикальный тулбары навигатора, `System.system` — системные кнопки, `System.logo` — логотип. `HIDE WINDOW` скрывает окно.
 
 ## Отчёты
 

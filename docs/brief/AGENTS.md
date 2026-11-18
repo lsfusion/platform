@@ -35,8 +35,8 @@ Three kinds of article, with different budgets:
   per element, enough to route — not enough to substitute.
   Every article MUST appear by its short name in the first column of a map.
   Keep the access-kind section to its table and two lines of explanation.
-- `Brief_<name>.md` are the five area articles: `logic`, `view`, `physical`,
-  `integration`, `operation`. Operation maps work in a running system for
+- `Brief_<name>.md` are the six area articles: `logic`, `view`, `custom`,
+  `physical`, `integration`, `operation`. Operation maps work in a running system for
   users and administrators; declarations of forms, designs and the navigator
   stay in `view`. Operation is an ordinary area, read by need. Area articles
   reach the assistant only when it asks for one by name, and must stay inside

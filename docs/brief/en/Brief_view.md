@@ -88,7 +88,9 @@ The [form design](../paradigm/Form_design.md) describes how a form looks in the 
 
 The hierarchy is changed by the [`DESIGN` statement](../language/DESIGN_statement.md): `NEW` creates a container, `MOVE` moves a component, `REMOVE` takes it out, a component name with a block edits it, and `propertyName = value` sets a property. A component is picked by its name or by `PROPERTY(...)`, `GRID(...)`, `BOX(...)`, `PANEL(...)`, `TOOLBARBOX`, `GROUP(...)`, `PARENT(...)`. The insertion position is `FIRST`, `LAST`, `BEFORE`, `AFTER`.
 
-The layout of the children is set by the container options `horizontal`, `tabbed`, `lines` (together with `grid`), and its look by `caption`, `image` ([icons](../paradigm/Icons.md)), `border`, `collapsible` (from code such a container is collapsed by the [`EXPAND` and `COLLAPSE`](../paradigm/Container_visibility_EXPAND_COLLAPSE.md) actions), `popup`, `showIf`, and `custom` — a React component or an HTML template, web client only. Data reaches a custom view through object groups — the group's rows in `props.data.<g>.list` for a React container, `props.data.list` for a `CUSTOM` React component registered as `reactView` ([React in CUSTOM](../language/React_component_views.md#form-custom)), the `update` list for a classic `CUSTOM` object-group view — with server-side paging and filters. A JSON property carries one object's value.
+The layout of the children is set by the container options `horizontal`, `tabbed`, `lines` (together with `grid`), and its look by `caption`, `image` ([icons](../paradigm/Icons.md)), `border`, `collapsible` (from code such a container is collapsed by the [`EXPAND` and `COLLAPSE`](../paradigm/Container_visibility_EXPAND_COLLAPSE.md) actions), `popup` and `showIf`.
+
+Client-code views of containers (`custom`), components and windows are covered in [Brief: custom views](Brief_custom.md).
 
 ```lsf
 DESIGN order {
@@ -138,11 +140,11 @@ NAVIGATOR {
 
 ### Windows and placement
 
-The [navigator design](../paradigm/Navigator_design.md) is a set of *windows*, areas of the screen each of which shows its own navigator elements. A window is declared by the [`WINDOW` statement](../language/WINDOW_statement.md): `VERTICAL` or `HORIZONTAL` sets the orientation of the toolbar, `POSITION(x, y, width, height)` sets the place on the `100` by `100` point desktop, and `LEFT`, `RIGHT`, `TOP` and `BOTTOM` pin the window to an edge. There are also `HIDETITLE`, `HIDESCROLLBARS`, the alignments `HALIGN`, `VALIGN`, `TEXTHALIGN`, `TEXTVALIGN`, `CLASS`, and `CUSTOM` — a custom view of the window, drawn by a React component or an HTML template. Only the desktop web client draws it: the mobile web client and the desktop client keep the standard menu.
+The [navigator design](../paradigm/Navigator_design.md) is a set of *windows*, areas of the screen each of which shows its own navigator elements. A window is declared by the [`WINDOW` statement](../language/WINDOW_statement.md): `VERTICAL` or `HORIZONTAL` sets the orientation of the toolbar, `POSITION(x, y, width, height)` sets the place on the `100` by `100` point desktop, and `LEFT`, `RIGHT`, `TOP` and `BOTTOM` pin the window to an edge. There are also `HIDETITLE`, `HIDESCROLLBARS`, the alignments `HALIGN`, `VALIGN`, `TEXTHALIGN`, `TEXTVALIGN` and `CLASS`.
 
 Which window an element is drawn in is set by the `WINDOW` option of its parent folder. An element that ended up in a window other than the window of its folder is shown only when that folder is the one [selected](../paradigm/Navigator_design.md#selectedfolder) by the user in its own window — this is how a folder switches the content of a neighbouring window.
 
-The [system windows](../paradigm/Navigator_design.md#systemwindows) are created by the platform: `System.forms` — the window forms open in, `System.log` — messages to the user, `System.root` and `System.toolbar` — the horizontal and vertical navigator toolbars, `System.system` — the system buttons, `System.logo` — the logo. The `EXTEND WINDOW ... CUSTOM` statement changes the renderer of an already declared window, and `HIDE WINDOW` hides it. `System.log` among the `NATIVE` windows and the `FORMS` windows — `System.forms` and those an application declares — take a renderer, and only a React component — one that is handed what the window holds instead of navigator elements. The other `NATIVE` windows hold no navigator elements and take neither a component nor a template.
+The [system windows](../paradigm/Navigator_design.md#systemwindows) are created by the platform: `System.forms` — the window forms open in, `System.log` — messages to the user, `System.root` and `System.toolbar` — the horizontal and vertical navigator toolbars, `System.system` — the system buttons, `System.logo` — the logo. `HIDE WINDOW` hides a window.
 
 ## Reports
 

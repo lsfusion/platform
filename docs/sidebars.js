@@ -684,6 +684,7 @@ module.exports = {
           items: [
             'brief/Brief_logic',
             'brief/Brief_view',
+            'brief/Brief_custom',
             'brief/Brief_physical',
             'brief/Brief_integration',
             'brief/Brief_operation',

@@ -10,7 +10,7 @@ map that says which article to open. It is deliberately not a short version of
 those articles. What is here is enough to classify a task and answer a rough conceptual
 question.
 
-Which branch: `language` — statement / operator syntax; `paradigm` — concepts and the system-module libraries; `how-to` — task recipes. Those three are searched with `lsfusion_retrieve_docs`. When unsure which one, omit the filter and it searches all three and merges them.
+Which branch: `language` — statement / operator syntax and the interfaces client code receives and calls; `paradigm` — concepts and the system-module libraries; `how-to` — task recipes. Those three are searched with `lsfusion_retrieve_docs`. When unsure which one, omit the filter and it searches all three and merges them.
 
 `brief` and `rules` are not searched. Each is a small set of articles, named and delivered whole by `lsfusion_get_guidance`: `brief` says what an area offers, `rules` states the constraints on using it. The `rules` map, in the top `Rules` article, says when reading one of its articles becomes mandatory.
 
@@ -48,7 +48,7 @@ on them:
 
 ## The brief articles — which one to open
 
-Five articles, read whole with `lsfusion_get_guidance(brief='<name>')`. Match
+Six articles, read whole with `lsfusion_get_guidance(brief='<name>')`. Match
 on either column: the intent describes the task in the user's terms, the
 anchors are what the code looks like.
 
@@ -56,6 +56,7 @@ anchors are what the code looks like.
 |---|---|---|
 | `logic` | compute, store, change, aggregate, constrain or react to data | `CLASS`, `DATA`, `=`, `GROUP`, `PARTITION`, `AGGR`, `<-`, `NEW`, `FOR`, `WHILE`, `WHEN`, `<- WHEN`, `CONSTRAINT`, `NEWSESSION`, `APPLY` |
 | `view` | show data to a person — a form, its layout, a menu, a report — or localize what they read | `FORM`, `OBJECTS`, `PROPERTIES`, `FILTERS`, `SHOW`, `DIALOG`, `DESIGN`, `PRINT`, `NAVIGATOR`, `WINDOW`, `{id}` captions |
+| `custom` | draw a part of the interface with client code — a container, a component, a field, an object group, a window or the window layout — or call the form or navigator controller | `custom`, `CUSTOM`, React, `props.data`, `props.controller`, `CUSTOMS`, render / edit functions, client JavaScript modules |
 | `physical` | control storage or speed, organize modules, extend or generate declarations, or rename something that already exists | `TABLE`, `MATERIALIZED`, `INDEX`, `MODULE`, `REQUIRE`, `NAMESPACE`, `EXTEND`, `META`, `@`, `migration.script` |
 | `integration` | move data in or out, or let another system call in | `IMPORT`, `EXPORT`, `JSON FROM`, `EXTERNAL`, `INTERNAL`, `FORMULA`, HTTP endpoints |
 | `operation` | configure or administer a running system: user preferences, saved form customization, access, scheduled tasks, backups or diagnosis | `EVAL`, `APPLY`, `dataExtendCode`, `Service`, `Security`, `Scheduler`, `Backup`, `ProcessMonitor`, `Profiler`, `Chat` |
@@ -66,6 +67,8 @@ Where they overlap — read both:
   for where it lives;
 - import or export of a FORM is `integration` for the exchange and `view` for
   the form it goes through;
+- a custom view is `view` for the form or navigator it belongs to and `custom`
+  for what the client code draws, receives and calls;
 - a `MATERIALIZED` property is `logic` for what it computes and `physical` for
   what that costs;
 - extending an element is `physical` for the mechanism and the area of the
