@@ -5,7 +5,7 @@ title: 'How-to: Custom Components (server calls)'
 
 This article describes classic JavaScript views for existing code. For a new view, use a React component in a `custom` container or registered as `reactView` for `CUSTOM` ([React views](../language/React_views.md)).
 
-A custom view calls the server through the form controller's `exec` / `eval` / `evalAction` / `change` methods. The mechanics — the authorization gate, sessions, value conversion — are described in [Calling the server](How-to_Custom_components_objects.md#calling-the-server), and the method signatures in the [form controller API](../language/Form_and_navigator_controllers.md#calling-the-server). This page is an end-to-end example: one CUSTOM component that calls actions and properties through the form's `CUSTOMS` clause with every major kind of parameter.
+A custom view calls the server through the form controller's `exec` / `eval` / `evalAction` / `change` methods. The mechanics — the authorization gate, sessions, value conversion — and the method signatures are described in [Calling the server](../language/Form_and_navigator_controllers.md#calling-the-server). This page is an end-to-end example: one CUSTOM component that calls actions and properties through the form's `CUSTOMS` clause with every major kind of parameter.
 
 ### Task
 
@@ -101,7 +101,7 @@ The key points:
 
 ### The component
 
-The `shopboard.js` and `shopboard.css` files go into the _resources/web_ folder (the no-build path — a plain `.js`, no bundling; see [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md)) and are registered in the `onWebClientInit[]` action:
+The `shopboard.js` and `shopboard.css` files go into the _resources/web_ folder (the no-build path — a plain `.js`, no bundling; see [Client JavaScript modules](../language/Client_JavaScript_modules.md#without-the-build)) and are registered in the `onWebClientInit[]` action:
 
 ```lsf
 onWebClientInit() + {
@@ -215,12 +215,14 @@ After "Discount 15%", "One of each", "Add to cart" on the coffee card, and "Hide
 
 ### Parameters and the result
 
-The calls pass parameters positionally as plain JS values: `addToCart` receives the object as its numeric id — the `item.key` of the card's row — and the `INTEGER`, `STRING` and `DATE` primitives directly (an actual `Date` for `DATE`). `addSet` receives a plain JS array for its `JSON` parameter. The `preview` promise resolves to the number produced by the action's `RETURN`.
+The calls pass [parameters](../language/Form_and_navigator_controllers.md#parameters) positionally as plain JS values: `addToCart` receives the object as its numeric id — the `item.key` of the card's row — and the `INTEGER`, `STRING` and `DATE` primitives directly (an actual `Date` for `DATE`). `addSet` receives a plain JS array for its `JSON` parameter. The `preview` promise resolves to the number produced by the action's `RETURN` ([The result](../language/Form_and_navigator_controllers.md#result)).
 
 ### Sessions
 
-On the form the calls run in the form's session: the cart line and the "hidden" flag are visible immediately, but reach the database only when the form is saved. When a change affects the component's own list — hiding a card here — the platform calls its `update`, and the component rebuilds the DOM from scratch, so transient state kept in DOM nodes — the "≈ 807.5" text on the preview button — is wiped by the next such update. To display a result persistently, put it into a form property.
+On the form the calls run in the form's session: the cart line and the "hidden" flag are visible immediately, but reach the database only when the form is saved ([Sessions](../language/Form_and_navigator_controllers.md#sessions)). When a change affects the component's own list — hiding a card here — the platform calls its `update`, and the component rebuilds the DOM from scratch, so transient state kept in DOM nodes — the "≈ 807.5" text on the preview button — is wiped by the next such update. To display a result persistently, put it into a form property.
 
 ### The gate
 
-`CUSTOMS` opens the listed entries to the controller of this form only, and it does not restrict the argument values the component passes, so every listed entry must stay safe for an arbitrary id and arbitrary values. The `edit` double-click needs no entry: an action drawn on the form is executed through the form-edit channel (`changeProperty`), which is not gated — but which also takes no extra arguments, only the target row. As soon as an argument that is not on the form is needed — a quantity, a percentage, an array — that is `exec` plus an entry in `CUSTOMS`.
+`CUSTOMS` opens the listed entries to the controller of this form only, and it does not restrict the argument values the component passes, so every listed entry must stay safe for an arbitrary id and arbitrary values ([Authorization gate](../language/Form_and_navigator_controllers.md#access)). The `edit` double-click needs no entry: an action drawn on the form is executed through the form-edit channel (`changeProperty`), which is not gated — but which also takes no extra arguments, only the target row. As soon as an argument that is not on the form is needed — a quantity, a percentage, an array — that is `exec` plus an entry in `CUSTOMS`.
+
+Prefer `CUSTOMS` over `@@api` for a call a custom view needs. Mark something `@@api` only when it is genuinely part of the external HTTP API.

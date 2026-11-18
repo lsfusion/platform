@@ -23,14 +23,14 @@ Optional arguments are bracketed.
 | [Forms window](React_windows.md#forms-window) | `EXTEND WINDOW System.forms CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — the [navigator controller](#navigator-controller)'s methods plus `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen` |
 | [Log window](React_windows.md#log-window) | `EXTEND WINDOW System.log CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — the [navigator controller](#navigator-controller)'s methods plus `togglePin` |
 | [Window layout](React_windows.md#window-layout) | `NAVIGATOR CUSTOM 'Name';` | a component taking `props` (`data`, `controller`) | `props.controller` — the [navigator controller](#navigator-controller) |
-| Classic CUSTOM object group | `OBJECTS g = Cls CUSTOM 'name'` | `render` / `update` callbacks | `controller.form` |
-| Classic CUSTOM property cell | `PROPERTIES p CUSTOM 'name'` | `render` / `update` callbacks | `controller.form` |
+| [Classic CUSTOM object group](Render_functions.md#object-group) | `OBJECTS g = Cls CUSTOM 'name'` | `render` / `update` callbacks | `controller.form` |
+| [Classic CUSTOM property cell](Render_functions.md#property) | `PROPERTIES p CUSTOM 'name'` | `render` / `update` callbacks | `controller.form` |
 
 In a form's React view, requests through controller members or `controller.form` return `Promise`s. The window operations `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen`, `togglePin` and `activate` return nothing.
 
 A **React view** renders an entire custom container, so the `controller` in its `props` is that container's own controller — its [members](React_view_controller.md#members) are called on it directly, and the form's controller is its `form`, `props.controller.form`.
 
-A **CUSTOM object group** and a **CUSTOM property cell** are rendered by classic `render(element, controller)` / `update(element, controller, ...)` callbacks — `update` also receives the group's `list` of rows, or the cell's `value`. The `controller` they receive is a *local* controller scoped to that one group or cell: it adds the helpers those views need — value, current-row and styling getters and `diff` / `clearDiff` for an object group, the `change` edit event for a property cell. The local controller exposes the form controller as `controller.form`, so the form-level methods below are reached through it:
+A **CUSTOM object group** and a **CUSTOM property cell** are rendered by classic `render(element, controller)` / `update(element, controller, ...)` callbacks — `update` also receives the group's `list` of rows, or the cell's `value`. The `controller` they receive is a *local* controller scoped to that one group or cell: it adds the helpers those views need — [value, current-row and styling getters and `diff` / `clearDiff`](Render_functions.md#controller-methods) for an object group, [the `change` edit event](Render_functions.md#property-controller) for a property cell. The local controller exposes the form controller as `controller.form`, so the form-level methods below are reached through it:
 
 ```js
 const total = await controller.form.exec('recalc', orderId);
@@ -39,7 +39,7 @@ await controller.form.change('customerOrder', orderId, customerId);
 
 Rows a classic view receives carry the same `key` and `objects` as React rows (see [Row identity](#row-identity-contract)). An object group's local `changeProperty` also *delegates*: for a property that is not one of its own columns it is passed on to the form's `changeProperty` and resolved form-wide, so the view can change a property it does not display. The form controller's `change` takes no rows: it names a property, then the values of its parameters and the new value.
 
-An [`INTERNAL CLIENT`](INTERNAL_operator.md) action is a fourth entry point: its bound JavaScript function receives the form controller as the argument after the call parameters. The custom value editor's controller (`CHANGE`) also exposes the form controller as its `form` field.
+An [`INTERNAL CLIENT`](INTERNAL_operator.md) action is a fourth entry point: its bound JavaScript function receives the form controller as the argument after the call parameters. The [custom value editor's controller](Edit_functions.md#editor-controller) (`CHANGE`) also exposes the form controller as its `form` field.
 
 ### The form controller's methods {#the-form-controller}
 
@@ -57,15 +57,36 @@ An [`INTERNAL CLIENT`](INTERNAL_operator.md) action is a fourth entry point: its
 
 ### Calling the server {#calling-the-server}
 
-The form's `exec`, `eval`, `evalAction` and `change` — `controller.form` in a React view — each run on the server and return a `Promise`. They are subject to the same authorization gate and convert the result to a JS value the same way as a classic view's server calls.
+The form's `exec`, `eval`, `evalAction` and `change` — `controller.form` in a React view — each run on the server and return a `Promise`. They are subject to the [authorization gate](#access) and convert [the result](#result) to a JS value.
 
 - `exec(action, ...params)` — runs a named action. Resolves to its `RETURN` value. `action` is the action's name — an entry of the form's `CUSTOMS` by the name it has there, or an action of the project by its [name](IDs.md), with the namespace and the signature in brackets when they are needed to pick one: `runReport[Order]` among overloaded actions. Not the `saveFilters()` a script would write: that shape answers "Action was not found".
 - `eval(script, ...params)` — runs an lsf script that defines its own `run` action (typed parameters).
 - `evalAction(script, ...params)` — runs an action body wrapped into a `run` action, with parameters referenced as `$1`, `$2`, ….
-- `mcp` — `exec`, `eval` and `evalAction` that make their call as the MCP server's eval tool makes one: `controller.form.mcp.eval(script, ...params)`. The parameters are bound as the tool binds its `params`, and the call resolves with the object the tool answers with, `{results, status}`.
+- `mcp` — `exec`, `eval` and `evalAction` that make their call as the MCP server's eval tool makes one: `controller.form.mcp.eval(script, ...params)`. The parameters are bound as the tool binds its `params`, and the call resolves with the object the tool answers with, `{results, status}` ([described after the result table](#mcp-calls)).
 - `change(property, ...keyParams, value)` — changes a global property. The last argument is the value, the preceding ones are the keys. When the property's value is an object, the value is its id, and the platform assigns the object with that id — the object picker opens only for interactive editing.
 
-Parameters are passed as plain JS values (a number, string, boolean, `Date`, or an object/array for a `JSON` parameter); a file — as the string of its text or as the object `{base64, fileName, extension}`, with `text` in place of `base64` for a text file. An lsFusion object is passed as its numeric id. When an action parameter is typed by a class, the platform resolves the id to the object of that class — no manual lookup is needed. A row handle is not an object reference here: for a class-typed parameter the call fails, so pass the id.
+#### The result {#result}
+
+The result is converted to a JS value:
+
+| Server result | JS value |
+| --- | --- |
+| number, string, boolean, or date scalar | a number, string, boolean, or `Date` |
+| `JSON` | a parsed object or array |
+| `JSONTEXT`, `XML` | the raw string |
+| a file — an image or a file-typed property | a download URL string |
+| a result with additional parameters — a [`RETURN`](RETURN_operator.md) whose expression declares new parameters | an array of `{name, value}` objects, one for each set of the parameters' values — an array for a single value too, and an empty one when there is none: `name` is those values joined with commas, `value` is the result converted as above |
+| a missing or `NULL` result | `undefined` |
+
+#### Calls as the MCP tool makes them {#mcp-calls}
+
+A call made as the [MCP server](../paradigm/MCP_server.md)'s eval tool makes one — `controller.mcp.eval(script, ...params)`, and `exec` and `evalAction` likewise — takes its parameters and gives its result as the tool does. The parameters are bound as the tool binds its `params`, by the rules of an HTTP request: a value is taken as its string and parsed by the class of the parameter — so a numeric string is a number —, and an object that has `text` or `base64`, or says `type: 'file'`, is a file whatever the class of the parameter. The call resolves with what the tool answers, in place of the result converted by the table: the object `{results, status}`, where `status` is the HTTP status the action set, `200` when it set none, and `results` has an entry for each value the action returned — `{value}` with the value as its string, and `name` too in each entry of a result with additional parameters.
+
+A file is the entry `{type: 'file', fileName, extension, mimeType, size}` — `fileName` is the file's name with its extension, the name of a file that has none of its own being `file` — with `text` — the text of a text file —, `base64` — the content of any other file under 64 KiB, in base64 —, or `url` — the download URL of a bigger one. The content is named as in a file given as a parameter, so an entry that carries it can be passed to the next call as it is. A text file over 10 MiB is given without its text, with `truncated: true`; one call carries 30 MiB of content at most, past which a text is given the same way and any other file by its `url`.
+
+#### Parameters {#parameters}
+
+Parameters are passed as plain JS values (a number, string, boolean, `Date`, or an object/array for a `JSON` parameter) and bound positionally. A file is passed as the string of its text, or as an object: `{base64, fileName, extension}` for a file whose content is not a text, `{text, fileName, extension}` to give a text file a name or an extension; the name and the extension are optional. An lsFusion object cannot be passed — its numeric id is passed instead. When an action parameter is typed by a class, the platform resolves the id to the object of that class — no manual lookup is needed. A row handle (`row.objects`) is not an object reference here: for a class-typed parameter the call fails, so pass the id. An error — a missing action or property, a script error, or a runtime exception — rejects the promise with its message.
 
 That id is the `row.key` of the object's row (see [Row identity](#row-identity-contract)) or an id-valued property on the form. A key read out of `data.<group>.byKey` or `data.<group>.keys` is a *string*, because keys of a JS object are always strings, and it can be passed as it is: a string given for a numeric or class-typed parameter is parsed as a number, an empty string gives `NULL`, and a string that is not a number is rejected.
 
@@ -74,6 +95,28 @@ const total = await controller.form.exec('recalc', orderId);
 const doubled = await controller.form.eval('run(INTEGER a) { RETURN a * 2; }', 21); // 42
 await controller.form.change('archived', orderId, true);
 ```
+
+#### Sessions {#sessions}
+
+In a form the calls run in the form's session, so a change is visible to the following calls and is committed when the form applies. In the navigator each call runs in its own session, so a change is discarded unless the script applies it with `APPLY`, and a read sees the committed database state.
+
+#### Authorization gate {#access}
+
+By default these calls are gated like the external HTTP API: with the default `enableAPI = 0` a call is allowed only when the target action or property carries [`@@api`](Action_options.md) (which also exposes it over HTTP), or the user has admin rights. To let a specific form's controller call selected actions/properties without that gate, list them in the form's `CUSTOMS` clause — the authorization becomes "the user can open this form" plus the explicit listing:
+
+```lsf
+FORM order 'Order'
+    OBJECTS o = Order
+    PROPERTIES(o) number, note
+    CUSTOMS round, format = formatSum, taxRate
+;
+```
+
+Now `controller.form.exec("round", 3.14159)`, `controller.form.exec("format", 1990, "USD")` and `controller.form.change("taxRate", 0.2)` work on this form without `@@api` or `enableAPI` (a React view calls the same on `props.controller.form`). Each entry may be renamed with an alias (`format = formatSum`), prefixed with `ACTION` to force the action reading, and fully qualified with a signature (`round[NUMERIC]`) to pick an overload. `exec` needs an action entry and `change` a property entry. Parameters are passed positionally by the caller as plain values — phase 1 entries are mostly primitive calls like these. The clause changes which calls are allowed, not how parameters are bound, and does not restrict the argument values a caller passes, so list only entries safe for any argument (forcing a parameter to the form's own object is phase 2). `eval`/`evalAction` run arbitrary script and stay under the gate.
+
+`CUSTOMS` scopes access to this form, while `@@api` also exposes the action or property over the external HTTP API.
+
+#### A closed form {#closed-form}
 
 A call made after the form has been closed *rejects* with a `Form is closed` error — it never hangs — so an `await` on a closed form lands in the `catch` branch. The form counts as closed once the server has closed it. A call made while the close is still being processed — the client has taken the form off the page as an action that may close it was clicked, and the server has not answered yet — is sent and runs after the close's request: if the server refuses the close, the form comes back with what the call did, so input a view commits as the form closes is not lost.
 
@@ -98,7 +141,7 @@ What another container draws, or the platform, a view changes through the form's
 | `getCount(group)` / `getSum(group, property)` | `<group>.getCount()` / `.getSum(property)` — a `Promise` | a list group's SID |
 | `changeManual(group, on)` / `update(group)` / `changeListView(group, name)` | `<group>.manual.change(on)` / `.update()` / `.listView.change(name)` | a list group's SID |
 | `export(table)` | `<table>.export()` | a list group's SID, or a tree's name |
-| `changeProperty(property[, row][, value])` | the classic `changeProperty`, its arguments read the same way: the value set, or the change event run, on the current object or on the row given | `'<group>.<property>'`, a property of the empty group by its name |
+| `changeProperty(property[, row][, value])` | the [classic `changeProperty`](Render_functions.md#controller-methods), its arguments read the same way: the value set, or the change event run, on the current object or on the row given | `'<group>.<property>'`, a property of the empty group by its name |
 | `getValues(property, value[, {row, mode, count}])` | `<group>.<property>.getValues(value[, options])`, the [suggestion list](#looking-up-values) — a `Promise`; the row a data row or its `objects` handle, none for the current object, and none for a property of the empty group, which has no rows; a property the form hides is asked all the same, as `changeProperty` changes it | the same |
 
 `changeFilter` is refused if the design removes the property's `FILTER` component or a container holding it. `changeFilters` can still state a condition on that property.

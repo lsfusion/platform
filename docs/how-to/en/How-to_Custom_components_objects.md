@@ -53,10 +53,10 @@ NAVIGATOR {
 }
 ```
 The keyword **CUSTOM** specifies that not the standard tabular interface should be used to draw the list of items,
-but the components created by the function _itemCards_. Let's declare this function in the file _itemcards.js_, which we'll place in the folder _resources/web_. This is the no-build path — a plain `.js` file, no JSX or bundling. See [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md) for where custom JS goes and for the with-build alternative.
-It will return an object consisting of two functions: _render_ and _update_. It is the function that is registered: the platform itself calls _itemCards()_ and takes _render_ and _update_ from the result, so the object with these functions cannot be registered without the wrapping function.
+but the components created by the function _itemCards_. Let's declare this function in the file _itemcards.js_, which we'll place in the folder _resources/web_. This is the no-build path — a plain `.js` file, no JSX or bundling. See [Client JavaScript modules](../language/Client_JavaScript_modules.md#without-the-build) for where custom JS goes and for the with-build alternative.
+It will return an object consisting of two functions: _render_ and _update_ ([The render function](../language/Render_functions.md#render-function)).
 
-The function _render_ takes as input the controller and the element inside which the new elements necessary to display the data are to be created:
+Let's write the _render_ function:
 ```js
 render: (element, controller) => {
     let cards = document.createElement("div")
@@ -68,8 +68,7 @@ render: (element, controller) => {
 ```
 In this example we create a new _div_ _cards_, remember it, and append it to _element_.
 
-To update the displayed values, the platform will call the _update_ function each time, and the same _element_ will be passed to it,
-as in the _render_ function, and the _list_ of objects:
+Let's write the _update_ function:
 ```js
 update: (element, controller, list) => {
     while (element.cards.lastElementChild) {
@@ -111,29 +110,14 @@ update: (element, controller, list) => {
 ```
 Because the _update_ function is called whenever the data changes, the first thing that happens is that all previously created elements (namely, item cards) are deleted.
 
-_list_ receives only the read page, not the whole set of objects: for an object group with the `CUSTOM` view type its default size is 1000 objects. For the view to receive all objects of the group, specify the `PAGESIZE 0` option (read all objects) in the [`OBJECTS`](../language/Object_blocks.md) block.
+This example uses the simplest update scheme, but if necessary, it can be optimized by updating the DOM only for changed values with the controller's [_diff_](../language/Render_functions.md#diff) method.
 
-This example uses the simplest update scheme, but if necessary, it can be optimized by updating the DOM only for changed values.
-To do that, the _controller_ has a _diff_ method, which takes the new _list_ of objects and a handler function. The method compares the passed list with the list from the previous call (the first call compares with an empty one) and delivers the changes as a sequential script transforming the old list into the new one: the handler is called for every change and receives its type (`'add'`, `'update'` or `'remove'`), the change position in the list being transformed (for `'add'` and `'update'` it coincides with the object's position in the new list), and the object itself (the removed one for `'remove'`, the new one for the other types). The passed list is then remembered. Two optional flags refine the comparison: with `noDiffObjects` one object's row is never turned into another's — such a pair yields `'remove'` and `'add'` instead of `'update'`. With `removeFirst` the handler receives all removals first — with positions in the previous list — and only then the additions and updates.
-Example:
-```js
-controller.diff(list, (type, index, object) => {
-    switch (type) {
-        case 'add': ...; break;
-        case 'update': ...; break;
-        case 'remove': ...; break;
-    }
-}, true, true);
-```
-The _clearDiff_ method resets the remembered list — it is called in the component's optional _clear_ function, invoked when the view is cleared with the same _element_ and _controller_, so that the next rendering starts from an empty state.
-
-After removing the old elements, for each object in the _list_ array a _div_ _card_ is created, in which the desired display elements of each property are placed.
-The names of the object fields correspond to the names of the properties on the form. The property values are converted to JS values in the same way as in the rows of a [React view](../language/React_projection.md#values): for example, values of the date and time classes are passed as `Date`, and `JSON` — as a parsed object. A property whose value is an object arrives as that object's numeric id — the same id an object is passed by in [FK writes and server calls](../language/Form_and_navigator_controllers.md#value-formats). The _isCurrent_ method determines which object from the list is current.
+After removing the old elements, for each object in the _list_ array a _div_ _card_ is created, in which the desired display elements of each property are placed ([An object group's rows](../language/Render_functions.md#object-group)).
 
 At the very end of the function, mouse click handlers are added to the item card. 
 
 On a single click _changeObject_ method is called on the controller, which changes the current object.
-The second parameter (_rendered_) is not specified (i.e. it is assumed to be _false_), which means that the server must eventually call the _update_ function with a new list of objects (probably the same one).
+The second parameter (_rendered_) is not specified, so the server will eventually call the _update_ function again ([An object group's controller](../language/Render_functions.md#controller-methods)).
 Since the value of the _isCurrent_ method will change, re-creating the item cards will change the currently selected object in the interface.
 
 On double-click, the _changeProperty_ method is called, which changes the current value of the _edit_ property for the object passed in the second parameter.
@@ -199,87 +183,3 @@ onWebClientInit() + {
 
 The resulting form will look like this:
 ![](../images/How-to_Custom_components_objects.png)
-
-### Controller methods {#controller-methods}
-
-The methods of the local controller passed to _render_ and _update_, internal helpers aside (optional arguments are bracketed). Here `property` is the integration name of a property added to the form in this object group, and `object` is an object from the _list_:
-
-| method | what it does |
-| --- | --- |
-| `isCurrent(object)` | whether the object is the group's current one |
-| `changeObject(object[, rendered[, element]])` | set the group's current object (see above); given an `element`, show the table's [record](../paradigm/Form_design.md#record) next to it; the `Promise` of its request |
-| `changeProperty(property[, object][, value])` | set a property value, or exec an action — on the current object or a given one (see above); the `Promise` of its request |
-| `batch(fn)` | run `fn`, the `changeProperty` and view filter calls made in it sent together, in one request; the `Promise` of that request |
-| `getValue(property, object)` | the current property value for the object |
-| `getCaption(property)` | the property caption |
-| `isPropertyReadOnly(property, object)` | whether the property can be edited: `null` — editable, `false` — read-only |
-| `getBackground(property, object)` / `getForeground(property, object)` | the cell background / text color |
-| `getFont(property, object)` | the cell font |
-| `getPlaceholder(property, object)`, `getPattern(property, object)`, `getRegexp(property, object)`, `getRegexpMessage(property, object)`, `getTooltip(property, object)`, `getValueTooltip(property, object)` | the values of the property's design attributes of the same name |
-| `getCaptionClass(property)`, `getGridClass(property, object)`, `getValueClass(property, object)` | the CSS classes set by the design attributes of the same name |
-| `getChangeKey(property, object)` / `getChangeMouse(property, object)` | the key combination / mouse event set on the form to change the property |
-| `getPropertyCustomOptions(property, object)` | the value of the property's `OPTIONS` option (a parsed JSON) |
-| `getPropertyValues(property, value[, mode], ok[, fail][, count])` | a server suggestion list for the property's values |
-| `diff(list, fnc[, noDiffObjects][, removeFirst])` / `clearDiff()` | compute the list changes (see above) |
-| `setBooleanViewFilter(property, pageSize)` | filter the view by the condition "the property value is true"; the `Promise` of its request |
-| `setDateIntervalViewFilter(startProperty, endProperty, pageSize, start, end)` | filter the view by a date interval; the `Promise` of its request |
-| `getColorThemeName()` | the current color theme name: `'LIGHT'` or `'DARK'` |
-| `form` | the [form controller](../language/Form_and_navigator_controllers.md) |
-
-`changeProperty` reads its arguments by their count, and a single argument by that argument alone: with none it runs the property's change event (for an action, the action) on the current object; with one, the argument is the row, and the change event runs on it, when it is a data row or an `objects` handle, or when the property is an action drawn in an object group; anything else is the value, set for the current object; with two, the first is the row and the second the value. The value formats are the same as in the [form controller](../language/Form_and_navigator_controllers.md#value-formats)'s `<group>.<property>.change`. A property that is not one of this group's columns is passed by `changeProperty` to the form, which resolves it by its name alone, the way a view names a property everywhere: `<group>.<property>` is a property of that group, an unqualified name one of the form level (the empty group) — a property of an object group is named with its group, a row passed or not, and a row passed with an unqualified name is a mistake. `batch(fn)` makes several changes together: each `changeProperty` call in `fn` is made at once, and they are all sent in one request when `fn` returns — for example, a Gantt chart view changes both dates at once when a task bar is dragged:
-
-```js
-controller.batch(() => {
-    controller.changeProperty('start', task, newStart);
-    controller.changeProperty('end', task, newEnd);
-});
-```
-
-A batch carries changes only: inside `fn`, `getPropertyValues` is refused — its failure callback called, the reason said on the console —, and so is a server call on the form's controller (`controller.form.exec`, `eval`, `evalAction`, `change`), its promise rejected; make them before the batch or after it; and changes only through `changeProperty` and the view filters (`setBooleanViewFilter`, `setDateIntervalViewFilter`), which go with the batch — moving the focus or changing the DOM inside `fn` makes the platform send requests of its own, which a batch is not made for. A function returning a Promise is refused — but not the batch's own, which a `changeProperty` made in `fn` returns —, as in the [form controller](../language/Form_and_navigator_controllers.md#batch)'s `batch`.
-
-`getPropertyValues` uses the same `mode` values as the form controller's `<group>.<property>.getValues`, but the property is resolved among this group's columns, and the lookup runs for its current object. The result is delivered to the `ok` callback as `{ data: [ { displayString, rawString, objects }, ... ], more }`. `more` is `true` while more answers are to come — the final list of an answer the server gave before it was sure the form's unsaved changes do not affect it, or a later lookup's answer. An earlier lookup's answer that comes after a later one's is dropped:
-
-```js
-controller.getPropertyValues('name', query, result => { ... });
-```
-
-`setBooleanViewFilter` and `setDateIntervalViewFilter` set a server view filter and the page size `pageSize`: the next _update_ call receives an already filtered list. `setBooleanViewFilter` keeps the objects whose `property` value is true. `setDateIntervalViewFilter` keeps the objects whose period from the `startProperty` value to the `endProperty` value intersects the interval from `start` to `end` (the values are JS `Date`s, and when `endProperty` is `null`, both ends of the period are taken from `startProperty`). This is how the built-in calendar view reads only the events of the visible date range.
-
-The display getters let the component use the design attributes set on the form: for example, a chart view builds its datasets taking the column captions and colors from `getCaption`, `getBackground` and `getForeground`.
-
-### Calling the server {#calling-the-server}
-
-A custom object view calls back into the server through the [form controller](../language/Form_and_navigator_controllers.md): reached as `controller.form` from the view's local controller, as `props.controller.form` in a [React view](../language/React_views.md), or as the controller passed to an [`INTERNAL CLIENT`](../language/INTERNAL_operator.md) function (the last argument, after the converted call parameters). Its `exec` / `eval` / `evalAction` / `change` methods each run on the server and return a `Promise`. Their signatures are in [Calling the server](../language/Form_and_navigator_controllers.md#calling-the-server). The rest of this section covers how those server calls behave — result conversion, sessions, and the authorization gate.
-
-The result is converted to a JS value:
-
-| Server result | JS value |
-| --- | --- |
-| number, string, boolean, or date scalar | a number, string, boolean, or `Date` |
-| `JSON` | a parsed object or array |
-| `JSONTEXT`, `XML` | the raw string |
-| a file — an image or a file-typed property | a download URL string |
-| a result with additional parameters — a [`RETURN`](../language/RETURN_operator.md) whose expression declares new parameters | an array of `{name, value}` objects, one for each set of the parameters' values — an array for a single value too, and an empty one when there is none: `name` is those values joined with commas, `value` is the result converted as above |
-| a missing or `NULL` result | `undefined` |
-
-A call made as the [MCP server](../paradigm/MCP_server.md)'s eval tool makes one — `controller.mcp.eval(script, ...params)`, and `exec` and `evalAction` likewise — takes its parameters and gives its result as the tool does. The parameters are bound as the tool binds its `params`, by the rules of an HTTP request: a value is taken as its string and parsed by the class of the parameter — so a numeric string is a number —, and an object that has `text` or `base64`, or says `type: 'file'`, is a file whatever the class of the parameter. The call resolves with what the tool answers, in place of the result converted by the table: the object `{results, status}`, where `status` is the HTTP status the action set, `200` when it set none, and `results` has an entry for each value the action returned — `{value}` with the value as its string, and `name` too in each entry of a result with additional parameters.
-
-A file is the entry `{type: 'file', fileName, extension, mimeType, size}` — `fileName` is the file's name with its extension, the name of a file that has none of its own being `file` — with `text` — the text of a text file —, `base64` — the content of any other file under 64 KiB, in base64 —, or `url` — the download URL of a bigger one. The content is named as in a file given as a parameter, so an entry that carries it can be passed to the next call as it is. A text file over 10 MiB is given without its text, with `truncated: true`; one call carries 30 MiB of content at most, past which a text is given the same way and any other file by its `url`.
-
-Parameters are passed as plain JS values (a number, string, boolean, `Date`, or an object/array for a `JSON` parameter) and bound positionally. A file is passed as the string of its text, or as an object: `{base64, fileName, extension}` for a file whose content is not a text, `{text, fileName, extension}` to give a text file a name or an extension; the name and the extension are optional. An lsFusion object cannot be passed — its numeric id is passed instead. When the parameter is typed by a class, the platform resolves the id to the object of that class. A row handle (`row.objects`) is not an object reference: for a class-typed parameter the call fails. An error — a missing action or property, a script error, or a runtime exception — rejects the promise with its message.
-
-In a form the calls run in the form's session, so a change is visible to the following calls and is committed when the form applies. In the navigator each call runs in its own session, so a change is discarded unless the script applies it with `APPLY`, and a read sees the committed database state.
-
-By default these calls are gated like the external HTTP API: with the default `enableAPI = 0` a call is allowed only when the target action or property carries [`@@api`](../language/Action_options.md) (which also exposes it over HTTP), or the user has admin rights. To let a specific form's controller call selected actions/properties without that gate, list them in the form's `CUSTOMS` clause — the authorization becomes "the user can open this form" plus the explicit listing:
-
-```lsf
-FORM order 'Order'
-    OBJECTS o = Order
-    PROPERTIES(o) number, note
-    CUSTOMS round, format = formatSum, taxRate
-;
-```
-
-Now `controller.form.exec("round", 3.14159)`, `controller.form.exec("format", 1990, "USD")` and `controller.form.change("taxRate", 0.2)` work on this form without `@@api` or `enableAPI` (a React view calls the same on `props.controller.form`). Each entry may be renamed with an alias (`format = formatSum`), prefixed with `ACTION` to force the action reading, and fully qualified with a signature (`round[NUMERIC]`) to pick an overload. `exec` needs an action entry and `change` a property entry. Parameters are passed positionally by the caller as plain values — phase 1 entries are mostly primitive calls like these. The clause changes which calls are allowed, not how parameters are bound, and does not restrict the argument values a caller passes, so list only entries safe for any argument (forcing a parameter to the form's own object is phase 2). `eval`/`evalAction` run arbitrary script and stay under the gate. An end-to-end working example — one CUSTOM view calling actions with object, primitive, and JSON parameters, reading a `RETURN` result, and changing properties through `CUSTOMS` — is in [How-to: Custom Components (server calls)](How-to_Custom_components_server_calls.md).
-
-Prefer `CUSTOMS` over `@@api` for a call a custom view needs: `CUSTOMS` scopes access to this form, while `@@api` also exposes the action or property over the external HTTP API. Mark something `@@api` only when it is genuinely part of that API.

@@ -662,7 +662,10 @@ module.exports = {
             'language/React_windows',
           ]
         },
+        'language/Render_functions',
+        'language/Edit_functions',
         'language/Form_and_navigator_controllers',
+        'language/Client_JavaScript_modules',
         'language/Comments',
         'language/Coding_conventions', 
       ]

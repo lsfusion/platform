@@ -69,7 +69,7 @@ NAVIGATOR {
 ```
 
 Next, use JavaScript and CSS to create a component that will display messages in the browser.
-The component will be created in the chat.js file, which will be located in the _resources/web_ folder. This is the no-build path — a plain `.js` file, no JSX or bundling. See [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md) for where custom JS goes and for the with-build alternative. The `controller` these classic components receive is described in [Form and navigator controllers](../language/Form_and_navigator_controllers.md#how-a-view-gets-its-controller).
+The component will be created in the chat.js file, which will be located in the _resources/web_ folder. This is the no-build path — a plain `.js` file, no JSX or bundling. See [Client JavaScript modules](../language/Client_JavaScript_modules.md#without-the-build) for where custom JS goes and for the with-build alternative. The `controller` these classic components receive is described in [Form and navigator controllers](../language/Form_and_navigator_controllers.md#how-a-view-gets-its-controller).
 
 Inside the chat.js file, create the _chatMessages_ function. It will return an object consisting of two functions: _render_ and _update_.
 
@@ -346,7 +346,7 @@ function chatMessageInput() {
     }
 }
 ```
-The _update_ function receives as the _value_ parameter the value of the `message[]` property — a string, or `null` when the property is empty. A value of any class arrives converted to a JS value in the same way as in the rows of a [React view](../language/React_projection.md#values), and, files aside, is passed to `change` in the same shape.
+The _update_ function receives as the _value_ parameter the value of the `message[]` property — a string, or `null` when the property is empty ([A property's value](../language/Render_functions.md#property)).
 
 The CSS for the created element will look like this:
 ```css
@@ -366,8 +366,8 @@ As a result, the component will look like this:
 
 Then we add event handlers that will send the message when CTRL+ENTER is pressed,
 and write the entered message to the `message[]` property when the component loses focus.
-The entered text is passed by the _change_ method of the controller: it goes into the change handling of the `message[]` property in the same way as a value entered by the standard editor — for a data property that is writing the value into it. When the passed object goes into the default change action of a property with a custom-class value listed in the `CHECKED BY` block of a [constraint](../language/CONSTRAINT_statement.md), it must be among the values the filter leaves: otherwise the change is refused.
-The `send[]` action is executed by the _exec_ method of the [form controller](../language/Form_and_navigator_controllers.md), available as `controller.form`: a call to the server, which the form allows by listing the action in its `CUSTOMS` clause. The requests are executed on the server in the order of the calls, so by the time `send[]` runs the entered text is already written to `message[]`.
+The entered text is passed by the _change_ method of the controller ([A property's controller](../language/Render_functions.md#property-controller)).
+The `send[]` action is executed by the _exec_ method of the [form controller](../language/Form_and_navigator_controllers.md), available as `controller.form`: a call to the server, which the form allows by listing the action in its `CUSTOMS` clause. On CTRL+ENTER the handler calls _change_ before _exec_, so by the time `send[]` runs the entered text is already written to `message[]`.
 The handlers are added in the _update_ function:
 ```js
 element.text.onkeydown = function(event) {
@@ -385,8 +385,7 @@ element.text.onblur = function (event) {
 ```
 
 Add the input field and the quoted message to the form, as well as the _Send_ button. **CUSTOMS** lets the component call `send[]` through `controller.form.exec`.
-The keyword **CUSTOM** specifies that the value of the `message[]` property is to be displayed using the _chatMessageInput_ function created earlier.
-If an action is specified after the property with the keyword **ON CHANGE**, it is executed instead of the standard change handling, and the value passed by the _change_ method is substituted for the user input in its [value request](../paradigm/Value_request_REQUEST.md):
+The keyword **CUSTOM** specifies that the value of the `message[]` property is to be displayed using the _chatMessageInput_ function created earlier:
 
 ```lsf
 EXTEND FORM chat
@@ -426,72 +425,3 @@ By setting the _valueHeight_ (`-1`, the height of the content) and _width_ attri
 The final form will look like this:
 
 ![](../images/How-to_Custom_components_form.png)
-
-### Controller methods {#controller-methods}
-
-The methods of the controller passed to the _update_ function, internal helpers aside (optional arguments are bracketed):
-
-| method | what it does |
-| --- | --- |
-| `change([value])` | pass a value change (see above); with no argument the change action is called without a value |
-| `getValues(value, ok[, fail][, count])` | a server suggestion list for the typed `value` — the same suggestions as when the property is edited normally |
-| `isReadOnly()` | whether the property can be edited: `null` — editable, `false` — read-only, `true` — disabled |
-| `diff(list, fnc[, noDiffObjects][, removeFirst])` | compute the changes of a value array — like the `diff` method in [Custom components (objects)](How-to_Custom_components_objects.md); the items are matched by their `objects` field |
-| `getColorThemeName()` | the current color theme name: `'LIGHT'` or `'DARK'` |
-| `form` | the [form controller](../language/Form_and_navigator_controllers.md) |
-
-The `ok` handler of `getValues` receives the result in the same format as a custom object group's [`getPropertyValues`](How-to_Custom_components_objects.md#controller-methods). The _render_ function and the optional _clear_ function, invoked when the cell is cleared, receive a reduced controller as the second argument — of its methods, `clearDiff()` is the useful one, resetting the list remembered by `diff`.
-
-### Custom editor {#custom-editor}
-
-By default the value is edited by the property's standard mechanism — a text input, for instance. The `CHANGE` keyword of the [`CUSTOM` value view](../language/Properties_and_actions_block.md) replaces or extends that mechanism with an editor of your own, written in JavaScript:
-
-```lsf
-PROPERTIES(o) address CUSTOM CHANGE 'googleAutocomplete'
-```
-
-The editor function, like the display function, is registered as a wrapper and returns an object of several functions. The editor kind is determined by which rendering function that object contains:
-
-| function | editor |
-| --- | --- |
-| `renderInput(element, controller, value)` | extends the standard text input; `element` is that input itself |
-| `renderDialog(element, controller, value)` | a window editor |
-| `render(element, controller, value)` | an editor replacing the cell content |
-
-`value` is the current property value converted to a JS value. Besides the rendering function, the object may contain:
-
-- `getValue(element)` — returns the value to commit. The string `'canceled'` cancels the edit. For an input editor, when this function is absent, the text of the input itself is taken.
-- `clear(element, cancel)` — cleanup when the edit finishes. `cancel` is true on cancellation.
-- `onBrowserEvent(event, element)` — handling browser events during the edit.
-
-The editor controller provides:
-
-| method | what it does |
-| --- | --- |
-| `commit([value])` | commit the edit: the passed value or, with no argument, the current one (from `getValue` or the input) |
-| `cancel()` | cancel the edit |
-| `setDeferredCommitOnBlur(true)` | defer the commit on focus loss — for picking from a suggestion list rendered outside `element` |
-| `getColorThemeName()` | the current color theme name |
-| `form` | the [form controller](../language/Form_and_navigator_controllers.md) |
-
-The committed value goes through the property's ordinary change channel — the same way as a value entered by the standard editor.
-
-For example, the built-in `googleAutocomplete` editor extends an address input with Google Maps suggestions:
-
-```js
-function googleAutocomplete() {
-    return {
-        renderInput: (element, controller) => {
-            // the suggestion list is rendered outside element, and picking from it ends with a focus loss,
-            // so the commit on focus loss is deferred until the value is set
-            controller.setDeferredCommitOnBlur(true);
-
-            new google.maps.places.Autocomplete(element, { types: ['address'] });
-        },
-        clear: (element, cancel) => {
-            // remove the suggestion list elements added to <body>
-            $(".pac-container").remove();
-        }
-    };
-}
-```
