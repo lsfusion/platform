@@ -101,15 +101,6 @@ public class DefaultFormView extends FormView {
     public DefaultFormView(FormEntity formEntity, Version version) {
         super(formEntity, version);
 
-        setCaption(entity.getInitCaption());
-        String initImage = entity.getInitImage();
-        if(initImage != null)
-            setImage(initImage);
-        canonicalName = entity.getSID();
-        creationPath = entity.getCreationPath();
-        path = entity.getPath();
-        formSchedulers = entity.formSchedulers;
-
         FormContainerSet formSet = FormContainerSet.fillContainers(mainContainer, containerFactory, version);
         
         objectsContainer = formSet.getObjectsContainer();
@@ -364,7 +355,6 @@ public class DefaultFormView extends FormView {
     // добавление в панель по сути, так как добавление в grid происходит уже на живой форме
     private void addPropertyDrawView(PropertyDrawView propertyDraw, ComplexLocation<PropertyDrawView> location, Version version) {
         PropertyDrawEntity drawEntity = propertyDraw.entity;
-        drawEntity.proceedDefaultDesign(propertyDraw, this);
 
         ContainerView propertyContainer;
         if (propertyDraw.entity.isToolbar(entity)) {

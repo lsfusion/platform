@@ -195,6 +195,15 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         mainContainer.height = -3;
         setComponentSID(mainContainer, getBoxContainerSID(), version);
 
+        setCaption(entity.getInitCaption());
+        String initFormImage = entity.getInitImage();
+        if(initFormImage != null)
+            setImage(initFormImage);
+        canonicalName = entity.getSID();
+        creationPath = entity.getCreationPath();
+        path = entity.getPath();
+        formSchedulers = entity.formSchedulers;
+
         Pair<ImOrderSet<GroupObjectEntity>, ImList<Integer>> groups = entity.getNFGroupsComplexOrderSet(version);
         for (int i = 0, size = groups.first.size() ; i < size ; i++) {
             addGroupObjectBase(groups.first.get(i), ComplexLocation.LAST(groups.second.get(i)), version);
@@ -212,6 +221,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             String initImage = property.initImage;
             if(initImage != null)
                 view.setImage(initImage);
+            property.proceedDefaultDesign(view);
         }
 
         for (RegularFilterGroupEntity filterGroup : entity.getNFRegularFilterGroupsListIt(version)) {
@@ -290,7 +300,9 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     public PropertyDrawView addPropertyDraw(PropertyDrawEntity property, ComplexLocation<PropertyDrawView> location, Version version) {
-        return addPropertyDrawBase(property, location, version);
+        PropertyDrawView view = addPropertyDrawBase(property, location, version);
+        property.proceedDefaultDesign(view);
+        return view;
     }
 
     private void addGroupObjectView(GroupObjectView groupObjectView, Version version) {

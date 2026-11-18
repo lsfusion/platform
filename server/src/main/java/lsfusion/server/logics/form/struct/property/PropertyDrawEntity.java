@@ -47,7 +47,6 @@ import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
-import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawViewOrPivotColumn;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -552,7 +551,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return editType == PropertyEditType.EDITABLE;
     }
 
-    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView defaultView) {
+    public void proceedDefaultDesign(PropertyDrawView propertyView) {
         getInheritedProperty().drawOptions.proceedDefaultDesign(propertyView);
     }
 
