@@ -169,7 +169,7 @@ A property's `.change` behaves the same way in a batch and out of one, and the f
 
 | value | how it is passed |
 | --- | --- |
-| a primitive | directly: a number for numeric types, a string, a JS `Date` or its ISO string for `DATE` / `TIME` / `DATETIME` / `ZDATETIME`, a boolean, `null` to clear |
+| a primitive | directly: a number for numeric types, a string, a JS `Date` or the string a date input of the class has for its value (`'2026-11-15'`, `'10:30'`, `'2026-11-15T10:30'`) for `DATE` / `TIME` / `DATETIME` / `ZDATETIME`, a boolean, `null` to clear |
 | an interval, a `COLOR` | in the same string format [received by the view](React_projection.md#values): `<from>.<to>` with the bounds in milliseconds, `#rrggbb`. A value of any other shape is refused |
 | `JSON` | a JS object or array, serialized as JSON |
 | an object (FK value) | the target object's id — `row.key` of its row (for a single-object group it already is its numeric id), or an id-valued property on the form (e.g. `LONG(obj)`) — not a handle |
