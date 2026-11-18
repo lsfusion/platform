@@ -121,30 +121,48 @@ Paradigm article structure convention:
   ``[`IS`, `AS`](IS_AS_operators.md).``
   or
   `[Type conversion operator](Type_conversion_operator.md).`
-  are forbidden
+  are forbidden;
+  the classic interface articles
+  (`Render_functions.md`,
+  `Edit_functions.md`)
+  belong in this section
+  as the language
+  of the `CUSTOM` options
+  that name a JavaScript function
+  for an object group,
+  a property,
+  or `INPUT`;
+  shared client interface articles
+  also belong here
+  when they describe
+  non-React code
+  used by the construction
 - if a Language article
-  of the interface
-  a React component
-  receives and calls
-  (`React_*.md`,
-  and `Form_and_navigator_controllers.md`
-  for the controllers
-  it is given)
+  on an interface
+  a React component receives and calls
+  (the `React_*.md` articles,
+  `Form_and_navigator_controllers.md`
+  for the controllers it is given,
+  and `Client_JavaScript_modules.md`
+  for the modules holding its code)
   realizes the abstraction —
-  a React component
-  draws it,
+  a React component draws it,
   reads it,
-  or changes it
+  changes it,
+  or is called by it
   through that interface —
   the Paradigm article
   SHOULD also contain
   a `React` section
-  (the heading is `React`
+  (the same heading
   in both language versions),
   placed immediately
-  after `Language`
-  (or in its place
-  when there is none)
+  after `Language`,
+  or immediately
+  before `Examples`
+  if there is no `Language`,
+  or last
+  if neither exists,
   at the same heading level,
   that links
   ONLY to those articles;
@@ -154,25 +172,33 @@ Paradigm article structure convention:
   it covers,
   not repeated
   in a more general one,
-  and the overview article
-  `React_views.md`
+  and an overview article
+  (`React_views.md`)
   MUST NOT be linked
   on top of
   a more specific article
   that covers the aspect;
   every link
   MUST be accompanied
-  by a brief descriptive clause,
+  by a brief descriptive clause
+  stating what the link covers
+  for a React component,
   as in `Language`
   (bare link lists
-  are forbidden)
+  are forbidden);
+  an article with only
+  classic or non-React
+  interface links
+  has no `React` section
 - links to Language articles
   MUST appear
   ONLY in the article's
-  `Language` (`Язык`) section —
-  those to the articles
-  of the React interface
-  ONLY in its `React` section;
+  `Language` (`Язык`) section,
+  except those covering
+  what a React component uses
+  as described above,
+  which appear ONLY
+  in its `React` section;
   the definition,
   body, `Examples`,
   and any other section
@@ -182,7 +208,7 @@ Paradigm article structure convention:
   Beyond links,
   a Paradigm article
   MUST NOT use,
-  anywhere in its prose,
+  in its body,
   a Language-specific term —
   one whose meaning
   is owned by
@@ -200,14 +226,30 @@ Paradigm article structure convention:
   is a *property*
   or its *value*,
   not an *expression*);
-  the terms of the React interface
+  the terms of those interfaces
   (*projection*, `props.data`,
-  a controller's *member*)
-  are such terms,
+  a controller's *member*,
+  a *local controller*,
+  a *render function*)
+  are such terms;
+  the link clauses
+  in `Language` and `React`
+  MAY name the interface
+  where needed,
   while the body
   MAY say
-  that a React component
-  draws an element
+  that client code —
+  a React component
+  or a JavaScript function —
+  draws an element.
+  The release overview
+  (`Whats_new.md`)
+  is exempt from these two restrictions.
+  A release item
+  MAY use interface names
+  and link directly
+  to the relevant Language articles,
+  including the React articles
 - a Paradigm article
   SHOULD also include
   an `Examples` section

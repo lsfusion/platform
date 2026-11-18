@@ -260,7 +260,9 @@ Language file naming convention:
   takes a descriptive name,
   prefixed with the client technology
   when the interface is specific to it
-  (`React_projection.md`)
+  and the name does not already say so
+  (`React_projection.md`;
+  `Render_functions.md` needs none)
   and without a prefix
   when several technologies share it
   (`Form_and_navigator_controllers.md`)
@@ -995,7 +997,26 @@ Completeness of research:
   that builds the projection
   and the controller
   (`web-client/src/main/java/lsfusion/gwt/client/form/design/view/`
-  and the classes it calls)
+  and the classes it calls);
+  for the render and edit functions,
+  the web-client classes
+  that call them
+  and build their controllers
+  (`form/object/table/grid/view/GCustom.java`
+  and `GSimpleStateTableView.java`,
+  `form/property/cell/view/CustomCellRenderer.java`,
+  `form/property/cell/classes/controller/CustomReplaceCellEditor.java`
+  and the editors beside it);
+  for the form and navigator controllers,
+  `form/controller/GController.java`
+  and the server handlers of their calls;
+  for the modules,
+  `server/src/main/lsfusion/system/SystemEvents.lsf`
+  (`onWebClientInit`, the scan of `web/`),
+  `build/web-compile-maven-plugin`
+  and `web-client/src/main/java/lsfusion/gwt/server/JsxTransformer.java`;
+  the `form/…` paths
+  are under `web-client/src/main/java/lsfusion/gwt/client/`
 - validate a JSX or JS example
   of such an interface
   (see Examples in ../AGENTS.md)
