@@ -1,0 +1,7 @@
+MODULE FormulaFewerNamedParams;
+
+REQUIRE System;
+
+// a property that declares fewer parameters than its FORMULA lists classes is reported as such: it used to stop
+// the parsing with an IndexOutOfBoundsException (#1998)
+sumTwice (a) = FORMULA DOUBLE '($1) + ($2) * 2' (DOUBLE, DOUBLE);

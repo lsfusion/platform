@@ -1,0 +1,9 @@
+MODULE FormulaUnnamedParams;
+
+REQUIRE System;
+
+// parameter classes without names in a property declared without parameters stopped the parsing
+// with an IndexOutOfBoundsException (#1998)
+sumTwice = FORMULA DOUBLE '($1) + ($2) * 2' (DOUBLE, DOUBLE);
+
+sumTwiceOfConstants = sumTwice(1.0, 2.0);
