@@ -11,7 +11,7 @@ title: 'Внутренний вызов (INTERNAL)'
 
 ### Java - выполнение Java-кода в JVM сервера приложений {#java}
 
-Цель — Java-класс, унаследованный от `lsfusion.server.physics.dev.integration.internal.to.InternalAction`. Его метод `executeInternal(ExecutionContext context)` вызывается на каждом исполнении. Способ задания цели (компилируемый класс или встраиваемый Java-фрагмент) — на стороне оператора `INTERNAL`.
+Цель — Java-класс, унаследованный от `lsfusion.server.physics.dev.integration.internal.to.InternalAction`. Его метод `executeInternal(ExecutionContext context)` вызывается на каждом исполнении. Способ задания цели — на стороне оператора `INTERNAL`.
 
 Классы параметров действия и поведение по `NULL`-аргументам определяются оператором `INTERNAL`. По умолчанию действие не принимает `NULL`-значения, на стороне Java приём `NULL` дополнительно управляется переопределением `allowNulls()`.
 

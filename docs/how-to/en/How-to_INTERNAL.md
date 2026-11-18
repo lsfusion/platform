@@ -65,7 +65,7 @@ First, the action reads the server parameters using the built-in `InetAddress` c
 There is also an alternative way to set this property:
 
 ```lsf
-getIPFusion INTERNAL <{ findProperty("ip").change((Object)java.net.InetAddress.getLocalHost().toString(), context); }>;
+getIPFusion INTERNAL <{ findProperty("ip").change(java.net.InetAddress.getLocalHost().toString(), context); }>;
 showIPFusion 'Show computer name (Fusion)' {
     getIPFusion();
     MESSAGE ip();
@@ -76,7 +76,7 @@ EXTEND FORM info
 ;
 ```
 
-The platform will generate the target class, insert the specified code into it and then compile it with the Eclipse compiler shipped with the platform. The advantage of this approach is that building the project does not require a dedicated step for compiling the Java code. However, the approach has a number of significant limitations and can be used only in the simplest cases.
+The platform will generate the target class, insert the specified code into it and then compile it with the Eclipse compiler shipped with the platform. The advantage of this approach is that no separate Java class has to be written. However, an action created this way has no parameters, and an exception thrown from its code is only printed to the application server's stderr, so the approach suits only the simplest cases.
 
 ## Example 2
 

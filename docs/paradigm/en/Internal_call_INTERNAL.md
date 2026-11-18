@@ -11,7 +11,7 @@ The platform currently supports the following types of internal calls:
 
 ### Java - executing Java code in the application-server JVM {#java}
 
-The target is a Java class extending `lsfusion.server.physics.dev.integration.internal.to.InternalAction`. Its `executeInternal(ExecutionContext context)` method runs on each invocation. How the target is specified (compiled class or inline Java fragment) is covered by the `INTERNAL` operator.
+The target is a Java class extending `lsfusion.server.physics.dev.integration.internal.to.InternalAction`. Its `executeInternal(ExecutionContext context)` method runs on each invocation. How the target is specified is covered by the `INTERNAL` operator.
 
 The classes of the action's parameters and the behaviour for `NULL` arguments are defined by the `INTERNAL` operator. By default the action rejects `NULL` parameter values, and on the Java side `NULL` acceptance can also be controlled by overriding `allowNulls()`.
 
