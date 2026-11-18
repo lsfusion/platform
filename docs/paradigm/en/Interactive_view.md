@@ -13,7 +13,22 @@ In the interactive view, object groups can be displayed in a table. The rows in 
 
 When an object group is displayed in a table, the number of rows (object collections) displayed can either be determined automatically based on the height of the visible part of the table, or specified by the developer explicitly when creating the form.
 
+In the web client, Ctrl+Home and Ctrl+End make the first or last row of the entire list current, under the current filters and sortings. The server finds that row and reads a portion of the list starting at the beginning or ending at the end, replacing the rows previously loaded into the table. The [object search](Activation_ACTIVATE.md#search) operation with the first or last direction and no seek objects performs the same move.
+
 The button that exports a table to `XLSX` has a fallback for a result that would be too large. The [working parameter](Working_parameters.md) `minSizeForReportExportToCSV` turns it on: it is `-1` by default and there is no fallback, while at zero or above the platform compares the size of the collected data in bytes with it and, if the data is larger, returns the same data as a `CSV` file with `;` as the separator instead of `XLSX`.
+
+#### Copying and pasting {#clipboard}
+
+In the web client's table, copying selected cells produces text with one line per row and tabs between cell values. The cells are the intersection of the selected rows and the selected columns the form currently shows. A selected column that becomes hidden is excluded from copying and pasting. Without a selection, the current cell is copied. The selected rows can include rows not loaded into the table: the server reads them under the current filters and sortings.
+
+Text copied from a table or a spreadsheet is pasted as follows:
+
+| Text | Result |
+| --- | --- |
+| One value | For each selected column, the current row's cell must allow the change. Otherwise the entire column is skipped. If the change is allowed, the value is pasted into the selected cells of that column, including the current row even when it is outside the selected rows. Without a selection, it is pasted into the current cell. |
+| Several values separated by tabs or line breaks | The values are pasted starting at the current cell: into successive shown columns and successive rows in the group's order. If there are not enough rows, new objects are created only for an object group consisting of one object whose base class is a concrete user class. The web client asks for confirmation before pasting several values. |
+
+Pasting uses the property's [change event](Form_events.md#property), with the [event source](Form_events.md#source) set to `PASTE`. Within the columns where pasting is allowed, cells that the form does not allow to change, including read-only cells, are skipped without shifting the other values. The pasted text is parsed for the input type requested by the change event handler, which can differ from the displayed value's type. If parsing fails, the handler receives `NULL`.
 
 ### Object trees {#tree}
 
@@ -86,6 +101,21 @@ The user can change existing orders or add their own, as well as add their own f
 -   Filters – by using the corresponding button under the table for each object group. By default, the filter is set to the active property in the table, and filters it for equality to the entered value (for all types except case-insensitive string types, where the filter is set to include the entered string). If necessary, the developer can specify the default filtering type explicitly by using the corresponding option.
 
 The developer can also declare a user filter for a property of the form in advance: its condition row is then shown in the user filter component of the property's object group as soon as the form opens, with the property and the comparison set and an empty value, and it filters nothing until the user enters a value. Such a row is permanent: the user changes its value and, with the filter controls shown, its comparison, but cannot remove it, and resetting all the filters only empties its value. The row is shown only while its component is present in the [form design](Form_design.md), where it can be moved or removed.
+
+In the web client, when the platform draws both the table and its user filters, the table's keys also control the filters:
+
+| Key | Result |
+| --- | --- |
+| F3 | Opens the editor of the first condition on the current column, keeping its comparison, negation and junction with the next condition. If there is no condition, the property's declared filter is used with its last comparison, or a new condition is added at the end with the property's default comparison. The current cell's value is put into the editor when the cell displays the value used for filtering. |
+| Alt+F3 | Resets the conditions and opens the editor of a new condition on the current column. |
+| Shift+F3, Escape | Resets the user filters immediately, including in manual apply mode. Escape is taken for this purpose while there are conditions or pending filter changes to reset. |
+| Typing in a column | Starts editing a quick filter on that column, or on the property assigned to it for quick filtering. If quick search is enabled instead, typing selects a loaded row whose text starts with the typed characters, ignoring case, in the first sorted column, or the first column if none is sorted. |
+
+F3, Alt+F3 and quick filtering require the user filter component in the form design. A cell whose displayed value differs from the value used for filtering does not supply that value to the condition's editor.
+
+Enter in the open filter editor confirms the value. In automatic apply mode, this also applies the filters. In manual apply mode, the change remains pending until the user chooses Apply or presses Enter again on the filter's value cell after editing has ended.
+
+When a React component draws the filters of a platform-drawn table, F3 sets the first condition on the current column using the current cell's value, with the same comparison, negation and junction rules. Alt+F3 replaces the conditions with one condition on that column. These keys do not change conditions when the current cell displays a different value from the one used for filtering. Neither key opens a platform editor, and typing in a column does not start quick filtering. The component edits the condition's value. Manual apply mode still leaves these changes pending until Apply.
 
 When several filters are chained together with AND/OR, by default the junction between two conditions is drawn as a separator glyph (a vertical bar). The working parameter `useTextAsFilterSeparator` draws it as a clickable "AND"/"OR" text label instead, which also switches the junction when clicked.
 

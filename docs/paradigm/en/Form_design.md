@@ -24,6 +24,18 @@ If at some point a container has no child components , or they are invisible, it
 
 A container that has a caption is *collapsible* by default: a toggle next to the caption folds it away, and the design can have it start folded. The [working parameter](Working_parameters.md) `disableCollapsibleContainers` (`false` by default) removes that default, leaving collapsible only the containers whose design asks for it explicitly. Its two halves take effect at different times: the toggle disappears as soon as the parameter is set, while the initial folded state given in the design is dropped only for a design built after that, that is, after a server restart.
 
+#### Hidden components {#hidden}
+
+The server does not read the contents of an unselected tab or a collapsed container. Closing a popup container stops reading its contents only if the container is collapsible. The server also does not read components hidden by their own display condition or that of a container above them, or components a React component reports as not shown.
+
+The server stops reading an object group's rows only when all the places on the form that need it are hidden. Until reading resumes, the table keeps the rows last sent.
+
+For a property hidden in an unselected tab, a collapsed container or a closed collapsible popup container, a value that changes while hidden is sent as `NULL` instead of being read. The same rule applies when a React component reports that it does not show the property itself or a component containing it. When a property is hidden by its own display condition or that of a container above it, the server instead removes it from the set of displayed properties and stops sending its values until it is shown again. Values needed by a visible part of the form continue to be read there.
+
+The first server response after a component is shown again brings current values for the contents that have become visible, except for updates held back by an object group's manual update mode. Showing the component does not apply those pending updates.
+
+A component's caption, image and comment continue to be read when they are displayed outside its hidden contents, for example in the title of an unselected tab. An action's labels and a list property's labels follow the visibility of the action or property itself. Hiding the whole form on screen, for example by switching to another form's tab, does not by itself stop the server from reading the form.
+
 ### Base components
 
 When defining the form design, the developer can use the following base components, which are created automatically based on the form structure:
@@ -45,7 +57,7 @@ When defining the form design, the developer can use the following base componen
 
 #### Table record {#record}
 
-The components the design adds to the table of an object group — `MOVE` or `NEW` inside `GRID(<object group>) { ... }` — make up the table's *record*: the card of the current object, which the map and the calendar [view types](../language/Object_blocks.md#objects) show over the marker or the event the user clicks, and a custom view next to an element of its own that it specifies when changing the current object, if anything in it is shown. The table and the pivot table do not show the record. A tree has no record.
+The components the design adds to the table of an object group — `MOVE` or `NEW` inside `GRID(<object group>) { ... }` — make up the table's *record*: the card of the current object, which the map and the calendar [views](Interactive_view.md#objects) show over the marker or the event the user clicks, and a custom view next to an element of its own that it specifies when changing the current object, if anything in it is shown. The table and the pivot table do not show the record. A tree has no record.
 
 ### Value cell rendering {#cellrender}
 
