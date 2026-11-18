@@ -182,7 +182,7 @@ If list/edit form is not defined for a class, the platform will create one autom
 
 ### Session owner {#owner}
 
-Since a form is opened by default in the current session, it may not always be safe to apply/cancel changes to this session: for example, the changes made in other forms may accidentally be applied. To avoid such situations, the platform has the concept of a *session owner* – a form which is responsible for managing the life cycle of the session (for example, applying / canceling changes). By default, it is considered that a form is the session owner if the session did not have any other owner when the form was [opened](In_an_interactive_view_SHOW_DIALOG.md).
+Since a form is opened by default in the current session, it may not always be safe to apply/cancel changes to this session: for example, the changes made in other forms may accidentally be applied. To avoid such situations, the platform has the concept of a *session owner* – a form which is responsible for managing the life cycle of the session (for example, applying / canceling changes). By default, it is considered that a form is the session owner if the session did not have any other owner when the form was [opened](In_an_interactive_view_SHOW_DIALOG.md), the form is not opened read-only, and actions that change the session can be called on the form (in a nested session, the last condition is not required).
 
 To implement the mechanism for working with session owners the platform uses a numerical [local](Data_properties_DATA.md#local) property called `System.sessionOwners`. Accordingly, this property is incremented by `1` when you open a form and decremented by `1` when you close it. Thus, it shows the nesting depth of the "form opening stack", and is `NULL` if the session has no owner and not `NULL` otherwise.
 
@@ -208,10 +208,11 @@ By default, these system actions have the following visibility conditions:
 
 |Action|Condition|
 |---|---|
-|Refresh|Always|
-|Save, Cancel|If the form is the owner and actions that change the current session can be called on the form. Cancel may not be shown if the platform determines that canceling the changes is guaranteed to lead to a change of the [initial values](Open_form.md#params) of form objects (i.e., selecting other objects)|
-|OK, Close|If the form was opened [synchronously](In_an_interactive_view_SHOW_DIALOG.md#flow)|
-|Drop|If the form is opened synchronously, returns a value and allows `NULL` values to be passed|
+|Refresh|If the form is not shown as an [embedded form or a popup](In_an_interactive_view_SHOW_DIALOG.md#location)|
+|Save, Cancel|If the form is the [session owner](#owner) and is not shown as an embedded form or a popup. Cancel may not be shown if the platform determines that canceling the changes is guaranteed to lead to a change of the [initial values](Open_form.md#params) of form objects (i.e., selecting other objects)|
+|OK|If the form is not shown as an embedded form or a popup and is either opened [synchronously](In_an_interactive_view_SHOW_DIALOG.md#flow) or the session owner|
+|Close|If the form is not shown as an embedded form or a popup|
+|Drop|If the form returns object values and `NULL` is allowed for at least one of them|
 
 If necessary, all these actions can be shown/hidden by removing the corresponding components from the [form design](Form_design.md) and/or using the corresponding options in the [open form](Open_form.md) operator.
 
