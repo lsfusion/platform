@@ -1226,7 +1226,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<String> result = new ArrayList<>();
         for (int i = 0, paramsSize = paramNames.size(); i < paramsSize; i++) {
             String paramName = paramNames.get(i);
-            if(paramName == null && defaultParamNames != null)
+            if(paramName == null && defaultParamNames != null && i < defaultParamNames.size())
                 paramName = defaultParamNames.get(i);
 
             result.add(paramName);
