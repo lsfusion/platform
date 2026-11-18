@@ -46,6 +46,19 @@ NAVIGATOR {
     }
 }
 
+// the items form customized for all users: a code that adds a button, and a saved grid layout - the column `name` alone,
+// under a caption of its own. With no parameter, both dropped
+uiWebMCPNameColumn() = propertyDraw(form('UiWebMCP.uiWebMCPItems'), 'name');
+uiWebMCPCustomize (BOOLEAN on) {
+    dataExtendCode(form('UiWebMCP.uiWebMCPItems')) <- 'EXTEND FORM uiWebMCPItems PROPERTIES() uiWebMCPReadNote' IF on;
+    columnCaption(uiWebMCPNameColumn()) <- 'Saved name' IF on;
+    columnOrder(uiWebMCPNameColumn()) <- 0 IF on;
+    show(uiWebMCPNameColumn()) <- PropertyDrawShowStatus.Show IF on;
+    inGrid(uiWebMCPNameColumn()) <- on;
+    hasUserPreferences(groupObject(uiWebMCPNameColumn())) <- on;
+    APPLY;
+}
+
 // a property with a parameter: a script that returns it with the parameter left free answers with every value
 uiWebMCPMark 'Mark' = DATA INTEGER (STRING[10]);
 

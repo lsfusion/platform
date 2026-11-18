@@ -199,8 +199,8 @@ public class UiWebMCPIT extends UiTest {
             assertThat(form.locator("[lsfusion-container='PROPERTY(uiWebMCPExtra())']")).hasCount(0);
 
             assertEquals("", call("lsfusion_exec", "{\"action\":\"SystemEvents.formRecreate\",\"form\":{}}", VALUES));
-            // the recreated form is the copy the code makes, under a name of its own
-            assertThat(page.locator("[lsfusion-container='PROPERTY(uiWebMCPExtra())']")).isVisible();
+            // the recreated form is the copy the code makes, known by the form's name
+            assertThat(form.locator("[lsfusion-container='PROPERTY(uiWebMCPExtra())']")).isVisible();
         } finally {
             exec("UiWebMCP.uiWebMCPDropCustomization");
         }
@@ -685,6 +685,27 @@ public class UiWebMCPIT extends UiTest {
         assertThat(form.locator("tr.table-select")).hasCount(3);
         String all = callForm("copy", "{\"group\":\"i\"}");
         assertTrue(all, all.startsWith("{\"result\":\"a\\t7\\t") && all.split("\\\\n").length == 3);
+    }
+
+    // an agent customizes the form the user is in and opens it anew: the form opened is a copy the code is compiled
+    // into, still known by the form's name - the page's, the agent's address - and with the form's saved grid layout
+    @Test
+    public void aCustomizedFormIsTheFormItCustomizes() throws Exception {
+        exec("UiWebMCP.uiWebMCPSeedItems");
+        String address = "\"form\":{\"name\":\"UiWebMCP.uiWebMCPItems\"}";
+        loadWithAgent();
+        Locator form = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCPItems");
+        Locator header = form.locator("th[lsfusion-container='PROPERTY(name)']:visible");
+        assertThat(header).hasText("Name");
+        try {
+            exec("UiWebMCP.uiWebMCPCustomize", "true");
+            call("lsfusion_exec", "{\"action\":\"SystemEvents.formRecreate\"," + address + "}");
+            assertThat(action(form, "uiWebMCPReadNote")).isVisible();
+            assertThat(header).hasText("Saved name");
+            assertEquals("{\"result\":3}", call(CLIENT_TOOL, "{\"method\":\"getCount\",\"args\":{\"group\":\"i\"}," + address + "}"));
+        } finally {
+            exec("UiWebMCP.uiWebMCPCustomize");
+        }
     }
 
     // the form is the one the agent addresses, whichever form the user is in

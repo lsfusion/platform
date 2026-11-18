@@ -172,8 +172,7 @@ public class UiConnectionCustomizeIT extends UiTest {
         type(editor, "EXTEND FORM uiCcForm PROPERTIES() uiCcAdded;");
         action(editor, "formOk").click();
 
-        // the customized form is a form of the module its code is compiled into, as an element the code adds is
-        Locator customized = page.locator("[lsfusion-form$='.uiCcForm']");
+        Locator customized = form(FORM);
         assertThat(customized.locator("[lsfusion-container='PROPERTY(uiCcAdded())']")).isVisible();
         close(customized);
     }
@@ -192,10 +191,9 @@ public class UiConnectionCustomizeIT extends UiTest {
         Locator reopened = form("SystemEvents.customizeForm");
         answered(0, () -> action(reopened, "formOk").click());
 
-        Locator recreated = page.locator("[lsfusion-form$='.uiCcForm']");
-        assertThat(recreated).isVisible();
-        assertThat(recreated.locator("[lsfusion-container='PROPERTY(uiCcAdded())']")).isHidden();
-        close(recreated);
+        assertThat(form).isVisible();
+        assertThat(form.locator("[lsfusion-container='PROPERTY(uiCcAdded())']")).isHidden();
+        close(form);
     }
 
     // its Save saves the code and leaves the editor open, with its editors and what is written in them : the editor
@@ -329,8 +327,7 @@ public class UiConnectionCustomizeIT extends UiTest {
 
     // the property of the connection's code the form's code put on the form
     private void assertAnswerOnTheForm(String answer) {
-        open(FOLDER, element(FORM));
-        Locator customized = page.locator("[lsfusion-form$='.uiCcForm']");
+        Locator customized = open(FOLDER, FORM);
         String container = "[lsfusion-container='PROPERTY(uiCcAnswer())']";
         assertThat(customized.locator(container + ".panel-renderer-value, " + container + " .panel-renderer-value")).hasText(answer);
         close(customized);

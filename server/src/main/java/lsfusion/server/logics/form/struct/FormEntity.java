@@ -1827,8 +1827,10 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
         String script = "FORM " + name + " EXTEND FORMS " + getCanonicalName() + ";\n" + extendCode + ";";
         EvalScriptingLogicsModule customizeLM = BL.LM.evaluate(script, EvalUtils.getParentLMs(applicationLM), false);
         FormEntity copyForm = customizeLM.findForm(name);
-        copyForm.customizeForm = this;
+        copyForm.customizeForm = getCustomizeForm(); // this is the copy itself when the code shows its own form
         copyForm.customizeLM = customizeLM;
+        // compiled: from now on the copy is known by the form's name, as the open form is the user's form
+        copyForm.canonicalName = getCanonicalName();
         return copyForm;
     }
 

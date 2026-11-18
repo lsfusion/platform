@@ -1,0 +1,42 @@
+MODULE CustomizedForms;
+
+REQUIRE TestUtils, SystemEvents;
+
+// a form opened with a code that customizes it (SystemEvents.dataExtendCode) is a copy of the form the code is compiled
+// into, and what the form's module says of the form is said of that copy
+
+cfSecondActive = DATA LOCAL BOOLEAN ();
+
+FORM cfTabs 'Customized tabs'
+    PROPERTIES() cfSecondActive
+;
+
+DESIGN cfTabs {
+    NEW cfPages {
+        tabbed = TRUE;
+        NEW cfFirst;
+        NEW cfSecond { MOVE PROPERTY(cfSecondActive()); }
+    }
+}
+
+// run only by the code, so the form that runs it is the copy
+cfActivateSecond () {
+    ACTIVATE TAB cfTabs.cfSecond;
+    cfSecondActive() <- ACTIVE TAB cfTabs.cfSecond;
+}
+
+// the code for all users : the test does not depend on which user runs it
+cfCustomize (TEXT code) {
+    dataExtendCode(form('CustomizedForms.cfTabs')) <- code;
+    APPLY;
+}
+
+testActivateTabInACustomizedForm 'ACTIVATE TAB of the form selects the tab in the form a code customizes' () {
+    cfCustomize('EXTEND FORM cfTabs EVENTS ON INIT cfActivateSecond()');
+    TRY {
+        SHOW cfTabs NOWAIT;
+        assertTrue(cfSecondActive(), 'ACTIVATE TAB did not select the tab of the customized form');
+    } FINALLY {
+        cfCustomize(NULL);
+    }
+}

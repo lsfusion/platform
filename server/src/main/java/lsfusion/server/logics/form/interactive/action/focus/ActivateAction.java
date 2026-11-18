@@ -46,7 +46,7 @@ public class ActivateAction extends SystemExplicitAction {
         // not something to select
         FormInstance activeFormInstance = context.getFormInstance(false, true);
         FormEntity activeForm = activeFormInstance == null ? null : activeFormInstance.entity;
-        if(activeForm != null && activeForm.equals(requestedForm))
+        if(activeForm != null && activeForm.isOrHasExEntity(requestedForm))
             activeFormInstance.activateTab(activeFormInstance.instanceFactory.getExInstance(requestedTab).entity);
     }
 }
