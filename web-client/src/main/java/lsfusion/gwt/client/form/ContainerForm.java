@@ -49,6 +49,10 @@ public class ContainerForm extends WidgetForm {
                 containerView.activateLastTab();
             }
         }
+        // as show does: a container the form leaves with nothing shown is hidden, and its tab in an outer tabbed
+        // container with it - once the tab shown in the form's place is chosen: updated before, the layout chose one
+        // itself
+        layout.update(-1);
     }
 
     private static GContainer getInContainer(GFormController formController, GContainerWindowFormType windowType) {

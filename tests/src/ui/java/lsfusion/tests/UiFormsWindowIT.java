@@ -514,6 +514,21 @@ public class UiFormsWindowIT extends UiTest {
         assertThat(closer).isVisible();
     }
 
+    // a form shown in a container that is a tab of an outer tabbed container, then closed: the container, empty, is
+    // hidden, and its tab with it. The layout was not updated once the form was taken out, and the tab stayed, empty
+    @Test
+    public void aContainerAFormInItLeftIsHidden() throws Exception {
+        Locator launcher = launcher(), guest = form(GUEST), boxTab = launcher.locator("[lsfusion-tab='guestBox']");
+        assertThat(boxTab).hasCount(0);
+        action(launcher, "uiFormsWindowGuestIntoBox").click();
+        assertThat(launcher.locator("[lsfusion-form='" + GUEST + "']")).hasCount(1);
+        assertThat(boxTab).isVisible();
+
+        action(launcher, "uiFormsWindowCloseGuest").click();
+        assertThat(guest).hasCount(0);
+        assertThat(boxTab).hasCount(0);
+    }
+
     // a floating form not waited for whose answer comes after the client's placeholder - the window the client shows
     // for an open it predicts, 100 ms after the click, which the form then arrives in -: the placeholder and the form
     // in it are a window not waited for - no backdrop, the page around it in use, a floating form the launcher under it

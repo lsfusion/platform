@@ -278,6 +278,19 @@ FORM uiFormsWindowGuestCloser 'Guest closer'
 uiFormsWindowGuestCloserFloating 'Guest closer, floating' () { SHOW uiFormsWindowGuestCloser FLOAT NOWAIT; }
 EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowGuestCloserFloating;
 
+// a form shown in a container that is a tab of an outer tabbed container of the launcher: empty, the container is
+// hidden, and so is its tab
+DESIGN uiFormsWindowLauncher {
+    NEW guestTabs {
+        tabbed = TRUE;
+        NEW guestBox {
+            caption = 'Box';
+        }
+    }
+}
+uiFormsWindowGuestIntoBox 'Guest into box' () { SHOW uiFormsWindowGuest IN uiFormsWindowLauncher.guestBox NOWAIT; }
+EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowGuestIntoBox;
+
 // a form a React view draws (UiFormsWindowCounter), opened from the launcher in System.forms, the window the full screen
 // draws alone
 FORM uiFormsWindowCounter 'Counter';
