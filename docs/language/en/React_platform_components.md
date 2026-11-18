@@ -7,7 +7,7 @@ Inside a React custom container, a [component](../paradigm/Form_design.md) of th
 
 ### Platform rendering {#crossing-back-to-lsfusion}
 
-`custom` crosses from the platform to React; `custom = NULL` is the crossing back. By default the component draws the container's whole subtree from `props.data`. A child given `custom = NULL` — the platform's standard view rather than a custom one — instead keeps its lsFusion view, and the component places that view with `<Platform name/>` rather than drawing it. So does a child with a custom view of its own: a container with its own `custom`, or a property the `FORM` gives a `CUSTOM` render function. `NOCUSTOM` is `custom = NULL` said in the `FORM`.
+By default the component draws the container's whole subtree from `props.data`. A child with its own view, selected by [`custom`](DESIGN_statement.md#component-properties) or [`CUSTOM` / `NOCUSTOM`](Properties_and_actions_block.md#options), is placed with `<Platform name/>`.
 
 ```lsf
 FORM orders 'Orders'
@@ -41,7 +41,7 @@ Every component the view draws, other than a property it carries — a container
 
 A React custom container obeys its own `SHOWIF` as any other component does: the platform hides its box. Inside what React draws, `tabbed`, `collapsed`, `popup` and `activated` do nothing: React lays that content out, and there is no tab strip or collapse header to apply them to — the view has each container's entry instead, and shows what it wants. A scripted `ACTIVATE TAB`, `COLLAPSE` or `EXPAND` on a component there is an error, as on a child the platform draws: its visibility is the view's.
 
-[`SHOW ... IN`](SHOW_operator.md) cannot open a form inside a React custom container or a container the React view draws inside it: the view cannot draw the form added there, so the server refuses the opening. Give the destination container `custom = NULL` and place it with `<Platform>` so that the platform draws the container and the form inside it.
+[Opening a form inside a container (`SHOW ... IN`)](SHOW_operator.md#windowtype).
 
 `Platform`, `usePlatform`, `useShown`, `Caption` and `Image` are runtime globals, like `List`, so bind them to local names before the examples below work: `const { Platform, usePlatform, useShown, Caption, Image } = window.lsfusion;`.
 
@@ -104,11 +104,11 @@ These rules bound the placement:
 - A component inside the container that the platform builds a view of without its being given `custom = NULL` — a [filter group](React_filters_and_toolbar.md#filter-groups) that filters by no object, moved in — is shown by nobody, and the console says so once, with the fix. A component whose [part](React_projection.md#parts) a view draws — a group's or a tree's filter box, filter controls or toolbar, or a group's filter group — is not such a component: the view gets that part.
 - The host has to reach the page. A host that is still outside the document once the render that created it is over gives the child up: the view goes back to waiting, a `<Platform>` with the same name that IS in the page gets it, and the console says which name was given up. A host a portal appends in an effect is in the page by then and is placed as usual.
 - The node `<Platform>` renders holds the lsFusion view, so it must stay empty: give it a class or a style, never children.
-- `custom = NULL` is the platform's standard view wherever it is given: outside a React custom container, or inside a container the platform draws whole, the component is drawn where it stands, with that view.
+- [`custom = NULL`](DESIGN_statement.md#component-properties).
 
 A placement that cannot work says so in the host itself, not only in the console: a name that names nothing inside the container (nor in a container it draws itself), a component the view draws itself, a second host for the same child, a name given a `row` that names no grid property the platform draws per row of a group this view draws, a `row` of another group, and a `row` that is not a row each render their message into the host, in an element of the class `lsf-view-error`. The host's own class stays as the component gave it.
 
-The view tells the server which of the children the platform draws it places — the set of them, not the mounts and unmounts that changed it: it is worked out after every change of placement and once after the component first draws, and only what changed is sent. A child with a host — holding its view, or waiting for it — is placed. A child no `<Platform>` places counts as [a hidden component](../paradigm/Form_design.md#hidden), with its caption, image and comment available to the view for display outside that child. So a component that shows one child at a time renders only that child, rather than hiding the others with CSS: a CSS-hidden child is still placed as far as the server knows, and goes on being read. For the same reason the visibility of a placed child belongs to the component alone — its `collapsible`, `collapsed` and `activated` attributes are ignored, and a scripted `COLLAPSE` / `EXPAND` or `ACTIVATE TAB` on it is an error. `SHOW ... IN` can open a form inside a placed container with `custom = NULL`: the platform draws its contents.
+The view tells the server which of the children the platform draws it places — the set of them, not the mounts and unmounts that changed it: it is worked out after every change of placement and once after the component first draws, and only what changed is sent. A child with a host — holding its view, or waiting for it — is placed. A child no `<Platform>` places counts as [a hidden component](../paradigm/Form_design.md#hidden), with its caption, image and comment available to the view for display outside that child. So a component that shows one child at a time renders only that child, rather than hiding the others with CSS: a CSS-hidden child is still placed as far as the server knows, and goes on being read. For the same reason the visibility of a placed child belongs to the component alone — its `collapsible`, `collapsed` and `activated` attributes are ignored, and a scripted `COLLAPSE` / `EXPAND` or `ACTIVATE TAB` on it is an error.
 
 A container the view draws itself — a page of a tab strip the view lays out, a section it folds — the server reads as a shown one for as long as the view says nothing of it: it cannot see what the view shows. `useShown(name, shown)` says it. A container reported as not shown and everything inside it follow the [rules for reading hidden components](../paradigm/Form_design.md#hidden), including a platform-drawn child placed there, with or without a host. Its caption and image remain available to the view outside it. Call it where it stays mounted while the container comes and goes — in the strip, not in the page —, one hook per container, under the container's design name: unmounted, the hook leaves the container shown, which is what the server assumes of a container no hook names. `shown` left out is `true`. A name that is no container the view draws itself is reported in the console. The container's `SHOWIF` stays the form's, and its entry's `hidden` says only that.
 
@@ -124,7 +124,7 @@ function Tab(props) {
 
 ### A live editor in every row {#live-editor}
 
-A placed child is drawn once. A grid property given `NOCUSTOM` in the `FORM` is drawn once per **row**, so a component can put a real lsFusion editor into every row it renders, instead of showing the value and having to build editing itself:
+A list property is placed in the view that draws its group's rows, wherever the property itself is in the design. A placed child is drawn once. A grid property given `NOCUSTOM` in the `FORM` is drawn once per **row**, so a component can put a real lsFusion editor into every row it renders, instead of showing the value and having to build editing itself:
 
 ```lsf
 FORM orders 'Orders'

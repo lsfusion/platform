@@ -71,6 +71,8 @@ The developer can control how the platform distributes the available container s
 
 First of all, for each component you can specify the *base* size that this component will receive in any case, regardless of the algorithm for placing its container.
 
+A container rendered by a React component without a base height grows with what the component draws, as do the containers above it. If the content exceeds the form, the whole form scrolls — in a tab, its main container. With a base height, the container expands from it into the available space by its extension coefficient, and content that does not fit scrolls inside it by default. It stretches the form only when its own size does not fit.
+
 To determine the final size of the components and their location inside the container, the following algorithm is used:
 
 For each container, one of the directions is considered to be *dynamic*, and the other *static*. The dynamic direction is determined from the name of the container, for example, for a vertical container, the dynamic direction will be vertical; for a horizontal splitter it will be horizontal. For a columned or scrollable container, as well as a tab panel, the dynamic direction is considered to be the vertical. Further, depending on the direction:
@@ -155,6 +157,8 @@ If the form opens in [window](In_an_interactive_view_SHOW_DIALOG.md#location) mo
 The size is computed from the content present at the moment the window opens and does not change afterwards (only the user can resize the window). In the web client, a container rendered by a React component is measured as the component first draws it, from the form's first data, before the window size is computed; what the component draws later — more rows, data that arrives afterwards — is not measured, so content that grows after the opening does not fit the window and pushes the components below it, including the system buttons, past its edge. A component's base size is taken as the minimum when the window size is computed, so a container whose content grows after the opening is given a base size. Content that does not fit in it scrolls inside the container by default.
 
 Measuring and fixing the size at opening is the default mode of the form's main container. If the form's design explicitly gives the main container the base size `-1` — in both directions or only in height — the window is not measured and not fixed in that direction but follows the content, including content drawn later. The window is then centered only at opening, by the content present at that moment, its height is not capped at the screen height — a window taller than the screen scrolls as a whole — and tables on such a form do not fit their height to their rows, keeping their base height with their own scrolling.
+
+A form opened as a tab is sized by the forms window, so a base size is not needed to determine its outer size.
 
 ### Default design {#defaultDesign}
 

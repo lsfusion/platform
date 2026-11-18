@@ -5,11 +5,11 @@ title: 'Form events'
 
 While the application is running, there is a number of events for each form that occur as a result of certain user actions:
 
-#### Global
+#### Global {#global}
 
 -   `QUERYCLOSE` - the user tries to close the form by clicking on the corresponding button in the form header.
 -   `QUERYOK` - the user tries to close a modal form by double-clicking on any row in the table.
--   `SCHEDULE` - a timer on the client: the handler runs every given number of seconds while the form is shown on screen. This is how a form keeps its data current - a periodic refresh (polling, auto-update, live data): with `System.formRefresh` as the handler the form re-reads everything it shows. For a form in a background tab (on the web client also for a form under a modal dialog) a run is skipped. The timer keeps counting, and the next run comes once the form is shown again. The next period is counted from the end of the previous run, once its response has been processed, unless the form asks for a fixed pace, when it is counted from the start of the previous run. On the web client the request does not block the user's input.
+-   `SCHEDULE` - a timer on the client: the handler runs every given number of seconds while the form is shown on screen. This is how a form keeps its data current - a periodic refresh (polling, auto-update, live data): with `System.formRefresh` as the handler the form re-reads everything it shows. For a form in a background tab (on the web client also for a form under a modal dialog or one a React component does not place) a run is skipped. The timer keeps counting, and the next run comes once the form is shown again. The next period is counted from the end of the previous run, once its response has been processed, unless the form asks for a fixed pace, when it is counted from the start of the previous run. On the web client the request is asynchronous: it does not block the user's input and shows no [busy indicator](Interactive_view.md#busy).
 
 #### For objects on the form
 
@@ -45,7 +45,7 @@ The `FILTER` and `ORDER` events of an object group also occur when the form read
 
 There are also several so-called *derivative* events that are nothing more than syntactic sugar, but at the same time allow you more effectively to solve typical problems that arise when working with forms:
 
-#### Global
+#### Global {#global-1}
 
 -   `INIT` - occurs immediately after the form is opened.
 -   `APPLY` - occurs when the form session is saved to the database (inside the transaction, at the very beginning, before global event handling is performed).

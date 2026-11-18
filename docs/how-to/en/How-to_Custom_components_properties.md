@@ -84,8 +84,7 @@ render: function (element, controller) {
 }
 ```
 
-To update the displayed values, the platform will call the _update_ function each time, in which the same _element_ will be passed, 
-as in the _render_ function, the controller, as well as the message _list_. Each list item contains the values of the properties added to the form in the fields named after these properties: _nameAuthor_, _dateTime_, _text_ and so on.
+The [`update` callback](../language/Render_functions.md#render-function) receives the message _list_. Each list item contains the values of the properties added to the form in the fields named after these properties: _nameAuthor_, _dateTime_, _text_ and so on.
 The function removes the previously created elements and creates its own element structure for each message in the list:
 ```js
 update: function (element, controller, list) {
@@ -249,7 +248,7 @@ function chatMessages() {
 }
 ```
 
-In order to load created js and css files when the page opens in the browser, you must add their initialization to the action _onWebClientInit_  by adding the file name to the _onWebClientInit(STRING)_ property. A numeric value is needed to specify the order of loading:
+Load `chat.js` and `chat.css` through [`onWebClientInit`](../language/Client_JavaScript_modules.md#without-the-build):
 ```lsf
 onWebClientInit() + {
     onWebClientInit('chat.js') <- 1;

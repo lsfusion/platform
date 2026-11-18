@@ -58,7 +58,7 @@ A key pressed in a field the view draws reaches the form like any other key. A f
 
 ### Live data {#live-data}
 
-Data that keeps changing while the form is open — quotes, a queue, a monitor — is refreshed by the form itself, not by a timer in the component. The [`SCHEDULE` event](../paradigm/Form_events.md) of the form runs an action every given number of seconds, and the platform delivers what changed through `props.data` like any other change:
+Changes from the form's [`SCHEDULE` event](../paradigm/Form_events.md#global) arrive through `props.data` like any other change:
 
 ```lsf
 FORM quotes 'Quotes'
@@ -74,13 +74,11 @@ DESIGN quotes {
 }
 ```
 
-`System.formRefresh[]` re-reads everything the form shows, so the response carries the whole form on every run. There is no refresh of a single object group: `System.forceUpdate[STRING]` only applies the pending update of a group in manual update mode (the `enableManualUpdate` design attribute) and does nothing for a group updated automatically. So a live board is kept as a form of its own, with only the properties it draws, and the period is no shorter than the data needs.
+[`System.formRefresh[]`](../paradigm/Form_events.md#global) returns the whole form on every run. There is no refresh of a single object group: `System.forceUpdate[STRING]` only applies the pending update of a group in manual update mode (the `enableManualUpdate` design attribute) and does nothing for a group updated automatically. So a live board is kept as a form of its own, with only the properties it draws, and the period is no shorter than the data needs.
 
-The scheduled run differs from a request the component would make itself. A timer of the component's own that calls `controller.refresh.exec()` polls the server the way a click on the form would — as a synchronous request that blocks input until it completes, unless the action is drawn with `NOWAIT` — and, as the third point shows, goes on polling while the form is hidden.
+The scheduled run differs from a request the component would make itself. A timer of the component's own that calls `controller.refresh.exec()` polls the server the way a click on the form would — as a synchronous request that blocks input until it completes, unless the action is drawn with `NOWAIT` — and goes on polling while the form is hidden.
 
-- **It does not block the user.** The web client sends it as an asynchronous request, without blocking input and without the [busy indicator](../paradigm/Interactive_view.md#busy) a synchronous request gets, so the user keeps working while the form is re-read.
-- **It runs only while the form is on screen.** For a form in a background tab, a form the [forms window](React_windows.md#forms-window) component places nowhere, or a form under a modal dialog, the run is skipped. The timer keeps counting, and the next run comes once the form is shown again.
-- **A hidden form stays mounted.** A background tab and an unplaced form are hidden, not closed, so the component is still mounted and a `setInterval` of its own keeps firing — and keeps calling the server — while the form's schedule is paused. That is why the refresh belongs to the form, not to the component. A timer the component does need (an animation, a countdown) is cleared in the effect's cleanup as usual, but that cleanup runs when the form closes, not when it is hidden: what stops it while the view is hidden is [`useVisible()`](#hidden-view).
+**A hidden form stays mounted.** A background tab and an unplaced form are hidden, not closed, so the component is still mounted and a `setInterval` of its own keeps firing — and keeps calling the server — while the form's schedule is paused. That is why the refresh belongs to the form, not to the component. A timer the component does need (an animation, a countdown) is cleared in the effect's cleanup as usual, but that cleanup runs when the form closes, not when it is hidden: what stops it while the view is hidden is [`useVisible()`](#hidden-view).
 
 ### A hidden view {#hidden-view}
 
@@ -108,4 +106,4 @@ It does not say whether the view is scrolled into sight. What the component draw
 
 The tabs and the collapsible containers around a view are a part of the form, and the view reads and changes them as it does the rest of the form — through the properties and actions the design gives it: [`ACTIVE TAB`](ACTIVE_operator.md) says whether a tab is selected, [`ACTIVATE TAB`](ACTIVATE_operator.md) selects it, [`COLLAPSE CONTAINER`](COLLAPSE_operator.md) and [`EXPAND CONTAINER`](EXPAND_operator.md) collapse and expand a container.
 
-The actions run on the server, so a tab is selected when the server answers, not when the view calls the action. Whether a container is collapsed is no property: the form's [`ON COLLAPSE` and `ON EXPAND`](Event_block.md) events run when the user collapses or expands it. A container the view draws itself has no tab and no collapse of the platform's — the view shows it or not —, so `ACTIVATE TAB`, `COLLAPSE CONTAINER` and `EXPAND CONTAINER` on it are an error. `SHOW ... IN` also requires a destination container the platform draws, with `custom = NULL` and placement through `<Platform>` inside a React view ([Child placement](React_platform_components.md#placing)).
+The actions run on the server, so a tab is selected when the server answers, not when the view calls the action. Whether a container is collapsed is no property: the form's [`ON COLLAPSE` and `ON EXPAND`](Event_block.md) events run when the user collapses or expands it. A container the view draws itself has no tab and no collapse of the platform's — the view shows it or not —, so `ACTIVATE TAB`, `COLLAPSE CONTAINER` and `EXPAND CONTAINER` on it are an error. [`SHOW ... IN`](SHOW_operator.md#windowtype).

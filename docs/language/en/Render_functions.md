@@ -116,7 +116,7 @@ update: function (element, controller, value) {
 
 A value of any class arrives converted to a JS value in the same way as in the rows of a [React view](React_projection.md#values), and, files aside, is passed to `change` in the same shape.
 
-Given together with [`SELECT`](Properties_and_actions_block.md#options), the render function draws the selection, and the wrapping function is called with the parameters of the selection.
+Given together with [`SELECT`](Properties_and_actions_block.md#options), the render function draws the selection. The `value` passed to `update` contains the property's options, as for the platform's own selection element. The wrapping function is called with an object `{multi, notNull, html, changeValue}`: `multi` means a selection of several values, `notNull` means a value has to be selected, `html` means the options' views are HTML, and `changeValue` means a pick is passed to the property's explicit change as the option's view.
 
 ### A property's controller {#property-controller}
 

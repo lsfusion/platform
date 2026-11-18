@@ -30,16 +30,16 @@ In a form's React view, requests through controller members or `controller.form`
 
 A **React view** renders an entire custom container, so the `controller` in its `props` is that container's own controller — its [members](React_view_controller.md#members) are called on it directly, and the form's controller is its `form`, `props.controller.form`.
 
-A **CUSTOM object group** and a **CUSTOM property cell** are rendered by classic `render(element, controller)` / `update(element, controller, ...)` callbacks — `update` also receives the group's `list` of rows, or the cell's `value`. The `controller` they receive is a *local* controller scoped to that one group or cell: it adds the helpers those views need — [value, current-row and styling getters and `diff` / `clearDiff`](Render_functions.md#controller-methods) for an object group, [the `change` edit event](Render_functions.md#property-controller) for a property cell. The local controller exposes the form controller as `controller.form`, so the form-level methods below are reached through it:
+A classic view's local controller exposes the form controller as `controller.form` ([object group](Render_functions.md#controller-methods), [property cell](Render_functions.md#property-controller)):
 
 ```js
 const total = await controller.form.exec('recalc', orderId);
 await controller.form.change('customerOrder', orderId, customerId);
 ```
 
-Rows a classic view receives carry the same `key` and `objects` as React rows (see [Row identity](#row-identity-contract)). An object group's local `changeProperty` also *delegates*: for a property that is not one of its own columns it is passed on to the form's `changeProperty` and resolved form-wide, so the view can change a property it does not display. The form controller's `change` takes no rows: it names a property, then the values of its parameters and the new value.
+For a classic view's rows, see [Row identity](#row-identity-contract); for its `changeProperty` delegation to the form, see [An object group's controller](Render_functions.md#controller-methods). The form controller's `change` takes no rows: it names a property, then the values of its parameters and the new value.
 
-An [`INTERNAL CLIENT`](INTERNAL_operator.md) action is a fourth entry point: its bound JavaScript function receives the form controller as the argument after the call parameters. The [custom value editor's controller](Edit_functions.md#editor-controller) (`CHANGE`) also exposes the form controller as its `form` field.
+An [`INTERNAL CLIENT`](INTERNAL_operator.md#client) action is another entry point. The [custom value editor's controller](Edit_functions.md#editor-controller) (`CHANGE`) also exposes the form controller as its `form` field.
 
 ### The form controller's methods {#the-form-controller}
 
@@ -216,6 +216,8 @@ A property's `.change` behaves the same way in a batch and out of one, and the f
 | an interval, a `COLOR` | in the same string format [received by the view](React_projection.md#values): `<from>.<to>` with the bounds in milliseconds, `#rrggbb`. A value of any other shape is refused |
 | `JSON` | a JS object or array, serialized as JSON |
 | an object (FK value) | the target object's id — `row.key` of its row (for a single-object group it already is its numeric id), or an id-valued property on the form (e.g. `LONG(obj)`) — not a handle |
+
+A value received by a view can be passed back to a member's `change` or as a condition's `value` without conversion, except for a file: a download link is not the file. A date or time string has no time zone and must use the input format of its class, as in the table. Any other string is refused, and so is a day its month does not have.
 
 :::info
 Passing a handle (`otherRow.objects`) as an FK value silently sets it to `NULL`, with no error. A handle is only for the row argument of a member's call and for `<group>.change`. To set an FK, pass the target object's id.

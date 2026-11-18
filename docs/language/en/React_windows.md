@@ -20,7 +20,7 @@ NAVIGATOR {
 }
 ```
 
-A component can also be given to a window that already exists, the standard toolbar included — then the navigator is not restructured at all, and only its drawing changes:
+[`EXTEND WINDOW`](WINDOW_statement.md#description) selects a component for an existing window:
 
 ```lsf
 EXTEND WINDOW System.toolbar CUSTOM 'AppMenu';
@@ -53,13 +53,13 @@ The window is given the elements it is responsible for: an element that crossed 
 
 So a window can receive elements the module never declared. A folder's `WINDOW` names the window of its children, and a child that lands in another window is drawn there while the folder is selected. In the stock application this is how Administration works: the folder itself sits in `System.system`, and its sections are declared with `WINDOW toolbar PARENT`, so while it is selected in the top bar they, and their children, are drawn by `System.toolbar` — after `EXTEND WINDOW System.toolbar CUSTOM`, by your component. A component that draws only the elements it knows about loses such sections. Everything the window was given is reached through `root` and `children`.
 
-Only the desktop web client draws the component. The mobile web client and the desktop client render their standard menu for that window, so the navigator stays usable in all of them.
+[Client availability](WINDOW_statement.md#custom).
 
 #### The standard button {#standard-button}
 
 An element the component does not want to draw itself is placed with `<Platform name/>` — the tag that places a design child on a form, where `name` is the element's canonical name. The platform puts its own button inside, with its icon, caption, tooltip and click behavior, but not with what the standard toolbar's layout adds to it: its caption is not hidden until the mouse is over the window, as in an unpinned navigator, and it has no indent for its depth. Where the button goes, and how deep it looks, is up to the component. The [node itself](React_platform_components.md#custom-placement) is left as the component rendered it, without the marks a form's host is given.
 
-The element must be declared `NOCUSTOM` in the [`NAVIGATOR`](NAVIGATOR_statement.md) — the crossing back is declared on the navigator side, the way `custom = NULL` declares it on a form:
+[`NOCUSTOM`](NAVIGATOR_statement.md#nocustom) selects the platform's button:
 
 ```lsf
 NAVIGATOR {
@@ -67,22 +67,18 @@ NAVIGATOR {
 }
 ```
 
-A `NOCUSTOM` element no `<Platform>` names is not shown, as on a form. Five mistakes are reported in the page: a name no navigator element has, a name that is not `NOCUSTOM`, which the component is expected to draw from the projection instead, a name of an element another window draws, a name a second `<Platform>` places again, and a `<Platform>` given a `row` even though a button is placed whole. A name the window merely does not draw right now — an element `SHOWIF` hides, one gated out because its parent is not selected — is not a mistake and is not reported: the place waits, and is filled as soon as the window draws that element. Meanwhile the place of an element `SHOWIF` hides is hidden, as its entry's `hidden` says, and the place of one gated out, which has no entry, stays empty. Which window draws an element is not such a case: waiting for a button another window owns would wait for good.
+Five mistakes are reported in the page: a name no navigator element has, a name that is not `NOCUSTOM`, which the component is expected to draw from the projection instead, a name of an element another window draws, a name a second `<Platform>` places again, and a `<Platform>` given a `row` even though a button is placed whole. A name the window merely does not draw right now — an element `SHOWIF` hides, one gated out because its parent is not selected — is not a mistake and is not reported: the place waits, and is filled as soon as the window draws that element. Meanwhile the place of an element `SHOWIF` hides is hidden, as its entry's `hidden` says, and the place of one gated out, which has no entry, stays empty. Which window draws an element is not such a case: waiting for a button another window owns would wait for good.
 
 #### An HTML template instead of a component {#navigator-template}
 
-A window whose menu only needs its own markup is given an HTML template instead of a component name — the [same template](WINDOW_statement.md) a `custom` container takes, where a `<Platform:name>` place takes the element's standard button. The name is resolved the way every other name in the module is, so nothing has to be spelled out in full, and the place is written open — closing it is an error:
+[Navigator HTML templates](WINDOW_statement.md#custom).
 
 ```lsf
 EXTEND WINDOW System.toolbar CUSTOM
     '<div class="menu"><div class="menu-head">Master data</div><Platform:items><Platform:partners></div>';
 ```
 
-The element has to be declared before the template that gives it a place — a `NAVIGATOR` block that creates it goes above. A name that resolves to nothing is an error when the module is read, so a misspelled name stops the application instead of leaving the menu an item short.
-
-An element the template gives no place is not drawn, so it names everything it shows, and `NOCUSTOM` is not needed on any of them — a template places nothing but the platform's own drawings.
-
-The template may also be computed: given a property instead of a literal, it is recomputed as the property's value changes and the window is drawn again from the new markup, so a menu can rearrange itself without a component. Nothing resolves a computed template, so its places name their elements in full, by canonical name. A component is still what a menu needs when the markup depends on what the component itself reads.
+A component is still what a menu needs when the markup depends on what the component itself reads.
 
 ### The forms window {#forms-window}
 
@@ -140,7 +136,7 @@ Hiding the close button of an inactive tab is how the standard strip follows the
 
 A forms window clips what is drawn in it. Nor is a high `z-index` enough: the window's own element is a stacking context (`position: relative; z-index: 0`), so a layer inside it can never rise above the neighbouring windows. A portal into the page body leaves both behind.
 
-Only the desktop web client draws the component. The mobile web client and the desktop client keep their standard forms window.
+[Client availability](WINDOW_statement.md#custom).
 
 ### The log window {#log-window}
 
@@ -178,11 +174,11 @@ A message the component places nowhere is still logged and still in the projecti
 
 The window itself is still the platform's: the component draws inside it, so in the standard layout the window is hidden, popped out over the form and revealed when a message arrives exactly as before. When the windows are laid out by a [component of their own](#window-layout), the window is shown where that component places it.
 
-Only the desktop web client draws the component. The desktop client keeps its standard message panel, and the mobile web client, whose layout has no message window at all, is left as it was.
+[Client availability](WINDOW_statement.md#custom).
 
 ### The window layout {#window-layout}
 
-A React component can also lay the windows out on the desktop - which window is where, and how large -, instead of the standard layout, which places them by their [`POSITION`](WINDOW_statement.md). The component is given with the `CUSTOM` option of the [`NAVIGATOR`](NAVIGATOR_statement.md) statement:
+The [`CUSTOM` option of `NAVIGATOR`](NAVIGATOR_statement.md#description) selects the window layout component:
 
 ```lsf
 NAVIGATOR CUSTOM 'AppLayout';
@@ -214,4 +210,4 @@ A window the component places nowhere is not shown, and lives on: its navigator 
 
 What the standard layout does with its own panels is not done under a component: the user dragging the border between windows and the sizes kept between sessions, the tabs of windows that share a place, the vertical navbar turning the top strip into a column, the unpinned navigator and log popping out over the form. The pin modes are the standard layout's way of laying the navigator and the log out, so a window the component lays out is not given the classes that collapse it and pop it out over the form or show the top strip's captions only on hover: pinning there changes no layout. The full screen (`ALT+F11`) is as without a component: `System.forms` is drawn alone over the page, and the component is hidden meanwhile - still mounted, its state kept. It is not told of the full screen: `fullScreen` is projected to the [component](#forms-window) of `System.forms` alone. [`Service.resetWindowsLayout`](../paradigm/System_Service.md) leaves the full screen and puts back the windows' declared visibility, and it does not reach sizes the component keeps itself.
 
-Only the desktop web client draws the component. The mobile web client keeps its own page - `System.forms` and the navigation menu -, and the desktop client its own layout of the windows.
+[Client availability](NAVIGATOR_statement.md#description).

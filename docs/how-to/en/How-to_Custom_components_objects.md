@@ -173,7 +173,7 @@ To complete the design setup, create a file _itemcards.css_, which we will also 
 }
 ```
 
-In order to load created js and css files when the page opens in the browser, you must add their initialization to the action _onWebClientInit_  by adding the file name to the _onWebClientInit(STRING)_ property. A numeric value is needed to specify the order of loading:
+Load `itemcards.js` and `itemcards.css` through [`onWebClientInit`](../language/Client_JavaScript_modules.md#without-the-build):
 ```lsf
 onWebClientInit() + {
     onWebClientInit('itemcards.js') <- 1;

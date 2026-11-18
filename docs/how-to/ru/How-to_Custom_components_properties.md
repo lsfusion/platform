@@ -84,8 +84,7 @@ render: function (element, controller) {
 }
 ```
 
-Для обновления отображаемых значений платформа будет каждый раз вызывать функцию _update_, в которую будет передан тот же _element_, 
-что и в функции _render_, контроллер, а также список сообщений _list_. Каждый элемент списка содержит значения свойств, добавленных на форму, в полях с именами этих свойств: _nameAuthor_, _dateTime_, _text_ и так далее.
+[Функция `update`](../language/Render_functions.md#render-function) получает список сообщений _list_. Каждый элемент списка содержит значения свойств, добавленных на форму, в полях с именами этих свойств: _nameAuthor_, _dateTime_, _text_ и так далее.
 Функция удаляет ранее созданные элементы и создает для каждого сообщения из списка свою структуру элементов:
 ```js
 update: function (element, controller, list) {
@@ -249,7 +248,7 @@ function chatMessages() {
 }
 ```
 
-Для того, чтобы при открытии страницы в браузере, загрузились созданные js и css файлы, нужно добавить их инициализацию в действии _onWebClientInit_ путем добавления имени файла в свойство _onWebClientInit(STRING)_. Числовое значение необходимо для задания порядка загрузки:
+Загрузим `chat.js` и `chat.css` через [`onWebClientInit`](../language/Client_JavaScript_modules.md#without-the-build):
 ```lsf
 onWebClientInit() + {
     onWebClientInit('chat.js') <- 1;

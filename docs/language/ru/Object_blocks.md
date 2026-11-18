@@ -204,16 +204,11 @@ FOREGROUND foregroundExpr
   
         - `renderFunction`
      
-            Строковый литерал, определяющий имя [JavaScript функции](Render_functions.md#render-function), которая отвечает за отображение данных. Эта функция должна находиться в .js файле, включенном в ресурсы проекта и загруженном для использования на клиенте. Она должна возвращать JavaScript объект, который содержит три функции: 
-            - `render(element, controller)`
-            - `update(element, controller, list, options)`
-            - `clear(element, controller)` (опциональна)
-          
-            Именем может быть и имя [компонента React](React_component_views.md#form-custom), зарегистрированного на клиенте с видом `reactView`. Тогда веб-клиент отображает данные этим компонентом: ему передаются строки группы объектов со значениями ее свойств в `props.data.list`, настройки в `props.data.options` и контроллер группы объектов в `props.controller`.
+            Строковый литерал с именем [функции отображения](Render_functions.md#render-function) или [компонента React](React_component_views.md#form-custom), отображающего данные группы.
 
 - `OPTIONS optionsExpr`
 
-    Указание дополнительных настроек вида представления. Опция указывается после вида представления `viewType`. Значение используется видами представления *пользовательский* (передается в качестве [аргумента `options` функции `update`](Render_functions.md#object-group), а компоненту React — в `props.data.options`) и *карта* (настройки карты).
+    Указание дополнительных настроек вида представления. Опция указывается после вида представления `viewType`. Значение используется видами представления *пользовательский* ([функция отображения](Render_functions.md#object-group) или [компонент React](React_component_views.md#form-custom)) и *карта* (настройки карты).
 
     - `optionsExpr`
   

@@ -22,7 +22,7 @@ A React view on a form reads the [form projection](React_projection.md) and call
 
 ### Component selection {#selecting-the-component}
 
-In `DESIGN`, set the container's `custom` attribute to the component name as a string literal matching `[A-Z][A-Za-z0-9_$]*` (a bare identifier starting with an uppercase letter):
+The container's [`custom` attribute](DESIGN_statement.md#containerprops) names the component:
 
 ```lsf
 FORM orders 'Orders'
@@ -37,15 +37,11 @@ DESIGN orders {
 }
 ```
 
-The value form selects the renderer: a string literal matching `[A-Z][A-Za-z0-9_$]*` names a React component, while an empty string `''`, an HTML template string, or a property gives the [classic (non-React) custom container](DESIGN_statement.md#containerprops). Here the object `o` is rendered by the `OrderBoard` React component instead of the standard table. A component that is not a container takes a React component name alone — see [A component's own view](React_component_views.md#component-views).
+Here the object `o` is rendered by the `OrderBoard` React component instead of the standard table. For a component that is not a container, see [A component's own view](React_component_views.md#component-views).
 
 ### Window size and base size {#base-size}
 
-A form opened as a window (`SHOW ... FLOAT`; for `DIALOG` the window is the default location) gets its size from its content at the moment of opening and keeps it: the component's first drawing, of the form's first data, is measured, and what it draws later - more rows, data that arrives afterwards - is not. So a container whose content grows after the opening is given a base size: `size = (900, 600)` or the separate `width` and `height` attributes. Without it, the window keeps the size of the first drawing, and the content drawn later pushes the OK / Close buttons past the window's edge. A tab (`WINDOW`) is sized by the forms window, so no base size is needed there.
-
-Another way is to leave the React container without a base size and make the window itself dynamic: in the form's own `DESIGN`, set its main container to `size = (-1, -1)`, or only `height = -1` — then the width is measured and fixed at opening while the height stays dynamic. In each dynamic direction the window follows the component's content, including content drawn later. This suits a form with no tables (their height stops fitting the rows) and content of moderate height: the window is centered only at opening, and its height is not capped at the screen height — a window taller than the screen scrolls as a whole.
-
-The base size also bounds the height of the container itself, wherever the form opens. Without it the container is as tall as what the component drew, and the containers above it grow with it, so a component that draws more than fits on the form stretches the whole form, and the form scrolls as a whole — in a tab, its main container. A base height (`height` or `size`) separates the container's size from the content's: the container gets that height, expands from it into the form's free space by its extension coefficient (`fill`), and content that does not fit scrolls inside it (`overflowVert` is `auto` by default). It stretches the form only when it does not fit there itself — like the base size of any component.
+The [window size](../paradigm/Form_design.md#windowSize) and the container's [base size](../paradigm/Form_design.md#components) are set through the [`size`, `width` and `height` attributes](DESIGN_statement.md#component-properties). For example, `size = (900, 600)` gives the React container a base size; `size = (-1, -1)` on the form's main container makes the window dynamic in both directions, and `height = -1` makes only its height dynamic. The `fill` and `overflowVert` attributes control expansion and vertical overflow. A dynamic window suits a form with no tables and content of moderate height.
 
 ### The component {#the-component}
 
@@ -94,8 +90,6 @@ The components and hooks of the platform are runtime globals in `window.lsfusion
 
 ### A React component and an HTML template {#choosing-between-a-react-component-and-an-html-template}
 
-A component that places children the platform draws and reads nothing from `props.data` does what a classic custom container already does: an HTML template positions the same children through its `<Platform:name>` places, without a React runtime and without a host node per child. When the platform draws every child of the container, `props.data` carries no group or property values, because such a child is not projected — only the children's `{ caption, image, hidden }` entries in `props.data`.
+For a component that only places children and reads nothing from `props.data`, compare [HTML template places](DESIGN_statement.md#template-places). When the platform draws every child of the container, `props.data` carries no group or property values, because such a child is not projected — only the children's `{ caption, image, hidden }` entries in `props.data`.
 
-A template is given no data at all. It places what the platform draws, by name, and everything else in it is written out: it cannot read the caption or the image of a child, or of the container itself. The captions it shows are drawn by the platform: a property child is drawn in parts (unless it is declared `inline = FALSE`) — its caption and its comment are places of their own, `<Platform:PROPERTY(qty).caption>` and `<Platform:PROPERTY(qty).comment>`, which the template can put inside markup of its own, a heading say —, any other child carries its caption inside its placed view, and the container's own caption and image are drawn by the platform beside the container rather than inside the template.
-
-Both name their children, so neither is extended from `DESIGN` alone: adding a child means editing the JSX or the template string. A template string belongs to the module that declared it and can only be replaced whole.
+The React component names its children too: adding a child requires editing the JSX, not just `DESIGN`.

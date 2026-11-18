@@ -173,7 +173,7 @@ function itemCards() {
 }
 ```
 
-Для того, чтобы при открытии страницы в браузере, загрузились созданные js и css файлы, нужно добавить их инициализацию в действии _onWebClientInit_ путем добавления имени файла в свойство _onWebClientInit(STRING)_. Числовое значение необходимо для задания порядка загрузки:
+Загрузим `itemcards.js` и `itemcards.css` через [`onWebClientInit`](../language/Client_JavaScript_modules.md#without-the-build):
 ```lsf
 onWebClientInit() + {
     onWebClientInit('itemcards.js') <- 1;

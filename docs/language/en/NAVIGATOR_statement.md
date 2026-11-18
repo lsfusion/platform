@@ -54,7 +54,7 @@ CHANGEKEY key [showSetting]
 CHANGEMOUSE key [showSetting]
 ```
 
-### Description
+### Description {#description}
 
 The `NAVIGATOR` statement allows to modify the navigator. Each navigator statement block enclosed in braces allows to change the descendants of a particular [navigator element](../paradigm/Navigator.md), which we will call the *current element*. In the outer block that follows the `NAVIGATOR` keyword, the current element is the root system folder `System.root`. There are three types of navigator statements:
 
@@ -66,7 +66,7 @@ The move and modify statements allow to change the caption and options of a navi
 
 The hierarchy described within a single `NAVIGATOR` statement can have an arbitrary nesting level and describe any number of elements at each level.
 
-The `CUSTOM` option gives the [windows](../paradigm/Navigator_design.md) a [React component](React_windows.md#window-layout) that lays them out on the desktop instead of the standard layout. The component decides where each window goes and how large it is, and the platform draws the content of each window as it does without the component - the window's navigator elements, the forms open in it, the messages logged in it - in the place the component gives the window. The windows' positions and `AUTOSIZE` are then not used. When several `NAVIGATOR` statements give the option, the last one is used. Only the desktop web client draws the component: the mobile web client and the desktop client keep their own layout of the windows.
+The `CUSTOM` option gives the [windows](../paradigm/Navigator_design.md) a [React component](React_windows.md#window-layout) that lays them out on the desktop instead of the standard layout. The component decides where each window goes and how large it is, and the platform draws the content of each window as it does without the component - the window's navigator elements, the forms open in it, the messages logged in it - in the place the component gives the window. The windows' positions and `AUTOSIZE` are then not used. When several `NAVIGATOR` statements give the option, the last one is used. Only the desktop web client draws the component: the mobile web client keeps its own page — `System.forms` and the navigation menu — and the desktop client keeps its own layout of the windows.
 
 ### Parameters
 
@@ -182,6 +182,8 @@ The `CUSTOM` option gives the [windows](../paradigm/Navigator_design.md) a [Reac
     - `showIfExpr`
 
         Expression whose value determines visibility of the navigator element.
+
+<a className="lsdoc-anchor" id="nocustom"/>
 
 - `NOCUSTOM`
 
