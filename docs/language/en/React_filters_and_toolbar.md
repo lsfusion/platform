@@ -148,7 +148,7 @@ platform's panel, `FILTERS(o)` placed back with `custom = NULL` —, and each do
 
 | on the node | member | over [conditions the view draws](#custom-filter-panel) | over the platform's panel |
 | --- | --- | --- | --- |
-| | `addFilter()` | the condition F3 puts in | a new condition on the same cell, its editor open, as the panel's add does — or the cell's value put into the property filter a view draws on that column, where it shows none |
+| | `addFilter()` | the condition [F3](../paradigm/Interactive_view.md#userfilters) puts in | a new condition on the same cell, its editor open, as the panel's add does — or the cell's value put into the property filter a view draws on that column, where it shows none |
 | `filtersPending`, `filtersManual` | `applyFilters()` | what waits sent — nothing, with nothing waiting | the same, the conditions typed in included |
 | | `resetFilters()` | the list cleared | the panel's conditions reset |
 
@@ -183,7 +183,7 @@ The cell a condition is added on is the current cell of the standard grid where 
 first column a view carries that the form shows and a condition can be on — a view has no current column —, in its
 current row, where a view draws them. On a tree it is the current cell of the platform's tree, or the first column of
 the [current node](React_trees_sortings_selection.md#trees)'s group that the form shows and a condition can be on, in that group's current row.
-With no `FILTERS(o)` in the design `addFilter` is refused, as the platform has no such button, and F3 does nothing.
+With no `FILTERS(o)` in the design `addFilter` is refused, as the platform has no such button.
 
 Inside a [batch](Form_and_navigator_controllers.md#batch) the commands go with it, as `filters.change` does.
 
@@ -292,10 +292,10 @@ A property filter does not depend on who draws the group's conditions: the view 
 `filters` too, or another view, or the platform's filter panel — its condition is one of the group's list either way,
 sent as any change is: at once, or, in the [manual apply mode](#filter-controls), on the apply, the filter showing the
 change meanwhile. Over the platform's panel the filter is the panel's own row of it, which the view draws: the panel
-shows no row of its own for it. It is a row of the panel as any other is: F3 on a column whose first row it is puts
-the cell's value into it, its comparison, negation and junction kept — React drawing the row, no editor opens —, and
-so, while it shows no condition, do Alt+F3 and the add of the filter controls on that column, typing there starting
-nothing; while it shows one, the add and typing start a new row of the panel's. A filter of a property of a
+shows no row of its own for it. When the [table's filter keys](../paradigm/Interactive_view.md#userfilters) put a value into this row, no editor
+opens: React draws it. While the row shows no condition, Alt+F3 and the filter controls' add on that column put the
+cell's value into it too, and typing there starts nothing; while it shows a condition, the add and typing start a
+new row of the panel's. A filter of a property of a
 [tree](React_trees_sortings_selection.md#trees)'s group is on its group's node, as a filter group of a tree's group
 is. Its [entry](React_projection.md#display-options), `data['FILTER(name(i))']`, says whether the form shows the
 filter — its `SHOWIF`, or a container's above it.
@@ -312,9 +312,9 @@ DESIGN items {
 }
 ```
 
-A value committed in the row is the filter's, sent as any change is; a condition the view states on the property shows
-in it, and F3 on its column puts the cell's value into it — on a property `filterProperties` lists, or on a file one: F3
-over a view's conditions starts no condition on another ([Custom filter panel](#custom-filter-panel)). Where the
+A value committed in the row is the filter's, sent as any change is; a condition the view states on the property
+shows in it. For F3 over a view's conditions, the property must be in `filterProperties`, or be a file property
+([Custom filter panel](#custom-filter-panel)). Where the
 toolbar turns the platform's filters off (`showFilters = FALSE`), nobody draws such a filter, as in a form with no React
 view. A filter with a React component of its own — `FILTER(name(i)) { custom = 'NameSearch'; }` — draws its part in its
 own view ([A component's own view](React_component_views.md#component-views)).
@@ -344,27 +344,23 @@ Such a component does not draw the group's rows — the platform still does — 
 `props.data.<g>` is the group's node there, carrying `filters`, what a condition can be on (`filterProperties`) and
 nothing of the rows.
 
-The platform draws no conditions of its own for such a group, but its commands over them stay, and each changes the
-group's list — the one the component is shown in `filters`:
+The platform draws no conditions of its own for such a group, but its [table filter commands](../paradigm/Interactive_view.md#userfilters)
+act on the conditions the view draws — the group's list the component is shown in `filters`:
 
 - the toolbar's filter button shows and hides the controls the platform draws in `FILTERCONTROLS(o)`. Their reset clears
   the list, and their add does what F3 does. Where the component's box holds `FILTERCONTROLS(o)` too, the component
   draws them: they are its [filter controls](#filter-controls), whose `resetFilters()` and `addFilter()` do the same,
   and the toolbar's filter button is there only for the rows of the property filters the platform draws, whose selectors
   it shows and hides;
-- F3 in the grid gives the value of its [current cell](#filter-controls) to that cell's property, as a value is given a
-  [property filter](#property-filters): in the place of the first condition on the property, its comparison, negation
-  and `or` kept, or, where there is none, in the place of the property's filter, compared as it compared last, else at
-  the end, compared the property's default way. It is stated at once, as F3 and Enter state a value on the platform's
-  panel — there is no editor here to type a value in, the component edits it —, and sent as any change is: at once, or,
-  in the [manual apply mode](#filter-controls), on the apply. Alt+F3 makes a new condition the only one. None is started
+- F3 states the value of the [current cell](#filter-controls) at once, including in a [property filter](#property-filters),
+  with no editor of the platform's to confirm it: the component edits it. Alt+F3 uses the default comparison for its
+  new condition. The change is sent at once or, in the [manual apply mode](#filter-controls), on the apply. None is started
   where no row is current — an empty grid, or a pivot, a map, a calendar or a custom view, which have no cell —, or on a
   cell whose property `filterProperties` does not list — a file property's cell excepted: F3 states a condition on it,
   which a view states with no value alone —, or that shows another value than it is filtered by;
-- Shift+F3 and Escape in the grid clear the list, at once, in the manual apply mode too;
-- typing in a column starts no condition (a grid with a quick search searches, as it does anyway), and the apply button
-  is the filter controls': the platform's in `FILTERCONTROLS(o)`, while they are shown, or the component's, where it
-  draws them — in the [manual apply mode](#filter-controls) a change waits for it.
+- typing in a column starts no condition. A grid with quick search keeps it. The apply button is the filter controls':
+  the platform's in `FILTERCONTROLS(o)`, while they are shown, or the component's, where it draws them — in the
+  [manual apply mode](#filter-controls) a change waits for it.
 
 The property filters the design declares in the box are the component's: it draws them as [property filters](#property-filters).
 

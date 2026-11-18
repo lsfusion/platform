@@ -50,7 +50,7 @@ The binding modes of a key work as anywhere: with `showing=all` the key works wh
 The platform does not bind:
 
 - the key of a property or an action that asks a value in a cell right away — the default change of a data property, an action that starts by asking a value (`INPUT`), a field a barcode scanner types into: the platform opens the editor for it in a cell, and that field is the view's. A view that needs such a key handles it itself;
-- the keys of the standard grid — `F3` and the other keys of its filters, the typing that starts a quick filter, `ENTER` down a column: over the rows a view draws there is no such grid, and the view uses the members of its [filter controls](React_filters_and_toolbar.md#filter-controls) and `filters.change`.
+- the standard grid's [filter keys and typing](../paradigm/Interactive_view.md#userfilters), and `ENTER` down a column: over the rows a view draws there is no such grid, and the view uses the members of its [filter controls](React_filters_and_toolbar.md#filter-controls) and `filters.change`.
 
 A view of the platform's that a view places with [`<Platform name/>`](React_platform_components.md#placing) keeps its keys, as it does anywhere: they work while its host is shown, and a host the view hides — `<Platform>` hides it while the entry of what it holds says `hidden` — takes them with it.
 
@@ -84,9 +84,7 @@ The scheduled run differs from a request the component would make itself. A time
 
 ### A hidden view {#hidden-view}
 
-The platform hides a view without taking it down: in a tab of a `tabbed` container that is not selected, in a collapsed container, in a `popup` container that is not open, under a `SHOWIF` — of the view's container or of a container above it —, and in a form that is not on screen: in a background tab, one the [forms window](React_windows.md#forms-window) component does not place, or one in another window while System.forms is expanded to the full screen. The component stays mounted and keeps its state, and what it draws is not seen.
-
-While the form hides the view's container, the server does not read what the view draws, as it does not read a hidden part of any form: the rows of a group stay as they were last sent, and a property whose value changes meanwhile reads as `null` — unless a part of the form that is shown reads the same. The first answer after the container is shown brings the current values. A form that is not on screen is read as usual.
+The platform hides a view with its container according to the [visibility and reading rules of form components](../paradigm/Form_design.md#hidden), and in a form that is not on screen: in a background tab, one the [forms window](React_windows.md#forms-window) component does not place, or one in another window while System.forms is expanded to the full screen. The component stays mounted and keeps its state, and what it draws is not seen.
 
 What the component does on its own goes on all the while: a timer, a request, an animation. `useVisible()` says whether the view is on screen now — whether the element its root is mounted in is displayed: in the page, with no element above it under `display: none`, which is how the platform hides one — and draws the component again when that changes, so work of the component's own is done while it is `true`:
 

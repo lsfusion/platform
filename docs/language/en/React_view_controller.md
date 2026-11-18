@@ -86,7 +86,7 @@ Editing the form goes through the ordinary edit channel and is not gated. The se
 
 <a className="lsdoc-anchor" id="first-last-row"/>
 
-To move to the first or last row of the whole list under the group's current filters and sortings, including the user's, pass the group's `change` an edge of the list instead of a row — `{to: 'home'}` or `{to: 'end'}`, which the form's controller also has as `form.HOME` and `form.END`:
+For the [move to the first or last row](../paradigm/Interactive_view.md#objects), pass the group's `change` an edge of the list instead of a row — `{to: 'home'}` or `{to: 'end'}`, which the form's controller also has as `form.HOME` and `form.END`:
 
 ```jsx
 <>
@@ -95,9 +95,9 @@ To move to the first or last row of the whole list under the group's current fil
 </>
 ```
 
-This is the move of the platform table's Ctrl+Home / Ctrl+End: the server finds the row, the first / last row becomes current, and the rows read from the start / up to the end replace `list`. The same call can change the [selected rows](React_trees_sortings_selection.md#selection). An action with [`ACTIVATE FIRST` / `LAST`](ACTIVATE_operator.md) placed in the view's container and run through its member performs the same move.
+The rows read by the move replace `list`. The same call can change the [selected rows](React_trees_sortings_selection.md#selection). An action with [`ACTIVATE FIRST` / `LAST`](ACTIVATE_operator.md) placed in the view's container and run through its member performs the same move.
 
-A group of an [object tree](React_trees_sortings_selection.md#trees) takes no edge, and `ACTIVATE FIRST` and `ACTIVATE LAST` without seek objects keep its current objects: the tree is read whole under its open nodes, without pages. To move to the first or last node, call `controller.<group>.change(row)` through the member of that node's group, passing the row of the first or last node the view draws in its own order — parent then children — rather than the first or last element of one group's `list`.
+A group of an [object tree](React_trees_sortings_selection.md#trees) takes no edge, and its `list` contains all rows under open nodes without paging ([object search in a tree](../paradigm/Activation_ACTIVATE.md#search)). To move to the first or last node, call `controller.<group>.change(row)` through the member of that node's group, passing the row of the first or last node the view draws in its own order — parent then children — rather than the first or last element of one group's `list`.
 
 `controller.<group>.<property>.change(value)` changes the property for the group's current object, and `.change(value, row)` for the given row. The arguments come in this order, and nothing is guessed from them: the value first — it is required, and `null` clears it — then the row, which is optional. `.exec()` runs the property's change event, the one a user fires by editing the cell, on the current object — for an action, it runs the action — and `.exec(row)` does it on the given row. An action has no value to set, so `.change` on one is refused: call `exec`. A row is taken only by the member of a list property, which lives where the group's rows are drawn. The member of a panel property and a member of the empty group take none, and act on the current objects. A [selection](React_projection.md#select) is changed by what is picked — the forms are given there.
 

@@ -205,7 +205,7 @@ The members that change the selection are on the group's member where its rows a
 | Member | What it does |
 | --- | --- |
 | `change(row[, {selection}])` | Makes the row current and changes the selected rows |
-| `change({to: 'home'}[, {selection}])`, `change({to: 'end'}[, {selection}])` | Makes the first or last row of the whole list current, under the group's current filters and sortings, and changes the selected rows. The form's controller has the two edges of the list as `form.HOME` and `form.END` |
+| `change({to: 'home'}[, {selection}])`, `change({to: 'end'}[, {selection}])` | Performs the [move to the first or last row](../paradigm/Interactive_view.md#objects) and changes the selected rows. The form's controller has the two edges of the list as `form.HOME` and `form.END` |
 | `properties.change(column[, {selection}])` | Makes the column current, named by its property, and changes the selected columns |
 | `selectAll()` | Selects all the rows the filters leave and all the columns. The current row and the current column stay |
 
@@ -269,36 +269,22 @@ group of a tree: `changeObject` takes a row there, with no `selection` but `'kee
 
 ### Clipboard {#clipboard}
 
-A view that draws the rows of a group not in a tree copies and pastes the [selected](#selection) cells as the
-platform's table does, by two more members in the same place:
+A view that draws the rows of a group not in a tree [copies and pastes](../paradigm/Interactive_view.md#clipboard) the
+[selected](#selection) cells by two more members in the same place:
 
 | Member | What it does |
 | --- | --- |
-| `copy()` | Returns the `Promise` of the text of the selected cells: a line for each row, with tabs between the values of its cells |
+| `copy()` | Returns the `Promise` of the text of the selected cells |
 | `paste(text)` | Pastes the text into the selected cells and returns the `Promise` of its request |
 
-The cells are the selected rows in the selected columns the form shows. While no row of `list` is `selected`, the row
-is the current one, and while no column is selected, the column is the current one. The selected rows are the ones the
-server keeps, so `copy` also returns the rows the view has not read, and `paste` changes them too; the text of the
-current row `copy` returns with no request to the server.
+`copy` uses the platform table's value formatting: the value's type and the property's format. For a current row copied without a server request, a cell's own format takes precedence when supplied. Selected rows read from the server use the property's format. `paste` accepts this tab- and line-separated text, including text copied from the platform's table or a spreadsheet.
 
-`copy` returns each value as the platform's table writes it to the clipboard, and `paste` reads a text written so, by
-the platform's table or by a spreadsheet. What `paste` does depends on the text:
-
-| Text | What is pasted |
-| --- | --- |
-| One value | The value, into every one of these cells. With rows selected, the current row takes it too where it is not among the selected rows, as in the platform's table |
-| Several values, in lines with tabs between the values | The values, into the cells from the current one on: the columns go into the current column and the columns after it, the lines into the current row and the rows after it in the group's order. Where the list has fewer rows, the server adds new objects — in a group of one object —, as it does for the platform's table |
-| An empty text | Nothing |
-
-Each cell is changed as a user's change of it: the property's [change event](Event_block.md) runs, and a
-cell the form does not let change — a `READONLY` property, for example — is skipped, the other values staying in their
-cells. A value that cannot be read as the cell's type is pasted as `NULL`. With no current row in `list` nothing is
-pasted, and with no column `copy` returns an empty text.
+While no row of `list` is `selected`, the row is the current one, and while no column is selected, the column is the
+current one. `copy` returns the text of the current row without a request to the server. With no current row in `list`
+nothing is pasted, and with no column `copy` returns an empty text. `paste('')` does nothing.
 
 `copy` and `paste` are calls of their own. A [batch](Form_and_navigator_controllers.md#batch) does not carry them,
-and inside one they are refused. The platform's table asks the user before it pastes several values. `paste` does not
-ask, so a view that needs the question asks it itself.
+and inside one they are refused. `paste` does not ask, so a view that needs the question asks it itself.
 
 The view takes the browser's `copy` and `paste` events itself and gives the text to the clipboard when it has it:
 
@@ -317,6 +303,5 @@ The view takes the browser's `copy` and `paste` events itself and gives the text
 ```
 
 Another container copies and pastes through the form's controller, `controller.form.copy('<group>')` and
-`paste('<group>', text)`, which are refused where the selection's calls are. On the platform's table a column of an
-action, and of a property grouped in columns, is none of the cells, and several values are not pasted while such a
-column is the current one.
+`paste('<group>', text)`, which are refused where the selection's calls are. In these calls over the platform's table, a column of an action or of a property grouped in columns is none of the
+cells, and several values are not pasted while such a column is the current one.
