@@ -65,6 +65,22 @@ const Cell = React.memo(({ ck }) => {
     return <div className="cell">{rowKeys.map(k => <Shift key={k} rowKey={k} />)}</div>;
 });
 
+// a DATE value comes in props.data as a JS Date
+function weekOf(from) {
+    return Array.from({length: 7}, (_, i) => {
+        const day = new Date(from);
+        day.setDate(from.getDate() + i);
+        return day;
+    });
+}
+
+function dateKey(d) {
+    const year = String(d.getFullYear()).padStart(4, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 export function Board(props) {
     // the view owns both axes: the days of the shown week and one board row per employee
     const days = weekOf(props.data.dates.scheduleFrom.value);
@@ -127,7 +143,36 @@ DESIGN catalog {
 }
 ```
 
-`CategoryList`, `ItemList` and `DetailPanel` are components like [`OrderBoard`](../language/React_views.md#the-component), and each container's `props.data` holds only the parts it draws: `CategoryList` sees `data.c`, `ItemList` sees `data.i` with its rows and the `archive` filter group, `DetailPanel` sees `data.d` and, as `data.i`, only the panel property `nameItem` moved there. A part of a group is projected where its component stands — the rows where the group's grid is, a panel property where the property itself is — so the current item's name reaches the detail panel as a panel property of `i`, added under an alias and `MOVE`d into the container that draws it, without the group's rows. A click in a list sets the current object (`controller.c.change(row)`), and the filters of the groups below follow it — the platform's own dependency between groups, so the containers need no shared JavaScript state. A container that does not draw a group's rows chooses its current object through the form's controller — `controller.form.changeObject('c', row)`, with a row of its own data or a lookup's `objects` handle —, as it sorts the rows another container draws ([across containers](../language/Form_and_navigator_controllers.md#across-containers)). A form-level property two containers show is added twice, under two aliases, one in each container.
+```jsx
+export function CategoryList({data, controller}) {
+    return <ul>{data.c.list.map(row =>
+        <li key={row.key}>
+            <button style={{fontWeight: row.current ? 'bold' : 'normal'}}
+                    onClick={() => controller.c.change(row)}>{row.name.value}</button>
+        </li>)}</ul>;
+}
+
+export function ItemList({data, controller}) {
+    return <>
+        <label>
+            <input type="checkbox" checked={data.i.archive.value === null}
+                   onChange={() => controller.i.archive.change(data.i.archive.value === null ? 0 : null)}/> archived too
+        </label>
+        <ul>{data.i.list.map(row =>
+            <li key={row.key}><button onClick={() => controller.i.change(row)}>{row.name.value}</button></li>)}</ul>
+    </>;
+}
+
+export function DetailPanel({data}) {
+    return <>
+        <h2>{data.i.nameItem.value}</h2>
+        <ul>{data.d.list.map(row =>
+            <li key={row.key}>{row.name.value}: {row.quantity.value}</li>)}</ul>
+    </>;
+}
+```
+
+Each container's `props.data` holds only the parts it draws: `CategoryList` sees `data.c`, `ItemList` sees `data.i` with its rows and the `archive` filter group, `DetailPanel` sees `data.d` and, as `data.i`, only the panel property `nameItem` moved there. A part of a group is projected where its component stands — the rows where the group's grid is, a panel property where the property itself is — so the current item's name reaches the detail panel as a panel property of `i`, added under an alias and `MOVE`d into the container that draws it, without the group's rows. A click in a list sets the current object (`controller.c.change(row)`), and the filters of the groups below follow it — the platform's own dependency between groups, so the containers need no shared JavaScript state. A container that does not draw a group's rows chooses its current object through the form's controller — `controller.form.changeObject('c', row)`, with a row of its own data or a lookup's `objects` handle —, as it sorts the rows another container draws ([across containers](../language/Form_and_navigator_controllers.md#across-containers)). A form-level property two containers show is added twice, under two aliases, one in each container.
 
 The named selection is a `FILTERGROUP`: `data.i.archive.value` is `0` for active items and `null` for all items, including archived ones. To show archived items too, call `controller.i.archive.change(null)`; to hide them, call `controller.i.archive.change(0)` ([Filter groups](../language/React_filters_and_toolbar.md#filter-groups)). A chosen section similarly uses a filter group or the current object of a group. A search the user types uses a [property filter](../language/React_filters_and_toolbar.md#property-filters) by default, or the group's [user filters](../language/React_filters_and_toolbar.md#filters) when the view builds the conditions. The server selects the rows, and a count under the form's filter follows these filters too ([the count under the form's filter](#filtered-count)) — `list.length` is only the rows already read. A value stays a form property when other form logic reads it. Which region or tab is shown may stay in React state ([Child placement](../language/React_platform_components.md#placing)), as may an expanded card or an open sheet.
 
@@ -137,7 +182,21 @@ The regions are laid out by the standard containers: a horizontal parent, an ext
 
 We need to show the children the platform draws as tabs: a strip of their captions and images over the one child shown. The solution uses the [child placement](../language/React_platform_components.md#placing), the child's entry, [`<Caption>`](../language/React_rendering.md#caption) and [`<Image>`](../language/React_rendering.md#image).
 
+Here the form `orders` has two object groups, `o` and `i`. Their boxes are moved into the view's container, the platform draws them (`custom = NULL`), and `PlacedTabs` places the active one:
+
+```lsf
+DESIGN orders {
+    NEW tabs FIRST {
+        custom = 'PlacedTabs';
+        MOVE BOX(o) { custom = NULL; }
+        MOVE BOX(i) { custom = NULL; }
+    }
+}
+```
+
 ```jsx
+const { Platform, Caption, Image } = window.lsfusion;
+
 const TABS = ['BOX(o)', 'BOX(i)'];
 
 export function PlacedTabs(props) {
@@ -215,6 +274,17 @@ DESIGN quotes {
 }
 ```
 
+```jsx
+export function QuoteBoard({data}) {
+    return <table><tbody>{data.q.list.map(row =>
+        <tr key={row.key}>
+            <td>{row.symbol.value}</td>
+            <td>{row.price.value}</td>
+            <td>{row.changedAt.value?.toLocaleTimeString()}</td>
+        </tr>)}</tbody></table>;
+}
+```
+
 ### Selecting a tab and collapsing a container {#tabs-and-collapse}
 
 We need a view that selects a tab of the form, shows whether that tab is selected, and collapses a container of the form. The solution uses a property with [`ACTIVE TAB`](../language/ACTIVE_operator.md) and actions with [`ACTIVATE TAB`](../language/ACTIVATE_operator.md) and [`COLLAPSE CONTAINER`](../language/COLLAPSE_operator.md), moved by the design into the view's container ([A hidden view](../language/React_form_behavior.md#hidden-view)).
@@ -239,7 +309,12 @@ DESIGN order {
 ```
 
 ```jsx
-<button aria-pressed={data.linesSelected.value === true} onClick={() => controller.selectLines.exec()}>Lines</button>
+export function Steps({data, controller}) {
+    return <>
+        <button aria-pressed={data.linesSelected.value === true} onClick={() => controller.selectLines.exec()}>Lines</button>
+        <button onClick={() => controller.collapseDetails.exec()}>Hide details</button>
+    </>;
+}
 ```
 
 ### A menu of your own {#app-menu}
@@ -261,11 +336,15 @@ NAVIGATOR {
 const { Caption } = window.lsfusion;
 
 export function AppMenu({ data, controller }) {
-    return <nav>{data.root.map(name => {
+    function item(name) {
         const e = data.byName[name];
-        return <button key={name} className={e.selected ? 'on' : ''}
-                       onClick={ev => controller.activate(name, ev)}><Caption value={e.caption}/></button>;
-    })}</nav>;
+        return <li key={name}>
+            <button className={e.selected ? 'on' : ''}
+                    onClick={ev => controller.activate(name, ev)}><Caption value={e.caption}/></button>
+            {e.children.length > 0 && <ul>{e.children.map(item)}</ul>}
+        </li>;
+    }
+    return <nav><ul>{data.root.map(item)}</ul></nav>;
 }
 ```
 
@@ -275,11 +354,16 @@ The same menu with the platform's button for `Sale.sales`:
 const { Platform, Caption } = window.lsfusion;
 
 export function AppMenu({ data, controller }) {
-    return <nav>
-        <Platform name="Sale.sales" className="menu-main"/>
-        {data.root.filter(name => name !== 'Sale.sales').map(name =>
-            <button key={name} onClick={ev => controller.activate(name, ev)}><Caption value={data.byName[name].caption}/></button>)}
-    </nav>;
+    function item(name) {
+        const e = data.byName[name];
+        return <li key={name}>
+            {name === 'Sale.sales'
+                ? <Platform name="Sale.sales" className="menu-main"/>
+                : <button onClick={ev => controller.activate(name, ev)}><Caption value={e.caption}/></button>}
+            {e.children.length > 0 && <ul>{e.children.map(item)}</ul>}
+        </li>;
+    }
+    return <nav><ul>{data.root.map(item)}</ul></nav>;
 }
 ```
 
@@ -405,7 +489,7 @@ FORM appHeader 'Header'
     PROPERTIES() query
     OBJECTS c = Customer
     PROPERTIES(c) READONLY name, city
-    PROPERTIES(c) openCustomer
+    PROPERTIES(c) openCustomer GRID
     FILTERS found(c)
     ORDERS name(c)
 ;
@@ -519,6 +603,10 @@ FORM catalogue
     PROPERTIES(i) name
     FILTERS category(i) == c
 ;
+
+DESIGN catalogue {
+    GRID(TREE t) { custom = 'Tree'; }
+}
 ```
 
 ```jsx
@@ -604,7 +692,7 @@ DESIGN items {
 A view that draws `FILTERS(<group>)` alone builds a condition editor from `filterProperties`, with no property of the group drawn there:
 
 ```jsx
-function FilterPanel({data, controller}) {
+export function FilterPanel({data, controller}) {
     const typed = data.i.filterProperties.filter(p => p.type === 'string' || p.type === 'number');
     const [choice, setChoice] = React.useState(typed[0]);
     const [text, setText] = React.useState('');
@@ -739,7 +827,7 @@ DESIGN items {
 ```
 
 ```jsx
-function ItemHeader({data, controller}) {
+export function ItemHeader({data, controller}) {
     const items = data.i, buttons = controller.i;
     const [count, setCount] = React.useState(null);
     return <div>
@@ -772,7 +860,7 @@ DESIGN catalogue {
 ```
 
 ```jsx
-function CatalogueHeader({data, controller}) {
+export function CatalogueHeader({data, controller}) {
     const buttons = controller.t; // t, the tree's name
     return <div>
         <button onClick={() => buttons.expandCurrent()}>Expand the current node</button>
@@ -815,10 +903,26 @@ window.lsfusion.custom.register('ItemCards', ItemCards, 'reactView');
 
 We need a React context the view provides — a theme — to reach the components in the cells of a table the platform draws and the view places. The solution uses a [React component inside a React view](../language/React_component_views.md#embedded). `Quantity` here is a property's component in [`CUSTOM`](../language/React_component_views.md#form-custom).
 
+```lsf
+FORM items
+    OBJECTS i = Item
+    PROPERTIES(i) READONLY name
+    PROPERTIES(i) quantity CUSTOM 'Quantity'
+;
+
+DESIGN items {
+    NEW board FIRST {
+        custom = 'Board';
+        MOVE GRID(i) { custom = NULL; }
+    }
+}
+```
+
 ```jsx
+const { Platform } = window.lsfusion;
 const Theme = React.createContext('light');
 
-function Board() {
+export function Board() {
     return <Theme.Provider value="dark">
         <Platform name="GRID(i)"/> {/* a table of the platform's, its quantity drawn by Quantity */}
     </Theme.Provider>;
@@ -828,6 +932,8 @@ function Quantity({data}) {
     const theme = React.useContext(Theme); // 'dark' in every cell of the table Board places
     return <span className={theme}>{data.value}</span>;
 }
+
+window.lsfusion.custom.register('Quantity', Quantity, 'reactView');
 ```
 
 ### Keeping the components' state {#keeping-state}

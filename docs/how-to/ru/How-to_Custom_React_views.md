@@ -65,6 +65,22 @@ const Cell = React.memo(({ ck }) => {
     return <div className="cell">{rowKeys.map(k => <Shift key={k} rowKey={k} />)}</div>;
 });
 
+// значение DATE приходит в props.data как Date JavaScript
+function weekOf(from) {
+    return Array.from({length: 7}, (_, i) => {
+        const day = new Date(from);
+        day.setDate(from.getDate() + i);
+        return day;
+    });
+}
+
+function dateKey(d) {
+    const year = String(d.getFullYear()).padStart(4, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 export function Board(props) {
     // обеими осями владеет представление: дни показанной недели и одна строка доски на сотрудника
     const days = weekOf(props.data.dates.scheduleFrom.value);
@@ -127,7 +143,36 @@ DESIGN catalog {
 }
 ```
 
-`CategoryList`, `ItemList` и `DetailPanel` — такие же компоненты, как [`OrderBoard`](../language/React_views.md#the-component), и в `props.data` каждого контейнера только те части, которые он рисует: `CategoryList` видит `data.c`, `ItemList` — `data.i` со строками и группой фильтров `archive`, `DetailPanel` — `data.d` и, как `data.i`, только перенесённое к нему панельное свойство `nameItem`. Часть группы проецируется туда, где стоит её компонент, — строки туда, где грид группы, панельное свойство туда, где само свойство, — поэтому имя текущего элемента попадает в панель деталей панельным свойством `i`, добавленным под алиасом и перенесённым `MOVE` в рисующий его контейнер, без строк группы. Щелчок в списке устанавливает текущий объект (`controller.c.change(row)`), и фильтры нижестоящих групп следуют за ним — это собственная зависимость групп платформы, поэтому общего состояния на JavaScript контейнерам не нужно. Контейнер, который не рисует строки группы, выбирает её текущий объект через контроллер формы — `controller.form.changeObject('c', row)` со строкой своих данных или дескриптором `objects` из запроса, — так же, как сортирует строки, которые рисует другой контейнер ([между контейнерами](../language/Form_and_navigator_controllers.md#across-containers)). Свойство уровня формы, которое показывают два контейнера, добавляется дважды, под двумя алиасами, по одному в каждый контейнер.
+```jsx
+export function CategoryList({data, controller}) {
+    return <ul>{data.c.list.map(row =>
+        <li key={row.key}>
+            <button style={{fontWeight: row.current ? 'bold' : 'normal'}}
+                    onClick={() => controller.c.change(row)}>{row.name.value}</button>
+        </li>)}</ul>;
+}
+
+export function ItemList({data, controller}) {
+    return <>
+        <label>
+            <input type="checkbox" checked={data.i.archive.value === null}
+                   onChange={() => controller.i.archive.change(data.i.archive.value === null ? 0 : null)}/> и архивные
+        </label>
+        <ul>{data.i.list.map(row =>
+            <li key={row.key}><button onClick={() => controller.i.change(row)}>{row.name.value}</button></li>)}</ul>
+    </>;
+}
+
+export function DetailPanel({data}) {
+    return <>
+        <h2>{data.i.nameItem.value}</h2>
+        <ul>{data.d.list.map(row =>
+            <li key={row.key}>{row.name.value}: {row.quantity.value}</li>)}</ul>
+    </>;
+}
+```
+
+В `props.data` каждого контейнера только те части, которые он рисует: `CategoryList` видит `data.c`, `ItemList` — `data.i` со строками и группой фильтров `archive`, `DetailPanel` — `data.d` и, как `data.i`, только перенесённое к нему панельное свойство `nameItem`. Часть группы проецируется туда, где стоит её компонент, — строки туда, где грид группы, панельное свойство туда, где само свойство, — поэтому имя текущего элемента попадает в панель деталей панельным свойством `i`, добавленным под алиасом и перенесённым `MOVE` в рисующий его контейнер, без строк группы. Щелчок в списке устанавливает текущий объект (`controller.c.change(row)`), и фильтры нижестоящих групп следуют за ним — это собственная зависимость групп платформы, поэтому общего состояния на JavaScript контейнерам не нужно. Контейнер, который не рисует строки группы, выбирает её текущий объект через контроллер формы — `controller.form.changeObject('c', row)` со строкой своих данных или дескриптором `objects` из запроса, — так же, как сортирует строки, которые рисует другой контейнер ([между контейнерами](../language/Form_and_navigator_controllers.md#across-containers)). Свойство уровня формы, которое показывают два контейнера, добавляется дважды, под двумя алиасами, по одному в каждый контейнер.
 
 Именованный отбор задаёт `FILTERGROUP`: `data.i.archive.value` равно `0` для активных элементов и `null` для всех, включая архивные. Чтобы показывать и архивные элементы, вызовите `controller.i.archive.change(null)`, а чтобы скрыть их — `controller.i.archive.change(0)` ([Группы фильтров](../language/React_filters_and_toolbar.md#filter-groups)). Выбранный раздел так же задаётся группой фильтров или текущим объектом группы. Поиск, который вводит пользователь, по умолчанию использует [фильтр свойства](../language/React_filters_and_toolbar.md#property-filters), а когда условия собирает представление — [пользовательские фильтры](../language/React_filters_and_toolbar.md#filters) группы. Строки отбирает сервер, и количество под фильтром формы учитывает эти фильтры тоже ([количество под фильтром формы](#filtered-count)), тогда как `list.length` — лишь уже прочитанные строки. Значение остаётся свойством формы, когда его читает другая логика формы. Какая область или закладка показана, может храниться в состоянии React ([Размещение дочернего компонента](../language/React_platform_components.md#placing)), как и раскрытая карточка или открытая панель.
 
@@ -137,7 +182,21 @@ DESIGN catalog {
 
 Нужно показывать дочерние компоненты, которые рисует платформа, вкладками: полосой их заголовков и изображений над одним показанным дочерним компонентом. Для решения используются [размещение дочернего компонента](../language/React_platform_components.md#placing), его запись, [`<Caption>`](../language/React_rendering.md#caption) и [`<Image>`](../language/React_rendering.md#image).
 
+Здесь у формы `orders` две группы объектов, `o` и `i`. Их боксы переносятся в контейнер представления, рисует их платформа (`custom = NULL`), а `PlacedTabs` размещает активный:
+
+```lsf
+DESIGN orders {
+    NEW tabs FIRST {
+        custom = 'PlacedTabs';
+        MOVE BOX(o) { custom = NULL; }
+        MOVE BOX(i) { custom = NULL; }
+    }
+}
+```
+
 ```jsx
+const { Platform, Caption, Image } = window.lsfusion;
+
 const TABS = ['BOX(o)', 'BOX(i)'];
 
 export function PlacedTabs(props) {
@@ -215,6 +274,17 @@ DESIGN quotes {
 }
 ```
 
+```jsx
+export function QuoteBoard({data}) {
+    return <table><tbody>{data.q.list.map(row =>
+        <tr key={row.key}>
+            <td>{row.symbol.value}</td>
+            <td>{row.price.value}</td>
+            <td>{row.changedAt.value?.toLocaleTimeString()}</td>
+        </tr>)}</tbody></table>;
+}
+```
+
 ### Выбор вкладки и сворачивание контейнера {#tabs-and-collapse}
 
 Нужно, чтобы представление выбирало вкладку формы, показывало, выбрана ли эта вкладка, и сворачивало контейнер формы. Для решения используются свойство с [`ACTIVE TAB`](../language/ACTIVE_operator.md) и действия с [`ACTIVATE TAB`](../language/ACTIVATE_operator.md) и [`COLLAPSE CONTAINER`](../language/COLLAPSE_operator.md), которые дизайн перемещает в контейнер представления ([Скрытое представление](../language/React_form_behavior.md#hidden-view)).
@@ -239,7 +309,12 @@ DESIGN order {
 ```
 
 ```jsx
-<button aria-pressed={data.linesSelected.value === true} onClick={() => controller.selectLines.exec()}>Строки</button>
+export function Steps({data, controller}) {
+    return <>
+        <button aria-pressed={data.linesSelected.value === true} onClick={() => controller.selectLines.exec()}>Строки</button>
+        <button onClick={() => controller.collapseDetails.exec()}>Скрыть детали</button>
+    </>;
+}
 ```
 
 ### Своё меню {#app-menu}
@@ -261,11 +336,15 @@ NAVIGATOR {
 const { Caption } = window.lsfusion;
 
 export function AppMenu({ data, controller }) {
-    return <nav>{data.root.map(name => {
+    function item(name) {
         const e = data.byName[name];
-        return <button key={name} className={e.selected ? 'on' : ''}
-                       onClick={ev => controller.activate(name, ev)}><Caption value={e.caption}/></button>;
-    })}</nav>;
+        return <li key={name}>
+            <button className={e.selected ? 'on' : ''}
+                    onClick={ev => controller.activate(name, ev)}><Caption value={e.caption}/></button>
+            {e.children.length > 0 && <ul>{e.children.map(item)}</ul>}
+        </li>;
+    }
+    return <nav><ul>{data.root.map(item)}</ul></nav>;
 }
 ```
 
@@ -275,11 +354,16 @@ export function AppMenu({ data, controller }) {
 const { Platform, Caption } = window.lsfusion;
 
 export function AppMenu({ data, controller }) {
-    return <nav>
-        <Platform name="Sale.sales" className="menu-main"/>
-        {data.root.filter(name => name !== 'Sale.sales').map(name =>
-            <button key={name} onClick={ev => controller.activate(name, ev)}><Caption value={data.byName[name].caption}/></button>)}
-    </nav>;
+    function item(name) {
+        const e = data.byName[name];
+        return <li key={name}>
+            {name === 'Sale.sales'
+                ? <Platform name="Sale.sales" className="menu-main"/>
+                : <button onClick={ev => controller.activate(name, ev)}><Caption value={e.caption}/></button>}
+            {e.children.length > 0 && <ul>{e.children.map(item)}</ul>}
+        </li>;
+    }
+    return <nav><ul>{data.root.map(item)}</ul></nav>;
 }
 ```
 
@@ -405,7 +489,7 @@ FORM appHeader 'Шапка'
     PROPERTIES() query
     OBJECTS c = Customer
     PROPERTIES(c) READONLY name, city
-    PROPERTIES(c) openCustomer
+    PROPERTIES(c) openCustomer GRID
     FILTERS found(c)
     ORDERS name(c)
 ;
@@ -519,6 +603,10 @@ FORM catalogue
     PROPERTIES(i) name
     FILTERS category(i) == c
 ;
+
+DESIGN catalogue {
+    GRID(TREE t) { custom = 'Tree'; }
+}
 ```
 
 ```jsx
@@ -604,7 +692,7 @@ DESIGN items {
 Представление, которое рисует только `FILTERS(<group>)`, строит по `filterProperties` редактор условия, хотя ни одного свойства группы в нём нет:
 
 ```jsx
-function FilterPanel({data, controller}) {
+export function FilterPanel({data, controller}) {
     const typed = data.i.filterProperties.filter(p => p.type === 'string' || p.type === 'number');
     const [choice, setChoice] = React.useState(typed[0]);
     const [text, setText] = React.useState('');
@@ -739,7 +827,7 @@ DESIGN items {
 ```
 
 ```jsx
-function ItemHeader({data, controller}) {
+export function ItemHeader({data, controller}) {
     const items = data.i, buttons = controller.i;
     const [count, setCount] = React.useState(null);
     return <div>
@@ -772,7 +860,7 @@ DESIGN catalogue {
 ```
 
 ```jsx
-function CatalogueHeader({data, controller}) {
+export function CatalogueHeader({data, controller}) {
     const buttons = controller.t; // t — имя дерева
     return <div>
         <button onClick={() => buttons.expandCurrent()}>Раскрыть текущий узел</button>
@@ -815,10 +903,26 @@ window.lsfusion.custom.register('ItemCards', ItemCards, 'reactView');
 
 Нужно, чтобы контекст React, который задаёт представление, — тема — доходил до компонентов в ячейках таблицы платформы, которую представление размещает. Для решения используется [компонент React внутри представления React](../language/React_component_views.md#embedded). `Quantity` здесь — компонент свойства в [`CUSTOM`](../language/React_component_views.md#form-custom).
 
+```lsf
+FORM items
+    OBJECTS i = Item
+    PROPERTIES(i) READONLY name
+    PROPERTIES(i) quantity CUSTOM 'Quantity'
+;
+
+DESIGN items {
+    NEW board FIRST {
+        custom = 'Board';
+        MOVE GRID(i) { custom = NULL; }
+    }
+}
+```
+
 ```jsx
+const { Platform } = window.lsfusion;
 const Theme = React.createContext('light');
 
-function Board() {
+export function Board() {
     return <Theme.Provider value="dark">
         <Platform name="GRID(i)"/> {/* платформенная таблица, количество в которой рисует Quantity */}
     </Theme.Provider>;
@@ -828,6 +932,8 @@ function Quantity({data}) {
     const theme = React.useContext(Theme); // 'dark' в каждой ячейке таблицы, которую размещает Board
     return <span className={theme}>{data.value}</span>;
 }
+
+window.lsfusion.custom.register('Quantity', Quantity, 'reactView');
 ```
 
 ### Сохранение состояния компонентов {#keeping-state}
