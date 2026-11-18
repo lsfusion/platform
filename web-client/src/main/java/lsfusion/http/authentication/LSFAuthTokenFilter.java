@@ -23,16 +23,22 @@ public class LSFAuthTokenFilter extends OncePerRequestFilter {
         this.authenticationManager = authenticationManager;
     }
 
+    // the token of an "Authorization: Bearer" header, if the request has one
+    public static String getBearerToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        return header != null && header.toLowerCase().startsWith("bearer ") ? header.substring(7) : null;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
-        String header = request.getHeader("Authorization");
+        String token = getBearerToken(request);
 
-        if (header == null || !header.toLowerCase().startsWith("bearer ")) {
+        if (token == null) {
             chain.doFilter(request, response);
             return;
         }
 
-        LSFAuthenticationToken auth = new LSFAuthenticationToken("", "", new AuthenticationToken(header.substring(7)), Locale.getDefault());
+        LSFAuthenticationToken auth = new LSFAuthenticationToken("", "", new AuthenticationToken(token), Locale.getDefault());
         Authentication authResult = authenticationManager.authenticate(auth);
 
         SecurityContextHolder.getContext().setAuthentication(authResult);

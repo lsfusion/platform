@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.http.authentication.LSFCrossSiteRequestFilter;
 import lsfusion.http.authentication.LSFLoginUrlAuthenticationEntryPoint;
 import lsfusion.http.controller.oauth.OAuthRequestHandlerBase;
 import lsfusion.http.provider.logics.LogicsProvider;
@@ -68,7 +69,9 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
     public static void processFailedAuthentication(HttpServletRequest request, HttpServletResponse response, Exception e, List<String> paramsToRemove) {
         try {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
-            LSFLoginUrlAuthenticationEntryPoint.requestCache.saveRequest(request);
+            // the login opens the request after it, on the session it logs in: so only a request that may run on a session
+            if (LSFCrossSiteRequestFilter.isAllowed(request))
+                LSFLoginUrlAuthenticationEntryPoint.requestCache.saveRequest(request);
 
             response.sendRedirect(MainController.getDirectUrl("/login", paramsToRemove, request));
         } catch (IOException e1) {

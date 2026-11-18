@@ -1,0 +1,19 @@
+MODULE UiCsrf;
+
+REQUIRE TestUtils, Authentication;
+
+// what the requests of UiCsrfIT ran as: each request records, under a tag of its own, the user it ran as
+
+uiCsrfUser 'User' = DATA STRING[100] (STRING[100]);
+
+uiCsrfRecord (STRING[100] tag) {
+    uiCsrfUser(tag) <- OVERRIDE currentUserLogin(), 'anonymous';
+    APPLY;
+}
+
+// expected: the user the request ran as, or 'none' for a request that did not run
+uiCsrfCheck (STRING[100] tag, STRING[100] expected) {
+    LOCAL user = STRING[100] ();
+    user() <- OVERRIDE uiCsrfUser(tag), 'none';
+    assertEquals(user(), expected, 'the request ' + tag + ' ran as \'' + user() + '\', not \'' + expected + '\'');
+}

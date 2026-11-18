@@ -102,6 +102,11 @@ public abstract class UiTest {
             }
     }
 
+    // the web client's address, as the browser reaches it
+    protected static String webClient() {
+        return "http://localhost:" + webPort;
+    }
+
     // where a test's page goes on the web client: the suite's application, unless the class has one of its own
     protected String main() {
         return "/main";
@@ -253,7 +258,7 @@ public abstract class UiTest {
             });
             ScheduledFuture<?> watch = WATCHDOG > 0 ? DUMPS.scheduleAtFixedRate(dumps(name), WATCHDOG, WATCHDOG, TimeUnit.MILLISECONDS) : null;
             try {
-                page.navigate("http://localhost:" + webPort + main());
+                page.navigate(webClient() + main());
                 page.locator("[lsfusion-container='System.root']").waitFor(); // the navigator's top window
                 test.evaluate();
                 page.evaluate("() => 0"); // playwright hands the page's events to the handlers only during a call into it
