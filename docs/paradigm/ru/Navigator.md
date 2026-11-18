@@ -26,6 +26,10 @@ title: 'Навигатор'
 
 Для управления навигатором используется [инструкция `NAVIGATOR`](../language/NAVIGATOR_statement.md).
 
+### React
+
+Компонент React, который рисует окно, выбирает элементы навигатора так же, как пользователь, через [контроллер навигатора](../language/Form_and_navigator_controllers.md#navigator-controller).
+
 ### Примеры
 
 ```lsf

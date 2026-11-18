@@ -45,7 +45,7 @@ When defining the form design, the developer can use the following base componen
 
 #### Table record {#record}
 
-The components the design adds to the table of an object group — `MOVE` or `NEW` inside `GRID(<object group>) { ... }` — make up the table's *record*: the card of the current object, which the map and the calendar [view types](../language/Object_blocks.md#objects) show over the marker or the event the user clicks, and a custom view next to the element it passes to [`changeObject`](../how-to/How-to_Custom_components_objects.md#controller-methods), if anything in it is shown. The table and the pivot table do not show the record. A tree has no record.
+The components the design adds to the table of an object group — `MOVE` or `NEW` inside `GRID(<object group>) { ... }` — make up the table's *record*: the card of the current object, which the map and the calendar [view types](../language/Object_blocks.md#objects) show over the marker or the event the user clicks, and a custom view next to an element of its own that it specifies when changing the current object, if anything in it is shown. The table and the pivot table do not show the record. A tree has no record.
 
 ### Value cell rendering {#cellrender}
 
@@ -202,6 +202,10 @@ The hierarchy of containers and components in the default design will look like 
 ### Language
 
 To set up the design of the form, use the [`DESIGN` statement](../language/DESIGN_statement.md). Its article also gives the complete tables of the properties of components of every kind (containers, components of properties and actions on the form, toolbars, grids) set by this statement.
+
+### React
+
+A container of the design can be [drawn by a React component](../language/React_views.md) instead of the platform, and then the components inside it that the platform still draws are [placed by that component](../language/React_platform_components.md). A tree's table, a toolbar, filter controls, a filter group and a property's filter can be drawn by [a React component of their own](../language/React_component_views.md#component-views). An unselected tab and a collapsed container [hide what a React component draws](../language/React_form_behavior.md#hidden-view), and the component itself selects the tabs and collapses and expands the containers around it with actions of the form.
 
 ### Examples
 

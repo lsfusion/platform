@@ -13,6 +13,10 @@ When a pivot table is opened with no measure (value) columns pre-selected, the p
 
 To declare a property that returns the current view type of an object group, use the [`VIEWTYPE` operator](../language/Object_group_operator.md).
 
+### React
+
+A React component can [draw the rows of an object group](../language/React_component_views.md#form-custom) as its custom view.
+
 ### Examples
 
 ```lsf

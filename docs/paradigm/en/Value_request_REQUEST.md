@@ -48,6 +48,10 @@ Note that all [value input](Value_input.md) operators can be automatically "wrap
 
 The syntax of the value request operator is described by the [`REQUEST` operator](../language/REQUEST_operator.md).
 
+### React
+
+A value that a React component passes when it changes a property through [its controller](../language/React_view_controller.md#changing-values) is pushed as the request value instead of the user's input, and the user is not asked for a value.
+
 ### Examples
 
 ```lsf

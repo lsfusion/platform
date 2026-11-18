@@ -67,6 +67,10 @@ Also, when calling the form, you can specify that it will be opened in a [new](N
 
 To open a form in the interactive view, use the [`SHOW` operator](../language/SHOW_operator.md). To show the form in the dialog mode, use the [`DIALOG` operator](../language/DIALOG_operator.md).
 
+### React
+
+A form opened as a tab in a forms window that a React component draws is [placed by that component](../language/React_windows.md#forms-window) as it chooses, and a form it places nowhere stays open and hidden.
+
 ### Examples
 
 ```lsf

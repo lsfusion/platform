@@ -205,6 +205,10 @@ All of the above options, as well as defining the form structure, can be done us
 
 The `inputlist` and `noinputlist` annotations of the asynchronous value list are written among the [property options](../language/Property_options.md) in the declaration of the property.
 
+### React
+
+A React component that draws a part of the form receives [the state of that part](../language/React_projection.md): its object groups with their rows and current objects, and its properties with their values, including the options of a property shown as a selection element. Through [its controller](../language/React_view_controller.md) it changes current objects and property values and runs actions, and it asks the server for [the asynchronous value list](../language/Form_and_navigator_controllers.md#looking-up-values) of a property. It can also draw [object trees](../language/React_trees_sortings_selection.md#trees), the [orders](../language/React_trees_sortings_selection.md#orders) of an object group, and its [user filters, filter groups and toolbar](../language/React_filters_and_toolbar.md), and change them as the user does.
+
 ### Open form
 
 To display the form in the interactive view, the corresponding [open form](Open_form.md) operator is used in [interactive view](In_an_interactive_view_SHOW_DIALOG.md).

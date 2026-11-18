@@ -26,6 +26,10 @@ Just as an [interactive](Interactive_view.md) form view, the navigator is displa
 
 To manage the navigator use the [`NAVIGATOR` statement](../language/NAVIGATOR_statement.md).
 
+### React
+
+A React component that draws a window selects navigator elements as the user does, through [the navigator controller](../language/Form_and_navigator_controllers.md#navigator-controller).
+
 ### Examples
 
 ```lsf

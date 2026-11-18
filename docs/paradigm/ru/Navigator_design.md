@@ -74,6 +74,10 @@ import ThemedImage from '@theme/ThemedImage';
 
 Для управления окнами необходимо использовать [инструкцию `WINDOW`](../language/WINDOW_statement.md). React-компонент, располагающий окна, задается опцией `CUSTOM` [инструкции `NAVIGATOR`](../language/NAVIGATOR_statement.md).
 
+### React
+
+Компонент React может [рисовать окно](../language/React_windows.md) вместо платформы — окно навигатора, окно форм, окно сообщений, — а также располагать окна на рабочем столе вместо стандартного расположения.
+
 ### Примеры
 
 ```lsf

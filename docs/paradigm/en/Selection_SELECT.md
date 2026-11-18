@@ -15,6 +15,10 @@ As long as the user has not selected any row, the property of an object collecti
 
 To declare these properties, use the [`SELECT`, `SELECT ACTIVE`, and `SELECT PROPERTY` operators](../language/Object_group_operator.md).
 
+### React
+
+A React component that draws the rows of an object group not in a tree [reads and changes the selected rows and columns](../language/React_trees_sortings_selection.md#selection) as the platform's table does.
+
 ### Examples
 
 ```lsf

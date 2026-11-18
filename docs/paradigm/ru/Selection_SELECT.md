@@ -15,6 +15,10 @@ title: 'Выделение (SELECT)'
 
 Для объявления этих свойств используются операторы [`SELECT`, `SELECT ACTIVE` и `SELECT PROPERTY`](../language/Object_group_operator.md).
 
+### React
+
+Компонент React, который рисует строки группы объектов вне дерева, [читает и меняет выделенные строки и колонки](../language/React_trees_sortings_selection.md#selection) так же, как таблица платформы.
+
 ### Примеры
 
 ```lsf
