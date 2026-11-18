@@ -13,6 +13,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.UUID;
 
 import static lsfusion.tests.TestServer.BASE;
 
@@ -60,18 +61,19 @@ public class ExternalApiAccessIT {
 
     // what the code that customizes the application declares is opened to the callers by its own annotations, as an
     // action of the logics is : by @@noauth here, on a server that lets only an authenticated call in. A call takes the
-    // code its session is built with, so the calls after the save open sessions of the stateful API of their own
+    // code its session is built with, so the calls after the save open sessions of the stateful API of their own, of names
+    // no call has used : the server drops a closed session after it has answered
     @Test
     public void aNoauthActionOfACustomizationRunsWithoutLogin() throws Exception {
         String code = "eaaOpen() { RETURN 7; } @@noauth;\neaaClosed() { RETURN 8; }";
         HttpResponse<String> set = post("/exec?action=HttpExtendCode.hecSet&p=" + URLEncoder.encode(code, "UTF-8"), "");
         Assert.assertEquals(set.body(), 200, set.statusCode());
         try {
-            HttpResponse<String> open = post("/exec?action=eaaOpen&session=eaa_close", "");
+            HttpResponse<String> open = post("/exec?action=eaaOpen&session=" + UUID.randomUUID() + "_close", "");
             Assert.assertEquals(open.body(), 200, open.statusCode());
             Assert.assertEquals("7", open.body());
 
-            HttpResponse<String> closed = post("/exec?action=eaaClosed&session=eaa_close", "");
+            HttpResponse<String> closed = post("/exec?action=eaaClosed&session=" + UUID.randomUUID() + "_close", "");
             Assert.assertEquals(closed.body(), 401, closed.statusCode());
         } finally {
             post("/exec?action=HttpExtendCode.hecReset", "");

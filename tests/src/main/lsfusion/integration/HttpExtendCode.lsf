@@ -18,15 +18,14 @@ hecSet (TEXT code) {
     APPLY;
 } @@noauth;
 hecReset () { hecSet(NULL); } @@noauth;
-// an action of the logics such a server lets an anonymous call run
-hecNothing () { } @@noauth;
-
-// what the server answers a call, or what the call fails with
+// what the server answers a call, or what the call fails with. Each call opens a session of a name no call has used : the
+// server drops a closed session after it has answered, and a later call of the same name could still find it
 hecResponse = DATA LOCAL STRING ();
 hecGet (STRING request) {
     hecResponse() <- NULL;
+    generateUUID();
     TRY {
-        EXTERNAL HTTP GET origin() + request + '&session=hec_close' TO hecResponse;
+        EXTERNAL HTTP GET origin() + request + '&session=' + generatedUUID() + '_close' TO hecResponse;
     } CATCH {
         hecResponse() <- messageCaughtException();
     }
@@ -34,8 +33,9 @@ hecGet (STRING request) {
 // a script is sent as the body : in a parameter of the address a ';' would end it
 hecEval (STRING script) {
     hecResponse() <- NULL;
+    generateUUID();
     TRY {
-        EXTERNAL HTTP POST origin() + '/eval?session=hec_close' PARAMS script TO hecResponse;
+        EXTERNAL HTTP POST origin() + '/eval?session=' + generatedUUID() + '_close' PARAMS script TO hecResponse;
     } CATCH {
         hecResponse() <- messageCaughtException();
     }
