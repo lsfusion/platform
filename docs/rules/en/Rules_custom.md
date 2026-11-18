@@ -295,20 +295,22 @@ title: 'Rules: custom views'
 
 ## Container sizing
 
-1. For a form with a `custom` container opened as a window
-   (`FLOAT`; the default location for `DIALOG`), the assistant
-   MUST give the container a base size — `size = (w, h)` or
-   the separate `width` and `height` attributes: the
-   window size is computed at the moment of opening from the
-   component's first drawing, of the form's first data, and
-   does not change afterwards, so without it what the
-   component draws later — more rows, data that arrives
-   afterwards — pushes the OK / Close buttons past the window's
-   edge. For a form with no tables and content of moderate
-   height, the assistant MAY instead leave the container
-   without a base size and set `size = (-1, -1)` on the main
-   container of the form itself: the window is then not fixed
-   and follows the content (details in `Form_design`).
+1. When the content of a `custom` container grows after the
+   opening — more rows, data that arrives afterwards — and its
+   form is opened as a window (`FLOAT`; the default location
+   for `DIALOG`), the assistant MUST give the container a base
+   size — `size = (w, h)` or the separate `width` and `height`
+   attributes: the window size is computed at the moment of
+   opening from the component's first drawing, of the form's
+   first data, and does not change afterwards, so without it
+   what the component draws later pushes the OK / Close
+   buttons past the window's edge. A container whose content
+   does not grow after the opening needs no base size: the
+   window is measured with it. For a form with no tables and
+   content of moderate height, the assistant MAY instead of
+   the base size set `size = (-1, -1)` on the main container
+   of the form itself: the window is then not fixed and
+   follows the content (details in `Form_design`).
 
 2. A tab (`WINDOW`) is sized by the forms window, but the
    base size bounds the height of the container itself there
