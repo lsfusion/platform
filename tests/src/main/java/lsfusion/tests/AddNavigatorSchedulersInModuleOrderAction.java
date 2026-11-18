@@ -8,10 +8,10 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
-import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.navigator.NavigatorEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
 import java.lang.reflect.Field;
@@ -33,23 +33,23 @@ public class AddNavigatorSchedulersInModuleOrderAction extends AtOnceAction {
             LogicsModule[] modules = independentModules(context.getBL(), LM);
             LA<?> earlier = findAction("nsEarlier[]");
             LA<?> later = findAction("nsLater[]");
-            BaseLogicsModule baseLM = context.getBL().LM;
-            Field field = BaseLogicsModule.class.getDeclaredField("navigatorSchedulers");
+            NavigatorEntity navigator = context.getBL().getNavigator();
+            Field field = NavigatorEntity.class.getDeclaredField("schedulers");
             field.setAccessible(true);
-            Object original = field.get(baseLM);
+            Object original = field.get(navigator);
 
             String failure = null;
-            field.set(baseLM, NFFact.list());
+            field.set(navigator, NFFact.list());
             try {
-                baseLM.addNavigatorScheduler(new NavigatorScheduler(60, false), later, modules[1].getVersion());
-                baseLM.addNavigatorScheduler(new NavigatorScheduler(60, false), earlier, modules[0].getVersion());
-                ImList<LA> actions = baseLM.getNavigatorSchedulers().get(new NavigatorScheduler(60, false));
+                navigator.addScheduler(new NavigatorScheduler(60, false), later, modules[1].getVersion());
+                navigator.addScheduler(new NavigatorScheduler(60, false), earlier, modules[0].getVersion());
+                ImList<LA> actions = navigator.getSchedulers().get(new NavigatorScheduler(60, false));
                 if (actions == null || actions.size() != 2 || actions.get(0) != earlier || actions.get(1) != later)
                     failure = "the period runs " + (actions != null ? actions.mapListValues(action -> action.action.getCanonicalName()) : "nothing")
                             + ", not both actions, " + modules[0].getName() + "'s first, earlier in the module order than "
                             + modules[1].getName() + " that scheduled first";
             } finally {
-                field.set(baseLM, original);
+                field.set(navigator, original);
             }
 
             findProperty("nsFailure[]").change(failure, context);

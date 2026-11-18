@@ -5,10 +5,10 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.navigator.NavigatorEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
 import java.lang.reflect.Field;
@@ -27,22 +27,22 @@ public class SetNavigatorCustomInModuleOrderAction extends AtOnceAction {
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             LogicsModule[] modules = independentModules(context.getBL(), LM);
-            BaseLogicsModule baseLM = context.getBL().LM;
-            Field field = BaseLogicsModule.class.getDeclaredField("navigatorCustom");
+            NavigatorEntity navigator = context.getBL().getNavigator();
+            Field field = NavigatorEntity.class.getDeclaredField("custom");
             field.setAccessible(true);
-            Object original = field.get(baseLM);
+            Object original = field.get(navigator);
 
             String failure = null;
-            field.set(baseLM, NFFact.property());
+            field.set(navigator, NFFact.property());
             try {
-                baseLM.setNavigatorCustom("NcLater", modules[1].getVersion());
-                baseLM.setNavigatorCustom("NcEarlier", modules[0].getVersion());
-                String custom = baseLM.getNavigatorCustom();
+                navigator.setCustom("NcLater", modules[1].getVersion());
+                navigator.setCustom("NcEarlier", modules[0].getVersion());
+                String custom = navigator.getCustom();
                 if (!"NcLater".equals(custom))
                     failure = "the navigator kept the CUSTOM " + custom + " of the module earlier in the module order ("
                             + modules[0].getName() + "), written last";
             } finally {
-                field.set(baseLM, original);
+                field.set(navigator, original);
             }
 
             findProperty("ncFailure[]").change(failure, context);

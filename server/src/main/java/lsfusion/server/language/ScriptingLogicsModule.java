@@ -5930,7 +5930,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void setNavigatorCustom(String custom, LPWithParams customProperty) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkComponentOnlyCustom("navigator", "NAVIGATOR", custom, customProperty != null);
 
-        baseLM.setNavigatorCustom(custom, getVersion());
+        getNavigator().setCustom(custom, getVersion());
     }
 
     // the one place a NAVIGATOR window is told what draws it, whichever statement said so - as the grammar has one
@@ -6134,7 +6134,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addNavigatorScheduler(LA action, NavigatorScheduler scheduler) throws ScriptingErrorLog.SemanticErrorException {
-        baseLM.addNavigatorScheduler(scheduler, action, getVersion());
+        getNavigator().addScheduler(scheduler, action, getVersion());
     }
 
     public static class ImageOption {

@@ -1,12 +1,19 @@
 package lsfusion.server.logics.navigator;
 
+import lsfusion.base.Pair;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.interop.navigator.NavigatorScheduler;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
+import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.physics.dev.id.name.DuplicateElementsChecker.DuplicateElementsFound;
@@ -14,10 +21,11 @@ import lsfusion.server.physics.dev.id.name.DuplicateElementsChecker.DuplicateEle
 import java.util.*;
 import java.util.function.Function;
 
-// The navigator : its elements, a tree under the root, and the windows they are drawn in. The logics has one, and every
-// module writes what it declares straight into it and finds in it what its code names, as a module does with a form it
-// extends (FormEntity) - a module keeps nothing of the navigator's itself. The code of a customization changes a copy
-// of it, which is what a client customized so draws - as a form is opened from its customized copy
+// The navigator : its elements, a tree under the root, the windows they are drawn in and what lays the windows out, and
+// the actions its clients run periodically. The logics has one, and every module writes what it declares straight into
+// it and finds in it what its code names, as a module does with a form it extends (FormEntity) - a module keeps nothing
+// of the navigator's itself. The code of a customization changes a copy of it, which is what a client customized so
+// draws and runs - as a form is opened from its customized copy
 public class NavigatorEntity {
 
     private final NavigatorElement root;
@@ -25,6 +33,16 @@ public class NavigatorEntity {
     // then the order in a module : a client searches the windows that hold forms in the order it is sent them
     private final NFOrderSet<NavigatorElement> elements = NFFact.orderSet();
     private final NFOrderSet<AbstractWindow> windows = NFFact.orderSet();
+
+    // NAVIGATOR CUSTOM: the React component that lays the windows out instead of the standard layout, if any. NF at the
+    // version of the module giving it : modules that do not require each other are parsed at once, and of two giving
+    // the navigator its CUSTOM the later in the module order wins
+    private final NFProperty<String> custom = NFFact.property();
+
+    // NAVIGATOR { SCHEDULE ... }: the actions a client of the navigator runs periodically, several of one period (and
+    // FIXED) among them. NF at the version of the module scheduling : modules that do not require each other are parsed
+    // at once, and the actions of one period run in the module order
+    private final NFList<Pair<NavigatorScheduler, LA>> schedulers = NFFact.list();
 
     // what the elements and the windows of the logics' navigator are in this one, a copy - kept as a form keeps the
     // mapping of each form it is copied of (FormEntity.getExEntity); none for the logics' own
@@ -43,6 +61,8 @@ public class NavigatorEntity {
         mapping = new NavigatorMapping(version);
         mapping.add(windows, src.windows);
         mapping.add(elements, src.elements);
+        mapping.sets(custom, src.custom);
+        mapping.adds(schedulers, src.schedulers);
         this.root = mapping.get(src.root);
     }
 
@@ -63,6 +83,22 @@ public class NavigatorEntity {
 
     public void addWindow(AbstractWindow window, Version version) {
         windows.add(window, version);
+    }
+
+    public void setCustom(String custom, Version version) {
+        this.custom.set(custom, version);
+    }
+
+    public String getCustom() {
+        return custom.get();
+    }
+
+    public void addScheduler(NavigatorScheduler scheduler, LA action, Version version) {
+        schedulers.add(new Pair<>(scheduler, action), version);
+    }
+
+    public ImMap<NavigatorScheduler, ImList<LA>> getSchedulers() {
+        return schedulers.getList().groupList(scheduled -> scheduled.first).mapValues(scheduled -> scheduled.mapListValues(pair -> pair.second));
     }
 
     // what a module that reads at the version sees - what it declared, and what the modules it requires did -, found by

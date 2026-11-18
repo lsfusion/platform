@@ -2,6 +2,7 @@ package lsfusion.server.logics.navigator;
 
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
+import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
 
@@ -44,6 +45,11 @@ public class NavigatorMapping {
     public <X> void sets(NFProperty<X> to, NFProperty<X> from) {
         assert to != from;
         to.set(from, p -> p, version);
+    }
+
+    public <X> void adds(NFList<X> to, NFList<X> from) {
+        assert to != from;
+        to.add(from, p -> p, version);
     }
 
     public <M extends NavigatorMappingInterface<? super M>> void set(NFProperty<M> to, NFProperty<M> from) {

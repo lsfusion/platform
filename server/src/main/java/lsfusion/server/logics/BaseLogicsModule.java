@@ -7,7 +7,6 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -15,7 +14,6 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.interop.navigator.NavigatorScheduler;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -23,8 +21,6 @@ import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.base.version.interfaces.NFList;
-import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
@@ -838,32 +834,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public NavigatorElement application;
     public NavigatorElement logs;
     public NavigatorElement system;
-
-    // NAVIGATOR { SCHEDULE ... }: the actions scheduled for the navigator, several of one period (and FIXED) among them.
-    // NF at the version of the module scheduling : modules that do not require each other are parsed at once, and the
-    // actions of one period run in the module order
-    private final NFList<Pair<NavigatorScheduler, LA>> navigatorSchedulers = NFFact.list();
-
-    public void addNavigatorScheduler(NavigatorScheduler scheduler, LA action, Version version) {
-        navigatorSchedulers.add(new Pair<>(scheduler, action), version);
-    }
-
-    public ImMap<NavigatorScheduler, ImList<LA>> getNavigatorSchedulers() {
-        return navigatorSchedulers.getList().groupList(scheduled -> scheduled.first).mapValues(scheduled -> scheduled.mapListValues(pair -> pair.second));
-    }
-
-    // NAVIGATOR CUSTOM: the React component that lays the windows out instead of the standard layout, if any. NF at
-    // the version of the module giving it : modules that do not require each other are parsed at once, and of two
-    // giving the navigator its CUSTOM the later in the module order wins
-    private final NFProperty<String> navigatorCustom = NFFact.property();
-
-    public void setNavigatorCustom(String custom, Version version) {
-        navigatorCustom.set(custom, version);
-    }
-
-    public String getNavigatorCustom() {
-        return navigatorCustom.get();
-    }
 
     private void initNavigators() throws ScriptingErrorLog.SemanticErrorException {
 
