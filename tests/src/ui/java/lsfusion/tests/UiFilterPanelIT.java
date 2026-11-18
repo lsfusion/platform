@@ -51,6 +51,19 @@ public class UiFilterPanelIT extends UiTest {
         close(form);
     }
 
+    // a condition's value editor turns the browser's autofill off: Chrome offered in it the values of the saved addresses
+    // that start with what was typed - a country -, though it did not take it for a field of an address (#2005)
+    @Test
+    public void aConditionsEditorTurnsTheBrowsersAutofillOff() throws Exception {
+        String[] items = seed();
+        Locator form = open(FOLDER, "UiFilterPanel.uiFpnItems");
+        Locator editor = form.locator(".filter:visible input");
+        key(cell(form, "name", items[1]), "F3");
+        assertThat(editor).isFocused();
+        assertThat(editor).hasAttribute("autocomplete", "off");
+        close(form);
+    }
+
     // in the manual apply mode (userFiltersManualApplyMode) the panel holds a condition committed back while its
     // controls are shown, lighting its apply button, which applies it; with the controls hidden, a change of the
     // condition applies as it is made

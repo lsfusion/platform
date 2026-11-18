@@ -109,6 +109,10 @@ public abstract class InputBasedCellRenderer extends CellRenderer {
     public static InputElement createInputElement(GPropertyDraw property, GFullInputType type) {
         GInputType inputType = type.inputType;
         InputElement inputElement = GwtClientUtils.createInputElement(inputType.getName());
+        // Chrome offers the values of the saved addresses that start with what is typed even in an
+        // input it does not take for a field of an address - a country in a filter's value, say -, and gives that up for
+        // autocomplete="off"
+        inputElement.setAttribute("autocomplete", "off");
         if(inputType.isNumber() && type.type instanceof GIntegralType)
             inputElement.setAttribute("step", ((GIntegralType) type.type).getStep());
         if (inputType.isMultilineText() && property.hasAutoHeight())
