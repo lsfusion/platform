@@ -172,6 +172,21 @@ title: 'Rules: integration'
     [default value](../paradigm/Built-in_classes.md#defaultvalue)
     of the class (`0` for a number).
 
+16. If a column of a file holds a date or a time only in records
+    of a particular kind (for example, in document headers, while
+    in their lines it holds another value), the assistant SHOULD
+    first copy its values, by a separate assignment, into a local
+    string property for those records only —
+    `headerDate(INTEGER i) <- value(i) WHERE type(i) = 'H';` —
+    and convert that property: `DATE(headerDate(i))`. A string
+    that cannot be read as a date or a time does not give `NULL`,
+    as a conversion to a number does, but fails the query, and
+    a condition on the record kind next to the conversion, an `IF`
+    inside it included, does not guarantee that it is not
+    evaluated for the other records: that happens, for example,
+    when the converted value is compared with another value (see
+    [type conversion](../paradigm/Type_conversion.md)).
+
 ## Data export (EXPORT)
 
 ### Choosing the export source
