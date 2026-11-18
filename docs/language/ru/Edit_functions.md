@@ -18,7 +18,7 @@ PROPERTIES(o) address CUSTOM CHANGE 'googleAutocomplete'
 | функция | редактор |
 | --- | --- |
 | `renderInput(element, controller, value)` | дополняет штатное текстовое поле ввода; `element` — само это поле |
-| `renderDialog(element, controller, value)` | редактор-окно |
+| `renderDialog(element, controller, value)` | редактор-окно. При потере фокуса значение автоматически не фиксируется |
 | `render(element, controller, value)` | редактор, замещающий содержимое ячейки |
 
 `value` — текущее значение свойства, преобразованное в значение JS. Кроме функции отрисовки, объект может содержать:
@@ -36,10 +36,13 @@ PROPERTIES(o) address CUSTOM CHANGE 'googleAutocomplete'
 | `commit([value])` | фиксирует правку: переданное значение либо, без аргумента, текущее (из `getValue` или поля ввода) |
 | `cancel()` | отменяет правку |
 | `setDeferredCommitOnBlur(true)` | откладывает фиксацию при потере фокуса — для выбора из списка подсказок, отрисованного вне `element` |
+| `setDeferredCommitOnBlur(false)` | если редактор фиксирует значение при потере фокуса, фиксация снова выполняется сразу (поведение по умолчанию) |
 | `getColorThemeName()` | имя текущей цветовой темы |
 | `form` | [контроллер формы](Form_and_navigator_controllers.md) |
 
 Зафиксированное значение проходит обычный канал изменения свойства — так же, как значение, введенное штатным редактором.
+
+Для вызова `commit()` у редактора-окна или редактора, замещающего ячейку, требуется `getValue(element)`. Вызов `commit(value)` пропускает `getValue` и преобразует переданное значение к типу ввода. Строка `'canceled'` означает отмену только как результат `getValue`.
 
 Например, встроенный редактор `googleAutocomplete` дополняет поле ввода адреса подсказками Google Maps:
 

@@ -18,7 +18,7 @@ The editor function, like the display function, is registered as a wrapper and r
 | function | editor |
 | --- | --- |
 | `renderInput(element, controller, value)` | extends the standard text input; `element` is that input itself |
-| `renderDialog(element, controller, value)` | a window editor |
+| `renderDialog(element, controller, value)` | a window editor. Losing focus does not automatically commit the edit |
 | `render(element, controller, value)` | an editor replacing the cell content |
 
 `value` is the current property value converted to a JS value. Besides the rendering function, the object may contain:
@@ -36,10 +36,13 @@ The editor controller provides:
 | `commit([value])` | commit the edit: the passed value or, with no argument, the current one (from `getValue` or the input) |
 | `cancel()` | cancel the edit |
 | `setDeferredCommitOnBlur(true)` | defer the commit on focus loss — for picking from a suggestion list rendered outside `element` |
+| `setDeferredCommitOnBlur(false)` | when the editor commits on focus loss, process the commit immediately (the default) |
 | `getColorThemeName()` | the current color theme name |
 | `form` | the [form controller](Form_and_navigator_controllers.md) |
 
 The committed value goes through the property's ordinary change channel — the same way as a value entered by the standard editor.
+
+Calling `commit()` on a window or replacement editor requires `getValue(element)`. Calling `commit(value)` skips `getValue` and converts the supplied value to the input type. The cancellation string `'canceled'` is recognized only as a result of `getValue`.
 
 For example, the built-in `googleAutocomplete` editor extends an address input with Google Maps suggestions:
 
