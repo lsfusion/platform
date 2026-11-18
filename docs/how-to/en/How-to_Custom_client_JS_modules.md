@@ -145,7 +145,7 @@ A module's JSX (any _.jsx_ or _.tsx_ source) is run through the **React Compiler
 
 Like plain bundling, this pass needs no Node and no other external toolchain: the compiler (Babel with `babel-plugin-react-compiler`) is vendored with the build plugin and runs in-process on the JVM. It is a build-time step only — a runtime / deploy box is unaffected. The pass does require the build JVM to be Java 11 through 23 — the JS engine performing it does not support newer JVMs yet. Outside that range it is skipped with a build warning rather than failing the build: the bundles are still produced and complete, because esbuild performs the JSX transform itself, but components are not auto-memoized. A _.js_/_.ts_-only module never runs the pass at all, and `-Dlsfusion.web.skip=true` skips the web compile entirely. An offline build (`mvn -o`) works as usual.
 
-The pass is not a substitute for [`window.lsfusion.List`](How-to_Custom_React_views.md): the common large-grid performance case — re-rendering only the rows that actually changed — is handled by `List` independently.
+The pass is not a substitute for [`window.lsfusion.List`](../language/React_rendering.md#rendering-rows): the common large-grid performance case — re-rendering only the rows that actually changed — is handled by `List` independently.
 
 ### Example
 
@@ -183,4 +183,4 @@ CSS preprocessors (Sass/SCSS, Less, Stylus) and utility frameworks that generate
 
 A standalone stylesheet that is not part of the build can still be shipped as a plain file and loaded through the [`onWebClientInit`](../language/INTERNAL_operator.md) action, like the CSS of a classic custom component (see [How-to: Custom Components (objects)](How-to_Custom_components_objects.md)).
 
-This page covers the generic packaging of any custom browser JavaScript. For the React-specific views and the controller calls a custom view makes back into the server, see [How-to: Custom React views](How-to_Custom_React_views.md) and [How-to: Custom view controller API](How-to_Custom_view_controller.md).
+This page covers the generic packaging of any custom browser JavaScript. For the React-specific views and the controller calls a custom view makes back into the server, see [React views](../language/React_views.md) and [Form and navigator controllers](../language/Form_and_navigator_controllers.md).

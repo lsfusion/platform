@@ -33,7 +33,7 @@ title: 'Rules: custom views'
      `render` / `update` pair over the rows of ONE group,
      with the controller's `diff`, view filters and page size,
      or a React component registered as `reactView`
-     ([A React component in CUSTOM](../how-to/How-to_Custom_React_views.md#form-custom));
+     ([A React component in CUSTOM](../language/React_component_views.md#form-custom));
    - a `DESIGN` container with the `custom` attribute — a
      React component (a name matching `[A-Z][A-Za-z0-9_$]*`)
      that draws the container's whole subtree from the
@@ -50,8 +50,25 @@ title: 'Rules: custom views'
    All three are web client only: the desktop client renders
    the standard views and the container's regular subtree.
    Before creating a React view the assistant MUST retrieve
-   the `How-to_Custom_React_views` documentation; before a
-   classic view, `How-to_Custom_components_objects` or
+   `React_views` (choosing the component, its module and
+   `props`), `React_projection` (`props.data`) and
+   `React_view_controller` (`props.controller`), together with
+   the articles the task needs: `Form_and_navigator_controllers`
+   (`controller.form` — server calls, other containers, the
+   batch — and the navigator's controller), `React_rendering`
+   (`List`, `Buckets`, following the scroll, `Image`,
+   `Caption`), `React_platform_components` (`<Platform>`, what
+   the platform draws inside a view), `React_form_behavior`
+   (focus, form loading, keys, `SCHEDULE`, a hidden view),
+   `React_trees_sortings_selection` (trees, sortings, selected
+   rows and columns, the clipboard), `React_filters_and_toolbar`
+   (user, property and view filters, filter controls and
+   groups, the toolbar), `React_component_views` (a component's
+   own view, a React component in `CUSTOM`) and `React_windows`
+   (the navigator, forms and log windows, the window layout) —
+   all in one `lsfusion_retrieve_docs` call,
+   `How-to_Custom_React_views` included for worked scenarios;
+   before a classic view, `How-to_Custom_components_objects` or
    `How-to_Custom_components_properties`. These rules do not
    describe the component API and MUST NOT be used instead
    of those articles.
@@ -145,7 +162,8 @@ title: 'Rules: custom views'
    draws — the current object of a group whose rows it does
    not draw, a sorting, a user filter, a filter group — it
    changes through the form's controller, by names
-   (`controller.form.changeOrders('i', …)` — the how-to,
+   (`controller.form.changeOrders('i', …)` —
+   `Form_and_navigator_controllers`,
    `Changing what another container draws`), and never
    through JavaScript state the components share.
 
@@ -162,7 +180,8 @@ title: 'Rules: custom views'
      property combining them, declared `FILTER` (concatenation
      also matches across field boundaries), or adjacent
      property filters joined by `or` and stated together in
-     one `batch` (the how-to, `Property filters`);
+     one `batch` (`React_filters_and_toolbar`, `Property filters`;
+     the how-to, `Search by several properties`);
    - conditions built by the view's filter editor — the group's
      user filters (`controller.<g>.filters.change(...)`);
    - a sorting the user picks — the group's sortings
@@ -196,8 +215,9 @@ title: 'Rules: custom views'
    of a row in a flat list is a property of the row. Only the
    number of rows already read is `list.length`. Placing the
    rows the server selected into visual blocks by such a
-   server-computed value is rendering (the `bucketOf` of the
-   how-to) and is allowed. Presentation state — an expanded
+   server-computed value is rendering (the `bucketOf` of
+   `React_rendering`, `Bucketing rows into cells`) and is
+   allowed. Presentation state — an expanded
    card, an open sheet, an input draft — MAY live in React state.
 
 ## Projection and editing

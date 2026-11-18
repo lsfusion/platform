@@ -221,7 +221,7 @@ In the current platform implementation, `=` is required before an expression or 
 
 - `FOOTER propertyExpression`
 
-    Specifying a property that determines the footer of the property (action) being added: a value for its whole table column. The table shows it in its footer row, under the column; a [React view](../how-to/How-to_Custom_React_views.md#display-options) gets it as the column's `footer`; the [print view](../paradigm/Print_view.md) of the form prints it under the column.
+    Specifying a property that determines the footer of the property (action) being added: a value for its whole table column. The table shows it in its footer row, under the column; a [React view](React_projection.md#display-options) gets it as the column's `footer`; the [print view](../paradigm/Print_view.md) of the form prints it under the column.
 
     - `propertyExpression`
 
@@ -267,7 +267,7 @@ In the current platform implementation, `=` is required before an expression or 
 
         Specifying the JavaScript functions responsible for displaying (`renderFunction`) and editing (`editFunction`) the property value. Each function is specified with a [string literal](Literals.md#strliteral) containing its name. If no function is specified after the `CHANGE` keyword, the default editing mechanism is used.
 
-        `renderFunction` can also be the name of a React component registered on the client with the kind `reactView`. The web client then displays each cell of the property — in a table or on a panel — with the component, which is given the cell's data as `props.data` and the cell's controller as `props.controller`. The component changes the value by the controller's calls only: a click on such a cell or typing in it does not start the default editing mechanism or `editFunction`.
+        `renderFunction` can also be the name of a [React component](React_component_views.md#form-custom) registered on the client with the kind `reactView`. The web client then displays each cell of the property — in a table or on a panel — with the component, which is given the cell's data as `props.data` and the cell's controller as `props.controller`. The component changes the value by the controller's calls only: a click on such a cell or typing in it does not start the default editing mechanism or `editFunction`.
 
         A render function given here makes the platform draw the value: inside a container a React component draws, the property is then not drawn by that component from its data but placed by it with `<Platform name/>` — per row, for a property in the rows it draws. An editing function alone changes nothing there, and neither does a render function the property declares: the React component still draws the property. The design attribute `custom` gives the render function too: `custom = 'renderFunction'` on the property's component says what `CUSTOM 'renderFunction'` says. Given together with `SELECT`, the render function draws the selection: it is given the property's options as its value, as the platform's own element of the selection is. A React component is given the options in `props.data.select`, and the views of the selected ones as the value. A classic function is called with an object `{multi, notNull, html, changeValue}`: `multi` means a selection of several values, `notNull` means a value has to be selected, `html` means the options' views are HTML, and `changeValue` means a pick is passed to the property's explicit change as the option's view.
 

@@ -3,7 +3,7 @@ slug: "/How-to_Custom_components_properties"
 title: 'How-to: Custom components (properties)'
 ---
 
-This article describes classic JavaScript views for existing code. For a new view, use a React component in a `custom` container or registered as `reactView` for `CUSTOM` ([How-to: Custom React views](How-to_Custom_React_views.md)).
+This article describes classic JavaScript views for existing code. For a new view, use a React component in a `custom` container or registered as `reactView` for `CUSTOM` ([React views](../language/React_views.md)).
 
 For each [property](../paradigm/Properties.md) type, by default, a predefined visual component is used to display and edit the data. 
 However, it is possible to override components with your own, created with JavaScript. 
@@ -69,7 +69,7 @@ NAVIGATOR {
 ```
 
 Next, use JavaScript and CSS to create a component that will display messages in the browser.
-The component will be created in the chat.js file, which will be located in the _resources/web_ folder. This is the no-build path — a plain `.js` file, no JSX or bundling. See [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md) for where custom JS goes and for the with-build alternative. The `controller` these classic components receive is described in [How-to: Custom view controller](How-to_Custom_view_controller.md).
+The component will be created in the chat.js file, which will be located in the _resources/web_ folder. This is the no-build path — a plain `.js` file, no JSX or bundling. See [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md) for where custom JS goes and for the with-build alternative. The `controller` these classic components receive is described in [Form and navigator controllers](../language/Form_and_navigator_controllers.md#how-a-view-gets-its-controller).
 
 Inside the chat.js file, create the _chatMessages_ function. It will return an object consisting of two functions: _render_ and _update_.
 
@@ -346,7 +346,7 @@ function chatMessageInput() {
     }
 }
 ```
-The _update_ function receives as the _value_ parameter the value of the `message[]` property — a string, or `null` when the property is empty. A value of any class arrives converted to a JS value in the same way as in the rows of a [React view](How-to_Custom_React_views.md#the-component), and, files aside, is passed to `change` in the same shape.
+The _update_ function receives as the _value_ parameter the value of the `message[]` property — a string, or `null` when the property is empty. A value of any class arrives converted to a JS value in the same way as in the rows of a [React view](../language/React_projection.md#values), and, files aside, is passed to `change` in the same shape.
 
 The CSS for the created element will look like this:
 ```css
@@ -367,7 +367,7 @@ As a result, the component will look like this:
 Then we add event handlers that will send the message when CTRL+ENTER is pressed,
 and write the entered message to the `message[]` property when the component loses focus.
 The entered text is passed by the _change_ method of the controller: it goes into the change handling of the `message[]` property in the same way as a value entered by the standard editor — for a data property that is writing the value into it. When the passed object goes into the default change action of a property with a custom-class value listed in the `CHECKED BY` block of a [constraint](../language/CONSTRAINT_statement.md), it must be among the values the filter leaves: otherwise the change is refused.
-The `send[]` action is executed by the _exec_ method of the [form controller](How-to_Custom_view_controller.md), available as `controller.form`: a call to the server, which the form allows by listing the action in its `CUSTOMS` clause. The requests are executed on the server in the order of the calls, so by the time `send[]` runs the entered text is already written to `message[]`.
+The `send[]` action is executed by the _exec_ method of the [form controller](../language/Form_and_navigator_controllers.md), available as `controller.form`: a call to the server, which the form allows by listing the action in its `CUSTOMS` clause. The requests are executed on the server in the order of the calls, so by the time `send[]` runs the entered text is already written to `message[]`.
 The handlers are added in the _update_ function:
 ```js
 element.text.onkeydown = function(event) {
@@ -438,7 +438,7 @@ The methods of the controller passed to the _update_ function, internal helpers 
 | `isReadOnly()` | whether the property can be edited: `null` — editable, `false` — read-only, `true` — disabled |
 | `diff(list, fnc[, noDiffObjects][, removeFirst])` | compute the changes of a value array — like the `diff` method in [Custom components (objects)](How-to_Custom_components_objects.md); the items are matched by their `objects` field |
 | `getColorThemeName()` | the current color theme name: `'LIGHT'` or `'DARK'` |
-| `form` | the [form controller](How-to_Custom_view_controller.md) |
+| `form` | the [form controller](../language/Form_and_navigator_controllers.md) |
 
 The `ok` handler of `getValues` receives the result in the same format as a custom object group's [`getPropertyValues`](How-to_Custom_components_objects.md#controller-methods). The _render_ function and the optional _clear_ function, invoked when the cell is cleared, receive a reduced controller as the second argument — of its methods, `clearDiff()` is the useful one, resetting the list remembered by `diff`.
 
@@ -472,7 +472,7 @@ The editor controller provides:
 | `cancel()` | cancel the edit |
 | `setDeferredCommitOnBlur(true)` | defer the commit on focus loss — for picking from a suggestion list rendered outside `element` |
 | `getColorThemeName()` | the current color theme name |
-| `form` | the [form controller](How-to_Custom_view_controller.md) |
+| `form` | the [form controller](../language/Form_and_navigator_controllers.md) |
 
 The committed value goes through the property's ordinary change channel — the same way as a value entered by the standard editor.
 

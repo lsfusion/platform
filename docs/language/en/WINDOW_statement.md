@@ -223,7 +223,7 @@ The `HIDE WINDOW` statement hides the specified window, making it invisible. A h
 
 - `CUSTOM customExpr`
 
-    The window's navigator elements are drawn by a React component or an HTML template instead of the standard toolbar. Only the desktop web client draws them that way: the mobile web client and the desktop client keep their standard menu, and the same holds for a `FORMS` window and the `System.log` window described below, which keep their standard view there.
+    The window's navigator elements are drawn by a [React component](React_windows.md#navigator-window) or an HTML template instead of the standard toolbar. Only the desktop web client draws them that way: the mobile web client and the desktop client keep their standard menu, and the same holds for a `FORMS` window and the `System.log` window described below, which keep their standard view there.
 
     - `customExpr`
 
@@ -233,7 +233,7 @@ The `HIDE WINDOW` statement hides the specified window, making it invisible. A h
 
         The template is markup the application writes and the platform inserts as it is, so what it contains is the application's: a `<script>` in it does not run, while an event attribute written on an element - `onclick`, `onerror` - does. The template is the one the `custom` attribute of a [`DESIGN`](DESIGN_statement.md) container takes, with the same rules for writing a place. Here `<Platform:name>` is the place the standard button of the navigator element with that name goes into. In a literal the name is resolved in the module's [namespaces](../paradigm/Naming.md#namespace), so the element must already be declared and a name that resolves to nothing is an error. A template computed by a property is not resolved, and there the [canonical name](../paradigm/Naming.md#canonicalname) is written.
 
-        A `FORMS` window - `System.forms` included - and the `System.log` window hold no navigator elements, but each can be given a React component, and that component is given what the running application put into the window instead - the forms open in the window, the messages logged in `System.log`. It places one of those with `<Platform name/>`, and what it places nowhere is not lost: a form stays open and hidden, a message stays logged. Only a component may be given: there are no navigator elements for a template's places to take, and what such a window shows exists only while the application runs, so neither a template nor a property is accepted here.
+        A `FORMS` window - `System.forms` included - and the `System.log` window hold no navigator elements, but each can be given a React component, and that component is given what the running application put into the window instead - the [forms open in the window](React_windows.md#forms-window), the [messages logged in `System.log`](React_windows.md#log-window). It places one of those with `<Platform name/>`, and what it places nowhere is not lost: a form stays open and hidden, a message stays logged. Only a component may be given: there are no navigator elements for a template's places to take, and what such a window shows exists only while the application runs, so neither a template nor a property is accepted here.
 
         Any other `NATIVE` window cannot be given a component or a template, since it holds no navigator elements and nothing else it could be drawn from.
 
