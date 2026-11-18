@@ -122,10 +122,57 @@ Paradigm article structure convention:
   or
   `[Type conversion operator](Type_conversion_operator.md).`
   are forbidden
+- if a Language article
+  of the interface
+  a React component
+  receives and calls
+  (`React_*.md`,
+  and `Form_and_navigator_controllers.md`
+  for the controllers
+  it is given)
+  realizes the abstraction —
+  a React component
+  draws it,
+  reads it,
+  or changes it
+  through that interface —
+  the Paradigm article
+  SHOULD also contain
+  a `React` section
+  (the heading is `React`
+  in both language versions),
+  placed immediately
+  after `Language`
+  (or in its place
+  when there is none)
+  at the same heading level,
+  that links
+  ONLY to those articles;
+  a link goes
+  only in the Paradigm article
+  that owns the concept
+  it covers,
+  not repeated
+  in a more general one,
+  and the overview article
+  `React_views.md`
+  MUST NOT be linked
+  on top of
+  a more specific article
+  that covers the aspect;
+  every link
+  MUST be accompanied
+  by a brief descriptive clause,
+  as in `Language`
+  (bare link lists
+  are forbidden)
 - links to Language articles
   MUST appear
   ONLY in the article's
-  `Language` (`Язык`) section;
+  `Language` (`Язык`) section —
+  those to the articles
+  of the React interface
+  ONLY in its `React` section;
   the definition,
   body, `Examples`,
   and any other section
@@ -152,7 +199,15 @@ Paradigm article structure convention:
   a computed value
   is a *property*
   or its *value*,
-  not an *expression*)
+  not an *expression*);
+  the terms of the React interface
+  (*projection*, `props.data`,
+  a controller's *member*)
+  are such terms,
+  while the body
+  MAY say
+  that a React component
+  draws an element
 - a Paradigm article
   SHOULD also include
   an `Examples` section
@@ -178,7 +233,8 @@ Paradigm article structure convention:
   their syntax,
   and their examples —
   SHOULD NOT carry
-  its own `Language`
+  its own `Language`,
+  `React`,
   or `Examples` section;
   those sections
   belong to the leaf

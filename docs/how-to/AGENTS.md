@@ -38,6 +38,16 @@ How-to article structure convention:
   the target result,
   not on full reference-style
   coverage of the syntax
+  or of an interface
+- a How-to article
+  about an interface
+  client code receives and calls
+  SHOULD hold only
+  such tasks and solutions,
+  linking the Language articles
+  that specify the interface;
+  it MUST NOT restate
+  that specification
 
 Cross-references:
 How-to articles

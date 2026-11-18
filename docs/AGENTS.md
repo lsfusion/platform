@@ -15,7 +15,8 @@ TYPE-SPECIFIC RULES live in each type folder's own AGENTS.md and apply only
 when working on that type (auto-loaded for BOTH language versions, since the
 layout is type-first docs/<type>/{en,ru}/ — these are agent rules, not
 translated content):
-- LANGUAGE — docs/language/AGENTS.md   (syntax-construction articles)
+- LANGUAGE — docs/language/AGENTS.md   (syntax constructions and the
+  interfaces client code receives and calls)
 - PARADIGM — docs/paradigm/AGENTS.md   (abstractions and concepts)
 - HOW-TO   — docs/how-to/AGENTS.md      (task recipes)
 - RULES    — docs/rules/AGENTS.md       (AI task rules / coding recommendations;
@@ -211,6 +212,18 @@ The required order is:
 2) Paradigm
 3) How-to
 
+The specification of an interface
+that client code
+(an application's own code
+running in the client)
+receives and calls
+is Language documentation,
+as is that of a syntax construction;
+How-to about such an interface
+holds only usage scenarios
+that link the specification
+rather than restate it.
+
 Rules and Brief are derived AI-guidance branches,
 distilled from the above
 (Rules = the task rules / recommendations in `rules/`;
@@ -254,7 +267,9 @@ RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
 
 2. RESEARCH FLOW
    The assistant MUST first determine
-   which syntax constructions are relevant.
+   which syntax constructions
+   (or interfaces client code receives and calls)
+   are relevant.
 
    After that it MUST:
    - inspect the primary platform / plugin sources
@@ -282,6 +297,11 @@ RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
    In this repository the corresponding paths are:
    - `plugin-idea/src/com/lsfusion/lang/LSF.bnf`
    - `plugin-idea/src/com/lsfusion/lang/psi/LSFPsiImplUtil.java`
+
+   For an interface client code receives and calls,
+   the primary source is the runtime code
+   that builds it and serves its calls
+   (named in docs/language/AGENTS.md).
 
 4. SUPPLEMENTARY SOURCES
    The assistant MUST search for examples
@@ -668,7 +688,7 @@ Canonical structural headings
 mandated for a part
 (`Syntax`, `Description`,
 `Parameters`, `Examples`,
-`Language` and similar)
+`Language`, `React` and similar)
 are exempt from this check.
 
 When several parallel variants,

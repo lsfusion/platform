@@ -12,9 +12,12 @@ LANGUAGE — applies to docs/<lang>/language/
 
 ### 1. Language
 
-Language documentation is organized by syntax constructions.
+Language documentation is organized by syntax constructions
+and by the interfaces client code
+(an application's own code running in the client)
+receives and calls.
 
-It MUST contain:
+For a syntax construction it MUST contain:
 - the language syntax itself
 - a description of the syntax
 - the mechanics of expression
@@ -36,6 +39,43 @@ It MUST contain:
 - a basic explanation
   assuming that the reader already more or less understands
   the paradigm
+
+For an interface
+client code receives and calls
+it MUST contain
+the same basic explanation
+and, for each element
+of the interface,
+those of the following that apply:
+- its names
+  as client code writes them,
+  how a name is formed
+  from the element it stands for,
+  and which names are reserved
+- the shape of its data:
+  each field,
+  its values,
+  and when the field
+  is present or absent
+- the signature
+  of each function or member
+  and what it returns,
+  including when
+  an asynchronous result
+  is fulfilled or rejected
+- its refusals and errors:
+  what is refused
+  and how it is reported
+- its timing:
+  when its data arrives
+  or changes,
+  and when a call
+  takes effect
+- its availability:
+  in which client,
+  under which kind of view,
+  and for which components
+  it exists
 
 Cross-references:
 A Language article
@@ -69,19 +109,28 @@ and naturally takes
 the keyword form
 as its subject —
 not the human-language name
-that abstraction prose uses.
-Syntax documentation
+that abstraction prose uses;
+an article on an interface
+client code receives and calls
+likewise takes as its subject
+the interface's own names,
+in the form client code writes them.
+Language documentation
 MUST describe
 what can be written
 and what it means,
 not speculative usage;
 pure usage variants
+(for an interface:
+a component that solves a task,
+advice on which mechanism to choose)
 belong to Rules / How-to.
 
 Language article structure convention:
 - a Language article SHOULD begin
   with a short definition
-  of what the construction does,
+  of what the construction
+  (or interface) does,
   creates,
   or describes,
   with a link
@@ -95,6 +144,25 @@ Language article structure convention:
   `Description`,
   `Parameters`,
   `Examples`
+- an article on an interface
+  client code receives and calls
+  uses none of these sections:
+  after the definition
+  it SHOULD have
+  a section
+  per element of the interface
+  (a part of the data,
+  a group of members,
+  a component or a function),
+  each holding
+  its description,
+  tables of its members or fields,
+  and short examples of writing it
+  (a declaration, a call,
+  the shape of its data) —
+  a whole component
+  only where the element
+  cannot be shown without one
 - `Syntax`
   SHOULD contain
   only the syntax itself
@@ -187,13 +255,27 @@ Language article structure convention:
 
 Language file naming convention:
 - file names usually contain the syntax token in uppercase
+- an article on an interface
+  client code receives and calls
+  takes a descriptive name,
+  prefixed with the client technology
+  when the interface is specific to it
+  (`React_projection.md`)
+  and without a prefix
+  when several technologies share it
+  (`Form_and_navigator_controllers.md`)
 
 RULES FOR DESCRIBING LANGUAGE SYNTAX ARTICLES
 
 When writing,
 completing,
 or extending
-an article for a language syntax construction,
+an article for a language syntax construction
+(or for an interface
+client code receives and calls,
+leaving out the rules
+for `Syntax`, `Parameters`,
+`Examples`, and syntax blocks),
 the assistant MUST:
 
 Consistency with existing documentation:
@@ -869,6 +951,7 @@ Coordination with Paradigm:
   and syntax,
   and describe in the Language article
   only the syntax
+  (or the interface)
   and the specific features
   of writing that abstraction;
   if the Paradigm logic
@@ -891,6 +974,50 @@ Completeness of research:
   in the target article,
   the assistant MUST explicitly propose
   describing them as well
+- for an interface
+  client code receives and calls,
+  inspect and describe
+  the ENTIRE interface
+  the same way —
+  every name,
+  field,
+  member,
+  and refusal —
+  in the runtime sources
+  that build it
+  and serve its calls
+  rather than in the grammar:
+  for React,
+  `server/src/main/resources/web/lsfusion-custom-registry.js`
+  (the `window.lsfusion` globals
+  and the hooks)
+  and the web-client code
+  that builds the projection
+  and the controller
+  (`web-client/src/main/java/lsfusion/gwt/client/form/design/view/`
+  and the classes it calls)
+- validate a JSX or JS example
+  of such an interface
+  (see Examples in ../AGENTS.md)
+  by running it,
+  since a wrong name
+  or data shape
+  shows only at execution:
+  the component,
+  with the `.lsf` declarations
+  it relies on,
+  loaded in the web client
+  of a running server
+  and shown there
+  (its form or window opened)
+  without errors
+  in the browser console;
+  a fragment
+  (a call, a read)
+  inside such a component;
+  a JSX syntax check alone
+  only when no server
+  can be run
 - inspect the related Paradigm articles
   and abstractions as well,
   completing them per the
