@@ -5,9 +5,9 @@ title: 'Rendering in React'
 
 A [React view](React_views.md) can draw the rows of an [object group](../paradigm/Interactive_view.md#objects), and the images and captions the platform projects, with components and hooks of the platform: they re-render only the rows that changed, lay the rows out in cells and let the page of rows follow the scroll.
 
-`List`, `BucketScope`, `useBucket`, `Buckets` and `useSeekOnScroll` are built on the group and row shape of a form projection — `data.<group>.list` / `.byKey` / `.keys` —, so they serve only a view of a form that draws the rows of that group, and no other kind of root ([Reading the projection](React_projection.md#reading)). `Image` and `Caption` draw the value they are given under a root of any kind.
+`List`, `BucketScope`, `useBucket`, `Buckets` and `useSeekOnScroll` are built on the group and row shape of a form projection — `data.<group>.list` / `.byKey` / `.keys` —, so they serve only a view of a form that draws the rows of that group, and no other kind of root ([Projection reading](React_projection.md#reading)). `Image` and `Caption` draw the value they are given under a root of any kind.
 
-### Rendering rows {#rendering-rows}
+### Row rendering {#rendering-rows}
 
 Use `window.lsfusion.List` to render the rows of a group with per-row render economy. It is a runtime global, so to write it as a JSX tag bind it to a local capitalized name first. Without an alias, call it through `React.createElement`. The alias is read where the module runs, which for a compiled bundle and for a `.jsx` resource is before anything renders, so it can sit at the top of the module. In a resource written as `.js`, which is served as it is, read the platform's components and hooks inside the component instead — the module runs before the first view mounts, and they are installed at that mount:
 
@@ -52,7 +52,7 @@ props.data.o.list.map(r => <MRow key={r.key} row={r} />)
 
 A `React.memo(Row)` created inside the component on each render is a new component type every time, which defeats the memoization and re-renders every row.
 
-### Bucketing rows into cells {#bucketing}
+### Row bucketing {#bucketing}
 
 When the view lays a group's rows out as a matrix rather than a list — a calendar, a kanban board, a timetable, a seating chart — each row belongs to a derived cell (day × employee, status column, and so on). `window.lsfusion.BucketScope` maintains a cell → rows index over one group, and each cell subscribes to only its own membership.
 
@@ -78,7 +78,7 @@ const Column = ({ cellKey, rowKeys }) => (
 
 Use bucketing for placing one group's rows into derived cells where only the membership matters — pivots, calendars, kanban boards, timetables, drag-and-drop grids. It does not compute per-cell aggregates: `useBucket` returns row keys, not sums or counts, and the cell component re-renders only when that cell's row-key array changes — live aggregates are what the [pivot table view type](../paradigm/Interactive_view.md#property) provides. For a plain one-to-one list of rows use `List`, and grouping only works over the group's own projected values.
 
-### Following the scroll {#seek-on-scroll}
+### Scroll tracking {#seek-on-scroll}
 
 A view that lays rows out in their own order — a card flow, a feed — can keep the page instead of reading all rows and let it follow the scroll, the way the standard table does. `useSeekOnScroll(controller.<group>)` returns a function that marks each row's element. The hook watches which of them are on screen as the view's own box scrolls — the nearest element that scrolls the rows, looked for from a row up to the element the view is drawn in and no further — and follows the table's own rules: while the current record is on screen, scrolling changes nothing; when it leaves, it is reseated on the visible edge it left through, which is also what requests the next page; on a page change the reseated row keeps its on-screen position, so nothing jumps under the eye; a current record moved from outside — a click, a programmatic seek — is scrolled into view instead. The pact rests on the same contract the table itself lives by, and it is the developer's to keep: the page must hold more rows than the viewport can show — set `PAGESIZE` on the [`OBJECTS`](Object_blocks.md) block accordingly. The window then always extends a page beyond the current record, so it leaves the viewport — and reseats, pulling the next page — before the scroller runs out of room at a loaded edge:
 
@@ -92,7 +92,7 @@ Options: `enabled` (default `true`) suspends the tracking, `threshold` (`0.6`) i
 
 The hook moves the scroll position of that box and switches off the browser's own scroll anchoring there, so it touches nothing outside the element the view is drawn in: everything there — a platform container, a box another view shares, the page, a portal's box — belongs to something else. Rows that scroll only in such an element leave the hook doing nothing at all — no seek, and no scroll into view of a current moved out of sight — and it says so once in the console. Give the rows a scrolling box of the view's own — a bounded height and `overflow: auto`.
 
-### Drawing an image {#image}
+### Image rendering {#image}
 
 An image the platform projects — a property of an image class, the icon of a navigator element or of an action — is drawn by `Image`:
 
@@ -105,7 +105,7 @@ const { Image } = window.lsfusion;
 
 The projected value is either an address or a ready element, since a font icon has no address at all, and `Image` draws whichever it was given. A view that wants the address itself — for a CSS background, say — still has it in the value. `Image` is there so that no view has to insert the platform's markup by hand. A missing image draws nothing.
 
-### Drawing a caption {#caption}
+### Caption rendering {#caption}
 
 A caption the platform projects — a form's, a navigator element's, the one a message carries — is drawn by `Caption`:
 
@@ -119,7 +119,7 @@ A caption is either plain text or markup the platform built, and `Caption` draws
 
 ### Performance tiers {#performance-tiers}
 
-The two ways of [reading the projection](React_projection.md#reading) compose into tiers, and each following one is only needed when the previous one's re-render becomes the cost:
+The two ways of [projection reading](React_projection.md#reading) compose into tiers, and each following one is only needed when the previous one's re-render becomes the cost:
 
 1. a small view — `props.data`, render everything;
 2. a longer list — `props.data` plus row components memoized at module level (`React.memo` bails out on the unchanged rows' stable references), or [`List`](#rendering-rows) which does exactly that;

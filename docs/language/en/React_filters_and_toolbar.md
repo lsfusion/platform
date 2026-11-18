@@ -57,7 +57,7 @@ that condition's comparison, negation and `or`; when there is none, it takes the
 `{property: 'price', value: 300}` turns `price > 100 OR …` into `price > 300 OR …`. A condition with no `value` —
 absent, `null`, `''`, or one its type reads as `NULL`: `false` of a `BOOLEAN` property (a `TBOOLEAN`'s `false` is a
 value) — takes that first condition off, alone. This is what a [property filter](#property-filters)'s `change` does, and
-F3 in a grid over the conditions a view draws ([Replacing only the filters](#custom-filter-panel)) — but those two, with
+F3 in a grid over the conditions a view draws ([Custom filter panel](#custom-filter-panel)) — but those two, with
 no condition on the property, compare as its filter compared last, and F3 on an empty cell states the condition
 comparing with `NULL`: a `FILTER` being a user filter given in advance, its value and a condition added by hand are
 stated by one rule.
@@ -314,7 +314,7 @@ DESIGN items {
 
 A value committed in the row is the filter's, sent as any change is; a condition the view states on the property shows
 in it, and F3 on its column puts the cell's value into it — on a property `filterProperties` lists, or on a file one: F3
-over a view's conditions starts no condition on another ([Replacing only the filters](#custom-filter-panel)). Where the
+over a view's conditions starts no condition on another ([Custom filter panel](#custom-filter-panel)). Where the
 toolbar turns the platform's filters off (`showFilters = FALSE`), nobody draws such a filter, as in a form with no React
 view. A filter with a React component of its own — `FILTER(name(i)) { custom = 'NameSearch'; }` — draws its part in its
 own view ([A component's own view](React_component_views.md#component-views)).
@@ -327,7 +327,7 @@ Some combinations are refused when the form is built:
   (`NOEXTID`), one grouped in columns, an action;
 - a filter the platform draws over the conditions a view draws, on an action, which is never filtered by.
 
-### Replacing only the filters {#custom-filter-panel}
+### Custom filter panel {#custom-filter-panel}
 
 A group's generated boxes — `FILTERS(o)`, `FILTERBOX(o)`, `FILTERGROUPS(o)`, `TOOLBARBOX(o)`, `TOOLBARLEFT(o)`,
 `TOOLBARRIGHT(o)`, `TOOLBAR(o)`, `POPUP(o)`, `PANEL(o)` — are ordinary containers, so each of them takes `custom`.

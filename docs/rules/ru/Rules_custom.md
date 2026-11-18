@@ -60,7 +60,7 @@ title: 'Rules: custom views'
    статьями, которые нужны задаче: `Form_and_navigator_controllers`
    (`controller.form` — вызовы сервера, другие контейнеры,
    пакет — и контроллер навигатора), `React_rendering` (`List`,
-   `Buckets`, следование за прокруткой, `Image`, `Caption`),
+   `Buckets`, отслеживание прокрутки, `Image`, `Caption`),
    `React_platform_components` (`<Platform>`, то, что внутри
    представления рисует платформа), `React_form_behavior`
    (фокус, загрузка формы, клавиши, `SCHEDULE`, скрытое
@@ -79,8 +79,8 @@ title: 'Rules: custom views'
    и контроллер свойства) вместе со статьями, которые нужны
    задаче: `Edit_functions` (функция редактирования,
    контроллер редактора), `Form_and_navigator_controllers`
-   (`controller.form`, вызов сервера) и
-   `Client_JavaScript_modules` (где размещаются файлы, без
+   (`controller.form`, вызовы сервера) и
+   `Client_JavaScript_modules` (размещение файлов, файлы без
    сборки, именованные экспорты и автоматическая
    регистрация), — тоже одним вызовом, включая how-to задачи
    с готовыми сценариями: `How-to_Custom_components_objects`,
@@ -190,7 +190,7 @@ title: 'Rules: custom views'
    формы, по именам
    (`controller.form.changeOrders('i', …)` —
    `Form_and_navigator_controllers`,
-   `Изменение того, что рисует другой контейнер`), и никогда
+   `Операции между контейнерами`), и никогда
    через общее для компонентов состояние на JavaScript.
 
 4. Отбор, порядок и итоги вычисляются на сервере.

@@ -7,7 +7,7 @@ title: 'How-to: Пользовательские клиентские модул
 
 ### Папка для файла {#file-folder}
 
-Нужно выбрать, куда положить файл клиентского кода — в _src/main/web_ для сборки или в _src/main/resources/web_ без неё — и как он будет загружаться ([Без сборки](../language/Client_JavaScript_modules.md#without-the-build)).
+Нужно выбрать, куда положить файл клиентского кода — в _src/main/web_ для сборки или в _src/main/resources/web_ без неё — и как он будет загружаться ([Файлы без сборки](../language/Client_JavaScript_modules.md#without-the-build)).
 
 **Автоматически — поместите его в _resources/web/init_.** Подходит для самодостаточного компонента или таблицы стилей.
 

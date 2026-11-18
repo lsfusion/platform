@@ -41,7 +41,7 @@ and each element carries:
 | --- | --- |
 | `name` | Its own canonical name, so a component that was handed the entry alone can still address the element |
 | `caption`, `elementClass` | Its caption and CSS class, the current ones — a `HEADER` or `CLASS` expression is applied as it changes. The caption is drawn with [`<Caption value={e.caption}/>`](React_rendering.md#caption) |
-| `image` | Its icon, drawn with `<Image value={e.image}/>` — see [Drawing an image](React_rendering.md#image) — or `null` |
+| `image` | Its icon, drawn with `<Image value={e.image}/>` — see [Image rendering](React_rendering.md#image) — or `null` |
 | `folder` | Whether it is a folder rather than an action |
 | `hidden` | Whether `SHOWIF` currently hides it. Unlike the standard toolbar, which simply omits such an element, the projection keeps it, so the component decides how to treat it |
 | `selected` | Whether it is the selected element **of this window** |

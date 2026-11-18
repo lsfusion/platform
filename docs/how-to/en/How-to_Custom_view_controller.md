@@ -9,7 +9,7 @@ An end-to-end example of these calls from a classic custom view is in [How-to: C
 
 ### Changing the current object and a value from a component {#current-object-and-value}
 
-We need a click on a row to make the row current, and a button to mark the current order. The solution uses the group's `change(row)` and the `change(value)` of the property's member ([Changing the current object and property values](../language/React_view_controller.md#changing-values)).
+We need a click on a row to make the row current, and a button to mark the current order. The solution uses the group's `change(row)` and the `change(value)` of the property's member ([Changes to the current object and property values](../language/React_view_controller.md#changing-values)).
 
 ```js
 function orderView(props) {
@@ -28,7 +28,7 @@ function orderView(props) {
 
 ### Suggestions as the user types {#suggestions}
 
-We need to show suggestions for a value the user types and to make a suggestion the group's current object. The solution uses `getValues` ([Looking up values](../language/Form_and_navigator_controllers.md#looking-up-values)).
+We need to show suggestions for a value the user types and to make a suggestion the group's current object. The solution uses `getValues` ([Value lookup](../language/Form_and_navigator_controllers.md#looking-up-values)).
 
 A view can show the first answer at once, the final one when it comes, and the message of a rejection:
 

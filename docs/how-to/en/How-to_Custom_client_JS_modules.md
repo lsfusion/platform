@@ -7,7 +7,7 @@ This article collects typical tasks solved with client JavaScript modules, each 
 
 ### A folder for a file {#file-folder}
 
-We need to choose where a file of client code goes — under _src/main/web_ for the build or under _src/main/resources/web_ without it — and how it is loaded ([Without the build](../language/Client_JavaScript_modules.md#without-the-build)).
+We need to choose where a file of client code goes — under _src/main/web_ for the build or under _src/main/resources/web_ without it — and how it is loaded ([Files without a build](../language/Client_JavaScript_modules.md#without-the-build)).
 
 **Auto-loaded — put it in _resources/web/init_.** Use it for a self-contained component or stylesheet.
 

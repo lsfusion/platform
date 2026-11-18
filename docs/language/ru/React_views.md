@@ -49,7 +49,7 @@ DESIGN orders {
 
 ### Компонент {#the-component}
 
-`OrderBoard` — именованный экспорт из [модуля](Client_JavaScript_modules.md) `.jsx` в каталоге `src/main/web`. Примеры статей о React используют JSX. Для проекта [без сборки](Client_JavaScript_modules.md#without-the-build) поместите тот же компонент в файл `.jsx` — он преобразуется на сервере при отдаче. `import` и `export` там недоступны, поэтому ключевое слово `export` опускается, а компонент работает с предоставляемым платформой `window.React` — либо напишите его через `React.createElement` в обычном `.js`. Любой из этих файлов кладётся в `src/main/resources/web/init` (автозагрузка) или в `src/main/resources/web` с регистрацией через `onWebClientInit`.
+`OrderBoard` — именованный экспорт из [модуля](Client_JavaScript_modules.md) `.jsx` в каталоге `src/main/web`. Примеры статей о React используют JSX. Для проекта [с файлами без сборки](Client_JavaScript_modules.md#without-the-build) поместите тот же компонент в файл `.jsx` — он преобразуется на сервере при отдаче. `import` и `export` там недоступны, поэтому ключевое слово `export` опускается, а компонент работает с предоставляемым платформой `window.React` — либо напишите его через `React.createElement` в обычном `.js`. Любой из этих файлов кладётся в `src/main/resources/web/init` (автозагрузка) или в `src/main/resources/web` с регистрацией через `onWebClientInit`.
 
 Компонент — это обычная функция, получающая `props.data` и `props.controller`:
 
@@ -85,10 +85,10 @@ function Row(props) {
 | `useData`, `useController` | [Чтение проекции](React_projection.md#reading) |
 | `List` | [Отрисовка строк](React_rendering.md#rendering-rows) |
 | `BucketScope`, `useBucket`, `Buckets` | [Раскладка строк по ячейкам](React_rendering.md#bucketing) |
-| `useSeekOnScroll` | [Следование за прокруткой](React_rendering.md#seek-on-scroll) |
+| `useSeekOnScroll` | [Отслеживание прокрутки](React_rendering.md#seek-on-scroll) |
 | `Image` | [Отрисовка изображения](React_rendering.md#image) |
 | `Caption` | [Отрисовка заголовка](React_rendering.md#caption) |
-| `Platform`, `usePlatform`, `useShown` | [Размещение дочернего компонента, который рисует платформа](React_platform_components.md#placing) |
+| `Platform`, `usePlatform`, `useShown` | [Размещение дочернего компонента](React_platform_components.md#placing) |
 | `useVisible` | [Скрытое представление](React_form_behavior.md#hidden-view) |
 | `custom.register` | [Компонент React в `CUSTOM`](React_component_views.md#form-custom) |
 

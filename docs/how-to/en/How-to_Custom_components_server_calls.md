@@ -5,7 +5,7 @@ title: 'How-to: Custom Components (server calls)'
 
 This article describes classic JavaScript views for existing code. For a new view, use a React component in a `custom` container or registered as `reactView` for `CUSTOM` ([React views](../language/React_views.md)).
 
-A custom view calls the server through the form controller's `exec` / `eval` / `evalAction` / `change` methods. The mechanics — the authorization gate, sessions, value conversion — and the method signatures are described in [Calling the server](../language/Form_and_navigator_controllers.md#calling-the-server). This page is an end-to-end example: one CUSTOM component that calls actions and properties through the form's `CUSTOMS` clause with every major kind of parameter.
+A custom view calls the server through the form controller's `exec` / `eval` / `evalAction` / `change` methods. The mechanics — the authorization gate, sessions, value conversion — and the method signatures are described in [Server calls](../language/Form_and_navigator_controllers.md#calling-the-server). This page is an end-to-end example: one CUSTOM component that calls actions and properties through the form's `CUSTOMS` clause with every major kind of parameter.
 
 ### Task
 

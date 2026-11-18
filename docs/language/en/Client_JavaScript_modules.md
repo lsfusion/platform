@@ -7,7 +7,7 @@ A *client JavaScript module* is a file of a project that holds client code: Java
 
 When an application needs its own browser JavaScript — a custom view for an object or property, a function bound by an [`INTERNAL CLIENT`](INTERNAL_operator.md) action, or any other client-side code — that code can be kept as ordinary source files in the project and compiled into the web client at build time. The platform bundles each entry file and registers what it exports, so the application does not write any explicit loading or wiring for it. This applies to the web client only.
 
-### Where the files go {#where-the-files-go}
+### File locations {#where-the-files-go}
 
 Browser JavaScript is placed under _src/main/web_ in the logic module, for example _src/main/web/OrderBoard.jsx_ or _src/main/web/util.js_. The files may be _.js_, _.jsx_, _.ts_, or _.tsx_.
 
@@ -15,7 +15,7 @@ During the build, each file under _src/main/web_ (outside the _lib_ subfolder) i
 
 A _src/main/web/lib_ subfolder is treated as shared helper code: its files are not compiled into bundles of their own, but they can be imported from the entry files and are bundled in.
 
-### Without the build {#without-the-build}
+### Files without a build {#without-the-build}
 
 A project with no build set up — no esbuild, no `org.mvnpm` dependencies — can still ship custom client JS as a plain file under _src/main/resources/web_, used as written: no bundling, no third-party-library resolution. (This is also the path `eval` uses.) A React view in a _.js_ file is therefore written with `React.createElement` against the platform-provided `window.React` instead of JSX (a _.jsx_ file keeps the JSX syntax — see the lightweight _.jsx_ section below), and the component is exposed on the global `window` (the fallback described below) instead of as a named export. A `custom` name matching `[A-Z][A-Za-z0-9_$]*` is still inferred as React:
 
@@ -99,7 +99,7 @@ A name placed directly on the global `window` object still works as a fallback, 
 
 React and ReactDOM are **provided by the platform**: a single vendored production build is loaded before any custom script, and `react`, `react-dom`, and `react-dom/client` imports in a module resolve to it. An application must not bundle its own copy of React or ReactDOM.
 
-### Adding a third-party library {#adding-a-third-party-library}
+### Third-party libraries {#adding-a-third-party-library}
 
 A third-party browser library is added as an ordinary **offline Maven dependency**, using the [mvnpm](https://mvnpm.org/) coordinates (`org.mvnpm:*`, the Maven Central mirror of npm) — there is no npm or yarn step. The dependency is resolved from the local Maven repository like any other, and the library, together with the npm packages it depends on, is bundled into the modules that import it:
 
@@ -117,7 +117,7 @@ A scoped npm package (`@scope/name`) uses the group `org.mvnpm.at.<scope>` and t
 import ApexCharts from "apexcharts";
 ```
 
-### Adding a third-party library without the build {#adding-a-third-party-library-without-the-build}
+### Third-party libraries without a build {#adding-a-third-party-library-without-the-build}
 
 Without the build there is no `org.mvnpm` bundling, so a third-party library is loaded as a separate browser script and used from the global name it defines — a build that assigns itself to `window` (a UMD or plain-script build). The component reads it from there (`window.confetti`, `window.dayjs`, …) instead of importing it. There are two ways to supply that script.
 

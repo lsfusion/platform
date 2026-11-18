@@ -5,7 +5,7 @@ title: 'Components the platform draws'
 
 Inside a React custom container, a [component](../paradigm/Form_design.md) of the design given `custom = NULL` or a custom view of its own is drawn by the platform. The [React view](React_views.md) does not draw such a component but places it: with `<Platform>` or `usePlatform` it says where in its own markup the component's view goes. In the same way a view places, in every row it draws, the editor of a table property the platform draws, and a window drawn by React places the platform's views it shows.
 
-### Crossing back to lsFusion {#crossing-back-to-lsfusion}
+### Platform rendering {#crossing-back-to-lsfusion}
 
 `custom` crosses from the platform to React; `custom = NULL` is the crossing back. By default the component draws the container's whole subtree from `props.data`. A child given `custom = NULL` — the platform's standard view rather than a custom one — instead keeps its lsFusion view, and the component places that view with `<Platform name/>` rather than drawing it. So does a child with a custom view of its own: a container with its own `custom`, or a property the `FORM` gives a `CUSTOM` render function. `NOCUSTOM` is `custom = NULL` said in the `FORM`.
 
@@ -59,7 +59,7 @@ export function Board(props) {
 }
 ```
 
-### Placing a child the platform draws {#placing}
+### Child placement {#placing}
 
 A child the platform draws need not be a direct child of the container: it may sit inside the containers the view draws itself, however deep — the [record](../paradigm/Form_design.md#record) of a table the view draws, what a design puts into `GRID(<group>)`, included —, and the React custom container above it places it by its name all the same — so a design groups such pieces the way the view draws them, a page or a section each. Inside a container the platform draws nothing is placed separately: the platform draws that container whole, with whatever is inside it — unless a React custom container inside it places a component, as it places its own.
 
@@ -165,7 +165,7 @@ What the author gets and what stays theirs:
 
 Where no React custom container draws the group's rows, `NOCUSTOM` is simply the standard view: the platform's grid draws the property, without a custom render or editing function. A grid property grouped in columns is refused, with the property named, where a React view draws its rows: a per-row editor cannot address a row-and-column cell.
 
-### Extending a container with placed children {#extending-a-container-with-placed-children}
+### Container extension with placed children {#extending-a-container-with-placed-children}
 
 Another module adds a child to the container from `DESIGN`:
 

@@ -50,13 +50,13 @@ title: 'Rules: custom views'
    All three are web client only: the desktop client renders
    the standard views and the container's regular subtree.
    Before creating a React view the assistant MUST retrieve
-   `React_views` (choosing the component, its module and
+   `React_views` (component selection, its module and
    `props`), `React_projection` (`props.data`) and
    `React_view_controller` (`props.controller`), together with
    the articles the task needs: `Form_and_navigator_controllers`
    (`controller.form` — server calls, other containers, the
    batch — and the navigator's controller), `React_rendering`
-   (`List`, `Buckets`, following the scroll, `Image`,
+   (`List`, `Buckets`, scroll tracking, `Image`,
    `Caption`), `React_platform_components` (`<Platform>`, what
    the platform draws inside a view), `React_form_behavior`
    (focus, form loading, keys, `SCHEDULE`, a hidden view),
@@ -74,8 +74,8 @@ title: 'Rules: custom views'
    articles the task needs: `Edit_functions` (the edit
    function, the editor's controller),
    `Form_and_navigator_controllers` (`controller.form`,
-   calling the server) and `Client_JavaScript_modules` (where
-   the files go, without the build, named exports and
+   server calls) and `Client_JavaScript_modules` (file
+   locations, files without a build, named exports and
    auto-registration) — in one call as well, the how-to of the
    task included for worked scenarios:
    `How-to_Custom_components_objects`,
@@ -176,7 +176,7 @@ title: 'Rules: custom views'
    changes through the form's controller, by names
    (`controller.form.changeOrders('i', …)` —
    `Form_and_navigator_controllers`,
-   `Changing what another container draws`), and never
+   `Operations across containers`), and never
    through JavaScript state the components share.
 
 4. Selecting, ordering and totals belong to the server.
@@ -228,7 +228,7 @@ title: 'Rules: custom views'
    number of rows already read is `list.length`. Placing the
    rows the server selected into visual blocks by such a
    server-computed value is rendering (the `bucketOf` of
-   `React_rendering`, `Bucketing rows into cells`) and is
+   `React_rendering`, `Row bucketing`) and is
    allowed. Presentation state — an expanded
    card, an open sheet, an input draft — MAY live in React state.
 

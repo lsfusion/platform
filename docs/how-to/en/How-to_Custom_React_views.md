@@ -9,7 +9,7 @@ The components of the examples are written in JSX, each in a `.jsx` module ([The
 
 ### "N of M": a count under the form's filter {#filtered-count}
 
-We need to show how many rows the form's filter admits beside the rows a view draws: "6 of 23". The solution extends the form `orders` of [Selecting the component](../language/React_views.md#selecting-the-component).
+We need to show how many rows the form's filter admits beside the rows a view draws: "6 of 23". The solution extends the form `orders` of [Component selection](../language/React_views.md#selecting-the-component).
 
 The number of rows read is `list.length`, not how many rows the group's filters admit, so under paged reading the projection alone cannot show "6 of 23". A total kept current is a separate property that counts the rows under the form's current filter, including the applied user filters and view filters, with the [`FILTER` operator](../paradigm/Filter_FILTER.md), as in [How-to: Table status](How-to_Table_status.md), placed inside the container so that it reaches `data`:
 
@@ -50,7 +50,7 @@ The buttons to the first and the last row:
 
 ### A calendar with rows bucketed into cells {#calendar-board}
 
-We need to show shifts as a calendar — a grid of days by employees with each shift in its cell — in which a change re-renders only the cells it touches. The solution uses `BucketScope` and `useBucket` ([Bucketing rows into cells](../language/React_rendering.md#bucketing)).
+We need to show shifts as a calendar — a grid of days by employees with each shift in its cell — in which a change re-renders only the cells it touches. The solution uses `BucketScope` and `useBucket` ([Row bucketing](../language/React_rendering.md#bucketing)).
 
 ```jsx
 const { BucketScope, useBucket, useData } = window.lsfusion;
@@ -129,13 +129,13 @@ DESIGN catalog {
 
 `CategoryList`, `ItemList` and `DetailPanel` are components like [`OrderBoard`](../language/React_views.md#the-component), and each container's `props.data` holds only the parts it draws: `CategoryList` sees `data.c`, `ItemList` sees `data.i` with its rows and the `archive` filter group, `DetailPanel` sees `data.d` and, as `data.i`, only the panel property `nameItem` moved there. A part of a group is projected where its component stands — the rows where the group's grid is, a panel property where the property itself is — so the current item's name reaches the detail panel as a panel property of `i`, added under an alias and `MOVE`d into the container that draws it, without the group's rows. A click in a list sets the current object (`controller.c.change(row)`), and the filters of the groups below follow it — the platform's own dependency between groups, so the containers need no shared JavaScript state. A container that does not draw a group's rows chooses its current object through the form's controller — `controller.form.changeObject('c', row)`, with a row of its own data or a lookup's `objects` handle —, as it sorts the rows another container draws ([across containers](../language/Form_and_navigator_controllers.md#across-containers)). A form-level property two containers show is added twice, under two aliases, one in each container.
 
-The named selection is a `FILTERGROUP`: `data.i.archive.value` is `0` for active items and `null` for all items, including archived ones. To show archived items too, call `controller.i.archive.change(null)`; to hide them, call `controller.i.archive.change(0)` ([Filter groups](../language/React_filters_and_toolbar.md#filter-groups)). A chosen section similarly uses a filter group or the current object of a group. A search the user types uses a [property filter](../language/React_filters_and_toolbar.md#property-filters) by default, or the group's [user filters](../language/React_filters_and_toolbar.md#filters) when the view builds the conditions. The server selects the rows, and a count under the form's filter follows these filters too ([the count under the form's filter](#filtered-count)) — `list.length` is only the rows already read. A value stays a form property when other form logic reads it. Which region or tab is shown may stay in React state ([Placing platform components](../language/React_platform_components.md#placing)), as may an expanded card or an open sheet.
+The named selection is a `FILTERGROUP`: `data.i.archive.value` is `0` for active items and `null` for all items, including archived ones. To show archived items too, call `controller.i.archive.change(null)`; to hide them, call `controller.i.archive.change(0)` ([Filter groups](../language/React_filters_and_toolbar.md#filter-groups)). A chosen section similarly uses a filter group or the current object of a group. A search the user types uses a [property filter](../language/React_filters_and_toolbar.md#property-filters) by default, or the group's [user filters](../language/React_filters_and_toolbar.md#filters) when the view builds the conditions. The server selects the rows, and a count under the form's filter follows these filters too ([the count under the form's filter](#filtered-count)) — `list.length` is only the rows already read. A value stays a form property when other form logic reads it. Which region or tab is shown may stay in React state ([Child placement](../language/React_platform_components.md#placing)), as may an expanded card or an open sheet.
 
 The regions are laid out by the standard containers: a horizontal parent, an extension coefficient (`fill`) on each column, and a base height on a column whose content scrolls inside it ([the base size](../language/React_views.md#base-size)).
 
 ### A tab strip over what the platform draws {#placed-tabs}
 
-We need to show the children the platform draws as tabs: a strip of their captions and images over the one child shown. The solution uses the [placement of a child the platform draws](../language/React_platform_components.md#placing), the child's entry, [`<Caption>`](../language/React_rendering.md#caption) and [`<Image>`](../language/React_rendering.md#image).
+We need to show the children the platform draws as tabs: a strip of their captions and images over the one child shown. The solution uses the [child placement](../language/React_platform_components.md#placing), the child's entry, [`<Caption>`](../language/React_rendering.md#caption) and [`<Image>`](../language/React_rendering.md#image).
 
 ```jsx
 const TABS = ['BOX(o)', 'BOX(i)'];
@@ -154,7 +154,7 @@ export function PlacedTabs(props) {
 }
 ```
 
-Rendering only the active child, rather than hiding the others, is what makes the closed tabs stop being read — see [Placing a child the platform draws](../language/React_platform_components.md#placing). Put the tabs over a group's `BOX`, not its `GRID`: only a container and a property carry a caption and an image, so a placed `GRID(o)` has an entry with no caption — it says only whether the form hides the grid.
+Rendering only the active child, rather than hiding the others, is what makes the closed tabs stop being read — see [Child placement](../language/React_platform_components.md#placing). Put the tabs over a group's `BOX`, not its `GRID`: only a container and a property carry a caption and an image, so a placed `GRID(o)` has an entry with no caption — it says only whether the form hides the grid.
 
 A tab strip over children of both kinds keeps one name per tab, the name it places the child by, and reads the child's entry by it — a design identifier at the top level, a property's name as its path:
 
@@ -383,7 +383,7 @@ export function AppLayout({ data }) {
 
 ### The application header {#application-header}
 
-We need a header above the forms area with a search field that finds customers and opens the one clicked. The solution uses [reading the projection](../language/React_projection.md#reading) with `useData` and `useController`, and the controller's [members](../language/React_view_controller.md#members).
+We need a header above the forms area with a search field that finds customers and opens the one clicked. The solution uses [projection reading](../language/React_projection.md#reading) with `useData` and `useController`, and the controller's [members](../language/React_view_controller.md#members).
 
 A header with a search field that finds records is a form: it wants a live projection, a session to hold the query, ordering and paging, and a way to open what it finds. So it is built as a form and opened into a window of its own, a [`WINDOW ... FORMS`](../language/WINDOW_statement.md) above the forms area, with [`SHOW ... WINDOW windowName`](../language/SHOW_operator.md).
 
@@ -549,7 +549,7 @@ export function Tree({data, controller}) {
 
 ### Sortable column headers {#sortable-headers}
 
-We need column headers that sort the rows on a click and show the direction of the sorting. The solution uses the group's `orders` and their `change` ([Sortings](../language/React_trees_sortings_selection.md#orders)). The form is `orders` of [Selecting the component](../language/React_views.md#selecting-the-component).
+We need column headers that sort the rows on a click and show the direction of the sorting. The solution uses the group's `orders` and their `change` ([Sortings](../language/React_trees_sortings_selection.md#orders)). The form is `orders` of [Component selection](../language/React_views.md#selecting-the-component).
 
 ```jsx
 export function OrderBoard(props) {
@@ -593,7 +593,7 @@ Rows are selected and ordered on the server. Choose the mechanism by the situati
 
 ### A condition editor {#condition-editor}
 
-We need a filter condition editor of our own in place of the conditions the platform draws: the user picks a property, types a value and adds the condition. The solution uses [replacing only the filters](../language/React_filters_and_toolbar.md#custom-filter-panel) and the group's [user filters](../language/React_filters_and_toolbar.md#filters) with their `filterProperties`.
+We need a filter condition editor of our own in place of the conditions the platform draws: the user picks a property, types a value and adds the condition. The solution uses [a custom filter panel](../language/React_filters_and_toolbar.md#custom-filter-panel) and the group's [user filters](../language/React_filters_and_toolbar.md#filters) with their `filterProperties`.
 
 ```lsf
 DESIGN items {
@@ -715,7 +715,7 @@ At form opening, empty property filters occupy the start of the condition list i
 
 ### Only the filters, or the whole group {#filters-or-whole-group}
 
-We need to decide whether a component replaces only a group's filters ([Replacing only the filters](../language/React_filters_and_toolbar.md#custom-filter-panel)) or the whole group.
+We need to decide whether a component replaces only a group's filters ([Custom filter panel](../language/React_filters_and_toolbar.md#custom-filter-panel)) or the whole group.
 
 Receiving a group's state does not make a component the only one drawing it. Which components are drawn is decided
 by the design and by what is placed with `<Platform>`, not by what `data` contains — the state is the group's, whoever draws it. So

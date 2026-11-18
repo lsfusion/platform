@@ -13,7 +13,7 @@ That is the name a view has, everywhere: `props.data` is keyed by it and every c
 
 Optional arguments are bracketed.
 
-### How a view gets its controller {#how-a-view-gets-its-controller}
+### Controllers by view type {#how-a-view-gets-its-controller}
 
 | view | declared | JavaScript entry point | its controller is |
 | --- | --- | --- | --- |
@@ -55,7 +55,7 @@ An [`INTERNAL CLIENT`](INTERNAL_operator.md) action is a fourth entry point: its
 | `form.isEditing(element)` | whether that declaration stands | `boolean` |
 | `form.changeObject(group, row)`, `form.changeOrders(table, …)`, … | what the members do, to what another container or the platform draws, named by strings — [across containers](#across-containers) | as the member |
 
-### Calling the server {#calling-the-server}
+### Server calls {#calling-the-server}
 
 The form's `exec`, `eval`, `evalAction` and `change` — `controller.form` in a React view — each run on the server and return a `Promise`. They are subject to the [authorization gate](#access) and convert [the result](#result) to a JS value.
 
@@ -78,7 +78,7 @@ The result is converted to a JS value:
 | a result with additional parameters — a [`RETURN`](RETURN_operator.md) whose expression declares new parameters | an array of `{name, value}` objects, one for each set of the parameters' values — an array for a single value too, and an empty one when there is none: `name` is those values joined with commas, `value` is the result converted as above |
 | a missing or `NULL` result | `undefined` |
 
-#### Calls as the MCP tool makes them {#mcp-calls}
+#### Calls in the MCP tool format {#mcp-calls}
 
 A call made as the [MCP server](../paradigm/MCP_server.md)'s eval tool makes one — `controller.mcp.eval(script, ...params)`, and `exec` and `evalAction` likewise — takes its parameters and gives its result as the tool does. The parameters are bound as the tool binds its `params`, by the rules of an HTTP request: a value is taken as its string and parsed by the class of the parameter — so a numeric string is a number —, and an object that has `text` or `base64`, or says `type: 'file'`, is a file whatever the class of the parameter. The call resolves with what the tool answers, in place of the result converted by the table: the object `{results, status}`, where `status` is the HTTP status the action set, `200` when it set none, and `results` has an entry for each value the action returned — `{value}` with the value as its string, and `name` too in each entry of a result with additional parameters.
 
@@ -120,7 +120,7 @@ Now `controller.form.exec("round", 3.14159)`, `controller.form.exec("format", 19
 
 A call made after the form has been closed *rejects* with a `Form is closed` error — it never hangs — so an `await` on a closed form lands in the `catch` branch. The form counts as closed once the server has closed it. A call made while the close is still being processed — the client has taken the form off the page as an action that may close it was clicked, and the server has not answered yet — is sent and runs after the close's request: if the server refuses the close, the form comes back with what the call did, so input a view commits as the form closes is not lost.
 
-### Changing what another container draws {#across-containers}
+### Operations across containers {#across-containers}
 
 What another container draws, or the platform, a view changes through the form's controller, `controller.form`, by names, as strings, checked when the call is made. Each of its methods does what a view's member does — the same arguments after the names, the same checks and refusals, a refusal quoting the form's call (`controller.form.changeOrders('i'): order 0: unknown property 'x' of object group 'i'`) — to the form's state, whoever draws it: a container that draws the part shows the change before the call returns, as a call of its own member would, and the platform's table, tree, toolbar or filter panel shows it as it shows the form's own edits. A call made in a [batch](#batch) goes with it; one that asks the server is refused there, as a member's is. Each returns what its member returns.
 
@@ -156,7 +156,7 @@ controller.form.changeFilterGroup('stock', 0);
 controller.form.changeObject('i', found.objects);   // a row found by a lookup
 ```
 
-### Looking up values {#looking-up-values}
+### Value lookup {#looking-up-values}
 
 `getValues` asks the server for a capped suggestion list for a property — a suggestion list, not a full `SELECT DISTINCT` — and returns the `Promise` of the answer, `{ data: [ { displayString, rawString, objects }, ... ] }`. A query too short for the server to search rejects it with the message the platform's editor shows then — "String too short to search", in the user's language —, as `form.exec` and `form.eval` reject with the server's message. An answer the server gave before it was sure the form's unsaved changes do not affect it carries `more` too — the `Promise` of the final answer.
 
@@ -232,7 +232,7 @@ controller.batch(() => {
 });
 ```
 
-### Declaring that the user is editing {#editing}
+### Editing declaration {#editing}
 
 While a form is editing, a binding whose `editing` scope is the default does not fire for an event that came from inside the element being edited: `ENTER` does not move the focus to the next component, `ESCAPE` does not close a modal window, and a shortcut bound with [`CHANGEKEY`](Property_options.md) does not run. A binding declared with `editing=all` fires regardless.
 
