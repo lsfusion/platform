@@ -15,7 +15,7 @@ Optional arguments are bracketed.
 
 | member | what it does | returns |
 | --- | --- | --- |
-| `<group>.change(row[, {selection}])` | set the group's current object — only where the group's rows are drawn. A group's not in a tree also takes the first or last row of the whole list, and changes the [selected rows](React_trees_sortings_selection.md#selection) | `Promise` |
+| `<group>.change(row[, {selection}])` | set the group's current object — only where the group's rows are drawn. For a group not in a tree, it also takes the first or last row of the whole list, and changes the [selected rows](React_trees_sortings_selection.md#selection) | `Promise` |
 | `<group>.properties.change(column[, {selection}])` | set the current column and change the selected columns — only where the rows of a group not in a tree are drawn | `Promise` |
 | `<group>.selectAll()` | select all the rows and columns — only where the rows of a group not in a tree are drawn | `Promise` |
 | `<group>.copy()` | the text of the selected cells, for the [clipboard](React_trees_sortings_selection.md#clipboard) — only where the rows of a group not in a tree are drawn | `Promise` |

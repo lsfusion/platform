@@ -682,7 +682,7 @@ export function CombinedItemSearch({data, controller}) {
 }
 ```
 
-[`CONCAT`](../language/CONCAT_operator.md) skips `NULL` operands and places a space between the others. The search can match across the boundary between fields, so this differs from `name contains text OR description contains text`. The combined property must be in `PROPERTIES`, but need not be displayed: its `FILTER(searchText(i))` component must remain in the design.
+[`CONCAT`](../language/CONCAT_operator.md) skips `NULL` operands and places a space between the others. The search can match across the boundary between fields, so this differs from "name contains text OR description contains text". The combined property must be in `PROPERTIES`, but need not be displayed: its `FILTER(searchText(i))` component must remain in the design.
 
 For a separate match in either property, declare their filters next to one another and state both in one synchronous `batch`:
 
@@ -711,7 +711,7 @@ export function NameOrDescriptionSearch({data, controller}) {
 }
 ```
 
-At form opening, empty property filters occupy the start of the condition list in declaration order, so these two conditions are adjacent. Always change and clear both together: `or` joins a condition to the next **active** one, so clearing only the second can join the first to an unrelated condition. Replacing the whole list with `filters.change([...])` moves empty property-filter placeholders to its end, and does not guarantee that this pair stays adjacent. Use the paired variant only while the two conditions remain adjacent; otherwise use a combined property or explicitly state the entire condition list when the view owns it.
+At form opening, empty property filters occupy the start of the condition list in declaration order, so these two conditions are adjacent. Always change and clear both together: `or` joins a condition to the next **active** one, so clearing only the second can join the first to an unrelated condition. Replacing the whole list with `filters.change([...])` moves empty property filters to its end, and does not guarantee that this pair stays adjacent. Use the paired variant only while the two conditions remain adjacent; otherwise use a combined property or explicitly state the entire condition list when the view owns it.
 
 ### Only the filters, or the whole group {#filters-or-whole-group}
 

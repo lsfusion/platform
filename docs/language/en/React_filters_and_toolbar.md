@@ -106,7 +106,7 @@ not empty" —, so a condition `filters` lists with a `null` `value` — one F3 
 as it is, a `BOOLEAN` property's too, listed with `false`, which reads back as `NULL`. A property filtered by no more is
 one the array leaves out.
 
-Either form reports an author's mistake instead of dropping a condition: an unknown property, an unknown
+Either form of `change` reports an author's mistake instead of dropping a condition: an unknown property, an unknown
 comparison or `IN ARRAY`, which no condition compares by, an unknown field in a condition, a `negation` or `or` that
 is not a boolean, a condition on an action or on a property grouped in columns.
 
@@ -212,7 +212,7 @@ controller.i.stock.change(null);   // none, as the platform's "(All)"
 | --- | --- |
 | `value` | The index of the filter selected in `filters`, `null` for none |
 | `filters` | The filters' captions, in the design's order |
-| `canClear` | Whether none may be selected, as the platform's widget offers it: a group of one filter is its check box, always clearable; a group of several is its list, with `(All)` unless `NONULL`. Where it is `false`, `change(null)` is refused |
+| `canClear` | Whether none may be selected, as the platform's widget offers it: a group of one filter is its check box, always clearable; a group of several is its list, with "(All)" unless `NONULL`. Where it is `false`, `change(null)` is refused |
 
 The server applies the filter selected and reports it, so `value` is what the server holds — the default filter when the
 form opens, a `FILTERGROUP` action's choice — and a filter a view selects shows at once. `change` takes the index of one

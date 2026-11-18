@@ -69,7 +69,7 @@ opened again afterwards shows its children closed. Their rows' `expanded` change
 installed on a group of a tree and nowhere else, and they are reserved on that group's node, as `list` is.
 
 These verbs are members of the group's node, so a container has them exactly where it has that group's rows: the tree
-React draws. A tree the platform draws is opened by the platform's own expander, and no react container has node verbs
+React draws. A tree the platform draws is opened by the platform's own expander, and no React container has node verbs
 for it; a view that draws its [toolbar](React_filters_and_toolbar.md#tree-toolbar) opens it through the toolbar's two buttons.
 
 ```lsf
@@ -178,7 +178,7 @@ DESIGN orders {
 ```
 
 It is stated on the property itself, so a panel property answers it as a column does. A view that draws its own
-headers reads it to leave that header alone.
+headers reads it to avoid making that header clickable.
 
 `noSort` refuses a sorting the USER states, not one the form does. What the form states may name such a property — a
 default `ORDERS` entry on it, and an [`ORDER`](FILTER_ORDER_operators.md) action naming it — the server
