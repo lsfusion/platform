@@ -646,6 +646,23 @@ module.exports = {
             'language/Empty_statement', 
           ]
         },
+        {
+          type: 'category',
+          label: 'React',
+          link: {type: 'doc', id: 'language/React_views'},
+          items: [
+            'language/React_projection',
+            'language/React_view_controller',
+            'language/React_rendering',
+            'language/React_platform_components',
+            'language/React_form_behavior',
+            'language/React_trees_sortings_selection',
+            'language/React_filters_and_toolbar',
+            'language/React_component_views',
+            'language/React_windows',
+          ]
+        },
+        'language/Form_and_navigator_controllers',
         'language/Comments',
         'language/Coding_conventions', 
       ]

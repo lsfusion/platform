@@ -14,7 +14,7 @@ This section describes the general concepts and terms used in the platform.
 
 ### [Language](../language/Language.md)
 
-This section describes the syntax of the **lsFusion** language used in the platform and based on the paradigm described above.
+This section describes the syntax of the **lsFusion** language used in the platform and based on the paradigm described above, and the interfaces that client code written in JavaScript receives and calls.
 
 ### [IDE](IDE.md)
 

@@ -7,6 +7,8 @@ title: 'Language'
 
 Each module consists of a sequence of [statements](Statements.md) divided into module [*header*](Module_header.md) and *body*. The header may include four special statements: `MODULE`, `REQUIRE`, `PRIORITY` and `NAMESPACE`, which define module parameters. The header is followed by the module body which consists of the remaining statements and describes the logic of this module.
 
+Besides the statements, this section describes the interfaces that client code written in JavaScript works with: the [React views](React_views.md) — what a React component that draws a container, a component or a window of the client receives from the form and calls — and the [form and navigator controllers](Form_and_navigator_controllers.md) that any view written in JavaScript is given.
+
 ### Example
 
 ```lsf

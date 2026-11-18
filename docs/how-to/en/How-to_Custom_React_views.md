@@ -3,141 +3,13 @@ slug: "/How-to_Custom_React_views"
 title: 'How-to: Custom React views'
 ---
 
-A [`DESIGN`](../language/DESIGN_statement.md) container can be rendered by a React component instead of the standard layout. The component receives a projection of the form state and draws the container's whole subtree itself. A table, a toolbar, filter controls, a filter group and a property's filter can be drawn by a React component of their own the same way, instead of the platform's view of them ([A component's own view](#component-views)). Outside a form, a React component can draw [a navigator window](#navigator-window), [the forms window](#forms-window), [the log window](#log-window) and [the window layout](#window-layout).
+This article collects typical tasks solved with React views, each with its solution. The views are specified in the Language articles, starting with [React views](../language/React_views.md): the data a component receives is described in [Form projection](../language/React_projection.md), and what it calls in [React view controller](../language/React_view_controller.md).
 
-This is a web-client feature only. The desktop client deserializes the container and renders its regular (non-React) subtree, and draws a component with a React component of its own with the platform's view, so the design stays usable in both clients.
+The components of the examples are written in JSX, each in a `.jsx` module ([The component](../language/React_views.md#the-component)). How the module is compiled and registered is covered in [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md). The classic (non-React) custom container is described in [How-to: Custom Components (objects)](How-to_Custom_components_objects.md).
 
-### Selecting the component {#selecting-the-component}
+### "N of M": a count under the form's filter {#filtered-count}
 
-In `DESIGN`, set the container's `custom` attribute to the component name as a string literal matching `[A-Z][A-Za-z0-9_$]*` (a bare identifier starting with an uppercase letter):
-
-```lsf
-FORM orders 'Orders'
-    OBJECTS o = Order
-    PROPERTIES(o) READONLY number, date, sum
-;
-
-DESIGN orders {
-    BOX(o) {
-        custom = 'OrderBoard';
-    }
-}
-```
-
-The value form selects the renderer: a string literal matching `[A-Z][A-Za-z0-9_$]*` names a React component, while an empty string `''`, an HTML template string, or a property gives the classic (non-React) custom container described in [How-to: Custom Components (objects)](How-to_Custom_components_objects.md). Here the object `o` is rendered by the `OrderBoard` React component instead of the standard table. A component that is not a container takes a React component name alone — see [A component's own view](#component-views).
-
-A form opened as a window (`SHOW ... FLOAT`; for `DIALOG` the window is the default location) gets its size from its content at the moment of opening and keeps it: the component's first drawing, of the form's first data, is measured, and what it draws later - more rows, data that arrives afterwards - is not. So a container whose content grows after the opening is given a base size: `size = (900, 600)` or the separate `width` and `height` attributes. Without it, the window keeps the size of the first drawing, and the content drawn later pushes the OK / Close buttons past the window's edge. A tab (`WINDOW`) is sized by the forms window, so no base size is needed there.
-
-Another way is to leave the React container without a base size and make the window itself dynamic: in the form's own `DESIGN`, set its main container to `size = (-1, -1)`, or only `height = -1` — then the width is measured and fixed at opening while the height stays dynamic. In each dynamic direction the window follows the component's content, including content drawn later. This suits a form with no tables (their height stops fitting the rows) and content of moderate height: the window is centered only at opening, and its height is not capped at the screen height — a window taller than the screen scrolls as a whole.
-
-The base size also bounds the height of the container itself, wherever the form opens. Without it the container is as tall as what the component drew, and the containers above it grow with it, so a component that draws more than fits on the form stretches the whole form, and the form scrolls as a whole — in a tab, its main container. A base height (`height` or `size`) separates the container's size from the content's: the container gets that height, expands from it into the form's free space by its extension coefficient (`fill`), and content that does not fit scrolls inside it (`overflowVert` is `auto` by default). It stretches the form only when it does not fit there itself — like the base size of any component.
-
-### The component {#the-component}
-
-`OrderBoard` is a named export from a `.jsx` module under `src/main/web`. How the module is compiled and registered is covered in [How-to: Custom client JS modules](How-to_Custom_client_JS_modules.md). The examples here use JSX. For a project [without the build](How-to_Custom_client_JS_modules.md#without-the-build), ship the same component as a `.jsx` file — it is transformed on the server when served. `import` and `export` are not available there, so the `export` keyword is dropped and the component works against the platform-provided `window.React` — or write it with `React.createElement` in a plain `.js`. Either file is placed under `src/main/resources/web/init` (auto-loaded) or under `src/main/resources/web` and registered with `onWebClientInit`.
-
-The component is a plain function that receives `props.data` and `props.controller`:
-
-```jsx
-export function OrderBoard(props) {
-    const orders = props.data.o.list;
-    return <div className="order-board">{orders.length} orders</div>;
-}
-```
-
-The component is first drawn with the first projection of its container, once the form's first data has arrived, and never before it: `props.data` has the shape described below from the very first render, so nothing in it needs a guard against a projection that has not arrived yet.
-
-`props.data` is the form projection — its own for each React custom container, holding only what that container draws or places, so a second React container on the form gets a separate one, and a [controller](How-to_Custom_view_controller.md) of its own with it.
-
-A view reads only its own container's parts, and changes them through its controller's members; what another container draws, or the platform, it changes through the form's controller, by names ([across containers](How-to_Custom_view_controller.md#across-containers)). What containers share is the form itself — its current objects, sortings, filters and session — so a filter or a current object changed in one container shows in another, as it does in the standard client. A page built of such containers is in [A page of several containers](#several-containers).
-
-Every property, group and container the projection carries is an object in `data`: read a value as `.value` and its attributes as sibling fields, and read a list property's column attributes at `data.<group>.<prop>`. The entries a container carries for properties and components are design data: each of them is there from the start, and whether the form shows it now is its [`hidden`](#display-options) field, never whether it is there. `data` contains a group when the view draws a PART of that group, and holds exactly the parts it draws. A part of a group, or of a [tree](#trees), is projected — its data, and the controller members that change it — in the React container where that part's component is, on the node of its group or tree there:
-
-| Component | Part | Node |
-| --- | --- | --- |
-| The group's grid, `GRID(<group>)`, or its tree, `GRID(TREE <tree>)` | The rows and the current object, and — of a group not in a tree — the [sortings](#orders) | `data.<group>` |
-| A panel property — one the platform draws where the view places it | The property — one the platform draws as the [entry that labels it](#placing) (the entry of an action the platform draws only says whether the form shows it: its caption and image are its button's face) | `data.<group>`, or `data` itself for the empty group |
-| What `FILTERS(<group>)` holds | The [user filters](#filters) | `data.<group>` |
-| `FILTERCONTROLS(<group>)` | The [filter controls](#filter-controls) | `data.<group>` |
-| `FILTERGROUP(<filterGroup>)` | A [filter group](#filter-groups) | `data.<group>` |
-| A property's filter, `FILTER(<property>)` | The [filter](#property-filters)'s condition | `data.<group>`, under `filter` |
-| `TOOLBARSYSTEM(<group>)` | The [toolbar](#toolbar) | `data.<group>` |
-| The tree, `GRID(TREE <tree>)` | The [tree](#trees)'s current row, the opening of its current node, and its [sortings](#orders) | `data.<tree>` |
-| What `FILTERS(TREE <tree>)` holds, `FILTERCONTROLS(TREE <tree>)`, `TOOLBARSYSTEM(TREE <tree>)` | A [tree](#trees)'s user filters, its [filter controls and toolbar](#tree-toolbar) | `data.<tree>` |
-
-A group in `PANEL` view has only its panel properties and its filter groups: no rows, sortings, user filters,
-filter controls or toolbar — the platform shows none of them for it either.
-
-A component's place is found by walking up from its container: a React custom container is the answer, and a container with a view of its own — `custom = NULL`, or a custom of its own — ends the walk, since that view draws everything under it. Whether the component itself has one decides only which entry it has there — its content, or the [entry that labels it](#placing) — never where. A view that draws the rows — the grid is inside the custom container, and neither it nor a container between them has a view of its own, so React renders them from `data` rather than the platform — gets `props.data.<g>` = `{ list, byKey, keys, options, orders, properties }` for that group object SID `g` — a group of a tree has no `orders`: the [tree](#trees)'s sortings are its own node's —, where `list` is the array of rows in display order, `byKey` maps a row's key string to the same row object, and `keys` is the array of those key strings in the same order. `byKey` is keyed by application data, so it is built with NO prototype: a row whose key is the string `__proto__` is an ordinary entry in it, and `byKey.hasOwnProperty` and the other `Object.prototype` methods are not there to call — read it as `byKey[k]`, and test with `k in byKey` or `Object.keys(byKey)`. Wherever the view draws the rows, `list`, `byKey` and `keys` are all present: they are empty while the group has no rows — before its first rows arrive, say — so the view reads `props.data.<g>.list` directly without guarding a missing field. A grid (or a tree) the form hides with `SHOWIF` says so in [its own entry](#display-options), `data['GRID(g)'].hidden` — a tree's is `data['GRID(TREE t)']`, one for all its groups —, and its rows stay as the server last sent them, as the platform's own grid keeps them — the server may stop refreshing them while the grid is hidden — so draw them only while the grid is not hidden. Where it does not, the node has none of them, and no `options` or `orders` (the group's sortings, the order those rows are drawn in) either: there are no rows here for them to be about, and a panel property of the group may take one of those names. A group in `PANEL` view draws its rows nowhere — the server sends it none, only its current object —, so its node is such a one wherever its grid is, the container its grid is in included: its panel properties, and no `change(row)`. A group **no part of which** the view draws is absent from `props.data` altogether (`props.data.<g>` is `undefined`): a container merely standing beside a platform-drawn grid gets nothing, and neither does one that only frames it (`MOVE GRID(g) { custom = NULL; }` — there the platform draws the rows, so the container gets the [entry that labels what it places](#placing) and no rows; one that holds `FILTERS(g)` as well gets the group's [user filters](#filters)). Asking [`<List>`](#rendering-rows) for rows that are not there is a mistake in the view, and it throws: the view shows the reason in its place and in the console. A group's panel properties are members of the group node in the container each property itself sits in, keyed by integration SID. The top level of `props.data` is the node of the empty group (the form level): each property of the empty group is a member of `props.data` directly, under its integration SID. A list property's column attributes are a member of the group too, at `data.<g>.<prop>` — one entry per column — while its per-row value and cell attributes live on each row. Actions React draws are projected the same way as properties — an action drawn on a group is a field of each row (a list action) or of the group node (a panel action), an object of its attributes like a property, so `controller.<group>.<action>.exec(row)` runs it (a panel action's `.exec()` takes no row). Its `value` field is there too but carries nothing. An action the platform draws has only its entry, and the platform's button runs it. `options` is the group's own [display options](#display-options); `properties` names every PROPERTY entry this node carries, shown or not, in the form's order — not everything on the node, which also holds what the projection itself defines (`list`, `byKey`, `keys`, `options`, `orders`) and is known by name rather than discovered. The number of rows is `list.length`. Each row carries:
-
-| Field | Meaning |
-| --- | --- |
-| `key` | A stable public id for the row — use it as the React key |
-| `current` | Whether the row is the current one in its group (`true` or `false`) |
-| `<integrationSID>` | Each list property, an object `{ value, ...cell attributes }` keyed by the property's integration SID — read its value as `.value` |
-| `objects` | An opaque row handle the controller uses to address the row |
-| `background`, `foreground`, `selected` | The row's own [display options](#display-options): its background and text colors and whether it is selected |
-
-So a `MOVE` of a panel property is what decides which engine draws it: inside a custom container React draws it from `data`, outside one the platform draws it where it now stands and it leaves `data`.
-
-A container with a `custom` of its own inside what a React component draws — another React component, an HTML template, `''` — is not drawn by that component: it is drawn by its own view, and the outer component places it like any other [child the platform draws](#placing). So is a table, a toolbar, filter controls, a filter group or a property's filter with a [React component of its own](#component-views).
-
-A property grouped in columns (`COLUMNS`) cannot be projected: its values are addressed by a row-and-column key, and everything here — a row of `list`, an entry of `byKey`, a name on the controller — means one row. So a React container may not carry one — a column of the rows it draws, or a panel property or a property of the empty group standing in it: such a form is rejected when it is built, naming the property. Elsewhere on the form it stays as it is, and a React view simply has no name for it: the [controller](How-to_Custom_view_controller.md) carries what the projection carries, so what is not projected has no member. The same holds whenever a name does not single out one property — two properties of a projected group may share an integration name only when their entries land in different containers, and each view then means the one its own node carries. Within one container they may not, because one entry and one member cannot stand for two properties; nor anywhere, one drawn by the platform included, when a view draws a part that names a property of the group ([Reserved names](#reserved-names)). Give one of them an explicit `EXTID`. Declare an ordinary property if the view has to read those values.
-
-A member takes a row only where the group's rows are drawn — `<group>.change(row)`, and the member of a list property, which lives there — and there it takes the row object, its `objects` handle, or the **key** string the projection gave it, looked up in this view's `byKey`. A panel property's member and a member of the empty group take no row: they act on the current objects. [Row identity](How-to_Custom_view_controller.md#row-identity-contract) says what each of the three means.
-
-For `controller.<g>.<p>.exec(row)`, `.change(value, row)` or `.getValues(query, {row})`, the property or action must be in `GRID` view, in a group in `GRID` view. Add a row action as `PROPERTIES(i) addToCart GRID`: actions default to `PANEL`. `PANEL`, `TOOLBAR` and `POPUP` properties refer to the current object, have no cells in `list` / `byKey`, and refuse member calls naming a row at runtime with `'<p>' is a panel property`. [Per-row editors](#live-editor) placed with `<Platform name row/>` or `usePlatform(name, {row})` also require a `GRID` property.
-
-A property's `value` is converted to a JS value depending on the property's class:
-
-| Property class | JS value |
-| --- | --- |
-| `BOOLEAN` | `true` / `false` (`false` instead of `NULL`) |
-| `TBOOLEAN` | `true` / `false` / `null` |
-| numeric classes | number |
-| user classes | number — the object's internal id |
-| date and time classes | `Date` |
-| interval classes | string `<from>.<to>` |
-| `COLOR` | string `#rrggbb` |
-| `JSON` | parsed JSON value |
-| file classes | string with a download link |
-| images | string with the image address or HTML |
-| other classes | string |
-
-A string property whose integration SID is `image` is given as the HTML of the image its value names (an icon class, an application image file, or an HTTP(S) URL), as in other custom views. A `SELECT` property is given its options instead.
-
-Except for `BOOLEAN`, a `NULL` value is converted to `null`.
-
-An interval's bounds are milliseconds since 1970: a bound of an `INTERVAL[ZDATETIME]` is the moment itself, while the other interval classes keep their date and time as those of UTC — `new Date(from).getUTCDate()` is the day an `INTERVAL[DATE]` starts on. A value a view hands back — to a member's `change`, or as a condition's `value` — is read the way this table writes it, so a value taken from `data` goes back as it is — but for a file's: a link is not the file —, and a `COLOR` or an interval written any other way is refused. A date or a time goes back as a string too, the one a date input of the class has for its value, with no time zone: `'2026-11-15'` for a `DATE`, `'10:30'` for a `TIME`, `'2026-11-15T10:30'` for a `DATETIME` or a `ZDATETIME`. Any other string is refused, and so is a day its month does not have.
-
-`list` contains the rows read — up to three pages, not all rows of the group. The view type of a group rendered by a React container remains the table, and the group is read page by page, but since the table itself is not displayed, the page size is not adjusted to the visible rows — the server default page size (50 objects) applies, so `list` holds up to 150 rows. For a view that shows all rows of the group — a calendar, a board, a map — specify the `PAGESIZE 0` option (read all objects) or an explicit page size in the [`OBJECTS`](../language/Object_blocks.md) block.
-
-A view that lays rows out in their own order — a card flow, a feed — can instead keep the page and let it follow the scroll, the way the standard table does. `useSeekOnScroll(controller.<group>)` returns a function that marks each row's element. The hook watches which of them are on screen as the view's own box scrolls — the nearest element that scrolls the rows, looked for from a row up to the element the view is drawn in and no further — and follows the table's own rules: while the current record is on screen, scrolling changes nothing; when it leaves, it is reseated on the visible edge it left through, which is also what requests the next page; on a page change the reseated row keeps its on-screen position, so nothing jumps under the eye; a current record moved from outside — a click, a programmatic seek — is scrolled into view instead. The pact rests on the same contract the table itself lives by, and it is the developer's to keep: the page must hold more rows than the viewport can show — set `PAGESIZE` on the [`OBJECTS`](../language/Object_blocks.md) block accordingly. The window then always extends a page beyond the current record, so it leaves the viewport — and reseats, pulling the next page — before the scroller runs out of room at a loaded edge:
-
-```jsx
-const seekRef = useSeekOnScroll(controller.o, { enabled: follow });
-...
-{rows.map(row => <div key={row.key} ref={seekRef(row)}>...</div>)}
-```
-
-Options: `enabled` (default `true`) suspends the tracking, `threshold` (`0.6`) is how much of an element must be visible to count as on screen, `settle` (`250` ms) is how long the rows on screen must stay the same before the view seeks — the wait starts over whenever a row comes on screen or leaves it, not on every scroll event —, and `onSeek(row)` is called for each issued seek. Use one `useSeekOnScroll` per scrolling element. The rows delivered for the new position replace `list`, and everything built from it — values and [placed lsFusion views](#placing) alike — follows.
-
-After a change of the filters or sortings, a feed that should start over moves to the first row ([filters](#filters)).
-
-The hook moves the scroll position of that box and switches off the browser's own scroll anchoring there, so it touches nothing outside the element the view is drawn in: everything there — a platform container, a box another view shares, the page, a portal's box — belongs to something else. Rows that scroll only in such an element leave the hook doing nothing at all — no seek, and no scroll into view of a current moved out of sight — and it says so once in the console. Give the rows a scrolling box of the view's own — a bounded height and `overflow: auto`.
-
-To move to the first or last row of the whole list under the group's current filters and sortings, including the user's, pass the group's `change` an edge of the list instead of a row — `{to: 'home'}` or `{to: 'end'}`, which the form's controller also has as `form.HOME` and `form.END`:
-
-```jsx
-<>
-    <button onClick={() => controller.o.change(controller.form.HOME)}>First</button>
-    <button onClick={() => controller.o.change(controller.form.END)}>Last</button>
-</>
-```
-
-This is the move of the platform table's Ctrl+Home / Ctrl+End: the server finds the row, the first / last row becomes current, and the rows read from the start / up to the end replace `list`. The same call can change the [selected rows](#selection). An action with [`ACTIVATE FIRST` / `LAST`](../language/ACTIVATE_operator.md) placed in the view's container and run through its member performs the same move.
-
-A group of an [object tree](#trees) takes no edge, and `ACTIVATE FIRST` and `ACTIVATE LAST` without seek objects keep its current objects: the tree is read whole under its open nodes, without pages. To move to the first or last node, call `controller.<group>.change(row)` through the member of that node's group, passing the row of the first or last node the view draws in its own order — parent then children — rather than the first or last element of one group's `list`.
+We need to show how many rows the form's filter admits beside the rows a view draws: "6 of 23". The solution extends the form `orders` of [Selecting the component](../language/React_views.md#selecting-the-component).
 
 The number of rows read is `list.length`, not how many rows the group's filters admit, so under paged reading the projection alone cannot show "6 of 23". A total kept current is a separate property that counts the rows under the form's current filter, including the applied user filters and view filters, with the [`FILTER` operator](../paradigm/Filter_FILTER.md), as in [How-to: Table status](How-to_Table_status.md), placed inside the container so that it reaches `data`:
 
@@ -155,166 +27,32 @@ const { o, filteredCount } = props.data;
 
 Drawn for the group instead (`PROPERTIES() filteredCount DRAW o PANEL`), the property needs no `MOVE`: its default place is in `PANEL(o)`, inside `BOX(o)`. It is a member of the group node, read as `data.o.filteredCount.value`.
 
-```jsx
-function Row(props) {
-    const r = props.row;
-    return (
-        <div className={r.current ? "order order-current" : "order"}>
-            <span>{r.number.value}</span>
-            <span>{r.sum.value}</span>
-        </div>
-    );
-}
-```
+### A feed that loads as it scrolls {#feed}
 
-#### Reserved names {#reserved-names}
-
-The reservation follows what a row or a node carries:
-
-| Where | Reserved |
-| --- | --- |
-| A row | `key`, `current`, `objects`, `background`, `foreground`, `selected` — on a row of a [tree](#trees) also `parent`, `hasChildren`, `expanded`, `loading` |
-| A group's node, wherever it is | `properties`, `change` |
-| A group's node where its rows are drawn | `list`, `byKey`, `keys`, `options`, and `orders`, `viewFilters`, `selectAll`, `copy` and `paste` of a group not in a tree — on a group of a tree `expand`, `collapse`, `toggle`, `expandAll`, `collapseAll` |
-| The node of a group in `LIST` view where `FILTERS(<group>)` is | `filters`, `filterProperties` |
-| The node of a group in `LIST` view where `FILTERCONTROLS(<group>)` is | The names of the [filter controls](#filter-controls): `addFilter`, `applyFilters`, `resetFilters`, `filtersPending`, `filtersManual` |
-| The node of a group in `LIST` view where `TOOLBARSYSTEM(<group>)` is, unless the design hides it (`visible = FALSE`) | The names of all the [toolbar](#toolbar)'s buttons, whatever the design's `show…` flags say: `manual`, `updatePending`, `update`, `filterControlsVisible`, `listView`, `listViews`, `getCount`, `getSum`, `export` |
-| A group's node where `FILTERGROUP(<filterGroup>)` is | The [filter group](#filter-groups)'s own name, as a property's |
-| A group's node where a property's filter, `FILTER(<property>)`, is drawn | `filter` |
-| The top level, where the node of the empty group is the controller itself as well | What the [controller](How-to_Custom_view_controller.md) carries beside its members: `form`, `batch` |
-
-A tree's own `current` and `expandCurrent` and its sortings, where its rows are drawn, and its user filters, filter controls and toolbar write their names on [its node](#trees). A container carrying just a panel property of the group has none of the names of the other parts, so a property called `list` is refused there by nothing. `__proto__` is reserved everywhere: assigning it does not add a field, it replaces the object's prototype. There is no `meta` object anywhere. A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built. So is a form in which a group whose rows or user filters a view draws, or its toolbar with the sum, carries one name on two properties anywhere, one drawn by the platform included: a [sorting](#orders), a [condition](#filters) or the [toolbar](#toolbar)'s `getSum` names the group's property by that name. Give it an explicit `EXTID`, or rename it. A property such a container draws or places has to have a name at all - the view reaches it by that name alone, its entry and its `<Platform>` alike: one declared `NOEXTID` is rejected the same way - give it an `EXTID`. A name that is empty or carries a dot is rejected too — a qualified name, `o.note`, is split at its last dot —, and so is a group of several objects with no name of its own, `OBJECTS (d = X, t = Y)`, wherever the view carries a part of it: its SID joins the objects' names with dots, so name it, `OBJECTS pair = (d = X, t = Y)`. A property or action the platform draws is named as any other, and all of this holds for it.
-
-### Reading the projection {#reading}
-
-The component reads the projection in one of two ways, and the choice is about who re-renders when data changes.
-
-`props.data` is the whole snapshot. The component re-renders — with a fresh `data` — whenever anything in its scope changes, and renders everything it draws from the new snapshot. For a small view this is the whole story: no hooks, a plain function of the data, and the examples above are written this way. It is also how the scope is read as a whole — its top-level entries enumerated, the containers read. `useData()` with no selector returns the same snapshot.
-
-`useData(selector)` subscribes the component to a slice: it re-renders only when the reference of `selector(data)` changes — so the selector must return something the projection already holds (a group node, a row, an entry, a value), never a new object or array built inside it, which would differ on every read and re-render without end. Because of structural sharing — an unchanged node, row or entry keeps its previous reference — this is what lets a component pay only for what it reads: a component subscribed to a group node (`useData(s => s.o)`) ignores the rest of the scope, a row component subscribed to its own row (`useData(s => s.o.byKey[rowKey])`) ignores the other rows. The root is the exception: the platform hands it a new `props.data` on every change, so it re-renders whatever it subscribes to, and what it renders below it skips the render only when it is memoized (`React.memo`) and is not handed `data`. `useController()` returns the same `controller` the root receives as a prop — its identity never changes for the life of the root, so it is safe in dependencies and closures, and passing it down as a prop is equally fine.
-
-`useData` and `useController` read whatever root the component is mounted under, and know nothing about forms in particular. `Platform` and `usePlatform` place a view the platform draws itself, so they serve a form container and a [navigator window](#navigator-window) alike. The helpers built on the group and row shape of a form projection — `List`, `BucketScope`, `useBucket`, `Buckets`, `useSeekOnScroll` — are form-only: they read `data.<group>.list` / `.byKey` / `.keys`, which another kind of root does not have — and neither does a form view that draws no rows of that group.
-
-The two compose into tiers, and each following one is only needed when the previous one's re-render becomes the cost:
-
-1. a small view — `props.data`, render everything;
-2. a longer list — `props.data` plus row components memoized at module level (`React.memo` bails out on the unchanged rows' stable references), or [`List`](#rendering-rows) which does exactly that;
-3. a big board — subscriptions down the tree: the root renders memoized columns and hands them no `data`, a column subscribes to its [bucket](#bucketing), a row to itself, so one edited value re-renders the root and one card.
-
-### Display options {#display-options}
-
-For every property drawn on a form the platform computes semantic options that determine how it is shown — its caption, image, background and text colors, whether it is read-only or disabled, its comment, the text shown in an empty cell, its tooltip. They come from the property's design and from the data-dependent options of the [properties and actions block](../language/Properties_and_actions_block.md) (`HEADER`, `IMAGE`, `BACKGROUND`, `FOREGROUND`, `READONLYIF`, `OPTIONS` and the rest), so an option that depends on the data is recomputed per row. Native element classes and fonts are not projected: a React component owns its CSS. `background` and `foreground` are projected — they are `BACKGROUND` / `FOREGROUND` highlighting, a data-dependent business signal, not a theme the component's own CSS should own. For a property the React container draws itself, the semantic result is projected into `data` as sibling fields of the property's value, so the view does not have to recompute it.
-
-The projection follows what an option describes — a whole column, one cell, or the row:
-
-| Where | What it holds |
-| --- | --- |
-| `data.<g>.<integrationSID>` | For a property shown in the table — its column attributes, one entry for the whole column: `caption`, `image`, `footer`, `comment`, `tooltip`, `defaultValue`, and `hidden` while the form hides it. For a panel property of the group — the property's `value` and its attributes, read for the current object, and `hidden` while the form hides it; while the group has no current object the `value` is empty and the entry stays, as in the platform's own panel. For one the platform draws — [the entry that labels it](#placing), with no `value` |
-| `data.<g>.list[i].<integrationSID>` | One cell of a table property — its `value` for that row and the cell attributes computed for that row: `readOnly`, `disabled`, `background`, `foreground` and the rest |
-| `data.<g>.list[i]` | The row's own options, direct on the row: `background`, `foreground`, `selected` |
-| `data.<g>` | `options` — the group's custom options, where the view draws its rows; `properties` — the property entries this node carries, shown or not |
-| `data.<integrationSID>` | A property of the empty group — its `value`, its attributes, and `hidden` while the form hides it; one the platform draws — the entry that labels it, with no `value` |
-| `data.<componentSID>` | The entry of every other component this view draws or places — a container, declared with `NEW` or generated like `PANEL(o)` or `TOOLBAR(o)`; a grid, like `GRID(o)`, or a tree, like `GRID(TREE t)`; a toolbar, like `TOOLBARSYSTEM(o)`; a property's filter, like `FILTER(name(o))`; and any component the platform draws other than a property: its `caption` and `image` when it has them, and `hidden` while the form hides it, keyed by its design component identifier, always at the top level, whatever it is nested in. The entry is always there; a shown component with neither a caption nor an image has an empty one |
-
-Each attribute is delivered at one point, already resolved: a property's static design value and its per-row `BACKGROUND` / `READONLYIF` / … result are folded into a single effective value before the view sees it, so the view reads an attribute straight from where it lives and never merges a column base with a row override. A list property's whole-column attributes — `caption`, `image`, `footer`, `comment`, `tooltip`, `defaultValue` — are on its column node `data.<g>.<prop>`, while its per-row value and the cell attributes that can vary by row are on the cell `data.<g>.list[i].<prop>`:
+We need to show a group's rows as a feed that reads the next page as it scrolls, starts over after a change of the filters or sortings, and moves to its first or last row on a button. The solution uses the [`useSeekOnScroll`](../language/React_rendering.md#seek-on-scroll) hook and an edge of the list passed to the group's `change` ([The first and the last row](../language/React_view_controller.md#first-last-row)).
 
 ```jsx
-const caption = props.data.o.sum.caption;   // a column attribute, once for the column
-const cell = row.sum;                        // { value, background, readOnly, ... } for this row
+const seekRef = useSeekOnScroll(controller.o, { enabled: follow });
+...
+{rows.map(row => <div key={row.key} ref={seekRef(row)}>...</div>)}
 ```
 
-The server computes a dynamic `IMAGE` for a property once at the column key (using the current object), while an action's dynamic `IMAGE` is computed for every row. The projection preserves that distinction: a property's image is on its column node `data.<g>.<prop>`, while an action's image is on its row cell `data.<g>.list[i].<action>`.
+After a change of the filters or sortings, a feed that should start over moves to the first row ([filters](../language/React_filters_and_toolbar.md#filters)).
 
-An option the platform computed nothing for is absent — a property with no `BACKGROUND` has no `background` in its cell entry — and a row the platform computed no row options for has no `background`, `foreground` or `selected`.
+After a change of the filters or sortings, the server reads rows around the current row, as in the platform's table. A feed that should start over calls `controller.<g>.change(controller.form.HOME)` after the change in the same synchronous [batch](../language/Form_and_navigator_controllers.md#batch). In the [manual filter apply mode](../language/React_filters_and_toolbar.md#filter-controls), move to the start after applying the filters, so the move uses the new conditions.
 
-`SHOWIF` controls the property itself, and what it changes is the entry's `hidden`, never whether the entry is there. When it hides a table column, the column entry says `hidden: true`, and the column's cells stay on the rows without a `value`. When it hides a panel property or a property of the empty group, its entry says `hidden: true` and has no `value`. A property the form hides when it opens is `hidden` until it is first sent. Read `hidden` when a hidden property must be distinguished from one whose `value` is `null`. An entry the form shows has no `hidden` at all, as any option the platform computed nothing for is absent.
-
-| Option | What it is | JS value |
-| --- | --- | --- |
-| `type` | The kind the value was converted by — `number`, `boolean`, `string`, `date`, or `json` (parsed, so the value is whatever the JSON held); of a [selection](#select), `string`: its value is made of the views of its options, which are text, as the platform's own element shows them. It describes the property rather than one of its values, so it sits with the column attributes: `data.<g>.<prop>.type` for a table property, and on the entry itself for a panel or empty-group one. A cell does not carry it | string |
-| `askConfirm` | Whether a change of the property — for an action, running it — asks the user first: `CONFIRM` on the action, or `askConfirm = TRUE` in the design. The platform's own editor and button ask before they send; a view's call through the property's member does not, so a view that wants the question asks it itself, before the call. It is where `type` is | `true` / `false` |
-| `askConfirmMessage` | The question to ask: the design's `askConfirmMessage`, or the platform's own | string; only where `askConfirm` is `true` |
-| `hidden` | Whether the form hides the property now — by its `SHOWIF`, or by the `SHOWIF` of a container above it. It is on the property's entry — the column entry of a table property, the entry itself of a panel or empty-group one — and never on a cell | `true`; absent while the form shows it |
-| `loading` | Whether a change of the cell still waits for the server's answer, whoever sent it — this view, through the property's member (`change` or `exec`, in a batch or outside one), or another part of the form. An action's cell says it while the action runs, and the entry of the form's Refresh button while the [form waits for the server](#form-loading). It is on the cell of a table property, and on the entry itself of a panel or empty-group one | `true`; absent otherwise |
-| `caption` | The property's caption | string |
-| `image` | The property's image | string with the image HTML |
-| `footer` | The column's footer value | converted like a cell value of its own type |
-| `readOnly` | The cell is read-only: as delivered by `READONLYIF`, and where it delivers nothing, for a property that is `READONLY` on the form or has no change at all. Absent otherwise | `true` / absent |
-| `disabled` | The cell is disabled: as delivered by `DISABLEIF`, and where it delivers nothing, for a property that is `DISABLE` on the form. Absent otherwise. One cell never carries both `readOnly` and `disabled` | `true` / absent |
-| `background`, `foreground` | The background and text colors of the cell | string with a color |
-| `comment` | The comment shown next to the value | string |
-| `placeholder` | The text shown in an empty cell | string |
-| `pattern` | The pattern the value is displayed with | string |
-| `regexp`, `regexpMessage` | The regular expression the entered value is checked against, and the message shown when it does not match | string |
-| `tooltip`, `valueTooltip` | The tooltips of the property and of its value | string |
-| `options` | The property's custom options | parsed JSON value |
-| `defaultValue` | The value editing starts with | string |
-| `select` | What a [selection](#select) adds — its options and how it selects. It is on the cell of a table property, and on the entry itself of a panel or empty-group one | object |
-
-Of these, `caption`, `image`, `footer`, `comment`, `tooltip` and `defaultValue` are the column's own attributes, on the column node `data.<g>.<prop>` — one per column, beside `type`. The rest (`background`, `foreground`, `readOnly`, `disabled`, `placeholder`, `pattern`, `regexp`, `regexpMessage`, `valueTooltip`, `options`, `select`, `loading`) are cell attributes, on each row's cell `data.<g>.list[i].<prop>` next to its `value`. The row itself carries `background` and `foreground` — the colors of the row as a whole — and `selected`, which is `true` while the row belongs to the selected range and absent otherwise — directly, not inside any property entry.
+The buttons to the first and the last row:
 
 ```jsx
-function Row(props) {
-    const r = props.row;
-    const sum = r.sum;              // { value, readOnly, disabled, background, foreground, ... }
-    return (
-        <div className="order" style={{ background: r.background }}>
-            <span>{r.number.value}</span>
-            <input value={sum.value} readOnly={!!sum.readOnly} disabled={!!sum.disabled}
-                   style={{ background: sum.background, color: sum.foreground }} />
-        </div>
-    );
-}
+<>
+    <button onClick={() => controller.o.change(controller.form.HOME)}>First</button>
+    <button onClick={() => controller.o.change(controller.form.END)}>Last</button>
+</>
 ```
 
-### Rendering rows {#rendering-rows}
+### A calendar with rows bucketed into cells {#calendar-board}
 
-Use `window.lsfusion.List` to render the rows of a group with per-row render economy. It is a runtime global, so to write it as a JSX tag bind it to a local capitalized name first. Without an alias, call it through `React.createElement`. The alias is read where the module runs, which for a compiled bundle and for a `.jsx` resource is before anything renders, so it can sit at the top of the module. In a resource written as `.js`, which is served as it is, read the platform's components and hooks inside the component instead — the module runs before the first view mounts, and they are installed at that mount:
-
-```jsx
-const List = window.lsfusion.List;
-// ...
-<List group="o" component={Row} />
-// or, without an alias:
-React.createElement(window.lsfusion.List, { group: 'o', component: Row })
-```
-
-`group` is the group object SID. `List` reads the group's rows out of the view's own projection by that name, the way [`BucketScope`](#bucketing) does, so it is given the name rather than the node. `keys` places some of those rows in a visual block, in the order given. For example, inside a `BucketScope` for `o` whose `bucketOf` uses a server-computed row property, each cell draws its own rows:
-
-```jsx
-function OrderCell({cellKey}) {
-    const keys = window.lsfusion.useBucket(cellKey);
-    return <List group="o" keys={keys} component={Row} />;
-}
-```
-
-Selecting or ordering rows is done on the server, through [filters](#filters) and [sortings](#orders), rather than by filtering or sorting the loaded page in JavaScript.
-
-A key the group does not hold draws nothing. A `List` given a group whose rows this view does not draw — one the view holds only a panel property of, or nothing of at all — throws: whether a view draws a group's rows is the form's design, not its data, so this is a mistake in the view, and the view shows the reason in its place and in the console. `List` draws the rows the projection holds, and a grid the form hides with `SHOWIF` keeps its rows, as the platform's own grid does: where the grid has a `SHOWIF`, render the `List` only while `props.data['GRID(o)'].hidden` is not set.
-
-Render `List` as a component — through JSX or `React.createElement` — never by calling it as a plain function: it renders each row through a component that uses hooks, so it only works when React mounts it.
-
-`List` keys each row by `row.key`, passes the row to the component as `props.row` — with `rowKey`, `index` and any other props given to `List` besides its own `group`, `keys` and `component` — or `children`, which names the row component when `component` is not given — and renders each row through a memoized wrapper bound to that row, so on a change only the rows that actually changed re-render. The plain alternative maps the list directly:
-
-```jsx
-props.data.o.list.map(r => <Row key={r.key} row={r} />)
-```
-
-Why per-row economy matters. When any single row changes, `props.data.<g>.list` is rebuilt as a new array reference, but the projection keeps the same object reference for every row that did not change (structural sharing) — only the rows whose contents changed get a new row object. A plain `list.map(r => <Row row={r}/>)` re-creates the `Row` element for every entry on any single-row change, so React re-renders all of them. The React `key` does not change this: it lets React preserve each row's element identity, DOM, and component state across renders, but it is not a render bail-out. The React Compiler does not help either — it memoizes the `.map` as one reactive scope keyed by the array reference, which has just changed, and it does not wrap the row children in `React.memo`, so every row still re-renders.
-
-`window.lsfusion.List` adds the missing per-row bail-out: it renders each row through a stable memoized wrapper that tracks that one row, so a value change re-renders only the changed row. The list itself is not re-walked when a row's value changes — only when rows are added, removed, or reordered —, so an update renders only what changed. What still grows with the number of rows is each mounted row's check of its own subscription, a lookup by its key. To get a per-row bail-out by hand without `window.lsfusion.List`, declare the memoized row component once at module level and key by `row.key`:
-
-```jsx
-const MRow = React.memo(Row);
-// ...
-props.data.o.list.map(r => <MRow key={r.key} row={r} />)
-```
-
-A `React.memo(Row)` created inside the component on each render is a new component type every time, which defeats the memoization and re-renders every row.
-
-### Bucketing rows into cells {#bucketing}
-
-When the view lays a group's rows out as a matrix rather than a list — a calendar, a kanban board, a timetable, a seating chart — each row belongs to a derived cell (day × employee, status column, and so on). `window.lsfusion.BucketScope` maintains a cell → rows index over one group, and each cell subscribes to only its own membership:
+We need to show shifts as a calendar — a grid of days by employees with each shift in its cell — in which a change re-renders only the cells it touches. The solution uses `BucketScope` and `useBucket` ([Bucketing rows into cells](../language/React_rendering.md#bucketing)).
 
 ```jsx
 const { BucketScope, useBucket, useData } = window.lsfusion;
@@ -345,29 +83,9 @@ export function Board(props) {
 }
 ```
 
-`<BucketScope group bucketOf bucketDeps>` wraps the grid markup. `group` is the group object SID. A group whose rows this view does not draw throws, as it does in [`List`](#rendering-rows). `bucketOf(row, rowKey)` computes the row's cell key from the row's property values — a string (any value is coerced to a string), an array of keys to place the row into several cells, or `null` for none. `bucketDeps` lists the outside values `bucketOf` closes over — like a hook dependency array, the index is rebuilt when they change. Keep the array's length constant.
-
-`useBucket(cellKey)` returns the array of row keys currently in that cell, in the group's display order, and subscribes the component to only that cell. Call it once per cell component, with that cell's fixed key (the usual hook rules). An empty cell always returns the same frozen empty array. The cell component resolves each row key to a row component that subscribes to its own row via `useData(d => d.<g>.byKey[rowKey])`, as above.
-
-The view keeps the layout: it supplies the cell keys — so empty cells exist and render too, e.g. as drop targets — and the cell markup. The platform keeps the index and the render economy: moving a row between cells re-renders only the old and the new cell; editing a value that does not change the row's cell re-renders only that row's own component; every other cell keeps its previous array reference and its `React.memo` skips. The plain alternative — grouping `data.<g>.list` into cells by hand on each render — rebuilds every cell's array every time, so any change re-renders the whole board.
-
-When the cells form a flat list and each cell's markup lives in one component, the `<Buckets group cells bucketOf component/>` form does the mapping itself, the way `List` does for rows: one memoized wrapper per key in `cells`, and the cell component receives `cellKey`, `rowKeys`, `index`, and the pass-through props. Keep the explicit `<BucketScope>` + `useBucket` markup when the view itself lays out the grid — a two-axis matrix, axis headers, pinned columns:
-
-```jsx
-const { Buckets } = window.lsfusion;
-const STATUSES = ['new', 'inProgress', 'done'];
-
-// Card subscribes to its own row, like Shift above
-const Column = ({ cellKey, rowKeys }) => (
-    <div className="column">{rowKeys.map(k => <Card key={k} rowKey={k} />)}</div>
-);
-
-<Buckets group="t" cells={STATUSES} bucketOf={t => t.status.value} component={Column} />
-```
-
-Use bucketing for placing one group's rows into derived cells where only the membership matters — pivots, calendars, kanban boards, timetables, drag-and-drop grids. It does not compute per-cell aggregates: `useBucket` returns row keys, not sums or counts, and the cell component re-renders only when that cell's row-key array changes — live aggregates are what the [pivot table view type](../paradigm/Interactive_view.md#property) provides. For a plain one-to-one list of rows use `List`, and grouping only works over the group's own projected values.
-
 ### A page of several containers {#several-containers}
+
+We need to build a page of several regions, each drawn by React, that follow one another: picking a category shows its items, and picking an item shows its details. The solution uses the [projection](../language/React_projection.md) each container gets.
 
 A page of several regions — a list of categories, the items of the chosen category, the details of the current item — is not one component over the whole form: each region is a `custom` container of its own, over its own part of the form, and ordinary `DESIGN` containers lay them out. A change then re-renders only the regions whose projections changed, a region in an inactive tab or a collapsed container is not read until it is shown — unless a visible region depends on it — and another module can still add to the page from `DESIGN`. What the regions share is the form's state, not a component's:
 
@@ -411,102 +129,15 @@ DESIGN catalog {
 }
 ```
 
-`CategoryList`, `ItemList` and `DetailPanel` are components like [`OrderBoard`](#the-component), and each container's `props.data` holds only the parts it draws: `CategoryList` sees `data.c`, `ItemList` sees `data.i` with its rows and the `archive` filter group, `DetailPanel` sees `data.d` and, as `data.i`, only the panel property `nameItem` moved there. A part of a group is projected where its component stands — the rows where the group's grid is, a panel property where the property itself is — so the current item's name reaches the detail panel as a panel property of `i`, added under an alias and `MOVE`d into the container that draws it, without the group's rows. A click in a list sets the current object (`controller.c.change(row)`), and the filters of the groups below follow it — the platform's own dependency between groups, so the containers need no shared JavaScript state. A container that does not draw a group's rows chooses its current object through the form's controller — `controller.form.changeObject('c', row)`, with a row of its own data or a lookup's `objects` handle —, as it sorts the rows another container draws ([across containers](How-to_Custom_view_controller.md#across-containers)). A form-level property two containers show is added twice, under two aliases, one in each container.
+`CategoryList`, `ItemList` and `DetailPanel` are components like [`OrderBoard`](../language/React_views.md#the-component), and each container's `props.data` holds only the parts it draws: `CategoryList` sees `data.c`, `ItemList` sees `data.i` with its rows and the `archive` filter group, `DetailPanel` sees `data.d` and, as `data.i`, only the panel property `nameItem` moved there. A part of a group is projected where its component stands — the rows where the group's grid is, a panel property where the property itself is — so the current item's name reaches the detail panel as a panel property of `i`, added under an alias and `MOVE`d into the container that draws it, without the group's rows. A click in a list sets the current object (`controller.c.change(row)`), and the filters of the groups below follow it — the platform's own dependency between groups, so the containers need no shared JavaScript state. A container that does not draw a group's rows chooses its current object through the form's controller — `controller.form.changeObject('c', row)`, with a row of its own data or a lookup's `objects` handle —, as it sorts the rows another container draws ([across containers](../language/Form_and_navigator_controllers.md#across-containers)). A form-level property two containers show is added twice, under two aliases, one in each container.
 
-The named selection is a `FILTERGROUP`: `data.i.archive.value` is `0` for active items and `null` for all items, including archived ones. To show archived items too, call `controller.i.archive.change(null)`; to hide them, call `controller.i.archive.change(0)` ([Filter groups](#filter-groups)). A chosen section similarly uses a filter group or the current object of a group. A search the user types uses a [property filter](#property-filters) by default, or the group's [user filters](#filters) when the view builds the conditions. The server selects the rows, and a count under the form's filter follows these filters too ([the count under the form's filter](#the-component)) — `list.length` is only the rows already read. A value stays a form property when other form logic reads it. Which region or tab is shown may stay in React state ([Placing platform components](#placing)), as may an expanded card or an open sheet.
+The named selection is a `FILTERGROUP`: `data.i.archive.value` is `0` for active items and `null` for all items, including archived ones. To show archived items too, call `controller.i.archive.change(null)`; to hide them, call `controller.i.archive.change(0)` ([Filter groups](../language/React_filters_and_toolbar.md#filter-groups)). A chosen section similarly uses a filter group or the current object of a group. A search the user types uses a [property filter](../language/React_filters_and_toolbar.md#property-filters) by default, or the group's [user filters](../language/React_filters_and_toolbar.md#filters) when the view builds the conditions. The server selects the rows, and a count under the form's filter follows these filters too ([the count under the form's filter](#filtered-count)) — `list.length` is only the rows already read. A value stays a form property when other form logic reads it. Which region or tab is shown may stay in React state ([Placing platform components](../language/React_platform_components.md#placing)), as may an expanded card or an open sheet.
 
-The regions are laid out by the standard containers: a horizontal parent, an extension coefficient (`fill`) on each column, and a base height on a column whose content scrolls inside it ([the base size](#selecting-the-component)).
+The regions are laid out by the standard containers: a horizontal parent, an extension coefficient (`fill`) on each column, and a base height on a column whose content scrolls inside it ([the base size](../language/React_views.md#base-size)).
 
-### Crossing back to lsFusion
+### A tab strip over what the platform draws {#placed-tabs}
 
-`custom` crosses from the platform to React; `custom = NULL` is the crossing back. By default the component draws the container's whole subtree from `props.data`. A child given `custom = NULL` — the platform's standard view rather than a custom one — instead keeps its lsFusion view, and the component places that view with `<Platform name/>` rather than drawing it. So does a child with a custom view of its own: a container with its own `custom`, or a property the `FORM` gives a `CUSTOM` render function. `NOCUSTOM` is `custom = NULL` said in the `FORM`.
-
-```lsf
-FORM orders 'Orders'
-    OBJECTS o = Order
-    PROPERTIES(o) READONLY number, date, sum
-    PROPERTIES() comment = orderComment      // given `custom = NULL` below; its entry is data.comment
-;
-
-DESIGN orders {
-    NEW board {
-        custom = 'Board';
-        MOVE BOX(o) { custom = NULL; }        // the standard grid, placed by the component
-        MOVE PROPERTY(comment) { custom = NULL; }
-    }
-}
-```
-
-A child the platform draws is not projected into `props.data` — the platform builds its view, feeds it the property values, and renders it, exactly as in a standard container. The component only decides where it goes. Its caption and image - and a property's comment - are the exception: they go to the component in `data` instead of the child's own view. Such a property projects only `{ caption, image, comment, hidden }` — it has no `.value`, since the platform draws the value with the rest of the child's presentation. It projects that entry even with neither a caption, an image nor a comment — an empty one while the form shows the child. Such an action projects only `{ hidden }`: its caption and image are its button's face, which the platform draws. Such a container is projected the same way as any container the view draws: the component reads its `caption` and `image` from `data` and decides where the platform's view goes.
-
-The entry holds `caption`, `image` - a property's `comment` too - and, while the form hides the child, `hidden` (an action's holds only `hidden`) — a table property's is its whole column entry — and it sits at the same place in `data` the [display options](#display-options) use, under the same name the child's value is keyed by:
-
-| Child the platform draws | Where its entry is | Key |
-| --- | --- | --- |
-| A **table** property of an object group, [drawn per row](#live-editor) | `data.<g>.<integrationSID>`, an ordinary column entry alongside the group's other columns | The property's integration SID, `qty` |
-| A **panel** property, or a property of the empty group | `data.<g>.<integrationSID>`, on its group's node (`data.<integrationSID>` for the empty group), where its value would be if React drew it | The property's integration SID, `note` |
-| A container, or any other component | `data.<componentSID>`, always at the top level | Its design component identifier, `BOX(o)`, `GRID(o)` |
-
-A property is named by its integration SID, table or panel, its entry and its place alike. Its entry sits on its group's node, where the entry of a property React draws would be, and a `<Platform>` names a panel one the way that entry is reached: `<Platform name="o.note"/>` for `data.o.note`, `<Platform name="note"/>` for the empty group's `data.note`; it hides the host while that entry says `hidden`. A table one's per-row renderer is named the same way, `<Platform name="o.quantity" row={row}/>` for its column entry `data.o.quantity`, and the row says which renderer: it has to be a row of that group — a tree's row of a group below passes, narrowed to the path down to the group, as a group's `change(row)` takes it —, and the column entry does not hide the host. A container or any other component is named by its design identifier, `<Platform name="BOX(o)"/>` and `data['BOX(o)']`. So the name a component places a child by is the path it reads the child's entry by.
-
-Every component the view draws, other than a property it carries — a container, one declared with `NEW` and a generated one (`PANEL(o)`, `TOOLBAR(o)`, …) alike, a grid (`GRID(o)`) or a tree (`GRID(TREE t)`), a toolbar (`TOOLBARSYSTEM(o)`) — and every component the platform draws that it places, other than a property, gets such an entry, `data['<component SID>'] = { caption, image, hidden }`, at the top level of this view's `data` — except what is inside a container the platform draws, which it draws whole and the component never looks into. The React custom container itself has no entry in its own `data`: nothing there draws its caption and image — the platform draws them around the container, or, for one another React view places, that view does, from its entry there. An entry's `hidden` follows `SHOWIF` — the component's own, or a container's above it — and not whether the view shows the component: a tab the view does not show keeps its caption, and has no `hidden`. While a placed component's entry has it, `<Platform>` and `usePlatform` hide the host that places it — the host gets `hidden`, and stays: the component is still placed, so it goes on being read and comes back with its `SHOWIF`. Being part of the projected `data`, a dynamic caption or image re-renders the component like any other data change.
-
-A React custom container obeys its own `SHOWIF` as any other component does: the platform hides its box. Inside what React draws, `tabbed`, `collapsed`, `popup` and `activated` do nothing: React lays that content out, and there is no tab strip or collapse header to apply them to — the view has each container's entry instead, and shows what it wants. A scripted `ACTIVATE TAB`, `COLLAPSE` or `EXPAND` on a component there is an error, as on a child the platform draws: its visibility is the view's.
-
-[`SHOW ... IN`](../language/SHOW_operator.md) cannot open a form inside a React custom container or a container the React view draws inside it: the view cannot draw the form added there, so the server refuses the opening. Give the destination container `custom = NULL` and place it with `<Platform>` so that the platform draws the container and the form inside it.
-
-`Platform`, `usePlatform`, `useShown`, `Caption` and `Image` are runtime globals, like `List`, so bind them to local names before the examples below work: `const { Platform, usePlatform, useShown, Caption, Image } = window.lsfusion;`.
-
-The component names each child it places, and draws the caption itself where it wants it:
-
-```jsx
-export function Board(props) {
-    const data = props.data;
-    return <div className="board">
-        <h3><Caption value={data['BOX(o)'].caption}/></h3>
-        <Platform name="BOX(o)"/>
-        <h3><Caption value={data.comment.caption}/></h3>
-        <Platform name="comment"/>
-    </div>;
-}
-```
-
-### Placing a child the platform draws {#placing}
-
-A child the platform draws need not be a direct child of the container: it may sit inside the containers the view draws itself, however deep — the [record](../paradigm/Form_design.md#record) of a table the view draws, what a design puts into `GRID(<group>)`, included —, and the React custom container above it places it by its name all the same — so a design groups such pieces the way the view draws them, a page or a section each. Inside a container the platform draws nothing is placed separately: the platform draws that container whole, with whatever is inside it — unless a React custom container inside it places a component, as it places its own.
-
-Such a child's view is moved into a *host*: a DOM node React owns and never renders children into. React places the view relative to a node it owns, and it must keep owning it to go on rendering the surrounding tree. Which node that is, is the only difference between the two ways to place a child:
-
-```jsx
-// the platform creates the host — a <div> inside the section
-<section className="board-panel"><Platform name="BOX(o)"/></section>
-
-// the component's own element is the host — one node less
-<section {...usePlatform('BOX(o)', { className: 'board-panel' })}/>
-```
-
-`<Platform>` is the shorter one. `usePlatform(name, { className, row })` is for an element the component renders anyway — a panel, a card, a grid cell — so the view goes straight into it: it returns the props that make that element a host, the ref that moves the view in, the host's marks and, while the child's entry says so, `hidden` — and, as `children`, the [React components in the placed child](#embedded). Spread them onto the element, and give its class to `usePlatform` rather than to the element: a `className` written after the spread replaces the one the marks are merged into.
-
-Everything else is the same for both. The host carries the class `lsf-platform` and the attribute `data-lsf-sid` with the child's name, whoever created it: `<Platform>` and `usePlatform` render them as props of their own, merged with the class the component gives the host, so a class that changes between renders keeps them. Every host is styled so that the view fills it, whatever the child is, so the component sizes the host and the view follows:
-
-```css
-.board > .lsf-platform[data-lsf-sid="BOX(o)"] { height: 260px; }
-```
-
-When the [host changes size](#custom-placement), the placed child — including a per-row renderer — is told so.
-
-Sizing is the component's job, because a placed child's `width`, `height`, `fill` and alignment attributes are **not** applied: those describe a position inside a standard container, and here the surrounding element is the component's own markup. Its `caption` and `image` are not drawn by the child either — except an action's, which are its button's face: they are handed to the component in `data`, so a component that places children itself draws them where it wants them — nothing draws them otherwise:
-
-```jsx
-<section className="board-panel">
-    <h3><Image value={props.data['BOX(o)'].image}/><Caption value={props.data['BOX(o)'].caption}/></h3>
-    <Platform name="BOX(o)"/>
-</section>
-```
-
-Drawn with [`<Caption>`](#caption) and [`<Image>`](#image), for the reason those exist: a caption is not always plain text, and an image is either an address or a ready element.
-
-This is what makes a **tab strip** possible, and it is what the entry is for. A component that shows one placed child at a time still has to name the ones it is not showing, and their captions are the only thing it has to name them with. Two things make that work: the entry does not follow the placement — every child the container places has one from the start, and its `hidden` follows `SHOWIF`, not whether the view shows the child, so a closed tab has a label — and a caption goes on being read while its body is hidden, so a computed caption on a closed tab keeps up to date.
+We need to show the children the platform draws as tabs: a strip of their captions and images over the one child shown. The solution uses the [placement of a child the platform draws](../language/React_platform_components.md#placing), the child's entry, [`<Caption>`](../language/React_rendering.md#caption) and [`<Image>`](../language/React_rendering.md#image).
 
 ```jsx
 const TABS = ['BOX(o)', 'BOX(i)'];
@@ -525,7 +156,7 @@ export function PlacedTabs(props) {
 }
 ```
 
-Rendering only the active child, rather than hiding the others, is what makes the closed tabs stop being read — see [below](#placing). Put the tabs over a group's `BOX`, not its `GRID`: only a container and a property carry a caption and an image, so a placed `GRID(o)` has an entry with no caption — it says only whether the form hides the grid.
+Rendering only the active child, rather than hiding the others, is what makes the closed tabs stop being read — see [Placing a child the platform draws](../language/React_platform_components.md#placing). Put the tabs over a group's `BOX`, not its `GRID`: only a container and a property carry a caption and an image, so a placed `GRID(o)` has an entry with no caption — it says only whether the form hides the grid.
 
 A tab strip over children of both kinds keeps one name per tab, the name it places the child by, and reads the child's entry by it — a design identifier at the top level, a property's name as its path:
 
@@ -538,76 +169,9 @@ const entryOf = (data, name) => {
 // the strip: <Caption value={entryOf(props.data, sid).caption}/>; the body: <Platform key={active} name={active}/>
 ```
 
-These rules bound the placement:
+### Status buttons for a `SELECT` property {#status-buttons}
 
-- Each child the platform draws is placed by at most one host. A child no host places is not shown. A duplicate host reports itself in the page and in the console, and the first one keeps the child.
-- A component inside the container that the platform builds a view of without its being given `custom = NULL` — a [filter group](#filter-groups) that filters by no object, moved in — is shown by nobody, and the console says so once, with the fix. A component whose [part](#the-component) a view draws — a group's or a tree's filter box, filter controls or toolbar, or a group's filter group — is not such a component: the view gets that part.
-- The host has to reach the page. A host that is still outside the document once the render that created it is over gives the child up: the view goes back to waiting, a `<Platform>` with the same name that IS in the page gets it, and the console says which name was given up. A host a portal appends in an effect is in the page by then and is placed as usual.
-- The node `<Platform>` renders holds the lsFusion view, so it must stay empty: give it a class or a style, never children.
-- `custom = NULL` is the platform's standard view wherever it is given: outside a React custom container, or inside a container the platform draws whole, the component is drawn where it stands, with that view.
-
-A placement that cannot work says so in the host itself, not only in the console: a name that names nothing inside the container (nor in a container it draws itself), a component the view draws itself, a second host for the same child, a name given a `row` that names no grid property the platform draws per row of a group this view draws, a `row` of another group, and a `row` that is not a row each render their message into the host, in an element of the class `lsf-view-error`. The host's own class stays as the component gave it.
-
-The view tells the server which of the children the platform draws it places — the set of them, not the mounts and unmounts that changed it: it is worked out after every change of placement and once after the component first draws, and only what changed is sent. A child with a host — holding its view, or waiting for it — is placed. A child no `<Platform>` places is not read, the same gating an inactive tab or a collapsed container gets — except what labels it: its caption, image and comment go on being read, as an inactive tab's title is, so the component can still name it. Its group stops being read only when the child was the group's last visible place on the form. So a component that shows one child at a time renders only that child, rather than hiding the others with CSS: a CSS-hidden child is still placed as far as the server knows, and goes on being read. For the same reason the visibility of a placed child belongs to the component alone — its `collapsible`, `collapsed` and `activated` attributes are ignored, and a scripted `COLLAPSE` / `EXPAND` or `ACTIVATE TAB` on it is an error. `SHOW ... IN` can open a form inside a placed container with `custom = NULL`: the platform draws its contents.
-
-A container the view draws itself — a page of a tab strip the view lays out, a section it folds — the server reads as a shown one for as long as the view says nothing of it: it cannot see what the view shows. `useShown(name, shown)` says it. A container the view does not show is not read, and neither is anything inside it — a child the platform draws placed there included, host or no host —, the same gating an inactive tab gets, its caption and image going on being read as an inactive tab's title is: a property there that changes meanwhile reads as `null` until the container is shown again, as on an inactive tab. Call it where it stays mounted while the container comes and goes — in the strip, not in the page —, one hook per container, under the container's design name: unmounted, the hook leaves the container shown, which is what the server assumes of a container no hook names. `shown` left out is `true`. A name that is no container the view draws itself is reported in the console. The container's `SHOWIF` stays the form's, and its entry's `hidden` says only that.
-
-```jsx
-// a tab of the strip: mounted for as long as the strip is, whichever page is shown
-function Tab(props) {
-    useShown(props.name, props.active);
-    return <button role="tab" aria-selected={props.active} onClick={props.onClick}>
-        <Caption value={props.entry.caption}/>
-    </button>;
-}
-```
-
-### A live editor in every row {#live-editor}
-
-A placed child is drawn once. A grid property given `NOCUSTOM` in the `FORM` is drawn once per **row**, so a component can put a real lsFusion editor into every row it renders, instead of showing the value and having to build editing itself:
-
-```lsf
-FORM orders 'Orders'
-    OBJECTS o = Order
-    PROPERTIES(o) number READONLY, date
-    PROPERTIES(o) quantity NOCUSTOM, note NOCUSTOM
-;
-
-DESIGN orders {
-    NEW board {
-        custom = 'OrderBoard';
-        MOVE BOX(o);                  // React draws the rows, from data.o
-    }
-}
-```
-
-`NOCUSTOM` says the platform draws the property, in its standard view: it is a component rather than a value. A `CUSTOM` render function says so too, the platform drawing the value by that function, and so does a `SELECT` given with `NOCUSTOM`, the platform drawing the value as a selection from a list: a `SELECT` alone says what is drawn, not who draws it ([A selection](#select)). The design says the same with the property's `custom`, as with its `caption`: `custom = NULL` is `NOCUSTOM`, and `PROPERTY(quantity(o)) { custom = 'starRating'; }` is `PROPERTIES(o) quantity CUSTOM 'starRating'`. Where it is placed is not said — and cannot be: a grid property has no place of its own in the design, and its renderers go into the rows, so the component drawing the rows is the one that places them. That is the component this `MOVE BOX(o)` gave the group to. A `MOVE` of a grid property is refused when the form is built, `NOCUSTOM` or not. The component names the property as its column entry is keyed, with its group, and gives the row:
-
-```jsx
-{data.o.list.map(row => (
-  <tr key={row.key}>
-    <td>{row.number.value}</td>
-    <td><Platform name="o.quantity" row={row}/></td>
-    <td><Platform name="o.note" row={row}/></td>
-  </tr>
-))}
-```
-
-Pass the row object out of the projected data — a row key alone cannot be resolved back to a row. The same property may be placed once per row, and only once per row.
-
-What the author gets and what stays theirs:
-
-- The editor is the platform's, with everything that implies: editing, `READONLYIF`, `BACKGROUND` and the other per-cell options, all read for **that row**.
-- The property leaves the rows: it is a component now, so `row.quantity` is not there, and the controller has no member for it — the platform draws and edits the values. Its column entry stays, an ordinary one at `data.o.quantity` — `caption`, `image`, `footer`, `comment`, `type`, `hidden` — and `properties` lists it. Its editors are placed by the same name, `o.quantity`, so it has to have one: a property declared `NOEXTID` is refused when the form is built. Declare a second, ordinary property if the value is also wanted as data.
-- The caption is not drawn in the row, and neither is the comment: the per-row editors draw none of their own. Like a placed child's caption, both arrive in the group's column node — `data.o.quantity.caption`, `data.o.quantity.comment` — so the component puts them where they belong, usually once, in a header. An action's column entry has no caption and no image: they stay on its buttons, as their face.
-- A renderer exists for every row the group is currently showing, whether the component renders that row or not. A row scrolled out of view keeps its editor. Only a row leaving that set loses it.
-- Its key (`CHANGEKEY`) is one for all the rows, as a grid column's is: pressed anywhere in the form, it opens the editor in the current row, while that row's editor is placed — the editor of a row the component does not render takes no key.
-
-Where no React custom container draws the group's rows, `NOCUSTOM` is simply the standard view: the platform's grid draws the property, without a custom render or editing function. A grid property grouped in columns is refused, with the property named, where a React view draws its rows: a per-row editor cannot address a row-and-column cell.
-
-### A selection {#select}
-
-A property given `SELECT` in the `FORM` is shown as a choice among all its possible values: the objects a link can point at, by their view (the statuses an order can have, by their names), or, for a [selection of several values](../paradigm/Interactive_view.md#multiselect), the objects that can be checked (the tags of an order). Inside a container a React component draws, the component draws such a property itself, and the property's entry carries all its options at once:
+We need the user to pick an order's status from a row of buttons, one button per status. The solution uses the entry of a property with a [selection](../language/React_projection.md#select) — its `select` field — and the `change` of the property's member.
 
 ```lsf
 FORM orders 'Orders'
@@ -619,33 +183,6 @@ DESIGN orders {
     NEW card FIRST { custom = 'OrderCard'; MOVE BOX(o); }
 }
 ```
-
-```js
-data.o.nameStatus = {
-    value: 'New',              // the value of the option picked
-    type: 'string',
-    select: {                  // what SELECT adds
-        list: [                // all the options, in their order
-            { key: 581, value: 'New', selected: true },
-            { key: 583, value: 'Done' },
-            { key: 584, value: 'Lost' }
-        ]
-    }
-}
-data.o.tags = {
-    value: 'red',              // the property's own: the values of the options checked, joined
-    type: 'string',
-    select: {
-        multi: true, separator: ', ',
-        list: [{ key: 577, value: 'blue' }, { key: 576, value: 'green' },
-               { key: 575, value: 'red', selected: true }]
-    }
-}
-```
-
-`select` is what `SELECT` adds to the entry, in one field. Each option of its `list` has `key` — the id of the object it is (of an option of several objects, as a selection over a group by several objects has, a string of their ids), the same while the option is there, which keys it in React —, `value` — the view it is shown by, a text — and `selected` while it is picked. Of one value, the entry's `value` is the value of the option picked, which is the property's own value; with nothing picked no option is `selected`, and `value` is `null`. Of several values, `select.multi: true`, `value` is the views of the options checked, in the list's order, joined by `select.separator`, and `null` with none checked. `select.separator` is the separator of its `GROUP CONCAT` where it is a literal, not to be localized, of an `OVERRIDE` of several the one they all join by, and a comma, `', '`, otherwise — where it is computed or localized, or the `OVERRIDE` joins by different ones. For the usual `tags(o) = GROUP CONCAT name(t) IF in(o, t), ', ' ORDER name(t), t` this is the property's own value; where the property is something else over the options — an expression over the `GROUP CONCAT` (`upper(tags(o))`), an `OVERRIDE` —, it is still the options checked, joined: `'green, red'` while the property has `'GREEN, RED'`. `select.notNull: true` says the value has to be there, so a view offers no way to clear it. How the selection is drawn is the view's own: an element type the form gives `SELECT` (`'list'`, `'dropdown'`, ...) is the platform's own element's, so the form is refused with one here — with `NOCUSTOM` the platform draws that element, and the view places it; a type the property declares is only its default, which the view overrides. For a column, `select` is on each row's cell, `row.nameStatus.select`: what is picked is each row's own. The view of an option is drawn with [`<Caption>`](#caption): it may be HTML.
-
-The property is changed by what is picked, with its member's `change`:
 
 ```jsx
 const { Caption } = window.lsfusion;
@@ -662,91 +199,9 @@ export function OrderCard(props) {
 }
 ```
 
-- Of one value, `change` takes an option — an element of `select.list`, or its value: `change('Done')` —, and `null` clears the value; a value that has to be there is not cleared. The option picked already changes nothing, and nothing is sent.
-- Of several values, it takes their value, as `value` has it — the views joined by `select.separator`: `change('green, red')` —, or the array of the options checked from now on, elements of `select.list` or their values: `change(['red', 'green'])`; `null` and `[]` uncheck all of them, and so does `''`. A value that splits back into views more ways than one — a view with the separator in it, or one that joins with it at its edge, or an empty separator — is refused: pass the array then. An option alone — an element of `select.list` — is checked or unchecked: the opposite of what the cell shows now, a pick not answered yet included.
-- A value no option has is refused, and so is a value several options have — options may share a view —: pass the option itself then.
+### A quote board refreshed by `SCHEDULE` {#live-data}
 
-A pick is sent as the platform's own element sends it, one option at a time, picked or no longer: the link is written — `status(o)` gets the status picked —, and for a selection of several values the condition of each option checked or unchecked, `in(o, t)`. A call that checks and unchecks several options sends them in one request, the checks first. The view shows the pick at once — in `select.list` and in `value` —, the cell says `loading` until the answer, and the answer brings the options read again. In a [batch](How-to_Custom_view_controller.md) a pick goes with the rest.
-
-The options are read and sent as a value is: when the form is opened, and again whenever what they depend on changes — their views, which objects they are, what is picked — or the current object or the rows do; each time the cell's options come whole. Where the platform's own element is given only the options picked and looks the others up by the text typed — over many options —, a view is still given all of them.
-
-The platform also builds a [selection element](../paradigm/Interactive_view.md#select) by itself, for a link with a unique view or a selection of several values; a property a React component draws gets none of that: its entry has options only where a selection is given — `SELECT` in the form or in the property's declaration. The design's `select` always names an element of the platform's, so it goes with `custom = NULL`. With `NOCUSTOM` — `PROPERTIES(o) nameStatus SELECT 'buttonGroup' NOCUSTOM` — the platform draws its own element of the selection, and the component places it with `<Platform name/>` like any [child the platform draws](#placing), per row in the rows it draws.
-
-### Extending a container with placed children
-
-Another module adds a child to the container from `DESIGN`:
-
-```lsf
-EXTEND FORM orders PROPERTIES() rating;
-DESIGN orders {
-    board { MOVE PROPERTY(rating) { custom = NULL; } }
-}
-```
-
-The component does not pick it up on its own. Every child the platform draws is placed by a `<Platform>` that names it, so a child no `<Platform>` names is not shown, and adding one this way means editing the JSX too — the `DESIGN` extension declares the child, the component decides where it goes. The layout is not extensible from `DESIGN` either: a React composition cannot be modified there. To change the layout, replace the whole component with `custom = 'OtherBoard'`. The children stay as declared.
-
-### Choosing between a React component and an HTML template
-
-A component that places children the platform draws and reads nothing from `props.data` does what a classic custom container already does: an HTML template positions the same children through its `<Platform:name>` places, without a React runtime and without a host node per child. When the platform draws every child of the container, `props.data` carries no group or property values, because such a child is not projected — only the children's `{ caption, image, hidden }` entries in `props.data`.
-
-A template is given no data at all. It places what the platform draws, by name, and everything else in it is written out: it cannot read the caption or the image of a child, or of the container itself. The captions it shows are drawn by the platform: a property child is drawn in parts (unless it is declared `inline = FALSE`) — its caption and its comment are places of their own, `<Platform:PROPERTY(qty).caption>` and `<Platform:PROPERTY(qty).comment>`, which the template can put inside markup of its own, a heading say —, any other child carries its caption inside its placed view, and the container's own caption and image are drawn by the platform beside the container rather than inside the template. So markup of your own that has to use a caption the application computes — as text of its own, or a container's caption — is the point at which a template stops being enough.
-
-Both name their children, so neither is extended from `DESIGN` alone: adding a child means editing the JSX or the template string. A React component earns its place when the layout is computed — the children are placed conditionally, the grid template is derived from the data read through `useData`, or the markup comes from a component library — or when the markup has to show something the projection carries, which for a container or a child the platform draws is its `caption` and its `image`. A template string belongs to the module that declared it and can only be replaced whole.
-
-### Interactivity
-
-To read and change form state from the component — selecting a row, changing a property, calling actions — use `props.controller`. Its methods are described in [How-to: Custom view controller](How-to_Custom_view_controller.md).
-
-A component that draws a field of its own also tells the form when the user is editing in it, so that `ENTER` does not move the focus to the next component and `ESCAPE` does not close the window while they are typing — see [Declaring that the user is editing](How-to_Custom_view_controller.md#editing). A component that draws no field of its own has nothing to declare.
-
-The focus in what a view draws is the view's own: the platform has no field there to move it to. So `defaultComponent` on a component the view draws does nothing, and a scripted [`ACTIVATE PROPERTY`](../language/ACTIVATE_operator.md) of a property it draws — a panel one, or a column of the rows it draws — is an error. `ACTIVATE PROPERTY` of a property the platform draws and the view places with [`<Platform>`](#placing) is no error. A view that wants one of its own fields focused focuses it itself, with `autoFocus` or the element's `focus()`.
-
-<a className="lsdoc-anchor" id="form-loading"/>
-
-While the form waits for the server, the platform shows it on the form's Refresh button (`formRefresh`), and where React draws that button, the button's entry says so: `data.formRefresh.loading` is `true`. The design moves the button into the view's container — `MOVE PROPERTY(formRefresh())` —, and the view draws from the entry what it needs: the button, or only an indicator. What it shows are the form's asynchronous requests, whichever part of the form sent them — a property changed with a value, the current object, sortings and filters changed, a tree's node opened, a [batch](How-to_Custom_view_controller.md#batch), the controller's own `exec`, `eval`, `evalAction` and `change`, a [scheduled](#live-data) run —, from the moment the first of them has waited 20 milliseconds until the answer to the last of them comes. A request answered sooner shows nothing, so that the page does not flicker. A synchronous request does not set it — the run of an action through its member outside a batch is one, unless the platform runs the action asynchronously, as it runs one drawn with `NOWAIT`: it blocks input, and the platform shows its [busy indicator](../paradigm/Interactive_view.md#busy) instead. The entry also says `loading` while the button's own run waits, as an action's does. A Refresh button the platform draws — placed with [`<Platform>`](#placing) or anywhere else on the form — shows it itself, and a form with no Refresh button shows it nowhere. Only the view that draws the button is drawn again when it changes:
-
-```lsf
-DESIGN orders {
-    board {
-        MOVE PROPERTY(formRefresh());
-    }
-}
-```
-
-```jsx
-const { useData } = window.lsfusion;
-
-function Busy() {
-    return useData(d => d.formRefresh.loading) ? <span className="spinner"/> : null;
-}
-```
-
-### Keys and mouse bindings {#keys}
-
-The keys and mouse bindings the design gives what a view draws work as in the standard form: the key and the mouse binding of a property or an action ([`CHANGEKEY`, `CHANGEMOUSE`](../language/Property_options.md)), the keys of the form's own buttons — actions of the `System` module: `ESCAPE` closes the form, `ctrl ENTER` is OK — and the key of a filter of a [filter group](#filter-groups). The platform binds them itself, and the view does nothing for them. A key works while the form shows its component — its entry is not `hidden` — and the view that draws it is shown, whatever element of the form the user presses it in, and it does what the platform's key does:
-
-- an action runs, as a click on its button. An action in the rows a view draws runs on the current row; with no current row the key is left to the other bindings. An action with `CONFIRM` asks first, in the platform's dialog: the key is the platform's, while a call of the action's member asks nothing — the view asks itself where the entry says [`askConfirm`](#display-options);
-- a property whose change asks no value — its `ON CHANGE` handler runs an action — runs that handler;
-- a filter's key selects the filter, as the platform's widget does.
-
-The key of an action or a property the form shows read only (`READONLY`, `READONLYIF`) is not taken while it is: it is left to the other bindings.
-
-A mouse binding is taken as in the standard form, where its modes let it: by default on a click in a cell of a table the platform draws, not of a panel (the `panel` and `cell` modes). What a view draws is no cell of the platform's: a click there takes a mouse binding only where its `cell` mode allows one outside a cell.
-
-The binding modes of a key work as anywhere: with `showing=all` the key works while the form shows its component, whether the view is on the page or not, and a key of a property of an object group with `group=only` asks for the focus in a view of that group the platform draws — what a view draws belongs to no group.
-
-The platform does not bind:
-
-- the key of a property or an action that asks a value in a cell right away — the default change of a data property, an action that starts by asking a value (`INPUT`), a field a barcode scanner types into: the platform opens the editor for it in a cell, and that field is the view's. A view that needs such a key handles it itself;
-- the keys of the standard grid — `F3` and the other keys of its filters, the typing that starts a quick filter, `ENTER` down a column: over the rows a view draws there is no such grid, and the view uses the members of its [filter controls](#filter-controls) and `filters.change`.
-
-A view of the platform's that a view places with [`<Platform name/>`](#placing) keeps its keys, as it does anywhere: they work while its host is shown, and a host the view hides — `<Platform>` hides it while the entry of what it holds says `hidden` — takes them with it.
-
-A key pressed in a field the view draws reaches the form like any other key. A field where the user types declares it ([`controller.form.startEditing`](How-to_Custom_view_controller.md#editing)), so that `ENTER`, `ESCAPE` and the keys bound with the default `editing` mode step aside; a key the view needs for itself it stops in its own handler (`stopPropagation`).
-
-### Live data {#live-data}
-
-Data that keeps changing while the form is open — quotes, a queue, a monitor — is refreshed by the form itself, not by a timer in the component. The [`SCHEDULE` event](../paradigm/Form_events.md) of the form runs an action every given number of seconds, and the platform delivers what changed through `props.data` like any other change:
+We need to show quotes that change while the form is open, re-read by the form every two seconds. The solution uses the form's `SCHEDULE` event running `formRefresh` ([Live data](../language/React_form_behavior.md#live-data)).
 
 ```lsf
 FORM quotes 'Quotes'
@@ -762,41 +217,11 @@ DESIGN quotes {
 }
 ```
 
-`System.formRefresh[]` re-reads everything the form shows, so the response carries the whole form on every run. There is no refresh of a single object group: `System.forceUpdate[STRING]` only applies the pending update of a group in manual update mode (the `enableManualUpdate` design attribute) and does nothing for a group updated automatically. So a live board is kept as a form of its own, with only the properties it draws, and the period is no shorter than the data needs.
+### Selecting a tab and collapsing a container {#tabs-and-collapse}
 
-The scheduled run differs from a request the component would make itself. A timer of the component's own that calls `controller.refresh.exec()` polls the server the way a click on the form would — as a synchronous request that blocks input until it completes, unless the action is drawn with `NOWAIT` — and, as the third point shows, goes on polling while the form is hidden.
+We need a view that selects a tab of the form, shows whether that tab is selected, and collapses a container of the form. The solution uses a property with [`ACTIVE TAB`](../language/ACTIVE_operator.md) and actions with [`ACTIVATE TAB`](../language/ACTIVATE_operator.md) and [`COLLAPSE CONTAINER`](../language/COLLAPSE_operator.md), moved by the design into the view's container ([A hidden view](../language/React_form_behavior.md#hidden-view)).
 
-- **It does not block the user.** The web client sends it as an asynchronous request, without blocking input and without the [busy indicator](../paradigm/Interactive_view.md#busy) a synchronous request gets, so the user keeps working while the form is re-read.
-- **It runs only while the form is on screen.** For a form in a background tab, a form the [forms window](#forms-window) component places nowhere, or a form under a modal dialog, the run is skipped. The timer keeps counting, and the next run comes once the form is shown again.
-- **A hidden form stays mounted.** A background tab and an unplaced form are hidden, not closed, so the component is still mounted and a `setInterval` of its own keeps firing — and keeps calling the server — while the form's schedule is paused. That is why the refresh belongs to the form, not to the component. A timer the component does need (an animation, a countdown) is cleared in the effect's cleanup as usual, but that cleanup runs when the form closes, not when it is hidden: what stops it while the view is hidden is [`useVisible()`](#hidden-view).
-
-### A hidden view {#hidden-view}
-
-The platform hides a view without taking it down: in a tab of a `tabbed` container that is not selected, in a collapsed container, in a `popup` container that is not open, under a `SHOWIF` — of the view's container or of a container above it —, and in a form that is not on screen: in a background tab, one the [forms window](#forms-window) component does not place, or one in another window while System.forms is expanded to the full screen. The component stays mounted and keeps its state, and what it draws is not seen.
-
-While the form hides the view's container, the server does not read what the view draws, as it does not read a hidden part of any form: the rows of a group stay as they were last sent, and a property whose value changes meanwhile reads as `null` — unless a part of the form that is shown reads the same. The first answer after the container is shown brings the current values. A form that is not on screen is read as usual.
-
-What the component does on its own goes on all the while: a timer, a request, an animation. `useVisible()` says whether the view is on screen now — whether the element its root is mounted in is displayed: in the page, with no element above it under `display: none`, which is how the platform hides one — and draws the component again when that changes, so work of the component's own is done while it is `true`:
-
-```jsx
-const { useVisible } = window.lsfusion;
-
-export function Clock() {
-    const visible = useVisible();
-    const [now, setNow] = React.useState(() => new Date());
-    React.useEffect(() => {
-        if (!visible)
-            return undefined;
-        const timer = setInterval(() => setNow(new Date()), 1000);
-        return () => clearInterval(timer);
-    }, [visible]);
-    return <span>{now.toLocaleTimeString()}</span>;
-}
-```
-
-It does not say whether the view is scrolled into sight. What the component draws from its data needs no such check: a hidden view is drawn again with the current data once it is shown, as the platform's own views are. What it measures does: an element under a hidden container has no size, so a view that sizes what it draws by its own box — a chart, a map — measures it again once it is visible.
-
-The tabs and the collapsible containers around a view are a part of the form, and the view reads and changes them as it does the rest of the form — through the properties and actions the design gives it: [`ACTIVE TAB`](../language/ACTIVE_operator.md) says whether a tab is selected, [`ACTIVATE TAB`](../language/ACTIVATE_operator.md) selects it, [`COLLAPSE CONTAINER`](../language/COLLAPSE_operator.md) and [`EXPAND CONTAINER`](../language/EXPAND_operator.md) collapse and expand a container. Here `lines` is a page of a `tabbed` container of the form `order`, and `details` a collapsible container of the same form:
+Here `lines` is a page of a `tabbed` container of the form `order`, and `details` a collapsible container of the same form:
 
 ```lsf
 linesSelected = ACTIVE TAB order.lines;
@@ -819,23 +244,9 @@ DESIGN order {
 <button aria-pressed={data.linesSelected.value === true} onClick={() => controller.selectLines.exec()}>Lines</button>
 ```
 
-The actions run on the server, so the tab is selected when the answer comes, not on the click. Whether a container is collapsed is no property: the form's [`ON COLLAPSE` and `ON EXPAND`](../language/Event_block.md) events run when the user collapses or expands it. A container the view draws itself has no tab and no collapse of the platform's — the view shows it or not —, so `ACTIVATE TAB`, `COLLAPSE CONTAINER` and `EXPAND CONTAINER` on it are an error. `SHOW ... IN` also requires a destination container the platform draws, with `custom = NULL` and placement through `<Platform>` inside a React view ([above](#placing)).
+### A menu of your own {#app-menu}
 
-### Placement in different views {#custom-placement}
-
-`<Platform>` and `usePlatform` place the following views. Where the place is marked, the view fills it, and `data-lsf-sid` holds the placed name:
-
-| Custom view | What `<Platform name>` names | Does the place wait for an absent view? | Place's marks | Where `hidden` comes from | Size changes reported to the placed view | `props.controller` |
-| --- | --- | --- | --- | --- | --- | --- |
-| [A form's container](#placing) / [component](#component-views) | A container's child (design SID or property path), or a per-row renderer (property path and `row`) | Yes, while a known view is absent | `lsf-platform`, `data-lsf-sid` | The child's or an ancestor container's `SHOWIF`. Not used per row | Yes, per-row renderers too | Its projection's [members and `form`](How-to_Custom_view_controller.md) |
-| [A navigator window](#navigator-window) | Canonical name of a `NOCUSTOM` element of this window | Yes, while this window does not draw the element | None | The element's `SHOWIF` | No | The [navigator controller](How-to_Custom_view_controller.md#navigator-controller) |
-| [The forms window](#forms-window) | An open form's `name` | No, even a loading form already has a view | `lsf-platform`, `data-lsf-sid` | No entry `hidden` | Yes | The [navigator controller](How-to_Custom_view_controller.md#navigator-controller)'s methods plus `select`, `close`, `closeAll`, `setEditMode`, `toggleFullScreen` |
-| [The log window](#log-window) | A logged message's `name` | No | None | No entry `hidden` | No | The [navigator controller](How-to_Custom_view_controller.md#navigator-controller)'s methods plus `togglePin` |
-| [The window layout](#window-layout) | A window's canonical name | No | `lsf-platform`, `data-lsf-sid` | `data.byName[name].hidden`: `HIDE WINDOW`, or an empty navigator window without a `CUSTOM`, except `System.root` | Yes | The [navigator controller](How-to_Custom_view_controller.md#navigator-controller) |
-
-### A navigator window {#navigator-window}
-
-A React component can also draw a navigator window — the menu itself — instead of the standard toolbar. The [`WINDOW`](../language/WINDOW_statement.md) is given the component name, and the elements placed in that window become its data:
+We need to draw the navigator's menu with a component of our own and keep the platform's button for some of the elements. The solution uses a [navigator window](../language/React_windows.md#navigator-window), [the standard button](../language/React_windows.md#standard-button) and the navigator controller's [`activate`](../language/Form_and_navigator_controllers.md#navigator-controller).
 
 ```lsf
 WINDOW appMenu VERTICAL POSITION(0, 6, 20, 94) HIDETITLE CUSTOM 'AppMenu';
@@ -860,44 +271,7 @@ export function AppMenu({ data, controller }) {
 }
 ```
 
-A component can also be given to a window that already exists, the standard toolbar included — then the navigator is not restructured at all, and only its drawing changes:
-
-```lsf
-EXTEND WINDOW System.toolbar CUSTOM 'AppMenu';
-```
-
-The window is then not given the classes with which the standard toolbar lays its strip out: with the vertical navbar, `System.logo`, `System.root` and `System.system` do not align their items to the start, and `System.logo` does not size its icon to the height of the horizontal strip — the component's own markup keeps the layout it gives it.
-
-`props.data` is the window's own elements, keyed by [canonical name](../paradigm/Naming.md#canonicalname) — canonical names contain dots, so they are map keys rather than fields:
-
-| Field | Meaning |
-| --- | --- |
-| `root` | The canonical names of the elements drawn at the top level, in display order |
-| `byName` | Each element by canonical name |
-
-and each element carries:
-
-| Field | Meaning |
-| --- | --- |
-| `name` | Its own canonical name, so a component that was handed the entry alone can still address the element |
-| `caption`, `elementClass` | Its caption and CSS class, the current ones — a `HEADER` or `CLASS` expression is applied as it changes. The caption is drawn with [`<Caption value={e.caption}/>`](#caption) |
-| `image` | Its icon, drawn with `<Image value={e.image}/>` — see [below](#image) — or `null` |
-| `folder` | Whether it is a folder rather than an action |
-| `hidden` | Whether `SHOWIF` currently hides it. Unlike the standard toolbar, which simply omits such an element, the projection keeps it, so the component decides how to treat it |
-| `selected` | Whether it is the selected element **of this window** |
-| `children` | The canonical names of its children that this window draws |
-
-An element declared [`NOCUSTOM`](../language/NAVIGATOR_statement.md) is drawn by the platform, so what it draws is not projected: its entry carries `name`, `caption`, `image`, `hidden`, `children` and `platformDrawn: true`, and none of the rest. While its `hidden` is `true`, `<Platform>` hides the [place](#standard-button) of its button.
-
-The window is given the elements it is responsible for: an element that crossed into another window, and a subtree gated out because its parent is not selected, are absent — the same rule that decides what the standard toolbar draws. What that rule keeps, the projection keeps, hidden or not. The component is drawn once the navigator has worked out the window's elements, and a window with none is drawn too, with `root` empty. `props.controller` is the navigator controller, whose [`activate`](How-to_Custom_view_controller.md#navigator-controller) does what clicking the element does: selects a folder, or runs an action.
-
-So a window can receive elements the module never declared. A folder's `WINDOW` names the window of its children, and a child that lands in another window is drawn there while the folder is selected. In the stock application this is how Administration works: the folder itself sits in `System.system`, and its sections are declared with `WINDOW toolbar PARENT`, so while it is selected in the top bar they, and their children, are drawn by `System.toolbar` — after `EXTEND WINDOW System.toolbar CUSTOM`, by your component. A component that draws only the elements it knows about loses such sections. Everything the window was given is reached through `root` and `children`.
-
-Only the desktop web client draws the component. The mobile web client and the desktop client render their standard menu for that window, so the navigator stays usable in all of them.
-
-#### The standard button {#standard-button}
-
-An element the component does not want to draw itself is placed with `<Platform name/>` — the tag that places a design child on a form, where `name` is the element's canonical name. The platform puts its own button inside, with its icon, caption, tooltip and click behavior, but not with what the standard toolbar's layout adds to it: its caption is not hidden until the mouse is over the window, as in an unpinned navigator, and it has no indent for its depth. Where the button goes, and how deep it looks, is up to the component. The [node itself](#custom-placement) is left as the component rendered it, without the marks a form's host is given.
+The same menu with the platform's button for `Sale.sales`:
 
 ```jsx
 const { Platform, Caption } = window.lsfusion;
@@ -911,36 +285,17 @@ export function AppMenu({ data, controller }) {
 }
 ```
 
-The element must be declared `NOCUSTOM` in the [`NAVIGATOR`](../language/NAVIGATOR_statement.md) — the crossing back is declared on the navigator side, the way `custom = NULL` declares it on a form:
-
 ```lsf
 NAVIGATOR {
     Sale.sales NOCUSTOM;
 }
 ```
 
-A `NOCUSTOM` element no `<Platform>` names is not shown, as on a form. Five mistakes are reported in the page: a name no navigator element has, a name that is not `NOCUSTOM`, which the component is expected to draw from the projection instead, a name of an element another window draws, a name a second `<Platform>` places again, and a `<Platform>` given a `row` even though a button is placed whole. A name the window merely does not draw right now — an element `SHOWIF` hides, one gated out because its parent is not selected — is not a mistake and is not reported: the place waits, and is filled as soon as the window draws that element. Meanwhile the place of an element `SHOWIF` hides is hidden, as its entry's `hidden` says, and the place of one gated out, which has no entry, stays empty. Which window draws an element is not such a case: waiting for a button another window owns would wait for good.
-
 A menu that is mostly standard is written this way as one `<Platform>` for each element the platform draws, and markup only for the elements the component draws itself.
 
-#### An HTML template instead of a component {#navigator-template}
+### A forms strip of your own {#forms-board}
 
-A window whose menu only needs its own markup is given an HTML template instead of a component name — the [same template](../language/WINDOW_statement.md) a `custom` container takes, where a `<Platform:name>` place takes the element's standard button. The name is resolved the way every other name in the module is, so nothing has to be spelled out in full, and the place is written open — closing it is an error:
-
-```lsf
-EXTEND WINDOW System.toolbar CUSTOM
-    '<div class="menu"><div class="menu-head">Master data</div><Platform:items><Platform:partners></div>';
-```
-
-The element has to be declared before the template that gives it a place — a `NAVIGATOR` block that creates it goes above. A name that resolves to nothing is an error when the module is read, so a misspelled name stops the application instead of leaving the menu an item short.
-
-An element the template gives no place is not drawn, so it names everything it shows, and `NOCUSTOM` is not needed on any of them — a template places nothing but the platform's own drawings.
-
-The template may also be computed: given a property instead of a literal, it is recomputed as the property's value changes and the window is drawn again from the new markup, so a menu can rearrange itself without a component. Nothing resolves a computed template, so its places name their elements in full, by canonical name. A component is still what a menu needs when the markup depends on what the component itself reads.
-
-### The forms window {#forms-window}
-
-A React component can also draw the window the forms open in, instead of the standard tabs. The [`WINDOW`](../language/WINDOW_statement.md) `System.forms` is given the component name, and the open forms become its data - and so is any other `FORMS` window the application declares, which gets the forms opened into it with `SHOW ... WINDOW windowName`:
+We need to draw the window the forms open in our own way: a strip that selects and closes the open forms, over the current form. The solution uses [the forms window](../language/React_windows.md#forms-window).
 
 ```lsf
 EXTEND WINDOW System.forms CUSTOM 'FormsBoard';
@@ -964,57 +319,9 @@ export function FormsBoard({ data, controller }) {
 }
 ```
 
-The component never draws a form: it renders a place for the form it wants shown, and the platform moves that form's own view into it. `<Platform name/>` is that place, and `name` is the name the projection gives the form. It places the form's view the same way it places a [design child](#placing) and a [navigator element](#standard-button). Like a design child's [host](#custom-placement), the place carries the marks — the class `lsf-platform` and `data-lsf-sid` with the form's name — and the form's view fills it. A form whose place changes size is told so.
+### A message log of your own {#message-log}
 
-Three mistakes are reported in the page: a name no open form has, a second `<Platform>` for the same form, and a `<Platform>` given a `row` even though a form is placed whole.
-
-`props.data` is the open forms and the state of the window itself. The component is drawn as soon as the window is, before any form opens — `open` is then empty — so what it shows while nothing is open is its own to draw:
-
-| Field | Meaning |
-| --- | --- |
-| `open` | The names of the open forms, in the order the standard strip shows them in |
-| `byName` | Each form by name |
-| `editMode` | The name of the chosen edit mode — the one the platform's mode button chooses, and the one kept between sessions. A mode switched on by holding Ctrl, Shift or Alt lasts while the key is held and does not change `editMode` |
-| `editModes` | Every edit mode, in the order the mode button offers them |
-| `fullScreen` | Whether System.forms is expanded to the full screen, the page drawing it alone; the component of another forms window always gets `false` |
-
-and each form carries:
-
-| Field | Meaning |
-| --- | --- |
-| `name` | Its own name, so a component that was handed the entry alone can still address the form |
-| `canonicalName` | The [canonical name](../paradigm/Naming.md#canonicalname) of the form, for a component that draws a particular form its own way |
-| `caption`, `image` | Its caption and icon, the current ones — the caption a tab shows. Drawn with [`<Caption value={e.caption}/>`](#caption) and [`<Image value={e.image}/>`](#image) |
-| `selected` | Whether it is this window's current form — the one its standard strip would show. The keyboard works in it when this window has the keyboard. With several `FORMS` windows, only one can have it at a time |
-| `loading` | Whether the form has not arrived from the server yet. Until it does, `caption` is the one the request that opened it carried and `image` is empty; the rest of the entry is there as always |
-| `blocked` | Whether a form opened from this one is on top of it. Such a form cannot be closed, which is why the standard tab disables its close button |
-
-and each edit mode in `editModes` carries what the mode button shows it with:
-
-| Field | Meaning |
-| --- | --- |
-| `name` | Its own name — the one `setEditMode` takes, and the one `editMode` is compared with |
-| `caption`, `image` | The mode's caption and icon. Drawn with [`<Caption value={m.caption}/>`](#caption) and [`<Image value={m.image}/>`](#image) |
-
-`props.controller` has the [navigator controller](How-to_Custom_view_controller.md#navigator-controller) methods — `exec`, `eval`, `evalAction`, `change`, `activate` — for calls in the navigator's session. It also does what only the platform can do to an open form: `select(name)` makes it the current one, the way clicking its tab does, and `close(name)` asks it to close, the way its close button does. Closing is a request — a form with unsaved changes asks the user first and may stay open — so a form leaves `open` when it is actually closed, not when `close` is called.
-
-`select`, `close`, `closeAll`, `setEditMode` and `toggleFullScreen` return nothing, so `await controller.close(name)` does not wait for the form to close. Read changes from `props.data`: `select`, `setEditMode` and `toggleFullScreen` take effect at once.
-
-`select` and `close` refuse a name no open form has, `close` refuses a blocked form, and `setEditMode` refuses a mode not in `editModes`. The call throws an `Error` with the reason in its `message`.
-
-A form the component places nowhere stays **open and hidden**, which is what a background tab already is: the standard strip only hides the forms it does not show. So a component that places only the current form gives an application without tabs, where every form opened so far is still there, and placing one again shows it as it was left. A form is closed only through `close(name)` or `closeAll()`, or the way it is closed without a component view.
-
-In a forms window drawn by a React component, form shortcuts act on the current form even if the component places it nowhere. The component should therefore place the current form.
-
-The platform's own toolbar — edit mode, full screen, the mobile menu — is System.forms', in its standard tab strip, so a component that draws System.forms does not show it, and no other window has it. What the toolbar does, a component of any forms window does through the controller: `setEditMode(name)` chooses the edit mode, one for the whole page, the way the mode button does, where `name` is the name of a mode in `editModes`, and `toggleFullScreen()` expands System.forms to the full screen and brings it back, the way the full screen button and ALT+F11 do. The full screen is System.forms' whichever window's component asks for it: the page draws System.forms alone then, without the navigator and the other windows, so the window of another component is not drawn, and that component never sees `fullScreen` as `true`. What the standard tab's context menu offers is here too: `closeAll()` asks every open form to close, starting from the last one in that order. Closing each of them is a request as well, so a form that did not close stays open and the rest are closed. The chosen mode and the full screen are state the platform holds itself, which is why it projects them: a mode chosen by the component and a full screen entered with ALT+F11 are both seen the same way, in `props.data`. The mobile menu is not something a component needs: on the mobile web client the platform draws the forms window.
-
-Hiding the close button of an inactive tab is how the standard strip follows the user's setting *Do not show close button on inactive tab* (`dontShowCloseButtonOnInactiveTab`), so `System.forms` drawn by a component is not given the class that hides it, `dont-show-close-button`: the class would hide the close buttons the component draws with the standard tabs' class names too. Whether its tabs show a close button is the component's to decide. The mobile web client, which draws the standard strip, keeps the class.
-
-Only the desktop web client draws the component. The mobile web client and the desktop client keep their standard forms window.
-
-### The log window {#log-window}
-
-A React component can also draw the window the messages to the user appear in, instead of the standard panel. The [`WINDOW`](../language/WINDOW_statement.md) `System.log` is given the component name, and the logged messages become its data:
+We need to draw the messages to the user as a log of our own, with the time of each message and a button that toggles the window's pin mode. The solution uses [the log window](../language/React_windows.md#log-window).
 
 ```lsf
 EXTEND WINDOW System.log CUSTOM 'MessageLog';
@@ -1037,39 +344,9 @@ export function MessageLog({ data, controller }) {
 }
 ```
 
-The component never draws a message: a message is markup the platform built — the text with its icon, or the table an action reported beside it — so the component renders a place for each message it wants shown, and the platform moves that markup in. `<Platform name/>` is that place, and `name` is the name the projection gives the message. It places the message's markup the same way it places a [design child](#placing), a [navigator element](#standard-button) and an [open form](#forms-window). Like a navigator button's, the [place](#custom-placement) is left as the component rendered it, without the marks a form's host gets.
+### An application shell {#app-layout}
 
-Three mistakes are reported in the page: a name no logged message has, a second `<Platform>` for the same message, and a `<Platform>` given a `row` even though a message is placed whole.
-
-`props.data` is the logged messages, and the component is drawn before the first one arrives, with `messages` empty:
-
-| Field | Meaning |
-| --- | --- |
-| `messages` | The names of the logged messages, newest first — the order the standard panel shows them in |
-| `byName` | Each message by name |
-
-and each message carries:
-
-| Field | Meaning |
-| --- | --- |
-| `name` | Its own name, so a component that was handed the entry alone can still place the message |
-| `caption` | The caption of the action that logged the message, drawn with [`<Caption value={m.caption}/>`](#caption) |
-| `time` | When the message arrived, in milliseconds — what the standard panel prints on its date line |
-| `failed` | Whether the message is an error — the panel's only distinction between two messages, and the one a component styles from |
-
-A message is markup, so what the projection carries is only what the standard panel writes itself beside that markup. The name is the platform's own: two messages can carry the same text, caption and second, so nothing about a message identifies it.
-
-`props.controller` has the [navigator controller](How-to_Custom_view_controller.md#navigator-controller) methods — `exec`, `eval`, `evalAction`, `change`, `activate` — for calls in the navigator's session. It also does the one thing only the platform can do to the log: `togglePin()` toggles the window's pin mode, the way the platform's pin button does. `togglePin` returns nothing and reports no completion, just as a click does not. Pinning is a setting of the display environment, shared with the desktop client, so the component asks the platform to change it. It is not told the current mode either, since the client is not — an unpinned window is unpinned by a class the server computes into the window.
-
-A message the component places nowhere is still logged and still in the projection: nothing drops one, exactly as the standard panel keeps every message it printed. So a component that shows only the last message, or only the failed ones, loses nothing — an earlier message placed again is shown as it was. There is no clearing and no dismissing, in the projection or in the controller, because the platform has none.
-
-The window itself is still the platform's: the component draws inside it, so in the standard layout the window is hidden, popped out over the form and revealed when a message arrives exactly as before. When the windows are laid out by a [component of their own](#window-layout), the window is shown where that component places it.
-
-Only the desktop web client draws the component. The desktop client keeps its standard message panel, and the mobile web client, whose layout has no message window at all, is left as it was.
-
-### The window layout {#window-layout}
-
-A React component can also lay the windows out on the desktop - which window is where, and how large -, instead of the standard layout, which places them by their [`POSITION`](../language/WINDOW_statement.md). The component is given with the `CUSTOM` option of the [`NAVIGATOR`](../language/NAVIGATOR_statement.md) statement:
+We need to lay the application's windows out ourselves: a top bar, a menu column the user can fold, the forms area and the message log. The solution uses [the window layout](../language/React_windows.md#window-layout).
 
 ```lsf
 NAVIGATOR CUSTOM 'AppLayout';
@@ -1106,39 +383,13 @@ export function AppLayout({ data }) {
 .app-work > .lsf-platform, .app-log > .lsf-platform { flex: 1; }
 ```
 
-The component never draws a window: it renders a place for each window it wants shown, and the platform moves that window's own view in, drawn as without the component - a navigator window's buttons, or what the window's own [component](#navigator-window) draws, the forms open in a `FORMS` window, the messages of `System.log`. `<Platform name/>` is that place, and `name` is the window's [canonical name](../paradigm/Naming.md#canonicalname). It places the window the same way it places a [design child](#placing) and an [open form](#forms-window), with the [same marks on the place](#custom-placement): the window's view fills the place, and the component sizes the place. A window whose place changes size is told so, as when a border of the standard layout is dragged, so a table, a pivot table's chart or a map in a form measures itself again.
-
-Three mistakes are reported in the page: a name no window has, a second `<Platform>` for the same window, and a `<Platform>` given a `row` even though a window is placed whole.
-
-`props.data` describes every window, `System.forms` included:
-
-| Field | Meaning |
-| --- | --- |
-| `windows` | Array of the windows' canonical names: navigator windows, `System.log`, application `FORMS` windows, then `System.forms`. Navigator and application `FORMS` windows follow declaration order within each module and module initialization order between modules |
-| `byName` | Entries under the windows' canonical names, such as `data.byName['System.toolbar']` |
-
-Each entry in `byName` has:
-
-| Field | Meaning |
-| --- | --- |
-| `name` | Its own canonical name, so a component that was handed the entry alone can still place the window |
-| `caption` | Its caption - the one the standard layout writes on the tab of windows that share a place. A window declared without a caption, as the system windows are, has its name |
-| `hidden` | Whether the standard layout would not show the window now: `HIDE WINDOW` hides it, or it is a navigator window with nothing to draw - the selected folder has no elements for it -, other than `System.root` and a window with a `CUSTOM`. While the entry says so, `<Platform>` hides the place. The component reads it to fold its own markup around the place, as `showMenu` does above |
-| `vertical` | Whether the window draws its buttons in a column. The "Navbar: Vertical" design setting turns `System.logo`, `System.root` and `System.system` so, whoever lays them out |
-
-`props.controller` has the [navigator controller](How-to_Custom_view_controller.md#navigator-controller) methods — `exec`, `eval`, `evalAction`, `change`, `activate` — for calls in the navigator's session. The windows are drawn and changed by the platform, and nothing about their arrangement is the platform's.
-
-A window the component places nowhere is not shown, and lives on: its navigator buttons are refreshed, a form opened into it is open - hidden, as a background tab is -, its messages are logged. Placed later, it is shown as it is then. So a component that places only the windows it knows hides a window another module adds. A component meant to take any window places the rest by `data.windows`.
-
-What the standard layout does with its own panels is not done under a component: the user dragging the border between windows and the sizes kept between sessions, the tabs of windows that share a place, the vertical navbar turning the top strip into a column, the unpinned navigator and log popping out over the form. The pin modes are the standard layout's way of laying the navigator and the log out, so a window the component lays out is not given the classes that collapse it and pop it out over the form or show the top strip's captions only on hover: pinning there changes no layout. The full screen (`ALT+F11`) is as without a component: `System.forms` is drawn alone over the page, and the component is hidden meanwhile - still mounted, its state kept. It is not told of the full screen: `fullScreen` is projected to the [component](#forms-window) of `System.forms` alone. [`Service.resetWindowsLayout`](../paradigm/System_Service.md) leaves the full screen and puts back the windows' declared visibility, and it does not reach sizes the component keeps itself.
-
-Only the desktop web client draws the component. The mobile web client keeps its own page - `System.forms` and the navigation menu -, and the desktop client its own layout of the windows.
-
 ### The application header {#application-header}
+
+We need a header above the forms area with a search field that finds customers and opens the one clicked. The solution uses [reading the projection](../language/React_projection.md#reading) with `useData` and `useController`, and the controller's [members](../language/React_view_controller.md#members).
 
 A header with a search field that finds records is a form: it wants a live projection, a session to hold the query, ordering and paging, and a way to open what it finds. So it is built as a form and opened into a window of its own, a [`WINDOW ... FORMS`](../language/WINDOW_statement.md) above the forms area, with [`SHOW ... WINDOW windowName`](../language/SHOW_operator.md).
 
-The query is a form property here because an empty query must find nothing. A search over a list the user browses uses a [property filter](#property-filters) by default.
+The query is a form property here because an empty query must find nothing. A search over a list the user browses uses a [property filter](../language/React_filters_and_toolbar.md#property-filters) by default.
 
 ```lsf
 // the window the header lives in: one form, drawn alone above the forms area, no taller than that form
@@ -1259,93 +510,9 @@ Two things make it read as a header rather than as a document. `REMOVE TOOLBARBO
 
 What the form route does not give is freshness across connections: a form does not see what another connection committed until it re-reads, so a header that must show that adds [`EVENTS ON SCHEDULE PERIOD n formRefresh()`](../paradigm/Interactive_view.md) to the form. And the header is drawn by the desktop web client only: the mobile web client and the desktop client draw `System.forms` alone and open the header there, as a tab, so an application that serves them keeps the header's design usable as a plain form.
 
-### Drawing an image {#image}
+### A catalogue tree {#tree-catalogue}
 
-An image the platform projects — a property of an image class, the icon of a navigator element or of an action — is drawn by `Image`:
-
-```jsx
-const { Image } = window.lsfusion;
-
-<Image value={e.image} className="menu-icon"/>
-<Image value={row.photo.value} className="avatar"/>
-```
-
-The projected value is either an address or a ready element, since a font icon has no address at all, and `Image` draws whichever it was given. A view that wants the address itself — for a CSS background, say — still has it in the value. `Image` is there so that no view has to insert the platform's markup by hand. A missing image draws nothing.
-
-### Drawing a caption {#caption}
-
-A caption the platform projects — a form's, a navigator element's, the one a message carries — is drawn by `Caption`:
-
-```jsx
-const { Caption } = window.lsfusion;
-
-<Caption value={e.caption} className="tab-caption"/>
-```
-
-A caption is either plain text or markup the platform built, and `Caption` draws whichever it was given, by the same rule the platform draws a caption of its own by: the value is markup when a tag appears anywhere in it. Printed as text, such a caption would show its own markup, so a view that prints `{e.caption}` itself is right only while the caption is plain text. A missing caption draws nothing.
-
-### Trees {#trees}
-
-A group of a tree is projected like any other group: what a container has of it is what its own components put there,
-and where the TREE's rows are drawn that is `list`, `byKey`, `keys` and the rows themselves. Each of those rows says
-where it sits in the hierarchy:
-
-```js
-{
-    key, current, objects, ...cells,
-    parent,       // the key of the row it hangs under
-    hasChildren,  // whether it has children, loaded or not
-    expanded,     // whether it is open
-    loading,      // true while its children are being loaded
-}
-```
-
-Each field a row of a tree adds is reserved where the tree's rows are drawn, as `key` is: a property drawn on such a
-row may not take its name.
-
-`parent` is the key of the row this one hangs under, `null` at the top of the tree; it points into whichever group that
-parent belongs to (a tree's rows are keyed by the whole path down to them, so the keys of its groups do not collide —
-short of an object of a STRING class whose value contains `|`). It is written the way a `key` is, so
-`row.parent === parentRow.key` holds rather than merely looking alike. Rows arrive under a loaded parent, so the parent
-a row names is usually there — until something takes it away: a filter on an upper group drops the parent row while its
-children stay (the server keeps sending them), and from then on `parent` can name a row this client does not have. So a
-view that indexes rows by key must decide what to do with a row whose parent it cannot find, rather than assume the
-lookup succeeded. A view finds a row's ancestors the same way, following `parent` through the `byKey` of the group
-the parent belongs to, and stopping at a parent it does not have; the depth a row is indented by needs no such walk, as
-it comes from drawing the tree from its roots down, as below.
-
-`hasChildren` is what the server says the node has, loaded or not — not a design attribute, but the tree's live
-state.
-
-`expanded` says the node is open: its children are loaded — or a view asked to open or close it and the rows of the
-answer have not arrived yet, and then it says what was asked, as a changed value is shown before the answer and as the
-platform's own tree turns its expander glyph at the click. A node is closed at once, while its children stay in `list`
-until the answer takes them away, so a view that draws a node's children only under an `expanded` node, as below, hides
-them at once. Only a node with children opens: one whose `hasChildren` is false stays closed, as it does in the
-platform's tree. It is live state as well.
-
-If an expand or collapse request fails without updating the rows, `expanded` keeps the requested state until the server sends rows for the node's group or the immediately following group in the tree in response to that request or a later one.
-
-`loading` is `true` while the node's children are being loaded: a view asked to open it, and the rows of the answer
-have not arrived — as a cell's `loading` says a change of it waits for its answer. Closing a node loads nothing, and
-neither does opening one whose `hasChildren` is false; the field is absent but while it is `true`.
-
-Rows arrive as the tree is opened — past the roots, a group of a tree returns only the rows under nodes that are
-currently expanded, which is why, before anything is opened, its lower groups project an empty list.
-
-A row of a group below carries the path above it, so a row made current — through `change(row)`, or by the server —
-makes the rows on that path current in their groups as well. `current` follows the path up, as the platform's tree
-selects one node. The groups below it have no current row — the server clears their current objects when a row above is
-chosen. Every row in those groups has `current` set to `false` until a row is chosen there again.
-
-`controller.<g>.expand(row)` / `.collapse(row)` / `.toggle(row)` open and close one node: a node is a row of a group, so
-they are the group's. Each takes a row (the row, its `objects` handle, or its key) and returns the `Promise` of its request: the row's
-`expanded` changes at once, and its children arrive as rows. `toggle` asks for the opposite of what the row's `expanded`
-says now, so two toggles before the answer open the node and close it again. `controller.<g>.expandAll()` opens every
-node of the group and of the groups below it: on the tree's top group, the whole tree; on a group below, its nodes under
-the nodes open above it. `controller.<g>.collapseAll()` closes the same nodes and every node below them, so a node
-opened again afterwards shows its children closed. Their rows' `expanded` changes at once too. A group outside a tree has no such members at all: the five are
-installed on a group of a tree and nowhere else, and they are reserved on that group's node, as `list` is.
+We need to draw a tree of categories and their items ourselves, with nodes that open and close and the current row in bold. The solution uses the fields of a tree's rows, the `toggle` and `change` members of its groups and the tree's own node with `current` and `expandCurrent()` ([Trees](../language/React_trees_sortings_selection.md#trees)).
 
 ```lsf
 FORM catalogue
@@ -1382,76 +549,9 @@ export function Tree({data, controller}) {
 }
 ```
 
-These verbs are members of the group's node, so a container has them exactly where it has that group's rows: the tree
-React draws. A tree the platform draws is opened by the platform's own expander, and no react container has node verbs
-for it; a view that draws its [toolbar](#tree-toolbar) opens it through the toolbar's two buttons.
+### Sortable column headers {#sortable-headers}
 
-What is a tree's, one for all its groups, is on a node of the tree's own, `data.<tree>` and `controller.<tree>`, where
-`<tree>` is the tree's name in the form, the `t` of `TREE t` (a tree with no name gets a generated one, so a tree a view
-draws a part of is named): at the top level, beside its groups' nodes. A container has it wherever it draws a part of
-the tree: the tree's rows — as a group's node is where its rows are — with its [sortings](#orders), its [user
-filters](#filters), its [toolbar and filter controls](#tree-toolbar). It carries no property, so a property of a group
-of the tree may take any name its parts take there. Where a view draws any part of the tree, the tree's name is taken at
-the top level there, so it may not be like a group the view carries, a container or a component it projects, a property
-of the empty group or a member of the controller.
-
-Where a view draws the tree's rows, the tree's node says which of them is current, and has the one verb that needs to
-know it — no group's rows know it alone:
-
-| on the node | member | what it is |
-| --- | --- | --- |
-| `current` | | the key of the tree's current row — the current row of the group whose current object was set last, by the view or by the server, as the platform's tree has its selected row —, `null` while there is none |
-| | `expandCurrent()` | the current node opened, and every node under it |
-
-`current` is written the way `key` is, so `row.key === data.t.current` holds, as `row.parent === parentRow.key` does.
-It is `null` while the tree has no current row loaded: before a row is chosen, while the current node's group is on no
-row, and while its row has not arrived or has gone — never the row above it in its stead. A row is made current through
-its group's `change(row)`; `current` only says which, and has no member of its own. `controller.<tree>.expandCurrent()`
-reads the current node when it is called, and does nothing while there is none or while it has no children; the nodes
-it opens are `expanded` at once, and `loading` until their rows arrive. Inside a
-[batch](How-to_Custom_view_controller.md#batch) it goes with the batch, so the row a `change(row)` made current earlier
-in the same batch is the node it opens.
-
-### Sortings {#orders}
-
-After a change of the filters or sortings, a feed that should start over moves to the first row ([filters](#filters)).
-
-A view that draws the rows of a group not in a tree carries `orders` — the group's sortings, in priority order — beside
-`list` and `keys`: a sorting is the order the rows are drawn in, so it is projected where they are, and a container
-holding only a panel property of the group has neither. Where it is there it is always there, and empty when the group
-is sorted by nothing. Each entry is an object:
-
-| Field | Meaning |
-| --- | --- |
-| `property` | The sorted property's integration SID — on a [tree](#trees)'s node, with its group's name, as below |
-| `desc` | Whether it sorts descending |
-
-The same shape the [`ORDER ... FROM`](../language/FILTER_ORDER_operators.md) operator applies and
-`ORDERS ... TO` reads, with one difference: `orders` names a property the way the rest of the node does — by its
-integration SID — while those operators name it by its SID on the form (`sum(o)`).
-
-A sorting names a property of the group, as a [condition](#filters) does, not an entry of the node: the property need
-not be one this view draws — a panel property of the group drawn in another container, or by the platform, is listed
-by its name as any other, and the view can name it back. So a name the group draws twice would name no sorting: a form
-whose rows a React view draws is refused when it is built until such properties have explicit `EXTID`s, even when one
-of the two is drawn by the platform.
-
-`controller.<group>.orders.change(...)` is a member in the same place, and only there. It changes **one** sorting,
-leaving the group's other sortings and their priority alone: a property already sorted keeps its place when its
-direction changes, and a new one is appended. An order with no `desc` is not a sorting, so it stops sorting by that
-property. An array — `controller.<group>.orders.change(orders)` — states the list as a whole, so what it leaves out
-stops sorting the group.
-
-A change through the controller is sent at once, as the group's whole list — the same request a click on a standard
-header sends —, and `orders` shows it straight away, before the rows sorted by it come back; an answer to a request made
-before it does not take it back.
-
-A [tree](#trees)'s sortings are the tree's, as its [user filters](#filters) are: where a view draws the tree's rows,
-`data.<tree>.orders` lists the sortings of all its groups, group by group, top down — each group's in its own priority
-order, as no group's sortings outrank another's —, each property named by its group's name and its own, `c.name`; its
-groups' nodes have no `orders`. `controller.<tree>.orders.change(...)` changes them the same way: one order merges into
-its group's sortings, and an array states the tree's whole list — each group gets the entries on its own properties, and
-a group none of them names stops being sorted. Each group's list is sent as a group's is.
+We need column headers that sort the rows on a click and show the direction of the sorting. The solution uses the group's `orders` and their `change` ([Sortings](../language/React_trees_sortings_selection.md#orders)). The form is `orders` of [Selecting the component](../language/React_views.md#selecting-the-component).
 
 ```jsx
 export function OrderBoard(props) {
@@ -1476,322 +576,34 @@ export function OrderBoard(props) {
 }
 ```
 
-`orders` describes the sorting the user can change, whoever stated it. A **fixed** sorting is not part of it and cannot
-be: `ORDERS ... FIXED`, and an `ORDERS` entry that is an expression rather than a property drawn on the form, are
-applied on the server and never sent to the client at all. Neither is the implicit ordering by the group's own objects
-that makes a read stable. So the rows can be ordered by more than `orders` says, and a view cannot show an indicator for
-the part it is not told about.
+### Choosing a filter mechanism {#choosing-a-filter-mechanism}
 
-`orders` is what the form has: its own `ORDERS` when it opens, then every list the server reports — an
-[`ORDER`](../language/FILTER_ORDER_operators.md) action's too. It is rebuilt only when that list changes: it keeps
-its identity across renders in which the sortings stay the same — a change to a property value, to the rows or to the
-current object leaves it as it was — so a view can compare it across renders and memoize on it.
-
-Two more kinds of sorting are not listed, and a console message says so when one appears: a sorting on a property with
-no integration SID (`NOEXTID`), which the projection has no name for, and a sorting on a property grouped in columns,
-as a sorting here names a property, not one of its columns.
-
-Handing `data.<group>.orders` back through the array form would therefore take those two sortings off — the one on a
-`NOEXTID` property and the one on a property grouped in columns — while changing ONE sorting never touches what it does
-not name.
-
-Each property says whether a view should offer sorting by it: `data.<group>.<property>.noSort` is `true` for a
-property whose design says so:
-
-```lsf
-DESIGN orders {
-    PROPERTY(number(o)) { noSort = TRUE; }
-}
-```
-
-It is stated on the property itself, so a panel property answers it as a column does. A view that draws its own
-headers reads it to leave that header alone.
-
-`noSort` refuses a sorting the USER states, not one the form does. What the form states may name such a property — a
-default `ORDERS` entry on it, and an [`ORDER`](../language/FILTER_ORDER_operators.md) action naming it — the server
-sorts the rows by it, and `orders` says so, as the standard grid's header shows it too: what is not offered is only the
-click that would sort by it.
-
-Asking to sort BY a property declared `noSort` is refused, and so is a list naming one property twice, a name the
-group does not carry, and a property grouped in columns. Taking a `noSort` sorting off is stating an order with no
-`desc`, which is allowed: what is refused is sorting by such a property, not stopping.
-
-### Selected rows and columns {#selection}
-
-A view that draws the rows of a group not in a tree selects rows and columns as the platform's table does. The selected
-rows are a range the server keeps, in the group's current order ([selection](../paradigm/Selection_SELECT.md)), so the
-range also holds rows the view has not read. A row in the range has `selected` in `list`; a `change` to a row changes
-the range on the rows of `list` at once, before the server answers — unless `'extend'` runs it on from a current row
-`list` does not have, which the answer brings. The columns are the list
-properties the view draws in its rows, except actions, in the order of `properties`. The entry of a column — the one
-its caption is in — has `current`, whether the column is the current one, and `selected`, whether the range of
-selected columns holds it. A cell is selected where its row and its column are.
-
-The members that change the selection are on the group's member where its rows are drawn, and only there:
-
-| Member | What it does |
-| --- | --- |
-| `change(row[, {selection}])` | Makes the row current and changes the selected rows |
-| `change({to: 'home'}[, {selection}])`, `change({to: 'end'}[, {selection}])` | Makes the first or last row of the whole list current, under the group's current filters and sortings, and changes the selected rows. The form's controller has the two edges of the list as `form.HOME` and `form.END` |
-| `properties.change(column[, {selection}])` | Makes the column current, named by its property, and changes the selected columns |
-| `selectAll()` | Selects all the rows the filters leave and all the columns. The current row and the current column stay |
-
-Each returns the `Promise` of its request. What a call does to the selection, `selection` says:
-
-| `selection` | Rows | Columns |
-| --- | --- | --- |
-| `'start'`, or not given | No row is selected, and a range starts from this row | This column alone is selected, and a range starts from it |
-| `'extend'` | The rows from the row the range starts from to this one are selected | The columns from the column the range starts from to this one are selected |
-| `'keep'` | The selected rows stay. While no row is selected, a range starts from this row | The selected columns stay |
-
-The two ranges are independent: a change of the row leaves the selected columns as they are, and a change of the
-column leaves the selected rows. The platform's table changes both by one move of the cell; a view does it by the two
-calls, which a [batch](How-to_Custom_view_controller.md#batch) sends in one request — a click on a cell, for example:
-
-```jsx
-function Cell({ row, name, controller }) {
-    const select = selection => controller.batch(() => {
-        controller.i.change(row, { selection });
-        controller.i.properties.change(name, { selection });
-    });
-    return <td onClick={e => select(e.shiftKey ? 'extend' : 'start')}>{row[name].value}</td>;
-}
-```
-
-The view takes the keys of the platform's table itself, as it takes [the other keys of the table](#keys):
-
-```jsx
-function onKeyDown(e, controller) {
-    const selection = e.shiftKey ? 'extend' : 'start';
-    if (e.ctrlKey && e.key === 'Home')
-        controller.i.change(controller.form.HOME, { selection });
-    else if (e.ctrlKey && e.key === 'End')
-        controller.i.change(controller.form.END, { selection });
-    else if (e.ctrlKey && e.key === 'a')
-        controller.i.selectAll();
-}
-```
-
-The server finds the first or last row when it reads the rows of the group, after all the changes of the request are
-made, as it does for an action's `ACTIVATE FIRST` / `LAST`. So a call made after such a move in the same batch still
-acts on the row that was current before it.
-
-The form sees this selection as it sees the selection in the platform's table: the properties of
-[`SELECT`, `SELECT ACTIVE` and `SELECT PROPERTY`](../language/Object_group_operator.md) return it, the current column
-is the active property ([`ACTIVE PROPERTY`](../language/ACTIVE_operator.md)), and the form's
-[`SELECT` and `SELECT PROPERTY` events](../language/Event_block.md) occur.
-
-A column the form does not show now — its entry is `hidden` — cannot be made current, and a name that is not a column
-is refused. A group of a tree has no selection: its `change` takes a row only, with no `selection` but `'keep'`.
-`useSeekOnScroll` moves the current row with `'keep'`, as a scroll of the platform's table
-leaves its selection.
-
-The selection is the view's that draws the rows. Another container changes it through the form's controller —
-`controller.form.changeObject('<group>', row, {selection})`, `changeColumn('<group>', column, {selection})` and
-`selectAll('<group>')` ([across containers](How-to_Custom_view_controller.md#across-containers)). Where the platform's
-table draws the rows, the same calls change the table's own selection: a column is made current where the table shows
-it now and lets the user move to it, and a property grouped in columns has no column of that name. While the table
-shows the rows as another view — a pivot, a map, a calendar, a custom view — the calls are refused, as they are for a
-group of a tree: `changeObject` takes a row there, with no `selection` but `'keep'`.
-
-### Clipboard {#clipboard}
-
-A view that draws the rows of a group not in a tree copies and pastes the [selected](#selection) cells as the
-platform's table does, by two more members in the same place:
-
-| Member | What it does |
-| --- | --- |
-| `copy()` | Returns the `Promise` of the text of the selected cells: a line for each row, with tabs between the values of its cells |
-| `paste(text)` | Pastes the text into the selected cells and returns the `Promise` of its request |
-
-The cells are the selected rows in the selected columns the form shows. While no row of `list` is `selected`, the row
-is the current one, and while no column is selected, the column is the current one. The selected rows are the ones the
-server keeps, so `copy` also returns the rows the view has not read, and `paste` changes them too; the text of the
-current row `copy` returns with no request to the server.
-
-`copy` returns each value as the platform's table writes it to the clipboard, and `paste` reads a text written so, by
-the platform's table or by a spreadsheet. What `paste` does depends on the text:
-
-| Text | What is pasted |
-| --- | --- |
-| One value | The value, into every one of these cells. With rows selected, the current row takes it too where it is not among the selected rows, as in the platform's table |
-| Several values, in lines with tabs between the values | The values, into the cells from the current one on: the columns go into the current column and the columns after it, the lines into the current row and the rows after it in the group's order. Where the list has fewer rows, the server adds new objects — in a group of one object —, as it does for the platform's table |
-| An empty text | Nothing |
-
-Each cell is changed as a user's change of it: the property's [change event](../language/Event_block.md) runs, and a
-cell the form does not let change — a `READONLY` property, for example — is skipped, the other values staying in their
-cells. A value that cannot be read as the cell's type is pasted as `NULL`. With no current row in `list` nothing is
-pasted, and with no column `copy` returns an empty text.
-
-`copy` and `paste` are calls of their own. A [batch](How-to_Custom_view_controller.md#batch) does not carry them,
-and inside one they are refused. The platform's table asks the user before it pastes several values. `paste` does not
-ask, so a view that needs the question asks it itself.
-
-The view takes the browser's `copy` and `paste` events itself and gives the text to the clipboard when it has it:
-
-```jsx
-<div tabIndex={0}
-     onCopy={e => {
-         e.preventDefault();
-         controller.i.copy().then(text => navigator.clipboard.writeText(text));
-     }}
-     onPaste={e => {
-         e.preventDefault();
-         controller.i.paste(e.clipboardData.getData('text/plain'));
-     }}>
-    ...
-</div>
-```
-
-Another container copies and pastes through the form's controller, `controller.form.copy('<group>')` and
-`paste('<group>', text)`, which are refused where the selection's calls are. On the platform's table a column of an
-action, and of a property grouped in columns, is none of the cells, and several values are not pasted while such a
-column is the current one.
-
-### Filters {#filters}
+We need to choose how a view selects and orders the rows it shows: by the group's current object, [user filters](../language/React_filters_and_toolbar.md#filters), a property filter, a filter group, view filters, a sorting or a form property.
 
 Rows are selected and ordered on the server. Choose the mechanism by the situation:
 
 | Situation | Mechanism |
 | --- | --- |
 | A record or category chosen from a list | The group's current object, `controller.<g>.change(row)` |
-| A search the user types over one or several properties | A [property filter](#property-filters), `controller.<g>.filter.<p>.change(...)`; for several properties, a combined property or adjacent filters joined by `or` and stated together |
+| A search the user types over one or several properties | A [property filter](../language/React_filters_and_toolbar.md#property-filters), `controller.<g>.filter.<p>.change(...)`; for several properties, a combined property or adjacent filters joined by `or` and stated together |
 | Conditions built by the view's filter editor | The group's user filters, `controller.<g>.filters.change(...)` |
-| A sorting the user picks | The group's [sortings](#orders), `controller.<g>.orders.change(...)` |
-| A fixed set of named selections | A [filter group](#filter-groups), `FILTERGROUP` |
-| A condition imposed by the view that the user must not see or reset | The group's [view filters](#view-filters), `controller.<g>.viewFilters.change(...)` |
+| A sorting the user picks | The group's [sortings](../language/React_trees_sortings_selection.md#orders), `controller.<g>.orders.change(...)` |
+| A fixed set of named selections | A [filter group](../language/React_filters_and_toolbar.md#filter-groups), `FILTERGROUP` |
+| A condition imposed by the view that the user must not see or reset | The group's [view filters](../language/React_filters_and_toolbar.md#view-filters), `controller.<g>.viewFilters.change(...)` |
 | A value other form logic reads, an empty value that must select no rows, or a predicate user filters cannot state | A form property (normally `DATA LOCAL`) and `FILTERS` / `ORDERS` over it |
-| Which region or tab is shown | React state (`useState`, [`<Platform>`](#placing), [`useShown`](#placing)) |
+| Which region or tab is shown | React state (`useState`, [`<Platform>`](../language/React_platform_components.md#placing), [`useShown`](../language/React_platform_components.md#placing)) |
 
-After a change of the filters or sortings, the server reads rows around the current row, as in the platform's table. A feed that should start over calls `controller.<g>.change(controller.form.HOME)` after the change in the same synchronous [batch](How-to_Custom_view_controller.md#batch). In the [manual filter apply mode](#filter-controls), move to the start after applying the filters, so the move uses the new conditions.
+### A condition editor {#condition-editor}
 
-`filters` is the group's list of user filter conditions, in the order they are applied: the ones the server filters the
-group by, with the changes that wait to be sent: in the [manual apply mode](#filter-controls), those that wait for the
-apply, and, in either mode, a value the platform's panel prepares — F3's — till its editor commits it. They are a part
-of the group of their own, like its rows and its panel properties, and they are on the group's node where their
-component is — where `FILTERS(<group>)` is: inside the group's box, which is where a `custom` on `BOX(<group>)` draws
-the rows too, or `FILTERS(<group>)` itself when it has a `custom` of its own. There `filters` is always present, and
-empty when the group is unfiltered; the group's node in any other container does not have it. A group in `PANEL` view
-has none anywhere: the platform shows it no user filters either. Each condition is an object:
+We need a filter condition editor of our own in place of the conditions the platform draws: the user picks a property, types a value and adds the condition. The solution uses [replacing only the filters](../language/React_filters_and_toolbar.md#custom-filter-panel) and the group's [user filters](../language/React_filters_and_toolbar.md#filters) with their `filterProperties`.
 
-| Field | Meaning |
-| --- | --- |
-| `property` | The filtered property's integration SID — the group's one property of that name, wherever it is drawn; on a [tree](#trees)'s node, with its group's name, as below |
-| `compare` | The comparison operator: `=`, `>`, `<`, `>=`, `<=`, `!=`, `_` (contains), `@` (match) |
-| `value` | The value compared against, converted like any other property value |
-| `negation` | Whether the condition is negated |
-| `or` | Whether this condition is joined to the **next** one by OR rather than AND — so `or` on the first of two makes the pair a disjunction |
-
-This is the shape the [`FILTER`](../language/FILTER_ORDER_operators.md) operator reads, so one vocabulary describes a
-condition in `.lsf` and in the projection; `FILTERS` writes it too, with the value as a string and `or` only on a
-condition joined by OR. Only the name differs: `FILTER` names a property by its name on the form, the projection by its
-integration SID, and the two are different names when the property has an `EXTID`.
-
-A condition names a property of the group, not an entry of a node: the filter area need not be where any column of
-the group is drawn. So a name the group draws twice — a column `price` and a panel property `price` in another
-container — would name no condition, and a form whose user filters a React view draws is refused when it is built
-until they have explicit `EXTID`s.
-
-`data.<g>.properties` lists the entries of the node it is on, so on a node that holds only the user filters it is
-empty: the properties a condition can name are the group's, not the node's — `filterProperties` lists them.
-
-The controller takes a condition in the same shape, so a projected condition can be handed back to it as it is. What a
-condition leaves out of `compare`, `negation` and `or` is read as below: in an array, as for a new condition — the
-property's default comparison (its `defaultCompare` in `filterProperties`), no negation, AND —; on its own, as the
-condition it takes the place of has it. One on a file property is the exception: its `value` is a link to the file, not
-the file a condition compares with, so the controller refuses one that has a value; one with none is read as any other
-with none.
-
-`controller.<group>.filters.change(condition)` — a member of the group where `filters` is — changes **one** condition
-and leaves the group's other conditions, and their order, alone: it takes the place of the FIRST condition on the same
-property — a range is two conditions on one property, and its other bound stays —, keeping what it does not state of
-that condition's comparison, negation and `or`; when there is none, it takes the place of the property's
-[filter](#property-filters), where the group has one, else is appended — the default way, either way. So
-`{property: 'price', value: 300}` turns `price > 100 OR …` into `price > 300 OR …`. A condition with no `value` —
-absent, `null`, `''`, or one its type reads as `NULL`: `false` of a `BOOLEAN` property (a `TBOOLEAN`'s `false` is a
-value) — takes that first condition off, alone. This is what a [property filter](#property-filters)'s `change` does, and
-F3 in a grid over the conditions a view draws ([Replacing only the filters](#custom-filter-panel)) — but those two, with
-no condition on the property, compare as its filter compared last, and F3 on an empty cell states the condition
-comparing with `NULL`: a `FILTER` being a user filter given in advance, its value and a condition added by hand are
-stated by one rule.
-
-Prefer it to replacing the whole list. A view that rebuilds the list merges into the conditions its handler saw, so
-a handler that holds the list of an earlier render silently drops a filter set since.
-
-```jsx
-export function ItemBoard(props) {
-    const items = props.data.i;
-    const search = items.filters.find(f => f.property === 'name');
-    return (
-        <div>
-            <input value={search ? search.value : ''} placeholder="name contains"
-                   onChange={ev => props.controller.i.filters.change({ property: 'name', compare: '_', value: ev.target.value })}/>
-            <ul>{items.list.map(row => <li key={row.key}>{row.name.value}</li>)}</ul>
-        </div>
-    );
+```lsf
+DESIGN items {
+    FILTERS(i) { custom = 'FilterPanel'; }
 }
 ```
 
-An empty input takes the condition on `name` off — the first one, which the input shows —, keeping the other conditions:
-its `value` is `''`, which is no value.
-
-`filters` follows the group's list as it is changed and as the server reports it — a list a `FILTER` action sets, say —
-and is rebuilt only then: it keeps its identity across renders in which nothing states its conditions anew — a change to
-a property value, to the rows or to the current object leaves it as it was — so a view can compare it across renders and
-memoize on it.
-
-A change through the controller goes into the group's list, and `filters` shows it straight away. It is sent at once,
-before the rows filtered by it come back — but in the [manual apply mode](#filter-controls), where it waits for the
-apply, as a change of the platform's filter panel does; until it is answered, a list the server reports for the group in
-the answer to an earlier request does not replace it. A view that sends a search only after a pause in the typing keeps
-what is being typed in its own state and calls `change` when the pause comes.
-
-`controller.<group>.filters.change(conditions)` — the same thing the projection calls `data.<group>.filters`, changed
-where it is read — replaces the list at once: an array states all the conditions a view can name — a condition on a
-property it names none by, below, keeps its place —, a single condition states one. For clearing what a view can name
-(`controller.i.filters.change([])` — the [filter controls](#filter-controls)' `resetFilters()` clears every condition,
-at once), or when the view genuinely owns the entire condition set. The array is the list of conditions, as `FILTER`
-reads one in `.lsf`: an element with no `value` is a condition comparing with `NULL` — "is empty", with `negation` "is
-not empty" —, so a condition `filters` lists with a `null` `value` — one F3 states on an empty cell, say — is taken back
-as it is, a `BOOLEAN` property's too, listed with `false`, which reads back as `NULL`. A property filtered by no more is
-one the array leaves out.
-
-Either form reports an author's mistake instead of dropping a condition: an unknown property, an unknown
-comparison or `IN ARRAY`, which no condition compares by, an unknown field in a condition, a `negation` or `or` that
-is not a boolean, a condition on an action or on a property grouped in columns.
-
-A condition set elsewhere is not listed when it is on a property with no integration SID (`NOEXTID`), which the
-projection has no name for, on an action, which is not something a form is filtered by, or on a property grouped in
-columns, as a condition here names a property, not one of its columns. The console says which and why.
-
-Handing `data.<group>.filters` back through the array form therefore leaves those conditions where they are, as changing
-ONE condition never touches the conditions on other properties.
-
-A tree has one filter box for all its groups, `FILTERS(TREE <tree>)`, and its user filters are on [the tree's
-node](#trees). `filters` there lists the conditions of all its groups, those of the upper groups first, and names each
-property by its group's name and its own, `c.name`, as a [`<Platform>`](#placing) names a property of a group.
-`controller.<tree>.filters.change` takes a condition named the same way: the name is read up to its first dot, the
-group's — a group's name has none, and an `EXTID` with a dot, which a property the platform draws may carry, is taken
-back as `filters` gives it. A list it states is the tree's: `controller.t.filters.change([])` clears the conditions it
-can name of all its groups in one request, and a single condition is merged into the conditions of all of them.
-
-Beside `filters`, the user filters say what a condition can be on — `filterProperties`, design data, there from the
-start: the group's properties a condition can name, wherever they are drawn, in the form's order — on a tree's node,
-the properties of all its groups, those of the upper groups first. Each is an object:
-
-| Field | Meaning |
-| --- | --- |
-| `property` | The property, named as a condition names it |
-| `caption` | Its caption in the design, `null` where the design gives none |
-| `type` | The type of a condition's value: `string`, `number`, `date`, `boolean` or `json` — the FILTER type, by which `value` is read and written |
-| `compares` | The comparisons the platform's own filter editor offers for it, spelled as `filters` spells them |
-| `defaultCompare` | The one that editor starts with — the one the design named, which need not be one of `compares` |
-
-An action, a property grouped in columns and one with no integration SID are not listed: no condition can be on them.
-Nor is a file property: a condition on one is listed in `filters` all the same, and is stated with no value alone, as
-above.
-So a view that draws `FILTERS(<group>)` alone builds a condition editor from it, with no property of the group drawn
-there:
+A view that draws `FILTERS(<group>)` alone builds a condition editor from `filterProperties`, with no property of the group drawn there:
 
 ```jsx
 function FilterPanel({data, controller}) {
@@ -1814,103 +626,9 @@ function FilterPanel({data, controller}) {
 `value` is of the type `type` names, converted as any other property value: this editor reads a string or a number,
 so it offers the `string` and `number` properties alone.
 
-### Filter controls {#filter-controls}
+### Search by one property {#property-search}
 
-The filter controls a view draws are the same whoever draws the conditions — the view, which gets `filters`, or the
-platform's panel, `FILTERS(o)` placed back with `custom = NULL` —, and each does what the platform's button does there:
-
-| on the node | member | over [conditions the view draws](#custom-filter-panel) | over the platform's panel |
-| --- | --- | --- | --- |
-| | `addFilter()` | the condition F3 puts in | a new condition on the same cell, its editor open, as the panel's add does — or the cell's value put into the property filter a view draws on that column, where it shows none |
-| `filtersPending`, `filtersManual` | `applyFilters()` | what waits sent — nothing, with nothing waiting | the same, the conditions typed in included |
-| | `resetFilters()` | the list cleared | the panel's conditions reset |
-
-`filtersManual` is the manual apply mode: the setting that makes the user filters apply changes by hand
-(`userFiltersManualApplyMode`) is on — the controls a view draws always have the apply button; the platform's have it
-while they are shown, which the toolbar's filter button does. In it a change of the group's conditions waits for the
-apply, whoever states it — the view, a [property filter](#property-filters), F3, the platform's panel —; the reset is
-sent at once all the same, and so are a pivot's drill-down and a row the platform's panel deletes. The apply sends the
-group's list as it stands: a value typed into an editor the view draws and kept in the view's own state — as the
-`FilterPanel` above keeps its text till Add — is not in the list until the view states it (`filters.change`, a
-property filter's `change`), so a view states it before the apply, or the apply does not send it. `filtersPending` is
-whether anything waits: the list differs from the one sent — in the manual apply mode till the apply, and in either mode
-while the platform's panel holds a value it prepared, F3's, which its editor has not committed. The setting is off by
-default: a change is sent at once, `filtersManual` stays `false`, and a view may as well not draw `FILTERCONTROLS(o)` at
-all — the group is filtered the same. Where the view draws the conditions too, `resetFilters()` clears them all at once,
-the conditions on a property the view names none by included, while `filters.change([])` clears the ones it can name and
-is sent as any change is: members of two components may do much the same thing, each component's part repeating its
-component.
-
-```jsx
-function ItemFilterButtons({data, controller}) {
-    const items = data.i, buttons = controller.i;
-    return <div>
-        <button onClick={() => buttons.addFilter()}>+</button>
-        {items.filtersManual &&
-            <button disabled={!items.filtersPending} onClick={() => buttons.applyFilters()}>Apply</button>}
-        <button onClick={() => buttons.resetFilters()}>Reset</button>
-    </div>;
-}
-```
-
-The cell a condition is added on is the current cell of the standard grid where the platform draws the rows, and the
-first column a view carries that the form shows and a condition can be on — a view has no current column —, in its
-current row, where a view draws them. On a tree it is the current cell of the platform's tree, or the first column of
-the [current node](#trees)'s group that the form shows and a condition can be on, in that group's current row.
-With no `FILTERS(o)` in the design `addFilter` is refused, as the platform has no such button, and F3 does nothing.
-
-Inside a [batch](How-to_Custom_view_controller.md#batch) the commands go with it, as `filters.change` does.
-
-### Filter groups {#filter-groups}
-
-A filter group a view draws is on its group's node under its own name, shaped like a property's entry:
-
-```lsf
-FORM items
-    OBJECTS i = Item
-    FILTERGROUP stock
-        FILTER 'In stock' balance(i) > 0 'F10' DEFAULT
-        FILTER 'Out of stock' balance(i) <= 0
-;
-```
-
-```js
-// data.i.stock
-{value: 0, filters: ['In stock', 'Out of stock'], canClear: true}
-
-controller.i.stock.change(1);      // select 'Out of stock'
-controller.i.stock.change(null);   // none, as the platform's "(All)"
-```
-
-| Field | Meaning |
-| --- | --- |
-| `value` | The index of the filter selected in `filters`, `null` for none |
-| `filters` | The filters' captions, in the design's order |
-| `canClear` | Whether none may be selected, as the platform's widget offers it: a group of one filter is its check box, always clearable; a group of several is its list, with `(All)` unless `NONULL`. Where it is `false`, `change(null)` is refused |
-
-The server applies the filter selected and reports it, so `value` is what the server holds — the default filter when the
-form opens, a `FILTERGROUP` action's choice — and a filter a view selects shows at once. `change` takes the index of one
-of `filters`, or `null`, and anything else is refused. It is a part of a [batch](How-to_Custom_view_controller.md#batch)
-as `filters.change` is, and asks the server even for the filter shown — after a batch that failed, it is set again. A
-filter's key keeps working while the form shows the filter group — its descriptor's `hidden` — and the view that draws
-it is shown, the host a container places that view in included, as the platform's widget takes it: it selects the
-filter, and in a group of one filter — the platform's check box —, pressed again, takes it off.
-
-A filter group is its group's — the last group for the objects its filters take, the one a
-[filter](../paradigm/Form_structure.md#filters) of the form is applied to —, a group of a [tree](#trees) included: it is
-on that group's node, `data.<group>.<filterGroup>`, never on the tree's, which carries what the platform has one of for
-the whole tree — its user filters, filter controls, toolbar and sortings —, though the platform's design puts a tree's
-filter groups in the tree's `FILTERGROUPS(TREE <tree>)`.
-
-### Property filters (`FILTER`) {#property-filters}
-
-A property declared a [user filter](../paradigm/Interactive_view.md#userfilters) — `PROPERTIES(i) name FILTER`, or
-`USER` in the [filters block](../language/Filters_and_sortings_block.md) — has a filter of its own among the user filters
-of its group: a component the design names `FILTER(name(i))`, by the property's name on the form, which the platform's
-filter panel shows as a condition row there from the start if the component and every container holding it remain in
-the form design. A property filter a view draws is a part of the group of its property there, as a filter group is: on
-the group's node, under `filter`, by the property's integration name — one object for the filters the view draws, with
-no prototype, as `byKey` is:
+We need a search field over one property of a list. The solution uses a [property filter](../language/React_filters_and_toolbar.md#property-filters).
 
 ```lsf
 FORM items
@@ -1926,37 +644,6 @@ DESIGN items {
 }
 ```
 
-```js
-// data.i.filter.name
-{caption: 'Name', type: 'string', active: false, compare: '_', negation: false, or: false, value: null}
-
-controller.i.filter.name.change('ab');                     // filtered by it
-controller.i.filter.name.change('ab', {negation: true});   // ... by its negation
-controller.i.filter.name.change(null);                     // ... and not any more
-```
-
-| Field | Meaning |
-| --- | --- |
-| `caption` | The property's caption in the design, `null` where the design gives none |
-| `type` | The type of a condition's value: `string`, `number`, `date`, `boolean` or `json` — the FILTER type, by which `value` is read and written |
-| `active` | Whether the filter has a condition — one comparing with `NULL` too, whose `value` is `null` as with none (`false` on a `BOOLEAN` property) |
-| `compare`, `negation`, `or` | The comparison of the filter's condition, spelled as `filters` spells it, whether the condition is negated, and whether it is joined to the next one by OR, as `filters` says it; while there is no condition, those of the condition it showed last — at first, the property's default comparison, `false` and `false` |
-| `value` | The value of the filter's condition, `null` while there is none |
-
-The filter's condition is the first condition on its property among the group's user filters — as the platform's row of
-the filter takes the first condition on its column —, whoever states it: the filter, `filters.change`, the platform's
-filter panel, a `FILTER` action. `change(value, options)` states its value as `filters.change` states one condition: in
-that condition's place, or, where there is none, in the filter's own. The options, `{compare, negation, or}`, any of
-them, state the condition's comparison — spelled as `filters` spells it —, its negation and its junction, as the
-platform's row does with the filter controls shown; what they leave out stays as the filter has it — as its condition
-has it, or, with none, as it compared last (above). An option `change` does not know, a comparison that is no comparison
-of a condition — an unknown one, `IN ARRAY` — and a negation or `or` that is not `true` or `false` are refused, with no
-value too, which then takes nothing off. No value — absent, `null`, `''`, or one its type reads as `NULL`: `false` of a
-`BOOLEAN` property — takes that condition off, whatever the options say, and that one alone: a range's other bound
-stays, and is the filter's condition then, as when the platform's row is emptied. The filter itself is never removed. It
-goes with a [batch](How-to_Custom_view_controller.md#batch) as `filters.change` does. The condition of a filter on a
-file property can only be taken off: its `value` is a link to the file, not the file a condition compares with.
-
 ```jsx
 export function ItemSearch({data, controller}) {
     if (data['FILTER(name(i))'].hidden) return null;
@@ -1966,6 +653,10 @@ export function ItemSearch({data, controller}) {
     </label>;
 }
 ```
+
+### Search by several properties {#several-properties-search}
+
+We need one search field over several properties. The solution uses [property filters](../language/React_filters_and_toolbar.md#property-filters) and a [batch](../language/Form_and_navigator_controllers.md#batch).
 
 One input can search several properties without a `DATA LOCAL` search property. One option is a combined property, declared `FILTER` (here `name` and `description` are string properties of `Item`):
 
@@ -2024,100 +715,9 @@ export function NameOrDescriptionSearch({data, controller}) {
 
 At form opening, empty property filters occupy the start of the condition list in declaration order, so these two conditions are adjacent. Always change and clear both together: `or` joins a condition to the next **active** one, so clearing only the second can join the first to an unrelated condition. Replacing the whole list with `filters.change([...])` moves empty property-filter placeholders to its end, and does not guarantee that this pair stays adjacent. Use the paired variant only while the two conditions remain adjacent; otherwise use a combined property or explicitly state the entire condition list when the view owns it.
 
-A property filter does not depend on who draws the group's conditions: this view, which then gets `filters` too, or
-another view, or the platform's filter panel — its condition is one of the group's list either way, sent as any change
-is: at once, or, in the [manual apply mode](#filter-controls), on the apply, the filter showing the change meanwhile.
-Over the platform's panel the filter is the panel's own row of it, which the view draws: the panel shows no row of its
-own for it. It is a row of the panel as any other is: F3 on a column whose first row it is puts the cell's value into
-it, its comparison, negation and junction kept — React drawing the row, no editor opens —, and so, while it shows no
-condition, do Alt+F3 and the add of the filter controls on that column, typing there starting nothing; while it shows
-one, the add and typing start a new row of the panel's. A filter of a property of a [tree](#trees)'s group is on its
-group's node, as a filter group of a tree's group is. Its [entry](#display-options), `data['FILTER(name(i))']`, says
-whether the form shows the filter — its `SHOWIF`, or a container's above it.
+### Only the filters, or the whole group {#filters-or-whole-group}
 
-A property filter with `custom = NULL` is the platform's: its row of the group's user filters, as a classic form shows
-it, which the view places with `<Platform name="FILTER(name(i))"/>` as any child the platform draws
-([placing](#placing)). It is that row whoever draws the group's conditions — the platform's filter panel, or a view,
-over whose conditions it is the one row the platform draws —, and so is a property filter that stands outside React:
-
-```lsf
-DESIGN items {
-    FILTERS(i) { custom = 'ItemFilters'; } // the conditions: a view
-    FILTER(name(i)) { custom = NULL; }     // ... and the platform's row of the name filter, which the view places
-}
-```
-
-A value committed in the row is the filter's, sent as any change is; a condition the view states on the property shows
-in it, and F3 on its column puts the cell's value into it — on a property `filterProperties` lists, or on a file one: F3
-over a view's conditions starts no condition on another ([Replacing only the filters](#custom-filter-panel)). Where the
-toolbar turns the platform's filters off (`showFilters = FALSE`), nobody draws such a filter, as in a form with no React
-view. A filter with a React component of its own — `FILTER(name(i)) { custom = 'NameSearch'; }` — draws its part in its
-own view ([A component's own view](#component-views)).
-
-Some combinations are refused when the form is built:
-
-- a filter of a group in `PANEL` view, which has no user filters: one a view draws, and one given `custom = NULL` in a
-  view;
-- a filter a view draws on a property its condition cannot name or give a value to: one with no integration name
-  (`NOEXTID`), one grouped in columns, an action;
-- a filter the platform draws over the conditions a view draws, on an action, which is never filtered by.
-
-### Replacing only the filters {#custom-filter-panel}
-
-A group's generated boxes — `FILTERS(o)`, `FILTERBOX(o)`, `FILTERGROUPS(o)`, `TOOLBARBOX(o)`, `TOOLBARLEFT(o)`,
-`TOOLBARRIGHT(o)`, `TOOLBAR(o)`, `POPUP(o)`, `PANEL(o)` — are ordinary containers, so each of them takes `custom`.
-Putting a component on one of them replaces just that part: the rows keep their standard grid, and the rest of the
-box stays the platform's.
-
-```lsf
-DESIGN items {
-    FILTERS(i) { custom = 'FilterPanel'; }
-}
-```
-
-Such a component does not draw the group's rows — the platform still does — but the user filters are its part:
-`props.data.<g>` is the group's node there, carrying `filters`, what a condition can be on (`filterProperties`) and
-nothing of the rows.
-
-The platform draws no conditions of its own for such a group, but its commands over them stay, and each changes the
-group's list — the one the component is shown in `filters`:
-
-- the toolbar's filter button shows and hides the controls the platform draws in `FILTERCONTROLS(o)`. Their reset clears
-  the list, and their add does what F3 does. Where the component's box holds `FILTERCONTROLS(o)` too, the component
-  draws them: they are its [filter controls](#filter-controls), whose `resetFilters()` and `addFilter()` do the same,
-  and the toolbar's filter button is there only for the rows of the property filters the platform draws, whose selectors
-  it shows and hides;
-- F3 in the grid gives the value of its [current cell](#filter-controls) to that cell's property, as a value is given a
-  [property filter](#property-filters): in the place of the first condition on the property, its comparison, negation
-  and `or` kept, or, where there is none, in the place of the property's filter, compared as it compared last, else at
-  the end, compared the property's default way. It is stated at once, as F3 and Enter state a value on the platform's
-  panel — there is no editor here to type a value in, the component edits it —, and sent as any change is: at once, or,
-  in the [manual apply mode](#filter-controls), on the apply. Alt+F3 makes a new condition the only one. None is started
-  where no row is current — an empty grid, or a pivot, a map, a calendar or a custom view, which have no cell —, or on a
-  cell whose property `filterProperties` does not list — a file property's cell excepted: F3 states a condition on it,
-  which a view states with no value alone —, or that shows another value than it is filtered by;
-- Shift+F3 and Escape in the grid clear the list, at once, in the manual apply mode too;
-- typing in a column starts no condition (a grid with a quick search searches, as it does anyway), and the apply button
-  is the filter controls': the platform's in `FILTERCONTROLS(o)`, while they are shown, or the component's, where it
-  draws them — in the [manual apply mode](#filter-controls) a change waits for it.
-
-The property filters the design declares in the box are the component's: it draws them as [property filters](#property-filters).
-
-These commands are there wherever a view draws the FILTERS box of a group in `LIST` view, whatever its
-`TOOLBARSYSTEM(o)` says: `showFilters`, like the toolbar's other `show…` flags, is the platform's alone, and turns off
-only what the platform draws of the filters — its panel, its controls in FILTERCONTROLS and the toolbar's filter button.
-With `showFilters = FALSE` and the conditions drawn by a view, the [filter controls](#filter-controls) a view draws and
-the keys of the grid work all the same; with the conditions the platform's, there are no commands, and the members of
-the filter controls a view draws refuse. A tree's commands are the same, over the conditions of all its groups, its
-[node's](#trees) `filters`, and so is its toolbar's `showFilters`.
-
-`props.controller.<g>.filters` changes them, so the panel both shows the current conditions and sets them: the
-search box of [`ItemBoard`](#filters), without its list, is such a panel.
-
-The conditions the component sets are the group's own: a `FILTER` action, a pivot's drill-down and this component all
-change one list, so they cannot disagree.
-
-`TOOLBARSYSTEM(o)`, `FILTERCONTROLS(o)`, `FILTERGROUP(f)` and a [property's filter](#property-filters), `FILTER(name(o))`, are not containers, but each takes a `custom` of its own, and a React component then draws it in its place ([A component's own view](#component-views)).
+We need to decide whether a component replaces only a group's filters ([Replacing only the filters](../language/React_filters_and_toolbar.md#custom-filter-panel)) or the whole group.
 
 Receiving a group's state does not make a component the only one drawing it. Which components are drawn is decided
 by the design and by what is placed with `<Platform>`, not by what `data` contains — the state is the group's, whoever draws it. So
@@ -2127,61 +727,9 @@ there are two recipes, and they read differently in the design rather than in th
 - **replace the whole group** — `custom` on `BOX(o)`: nothing else is drawn at all, and the component owns the
   filters along with the rows.
 
-A component on a box beside `FILTERS(o)` — `TOOLBARLEFT(o)`, say — gets no part of the filters: the group's node
-there, if it has one, has no `filters`.
+### A header over the standard grid {#grid-header}
 
-### View filters {#view-filters}
-
-A view that draws the rows of a group not in a tree can have the server filter them by conditions of its own — the
-group's view filters, as a calendar filters its group by the period it shows. They are a list apart from the group's
-[user filters](#filters), which the user changes and a `FILTER` action states, and the server applies them together
-with those, with the form's own `FILTERS` and with its filter groups. `viewFilters` lists them beside `list` and
-`keys`, where the rows are drawn: always there, and empty until the view states any. Each entry is a condition in the
-shape [`filters`](#filters) gives one — `property`, `compare`, `value`, `negation`, `or` —, on a property of the group
-named the same way, wherever it is drawn.
-
-`controller.<group>.viewFilters.change(conditions)` — a member in the same place, and only there — states the whole
-list, an array, read as an array of `filters.change` is: what a condition leaves out of `compare` and `negation` is the
-default, and one with no `value` compares with `NULL`. An empty array takes them all off. The conditions are all applied
-together, so one with `or: true` is refused, and so is what `filters.change` refuses in a condition.
-
-```jsx
-export function MeetingList({data, controller}) {
-    const meetings = data.e;
-    const show = first => controller.e.viewFilters.change([       // the meetings of one month: two conditions on the date
-        {property: 'date', compare: '>=', value: first},
-        {property: 'date', compare: '<', value: new Date(first.getFullYear(), first.getMonth() + 1, 1)}
-    ]);
-    const stated = meetings.viewFilters[0];                       // what the view stated is read back out of the projection
-    return (
-        <div>
-            <button onClick={() => show(new Date(2031, 0, 1))}>January</button>
-            <button onClick={() => show(new Date(2031, 1, 1))}>February</button>
-            <button onClick={() => controller.e.viewFilters.change([])}>All</button>
-            <span>{stated ? 'from ' + stated.value.toLocaleDateString() : 'all meetings'}</span>
-            <ul>{meetings.list.map(row => <li key={row.key}>{row.name.value}</li>)}</ul>
-        </div>
-    );
-}
-```
-
-A change through the controller is sent at once, as the group's whole list, and `viewFilters` shows it straight away,
-before the rows filtered by it come back. The server does not report view filters, so `viewFilters` is what a call
-stated last: it is rebuilt only by one, keeping its identity across renders otherwise, and after a request that failed
-it still lists what that request stated — state the list again where it matters. No page size goes with them: the
-group's stays as the form gives it (`PAGESIZE`).
-
-The view filters are the view's that draws the rows. Another container states them through the form's controller,
-`controller.form.changeViewFilters('<group>', conditions)`
-([across containers](How-to_Custom_view_controller.md#across-containers)); for a group whose rows the platform draws
-the call is refused — the view types the platform's table shows such rows in state their own, a calendar the period it
-shows —, as it is for a group of a tree.
-
-### Toolbar {#toolbar}
-
-Where a view draws a group's toolbar, what its buttons show is on the group's node, `props.data.<g>`, and its buttons
-are members of the group, on `props.controller.<g>`. The platform draws no toolbar of its own for the group then, over
-its own grid as well. A view's header over the standard grid:
+We need a header of our own over a group's standard grid: the record count, export to Excel, the manual update mode and the view type. The solution uses the group's [toolbar](../language/React_filters_and_toolbar.md#toolbar), drawn by the view.
 
 ```lsf
 DESIGN items {
@@ -2212,45 +760,9 @@ function ItemHeader({data, controller}) {
 }
 ```
 
-Every member, and what its button shows, is there whatever the design's flags say — `showFilters`, `showViews`,
-`showCalculateSum`, … are the platform's alone, which draw its own toolbar; a view draws what it wants —, and so is the
-name each takes on the node: where a view draws the toolbar, no property of the group takes `getSum`, whatever
-`showCalculateSum` says. `visible` is not one of these flags: a toolbar the design hides (`visible = FALSE`) is no part
-of any view — nothing of it on the node, no members, no names taken.
+### A tree's header {#tree-header}
 
-| on the node | member | what it does | the platform's button |
-| --- | --- | --- | --- |
-| `manual` | `manual.change(on)` | the manual update turned on or off | the manual update |
-| `updatePending` | `update()` | the changes the server holds back while the update is manual, brought | the update |
-| `filterControlsVisible` | `filterControlsVisible.change(shown)` | whether the platform's filter controls are shown — the buttons of its FILTERCONTROLS and the condition editors of its FILTERS panel and of the property filters' rows it draws; shown on a panel with no conditions, with one to fill in | the filter button |
-| `listView`, `listViews` | `listView.change(name)` | the rows of the platform's table shown in another view type, one of `listViews`: `grid`, `pivot`, and `custom`, `map` or `calendar` where the group has one | the view type switch |
-| | `getCount()` | the number of the group's rows — of the marked ones only, where the user has marked any, as the platform counts them —, as a `Promise` of the server's answer, a request as `getValues` is | the count |
-| | `getSum(property)` | the sum of a column — over the marked rows only, where the user has marked any, as the platform sums it —, as a `Promise`: a number property of the group, named as a [sorting](#orders) names one, not one grouped in columns | the sum, of the current column — a view has none, so the call names it |
-| | `export()` | the group's rows exported to Excel, the server's report of them | the export — which on a pivot exports the pivot |
-
-What the buttons act on is the platform's: `filterControlsVisible` shows and hides the PLATFORM's filter controls — its
-FILTERCONTROLS buttons, its panel's editors and the selectors of the property filters' rows it draws —, and where the
-platform has none for the group — it draws neither the `FILTERS(o)` panel nor `FILTERCONTROLS(o)` nor a property
-filter's row, the view drawing them, or the design removing them or a container holding them, or the toolbar turns the
-platform's filters off (`showFilters = FALSE`) — it stays `false` and its change is refused, saying why. Controls a view
-draws itself are its own to show, its [filter controls](#filter-controls). The view type switch switches the platform's
-table: where a view draws the rows, `listViews` is empty, `listView` is `null`, and a change is refused. A group whose
-rows a view draws has the default `GRID` list view type. The grid of a group the form gives another
-(`OBJECTS o = Order PIVOT`, and `MAP`, `CALENDAR`, `CUSTOM`) is drawn by the platform in that view type, and a React
-container around it places the grid with `<Platform name="GRID(o)"/>`, as it places a grid given `custom = NULL`. A
-`custom` of the grid itself (`GRID(o) { custom = 'OrderCards'; }`) is the group's `CUSTOM`, and puts the group in the
-`CUSTOM` view type ([A React component in `CUSTOM`](#form-custom)).
-
-The toolbar's `export()`, `update()`, `manual.change()` and `listView.change()` return the `Promise` of their request.
-Inside a [batch](How-to_Custom_view_controller.md#batch) the members that ask the server return a rejected `Promise` with the reason. The settings of
-the platform's table are not there — a dialog of the platform's, over the table it draws. A toolbar placed back with
-`custom = NULL` keeps them.
-
-### A tree's toolbar and filter controls {#tree-toolbar}
-
-A [tree](#trees) has one toolbar and one set of filter controls for all its groups, `TOOLBARSYSTEM(TREE t)` and
-`FILTERCONTROLS(TREE t)`. Where a view draws them, they are on [the tree's node](#trees), `data.t`, whoever draws the
-tree's rows:
+We need a header of our own over a tree the platform draws: opening the current node and the whole tree, export to Excel and showing the filter controls. The solution uses [a tree's toolbar and filter controls](../language/React_filters_and_toolbar.md#tree-toolbar).
 
 ```lsf
 DESIGN catalogue {
@@ -2276,139 +788,9 @@ function CatalogueHeader({data, controller}) {
 }
 ```
 
-The toolbar has the buttons of the platform's tree toolbar as members, whatever its `show…` flags say — they are the
-platform's alone, as a group's [toolbar](#toolbar)'s are —, and the two that open the tree only where the platform draws
-the tree's rows:
+### Item cards in `CUSTOM` {#item-cards}
 
-| on the node | member | what it does | the platform's button |
-| --- | --- | --- | --- |
-| `filterControlsVisible` | `filterControlsVisible.change(shown)` | whether the platform's filter controls of the tree are shown, as on a group's [toolbar](#toolbar) | the filter button |
-| | `export()` | the tree exported to Excel, the server's report of it | the export |
-| | `expandCurrent()` | over the platform's tree: its selected node opened, and every node under it — a node with children only | expand current object |
-| | `expandTree()` | over the platform's tree: every node of the selected node's group under the nodes open above it, and of the groups below — all of the tree when the selected node is the top group's | expand whole tree |
-
-Where a view draws the tree's rows, the toolbar has not the two that open it: the tree opens through members it has
-already — its current node through the tree's own [`expandCurrent()`](#trees), on the same node where the view draws
-both, the tree from a group down through that group's `expandAll()` — all of it through the top group's —, one member
-for each. So which members open a tree depends on who draws its rows, and a view that draws the tree's toolbar in
-another container than the tree's rows has none there: the view that draws the rows has them. They only open — the
-platform's tree closes nothing from its toolbar. Inside a [batch](How-to_Custom_view_controller.md#batch)
-`expandCurrent()` and `expandTree()` go with it, as `expandAll()` does, and `export()` is refused.
-
-The tree's filter controls are a part of the tree the same way, with the state and members of a group's
-[filter controls](#filter-controls), over the conditions of all its groups.
-
-### The platform's toolbar and filters over a view's rows {#platform-toolbar-and-filters}
-
-Where a view draws a group's rows, the platform still draws what the design leaves to it of the group's toolbar and
-filters — `TOOLBARSYSTEM(o)`, and what `FILTERS(o)` and `FILTERCONTROLS(o)` hold — when they are outside the view's
-containers, or placed back with `custom = NULL`:
-
-```lsf
-DESIGN items {
-    NEW cards {
-        custom = 'ItemCards';
-        MOVE GRID(i); // the view draws the rows; BOX(i) keeps the toolbar and the filters
-    }
-}
-```
-
-They work over the view's rows as over the standard grid, with what those rows can tell them:
-
-- the toolbar has the buttons that need no table: the filter button, the count of the rows, the export and the manual
-  update — not the view type switch, the settings or the sum of a column;
-- the filter panel's conditions can be on the columns the view carries, by their captions, and a new one starts on [the
-  cell a condition is added on](#filter-controls). The panel states them as the group's list, the one a `FILTER` action
-  sets, and the view's rows follow it;
-- where the view draws the conditions too — it gets the group's `filters` —, the platform builds no panel: its controls
-  and the toolbar's filter button give the [commands over the view's conditions](#custom-filter-panel);
-- the keys of the platform's grid are not there, so the controls open from the toolbar's filter button — the
-  `filterControlsVisible` member of the view's [toolbar](#toolbar), where the view draws it —, and where the design hides the
-  toolbar, nothing opens them: they start hidden, as over the standard grid, and stay so.
-
-A [tree](#trees) a view draws (`MOVE GRID(TREE t)`) is given the same, one for all its groups, as the platform's own
-tree has it — `TOOLBARSYSTEM(TREE t)`, and what `FILTERS(TREE t)` and `FILTERCONTROLS(TREE t)` hold. The toolbar has the
-tree's buttons: over the view's rows the one that expands the current object opens what the tree's
-[`expandCurrent()`](#trees) opens, the one that expands the tree opens, as over the platform's tree, every node of the
-current node's group under the nodes open above it and of the groups below — nothing before a node is current; all of
-the tree is the top group's `expandAll()` —, and the export exports the tree. The panel's conditions can be on the
-columns of all the tree's groups, each condition of its column's group, and a new one starts on [the cell a condition is
-added on](#filter-controls).
-
-What the view draws itself the platform does not build: a `custom` on `BOX(o)` draws the whole group.
-
-### A component's own view {#component-views}
-
-A tree's table, a toolbar, filter controls, a filter group and a property's filter — `GRID(TREE t)`,
-`TOOLBARSYSTEM`, `FILTERCONTROLS`, `FILTERGROUP(fg)` and `FILTER(<property>)` — take a React component in `custom` as a
-container does, and the component then draws, in their place, what they show of their object group or tree: the rows,
-the toolbar's buttons, the filter controls, the filter selected in the filter group, the property filter's condition.
-The rest of the form stays as it is:
-
-```lsf
-DESIGN items {
-    GRID(TREE t) { custom = 'CategoryTree'; } // the toolbar and the filters over the rows stay the platform's
-    TOOLBARSYSTEM(j) { custom = 'OrderToolbar'; } // over the platform's grid of j
-}
-```
-
-The `custom` of the table of an object group, `GRID(i)`, is another thing: it is the group's `CUSTOM`, the render
-function of one of the views the platform shows the group's rows in ([A React component in `CUSTOM`](#form-custom)).
-
-The component gets what a container holding that component alone would get — `NEW bar { custom = 'OrderToolbar';
-MOVE TOOLBARSYSTEM(j); }` —: the part of the group or of the tree on its node, under the same names ([the table at the
-top](#the-component)) — the toolbar's state and
-members on `data.j` and `controller.j`, a tree's rows on its groups' nodes and its own on `data.<tree>`, a filter group
-on `data.<group>.<filterGroup>`, a property's filter on `data.<group>.filter.<property>`. Nothing else is on the top
-level.
-
-The component's own design attributes are its view's, as they are of the platform's view of it: its size and its
-place in its container, its class, and its `SHOWIF`, which hides the view — so its data has no [entry](#display-options)
-of the component itself, which a container around it would have. Inside what a React container draws, the component
-has a view of its own, and the container places it with `<Platform name="TOOLBARSYSTEM(j)"/>`, its entry in the container's
-data, and its parts in the data of its own view. A property the platform draws in the rows it draws is placed per row
-with [`<Platform name row/>`](#live-editor); it places nothing else.
-
-Some combinations are refused when the form is built:
-
-- a component that shows nothing there — the toolbar or the filter controls of a group in `PANEL` view,
-  which has no rows, and a filter of its property, which has no user filters to be among; a toolbar hidden with
-  `visible = FALSE`; a filter group with no filters or of no object — would give its component nothing to draw;
-- a value other than a component name: `''`, an HTML template and a property lay out the children of a container.
-
-The attributes of the platform's table — a table's `valueClass` given by a property, a tree's `hierarchicalCaption` —
-mean nothing to its own view, as to a table a React container draws: the projection carries neither.
-
-### A React component in `CUSTOM` {#form-custom}
-
-The `CUSTOM` option of a property in the [`PROPERTIES`](../language/Properties_and_actions_block.md) block and of an object group in the [`OBJECTS`](../language/Object_blocks.md) block specifies a render function, and that function can be a React component. The property or the group remains the platform's: it stays where the form's design puts it, and the component draws only what the render function would draw — one cell of the property, or the rows of the group.
-
-The web client tells a component from a classic render function ([properties](How-to_Custom_components_properties.md), [objects](How-to_Custom_components_objects.md)) by the way the name is registered: a component is registered with the kind `reactView`, and any other name is a classic function, whatever its case. The name itself does not say it here, as it does for the `custom` of a container: a classic function may be named as a component is. A named export of a compiled module is registered without a kind, and a function of a `.jsx` file is not registered at all, so the module registers the component explicitly:
-
-```jsx
-function Quantity({data, controller}) {
-    return <button disabled={data.readOnly || data.disabled}
-                   onClick={() => controller.change((data.value ?? 0) + 1)}>
-        {data.value}
-    </button>;
-}
-
-window.lsfusion.custom.register('Quantity', Quantity, 'reactView');
-```
-
-```lsf
-FORM items
-    OBJECTS i = Item
-    PROPERTIES(i) READONLY name
-    PROPERTIES(i) quantity CUSTOM 'Quantity'
-;
-```
-
-The component of a property draws one cell: a cell of the table, or the value of the property on a panel. `data` describes that cell — its `value`, `readOnly`, `disabled`, `loading`, `background`, `foreground`, `placeholder`, `pattern`, `regexp`, `regexpMessage`, `defaultValue`, `valueTooltip` and `options`, and the `type` and `askConfirm` of the property — the fields [the entry of a panel property a view draws](#display-options) has, with the same meaning, an option the platform computed nothing for being absent. `controller` is the property's [member](How-to_Custom_view_controller.md) for that cell — `change(value)`, `exec()` and `getValues(query, {mode, count})`, each returning the `Promise` of its request — with the form's controller as `controller.form`. A call takes no row: in a table it changes the row of the cell, whichever row is current, and on a panel the current object of the form. The component changes the value by these calls only: a click on the cell or typing in it does not start the platform's editing of the cell. Whether the cell may be changed is checked by the server, as for a classic render function, so a change of a read-only cell is not made.
-
-A table reuses the element of a cell for another row when its rows are sorted or scrolled. The component stays mounted then and keeps its state: it receives the `data` of the other row, and its `controller`, which stays the same object, changes the row the cell shows at the moment of the call — after an `await` too. A view that draws the rows itself places such a property as any other property the platform draws, with [`<Platform name row/>`](#live-editor), and the component is drawn [in that view's tree](#embedded).
-
-The component of a group draws the rows of the group where the platform's table would, as one of the view types the toolbar switches:
+We need to show a group's rows as cards, one of the view types the toolbar switches. The solution uses a [React component in `CUSTOM`](../language/React_component_views.md#form-custom) of the group.
 
 ```lsf
 FORM itemCards
@@ -2431,11 +813,9 @@ function ItemCards({data, controller}) {
 window.lsfusion.custom.register('ItemCards', ItemCards, 'reactView');
 ```
 
-The `custom` of the group's table in the design says the same as `CUSTOM` in `OBJECTS`: `GRID(i) { custom = 'ItemCards'; }` is `OBJECTS i = Item CUSTOM 'ItemCards'`, and `custom = NULL` leaves the table to the platform's own views. The component is given its one group, with no name above it: `data` is the group's node, as a container that draws the group's rows has it under the group's name ([Reading the projection](#reading)) — its rows (`data.list`, `data.byKey`, `data.keys`), the entries of its properties, its [sortings](#orders) and [view filters](#view-filters), and the `OPTIONS` of the group as `data.options` —, and `controller` is the group's [member](How-to_Custom_view_controller.md) — `change(row)`, `orders.change(...)`, `viewFilters.change(...)` and a member per property —, with the form's controller as `controller.form` and `controller.batch`. [`List`](#rendering-rows) and [`BucketScope`](#bucketing) are given no `group` there. A property the form gives a view of its own — `NOCUSTOM`, or a `CUSTOM` render function — is not drawn by the component but placed by it in each row, by its name alone: [`<Platform name="quantity" row={row}/>`](#live-editor); the component places nothing else. The table takes the size of what the component draws, as any `CUSTOM` view does, and the toolbar switches it with the platform's other views of the rows. The toolbar and the user filters of the group remain the platform's, which draws them around the component, so `data` and `controller` carry nothing for them. A property whose name is a [reserved name](#reserved-names) of a row or of a group's node where its rows are drawn, or `form` or `batch`, is not given, and neither is a property grouped in columns (`COLUMNS`): the form is not refused for it, as the server does not know that the render function is a component. Inside a container a React view draws, the grid of such a group is drawn by the platform, and the view places it with `<Platform name="GRID(i)"/>`.
+### A theme context {#theme-context}
 
-### A React component inside a React view {#embedded}
-
-A child the platform draws can itself be drawn by a React component: a property or a group whose `CUSTOM` is a [component](#form-custom), a table that has such a property, a container or [another component](#component-views) with a `custom` of its own. When a view of the form places such a child with [`<Platform>`](#placing) — whole, or its cell in a [row](#live-editor) —, the component is drawn in the React tree of that view, where the `<Platform>` stands, and not in a React root of its own:
+We need a React context the view provides — a theme — to reach the components in the cells of a table the platform draws and the view places. The solution uses a [React component inside a React view](../language/React_component_views.md#embedded). `Quantity` here is a property's component in [`CUSTOM`](../language/React_component_views.md#form-custom).
 
 ```jsx
 const Theme = React.createContext('light');
@@ -2452,20 +832,18 @@ function Quantity({data}) {
 }
 ```
 
-- A context the view provides around the `<Platform>` reaches the component, however many components the placed child holds — a table has one in every row. `props.data` and `props.controller`, and so `useData` and `useController` inside the component, remain the component's own.
-- An event in the component bubbles through the React handlers of the elements around the `<Platform>`. The handlers of the component, and then those handlers of the view, run before the platform handles the event in the cell — selecting the row, handling a key —, so `stopPropagation()` in any of them keeps the event from the platform, and in the component from the view's handlers too.
-- A component that throws while it draws shows its message in its own place, and the view around it stays. A component that suspends shows the fallback of the nearest `Suspense` above it, which, unless the component has one of its own, is one of the view's, around the whole placed child.
-- The component is mounted while its place is: when the view stops rendering the `<Platform>`, gives it another name, or a `Suspense` around it shows its fallback, the component is unmounted and loses its state, and it is mounted anew when the child is placed again. A child no `<Platform>` places is not drawn. What the platform keeps for a child that is not placed — a row's [editor](#live-editor) while its row is not rendered — is its own view, not the state of a component it draws there.
+### Keeping the components' state {#keeping-state}
+
+We need the components of a placed child to keep their state while the view does not show the child, as in a tab strip ([A React component inside a React view](../language/React_component_views.md#embedded)).
 
 To keep the state of the components in a child while the child is not shown, keep its place rendered and hide it, rather than render only the place of the child that is shown: `<div hidden={name !== active}><Platform name={name}/></div>`. A child hidden so is still placed: hiding its place does not stop the server reading it.
 
-Where the place itself has to go and come back — a tab strip that renders only the active child so that the others are not read, a row of a list that is not rendered while it is scrolled away — and the components inside have to keep their state meanwhile, give the place `ownRoot`, at the price of the context and the `Suspense` boundaries the view has around the place:
+Where the place itself has to go, `ownRoot` keeps the state instead.
 
-```jsx
-<Platform key={active} name={active} ownRoot/>
-// or: usePlatform(active, { ownRoot: true })
-```
+### A React component or an HTML template {#react-or-template}
 
-Every component in what such a place holds is drawn in a React root of its own instead, and stays mounted, with its state, while no place holds the child, until the form is closed. No context and no `Suspense` boundary of the view around the `<Platform>` reaches it then; an event in it still reaches the view's handlers around the place, after the platform has handled it. A whole child that is not placed is [not read](#placing): the component keeps the `data` it had until the child is placed again, and its effects and timers go on running with that `data`. A row's editor that is not placed goes on receiving its `data`, and is there until its row leaves the rows of the group. Give a place `ownRoot` when the child is first placed, and do not change it: a root of its own, once made, is kept wherever the child is placed later, and a component made later — the cell of a new row — is drawn in a root of its own where its place has `ownRoot`, and in the tree of the view that places it where it has not. A component in such a place that is itself a view draws what it places with its own `<Platform>` in its own tree.
+We need to choose whether a container is drawn by a React component or by an HTML template ([A React component and an HTML template](../language/React_views.md#choosing-between-a-react-component-and-an-html-template)).
 
-Where no view of the form places it — in a table or on a panel the platform lays out — the component is drawn in a React root of its own, one for each cell, and no context reaches it. A form in the [forms window](#forms-window) and a window in the [window layout](#window-layout) keep their own roots too: an open form that no `<Platform>` shows stays open, and its components keep their state. So does a form shown inside another form, in a container or in a cell that a view of that form places — a component is drawn in the tree of a view of its own form only —, and what a form shows outside its place: the content of a popup container, a record of a table.
+Markup of your own that has to use a caption the application computes — as text of its own, or a container's caption — is the point at which a template stops being enough.
+
+A React component earns its place when the layout is computed — the children are placed conditionally, the grid template is derived from the data read through `useData`, or the markup comes from a component library — or when the markup has to show something the projection carries, which for a container or a child the platform draws is its `caption` and its `image`.
