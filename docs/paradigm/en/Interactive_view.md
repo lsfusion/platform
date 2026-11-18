@@ -155,7 +155,7 @@ It is worth noting that the selection of objects by default is pretty the same a
     -   on opening the form - passed objects
     -   in other cases – an empty object collection
 
-Search direction is determined by the object's default type (`PREV` here is equivalent to `FIRST`).
+[Search direction](Activation_ACTIVATE.md#direction) is determined by the object's default type (`PREV` here is equivalent to `FIRST`).
 :::
 
 ### Object operators {#objectoperators}
