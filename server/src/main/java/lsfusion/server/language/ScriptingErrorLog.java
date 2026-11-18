@@ -103,6 +103,10 @@ public class ScriptingErrorLog {
         return parser.getLsfConsoleLink(module, e.line - lineNumberShift, e.charPositionInLine + 1);
     }
 
+    public String getPosition(ScriptParser parser) {
+        return getPosition(parser, new SemanticErrorException(parser.getCurrentParser().input));
+    }
+
     //If the error occurs in the moduleHeader rule, moduleId is not yet set
     private String getModulePath(ScriptParser parser) {
         //remove first '/'
@@ -507,7 +511,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitMultipleAggrGPropError(ScriptParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
-        emitSimpleError(parser, format("multiple aggregate properties are forbidden with '%s' grouping type", groupType));
+        emitSimpleError(parser, format("multiple aggregate properties are forbidden with '%s' grouping type (if the expressions after the first one belong to an enclosing list, enclose the GROUP in parentheses)", groupType));
     }
 
     public void emitConcatAggrGPropError(ScriptParser parser) throws SemanticErrorException {
@@ -523,7 +527,11 @@ public class ScriptingErrorLog {
     }
 
     public void emitWhereGPropError(ScriptParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
-        emitSimpleError(parser, format("WHERE clause is forbidden with '%s' grouping type", groupType));
+        emitSimpleError(parser, format("WHERE clause is forbidden with '%s' grouping type (if this WHERE belongs to an enclosing operator, enclose the GROUP in parentheses)", groupType));
+    }
+
+    public void emitTopGPropError(ScriptParser parser, ScriptingLogicsModule.GroupingType groupType) throws SemanticErrorException {
+        emitSimpleError(parser, format("TOP / OFFSET clause is forbidden with '%s' grouping type", groupType));
     }
 
     public void emitTopInnerParamGPropError(ScriptParser parser, String paramName) throws SemanticErrorException {

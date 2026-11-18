@@ -36,6 +36,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.navigator.NavigatorElement;
@@ -463,6 +464,12 @@ public class ScriptingLogicsModuleChecks {
     public void checkGPropWhereConsistence(GroupingType type, LPWithParams where) throws ScriptingErrorLog.SemanticErrorException {
         if (type != GroupingType.AGGR && type != GroupingType.NAGGR && type != GroupingType.CONCAT && where != null) {
             errLog.emitWhereGPropError(parser, type);
+        }
+    }
+
+    public void checkGPropTopConsistence(GroupingType type, SelectTop<?> selectTop) throws ScriptingErrorLog.SemanticErrorException {
+        if ((type == GroupingType.EQUAL || type == GroupingType.AGGR || type == GroupingType.NAGGR) && !selectTop.isEmpty()) {
+            errLog.emitTopGPropError(parser, type);
         }
     }
 

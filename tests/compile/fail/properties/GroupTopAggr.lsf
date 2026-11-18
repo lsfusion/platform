@@ -1,0 +1,15 @@
+MODULE GroupTopAggr;
+
+REQUIRE System;
+
+// TOP / OFFSET in GROUP EQUAL, AGGR and NAGGR are reported at load: they failed with a ClassCastException (#1836)
+
+CLASS Team;
+CLASS Game;
+hostTeam = DATA Team (Game);
+date = DATA DATE (Game);
+city = DATA STRING[100] (Game);
+
+firstCity (Team t) = GROUP EQUAL city(Game game) ORDER date(game), game TOP 1 BY hostTeam(game);
+firstGame (Team t) = GROUP AGGR Game game ORDER date(game), game TOP 1 BY hostTeam(game);
+laterGame (Team t) = GROUP NAGGR Game game ORDER date(game), game OFFSET 1 WHERE hostTeam(game) = t;

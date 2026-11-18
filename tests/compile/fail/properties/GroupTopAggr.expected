@@ -1,0 +1,3 @@
+TOP / OFFSET clause is forbidden with 'EQUAL' grouping type
+TOP / OFFSET clause is forbidden with 'AGGR' grouping type
+TOP / OFFSET clause is forbidden with 'NAGGR' grouping type

@@ -1,0 +1,104 @@
+MODULE GroupOrder;
+
+REQUIRE TestUtils;
+
+// ORDER without TOP / OFFSET leaves GROUP SUM / MAX / MIN / EQUAL / AGGR / NAGGR as it is without that ORDER (#1836: the
+// ORDER expressions became groups of the property - extra parameters with BY, a wrong value or an internal error without it)
+
+CLASS GroupOrderTeam 'Team';
+CLASS GroupOrderGame 'Game';
+gorTeam 'Team' = DATA GroupOrderTeam (GroupOrderGame);
+gorDate 'Date' = DATA DATE (GroupOrderGame);
+gorGoals 'Goals' = DATA INTEGER (GroupOrderGame);
+gorCity 'City' = DATA STRING[100] (GroupOrderGame);
+
+gorTotalBy (GroupOrderTeam t) = GROUP SUM gorGoals(GroupOrderGame g) ORDER gorDate(g), g BY gorTeam(g);
+gorBestBy (GroupOrderTeam t) = GROUP MAX gorGoals(GroupOrderGame g) ORDER gorDate(g), g BY gorTeam(g);
+gorWorstBy (GroupOrderTeam t) = GROUP MIN gorGoals(GroupOrderGame g) ORDER gorDate(g), g BY gorTeam(g);
+gorCityBy (GroupOrderTeam t) = GROUP EQUAL gorCity(GroupOrderGame g) ORDER gorDate(g), g BY gorTeam(g);
+gorGameOn (DATE d) = GROUP AGGR GroupOrderGame g ORDER gorGoals(g) BY gorDate(g);
+gorAnyGameOn (DATE d) = GROUP NAGGR GroupOrderGame g ORDER gorGoals(g) BY gorDate(g);
+gorTotalByNoParams = GROUP SUM gorGoals(GroupOrderGame g) ORDER gorDate(g), g BY gorTeam(g);
+gorTotalInline (GroupOrderTeam t) = OVERRIDE [GROUP SUM gorGoals(GroupOrderGame g) ORDER gorDate(g), g BY gorTeam(g)](t), 0;
+
+gorTotal (GroupOrderTeam t) = GROUP SUM gorGoals(GroupOrderGame g) IF gorTeam(g) = t ORDER g;
+gorTotalByCity (GroupOrderTeam t) = GROUP SUM gorGoals(GroupOrderGame g) IF gorTeam(g) = t ORDER gorCity(g);
+gorBest (GroupOrderTeam t) = GROUP MAX gorGoals(GroupOrderGame g) IF gorTeam(g) = t ORDER gorDate(g), g;
+gorTotalBefore (GroupOrderTeam t, DATE d) = GROUP SUM gorGoals(GroupOrderGame g) IF gorTeam(g) = t AND gorDate(g) < d ORDER gorDate(g), g;
+gorTotalAll () = GROUP SUM gorGoals(GroupOrderGame g) ORDER gorDate(g), g;
+gorTotalPlusOne (GroupOrderTeam t) = 1 + (GROUP SUM gorGoals(GroupOrderGame g) IF gorTeam(g) = t ORDER g);
+// d is used only in ORDER, so the property does not depend on it
+gorTotalSorted (GroupOrderTeam t, DATE d) = GROUP SUM gorGoals(GroupOrderGame g) IF gorTeam(g) = t ORDER gorDate(g) < d, g;
+
+// a parameter that only ORDER declares keeps the condition that the ORDER expressions are not NULL
+gorDatedGames () = GROUP SUM 1 ORDER gorDate(GroupOrderGame g);
+gorGamesBy (GroupOrderTeam t) = GROUP SUM 1 ORDER gorDate(GroupOrderGame g) BY gorTeam(g);
+
+gorNewGame (GroupOrderTeam t, DATE d, INTEGER goals, STRING[100] city) {
+    NEW g = GroupOrderGame {
+        gorTeam(g) <- t;
+        gorDate(g) <- d;
+        gorGoals(g) <- goals;
+        gorCity(g) <- city;
+    }
+}
+
+// a team with four games scoring 1 to 4 goals in the order of their dates and one more game without a date scoring 100,
+// and a team with two games scoring 10 and 20
+gorNewGames (GroupOrderTeam t, GroupOrderTeam other) {
+    gorNewGame(t, 2026_01_01, 1, 'Minsk');
+    gorNewGame(t, 2026_01_02, 2, 'Minsk');
+    gorNewGame(t, 2026_01_03, 3, 'Minsk');
+    gorNewGame(t, 2026_01_04, 4, 'Minsk');
+    NEW g = GroupOrderGame {
+        gorTeam(g) <- t;
+        gorGoals(g) <- 100;
+        gorCity(g) <- 'Minsk';
+    }
+    gorNewGame(other, 2026_01_05, 10, 'Brest');
+    gorNewGame(other, 2026_01_06, 20, 'Brest');
+}
+
+testGroupOrderBy 'GROUP ... ORDER without TOP / OFFSET, with BY' () {
+    NEW t = GroupOrderTeam {
+        NEW other = GroupOrderTeam {
+            gorNewGames(t, other);
+            assertEquals(gorTotalBy(t), 110, 'SUM ... ORDER ... BY');
+            assertEquals(gorTotalBy(other), 30, 'SUM ... ORDER ... BY of another team');
+            assertEquals(gorBestBy(t), 100, 'MAX ... ORDER ... BY');
+            assertEquals(gorWorstBy(t), 1, 'MIN ... ORDER ... BY');
+            assertEquals(gorCityBy(other), 'Brest', 'EQUAL ... ORDER ... BY');
+            assertEquals(gorGoals(gorGameOn(2026_01_03)), 3, 'AGGR ... ORDER ... BY');
+            assertEquals(gorGoals(gorAnyGameOn(2026_01_05)), 10, 'NAGGR ... ORDER ... BY');
+            assertEquals(gorTotalByNoParams(t), 110, 'SUM ... ORDER ... BY without parameters on the left');
+            assertEquals(gorTotalInline(t), 110, 'SUM ... ORDER ... BY inline');
+        }
+    }
+}
+
+testGroupOrder 'GROUP ... ORDER without TOP / OFFSET, without BY' () {
+    NEW t = GroupOrderTeam {
+        NEW other = GroupOrderTeam {
+            gorNewGames(t, other);
+            assertEquals(gorTotal(t), 110, 'SUM ... ORDER by the object itself');
+            assertEquals(gorTotal(other), 30, 'SUM ... ORDER by the object itself of another team');
+            assertEquals(gorTotalByCity(t), 110, 'SUM ... ORDER by a value of another class');
+            assertEquals(gorBest(t), 100, 'MAX ... ORDER');
+            assertEquals(gorTotalBefore(t, 2026_01_03), 3, 'SUM ... ORDER with two upper parameters');
+            assertEquals(gorTotalAll(), 140, 'SUM ... ORDER without upper parameters');
+            assertEquals(gorTotalPlusOne(t), 111, 'SUM ... ORDER inside an expression');
+            assertEquals((GROUP SUM gorGoals(GroupOrderGame g) IF gorTeam(g) = t ORDER g), 110, 'SUM ... ORDER inside an action');
+            assertEquals(gorTotalSorted(t, 2026_01_03), 110, 'SUM ... ORDER by an upper parameter used only there');
+        }
+    }
+}
+
+testGroupOrderNewParameter 'GROUP ... ORDER without TOP / OFFSET declaring a parameter' () {
+    NEW t = GroupOrderTeam {
+        NEW other = GroupOrderTeam {
+            gorNewGames(t, other);
+            assertEquals(gorDatedGames(), 6, 'SUM ... ORDER declaring a parameter: only the games with a date');
+            assertEquals(gorGamesBy(t), 5, 'SUM ... ORDER ... BY using that parameter: all the games');
+        }
+    }
+}

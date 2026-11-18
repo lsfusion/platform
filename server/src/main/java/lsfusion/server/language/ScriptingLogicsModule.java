@@ -3337,6 +3337,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkGPropAggrConstraints(type, mainProps, groupProps);
         checks.checkGPropAggregateConsistence(type, mainProps);
         checks.checkGPropWhereConsistence(type, whereProp);
+        checks.checkGPropTopConsistence(type, selectTop);
         checks.checkGPropSumConstraints(type, mainProps.isEmpty() ? null : mainProps.get(0));
 
         List<LPWithParams> whereProps = new ArrayList<>();
@@ -3462,6 +3463,14 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<LPWithParams> whereProps = whereProp != null ? singletonList(whereProp) : Collections.emptyList();
 
+        // without TOP / OFFSET the order changes nothing: only the not NULL condition for a parameter declared just in ORDER stays
+        boolean orderIgnored = !orderProps.isEmpty() && selectTop.isEmpty() && !(type == GroupingType.CONCAT || type == GroupingType.LAST || type instanceof CustomGroupingType);
+        if (orderIgnored) {
+            warningList.add("ORDER without TOP / OFFSET is ignored in GROUP " + type + " at " + errLog.getPosition(parser) + " (if this ORDER belongs to an enclosing operator, enclose the GROUP in parentheses)");
+            if (mergeAllParams(mergeLists(whereProps, mainProps, groupProps)).containsAll(getExtendInterfaces(oldContextSize, mergeAllParams(orderProps))))
+                orderProps = Collections.emptyList();
+        }
+
         List<LPWithParams> lpWithParams = mergeLists(groupProps, mainProps, orderProps, whereProps);
         if(!groupProps.isEmpty()) // with BY an upper parameter used only in TOP / OFFSET still has to be an interface of the result
             lpWithParams = mergeLists(lpWithParams, selectTop.getParams());
@@ -3475,6 +3484,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         boolean ordersNotNull = doesExtendContext(0, notNullParams, orderProps);
 
         LPWithParams patchedWhere = patchExtendParams(notNullParams, orderProps, ordersNotNull, newContext, oldContextSize, debugPoint);
+        if (orderIgnored && !orderProps.isEmpty()) {
+            patchedWhere = addScriptedIfProp(mergeLists(singletonList(patchedWhere), orderProps));
+            orderProps = Collections.emptyList();
+        }
         if(whereProp != null || (type == GroupingType.AGGR || type == GroupingType.NAGGR))
             whereProp = patchedWhere;
         else

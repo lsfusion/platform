@@ -5,7 +5,7 @@ title: 'Grouping (GROUP)'
 
 The *group* operator creates a [property](Properties.md) that divides all object collections in the system into groups, and calculates an [aggregating function](Set_operations.md#func) for each group following specified order. Accordingly, the set for which this aggregating function is calculated is determined as all the object collections belonging to this group. If the grouping set is empty and the operator does not reference any upper parameters, all matching object collections belong to one common group. Any upper parameters that the operator does reference implicitly extend the grouping set, so that each combination of their values forms a separate group. 
 
-Groups are defined for this operator as a set of properties (*groups*), and the order is defined as a list of properties and an increasing or decreasing marker. An object collection for which at least one of the groups is `NULL` belongs to no group and takes no part in the calculation of any result. If the aggregation function is not [commutative](Set_operations.md#commutative), then the order must be uniquely determined. For commutative aggregators, the order does not change the final value by itself, but it becomes important when aggregation is performed not over the whole group, but only over some ordered fragment of the group.
+Groups are defined for this operator as a set of properties (*groups*), and the order is defined as a list of properties and an increasing or decreasing marker. An object collection for which at least one of the groups is `NULL` belongs to no group and takes no part in the calculation of any result. If the aggregation function is not [commutative](Set_operations.md#commutative), then the order must be uniquely determined. For commutative aggregators, the order does not change the final value by itself, but it becomes important when aggregation is performed not over the whole group, but only over its *slice* — the first `n` elements of the ordered group, all elements after the first `m`, or the `n` elements after the first `m`.
 
 At the same time, it is useful to distinguish between the *group key* and the *group elements*. The group key determines which object collections belong to the same group and for which set of values a result exists, while the group elements determine from which data that result is calculated. This distinction helps explain why grouping returns one value per group rather than a separate value for each source object collection, as in [partitioning / ordering](Partitioning_sorting_PARTITION_..._ORDER.md).
 
@@ -14,10 +14,10 @@ Functionally, grouping can be viewed as follows:
 - for each group, the full set of object collections belonging to it is determined
 - if necessary, only the relevant elements are kept from this set
 - if order matters for the aggregate or only part of the group should participate, an order is defined inside the group
-- if necessary, only a fragment of the ordered group is used — for example, the first `n` elements, all elements after skipping the first `m`, or the next `n` elements after skipping the first `m`
+- if necessary, only a slice of the ordered group is used
 - the aggregate function is then calculated over the remaining data
 
-Order inside a group can play two different roles. For non-commutative aggregators (`CONCAT`, `LAST`, and order-sensitive custom aggregates) it directly affects the result, so it should be uniquely determined. For commutative aggregators (`SUM`, `MAX`, `MIN`, `EQUAL`, `AGGR`, `NAGGR`) it is used primarily to select the required fragment of the group.
+Order inside a group can play two different roles. For non-commutative aggregators (`CONCAT`, `LAST`, and order-sensitive custom aggregates) it directly affects the result, so it should be uniquely determined. For commutative aggregators (`SUM`, `MAX`, `MIN`, `EQUAL`, `AGGR`, `NAGGR`) it only determines which elements fall into the slice of the group. Of these aggregators, only `SUM`, `MAX`, and `MIN` support a slice.
 
 
 :::info
