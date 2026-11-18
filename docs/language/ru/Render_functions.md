@@ -11,10 +11,10 @@ title: 'Функции отображения'
 ```js
 function itemCards() {
     return {
-        render: function (element, controller) => {
+        render: (element, controller) => {
             ...
         },
-        update: function (element, controller, list) {
+        update: (element, controller, list) => {
             ...
         }
     }

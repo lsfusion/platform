@@ -37,8 +37,6 @@ const seekRef = useSeekOnScroll(controller.o, { enabled: follow });
 {rows.map(row => <div key={row.key} ref={seekRef(row)}>...</div>)}
 ```
 
-После смены фильтров или сортировок лента, которая должна начинаться заново, переходит к первой строке ([фильтры](../language/React_filters_and_toolbar.md#filters)).
-
 После смены фильтров или сортировок сервер читает строки вокруг текущей строки, как в таблице платформы. Лента, которая должна начинаться заново, после изменения вызывает `controller.<g>.change(controller.form.HOME)` в том же синхронном [пакете](../language/Form_and_navigator_controllers.md#batch). В [режиме ручного применения фильтров](../language/React_filters_and_toolbar.md#filter-controls) переходите к началу после применения фильтров, чтобы переход использовал новые условия.
 
 Кнопки перехода к первой и последней строке:

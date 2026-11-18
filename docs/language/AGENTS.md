@@ -136,7 +136,8 @@ Language article structure convention:
   with a link
   to the main abstraction
   when relevant
-- when the corresponding sections
+- for a syntax-construction article,
+  when the corresponding sections
   are needed,
   they SHOULD usually go
   in this order:
@@ -229,7 +230,8 @@ Language article structure convention:
   unless they are
   already established
   canonically
-- `Description`
+- in a syntax-construction article,
+  `Description`
   SHOULD contain
   everything else:
   semantics,
@@ -276,7 +278,7 @@ an article for a language syntax construction
 (or for an interface
 client code receives and calls,
 leaving out the rules
-for `Syntax`, `Parameters`,
+for `Syntax`, `Description`, `Parameters`,
 `Examples`, and syntax blocks),
 the assistant MUST:
 
@@ -1032,7 +1034,13 @@ Completeness of research:
   and shown there
   (its form or window opened)
   without errors
-  in the browser console;
+  in the browser console,
+  with the calls
+  and interactions
+  it demonstrates
+  exercised
+  and their observable results
+  checked;
   a fragment
   (a call, a read)
   inside such a component;

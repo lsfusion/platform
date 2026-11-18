@@ -37,8 +37,6 @@ const seekRef = useSeekOnScroll(controller.o, { enabled: follow });
 {rows.map(row => <div key={row.key} ref={seekRef(row)}>...</div>)}
 ```
 
-After a change of the filters or sortings, a feed that should start over moves to the first row ([filters](../language/React_filters_and_toolbar.md#filters)).
-
 After a change of the filters or sortings, the server reads rows around the current row, as in the platform's table. A feed that should start over calls `controller.<g>.change(controller.form.HOME)` after the change in the same synchronous [batch](../language/Form_and_navigator_controllers.md#batch). In the [manual filter apply mode](../language/React_filters_and_toolbar.md#filter-controls), move to the start after applying the filters, so the move uses the new conditions.
 
 The buttons to the first and the last row:

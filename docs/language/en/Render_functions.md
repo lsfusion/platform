@@ -11,10 +11,10 @@ For example, the render function `itemCards` of an object group returns an objec
 ```js
 function itemCards() {
     return {
-        render: function (element, controller) => {
+        render: (element, controller) => {
             ...
         },
-        update: function (element, controller, list) {
+        update: (element, controller, list) => {
             ...
         }
     }

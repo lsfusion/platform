@@ -25,7 +25,14 @@ How-to article structure convention:
 - a How-to article
   SHOULD be organized
   around concrete tasks
-  and their solutions
+  and their solutions;
+  for an interface
+  client code receives and calls,
+  it MUST contain only
+  usage scenarios
+  that link
+  the Language specification
+  and do not restate it
 - when several cases
   are present,
   they SHOULD usually appear
@@ -39,15 +46,6 @@ How-to article structure convention:
   not on full reference-style
   coverage of the syntax
   or of an interface
-- a How-to article
-  about an interface
-  client code receives and calls
-  SHOULD hold only
-  such tasks and solutions,
-  linking the Language articles
-  that specify the interface;
-  it MUST NOT restate
-  that specification
 
 Cross-references:
 How-to articles

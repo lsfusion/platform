@@ -5,6 +5,8 @@ title: 'How-to: Custom view controller API'
 
 This article collects typical tasks a custom view solves through its controller. The controller is specified in the Language articles: the members of a React view's controller in [React view controller](../language/React_view_controller.md), and the form's controller, which a custom view of any kind gets, and the navigator's controller in [Form and navigator controllers](../language/Form_and_navigator_controllers.md).
 
+An end-to-end example of these calls from a classic custom view is in [How-to: Custom Components (server calls)](How-to_Custom_components_server_calls.md).
+
 ### Changing the current object and a value from a component {#current-object-and-value}
 
 We need a click on a row to make the row current, and a button to mark the current order. The solution uses the group's `change(row)` and the `change(value)` of the property's member ([Changing the current object and property values](../language/React_view_controller.md#changing-values)).
