@@ -96,8 +96,6 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     // the module of the code that customizes the application for the connection's user, null when there is no code
     protected EvalScriptingLogicsModule customizeLM;
-    // the code that module is of, or that failed
-    private String customizeCode;
 
     public RemoteConnection(int port, String sID, LogicsInstance logicsInstance, AuthenticationToken token, SessionInfo sessionInfo, ExecutionStack upStack) throws RemoteException, SQLException, SQLHandledException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         super(port, upStack, sID, SyncType.NOSYNC);
@@ -132,15 +130,12 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
             initComputer(stack, connectionInfo.computerInfo, session.dataSession);
 
-            initCustomize();
+            initCustomize(session.dataSession);
         }
     }
 
-    protected void initCustomize() throws SQLException, SQLHandledException {
-        String code = readCustomizeCode();
-        if (Objects.equals(code, customizeCode)) // the module is of the code's text alone, whoever the user
-            return;
-
+    protected void initCustomize(DataSession session) throws SQLException, SQLHandledException {
+        String code = readCustomizeCode(session);
         EvalScriptingLogicsModule customizeLM = null;
         if (code != null) {
             try {
@@ -154,25 +149,10 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             }
         }
         this.customizeLM = customizeLM;
-        // a compile the thread was interrupted in says nothing of the code : it is compiled again the next time
-        this.customizeCode = customizeLM == null && Thread.currentThread().isInterrupted() ? null : code;
     }
 
-    // SystemEvents.extendCode[User] is LAZY WAIT : the server keeps its value, and an apply that saves a code drops it. So it
-    // is read where a session would read it, with no session : a session of the pool is asked of it before it is taken
-    private String readCustomizeCode() throws SQLException, SQLHandledException {
-        LP extendCode = businessLogics.systemEventsLM.extendCodeUser;
-        return (String) dbManager.readLazyValue(extendCode.property, extendCode.getMapValues(user)).getValue();
-    }
-
-    // the code saved for the user is still the one the module is of, or that failed - a broken code is not compiled, nor
-    // logged, again on every call (RemoteSession.equalsConnectionContext)
-    protected boolean isCustomizeActual() {
-        try {
-            return Objects.equals(readCustomizeCode(), customizeCode);
-        } catch (SQLException | SQLHandledException e) {
-            throw Throwables.propagate(e);
-        }
+    private String readCustomizeCode(DataSession session) throws SQLException, SQLHandledException {
+        return (String) businessLogics.systemEventsLM.extendCodeUser.read(session, user);
     }
 
     // a client tells its user what the code failed with, a call of the program interface has only the log

@@ -53,7 +53,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
             } catch (AuthenticationException e) {
                 return false;
             }
-            return isCustomizeActual(); // and the code of the customization, which may have been saved since
+            return true;
         }
         return false;
     }

@@ -4,8 +4,8 @@ REQUIRE TestUtils, SystemEvents;
 
 // a call through the Action API is a connection of its user as a client is, so the code that customizes the application
 // for the user (SystemEvents.dataExtendCode[]) customizes the call : an action the code declares is called by its name,
-// and a script the call sends sees what the code declares. A call without a session takes the code as it is saved at
-// the moment, though the session it gets from the pool was initialized before that
+// and a script the call sends sees what the code declares. A call takes the code its session is built with, so every
+// call of the test opens a session of the stateful API of its own (session=..._close) : one built after the code is saved
 
 // an action the code of the test declares under the same name : called by the bare name it is neither, with the
 // namespace this one
@@ -21,15 +21,12 @@ hecReset () { hecSet(NULL); } @@noauth;
 // an action of the logics such a server lets an anonymous call run
 hecNothing () { } @@noauth;
 
-// what the server answers a call, or what the call fails with. A call waits a while first : the server returns the
-// session of the call before it to the pool after it has answered, and the call should rather get that session - one
-// that read the code before the code was changed - than a new one
+// what the server answers a call, or what the call fails with
 hecResponse = DATA LOCAL STRING ();
 hecGet (STRING request) {
     hecResponse() <- NULL;
-    sleep(500);
     TRY {
-        EXTERNAL HTTP GET origin() + request TO hecResponse;
+        EXTERNAL HTTP GET origin() + request + '&session=hec_close' TO hecResponse;
     } CATCH {
         hecResponse() <- messageCaughtException();
     }
@@ -37,9 +34,8 @@ hecGet (STRING request) {
 // a script is sent as the body : in a parameter of the address a ';' would end it
 hecEval (STRING script) {
     hecResponse() <- NULL;
-    sleep(500);
     TRY {
-        EXTERNAL HTTP POST origin() + '/eval' PARAMS script TO hecResponse;
+        EXTERNAL HTTP POST origin() + '/eval?session=hec_close' PARAMS script TO hecResponse;
     } CATCH {
         hecResponse() <- messageCaughtException();
     }
