@@ -75,6 +75,28 @@ public class UiGridIT extends UiTest {
         close(form);
     }
 
+    // a FOREGROUND colours the text of a cell that has a BACKGROUND too, in the current row and in another one, and in the
+    // panel, where the input has the focus. Bootstrap's rules for a table cell and for a focused input are more specific
+    // than the platform's, and the text was drawn in the theme's colour (#2004)
+    @Test
+    public void aForegroundColoursTheText() throws Exception {
+        String first = "Item " + System.nanoTime(), second = "Item " + System.nanoTime();
+        exec("UiGrid.uiGridSeed", first);
+        exec("UiGrid.uiGridSeed", second);
+        Locator form = open("UiGrid.uiGrid", "UiGrid.uiGridColors");
+        for (String name : new String[]{first, second}) {
+            Locator cell = cell(form, "uiGridName(i)", name);
+            assertEquals(name, "rgb(85, 85, 0)", cell.evaluate(TEXT_COLOR));
+            assertEquals(name, "rgb(221, 255, 255)", cell.evaluate("td => getComputedStyle(td).backgroundColor"));
+        }
+        assertEquals("panel", "rgb(85, 85, 0)", form.locator("[lsfusion-container='PROPERTY(panelName)'] input").evaluate("e => getComputedStyle(e).color"));
+        close(form);
+    }
+
+    // the colour of the innermost element that holds the cell's text
+    private static final String TEXT_COLOR = "td => { let e = td; for (const d of td.querySelectorAll('*'))"
+            + " if ([...d.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) e = d; return getComputedStyle(e).color; }";
+
     // a range of rows runs on from the row it starts from and shrinks back, a range of columns runs on beside it, a move
     // without Shift starts both anew, and every row and column is selected (GGridSelection) - and stays shown so when
     // selected again: the server says nothing of the rows it has as selected already, which the table took for their

@@ -79,6 +79,15 @@ EXTEND FORM uiGridSelection
     PROPERTIES() selectedCount = uiGridSelected, nameSelected = uiGridNameSelected, qtySelected = uiGridQtySelected
 ;
 
+// columns with a BACKGROUND, one of them with a FOREGROUND too, in the grid and in the panel
+FORM uiGridColors 'Colors'
+    OBJECTS i = UiGridItem
+    PROPERTIES(i) BACKGROUND #ddffff uiGridName FOREGROUND #555500, uiGridQuantity
+
+    OBJECTS p = UiGridItem PANEL
+    PROPERTIES(p) BACKGROUND #ddffff panelName = uiGridName FOREGROUND #555500
+;
+
 NAVIGATOR {
     NEW FOLDER uiGrid 'UI grid' WINDOW toolbar {
         NEW uiGridItems;
@@ -87,6 +96,7 @@ NAVIGATOR {
         NEW uiGridFooters;
         NEW uiGridPatterns;
         NEW uiGridIcons;
+        NEW uiGridColors;
     }
 }
 

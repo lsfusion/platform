@@ -154,10 +154,15 @@ input.prop-text-vert-center {
 .cell-with-foreground,
 .cell-with-foreground .btn,
 .cell-with-foreground .btn-check:checked+.btn,
-.cell-with-foreground.form-control {
+.cell-with-foreground.form-control,
+.cell-with-foreground.form-control:focus {
     color: var(--foreground-color);
     --disabled-text-color: var(--foreground-color);
     --text-color: var(--foreground-color);
+}
+/* a cell of a bootstrap table takes its color from this variable, by a rule more specific than the one above */
+.cell-with-foreground {
+    --bs-table-color-state: var(--foreground-color);
 }
 
 .cell-with-custom-font,
