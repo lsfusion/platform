@@ -1,6 +1,6 @@
 MODULE UiConnectionCustomize;
 
-REQUIRE SystemEvents;
+REQUIRE SystemEvents, Service;
 
 FORM uiCcForm 'UI connection customize: form';
 FORM uiCcOther 'UI connection customize: other';
@@ -48,6 +48,12 @@ EXTEND FORM uiCcOther PROPERTIES() uiCcEvaluate;
 // neither; with the namespace, this one
 uiCcLogics (INTEGER a) { RETURN a; }
 uiCcLogicsNote = DATA LOCAL STRING[20] ();
+
+// the test sets the setting and restores it through /exec, with no login
+uiCcEnableAPI (STRING value) {
+    Service.baseValue(setting('enableAPI')) <- value;
+    APPLY;
+} @@noauth;
 
 // with what the editor saved for a user : the browser's user is not known here
 uiCcReset () {

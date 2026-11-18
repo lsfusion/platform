@@ -34,6 +34,7 @@ public class ExternalApiAccessIT {
 
     private static final String DATABASE = "lsfusion_test_api_" + ProcessHandle.current().pid();
     private static final String SECOND_FACTOR_PASSWORD = "eaaPassword1";
+    private static final String ADMIN_PASSWORD = "external-api-test";
 
     private static Process server;
     private static int httpPort;
@@ -46,6 +47,7 @@ public class ExternalApiAccessIT {
         Path log = BASE.resolve("target/server-api.log");
         server = TestServer.start(DATABASE, ports, log, BASE.resolve("target/classes"),
                 "settings.enableAPI=1",
+                "logics.initialAdminPassword=" + ADMIN_PASSWORD,
                 "lsfusion.server.devmode=false"); // which would set enableAPI to 2 whatever is given
         TestServer.waitStarted(server, log);
         logics = RMIUtils.<RemoteLogicsLoaderInterface>rmiLookup("localhost", ports[1], "default", "RemoteLogicsLoader").getLogics();
@@ -82,6 +84,29 @@ public class ExternalApiAccessIT {
         Assert.assertEquals(response.body(), 401, response.statusCode());
     }
 
+    // a code of every kind is saved only by a call that may evaluate a script : an authenticated one, not one with no login
+    @Test
+    public void writingCustomizationCodeRequiresTheRightToEvaluate() throws Exception {
+        for (String kind : new String[]{"application", "form", "ownApplication", "ownForm"}) {
+            String write = "/exec?action=ExtendCodeRights.ecrWrite&p=" + kind;
+            Assert.assertEquals(kind, "refused", post(write, "").body());
+            Assert.assertEquals(kind, "saved", postAsAdmin(write, "").body());
+        }
+    }
+
+    // a form is built of the code saved, not of one its session wrote and did not save, for any call
+    @Test
+    public void aFormIsBuiltOfTheSavedCode() throws Exception {
+        HttpResponse<String> save = postAsAdmin("/exec?action=ExtendCodeRights.ecrSaveForm", "");
+        Assert.assertEquals(save.body(), 200, save.statusCode());
+        try {
+            Assert.assertEquals("saved", post("/exec?action=ExtendCodeRights.ecrBuild", "").body());
+            Assert.assertEquals("saved", postAsAdmin("/exec?action=ExtendCodeRights.ecrBuild", "").body());
+        } finally {
+            postAsAdmin("/exec?action=ExtendCodeRights.ecrDropForm", "");
+        }
+    }
+
     // what the code that customizes the application declares is opened to the callers by its own annotations, as an
     // action of the logics is : by @@noauth here, on a server that lets only an authenticated call in. The calls after the
     // save open sessions of the stateful API of their own, of names no call has used : the server drops a closed session
@@ -89,7 +114,7 @@ public class ExternalApiAccessIT {
     @Test
     public void aNoauthActionOfACustomizationRunsWithoutLogin() throws Exception {
         String code = "eaaOpen() { RETURN 7; } @@noauth;\neaaClosed() { RETURN 8; }";
-        HttpResponse<String> set = post("/exec?action=HttpExtendCode.hecSet&p=" + URLEncoder.encode(code, "UTF-8"), "");
+        HttpResponse<String> set = postAsAdmin("/exec?action=HttpExtendCode.hecSet&p=" + URLEncoder.encode(code, "UTF-8"), "");
         Assert.assertEquals(set.body(), 200, set.statusCode());
         try {
             HttpResponse<String> open = post("/exec?action=eaaOpen&session=" + UUID.randomUUID() + "_close", "");
@@ -99,7 +124,7 @@ public class ExternalApiAccessIT {
             HttpResponse<String> closed = post("/exec?action=eaaClosed&session=" + UUID.randomUUID() + "_close", "");
             Assert.assertEquals(closed.body(), 401, closed.statusCode());
         } finally {
-            post("/exec?action=HttpExtendCode.hecReset", "");
+            postAsAdmin("/exec?action=HttpExtendCode.hecReset", "");
         }
     }
 
@@ -542,6 +567,11 @@ public class ExternalApiAccessIT {
 
     private static HttpResponse<String> post(String path, String body) throws Exception {
         return post(path, body, "text/plain");
+    }
+
+    private static HttpResponse<String> postAsAdmin(String path, String body) throws Exception {
+        String credentials = Base64.getEncoder().encodeToString(("admin:" + ADMIN_PASSWORD).getBytes(StandardCharsets.UTF_8));
+        return post(path, body, "text/plain", "Basic " + credentials);
     }
 
     private static HttpResponse<String> post(String path, String body, String contentType) throws Exception {

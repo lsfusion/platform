@@ -11,5 +11,6 @@ public interface UserController {
 
     boolean changeCurrentUser(DataObject user, ExecutionStack stack) throws SQLException, SQLHandledException;
     Long getCurrentUserRole();
+    boolean canEvaluate();
     EvalScriptingLogicsModule getCustomizeLM();
 }

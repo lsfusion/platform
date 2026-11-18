@@ -11,8 +11,7 @@ REQUIRE TestUtils, SystemEvents;
 // namespace this one
 hecLogics (INTEGER a) { RETURN a; }
 
-// the code for all users : the calls of a test are anonymous. Open to them on a server that lets only an authenticated
-// call in as well (ExternalApiAccessIT)
+// the code for all users : ExternalApiAccessIT writes it authenticated
 hecSet (TEXT code) {
     dataExtendCode() <- code;
     APPLY;

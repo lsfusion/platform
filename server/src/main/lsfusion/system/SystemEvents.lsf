@@ -1131,13 +1131,14 @@ dataExtendCode = DATA TEXT (User);
 // the separator has to be a line break, otherwise the last line of the global code and the first line of the personal one are glued together
 extendCode(Form f, User u) = CONCAT '\n', dataExtendCode(f), dataExtendCode(f, u);
 extendCode(Form f) = extendCode(f, currentUser());
-extendCode(STRING sid) = extendCode(form(sid));
+// the code a form is built of (FormEntity.getForm) : as it is saved, with nothing the session changed
+extendCode(STRING sid) = PREV(extendCode(form(sid)));
 
 // a line break between the two, as in a form's. Every connection of a user reads it, so it is kept in memory (LAZY) -
 // and let go as a code is applied (WAIT), for a connection made right after that to take the code that was saved
 extendCode (User user) = CONCAT '\n', dataExtendCode(), dataExtendCode(user) LAZY WAIT;
 
-// what compileExtendCode failed with, NULL if the code compiles
+// what compileExtendCode failed with, or that the user may not write a code, NULL if the code compiles
 extendCodeError = DATA LOCAL TEXT ();
 // compile a code as it is compiled where it is used, running nothing of it: a form's (by its canonical name) as the form
 // opens in a connection the application's code given before it customizes, the application's as a connection starts

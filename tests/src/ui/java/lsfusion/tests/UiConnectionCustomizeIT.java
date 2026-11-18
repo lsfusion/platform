@@ -28,6 +28,7 @@ public class UiConnectionCustomizeIT extends UiTest {
     // the next one, whose navigator would be made of them too
     @After
     public void dropTheCodes() throws Exception {
+        exec("UiConnectionCustomize.uiCcEnableAPI"); // no argument passes NULL : restore the startup setting before resetting the codes
         exec("UiConnectionCustomize.uiCcReset");
     }
 
@@ -278,6 +279,28 @@ public class UiConnectionCustomizeIT extends UiTest {
         answered(0, () -> open("System.administration", element("SystemEvents.customize")));
         assertEquals("", personalEditor(editor).evaluate("ace => ace.parentElement.currentValue"));
         close(editor);
+    }
+
+    // and a code of a user who may not evaluate a script : the editor shows the refusal and stays open, and the form
+    // opened again has the code saved
+    @Test
+    public void theEditorRefusesTheCodeOfAClientThatMayNotEvaluate() throws Exception {
+        exec("UiConnectionCustomize.uiCcSetForm", FORM, "uiCcSaved 'Saved by the code' () = 'saved';\nEXTEND FORM uiCcForm PROPERTIES() uiCcSaved;");
+        exec("UiConnectionCustomize.uiCcEnableAPI", "0");
+        Locator form = open(FOLDER, FORM);
+        action(form, "formCustomize").click();
+        Locator editor = form("SystemEvents.customizeForm");
+        type(editor, "EXTEND FORM uiCcForm PROPERTIES() uiCcAdded;");
+        action(editor, "formOk").click();
+        closeDialog("Only a user who may evaluate a script may write a customization code");
+        assertThat(editor).isVisible();
+        closeDropping(editor);
+        close(form);
+
+        Locator reopened = open(FOLDER, FORM);
+        assertThat(reopened.locator("[lsfusion-container='PROPERTY(uiCcSaved())']")).isVisible();
+        assertThat(reopened.locator("[lsfusion-container='PROPERTY(uiCcAdded())']")).hasCount(0);
+        close(reopened);
     }
 
     private void refuseCode(Locator editor, String code, String missingName) {

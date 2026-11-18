@@ -1,0 +1,50 @@
+MODULE ExtendCodeRights;
+
+REQUIRE SystemEvents, Utils;
+
+// a customization's code of each kind : the application's and a form's, for all users and the caller's own
+ecrCode (STRING kind, Form f, User u) = CASE
+    WHEN kind == 'application' THEN dataExtendCode()
+    WHEN kind == 'form' THEN dataExtendCode(f)
+    WHEN kind == 'ownApplication' THEN dataExtendCode(u)
+    WHEN kind == 'ownForm' THEN dataExtendCode(f, u);
+ecrMarker() = 'ecrMarker() \{ \}';
+
+// the external API test calls it with no login and authenticated : saving a code needs the right to evaluate a script.
+// What was saved is read in a new session
+ecrWrite (STRING kind) {
+    FOR Form f == form('ExtendCodeRights.ecrForm') AND User u == currentUser() DO {
+        ecrCode(kind, f, u) <- ecrMarker();
+        APPLY;
+        NEWSESSION {
+            IF NOT ecrCode(kind, f, u) == ecrMarker() THEN RETURN 'refused';
+            ecrCode(kind, f, u) <- NULL;
+            APPLY;
+            RETURN 'saved';
+        }
+    }
+} @@noauth;
+
+// a form with a code saved and another one its session writes : the export shows which one the form is built of
+FORM ecrForm;
+ecrSavedCode() = 'ecrFromSaved() = \'ecrSavedMark\';\nEXTEND FORM ecrForm PROPERTIES() ecrFromSaved';
+ecrUnsavedCode() = 'ecrFromUnsaved() = \'ecrUnsavedMark\';\nEXTEND FORM ecrForm PROPERTIES() ecrFromUnsaved';
+
+// called authenticated : saving the code takes the right
+ecrSetForm (TEXT code) {
+    dataExtendCode(form('ExtendCodeRights.ecrForm')) <- code;
+    APPLY;
+}
+ecrSaveForm () { ecrSetForm(ecrSavedCode()); } @@noauth;
+ecrDropForm () { ecrSetForm(NULL); } @@noauth;
+
+// which code the form is built of in a session that wrote the other one. The session is dropped with nothing applied
+ecrBuild () {
+    NEWSESSION {
+        dataExtendCode(form('ExtendCodeRights.ecrForm')) <- ecrUnsavedCode();
+        EXPORT ecrForm JSON;
+        fileToString(exportFile());
+        RETURN CONCAT ',', (IF isSubstring(resultString(), 'ecrSavedMark') THEN 'saved'),
+            (IF isSubstring(resultString(), 'ecrUnsavedMark') THEN 'unsaved');
+    }
+} @@noauth;

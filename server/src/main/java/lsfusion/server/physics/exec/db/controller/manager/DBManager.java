@@ -1134,6 +1134,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         return null;
                     }
 
+                    // a session of no connection is the server's own : it may evaluate a script
+                    @Override
+                    public boolean canEvaluate() {
+                        return true;
+                    }
+
                     @Override
                     public EvalScriptingLogicsModule getCustomizeLM() {
                         return null;

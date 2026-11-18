@@ -244,6 +244,19 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             return remoteConnection == null ? null : remoteConnection.userRole;
         }
 
+        // whether the connection may evaluate a script, by the API gate as /eval
+        public boolean canEvaluate() {
+            RemoteConnection remoteConnection = weakThis.get();
+            if(remoteConnection == null)
+                return false;
+            try {
+                remoteConnection.checkAPIAccess(false, false);
+                return true;
+            } catch (RuntimeException e) {
+                return false;
+            }
+        }
+
         public EvalScriptingLogicsModule getCustomizeLM() {
             RemoteConnection remoteConnection = weakThis.get();
             return remoteConnection == null ? null : remoteConnection.getCustomizeLM();
