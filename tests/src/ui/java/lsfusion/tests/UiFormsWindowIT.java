@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 // the FORMS windows of an application (UiFormsWindow.lsf): what a window that draws one form at a time does with the
 // form it displaces - closes it, asks about its changes, keeps it -, docked-modal pairs in it, the address ACTIVATE
@@ -529,6 +530,42 @@ public class UiFormsWindowIT extends UiTest {
         assertThat(boxTab).hasCount(0);
     }
 
+    // a form shown in a tab of a tabbed container whose active tab is the first, then closed: the last tab, which the
+    // container shows then, is the server's active tab too, and its data come. It was shown with nothing sent, and the
+    // server, still with the first tab active, did not read it
+    @Test
+    public void theTabShownOnceAFormInATabbedContainerLeftIsActiveOnTheServer() throws Exception {
+        String[] items = seed();
+        Locator launcher = launcher(), guest = form(GUEST), secondName = secondName(launcher);
+        assertThat(secondName).isHidden();
+        action(launcher, "uiFormsWindowGuestIntoTabs").click();
+        assertThat(launcher.locator("[lsfusion-form='" + GUEST + "']")).isVisible();
+
+        action(launcher, "uiFormsWindowCloseGuest").click();
+        assertThat(guest).hasCount(0);
+        assertThat(secondName).isVisible();
+        assertThat(secondName.locator(".panel-renderer-value")).hasText("Name: " + items[1]);
+    }
+
+    // ... and when SHOWIF has hidden the server's active tab meanwhile: the last tab is the only one sent. The layout,
+    // updated before it was selected, selected the first tab shown, and sent it - the server made active a tab the user
+    // never saw
+    @Test
+    public void onlyTheTabShownOnceAFormInATabbedContainerLeftIsSent() throws Exception {
+        String[] items = seed();
+        Locator launcher = launcher(), guest = form(GUEST);
+        action(launcher, "uiFormsWindowGuestIntoTabs").click();
+        assertThat(launcher.locator("[lsfusion-form='" + GUEST + "']")).isVisible();
+        action(launcher, "uiFormsWindowHideTabA").click();
+        assertThat(launcher.locator("[lsfusion-tab='guestTabA']")).hasCount(0);
+
+        List<String> sent = requests("SetTabActive");
+        action(launcher, "uiFormsWindowCloseGuest").click();
+        assertThat(guest).hasCount(0);
+        assertThat(secondName(launcher).locator(".panel-renderer-value")).hasText("Name: " + items[1]);
+        assertEquals(1, sent.size());
+    }
+
     // a floating form not waited for whose answer comes after the client's placeholder - the window the client shows
     // for an open it predicts, 100 ms after the click, which the form then arrives in -: the placeholder and the form
     // in it are a window not waited for - no backdrop, the page around it in use, a floating form the launcher under it
@@ -970,6 +1007,11 @@ public class UiFormsWindowIT extends UiTest {
     // a form of the module inside a window or a form
     private static Locator in(Locator scope, String form) {
         return scope.locator("[lsfusion-form='UiFormsWindow." + form + "']");
+    }
+
+    // the property the launcher's last tab shows: the second item's name
+    private static Locator secondName(Locator launcher) {
+        return launcher.locator("[lsfusion-container='PROPERTY(uiFormsWindowSecondName())']");
     }
 
     // a click into the form reaches it - no other window is over it -, as playwright's checks before a click tell

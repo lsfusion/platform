@@ -72,12 +72,12 @@ public class TabbedContainerView extends GAbstractContainerView {
             activateTab(component);
     }
 
+    // the last tab, selected as if the user picked it: sent to the server (unless it is a form's), which reads a tab's
+    // data only while the tab is active
     public void activateLastTab() {
         int index = visibleChildren.size() - 1;
-        if(index >= 0) {
-            currentChild = visibleChildren.get(index);
+        if(index >= 0)
             panel.selectTab(index);
-        }
     }
 
     protected void onTabSelected(int selectedIndex, GFormController formController, GContainer container) {

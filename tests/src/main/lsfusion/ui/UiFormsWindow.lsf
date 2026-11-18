@@ -279,17 +279,41 @@ uiFormsWindowGuestCloserFloating 'Guest closer, floating' () { SHOW uiFormsWindo
 EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowGuestCloserFloating;
 
 // a form shown in a container that is a tab of an outer tabbed container of the launcher: empty, the container is
-// hidden, and so is its tab
+// hidden, and so is its tab. Before it, three tabs, the first of which an action hides (SHOWIF); the first and the last
+// show the first and the second item's names - the server reads a tab's only while the tab is active. Formulas, drawn
+// as text: the name of an item itself is drawn as a choice of the item - radio buttons, a list or an input, by how many
+// items there are
+uiFormsWindowFirstName 'First name' () = 'Name: ' + uiFormsWindowName(uiFormsWindowFirstItem());
+uiFormsWindowTabNote 'Note' () = 'Tab B';
+uiFormsWindowSecondName 'Second name' () = 'Name: ' + uiFormsWindowName(uiFormsWindowSecondItem());
+uiFormsWindowTabAHidden = DATA LOCAL BOOLEAN ();
+uiFormsWindowHideTabA 'Hide tab A' () { uiFormsWindowTabAHidden() <- TRUE; }
+EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowFirstName, uiFormsWindowTabNote, uiFormsWindowSecondName,
+                                              uiFormsWindowHideTabA;
 DESIGN uiFormsWindowLauncher {
     NEW guestTabs {
         tabbed = TRUE;
+        NEW guestTabA {
+            caption = 'Tab A';
+            showIf = NOT uiFormsWindowTabAHidden();
+            MOVE PROPERTY(uiFormsWindowFirstName());
+        }
+        NEW guestTabB {
+            caption = 'Tab B';
+            MOVE PROPERTY(uiFormsWindowTabNote());
+        }
+        NEW guestTabC {
+            caption = 'Tab C';
+            MOVE PROPERTY(uiFormsWindowSecondName());
+        }
         NEW guestBox {
             caption = 'Box';
         }
     }
 }
 uiFormsWindowGuestIntoBox 'Guest into box' () { SHOW uiFormsWindowGuest IN uiFormsWindowLauncher.guestBox NOWAIT; }
-EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowGuestIntoBox;
+uiFormsWindowGuestIntoTabs 'Guest into tabs' () { SHOW uiFormsWindowGuest IN uiFormsWindowLauncher.guestTabs NOWAIT; }
+EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowGuestIntoBox, uiFormsWindowGuestIntoTabs;
 
 // a form a React view draws (UiFormsWindowCounter), opened from the launcher in System.forms, the window the full screen
 // draws alone
