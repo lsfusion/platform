@@ -243,11 +243,17 @@ getClientCredentials(STRING str) {
 } @@api @@noauth;
 
 onUserRegister ABSTRACT LIST (User);
+// no one may register by themselves : neither on the registration page nor by a call of registerUser
+registrationDisabled = ABSTRACT BOOLEAN ();
 
 checkPasswordStrength ABSTRACT LIST (STRING);
 passwordStrengthError = DATA LOCAL STRING ();
 
 registerUser(JSONFILE user) {
+    IF registrationDisabled() THEN {
+        EXPORT FROM error = '{registration.disabled}';
+        RETURN;
+    }
     IMPORT FROM user FIELDS STRING[100] login, STRING[100] password, STRING[100] firstName, STRING[100] lastName, STRING[400] email DO {
         checkPasswordStrength(password);
         IF customUserLogin(login) THEN {
