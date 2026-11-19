@@ -107,7 +107,7 @@ A view that lays rows out in their own order — a card flow, a feed — can kee
 - on a page change the reseated row keeps its on-screen position, so nothing jumps under the eye;
 - a current record moved from outside — a click, a programmatic seek — is scrolled into view instead.
 
-The pact rests on the same contract the table itself lives by, and it is the developer's to keep: the page must hold more rows than the viewport can show — set `PAGESIZE` on the [`OBJECTS`](Object_blocks.md) block accordingly. The window then always extends a page beyond the current record, so it leaves the viewport — and reseats, pulling the next page — before the scroller runs out of room at a loaded edge:
+These rules hold under the same condition as the table's own, and meeting it is up to the developer: the page must hold more rows than the viewport can show — set `PAGESIZE` on the [`OBJECTS`](Object_blocks.md) block accordingly. The rows read then always extend a page beyond the current record, so it leaves the viewport — and is reseated, requesting the next page — before the scroller runs out of room at a loaded edge:
 
 ```jsx
 const seekRef = useSeekOnScroll(controller.o, { enabled: follow });

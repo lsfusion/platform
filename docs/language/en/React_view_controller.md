@@ -128,7 +128,7 @@ Editing the form and calling the server also differ along two more axes — whet
 
 A custom view normally reads state from `props.data` and changes it through the form-edit members — including running an action drawn on the form with `controller.<action>.exec()`. Its members change what the view draws — rows, their current row and the selected ones, sortings, filters, tree nodes and the toolbar. There is no member for a tab or container the platform draws: place a form action with [`ACTIVATE TAB`](ACTIVATE_operator.md), [`COLLAPSE CONTAINER`](COLLAPSE_operator.md) or [`EXPAND CONTAINER`](EXPAND_operator.md) in the view's container and run it through its member.
 
-The form's server calls (`exec` / `eval` / `evalAction` / `change`) are an escape hatch, used only for what the form does not express — ad-hoc server computation, a global write, or creating an object.
+The form's server calls (`exec` / `eval` / `evalAction` / `change`) are used only for what the form does not express — ad-hoc server computation, a global write, or creating an object.
 
 Editing the form goes through the ordinary edit channel and is not gated. The server calls are (see [Server calls](Form_and_navigator_controllers.md#calling-the-server)). The edited row is addressed by a handle, while any other object — an FK value or an action parameter — is passed as its numeric id (an lsFusion object cannot be passed from JS).
 
