@@ -89,3 +89,13 @@ DESIGN orders {
     }
 }
 ```
+
+The `OrderBoard` component draws a line with the number and the sum of each order read:
+
+```jsx
+export function OrderBoard(props) {
+    return <ul className="order-board">
+        {props.data.o.list.map(r => <li key={r.key}>{r.number.value}: {r.sum.value}</li>)}
+    </ul>;
+}
+```

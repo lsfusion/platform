@@ -94,4 +94,25 @@ WINDOW toolbar VERTICAL POSITION(0, 6, 20, 94) HIDETITLE CLASS toolbarWindowClas
 WINDOW hotforms HORIZONTAL BOTTOM VALIGN(CENTER) TEXTVALIGN(START);
 ```
 
+In the desktop web client, a React component draws the `toolbar` window instead of the platform, a button for each navigator element of the window that is not hidden:
+
+```lsf
+EXTEND WINDOW System.toolbar CUSTOM 'AppMenu';
+```
+
+```jsx
+const { Caption } = window.lsfusion;
+
+export function AppMenu({ data, controller }) {
+    const item = name => {
+        const e = data.byName[name];
+        return !e.hidden && <li key={name}>
+            <button onClick={ev => controller.activate(name, ev)}><Caption value={e.caption}/></button>
+            <ul>{e.children.map(item)}</ul>
+        </li>;
+    };
+    return <nav><ul>{data.root.map(item)}</ul></nav>;
+}
+```
+
   

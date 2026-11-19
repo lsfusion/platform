@@ -89,3 +89,13 @@ DESIGN orders {
     }
 }
 ```
+
+Компонент `OrderBoard` рисует по строке с номером и суммой каждого прочитанного заказа:
+
+```jsx
+export function OrderBoard(props) {
+    return <ul className="order-board">
+        {props.data.o.list.map(r => <li key={r.key}>{r.number.value}: {r.sum.value}</li>)}
+    </ul>;
+}
+```
