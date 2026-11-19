@@ -13,13 +13,19 @@ own — the group's view filters.
 ### User filters {#filters}
 
 `filters` is the group's list of user filter conditions, in the order they are applied: the ones the server filters the
-group by, with the changes that wait to be sent: in the [manual apply mode](#filter-controls), those that wait for the
-apply, and, in either mode, a value the platform's panel prepares — F3's — till its editor commits it. They are a part
-of the group of their own, like its rows and its panel properties, and they are on the group's node where their
-component is — where `FILTERS(<group>)` is: inside the group's box, which is where a `custom` on `BOX(<group>)` draws
-the rows too, or `FILTERS(<group>)` itself when it has a `custom` of its own. There `filters` is always present, and
-empty when the group is unfiltered; the group's node in any other container does not have it. A group in `PANEL` view
-has none anywhere: the platform shows it no user filters either. Each condition is an object:
+group by, with the changes that wait to be sent:
+
+- in the [manual apply mode](#filter-controls), those that wait for the apply;
+- in either mode, a value the platform's panel prepares — F3's — till its editor commits it.
+
+They are a part of the group of their own, like its rows and its panel properties, and they are on the group's node
+where their component is — where `FILTERS(<group>)` is: inside the group's box, which is where a `custom` on
+`BOX(<group>)` draws the rows too, or `FILTERS(<group>)` itself when it has a `custom` of its own. There `filters` is
+always present, and empty when the group is unfiltered; the group's node in any other container does not have it.
+
+A group in `PANEL` view has none anywhere: the platform shows it no user filters either.
+
+Each condition is an object:
 
 | Field | Meaning |
 | --- | --- |
@@ -43,24 +49,33 @@ until they have explicit `EXTID`s.
 empty: the properties a condition can name are the group's, not the node's — `filterProperties` lists them.
 
 The controller takes a condition in the same shape, so a projected condition can be handed back to it as it is. What a
-condition leaves out of `compare`, `negation` and `or` is read as below: in an array, as for a new condition — the
-property's default comparison (its `defaultCompare` in `filterProperties`), no negation, AND —; on its own, as the
-condition it takes the place of has it. One on a file property is the exception: its `value` is a link to the file, not
-the file a condition compares with, so the controller refuses one that has a value; one with none is read as any other
-with none.
+condition leaves out of `compare`, `negation` and `or` is read as below:
+
+- in an array, as for a new condition — the property's default comparison (its `defaultCompare` in `filterProperties`),
+  no negation, AND;
+- on its own, as the condition it takes the place of has it.
+
+One on a file property is the exception: its `value` is a link to the file, not the file a condition compares with, so
+the controller refuses one that has a value; one with none is read as any other with none.
+
+#### Changing one condition {#changing-one-condition}
 
 `controller.<group>.filters.change(condition)` — a member of the group where `filters` is — changes **one** condition
-and leaves the group's other conditions, and their order, alone: it takes the place of the FIRST condition on the same
-property — a range is two conditions on one property, and its other bound stays —, keeping what it does not state of
-that condition's comparison, negation and `or`; when there is none, it takes the place of the property's
-[filter](#property-filters), where the group has one, else is appended — the default way, either way. So
-`{property: 'price', value: 300}` turns `price > 100 OR …` into `price > 300 OR …`. A condition with no `value` —
+and leaves the group's other conditions, and their order, alone:
+
+- it takes the place of the FIRST condition on the same property — a range is two conditions on one property, and its
+  other bound stays —, keeping what it does not state of that condition's comparison, negation and `or`;
+- when there is none, it takes the place of the property's [filter](#property-filters), where the group has one, else
+  is appended — the default way, either way.
+
+So `{property: 'price', value: 300}` turns `price > 100 OR …` into `price > 300 OR …`. A condition with no `value` —
 absent, `null`, `''`, or one its type reads as `NULL`: `false` of a `BOOLEAN` property (a `TBOOLEAN`'s `false` is a
-value) — takes that first condition off, alone. This is what a [property filter](#property-filters)'s `change` does, and
-F3 in a grid over the conditions a view draws ([Custom filter panel](#custom-filter-panel)) — but those two, with
-no condition on the property, compare as its filter compared last, and F3 on an empty cell states the condition
-comparing with `NULL`: a `FILTER` being a user filter given in advance, its value and a condition added by hand are
-stated by one rule.
+value) — takes that first condition off, alone.
+
+This is what a [property filter](#property-filters)'s `change` does, and F3 in a grid over the conditions a view draws
+([Custom filter panel](#custom-filter-panel)) — but those two, with no condition on the property, compare as its filter
+compared last, and F3 on an empty cell states the condition comparing with `NULL`: a `FILTER` being a user filter given
+in advance, its value and a condition added by hand are stated by one rule.
 
 Prefer it to replacing the whole list. A view that rebuilds the list merges into the conditions its handler saw, so
 a handler that holds the list of an earlier render silently drops a filter set since.
@@ -82,6 +97,8 @@ export function ItemBoard(props) {
 An empty input takes the condition on `name` off — the first one, which the input shows —, keeping the other conditions:
 its `value` is `''`, which is no value.
 
+#### Rebuilding and sending {#rebuilding-and-sending}
+
 `filters` follows the group's list as it is changed and as the server reports it — a list a `FILTER` action sets, say —
 and is rebuilt only then: it keeps its identity across renders in which nothing states its conditions anew — a change to
 a property value, to the rows or to the current object leaves it as it was — so a view can compare it across renders and
@@ -90,25 +107,26 @@ memoize on it.
 A change through the controller goes into the group's list, and `filters` shows it straight away. It is sent at once,
 before the rows filtered by it come back — but in the [manual apply mode](#filter-controls), where it waits for the
 apply, as a change of the platform's filter panel does; until it is answered, a list the server reports for the group in
-the answer to an earlier request does not replace it. A view that sends a search only after a pause in the typing keeps
-what is being typed in its own state and calls `change` when the pause comes.
+the answer to an earlier request does not replace it.
+
+A view that sends a search only after a pause in the typing keeps what is being typed in its own state and calls
+`change` when the pause comes.
 
 After a change of the filters or sortings, the server reads rows around the current row, as in the platform's
 table.
 
+#### Replacing the list {#replacing-the-list}
+
 `controller.<group>.filters.change(conditions)` — the same thing the projection calls `data.<group>.filters`, changed
 where it is read — replaces the list at once: an array states all the conditions a view can name — a condition on a
-property it names none by, below, keeps its place —, a single condition states one. For clearing what a view can name
+property it names none by, below, keeps its place —, while a single condition changes only one ([above](#changing-one-condition)). For clearing what a view can name
 (`controller.i.filters.change([])` — the [filter controls](#filter-controls)' `resetFilters()` clears every condition,
-at once), or when the view genuinely owns the entire condition set. The array is the list of conditions, as `FILTER`
-reads one in `.lsf`: an element with no `value` is a condition comparing with `NULL` — "is empty", with `negation` "is
-not empty" —, so a condition `filters` lists with a `null` `value` — one F3 states on an empty cell, say — is taken back
-as it is, a `BOOLEAN` property's too, listed with `false`, which reads back as `NULL`. A property filtered by no more is
-one the array leaves out.
+at once), or when the view genuinely owns the entire condition set.
 
-Either form of `change` reports an author's mistake instead of dropping a condition: an unknown property, an unknown
-comparison or `IN ARRAY`, which no condition compares by, an unknown field in a condition, a `negation` or `or` that
-is not a boolean, a condition on an action or on a property grouped in columns.
+The array is the list of conditions, as `FILTER` reads one in `.lsf`: an element with no `value` is a condition
+comparing with `NULL` — "is empty", with `negation` "is not empty" —, so a condition `filters` lists with a `null`
+`value` — one F3 states on an empty cell, say — is taken back as it is, a `BOOLEAN` property's too, listed with `false`,
+which reads back as `NULL`. A property filtered by no more is one the array leaves out.
 
 A condition set elsewhere is not listed when it is on a property with no integration SID (`NOEXTID`), which the
 projection has no name for, on an action, which is not something a form is filtered by, or on a property grouped in
@@ -117,13 +135,24 @@ columns, as a condition here names a property, not one of its columns. The conso
 Handing `data.<group>.filters` back through the array form therefore leaves those conditions where they are, as changing
 ONE condition never touches the conditions on other properties.
 
+#### Refused conditions {#refused-conditions}
+
+Either form of `change` reports an author's mistake instead of dropping a condition: an unknown property, an unknown
+comparison or `IN ARRAY`, which no condition compares by, an unknown field in a condition, a `negation` or `or` that
+is not a boolean, a condition on an action or on a property grouped in columns.
+
+#### A tree's user filters {#tree-user-filters}
+
 A tree has one filter box for all its groups, `FILTERS(TREE <tree>)`, and its user filters are on [the tree's
 node](React_trees_sortings_selection.md#trees). `filters` there lists the conditions of all its groups, those of the upper groups first, and names each
 property by its group's name and its own, `c.name`, as a [`<Platform>`](React_platform_components.md#crossing-back-to-lsfusion) names a property of a group.
+
 `controller.<tree>.filters.change` takes a condition named the same way: the name is read up to its first dot, the
 group's — a group's name has none, and an `EXTID` with a dot, which a property the platform draws may carry, is taken
 back as `filters` gives it. A list it states is the tree's: `controller.t.filters.change([])` clears the conditions it
 can name of all its groups in one request, and a single condition is merged into the conditions of all of them.
+
+#### Properties a condition can be on {#filter-properties}
 
 Beside `filters`, the user filters say what a condition can be on — `filterProperties`, design data, there from the
 start: the group's properties a condition can name, wherever they are drawn, in the form's order — on a tree's node,
@@ -154,18 +183,26 @@ platform's panel, `FILTERS(o)` placed back with `custom = NULL` —, and each do
 
 `filtersManual` is the manual apply mode: the setting that makes the user filters apply changes by hand
 (`userFiltersManualApplyMode`) is on — the controls a view draws always have the apply button; the platform's have it
-while they are shown, which the toolbar's filter button does. In it a change of the group's conditions waits for the
-apply, whoever states it — the view, a [property filter](#property-filters), F3, the platform's panel —; the reset is
-sent at once all the same, and so are a pivot's drill-down and a row the platform's panel deletes. The apply sends the
-group's list as it stands: a value typed into an editor the view draws and kept in the view's own state is not in the
-list until the view states it (`filters.change`, a property filter's `change`), so a view states it before the apply,
-or the apply does not send it. `filtersPending` is whether anything waits: the list differs from the one sent — in the
-manual apply mode till the apply, and in either mode while the platform's panel holds a value it prepared, F3's, which
-its editor has not committed. The setting is off by default: a change is sent at once, `filtersManual` stays `false`,
-and a view may as well not draw `FILTERCONTROLS(o)` at all — the group is filtered the same. Where the view draws the
-conditions too, `resetFilters()` clears them all at once, the conditions on a property the view names none by
-included, while `filters.change([])` clears the ones it can name and is sent as any change is: members of two
-components may do much the same thing, each component's part repeating its component.
+while they are shown, which the toolbar's filter button does.
+
+In it a change of the group's conditions waits for the apply, whoever states it — the view, a
+[property filter](#property-filters), F3, the platform's panel —; the reset is sent at once all the same, and so are a
+pivot's drill-down and a row the platform's panel deletes.
+
+The apply sends the group's list as it stands: a value typed into an editor the view draws and kept in the view's own
+state is not in the list until the view states it (`filters.change`, a property filter's `change`), so a view states it
+before the apply, or the apply does not send it.
+
+`filtersPending` is whether anything waits: the list differs from the one sent — in the manual apply mode till the
+apply, and in either mode while the platform's panel holds a value it prepared, F3's, which its editor has not
+committed.
+
+The setting is off by default: a change is sent at once, `filtersManual` stays `false`, and a view may as well not draw
+`FILTERCONTROLS(o)` at all — the group is filtered the same.
+
+Where the view draws the conditions too, `resetFilters()` clears them all at once, the conditions on a property the
+view names none by included, while `filters.change([])` clears the ones it can name and is sent as any change is:
+members of two components may do much the same thing, each component's part repeating its component.
 
 ```jsx
 function ItemFilterButtons({data, controller}) {
@@ -179,10 +216,15 @@ function ItemFilterButtons({data, controller}) {
 }
 ```
 
-The cell a condition is added on is the current cell of the standard grid where the platform draws the rows, and the
-first column a view carries that the form shows and a condition can be on — a view has no current column —, in its
-current row, where a view draws them. On a tree it is the current cell of the platform's tree, or the first column of
-the [current node](React_trees_sortings_selection.md#trees)'s group that the form shows and a condition can be on, in that group's current row.
+The cell a condition is added on is:
+
+- where the platform draws the rows, the current cell of the standard grid;
+- where a view draws them, the first column a view carries that the form shows and a condition can be on — a view has
+  no current column —, in its current row;
+- on a tree, the current cell of the platform's tree, or the first column of the
+  [current node](React_trees_sortings_selection.md#trees)'s group that the form shows and a condition can be on, in that
+  group's current row.
+
 With no `FILTERS(o)` in the design `addFilter` is refused, as the platform has no such button.
 
 Inside a [batch](Form_and_navigator_controllers.md#batch) the commands go with it, as `filters.change` does.
@@ -215,10 +257,13 @@ controller.i.stock.change(null);   // none, as the platform's "(All)"
 | `canClear` | Whether none may be selected, as the platform's widget offers it: a group of one filter is its check box, always clearable; a group of several is its list, with "(All)" unless `NONULL`. Where it is `false`, `change(null)` is refused |
 
 The server applies the filter selected and reports it, so `value` is what the server holds — the default filter when the
-form opens, a `FILTERGROUP` action's choice — and a filter a view selects shows at once. `change` takes the index of one
-of `filters`, or `null`, and anything else is refused. It is a part of a [batch](Form_and_navigator_controllers.md#batch)
-as `filters.change` is, and asks the server even for the filter shown — after a batch that failed, it is set again. A
-filter's key keeps working while the form shows the filter group — its descriptor's `hidden` — and the view that draws
+form opens, a `FILTERGROUP` action's choice — and a filter a view selects shows at once.
+
+`change` takes the index of one of `filters`, or `null`, and anything else is refused. It is a part of a
+[batch](Form_and_navigator_controllers.md#batch) as `filters.change` is, and asks the server even for the filter shown —
+after a batch that failed, it is set again.
+
+A filter's key keeps working while the form shows the filter group — its descriptor's `hidden` — and the view that draws
 it is shown, the host a container places that view in included, as the platform's widget takes it: it selects the
 filter, and in a group of one filter — the platform's check box —, pressed again, takes it off.
 
@@ -234,9 +279,11 @@ A property declared a [user filter](../paradigm/Interactive_view.md#userfilters)
 `USER` in the [filters block](Filters_and_sortings_block.md) — has a filter of its own among the user filters
 of its group: a component the design names `FILTER(name(i))`, by the property's name on the form, which the platform's
 filter panel shows as a condition row there from the start if the component and every container holding it remain in
-the form design. A property filter a view draws is a part of the group of its property there, as a filter group is: on
-the group's node, under `filter`, by the property's integration name — one object for the filters the view draws, with
-no prototype, as `byKey` is:
+the form design.
+
+A property filter a view draws is a part of the group of its property there, as a filter group is: on the group's node,
+under `filter`, by the property's integration name — one object for the filters the view draws, with no prototype, as
+`byKey` is:
 
 ```lsf
 FORM items
@@ -269,19 +316,32 @@ controller.i.filter.name.change(null);                     // ... and not any mo
 | `compare`, `negation`, `or` | The comparison of the filter's condition, spelled as `filters` spells it, whether the condition is negated, and whether it is joined to the next one by OR, as `filters` says it; while there is no condition, those of the condition it showed last — at first, the property's default comparison, `false` and `false` |
 | `value` | The value of the filter's condition, `null` while there is none |
 
+A filter of a property of a [tree](React_trees_sortings_selection.md#trees)'s group is on its group's node, as a filter
+group of a tree's group is. Its [entry](React_projection.md#display-options), `data['FILTER(name(i))']`, says whether
+the form shows the filter — its `SHOWIF`, or a container's above it.
+
+#### The filter's condition {#property-filter-condition}
+
 The filter's condition is the first condition on its property among the group's user filters — as the platform's row of
 the filter takes the first condition on its column —, whoever states it: the filter, `filters.change`, the platform's
-filter panel, a `FILTER` action. `change(value, options)` states its value as `filters.change` states one condition: in
-that condition's place, or, where there is none, in the filter's own. The options, `{compare, negation, or}`, any of
-them, state the condition's comparison — spelled as `filters` spells it —, its negation and its junction, as the
-platform's row does with the filter controls shown; what they leave out stays as the filter has it — as its condition
-has it, or, with none, as it compared last (above). An option `change` does not know, a comparison that is no comparison
-of a condition — an unknown one, `IN ARRAY` — and a negation or `or` that is not `true` or `false` are refused, with no
-value too, which then takes nothing off. No value — absent, `null`, `''`, or one its type reads as `NULL`: `false` of a
-`BOOLEAN` property — takes that condition off, whatever the options say, and that one alone: a range's other bound
-stays, and is the filter's condition then, as when the platform's row is emptied. The filter itself is never removed. It
-goes with a [batch](Form_and_navigator_controllers.md#batch) as `filters.change` does. The condition of a filter on a
-file property can only be taken off: its `value` is a link to the file, not the file a condition compares with.
+filter panel, a `FILTER` action.
+
+`change(value, options)` states its value as `filters.change` states one condition: in that condition's place, or,
+where there is none, in the filter's own. The options, `{compare, negation, or}`, any of them, state the condition's
+comparison — spelled as `filters` spells it —, its negation and its junction, as the platform's row does with the
+filter controls shown; what they leave out stays as the filter has it — as its condition has it, or, with none, as it
+compared last (above).
+
+An option `change` does not know, a comparison that is no comparison of a condition — an unknown one, `IN ARRAY` — and
+a negation or `or` that is not `true` or `false` are refused, with no value too, which then takes nothing off.
+
+No value — absent, `null`, `''`, or one its type reads as `NULL`: `false` of a `BOOLEAN` property — takes that condition
+off, whatever the options say, and that one alone: a range's other bound stays, and is the filter's condition then, as
+when the platform's row is emptied. The filter itself is never removed. It goes with a
+[batch](Form_and_navigator_controllers.md#batch) as `filters.change` does.
+
+The condition of a filter on a file property can only be taken off: its `value` is a link to the file, not the file a
+condition compares with.
 
 A property filter with no condition is not in `filters`, but it keeps its place among the group's conditions, and a
 condition it is given is put in that place: at form opening these places come first, in declaration order. `or` joins a
@@ -291,14 +351,18 @@ by a `FILTER` action — moves them after its conditions.
 A property filter does not depend on who draws the group's conditions: the view that draws it, which then gets
 `filters` too, or another view, or the platform's filter panel — its condition is one of the group's list either way,
 sent as any change is: at once, or, in the [manual apply mode](#filter-controls), on the apply, the filter showing the
-change meanwhile. Over the platform's panel the filter is the panel's own row of it, which the view draws: the panel
-shows no row of its own for it. When the [table's filter keys](../paradigm/Interactive_view.md#userfilters) put a value into this row, no editor
-opens: React draws it. While the row shows no condition, Alt+F3 and the filter controls' add on that column put the
-cell's value into it too, and typing there starts nothing; while it shows a condition, the add and typing start a
-new row of the panel's. A filter of a property of a
-[tree](React_trees_sortings_selection.md#trees)'s group is on its group's node, as a filter group of a tree's group
-is. Its [entry](React_projection.md#display-options), `data['FILTER(name(i))']`, says whether the form shows the
-filter — its `SHOWIF`, or a container's above it.
+change meanwhile.
+
+#### The filter over the platform's panel {#property-filter-over-panel}
+
+Over the platform's panel the filter is the panel's own row of it, which the view draws: the panel shows no row of its
+own for it. When the [table's filter keys](../paradigm/Interactive_view.md#userfilters) put a value into this row, no
+editor opens: React draws it.
+
+While the row shows no condition, Alt+F3 and the filter controls' add on that column put the cell's value into it too,
+and typing there starts nothing; while it shows a condition, the add and typing start a new row of the panel's.
+
+#### The filter drawn by the platform or by a component of its own {#property-filter-custom}
 
 A property filter with `custom = NULL` is the platform's: its row of the group's user filters, as a classic form shows
 it, which the view places with `<Platform name="FILTER(name(i))"/>` as any child the platform draws
@@ -314,10 +378,13 @@ DESIGN items {
 
 A value committed in the row is the filter's, sent as any change is; a condition the view states on the property
 shows in it. For F3 over a view's conditions, the property must be in `filterProperties`, or be a file property
-([Custom filter panel](#custom-filter-panel)). Where the
-toolbar turns the platform's filters off (`showFilters = FALSE`), nobody draws such a filter, as in a form with no React
-view. A filter with a React component of its own — `FILTER(name(i)) { custom = 'NameSearch'; }` — draws its part in its
-own view ([A component's own view](React_component_views.md#component-views)).
+([Custom filter panel](#custom-filter-panel)). Where the toolbar turns the platform's filters off
+(`showFilters = FALSE`), nobody draws such a filter, as in a form with no React view.
+
+A filter with a React component of its own — `FILTER(name(i)) { custom = 'NameSearch'; }` — draws its part in its own
+view ([A component's own view](React_component_views.md#component-views)).
+
+#### Refused combinations {#property-filter-refusals}
 
 Some combinations are refused when the form is built:
 
@@ -354,10 +421,11 @@ act on the conditions the view draws — the group's list the component is shown
   it shows and hides;
 - F3 states the value of the [current cell](#filter-controls) at once, including in a [property filter](#property-filters),
   with no editor of the platform's to confirm it: the component edits it. Alt+F3 uses the default comparison for its
-  new condition. The change is sent at once or, in the [manual apply mode](#filter-controls), on the apply. None is started
-  where no row is current — an empty grid, or a pivot, a map, a calendar or a custom view, which have no cell —, or on a
-  cell whose property `filterProperties` does not list — a file property's cell excepted: F3 states a condition on it,
-  which a view states with no value alone —, or that shows another value than it is filtered by;
+  new condition. The change is sent at once or, in the [manual apply mode](#filter-controls), on the apply.
+
+  None is started where no row is current — an empty grid, or a pivot, a map, a calendar or a custom view, which have no
+  cell —, or on a cell whose property `filterProperties` does not list — a file property's cell excepted: F3 states a
+  condition on it, which a view states with no value alone —, or that shows another value than it is filtered by;
 - typing in a column starts no condition. A grid with quick search keeps it. The apply button is the filter controls':
   the platform's in `FILTERCONTROLS(o)`, while they are shown, or the component's, where it draws them — in the
   [manual apply mode](#filter-controls) a change waits for it.
@@ -367,9 +435,12 @@ The property filters the design declares in the box are the component's: it draw
 These commands are there wherever a view draws the FILTERS box of a group in `LIST` view, whatever its
 `TOOLBARSYSTEM(o)` says: `showFilters`, like the toolbar's other `show…` flags, is the platform's alone, and turns off
 only what the platform draws of the filters — its panel, its controls in FILTERCONTROLS and the toolbar's filter button.
+
 With `showFilters = FALSE` and the conditions drawn by a view, the [filter controls](#filter-controls) a view draws and
 the keys of the grid work all the same; with the conditions the platform's, there are no commands, and the members of
-the filter controls a view draws refuse. A tree's commands are the same, over the conditions of all its groups, its
+the filter controls a view draws refuse.
+
+A tree's commands are the same, over the conditions of all its groups, its
 [node's](React_trees_sortings_selection.md#trees) `filters`, and so is its toolbar's `showFilters`.
 
 `props.controller.<g>.filters` changes them, so the panel both shows the current conditions and sets them: the
@@ -392,10 +463,11 @@ there, if it has one, has no `filters`.
 A view that draws the rows of a group not in a tree can have the server filter them by conditions of its own — the
 group's view filters, as a calendar filters its group by the period it shows. They are a list apart from the group's
 [user filters](#filters), which the user changes and a `FILTER` action states, and the server applies them together
-with those, with the form's own `FILTERS` and with its filter groups. `viewFilters` lists them beside `list` and
-`keys`, where the rows are drawn: always there, and empty until the view states any. Each entry is a condition in the
-shape [`filters`](#filters) gives one — `property`, `compare`, `value`, `negation`, `or` —, on a property of the group
-named the same way, wherever it is drawn.
+with those, with the form's own `FILTERS` and with its filter groups.
+
+`viewFilters` lists them beside `list` and `keys`, where the rows are drawn: always there, and empty until the view
+states any. Each entry is a condition in the shape [`filters`](#filters) gives one — `property`, `compare`, `value`,
+`negation`, `or` —, on a property of the group named the same way, wherever it is drawn.
 
 `controller.<group>.viewFilters.change(conditions)` — a member in the same place, and only there — states the whole
 list, an array, read as an array of `filters.change` is: what a condition leaves out of `compare` and `negation` is the
@@ -452,8 +524,10 @@ DESIGN items {
 Every member, and what its button shows, is there whatever the design's flags say — `showFilters`, `showViews`,
 `showCalculateSum`, … are the platform's alone, which draw its own toolbar; a view draws what it wants —, and so is the
 name each takes on the node: where a view draws the toolbar, no property of the group takes `getSum`, whatever
-`showCalculateSum` says. `visible` is not one of these flags: a toolbar the design hides (`visible = FALSE`) is no part
-of any view — nothing of it on the node, no members, no names taken.
+`showCalculateSum` says.
+
+`visible` is not one of these flags: a toolbar the design hides (`visible = FALSE`) is no part of any view — nothing of
+it on the node, no members, no names taken.
 
 | on the node | member | what it does | the platform's button |
 | --- | --- | --- | --- |
@@ -467,12 +541,20 @@ of any view — nothing of it on the node, no members, no names taken.
 
 What the buttons act on is the platform's: `filterControlsVisible` shows and hides the PLATFORM's filter controls — its
 FILTERCONTROLS buttons, its panel's editors and the selectors of the property filters' rows it draws —, and where the
-platform has none for the group — it draws neither the `FILTERS(o)` panel nor `FILTERCONTROLS(o)` nor a property
-filter's row, the view drawing them, or the design removing them or a container holding them, or the toolbar turns the
-platform's filters off (`showFilters = FALSE`) — it stays `false` and its change is refused, saying why. Controls a view
-draws itself are its own to show, its [filter controls](#filter-controls). The view type switch switches the platform's
-table: where a view draws the rows, `listViews` is empty, `listView` is `null`, and a change is refused. A group whose
-rows a view draws has the default `GRID` list view type. The grid of a group the form gives another
+platform has none for the group, it stays `false` and its change is refused, saying why. The platform has none for the
+group — it draws neither the `FILTERS(o)` panel nor `FILTERCONTROLS(o)` nor a property filter's row — in each of these
+cases:
+
+- the view draws them;
+- the design removes them or a container holding them;
+- the toolbar turns the platform's filters off (`showFilters = FALSE`).
+
+Controls a view draws itself are its own to show, its [filter controls](#filter-controls).
+
+The view type switch switches the platform's table: where a view draws the rows, `listViews` is empty, `listView` is
+`null`, and a change is refused.
+
+A group whose rows a view draws has the default `GRID` list view type. The grid of a group the form gives another
 (`OBJECTS o = Order PIVOT`, and `MAP`, `CALENDAR`, `CUSTOM`) is drawn by the platform in that view type, and a React
 container around it places the grid with `<Platform name="GRID(o)"/>`, as it places a grid given `custom = NULL`. A
 `custom` of the grid itself (`GRID(o) { custom = 'OrderCards'; }`) is the group's `CUSTOM`, and puts the group in the
@@ -512,10 +594,14 @@ the tree's rows:
 Where a view draws the tree's rows, the toolbar has not the two that open it: the tree opens through members it has
 already — its current node through the tree's own [`expandCurrent()`](React_trees_sortings_selection.md#trees), on the same node where the view draws
 both, the tree from a group down through that group's `expandAll()` — all of it through the top group's —, one member
-for each. So which members open a tree depends on who draws its rows, and a view that draws the tree's toolbar in
-another container than the tree's rows has none there: the view that draws the rows has them. They only open — the
-platform's tree closes nothing from its toolbar. Inside a [batch](Form_and_navigator_controllers.md#batch)
-`expandCurrent()` and `expandTree()` go with it, as `expandAll()` does, and `export()` is refused.
+for each.
+
+So which members open a tree depends on who draws its rows, and a view that draws the tree's toolbar in another
+container than the tree's rows has none there: the view that draws the rows has them. They only open — the platform's
+tree closes nothing from its toolbar.
+
+Inside a [batch](Form_and_navigator_controllers.md#batch) `expandCurrent()` and `expandTree()` go with it, as
+`expandAll()` does, and `export()` is refused.
 
 The tree's filter controls are a part of the tree the same way, with the state and members of a group's
 [filter controls](#filter-controls), over the conditions of all its groups.
@@ -549,12 +635,14 @@ They work over the view's rows as over the standard grid, with what those rows c
   toolbar, nothing opens them: they start hidden, as over the standard grid, and stay so.
 
 A [tree](React_trees_sortings_selection.md#trees) a view draws (`MOVE GRID(TREE t)`) is given the same, one for all its groups, as the platform's own
-tree has it — `TOOLBARSYSTEM(TREE t)`, and what `FILTERS(TREE t)` and `FILTERCONTROLS(TREE t)` hold. The toolbar has the
-tree's buttons: over the view's rows the one that expands the current object opens what the tree's
+tree has it — `TOOLBARSYSTEM(TREE t)`, and what `FILTERS(TREE t)` and `FILTERCONTROLS(TREE t)` hold.
+
+The toolbar has the tree's buttons: over the view's rows the one that expands the current object opens what the tree's
 [`expandCurrent()`](React_trees_sortings_selection.md#trees) opens, the one that expands the tree opens, as over the platform's tree, every node of the
 current node's group under the nodes open above it and of the groups below — nothing before a node is current; all of
-the tree is the top group's `expandAll()` —, and the export exports the tree. The panel's conditions can be on the
-columns of all the tree's groups, each condition of its column's group, and a new one starts on [the cell a condition is
-added on](#filter-controls).
+the tree is the top group's `expandAll()` —, and the export exports the tree.
+
+The panel's conditions can be on the columns of all the tree's groups, each condition of its column's group, and a new
+one starts on [the cell a condition is added on](#filter-controls).
 
 What the view draws itself the platform does not build: a `custom` on `BOX(o)` draws the whole group.
