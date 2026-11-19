@@ -117,7 +117,7 @@ const seekRef = useSeekOnScroll(controller.o, { enabled: follow });
 
 Options:
 
-- `enabled` (default `true`) suspends the tracking;
+- `enabled` (default `true`) turns the tracking on, and `false` suspends it;
 - `threshold` (`0.6`) is how much of an element must be visible to count as on screen;
 - `settle` (`250` ms) is how long the rows on screen must stay the same before the view seeks — the wait starts over whenever a row comes on screen or leaves it, not on every scroll event;
 - `onSeek(row)` is called for each issued seek.
