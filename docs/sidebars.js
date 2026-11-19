@@ -663,10 +663,16 @@ module.exports = {
             'language/React_windows',
           ]
         },
-        'language/Render_functions',
-        'language/Edit_functions',
-        'language/Form_and_navigator_controllers',
-        'language/Client_JavaScript_modules',
+        {
+          type: 'category',
+          label: 'JavaScript',
+          link: {type: 'doc', id: 'language/Client_JavaScript_modules'},
+          items: [
+            'language/Render_functions',
+            'language/Edit_functions',
+            'language/Form_and_navigator_controllers',
+          ]
+        },
         'language/Comments',
         'language/Coding_conventions', 
       ]
