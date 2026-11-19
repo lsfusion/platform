@@ -20,6 +20,13 @@ uiCcSet (TEXT code) {
     dataExtendCode() <- code;
     APPLY;
 }
+// a code that does not compile is refused when it is saved, so one saved before that, or broken since by a change of the
+// logics, is stored past the refusal
+uiCcSetBroken (TEXT code) {
+    setNoCancelInTransaction();
+    uiCcSet(code);
+    dropNoCancelInTransaction();
+}
 
 // the code of a form, for all users as well
 uiCcSetForm (STRING name, TEXT code) {

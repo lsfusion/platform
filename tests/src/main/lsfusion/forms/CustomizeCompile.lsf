@@ -1,0 +1,167 @@
+MODULE CustomizeCompile;
+
+REQUIRE TestUtils, SystemEvents, Reflection;
+
+ccNote = DATA LOCAL TEXT ();
+FORM ccForm PROPERTIES() ccNote;
+ccFormName() = 'CustomizeCompile.ccForm';
+ccForm() = form(ccFormName());
+
+ccBadFormCode() = 'EXTEND FORM ccForm PROPERTIES() ccNoSuchProperty;';
+ccFormObjects() = 'EXTEND FORM ccForm OBJECTS n = INTEGER PANEL;';
+ccFormProperties() = 'EXTEND FORM ccForm PROPERTIES VALUE(n)';
+ccBadAppCode() = 'NAVIGATOR \{ NEW ccNoSuchForm; \}';
+ccAppForm() = 'FORM ccAppForm \'x\';';
+ccAppNavigator() = 'NAVIGATOR \{ System.administration \{ NEW ccAppForm; \} \}';
+ccAppDeclares() = 'ccAppAnswer() = 42;';
+ccFormUsesApp() = 'EXTEND FORM ccForm PROPERTIES() ccAppAnswer;';
+
+testCcFormCode () {
+    compileExtendCode(ccFormName(), NULL, ccBadFormCode());
+    assertTrue(extendCodeError() LIKE '%ccNoSuchProperty%', 'The error of the form code should name the missing property');
+
+    compileExtendCode(ccFormName(), NULL, ccFormObjects());
+    assertNull(extendCodeError(), 'The form code still has an error');
+
+    compileExtendCode(ccFormName(), NULL, ccFormProperties());
+    assertTrue(extendCodeError() LIKE '%object \'n\' is not found%', 'The personal code needs the object from the code for all users');
+    compileExtendCode(ccFormName(), NULL, ccFormObjects() + '\n' + ccFormProperties());
+    assertNull(extendCodeError(), 'The personal code should see the object from the code for all users');
+
+    // a check of what the code makes, the objects of the form, is an error of the code as well
+    compileExtendCode(ccFormName(), NULL, 'EXTEND FORM ccForm OBJECTS m = INTEGER MAP;');
+    assertTrue(extendCodeError() LIKE '%none of required MAP propertyDraws found%', 'A MAP group without coordinates was not refused: ' + extendCodeError());
+
+    // the code sees what the application's code given declares, as in a connection that code customizes
+    compileExtendCode(ccFormName(), ccAppDeclares(), ccFormUsesApp());
+    assertNull(extendCodeError(), 'The form code did not see what the application code declares: ' + extendCodeError());
+    compileExtendCode(ccFormName(), ccBadAppCode(), ccFormUsesApp());
+    assertTrue(extendCodeError() LIKE '%ccAppAnswer%', 'The form code saw a broken application code');
+
+    compileExtendCode(ccFormName(), NULL, ccBadFormCode());
+    compileExtendCode(ccFormName(), NULL, NULL);
+    assertNull(extendCodeError(), 'A NULL form code kept the previous error');
+}
+
+testCcApplicationCode () {
+    compileExtendCode(ccBadAppCode());
+    assertTrue(extendCodeError() LIKE '%ccNoSuchForm%', 'The error of the application code should name the missing form');
+
+    compileExtendCode(ccAppForm() + '\n' + ccAppNavigator());
+    assertNull(extendCodeError(), 'The application code still has an error');
+
+    compileExtendCode('NAVIGATOR \{ NEW FOLDER ccTop; \}');
+    assertTrue(extendCodeError() LIKE '%must specify a WINDOW for its children%', 'The navigator check should refuse a top folder without a window');
+    compileExtendCode(NULL);
+    assertNull(extendCodeError(), 'A NULL application code kept the navigator error');
+}
+
+// each code is saved in an apply of its own - the code of the form, else the application's.
+// They stay saved, so every test drops them at its start and its end
+// what the apply ended with : APPLY's own canceled[] and applyMessage[] are not taken out of the session
+ccCanceled = DATA LOCAL BOOLEAN ();
+ccMessage = DATA LOCAL TEXT ();
+ccSaveAll (Form f, TEXT code) {
+    NEWSESSION NESTED (ccCanceled, ccMessage) {
+        IF f THEN
+            dataExtendCode(f) <- code;
+        ELSE
+            dataExtendCode() <- code;
+        APPLY;
+        ccCanceled() <- canceled();
+        ccMessage() <- applyMessage();
+    }
+}
+ccSaveUser (Form f, TEXT code) {
+    NEWSESSION NESTED (ccCanceled, ccMessage) {
+        IF f THEN
+            dataExtendCode(f, currentUser()) <- code;
+        ELSE
+            dataExtendCode(currentUser()) <- code;
+        APPLY;
+        ccCanceled() <- canceled();
+        ccMessage() <- applyMessage();
+    }
+}
+ccDrop (Form f) {
+    ccSaveAll(f, NULL);
+    ccSaveUser(f, NULL);
+}
+ccRefused (STRING ccMissingName, STRING what) {
+    assertTrue(ccCanceled(), what + ' was saved');
+    assertTrue(ccMessage() LIKE '%' + ccMissingName + '%', what + ' was refused without the compiler\'s error: ' + ccMessage());
+}
+ccSaved (STRING what) {
+    assertNull(ccCanceled(), what + ' was refused: ' + ccMessage());
+}
+
+testCcFormSave () {
+    ccDrop(ccForm());
+
+    // a code that does not compile is not saved, whoever writes it
+    ccSaveUser(ccForm(), ccBadFormCode());
+    ccRefused('ccNoSuchProperty', 'a broken personal code');
+    ccSaveAll(ccForm(), ccBadFormCode());
+    ccRefused('ccNoSuchProperty', 'a broken code for all users');
+    assertNull(dataExtendCode(ccForm()), 'the broken code for all users is stored');
+    assertNull(dataExtendCode(ccForm(), currentUser()), 'the broken personal code is stored');
+
+    // a personal code is compiled after the code for all users, which is compiled by itself
+    ccSaveAll(ccForm(), ccFormObjects());
+    ccSaved('a code for all users');
+    ccSaveUser(ccForm(), ccFormProperties());
+    ccSaved('a personal code using an object of the code for all users');
+
+    // a code dropped is not compiled : the code for all users is dropped though the personal code needs it
+    ccSaveAll(ccForm(), NULL);
+    ccSaved('a drop of the code for all users');
+    assertEquals(dataExtendCode(ccForm(), currentUser()), ccFormProperties(), 'the personal code is not stored');
+    // and a code written back as it is stored is not compiled either
+    ccSaveUser(ccForm(), ccFormProperties());
+    ccSaved('a personal code written back');
+    ccSaveUser(ccForm(), ccFormProperties() + ' ');
+    ccRefused('object \'n\' is not found', 'a broken personal code written anew');
+
+    ccDrop(ccForm());
+}
+
+testCcApplicationSave () {
+    ccDrop(NULL);
+
+    ccSaveUser(NULL, ccBadAppCode());
+    ccRefused('ccNoSuchForm', 'a broken personal application code');
+    ccSaveAll(NULL, ccBadAppCode());
+    ccRefused('ccNoSuchForm', 'a broken application code for all users');
+    ccSaveUser(NULL, 'NAVIGATOR \{ NEW FOLDER ccTop; \}');
+    ccRefused('must specify a WINDOW for its children', 'a code the navigator check refuses');
+    ccSaveAll(NULL, 'EXTEND WINDOW System.toolbar CUSTOM \'CcDrawn\';');
+    ccRefused('CUSTOM option of a WINDOW statement cannot be used in EVAL module', 'a code saying what draws a window');
+    assertNull(dataExtendCode(), 'the broken application code for all users is stored');
+    assertNull(dataExtendCode(currentUser()), 'the broken personal application code is stored');
+
+    ccSaveAll(NULL, ccAppForm());
+    ccSaved('an application code for all users');
+    ccSaveUser(NULL, ccAppNavigator());
+    ccSaved('a personal application code using a form of the code for all users');
+    ccSaveAll(NULL, NULL);
+    ccSaved('a drop of the application code for all users');
+
+    ccDrop(NULL);
+}
+
+// a form's code is compiled with the application's code it is used with, as it is stored : not the one the connection that
+// saves it was made with (this test's has none)
+testCcFormSaveOverApplication () {
+    ccDrop(ccForm());
+    ccDrop(NULL);
+
+    ccSaveUser(ccForm(), ccFormUsesApp());
+    ccRefused('ccAppAnswer', 'a form code using what no application code declares');
+    ccSaveAll(NULL, ccAppDeclares());
+    ccSaved('an application code');
+    ccSaveUser(ccForm(), ccFormUsesApp());
+    ccSaved('a form code using what the application code declares');
+
+    ccDrop(ccForm());
+    ccDrop(NULL);
+}

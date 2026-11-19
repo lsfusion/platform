@@ -139,7 +139,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         EvalScriptingLogicsModule customizeLM = null;
         if (code != null) {
             try {
-                customizeLM = businessLogics.LM.evaluate(code, Collections.emptySet(), true);
+                customizeLM = evaluateCustomizeCode(businessLogics, code);
             } catch (RuntimeException e) {
                 // the code is written by the users, and a client that cannot get its navigator cannot start : there would
                 // be no way back to the code from it. Whatever the code fails with - its own errors, a check of the
@@ -149,6 +149,13 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             }
         }
         this.customizeLM = customizeLM;
+    }
+
+    // the code that customizes the application, compiled as a connection of its user is made: its NAVIGATOR statements over
+    // a copy of the navigator, which is checked. What it fails with is thrown - a connection goes on without the code, a
+    // save of the code refuses it
+    public static EvalScriptingLogicsModule evaluateCustomizeCode(BusinessLogics businessLogics, String code) {
+        return businessLogics.LM.evaluate(code, Collections.emptySet(), true);
     }
 
     private String readCustomizeCode(DataSession session) throws SQLException, SQLHandledException {

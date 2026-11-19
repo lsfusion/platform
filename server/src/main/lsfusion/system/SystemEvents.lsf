@@ -1118,52 +1118,104 @@ shareAction(STRING relativeUrl) {
 
 dataExtendCode = DATA TEXT (Form);
 dataExtendCode = DATA TEXT (Form, User);
+
+// the application as a whole is customized for a user the way a form is, and its code is named as a form's, with no
+// form among the parameters. The code is compiled for a connection of the user as it is made - a client, say -, its
+// NAVIGATOR statements over a copy of the navigator, so it takes effect when the client is started again
+dataExtendCode = DATA TEXT ();
+dataExtendCode = DATA TEXT (User);
+
 // the separator has to be a line break, otherwise the last line of the global code and the first line of the personal one are glued together
-extendCode(Form f) = CONCAT '\n', dataExtendCode(f), dataExtendCode(f,currentUser());
+extendCode(Form f, User u) = CONCAT '\n', dataExtendCode(f), dataExtendCode(f, u);
+extendCode(Form f) = extendCode(f, currentUser());
 extendCode(STRING sid) = extendCode(form(sid));
+
+// a line break between the two, as in a form's. Every connection of a user reads it, so it is kept in memory (LAZY) -
+// and let go as a code is applied (WAIT), for a connection made right after that to take the code that was saved
+extendCode (User user) = CONCAT '\n', dataExtendCode(), dataExtendCode(user) LAZY WAIT;
+
+// what compileExtendCode failed with, NULL if the code compiles
+extendCodeError = DATA LOCAL TEXT ();
+// compile a code as it is compiled where it is used, running nothing of it: a form's (by its canonical name) as the form
+// opens in a connection the application's code given before it customizes, the application's as a connection starts
+compileExtendCode INTERNAL 'lsfusion.server.physics.admin.interpreter.action.CompileFormExtendCodeAction' (STRING, TEXT, TEXT) NULL;
+compileExtendCode INTERNAL 'lsfusion.server.physics.admin.interpreter.action.CompileApplicationExtendCodeAction' (TEXT) NULL;
+
+refuseExtendCode() {
+    IF extendCodeError() THEN {
+        MESSAGE '{action.form.customize.not.compiled}\n' + extendCodeError() NOWAIT;
+        CANCEL;
+    }
+}
+
+// a code written anew is compiled as it is used, whoever writes it, and the apply is canceled if it does not compile : the
+// code for all users by itself, a user's after it on a line of its own, a form's in a connection of the application's code
+// it is used with. A code dropped is not compiled - a code can be dropped when what remains does not compile
+WHEN SETCHANGED(dataExtendCode(Form f)) DO {
+    compileExtendCode(canonicalName(f), dataExtendCode(), dataExtendCode(f));
+    refuseExtendCode();
+}
+WHEN SETCHANGED(dataExtendCode(Form f, User u)) DO {
+    compileExtendCode(canonicalName(f), extendCode(u), extendCode(f, u));
+    refuseExtendCode();
+}
+WHEN SETCHANGED(dataExtendCode()) DO {
+    compileExtendCode(dataExtendCode());
+    refuseExtendCode();
+}
+WHEN SETCHANGED(dataExtendCode(User u)) DO {
+    compileExtendCode(extendCode(u));
+    refuseExtendCode();
+}
 
 defaultExtendCode(Form form) = 'EXTEND FORM ' + substrFrom(canonicalName(form), strpos(canonicalName(form), '.') + 1) + '\n;';
 jsonCode (STRING code) = JSON FROM text = (OVERRIDE code, ''), type = 'script';
 formCustomizeBackground() += RGB(211, 229, 232) IF extendCode(activeForm());
 formCustomizeShowIf() += isWeb();
 
-enableOriginalCode '{action.form.customize.base}' = DATA LOCAL BOOLEAN(); 
-enableExtendCodeAll '{action.form.customize.all.users}' = DATA LOCAL BOOLEAN(); 
-enableExtendCodeCurrentUser '{action.form.customize.current.user}' = DATA LOCAL BOOLEAN();
+// the panels the dialog shows, kept when its Save applies the codes
+enableOriginalCode '{action.form.customize.base}' = DATA LOCAL NESTED MANAGESESSION BOOLEAN(); 
+enableExtendCodeAll '{action.form.customize.all.users}' = DATA LOCAL NESTED MANAGESESSION BOOLEAN(); 
+enableExtendCodeCurrentUser '{action.form.customize.current.user}' = DATA LOCAL NESTED MANAGESESSION BOOLEAN();
 recreate = DATA LOCAL BOOLEAN();
 
 nullEmpty(STRING s) = IF s == '' THEN NULL ELSE s;
 
-// the code the dialog edits, of a form or of the application, the caller's on OK only : closing the dialog leaves the
-// caller's code as it was. And only what was edited is written back - another one may have saved the rest meanwhile
-extendCodeAll = DATA LOCAL TEXT ();
-extendCodeCurrentUser = DATA LOCAL TEXT ();
-extendCodeAllEdited = DATA LOCAL BOOLEAN ();
-extendCodeCurrentUserEdited = DATA LOCAL BOOLEAN ();
+// the codes the dialog edits : of the form sid, else of the application. Each is written to its own DATA property - a
+// change of the IF over them does not reach a property joined on form(sid)
+customizeCodeAll(STRING sid) = IF form(sid) THEN dataExtendCode(form(sid)) ELSE dataExtendCode();
+customizeCodeCurrentUser(STRING sid) = IF form(sid) THEN dataExtendCode(form(sid), currentUser()) ELSE dataExtendCode(currentUser());
+changeCustomizeCodeAll(STRING sid, TEXT code) {
+    IF form(sid) THEN
+        dataExtendCode(form(sid)) <- code;
+    ELSE
+        dataExtendCode() <- code;
+}
+changeCustomizeCodeCurrentUser(STRING sid, TEXT code) {
+    IF form(sid) THEN
+        dataExtendCode(form(sid), currentUser()) <- code;
+    ELSE
+        dataExtendCode(currentUser()) <- code;
+}
 
 FORM customizeForm '{action.form.customize}' IMAGE 'settings'
-    OBJECTS code = TEXT PANEL, defaultCode = TEXT PANEL
+    // sid : the form whose code is edited, not passed for the application's
+    OBJECTS code = TEXT PANEL, defaultCode = TEXT PANEL, sid = STRING PANEL
     PROPERTIES() enableOriginalCode SHOWIF code, enableExtendCodeAll, enableExtendCodeCurrentUser
     PROPERTIES
         code '{action.form.customize.base}' = jsonCode(code) CUSTOM 'interpreter' SHOWIF enableOriginalCode() DISABLE,
-        extendCodeAll '{action.form.customize.all.users}' = jsonCode(extendCodeAll()) CUSTOM 'interpreter' SHOWIF enableExtendCodeAll() ON CHANGE {
-            INPUT s = TEXT DO {
-                extendCodeAll() <- nullEmpty(fieldText(JSON((s)), 'text'));
-                extendCodeAllEdited() <- TRUE;
-            }
+        extendCodeAll '{action.form.customize.all.users}' = jsonCode(customizeCodeAll(sid)) CUSTOM 'interpreter' SHOWIF enableExtendCodeAll() ON CHANGE {
+            INPUT s = TEXT DO
+                changeCustomizeCodeAll(sid, nullEmpty(fieldText(JSON((s)), 'text')));
         },
-        extendCodeCurrentUser '{action.form.customize.current.user}' = jsonCode(extendCodeCurrentUser()) CUSTOM 'interpreter' SHOWIF enableExtendCodeCurrentUser() ON CHANGE {
-            INPUT s = TEXT DO {
-                extendCodeCurrentUser() <- nullEmpty(fieldText(JSON((s)), 'text'));
-                extendCodeCurrentUserEdited() <- TRUE;
-            }
+        extendCodeCurrentUser '{action.form.customize.current.user}' = jsonCode(customizeCodeCurrentUser(sid)) CUSTOM 'interpreter' SHOWIF enableExtendCodeCurrentUser() ON CHANGE {
+            INPUT s = TEXT DO
+                changeCustomizeCodeCurrentUser(sid, nullEmpty(fieldText(JSON((s)), 'text')));
         }
     ON INIT {
         enableOriginalCode() <- TRUE IF code;
-        enableExtendCodeAll() <- TRUE IF extendCodeAll();
+        enableExtendCodeAll() <- TRUE IF customizeCodeAll(sid);
         enableExtendCodeCurrentUser() <- TRUE; 
-        extendCodeAllEdited() <- NULL;
-        extendCodeCurrentUserEdited() <- NULL;
     }
 ;
 
@@ -1214,35 +1266,19 @@ DESIGN customizeForm {
 
 formRecreate INTERNAL 'lsfusion.server.logics.form.interactive.action.FormRecreateAction' ();
 customize(STRING sid, STRING code) {
-    extendCodeAll() <- dataExtendCode(form(sid));
-    extendCodeCurrentUser() <- dataExtendCode(form(sid), currentUser());
-    DIALOG customizeForm OBJECTS code = code, defaultCode = defaultExtendCode(form(sid)) NOMANAGESESSION DO {
-        dataExtendCode(form(sid)) <- extendCodeAll() WHERE extendCodeAllEdited();
-        dataExtendCode(form(sid), currentUser()) <- extendCodeCurrentUser() WHERE extendCodeCurrentUserEdited();
-        formRecreate();
+    // a form the application's code declares has no row in the reflection, so no code of its own
+    IF NOT form(sid) THEN {
+        MESSAGE 'Form was not found: ' + sid;
+        RETURN;
     }
+    DIALOG customizeForm OBJECTS code = code, defaultCode = defaultExtendCode(form(sid)), sid = sid NEWSESSION MANAGESESSION NOCANCEL DO
+        formRecreate();
 }
-
-// the application as a whole is customized for a user the way a form is, and its code is named as a form's, with no
-// form among the parameters. The code is compiled for a connection of the user as it is made - a client, say -, its
-// NAVIGATOR statements over a copy of the navigator, so it takes effect when the client is started again
-dataExtendCode = DATA TEXT ();
-dataExtendCode = DATA TEXT (User);
-// a line break between the two, as in a form's. Every connection of a user reads it, so it is kept in memory (LAZY) -
-// and let go as a code is applied (WAIT), for a connection made right after that to take the code that was saved
-extendCode (User user) = CONCAT '\n', dataExtendCode(), dataExtendCode(user) LAZY WAIT;
 
 // the code is saved before the client is reloaded : the client then makes its navigator anew, of the saved code
 customize '{logics.customize}' () {
-    extendCodeAll() <- dataExtendCode();
-    extendCodeCurrentUser() <- dataExtendCode(currentUser());
-    DIALOG customizeForm OBJECTS defaultCode = 'NAVIGATOR \{\n\}' NOMANAGESESSION DO {
-        dataExtendCode() <- extendCodeAll() WHERE extendCodeAllEdited();
-        dataExtendCode(currentUser()) <- extendCodeCurrentUser() WHERE extendCodeCurrentUserEdited();
-        APPLY;
-        IF NOT canceled() THEN
-            reload();
-    }
+    DIALOG customizeForm OBJECTS defaultCode = 'NAVIGATOR \{\n\}' NEWSESSION MANAGESESSION NOCANCEL DO
+        reload();
 } IMAGE 'settings.png';
 
 // in the web client only : the code is written in its editor, and the client is reloaded to take it

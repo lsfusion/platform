@@ -18,6 +18,13 @@ hecSet (TEXT code) {
     APPLY;
 } @@noauth;
 hecReset () { hecSet(NULL); } @@noauth;
+// a code that does not compile is refused when it is saved, so one saved before that, or broken since by a change of the
+// logics, is stored past the refusal
+hecSetBroken (TEXT code) {
+    setNoCancelInTransaction();
+    hecSet(code);
+    dropNoCancelInTransaction();
+}
 // what the server answers a call, or what the call fails with. Each call opens a session of a name no call has used : the
 // server drops a closed session after it has answered, and a later call of the same name could still find it
 hecResponse = DATA LOCAL STRING ();
@@ -88,7 +95,8 @@ testCallSeesExtendCode 'A call through the Action API sees what the code of the 
 }
 
 testCallIgnoresBrokenExtendCode 'A call through the Action API goes on without a customization code that does not compile' () {
-    hecSet('hecTwice(INTEGER a) \{ RETURN a * 2; \}\nNAVIGATOR \{ hecNoSuchElement \'Renamed\'; \}');
+    hecSetBroken('hecTwice(INTEGER a) \{ RETURN a * 2; \}\nNAVIGATOR \{ hecNoSuchElement \'Renamed\'; \}');
+    assertEquals(dataExtendCode(), 'hecTwice(INTEGER a) \{ RETURN a * 2; \}\nNAVIGATOR \{ hecNoSuchElement \'Renamed\'; \}', 'The broken code was not stored');
     TRY {
         hecGet('/exec?action=HttpExtendCode.hecLogics&p=1');
         hecAnswered('1', 'An action of the application');

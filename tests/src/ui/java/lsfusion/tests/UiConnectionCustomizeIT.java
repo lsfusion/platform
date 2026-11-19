@@ -2,6 +2,8 @@ package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.assertions.LocatorAssertions;
+import com.microsoft.playwright.options.AriaRole;
+import com.microsoft.playwright.options.WaitForSelectorState;
 import org.junit.After;
 import org.junit.Test;
 
@@ -130,7 +132,7 @@ public class UiConnectionCustomizeIT extends UiTest {
     @Test
     public void aCodeCannotSayWhatDrawsAWindow() throws Exception {
         for (String code : new String[]{"WINDOW uiCcDrawn 'Drawn' HORIZONTAL BOTTOM CUSTOM 'UiCcDrawn';", "EXTEND WINDOW System.toolbar CUSTOM 'UiCcDrawn';"}) {
-            exec("UiConnectionCustomize.uiCcSet", code);
+            exec("UiConnectionCustomize.uiCcSetBroken", code);
             restart();
 
             closeDialog("CUSTOM option of a WINDOW statement cannot be used in EVAL module");
@@ -141,7 +143,7 @@ public class UiConnectionCustomizeIT extends UiTest {
     // and says so
     @Test
     public void aBrokenCodeLeavesTheNavigator() throws Exception {
-        exec("UiConnectionCustomize.uiCcSet", "NAVIGATOR {\n    uiCcNoSuchElement 'Renamed';\n}");
+        exec("UiConnectionCustomize.uiCcSetBroken", "NAVIGATOR {\n    uiCcNoSuchElement 'Renamed';\n}");
         restart();
 
         closeDialog("Application customization code is broken");
@@ -176,15 +178,15 @@ public class UiConnectionCustomizeIT extends UiTest {
         close(customized);
     }
 
-    // and what is written in it and then left by closing the dialog is dropped : the editor opened again keeps nothing
-    // of it, and its OK opens the form anew without it
+    // and what is written in it and then left by closing the dialog - which asks first - is dropped : the editor opened
+    // again keeps nothing of it, and its OK opens the form anew without it
     @Test
     public void closingTheEditorDropsWhatWasWritten() {
         Locator form = open(FOLDER, FORM);
         action(form, "formCustomize").click();
         Locator editor = form("SystemEvents.customizeForm");
         type(editor, "EXTEND FORM uiCcForm PROPERTIES() uiCcAdded;");
-        close(editor);
+        closeDropping(editor);
 
         action(form, "formCustomize").click();
         Locator reopened = form("SystemEvents.customizeForm");
@@ -196,10 +198,81 @@ public class UiConnectionCustomizeIT extends UiTest {
         close(recreated);
     }
 
+    // its Save saves the code and leaves the editor open, with its editors and what is written in them : the editor
+    // opened again has the code
+    @Test
+    public void theEditorsSaveKeepsItOpen() {
+        Locator form = open(FOLDER, FORM);
+        action(form, "formCustomize").click();
+        Locator editor = form("SystemEvents.customizeForm");
+        String code = "EXTEND FORM uiCcForm PROPERTIES() uiCcAdded;";
+        type(editor, code);
+        answered(0, () -> action(editor, "formApply").click());
+        assertThat(personalEditor(editor)).isVisible();
+        assertEquals(code, personalEditor(editor).evaluate("ace => ace.parentElement.aceEditor.getValue()"));
+        close(editor);
+
+        answered(0, () -> action(form, "formCustomize").click());
+        Locator reopened = form("SystemEvents.customizeForm");
+        assertEquals(code, personalEditor(reopened).evaluate("ace => ace.parentElement.currentValue"));
+        close(reopened);
+        close(form);
+    }
+
+    // a code that does not compile is refused on OK : the editor shows the compiler's error and stays open, and the code
+    // is not saved - the editor opened again has none of it. For a form's code
+    @Test
+    public void theEditorRefusesBrokenFormCode() {
+        Locator form = open(FOLDER, FORM);
+        action(form, "formCustomize").click();
+        Locator editor = form("SystemEvents.customizeForm");
+        refuseCode(editor, "EXTEND FORM uiCcForm PROPERTIES() uiCcNoSuchProperty;", "uiCcNoSuchProperty");
+
+        answered(0, () -> action(form, "formCustomize").click());
+        assertEquals("", personalEditor(editor).evaluate("ace => ace.parentElement.currentValue"));
+        close(editor);
+        close(form);
+    }
+
+    // and for the application's
+    @Test
+    public void theEditorRefusesBrokenApplicationCode() {
+        open("System.administration", element("SystemEvents.customize"));
+        Locator editor = form("SystemEvents.customizeForm");
+        refuseCode(editor, "NAVIGATOR { NEW uiCcNoSuchForm; }", "uiCcNoSuchForm");
+
+        answered(0, () -> open("System.administration", element("SystemEvents.customize")));
+        assertEquals("", personalEditor(editor).evaluate("ace => ace.parentElement.currentValue"));
+        close(editor);
+    }
+
+    private void refuseCode(Locator editor, String code, String missingName) {
+        type(editor, code);
+        action(editor, "formOk").click();
+        String refusal = "The code does not compile and is not saved:";
+        assertThat(dialog(refusal)).containsText(missingName);
+        closeDialog(refusal);
+        assertThat(editor).isVisible();
+        assertEquals(code, personalEditor(editor).evaluate("ace => ace.parentElement.currentValue"));
+        closeDropping(editor);
+    }
+
+    // the editor edits the codes in a session of its own, so closing it with what is written asks whether to drop that
+    private void closeDropping(Locator editor) {
+        editor.locator("button[lsfusion-container='PROPERTY(formClose())']").click();
+        Locator question = page.locator(".modal-dialog").filter(new Locator.FilterOptions().setHasText("Do you really want close the form"));
+        question.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Yes").setExact(true)).click();
+        editor.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.DETACHED));
+    }
+
+    private Locator personalEditor(Locator editor) {
+        return editor.locator("[lsfusion-container='PROPERTY(extendCodeCurrentUser)'] .ace_editor");
+    }
+
     // the code written into the editor's "For me" : the editor sends its text a moment after it changes, and the dialog
     // is closed once the server has it
     private void type(Locator editor, String code) {
-        Locator ace = editor.locator("[lsfusion-container='PROPERTY(extendCodeCurrentUser)'] .ace_editor");
+        Locator ace = personalEditor(editor);
         answered(0, () -> {
             ace.evaluate("(ace, code) => ace.parentElement.aceEditor.setValue(code, 1)", code);
             page.waitForCondition(() -> code.equals(ace.evaluate("ace => ace.parentElement.currentValue")));
