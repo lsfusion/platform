@@ -130,7 +130,7 @@ The automatic design is generated as follows:
     -   `PANEL`: contains components of the properties that are displayed in `PANEL` [view](Interactive_view.md#property)  and [display group](Form_structure.md#drawgroup) of which is undefined (the property has no parameters). The internal structure and layout are similar to the internal structure and layout of the object group container. 
         -   `GROUP...`
     -   `OBJECTS`: contains all the components that are created for object groups/trees on this form. Vertical container. Extension coefficient: `1`, alignment: `STRETCH`.
-        -   `BOX(<object group/tree>)`:  contains all the components of this group of objects. Vertical container. Extension coefficient: `1`, alignment: `STRETCH`.
+        -   `BOX(<object group/tree>)`:  contains all the components of this group of objects. Vertical container. Extension coefficient: `1` (`0` for an object group in `PANEL`, `TOOLBAR` or `POPUP` view, which shows no table), alignment: `STRETCH`.
             -   `GRID (<group of objects / tree>)`: the base component of a Table.
             -   `TOOLBARBOX(<group of objects / tree>)`: contains all the components of a toolbar (responsible for layout inside the toolbar). Horizontal container. Alignment: `STRETCH`
                 -   `TOOLBARLEFT(<group of objects / tree>)`: the left side of a toolbar. Horizontal container. Alignment: `CENTER`.  
