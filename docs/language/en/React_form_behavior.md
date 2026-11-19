@@ -15,7 +15,22 @@ The focus in what a view draws is the view's own: the platform has no field ther
 
 <a className="lsdoc-anchor" id="form-loading"/>
 
-While the form waits for the server, the platform shows it on the form's Refresh button (`formRefresh`), and where React draws that button, the button's entry says so: `data.formRefresh.loading` is `true`. The design moves the button into the view's container — `MOVE PROPERTY(formRefresh())` —, and the view draws from the entry what it needs: the button, or only an indicator. What it shows are the form's asynchronous requests, whichever part of the form sent them — a property changed with a value, the current object, sortings and filters changed, a tree's node opened, a [batch](Form_and_navigator_controllers.md#batch), the controller's own `exec`, `eval`, `evalAction` and `change`, a [scheduled](#live-data) run —, from the moment the first of them has waited 20 milliseconds until the answer to the last of them comes. A request answered sooner shows nothing, so that the page does not flicker. A synchronous request does not set it — the run of an action through its member outside a batch is one, unless the platform runs the action asynchronously, as it runs one drawn with `NOWAIT`: it blocks input, and the platform shows its [busy indicator](../paradigm/Interactive_view.md#busy) instead. The entry also says `loading` while the button's own run waits, as an action's does. A Refresh button the platform draws — placed with [`<Platform>`](React_platform_components.md#placing) or anywhere else on the form — shows it itself, and a form with no Refresh button shows it nowhere. Only the view that draws the button is drawn again when it changes:
+While the form waits for the server, the platform shows it on the form's Refresh button (`formRefresh`), and where React draws that button, the button's entry says so: `data.formRefresh.loading` is `true`. The design moves the button into the view's container — `MOVE PROPERTY(formRefresh())` —, and the view draws from the entry what it needs: the button, or only an indicator.
+
+What it shows are the form's asynchronous requests, whichever part of the form sent them. Such requests are caused by:
+
+- a property changed with a value;
+- the current object, sortings and filters changed;
+- a tree's node opened;
+- a [batch](Form_and_navigator_controllers.md#batch);
+- the controller's own `exec`, `eval`, `evalAction` and `change`;
+- a [scheduled](#live-data) run.
+
+These requests are shown from the moment the first of them has waited 20 milliseconds until the answer to the last of them comes. A request answered sooner shows nothing, so that the page does not flicker.
+
+A synchronous request does not set `loading`: it blocks input, and the platform shows its [busy indicator](../paradigm/Interactive_view.md#busy) instead. The run of an action through its member outside a batch is a synchronous request, unless the platform runs the action asynchronously, as it runs one drawn with `NOWAIT`. The entry also says `loading` while the button's own run waits, as an action's does.
+
+A Refresh button the platform draws — placed with [`<Platform>`](React_platform_components.md#placing) or anywhere else on the form — shows it itself, and a form with no Refresh button shows it nowhere. Only the view that draws the button is drawn again when it changes:
 
 ```lsf
 DESIGN orders {
@@ -35,7 +50,13 @@ function Busy() {
 
 ### Keys and mouse bindings {#keys}
 
-The keys and mouse bindings the design gives what a view draws work as in the standard form: the key and the mouse binding of a property or an action ([`CHANGEKEY`, `CHANGEMOUSE`](Property_options.md)), the keys of the form's own buttons — actions of the `System` module: `ESCAPE` closes the form, `ctrl ENTER` is OK — and the key of a filter of a [filter group](React_filters_and_toolbar.md#filter-groups). The platform binds them itself, and the view does nothing for them. A key works while the form shows its component — its entry is not `hidden` — and the view that draws it is shown, whatever element of the form the user presses it in, and it does what the platform's key does:
+The keys and mouse bindings the design gives what a view draws work as in the standard form:
+
+- the key and the mouse binding of a property or an action ([`CHANGEKEY`, `CHANGEMOUSE`](Property_options.md));
+- the keys of the form's own buttons — actions of the `System` module: `ESCAPE` closes the form, `ctrl ENTER` is OK;
+- the key of a filter of a [filter group](React_filters_and_toolbar.md#filter-groups).
+
+The platform binds them itself, and the view does nothing for them. A key works while the form shows its component — its entry is not `hidden` — and the view that draws it is shown, whatever element of the form the user presses it in, and it does what the platform's key does:
 
 - an action runs, as a click on its button. An action in the rows a view draws runs on the current row; with no current row the key is left to the other bindings. An action with `CONFIRM` asks first, in the platform's dialog: the key is the platform's, while a call of the action's member asks nothing — the view asks itself where the entry says [`askConfirm`](React_projection.md#display-options);
 - a property whose change asks no value — its `ON CHANGE` handler runs an action — runs that handler;
@@ -78,7 +99,9 @@ DESIGN quotes {
 
 The scheduled run differs from a request the component would make itself. A timer of the component's own that calls `controller.refresh.exec()` polls the server the way a click on the form would — as a synchronous request that blocks input until it completes, unless the action is drawn with `NOWAIT` — and goes on polling while the form is hidden.
 
-**A hidden form stays mounted.** A background tab and an unplaced form are hidden, not closed, so the component is still mounted and a `setInterval` of its own keeps firing — and keeps calling the server — while the form's schedule is paused. That is why the refresh belongs to the form, not to the component. A timer the component does need (an animation, a countdown) is cleared in the effect's cleanup as usual, but that cleanup runs when the form closes, not when it is hidden: what stops it while the view is hidden is [`useVisible()`](#hidden-view).
+**A hidden form stays mounted.** A background tab and an unplaced form are hidden, not closed, so the component is still mounted and a `setInterval` of its own keeps firing — and keeps calling the server — while the form's schedule is paused. That is why the refresh belongs to the form, not to the component.
+
+A timer the component does need (an animation, a countdown) is cleared in the effect's cleanup as usual, but that cleanup runs when the form closes, not when it is hidden: what stops it while the view is hidden is [`useVisible()`](#hidden-view).
 
 ### A hidden view {#hidden-view}
 
