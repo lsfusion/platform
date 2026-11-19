@@ -42,7 +42,7 @@ This is the standard layout. The windows can be laid out by a React component in
 
 ### Selected folder {#selectedfolder}
 
-At any moment in time in each window there can be one current *user-selected* navigator folder. Accordingly, if the element item belongs to a window other than the window of its parent folder, then this element is shown in its window if and only if its parent folder is selected in its window. The predefined `System.root` folder is always considered to be selected. If at some point a window does not display any navigator element, then that window is automatically hidden.
+At any moment in time in each window there can be one current *user-selected* navigator folder. Accordingly, if the element item belongs to a window other than the window of its parent folder, then this element is shown in its window if and only if its parent folder is selected in its window. The predefined `System.root` folder is always considered to be selected. If at some point a window does not display any navigator element, then that window is automatically hidden. A window drawn by the application's client code is not hidden this way: it is drawn with no elements too.
 
 ### System windows {#systemwindows}
 
