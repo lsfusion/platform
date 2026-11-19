@@ -8,14 +8,11 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormFlowAction;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 
 import java.sql.SQLException;
 
 public class FormCustomizeAction extends FormFlowAction {
-
-    private static LP showIf = createIfProperty(new Property[]{FormEntity.isAdd, FormEntity.isEditing}, new boolean[]{true, true});
 
     public FormCustomizeAction(BaseLogicsModule LM) {
         super(LM);
@@ -32,9 +29,10 @@ public class FormCustomizeAction extends FormFlowAction {
         context.getBL().systemEventsLM.customize.execute(context, new DataObject(formEntity.getSID()), new DataObject(formEntity.getCode()));
     }
 
+    // for the toolbar's Customize and for one a form places itself
     @Override
     protected LP getShowIf() {
-        return showIf;
+        return LM.baseLM.getFormCustomizeShowIf();
     }
 
     @Override

@@ -243,6 +243,16 @@ public class UiConnectionCustomizeIT extends UiTest {
         close(item);
     }
 
+    // but the same form shown as a popup, an editor of a property of the form it is shown on, has no Customize
+    @Test
+    public void aPopupFormHasNoCustomize() throws Exception {
+        exec("UiConnectionCustomize.uiCcSaveItem", "saved");
+        action(open(FOLDER, OTHER), "uiCcPopupItem").click();
+        Locator item = form("UiConnectionCustomize.uiCcItem");
+        assertThat(itemName(item)).hasValue("saved");
+        assertThat(action(item, "formCustomize")).isHidden();
+    }
+
     // the form of the item customized by a code that adds a property, and opened anew with it
     private void customizeItem(Locator item, String property) {
         action(item, "formCustomize").click();

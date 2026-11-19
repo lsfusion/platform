@@ -1175,7 +1175,8 @@ WHEN SETCHANGED(dataExtendCode(User u)) DO {
 defaultExtendCode(Form form) = 'EXTEND FORM ' + substrFrom(canonicalName(form), strpos(canonicalName(form), '.') + 1) + '\n;';
 jsonCode (STRING code) = JSON FROM text = (OVERRIDE code, ''), type = 'script';
 formCustomizeBackground() += RGB(211, 229, 232) IF extendCode(activeForm());
-formCustomizeShowIf() += isWeb();
+// the web client's only, and not on a form shown EMBEDDED or POPUP, which edits a property of the form it is shown on
+formCustomizeShowIf() += isWeb() AND NOT isEditing();
 
 // the panels the dialog shows, kept when its Save applies the codes
 enableOriginalCode '{action.form.customize.base}' = DATA LOCAL NESTED MANAGESESSION BOOLEAN(); 

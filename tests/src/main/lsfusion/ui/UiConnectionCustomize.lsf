@@ -48,6 +48,12 @@ NAVIGATOR {
     }
 }
 
+// the form of the item shown as a popup, as a property's editor is
+uiCcPopupItem 'Item in a popup' () {
+    SHOW uiCcItem POPUP;
+}
+EXTEND FORM uiCcOther PROPERTIES() uiCcPopupItem;
+
 // an item saved before : a form that lost its object shows this one
 uiCcSaveItem (STRING name) {
     NEWSESSION {
