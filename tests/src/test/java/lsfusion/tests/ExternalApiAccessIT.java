@@ -1,5 +1,6 @@
 package lsfusion.tests;
 
+import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -80,11 +81,39 @@ public class ExternalApiAccessIT {
         }
     }
 
+    // registerUser is open to an anonymous call, as the registration page calls it : a switched off registration is
+    // switched off for the call too, and the user is not created
+    @Test
+    public void aDisabledRegistrationRegistersNoOneByTheApi() throws Exception {
+        String user = "[{\"login\":\"eaaRegistered\",\"password\":\"eaaPassword1\",\"firstName\":\"First\",\"lastName\":\"Last\",\"email\":\"eaa@example.com\"}]";
+
+        HttpResponse<String> disable = post("/exec?action=HttpRegistration.hrDisable", "");
+        Assert.assertEquals(disable.body(), 200, disable.statusCode());
+        try {
+            HttpResponse<String> refused = post("/exec?action=Authentication.registerUser", user, "application/json");
+            Assert.assertEquals(refused.body(), 200, refused.statusCode());
+            JSONObject answer = new JSONObject(refused.body());
+            Assert.assertTrue(refused.body(), answer.has("error") && !answer.has("success"));
+        } finally {
+            post("/exec?action=HttpRegistration.hrEnable", "");
+        }
+
+        // the login is still free
+        HttpResponse<String> registered = post("/exec?action=Authentication.registerUser", user, "application/json");
+        Assert.assertEquals(registered.body(), 200, registered.statusCode());
+        JSONObject answer = new JSONObject(registered.body());
+        Assert.assertTrue(registered.body(), answer.has("success") && !answer.has("error"));
+    }
+
     private static HttpResponse<String> post(String path, String body) throws Exception {
+        return post(path, body, "text/plain");
+    }
+
+    private static HttpResponse<String> post(String path, String body, String contentType) throws Exception {
         return HTTP.send(
                 HttpRequest.newBuilder(URI.create("http://localhost:" + httpPort + path))
                         .timeout(Duration.ofMinutes(1))
-                        .header("Content-Type", "text/plain; charset=UTF-8")
+                        .header("Content-Type", contentType + "; charset=UTF-8")
                         .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8)).build(),
                 HttpResponse.BodyHandlers.ofString());
     }
