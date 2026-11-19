@@ -1,0 +1,7 @@
+MODULE EvalLog;
+
+// a script of two lines the EVAL operator runs, for ExternalApiAccessIT : its calls are anonymous on a server that lets
+// only an authenticated call in
+elRun () {
+    EVAL 'run() \{\n    // elOperatorLogged\n\}';
+} @@noauth;

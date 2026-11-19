@@ -12,6 +12,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.UUID;
@@ -103,6 +104,55 @@ public class ExternalApiAccessIT {
         Assert.assertEquals(registered.body(), 200, registered.statusCode());
         JSONObject answer = new JSONObject(registered.body());
         Assert.assertTrue(registered.body(), answer.has("success") && !answer.has("error"));
+    }
+
+    // a script sent to run is logged with who sent it before it is compiled : one that is refused is there too
+    @Test
+    public void aRefusedScriptIsLoggedWithWhoSentIt() throws Exception {
+        String marker = "eaaLogged" + UUID.randomUUID().toString().replace("-", "");
+        HttpResponse<String> refused = post("/eval", "run() { MESSAGE '" + marker + "'; }");
+        Assert.assertEquals(refused.body(), 401, refused.statusCode());
+
+        String entry = evalLogEntry(marker, 0);
+        Assert.assertTrue(entry, entry.startsWith("EVAL - User : anonymous") && entry.contains("Remote : ") && entry.endsWith(":\n\trun() { MESSAGE '"));
+    }
+
+    // the script the EVAL operator runs is logged too, each of its lines indented, so that none reads as an entry - and
+    // each time it is run, though it is compiled only the first time
+    @Test
+    public void aScriptOfTheEvalOperatorIsLoggedEachTimeItIsRun() throws Exception {
+        String script = ":\n\trun() {\n\t    // elOperatorLogged\n\t}";
+        int from = evalLog().length();
+        for (int time = 0; time < 2; time++) {
+            HttpResponse<String> run = post("/exec?action=EvalLog.elRun", "");
+            Assert.assertEquals(run.body(), 200, run.statusCode());
+
+            String entry = evalLogEntry(script, from);
+            Assert.assertTrue(entry, entry.startsWith("EVAL - "));
+            from = evalLog().indexOf(script, from) + script.length();
+        }
+    }
+
+    // the server writes its logs into the folder it is started in
+    private static String evalLog() throws Exception {
+        Path log = BASE.resolve("logs/eval.log");
+        return Files.exists(log) ? Files.readString(log, StandardCharsets.UTF_8) : "";
+    }
+
+    // the entry of the eval log, written after from, that holds the text : from its logger's name to the text
+    private static String evalLogEntry(String text, int from) throws Exception {
+        long deadline = System.currentTimeMillis() + 10_000;
+        while (true) {
+            String log = evalLog();
+            int at = log.indexOf(text, from);
+            if (at >= 0) {
+                String logger = "EvalLogger - ";
+                return log.substring(log.lastIndexOf(logger, at) + logger.length(), at);
+            }
+            if (System.currentTimeMillis() > deadline)
+                throw new AssertionError("no entry of " + text + " in the eval log");
+            Thread.sleep(200);
+        }
     }
 
     private static HttpResponse<String> post(String path, String body) throws Exception {
