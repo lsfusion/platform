@@ -5,7 +5,7 @@ title: 'Navigator design'
 
 *Navigator design* determines how the navigator is displayed to the user on the screen of his device (we will call the screen space on which the navigator is displayed the *desktop*).
 
-The navigator design consists of multiple *windows*, desktop components, each of which displays certain [navigator](Navigator.md) elements. 
+The navigator design consists of multiple *windows*, desktop components, each of which displays certain [navigator](Navigator.md) elements. A window, and the layout of the windows on the desktop, can also be drawn by the application's client code instead of the platform: these are [custom views](Custom_views.md).
 
 Each window must have a *caption* which will be used when displaying the window in the user interface.
 

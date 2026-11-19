@@ -3,7 +3,7 @@ slug: "/Form_design"
 title: 'Form design'
 ---
 
-The *form design* defines how a [form](Forms.md) is displayed in the [interactive](Interactive_view.md) view.
+The *form design* defines how a [form](Forms.md) is displayed in the [interactive](Interactive_view.md) view. Parts of the form can also be drawn by the application's client code instead of the platform: these are [custom views](Custom_views.md).
 
 As with any GUI, form design is a hierarchy whose nodes are *components*. Components, in turn, can be:
 

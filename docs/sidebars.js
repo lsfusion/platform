@@ -230,7 +230,8 @@ module.exports = {
                                  label: 'Form design',
                                  link: {type: 'doc', id: 'paradigm/Form_design'},
                                  items: [
-                                    'paradigm/Icons'
+                                    'paradigm/Icons',
+                                    'paradigm/Custom_views',
                                  ]
                             },
                             'paradigm/Form_events', 
@@ -314,7 +315,6 @@ module.exports = {
                     'paradigm/Navigator_design', 
                   ]
                 },
-                'paradigm/Custom_views',
               ]
             },
           ]

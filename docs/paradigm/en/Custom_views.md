@@ -3,7 +3,7 @@ slug: "/Custom_views"
 title: 'Custom views'
 ---
 
-A *custom view* is a part of a form's [interactive view](Interactive_view.md) or of the [navigator design](Navigator_design.md) drawn by *client code* instead of the platform: the application's own JavaScript code running in the web client. The desktop client uses the platform's standard view in its place.
+A *custom view* is a part of the [form design](Form_design.md) or of the [navigator design](Navigator_design.md) drawn by *client code* instead of the platform: the application's own JavaScript code running in the web client. The desktop client uses the platform's standard view in its place.
 
 ### Kinds of custom views {#kinds}
 
