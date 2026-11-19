@@ -2452,7 +2452,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             ILEWithParams contextEntity = getContextListEntity(oldContext.size(), listProp, whereProp, actionImages, keyStrokes, quickAccesses, actions);
             usedParams = contextEntity.usedParams;
 
-            action = addDataInputAProp((DataClass) requestValueClass, tprop, oldValue != null, oldValue != null ? oldValue.getLP().getActionOrProperty() : null, contextEntity.orderInterfaces, contextEntity.list, contextEntity.where, listScope, contextEntity.contextActions, customEditorFunction, notNull);
+            // a parameter as the initial value (INPUT i = (n)) has no property to offer its values from
+            action = addDataInputAProp((DataClass) requestValueClass, tprop, oldValue != null, oldValue != null && oldValue.getLP() != null ? oldValue.getLP().getActionOrProperty() : null, contextEntity.orderInterfaces, contextEntity.list, contextEntity.where, listScope, contextEntity.contextActions, customEditorFunction, notNull);
         }
         
         List<LPWithParams> mapping = new ArrayList<>();
