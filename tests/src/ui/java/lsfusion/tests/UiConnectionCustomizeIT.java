@@ -216,6 +216,46 @@ public class UiConnectionCustomizeIT extends UiTest {
         close(customized);
     }
 
+    // and a form opened over an object as it is added, which has no Cancel then, is customized as any other : it is
+    // opened anew in the same session over the same object, still with no Cancel. So is the copy of the form a code made,
+    // customized again - its objects are the copy's. The object is saved after that, beside the one saved before
+    @Test
+    public void aFormOverANewObjectIsCustomizedWithIt() throws Exception {
+        exec("UiConnectionCustomize.uiCcSaveItem", "saved");
+        open(FOLDER, element("UiConnectionCustomize.uiCcNewItem"));
+        Locator item = form("UiConnectionCustomize.uiCcItem");
+        assertThat(itemName(item)).hasValue("unsaved");
+        assertThat(action(item, "formCancel")).isHidden();
+
+        customizeItem(item, "uiCcAdded");
+        assertThat(itemName(item)).hasValue("unsaved");
+        assertThat(action(item, "formCancel")).isHidden();
+
+        customizeItem(item, "uiCcAgain");
+        assertThat(item.locator("[lsfusion-container='PROPERTY(uiCcAdded())']")).isHidden();
+        assertThat(itemName(item)).hasValue("unsaved");
+        assertThat(action(item, "formCancel")).isHidden();
+
+        answered(0, () -> action(item, "formApply").click());
+        check("UiConnectionCustomize.uiCcCheckItems", "saved,unsaved");
+        // a saved object is no new one : the form has its Cancel now
+        assertThat(action(item, "formCancel")).isVisible();
+        close(item);
+    }
+
+    // the form of the item customized by a code that adds a property, and opened anew with it
+    private void customizeItem(Locator item, String property) {
+        action(item, "formCustomize").click();
+        Locator editor = form("SystemEvents.customizeForm");
+        type(editor, "EXTEND FORM uiCcItem PROPERTIES() " + property + ";");
+        action(editor, "formOk").click();
+        assertThat(item.locator("[lsfusion-container='PROPERTY(" + property + "())']")).isVisible();
+    }
+
+    private static Locator itemName(Locator form) {
+        return form.locator("[lsfusion-container='PROPERTY(uiCcItemName(i))'] input");
+    }
+
     // and what is written in it and then left by closing the dialog - which asks first - is dropped : the editor opened
     // again keeps nothing of it, and its OK opens the form anew without it
     @Test

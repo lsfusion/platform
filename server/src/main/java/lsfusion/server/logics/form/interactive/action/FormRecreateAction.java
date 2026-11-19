@@ -30,6 +30,7 @@ public class FormRecreateAction extends InternalAction {
         form.formClose(context, true);
 
         Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> resolvedForm = form.entity.getCustomizeForm().getForm(context.getBL(), context.getSession(), MapFact.EMPTY());
-        form.recreatedForm = context.createAndRequestFormInstance(resolvedForm.first, resolvedForm.second.mapValues(object -> form.instanceFactory.getInstance(object).getObjectValue()), form.options);
+        // the objects are the base form's, and a form customized already is a copy with objects of its own
+        form.recreatedForm = context.createAndRequestFormInstance(resolvedForm.first, resolvedForm.second.mapValues(object -> form.instanceFactory.getExInstance(object).getObjectValue()), form.options);
     }
 }

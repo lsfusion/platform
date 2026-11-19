@@ -1,6 +1,6 @@
 MODULE UiConnectionCustomize;
 
-REQUIRE SystemEvents, Service;
+REQUIRE SystemEvents, Service, TestUtils;
 
 FORM uiCcForm 'UI connection customize: form';
 FORM uiCcOther 'UI connection customize: other';
@@ -19,6 +19,49 @@ NAVIGATOR {
 // function what a code schedules calls (UiConnectionCustomize.js) : a code brings no page code of its own
 onWebClientInit() + {
     onWebClientInit('UiConnectionCustomize.js') <- 1;
+}
+
+// a form opened over an item as it is added, before it is saved : NEW gives the form an object it has no Cancel for.
+// Given none, the form shows the first item
+CLASS UiCcItem 'UI connection customize: item';
+uiCcItemName 'Name' = DATA STRING[20] (UiCcItem);
+
+FORM uiCcItem 'UI connection customize: item'
+    OBJECTS i = UiCcItem PANEL FIRST
+    PROPERTIES(i) uiCcItemName
+;
+// what the code written in the editor adds to that form the second time
+uiCcAgain 'Added again' = DATA LOCAL STRING[20] ();
+
+uiCcNewItem 'New item' () {
+    NEWSESSION {
+        NEW i = UiCcItem {
+            uiCcItemName(i) <- 'unsaved';
+            SHOW uiCcItem OBJECTS i = i DOCKED;
+        }
+    }
+}
+
+NAVIGATOR {
+    uiConnectionCustomize {
+        NEW uiCcNewItem;
+    }
+}
+
+// an item saved before : a form that lost its object shows this one
+uiCcSaveItem (STRING name) {
+    NEWSESSION {
+        NEW i = UiCcItem {
+            uiCcItemName(i) <- name;
+        }
+        APPLY;
+    }
+}
+
+uiCcCheckItems (STRING expected) {
+    LOCAL names = TEXT ();
+    names() <- GROUP CONCAT uiCcItemName(UiCcItem i), ',' ORDER i;
+    assertEquals(names(), expected, CONCAT ' ', 'the items saved are', names(), 'not', expected);
 }
 
 // the code for all users, so that it does not matter which user the browser is
@@ -55,12 +98,14 @@ uiCcEnableAPI (STRING value) {
     APPLY;
 } @@noauth;
 
-// with what the editor saved for a user : the browser's user is not known here
+// with what the editor saved for a user : the browser's user is not known here. And the items a test saved
 uiCcReset () {
     dataExtendCode() <- NULL;
     dataExtendCode(User u) <- NULL WHERE u IS User;
     dataExtendCode(form('UiConnectionCustomize.uiCcForm'), User u) <- NULL WHERE u IS User;
     dataExtendCode(form('UiConnectionCustomize.uiCcForm')) <- NULL;
+    dataExtendCode(form('UiConnectionCustomize.uiCcItem'), User u) <- NULL WHERE u IS User;
     dataExtendCode(form('UiCustomView.uiCustomViewCalls')) <- NULL;
+    DELETE UiCcItem i WHERE i IS UiCcItem;
     APPLY;
 }
