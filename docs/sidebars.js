@@ -691,12 +691,14 @@ module.exports = {
             {
               type: 'category',
               label: 'Development',
+              key: 'brief-via-dev',
               link: {type: 'doc', id: 'brief/Brief_via_dev'},
               items: ['brief/Brief_via_idedev'],
             },
             {
               type: 'category',
               label: 'Application',
+              key: 'brief-via-app',
               link: {type: 'doc', id: 'brief/Brief_via_app'},
               items: ['brief/Brief_via_webapp'],
             },
@@ -715,12 +717,14 @@ module.exports = {
             {
               type: 'category',
               label: 'Development',
+              key: 'rules-via-dev',
               link: {type: 'doc', id: 'rules/Rules_via_dev'},
               items: ['rules/Rules_via_idedev'],
             },
             {
               type: 'category',
               label: 'Application',
+              key: 'rules-via-app',
               link: {type: 'doc', id: 'rules/Rules_via_app'},
               items: ['rules/Rules_via_webapp'],
             },
