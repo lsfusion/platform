@@ -19,6 +19,7 @@ import lsfusion.interop.navigator.NavigatorScheduler;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
@@ -100,6 +101,7 @@ import lsfusion.server.logics.property.value.NullValueProperty;
 import lsfusion.server.physics.admin.drilldown.action.LazyDrillDownAction;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.interpreter.EvalUtils;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.log.form.LogFormEntity;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.debug.ActionDebugger;
@@ -1473,8 +1475,12 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         return Collections.synchronizedList(super.createLAPList());
     }
 
-    @IdentityLazy
+    // every script run from text - by the EVAL operator, by a request (/eval, the navigator's) - is logged with who runs it
+    // before it is compiled : the scripts that are refused or fail are there too. Every line of an entry but its first is
+    // indented, so that nothing a client sends - a script, the name of its computer - reads as an entry of its own. It is
+    // out of the cache of evaluate, so a script run again is logged again
     public Pair<LA, EvalScriptingLogicsModule> evaluateRun(String script, Set<EvalScriptingLogicsModule> parentLMs, boolean action) {
+        ServerLoggers.evalLogger.info(((action ? "EVAL ACTION" : "EVAL") + " - " + ThreadLocalContext.get().getLogInfo() + ":\n" + script).replaceAll("\\R", "\n\t"));
         return EvalUtils.evaluateAndFindAction(BL, parentLMs, script, action);
     }
 
