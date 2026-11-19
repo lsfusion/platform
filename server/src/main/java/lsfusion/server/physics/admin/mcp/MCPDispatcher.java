@@ -553,7 +553,7 @@ public class MCPDispatcher {
                         .put("client_dedup_hint", strProp("Optional agent hint; the SERVER computes the canonical dedup_fingerprint."))
                         .put("lsfusion_version", strProp("lsFusion version, if known."))
                         .put("deployment_kind", strProp("Deployment kind, if known."))
-                        .put("agent", strProp("Reporting client name/version, e.g. claude-code."))
+                        .put("agent", strProp("Reporting agent and model, e.g. 'claude-code, claude-opus-4-5'."))
                         .put("n_eval_attempts", new JSONObject().put("type", "integer").put("description", "Number of eval attempts.")))
                 .put("required", arr("agent_journey_id", "signal_type", "problem_summary", "recommendation"));
         JSONObject input = new JSONObject()
