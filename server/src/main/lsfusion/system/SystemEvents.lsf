@@ -1275,6 +1275,18 @@ customize(STRING sid, STRING code) {
         formRecreate();
 }
 
+// saved in a session of its own: the session it is called in (a form's) holds the user's unsaved changes
+customizeFormUser(STRING sid, TEXT code) {
+    IF NOT form(sid) THEN
+        throwException(CONCAT '', 'Form was not found: ', sid);
+    NEWSESSION {
+        dataExtendCode(form(sid), currentUser()) <- nullEmpty(code);
+        APPLY;
+        IF canceled() THEN
+            throwException(OVERRIDE applyMessage(), 'Form customization was not saved: ' + sid);
+    }
+}
+
 // the code is saved before the client is reloaded : the client then makes its navigator anew, of the saved code
 customize '{logics.customize}' () {
     DIALOG customizeForm OBJECTS defaultCode = 'NAVIGATOR \{\n\}' NEWSESSION MANAGESESSION NOCANCEL DO

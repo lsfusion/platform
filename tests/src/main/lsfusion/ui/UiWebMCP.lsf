@@ -1,6 +1,6 @@
 MODULE UiWebMCP;
 
-REQUIRE TestUtils;
+REQUIRE TestUtils, SystemEvents, Reflection;
 
 // what the scripts of UiWebMCPIT read and change, in the form's session or in a session of the navigator
 
@@ -73,5 +73,12 @@ uiWebMCPSeedItems () {
         uiWebMCPName(b) <- 'b'; uiWebMCPQuantity(b) <- 20; uiWebMCPDate(b) <- 2026_02_10;
     }
     uiWebMCPNote() <- NULL;
+    APPLY;
+}
+
+uiWebMCPExtra 'Extra' = DATA STRING[100] ();
+
+uiWebMCPDropCustomization () {
+    dataExtendCode(form('UiWebMCP.uiWebMCP'), User u) <- NULL WHERE dataExtendCode(form('UiWebMCP.uiWebMCP'), u);
     APPLY;
 }

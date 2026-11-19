@@ -1,0 +1,72 @@
+MODULE CustomizeFormUser;
+
+REQUIRE TestUtils, SystemEvents, Reflection;
+
+// the code is saved in a session of its own, not in the test's, so a test drops it itself
+
+FORM cfuForm 'Customized';
+
+cfuForm() = form('CustomizeFormUser.cfuForm');
+cfuUserCode() = dataExtendCode(cfuForm(), currentUser());
+
+cfuDrop() {
+    NEWSESSION {
+        dataExtendCode(cfuForm()) <- NULL;
+        dataExtendCode(cfuForm(), User u) <- NULL WHERE dataExtendCode(cfuForm(), u);
+        APPLY;
+    }
+}
+
+testCustomizeFormUserWritesAndDropsTheCode () {
+    cfuDrop();
+    customizeFormUser('CustomizeFormUser.cfuForm', 'EXTEND FORM cfuForm OBJECTS n = INTEGER PANEL');
+    assertEquals(cfuUserCode(), 'EXTEND FORM cfuForm OBJECTS n = INTEGER PANEL', 'the code written is ' + cfuUserCode());
+    assertNull(dataExtendCode(cfuForm()), 'the code for all users was written');
+    customizeFormUser('CustomizeFormUser.cfuForm', NULL);
+    assertNull(cfuUserCode(), 'the code was not dropped');
+}
+
+testCustomizeFormUserRefusesAnUnknownForm () {
+    TRY {
+        customizeFormUser('CustomizeFormUser.cfuNoSuchForm', 'EXTEND FORM cfuNoSuchForm');
+    } CATCH {
+    }
+    assertTrue(messageCaughtException() LIKE '%Form was not found: CustomizeFormUser.cfuNoSuchForm%', 'an unknown form failed with ' + messageCaughtException());
+    // no form given is refused as well, not passed over in silence
+    messageCaughtException() <- NULL;
+    TRY {
+        customizeFormUser(NULL, 'EXTEND FORM cfuForm OBJECTS n = INTEGER PANEL');
+    } CATCH {
+    }
+    assertTrue(messageCaughtException() LIKE '%Form was not found%', 'no form failed with ' + messageCaughtException());
+}
+
+testFormRecreateRefusesOutOfAForm () {
+    TRY {
+        formRecreate();
+    } CATCH {
+    }
+    assertTrue(messageCaughtException() LIKE '%formRecreate must be called in a form%', 'formRecreate out of a form failed with ' + messageCaughtException());
+}
+
+testReloadRefusesWithNoClient () {
+    TRY {
+        reload();
+    } CATCH {
+    }
+    assertTrue(messageCaughtException() LIKE '%not supported in server context%INTERNAL CLIENT \'reload\'%', 'reload with no client failed with ' + messageCaughtException());
+}
+
+// a CANCEL that says nothing still fails the write
+WHEN CHANGED(dataExtendCode(Form f, User u)) AND dataExtendCode(f, u) LIKE '%cfuCancel%' DO
+    CANCEL;
+
+testCustomizeFormUserFailsWhenTheApplyIsCanceled () {
+    cfuDrop();
+    TRY {
+        customizeFormUser('CustomizeFormUser.cfuForm', 'EXTEND FORM cfuForm OBJECTS cfuCancel = INTEGER PANEL');
+    } CATCH {
+    }
+    assertTrue(messageCaughtException() LIKE '%Form customization was not saved: CustomizeFormUser.cfuForm%', 'a canceled apply failed with ' + messageCaughtException());
+    assertNull(cfuUserCode(), 'the code of a canceled apply was written');
+}

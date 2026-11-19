@@ -217,7 +217,13 @@ public abstract class AbstractContext implements Context {
             systemLogger.info("Server message: " + message);
         else if (!(action instanceof ResetServerSettingsCacheClientAction //todo. temporary fix. problem on empty DB is that ResetServerSettingsCacheClientAction is called when there is no client context yet.
                 || action instanceof ChangeColorThemeClientAction)) // todo. temporary fix. it seems that during synchronizeDB color theme can be changed somehow
-            throw new UnsupportedOperationException("delayUserInteraction is not supported in server context, action : " + action.getClass());
+            throw new UnsupportedOperationException("delayUserInteraction is not supported in server context, action : " + describe(action));
+    }
+
+    private static String describe(ClientAction action) {
+        if(action instanceof ClientWebAction)
+            return "INTERNAL CLIENT '" + ((ClientWebAction) action).originalResourceName + "'";
+        return String.valueOf(action.getClass());
     }
 
     public Object aspectRequestUserInteraction(ClientAction action, String message) {
@@ -225,7 +231,7 @@ public abstract class AbstractContext implements Context {
             if (action instanceof ConfirmClientAction)
                 return JOptionPane.YES_OPTION;
             else
-                throw new UnsupportedOperationException("requestUserInteraction is not supported in server context, action : " + action.getClass());
+                throw new UnsupportedOperationException("requestUserInteraction is not supported in server context, action : " + describe(action));
         }
         // there is no one to show the message to, so it is logged the same way as a delayed (NOWAIT) one
         systemLogger.info("Server message: " + message);

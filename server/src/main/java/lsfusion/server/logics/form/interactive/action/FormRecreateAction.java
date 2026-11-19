@@ -24,7 +24,9 @@ public class FormRecreateAction extends InternalAction {
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        FormInstance form = context.getFormInstance(true, true);
+        FormInstance form = context.getFormInstance(true, false);
+        if(form == null)
+            throw new RuntimeException("formRecreate must be called in a form");
         form.formClose(context, true);
 
         Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> resolvedForm = form.entity.getCustomizeForm().getForm(context.getBL(), context.getSession(), MapFact.EMPTY());

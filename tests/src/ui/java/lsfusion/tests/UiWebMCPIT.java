@@ -178,6 +178,33 @@ public class UiWebMCPIT extends UiTest {
         assertEquals(onServer.toString(), 1, onServer.size());
     }
 
+    // the write keeps the form's unsaved changes unsaved; formRecreate opens the form with the code
+    @Test
+    public void customizeFormUserWritesTheCodeFormRecreateShowsIt() throws Exception {
+        String saved = "saved " + System.nanoTime(), draft = "draft " + System.nanoTime();
+        exec("UiWebMCP.uiWebMCPSeed", saved);
+        exec("UiWebMCP.uiWebMCPDropCustomization");
+        try {
+            loadWithAgent();
+            Locator form = open("UiWebMCP.uiWebMCPFolder", "UiWebMCP.uiWebMCP");
+            assertThat(form.locator("[lsfusion-container='PROPERTY(uiWebMCPNote())'] input")).hasValue(saved); // the form is open
+            call("lsfusion_eval", "{\"script\":\"run(STRING[100] note) { UiWebMCP.uiWebMCPNote() <- note; }\",\"params\":[\"" + draft + "\"],\"form\":{}}");
+
+            assertEquals("", call("lsfusion_exec", "{\"action\":\"SystemEvents.customizeFormUser\",\"form\":{},"
+                    + "\"params\":[\"UiWebMCP.uiWebMCP\",\"EXTEND FORM uiWebMCP PROPERTIES() uiWebMCPExtra\"]}", VALUES));
+            String read = "\"script\":\"run() { RETURN UiWebMCP.uiWebMCPNote(); }\"";
+            assertEquals(saved, call("lsfusion_eval", "{" + read + "}", VALUES)); // the user's change is not saved
+            assertEquals(draft, call("lsfusion_eval", "{" + read + ",\"form\":{}}", VALUES)); // and is still the form's
+            assertThat(form.locator("[lsfusion-container='PROPERTY(uiWebMCPExtra())']")).hasCount(0);
+
+            assertEquals("", call("lsfusion_exec", "{\"action\":\"SystemEvents.formRecreate\",\"form\":{}}", VALUES));
+            // the recreated form is the copy the code makes, under a name of its own
+            assertThat(page.locator("[lsfusion-container='PROPERTY(uiWebMCPExtra())']")).isVisible();
+        } finally {
+            exec("UiWebMCP.uiWebMCPDropCustomization");
+        }
+    }
+
     // the agent addresses a form as ACTIVATE FORM does - by its name, the label it was opened with, the window - and
     // the script runs in that one, whichever form the user is in. The address is to name one open form
     @Test

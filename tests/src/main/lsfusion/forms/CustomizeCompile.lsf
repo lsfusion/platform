@@ -165,3 +165,16 @@ testCcFormSaveOverApplication () {
     ccDrop(ccForm());
     ccDrop(NULL);
 }
+
+// the action that writes the current user's code without a dialog is refused the same way : the call fails with the
+// compiler's error, and nothing is saved
+testCcFormUserRefused () {
+    ccDrop(ccForm());
+    messageCaughtException() <- NULL;
+    TRY {
+        customizeFormUser(ccFormName(), ccBadFormCode());
+    } CATCH {
+    }
+    assertTrue(messageCaughtException() LIKE '%ccNoSuchProperty%', 'a broken form code failed the call with ' + messageCaughtException());
+    assertNull(dataExtendCode(ccForm(), currentUser()), 'the broken form code is stored');
+}
