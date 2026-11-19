@@ -1,0 +1,38 @@
+MODULE CustomizeNavigatorUser;
+
+REQUIRE TestUtils, SystemEvents;
+
+// the code is saved in a session of its own, not in the test's, so a test drops it itself
+
+cnuUserCode() = dataExtendCode(currentUser());
+
+cnuDrop() {
+    NEWSESSION {
+        dataExtendCode() <- NULL;
+        dataExtendCode(User u) <- NULL WHERE dataExtendCode(u);
+        APPLY;
+    }
+}
+
+testCustomizeNavigatorUserWritesAndDropsTheCode () {
+    cnuDrop();
+    customizeNavigatorUser('FORM cnuForm;');
+    assertEquals(cnuUserCode(), 'FORM cnuForm;', 'the code written is ' + cnuUserCode());
+    assertNull(dataExtendCode(), 'the code for all users was written');
+    customizeNavigatorUser(NULL);
+    assertNull(cnuUserCode(), 'the code was not dropped');
+}
+
+// a CANCEL that says nothing still fails the write
+WHEN CHANGED(dataExtendCode(User u)) AND dataExtendCode(u) LIKE '%cnuCancel%' DO
+    CANCEL;
+
+testCustomizeNavigatorUserFailsWhenTheApplyIsCanceled () {
+    cnuDrop();
+    TRY {
+        customizeNavigatorUser('FORM cnuCancel;');
+    } CATCH {
+    }
+    assertTrue(messageCaughtException() LIKE '%Navigator customization was not saved%', 'a canceled apply failed with ' + messageCaughtException());
+    assertNull(cnuUserCode(), 'the code of a canceled apply was written');
+}

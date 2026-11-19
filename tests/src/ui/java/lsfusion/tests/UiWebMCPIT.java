@@ -1,6 +1,7 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.assertions.LocatorAssertions;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -200,6 +201,25 @@ public class UiWebMCPIT extends UiTest {
             assertEquals("", call("lsfusion_exec", "{\"action\":\"SystemEvents.formRecreate\",\"form\":{}}", VALUES));
             // the recreated form is the copy the code makes, under a name of its own
             assertThat(page.locator("[lsfusion-container='PROPERTY(uiWebMCPExtra())']")).isVisible();
+        } finally {
+            exec("UiWebMCP.uiWebMCPDropCustomization");
+        }
+    }
+
+    @Test
+    public void customizeNavigatorUserWritesTheCodeReloadShowsIt() throws Exception {
+        exec("UiWebMCP.uiWebMCPDropCustomization");
+        try {
+            loadWithAgent();
+            Locator folder = page.locator("[lsfusion-container='UiWebMCP.uiWebMCPFolder']");
+
+            assertEquals("", call("lsfusion_exec", "{\"action\":\"SystemEvents.customizeNavigatorUser\","
+                    + "\"params\":[\"NAVIGATOR { UiWebMCP.uiWebMCPFolder 'Renamed by the agent'; }\"]}", VALUES));
+            assertThat(folder).containsText("UI WebMCP"); // the client keeps the navigator it was started with
+
+            // reload loads the page again before the call answers
+            page.evaluate("() => { Promise.resolve(window.uiWebMCPTools.lsfusion_exec.execute({ action: 'System.reload' })).catch(() => {}); }");
+            assertThat(folder).containsText("Renamed by the agent", new LocatorAssertions.ContainsTextOptions().setTimeout(30_000));
         } finally {
             exec("UiWebMCP.uiWebMCPDropCustomization");
         }

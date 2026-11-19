@@ -1293,6 +1293,15 @@ customize '{logics.customize}' () {
         reload();
 } IMAGE 'settings.png';
 
+customizeNavigatorUser(TEXT code) {
+    NEWSESSION {
+        dataExtendCode(currentUser()) <- nullEmpty(code);
+        APPLY;
+        IF canceled() THEN
+            throwException(OVERRIDE applyMessage(), 'Navigator customization was not saved');
+    }
+}
+
 // in the web client only : the code is written in its editor, and the client is reloaded to take it
 NAVIGATOR {
     system {
