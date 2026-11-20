@@ -1,0 +1,17 @@
+MODULE HttpClientSettings;
+
+REQUIRE Service;
+
+// the web agent's token and the access to the UI, set as an administrator sets them on the settings form. Open to the
+// calls of ExternalApiDisabledIT, which are anonymous on a server that lets in only what an action opens by its
+// annotations
+hcsAgentToken () {
+    generateWebAgentToken();
+    APPLY;
+    RETURN webAgentToken();
+} @@noauth;
+
+hcsEnableUI (STRING enableUI) {
+    baseValue(setting('enableUI')) <- enableUI;
+    APPLY;
+} @@noauth;

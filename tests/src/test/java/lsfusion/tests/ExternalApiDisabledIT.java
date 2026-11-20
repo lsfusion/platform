@@ -1,11 +1,20 @@
 package lsfusion.tests;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.remote.RMIUtils;
 import lsfusion.interop.base.exception.LoginException;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ComputerInfo;
+import lsfusion.interop.connection.ConnectionInfo;
+import lsfusion.interop.connection.UserInfo;
 import lsfusion.interop.connection.authentication.OAuth2Authentication;
+import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
+import lsfusion.interop.navigator.NavigatorInfo;
+import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
+import lsfusion.interop.session.ExternalRequest;
+import lsfusion.interop.session.SessionInfo;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.AfterClass;
@@ -26,7 +35,8 @@ import static lsfusion.tests.TestServer.BASE;
  *  webhooks - on a server of its own that lets the API in only for what an action opens by its annotations
  *  (enableAPI=0, the default): what is called before a login is opened by @@noauth, what a logged in user calls by
  *  @@api. A call the API refused would fail here, where the web client takes a refusal of some of them for an empty
- *  answer. Also the first login of an OAuth provider's user while registration is switched off. */
+ *  answer. Also the first login of an OAuth provider's user while registration is switched off, and whom the
+ *  navigator's settings give the web agent's token. */
 public class ExternalApiDisabledIT {
 
     private static final String DATABASE = "lsfusion_test_api0_" + ProcessHandle.current().pid();
@@ -140,6 +150,41 @@ public class ExternalApiDisabledIT {
 
         // right after the switch off : the login above left the server keeping the value that let registration in
         assertRefused(logics, oauthLogin("eadProvider:eadOAuthLater", "eadoauthlater@example.com"));
+    }
+
+    // the navigator's settings give the web agent's token to an authenticated call, by the navigator the web client
+    // reads them with and by the API, and not to a call made without a login : neither by the API nor by a navigator,
+    // once the UI is open to anonymous access
+    @Test
+    public void theWebAgentTokenIsGivenOnlyToAnAuthenticatedCall() throws Exception {
+        String agentToken = noauth("HttpClientSettings.hcsAgentToken", "");
+        Assert.assertFalse(agentToken.isEmpty());
+
+        String userToken = noauth("HttpRoleSettings.hrsUser&p=eadAgentUser", "");
+        Assert.assertEquals(agentToken, navigatorAgentToken(new AuthenticationToken(userToken)));
+        Assert.assertEquals(agentToken, new JSONObject(call("Service.getClientSettings[]", "", "Authorization", "Bearer " + userToken)).optString("webAgentToken"));
+
+        Assert.assertEquals("", new JSONObject(noauth("Service.getClientSettings[]", "")).optString("webAgentToken"));
+        noauth("HttpClientSettings.hcsEnableUI&p=2", "");
+        try {
+            Assert.assertNull(navigatorAgentToken(AuthenticationToken.ANONYMOUS));
+        } finally {
+            noauth("HttpClientSettings.hcsEnableUI", "");
+        }
+    }
+
+    // as the web client reads it after the login, by a navigator of its own
+    private static String navigatorAgentToken(AuthenticationToken token) throws Exception {
+        NavigatorInfo info = new NavigatorInfo(new SessionInfo(new ConnectionInfo(new ComputerInfo("localhost", "127.0.0.1"), UserInfo.NULL),
+                ExternalRequest.EMPTY), null, null, null, null, null, null, null, null, null,
+                BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
+        RemoteNavigatorInterface navigator = RMIUtils.<RemoteLogicsLoaderInterface>rmiLookup("localhost", rmiPort, "default", "RemoteLogicsLoader")
+                .getLogics().createNavigator(token, info);
+        try {
+            return LogicsSessionObject.getClientSettings(ExternalRequest.EMPTY, navigator, null).webAgentToken;
+        } finally {
+            navigator.close();
+        }
     }
 
     // as the web client names a provider's user, and with the web client's secret
