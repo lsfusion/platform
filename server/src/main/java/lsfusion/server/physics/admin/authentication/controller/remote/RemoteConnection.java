@@ -21,7 +21,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.action.LA;
-import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.Action;
@@ -485,7 +484,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
                     runnable.run(dataSession, getStack(), null);
 
-                    return readResult(request.returnNames, request.returnMultiType, property.action, dataSession);
+                    return readResult(request.returnMultiType, property.action, dataSession);
                 }
             } catch (SQLException | SQLHandledException e) {
                 throw Throwables.propagate(e);
@@ -580,7 +579,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    private ExternalResponse readResult(String[] returnNames, String returnMultiType, Action<?> property, DataSession dataSession) throws SQLException, SQLHandledException {
+    private ExternalResponse readResult(String returnMultiType, Action<?> property, DataSession dataSession) throws SQLException, SQLHandledException {
 
         ImOrderMap<String, String> headers = CallHTTPAction.readPropertyValues(dataSession, businessLogics.LM.headersTo).toOrderMap();
         String[] headerNames = headers.keyOrderSet().toArray(new String[headers.size()]);
@@ -594,27 +593,10 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         ExternalUtils.ResponseType responseType = ExternalUtils.getResponseType(returnMultiType, headerNames, headerValues);
         Charset charset = responseType.charset;
 
-        List<ExternalRequest.Result> returns = new ArrayList<>();
+        Result<SessionDataProperty> resultProp = new Result<>();
+        ObjectValue objectValue = businessLogics.LM.getExportValueProperty().readFirstNotNull(dataSession, resultProp, property);
 
-        LP[] returnProps;
-        if (returnNames.length > 0) {
-            returnProps = new LP[returnNames.length];
-            for (int i = 0; i < returnNames.length; i++) {
-                String returnName = returnNames[i];
-                LP returnProperty = businessLogics.findPropertyByCompoundName(returnName);
-                if (returnProperty == null)
-                    throw new RuntimeException(String.format("Return property %s was not found", returnName));
-                returnProps[i] = returnProperty;
-            }
-            for (LP<?> returnProp : returnProps)
-                returns.add(formatReturnValue(returnProp.read(dataSession), returnProp.property, charset, returnProps.length > 1 ? returnProp.property.getName() : null));
-        } else {
-            Result<SessionDataProperty> resultProp = new Result<>();
-            ObjectValue objectValue = businessLogics.LM.getExportValueProperty().readFirstNotNull(dataSession, resultProp, property);
-            returns.add(formatReturnValue(objectValue.getValue(), resultProp.result, charset, null));
-        }
-
-        return new ResultExternalResponse(returns.toArray(new ExternalRequest.Result[0]), headerNames, headerValues, cookieNames, cookieValues, nvl(statusHttp, HttpServletResponse.SC_OK));
+        return new ResultExternalResponse(new ExternalRequest.Result[]{formatReturnValue(objectValue.getValue(), resultProp.result, charset, null)}, headerNames, headerValues, cookieNames, cookieValues, nvl(statusHttp, HttpServletResponse.SC_OK));
     }
 
     private ExternalRequest.Result formatReturnValue(Object returnValue, Type type, Charset charset, String paramName) {
