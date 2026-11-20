@@ -70,6 +70,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP allowOnlyGroupUsers;
 
     public LP webClientSecret;
+    public LP clientCredentials;
 
     //OAuth2
     public LP oauth2id;
@@ -190,6 +191,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         allowOnlyGroupUsers = findProperty("allowOnlyGroupUsers[]");
 
         webClientSecret = findProperty("webClientSecretKey[]");
+        clientCredentials = findProperty("clientCredentials[]");
 
         oauth2id = findProperty("id[OAuth2]");
         oauth2ClientId = findProperty("clientId[OAuth2]");

@@ -53,6 +53,14 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends PendingR
         return result;
     }
 
+    @Override
+    public String getClientCredentials() throws RemoteException {
+        logRemoteMethodStartCall("getClientCredentials");
+        String result = target.getClientCredentials();
+        logRemoteMethodEndVoidCall("getClientCredentials");
+        return result;
+    }
+
     public long generateID() throws RemoteException {
         logRemoteMethodStartCall("getUserInfo");
         long result = target.generateID();

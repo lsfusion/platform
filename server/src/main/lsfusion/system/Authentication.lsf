@@ -224,23 +224,18 @@ writeDefaultCredentials() {
     APPLY;
 }
 
-getClientCredentials(STRING str) {
-    IF str != webClientSecretKey() THEN {
-        EXPORT FROM error = STRING s WHERE s = '{authentication.oauth2.incorrect.web.client.auth.token}';
-    } ELSE {
-        EXPORT FROM id(OAuth2 oa),
-            clientId(oa),
-            clientSecret(oa),
-            clientAuthenticationMethod(oa),
-            scope(oa),
-            authorizationUri(oa),
-            tokenUri(oa),
-            jwkSetUri(oa),
-            userInfoUri(oa),
-            userNameAttributeName(oa),
-            clientName(oa) WHERE clientId(oa) AND clientSecret(oa) AND oa IS OAuth2;
-    }
-} @@api @@noauth;
+// the providers the web client offers for login, which it gets from the server through RemoteLogicsInterface
+clientCredentials = JSON FROM id = id(OAuth2 oa),
+    clientId = clientId(oa),
+    clientSecret = clientSecret(oa),
+    clientAuthenticationMethod = clientAuthenticationMethod(oa),
+    scope = scope(oa),
+    authorizationUri = authorizationUri(oa),
+    tokenUri = tokenUri(oa),
+    jwkSetUri = jwkSetUri(oa),
+    userInfoUri = userInfoUri(oa),
+    userNameAttributeName = userNameAttributeName(oa),
+    clientName = clientName(oa) WHERE clientId(oa) AND clientSecret(oa);
 
 onUserRegister ABSTRACT LIST (User);
 // no one may register by themselves : neither on the registration page nor by a call of registerUser

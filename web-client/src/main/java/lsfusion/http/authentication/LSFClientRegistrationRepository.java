@@ -1,13 +1,9 @@
 package lsfusion.http.authentication;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.col.ListFact;
 import lsfusion.http.controller.LogicsRequestHandler;
-import lsfusion.http.controller.MainController;
 import lsfusion.http.provider.logics.LogicsProvider;
-import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.logics.LogicsSessionObject;
-import lsfusion.interop.session.ExternalRequest;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.lang.NonNull;
@@ -17,7 +13,6 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.util.Assert;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -27,11 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class LSFClientRegistrationRepository extends LogicsRequestHandler implements ClientRegistrationRepository, Iterable<ClientRegistration> {
     private Map<String, ClientRegistration> registrations;
 
-    private final ServletContext servletContext;
-
-    public LSFClientRegistrationRepository(LogicsProvider logicsProvider, ServletContext servletContext) {
+    public LSFClientRegistrationRepository(LogicsProvider logicsProvider) {
         super(logicsProvider);
-        this.servletContext = servletContext;
     }
 
     @Override
@@ -45,7 +37,7 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
             HttpServletRequest request = LSFRemoteAuthenticationProvider.getHttpServletRequest();
             List<ClientRegistration> clientRegistrations;
             try {
-                clientRegistrations = runRequest(request, (sessionObject, retry) -> getOauth2ClientCredentials(sessionObject, request));
+                clientRegistrations = runRequest(request, (sessionObject, retry) -> getOauth2ClientCredentials(sessionObject));
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
@@ -66,16 +58,13 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
         return Collections.unmodifiableMap(result);
     }
 
-    private List<ClientRegistration> getOauth2ClientCredentials(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException {
-        String authSecret = servletContext.getInitParameter(OAuth2ToLSFTokenFilter.AUTH_SECRET_KEY);
+    private List<ClientRegistration> getOauth2ClientCredentials(LogicsSessionObject sessionObject) throws RemoteException {
         List<ClientRegistration> clientRegistrations = new ArrayList<>();
 
-        JSONArray jsonArray = new JSONArray(MainController.sendRequest(request, ListFact.singleton(ExternalRequest.getSystemParam(authSecret)), sessionObject, "Authentication.getClientCredentials"));
+        String credentials = sessionObject.remoteLogics.getClientCredentials();
+        JSONArray jsonArray = credentials != null ? new JSONArray(credentials) : new JSONArray();
 
         int jsonArrayLength = jsonArray.length();
-        if (jsonArrayLength == 1 && jsonArray.getJSONObject(0).has("error")){
-            throw new AuthenticationException(jsonArray.getJSONObject(0).getString("error"));
-        }
 
         for (int i = 0; i < jsonArrayLength; i++) {
             JSONObject jsonobject = jsonArray.getJSONObject(i);
@@ -98,7 +87,7 @@ public class LSFClientRegistrationRepository extends LogicsRequestHandler implem
 
     @Override
     @NonNull
-    public Iterator<ClientRegistration> iterator() throws AuthenticationException {
+    public Iterator<ClientRegistration> iterator() {
         Map<String, ClientRegistration> registrations = getRegistrations();
         if (registrations == null || registrations.size() == 0){
             return Collections.<String, ClientRegistration>emptyMap().values().iterator();
