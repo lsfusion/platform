@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.DaemonThreadFactory;
 import lsfusion.base.Result;
 import lsfusion.base.file.FileData;
+import lsfusion.interop.base.exception.RemoteInternalException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ComputerInfo;
 import lsfusion.interop.connection.ConnectionInfo;
@@ -304,7 +305,7 @@ public class ExternalHttpServer extends MonitorServer {
             } catch (Exception e) {
                 ServerLoggers.systemLogger.error("ExternalHttpServer error: ", e);
                 try {
-                    sendErrorResponse(request, logicsInstance.getSettings().isHideAPIErrorStackTrace() ? "" : e.getMessage());
+                    sendErrorResponse(request, BaseUtils.nvl(e instanceof RemoteInternalException ? ((RemoteInternalException) e).status : null, HttpServletResponse.SC_INTERNAL_SERVER_ERROR), logicsInstance.getSettings().isHideAPIErrorStackTrace() ? "" : e.getMessage());
                 } catch (Exception ignored) {
                 }
             } finally {
@@ -356,12 +357,12 @@ public class ExternalHttpServer extends MonitorServer {
             return contentType;
         }
 
-        private void sendErrorResponse(HttpExchange request, String response) throws IOException {
+        private void sendErrorResponse(HttpExchange request, int status, String response) throws IOException {
             Charset bodyCharset = ExternalUtils.defaultBodyCharset;
             request.getResponseHeaders().add("Content-Type", "text/html; charset=" + bodyCharset.name());
             request.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             byte[] responseBytes = response.getBytes(bodyCharset);
-            request.sendResponseHeaders(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, responseBytes.length);
+            request.sendResponseHeaders(status, responseBytes.length);
             OutputStream os = request.getResponseBody();
             os.write(responseBytes);
             os.close();
