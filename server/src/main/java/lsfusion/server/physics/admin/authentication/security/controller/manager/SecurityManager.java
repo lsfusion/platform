@@ -283,6 +283,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 }
                 userObject = readUser(authentication.getUserName(), session);
                 if (userObject == null) {
+                    if (securityLM.disableRole.read(session, securityLM.userRoleSID.readClasses(session, new DataObject("selfRegister"))) != null) // if selfRegister is disabled
+                        throw new LoginException();
                     String pwd = BaseUtils.generatePassword(20, false, true);
                     userObject = addUser(authentication.getUserName(), pwd, session);
                     setUserParameters(userObject, ((OAuth2Authentication) authentication).getFirstName(),
