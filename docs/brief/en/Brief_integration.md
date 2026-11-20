@@ -167,10 +167,9 @@ From outside, an [action](../paradigm/Actions.md) is called with parameters, and
 Requests are served by the application server (port `7651`) and by the web server:
 
 - Action API — `/exec`, `/eval`, `/eval/action`, both servers;
-- Form API — `/form`, web server only: driving a form in the interactive view;
 - File API — `/files/list`, `/files/read`, `/files/search`, web server only: reading the application's classpath.
 
-Whether such a call is accepted at all is set by a working parameter — [`enableAPI`](../paradigm/Working_parameters.md) for the Action and File APIs, `enableUI` for the Form API, which the platform counts as user interface rather than as a program interface. An action that turns out to be interactive is routed to a running client of the user, and needs `enableUI` on top of the `enableAPI` check. The [`@@api`](../language/Action_options.md) action option allows one specific action at `enableAPI=0` (an authenticated user is still required), and `@@noauth` bypasses both the authentication check and `enableAPI`. The annotation marks a named action, so it does not extend to `/eval` and `/eval/action`, which run arbitrary code, nor to the File API, where no action is called. The mechanism is [access from an external system](../paradigm/Access_from_an_external_system.md).
+Whether such a call is accepted at all is set by the [`enableAPI`](../paradigm/Working_parameters.md) working parameter. An action that turns out to be interactive is routed to a running client of the user, and needs `enableUI` on top of the `enableAPI` check. The [`@@api`](../language/Action_options.md) action option allows one specific action at `enableAPI=0` (an authenticated user is still required), and `@@noauth` bypasses both the authentication check and `enableAPI`. The annotation marks a named action, so it does not extend to `/eval` and `/eval/action`, which run arbitrary code, nor to the File API, where no action is called. The mechanism is [access from an external system](../paradigm/Access_from_an_external_system.md).
 
 From the same JVM or the same SQL server the elements are reached directly — by Java code ([Java API for integrations](../paradigm/Java_integration_API.md)) or by SQL against the platform's tables ([access from an internal system](../paradigm/Access_from_an_internal_system.md)).
 

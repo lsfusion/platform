@@ -81,6 +81,7 @@ import lsfusion.server.logics.form.stat.print.tree.TreeReportGenerator;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -1140,6 +1141,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     @Override
     public Pair<Long, String> changeExternal(final long requestIndex, long lastReceivedRequestIndex, final String json) throws RemoteException {
+        RemoteNavigator.refuseFormAPI();
         return processRMIContextRequest(requestIndex, lastReceivedRequestIndex, (stack, context) -> {
             assert !currentInvocationExternal;
             currentInvocationExternal = true;

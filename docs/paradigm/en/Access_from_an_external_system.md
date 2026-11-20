@@ -49,8 +49,8 @@ For `EXEC`, the action name can be either the action's [compound name](Element_i
 
 The HTTP API is served by two kinds of servers:
 
--   **Application server** - a lightweight HTTP server built into the application server, listening on port `7651` by default. It serves the Action API at `/exec` / `/eval` / `/eval/action`, with `Authorization: Basic` / `Authorization: Bearer` authentication and stateful sessions via the `session` parameter. A request to a path the Action API does not define — among them the [Form API](#form), the [File API](#files) and the [`/mcp`](MCP_server.md) endpoint, which only the web server serves — is answered with `404` and a `text/plain` body naming the paths the Action API is served at. [Interactive actions](#interactive) here are accepted only through the `Need-Notification-Id` header.
--   **Web server** - a separate web application (deployed in a servlet container such as Tomcat), listening on its own port. It serves the lsFusion web client (the browser-based user interface) and, on the same port, the HTTP API: the same Action API as the application server, plus the [Form API](#form) at `/form` and the browser-redirect variant for [interactive actions](#interactive).
+-   **Application server** - a lightweight HTTP server built into the application server, listening on port `7651` by default. It serves the Action API at `/exec` / `/eval` / `/eval/action`, with `Authorization: Basic` / `Authorization: Bearer` authentication and stateful sessions via the `session` parameter. A request to a path the Action API does not define — among them the [File API](#files) and the [`/mcp`](MCP_server.md) endpoint, which only the web server serves — is answered with `404` and a `text/plain` body naming the paths the Action API is served at. [Interactive actions](#interactive) here are accepted only through the `Need-Notification-Id` header.
+-   **Web server** - a separate web application (deployed in a servlet container such as Tomcat), listening on its own port. It serves the lsFusion web client (the browser-based user interface) and, on the same port, the HTTP API: the same Action API as the application server, plus the browser-redirect variant for [interactive actions](#interactive).
 
 A request is addressed as `http://<server address>:<port><endpoint>` for the corresponding server.
 
@@ -238,49 +238,9 @@ On failure, the response uses a specific HTTP status code:
 
 For `404`, `500`, and other server-side exception statuses, the response body is `text/html` with the error message (a path the Action API does not define is answered with a `text/plain` body). For most exceptions it also includes Java and lsFusion stack traces, except for a `RemoteMessageException` (a user-facing platform message) which returns only the message. The [working parameter](Working_parameters.md) `hideAPIErrorStackTrace` (`false` by default) hides the details of internal errors, which is worth turning on for a server reachable from outside: the body of such an error is then empty — the message goes together with the stacks — while a `RemoteMessageException` (for example, a compilation error of a script sent to `/eval`, which names the unresolved identifier with its line and column) and an authentication error keep their text on both servers. On the web server the change reaches the caller only once the cached server settings are refreshed. A `401` body carries only the short error message. On the web server, the redirect to `/login` has no body - the exception is stored in the HTTP session and the original request is cached for retry after login.
 
-## Form API {#form}
-
-Apart from executing actions, the platform also supports an API (similar to JSON API) for working with [forms](Forms.md), or specifically, their [interactive views](Interactive_view.md). Since it's a stateful API designed for the asynchronous mode (which means that the HTTPS interface itself has a number of system parameters, such as a request index, index of the latest received response, etc.), it's easier to use this API with the help of special libraries for specific languages/platforms that you want to integrate with:
-
-### Protocols
-
-#### JavaScript
-
-The JavaScript library is available in the central npm-repository under the name  [@lsfusion/core](https://www.npmjs.com/~lsfusion).
-
-The key concept in this API is the concept of *state*. A state is a JS object with a structure corresponding to form elements in the following way:
-
--   [An object group](Form_structure.md#objects) corresponds to a JS object that is stored in the js field of the state object. The name of the field matches the name of the object group. Each JS object from the object group, in turn, stores an array of JS objects (with [filters](Form_structure.md#filters) and [orders](Form_structure.md#sort) taken into account) in the `list` field. The JS object of the object group corresponds to the [current](Form_structure.md#currentObject) object collection. Also, each JS object of an array (including the JS object of the object group) in the `value` field stores the value of objects – only values if there is just one object in the object group or, if there are multiple objects, a JS object with fields whose names are equal to object names and values are equal to object values.
--   [Properties](Properties.md) correspond to a value stored in a field (the name of the field is equal to the property name) of a JS object which is determined in the following way depending on the existence of parameters and [its view](Interactive_view.md#property):
-    -   A property has parameters:
-        -   The property view is equal to `GRID` of each JS object in the `list` array of the JS object of this property's [display group](Form_structure.md#drawgroup).
-        -   The property's view is equal to `PANEL`, `TOOLBAR`  of the JS object of this property's display group
-    -   A property has no parameters - of a JS state object.
-
-The task of the library is to automatically keep this state described above up to date, both during form creation and during its subsequent modification (this behavior is often called reactivity).
-
-The library exports the following functions:
-
--   `create` - creates a new form. Parameters:
-    -  `setState` - a state change request function. This function is supposed to take a single parameter – a state change function (which, in turn, has just one parameter, the previous state, and outputs the next state as the result) and as a result of execution add this function to the state change queue (or, for example, apply it right away depending on the implementation of the view logic). This state management logic is fully identical to the state management logic in React and, as a rule, if used inside a React component, the `setState` parameter is passed as `updateState => this.setState(updateState)`.
-    -  `baseUrl` - the URL of the lsFusion web server - a string, for example `'https://demo.lsfusion.org/hockeystats'`.
-    -  `formData` - an object describing the form. Must contain either a name field with the name of the form (for example `{name: "MainForm"}`) or a script field with the form code (for example, `script:"OBJECTS i = Invoice PROPERTIES (i) date, stock"`)
--   `change` - changes the form data. Parameters:
-    -  `setState` - a state change request function.
-    -  `changes` - a JS object containing what exactly needs to be changed. The structure of a JS change object is the same as that of the JS state object, except that a JS object of an object group does not have/is not supposed to have a `list` field – that is, all changes are supposed to be made for current object collection. However, if necessary, the `value` can be set to a single-element array, which will mean that there is no need to change the current object, but property values should be changed for the specified, not the current object. For example, `change(setState, {game:{value:[30], hostGoals:40, guestGoals:30}})` will change the number of goals to `40` and `30`, but not for the current game, but for one with an object id `30`. You can also specify actions in a JS change object (there are no actions in JS state objects). The value of the corresponding field in this case can be arbitrary. For example, `change(setState, {game: {doSmthWithGame : true}})`
-    -  `currentState` - a JS object of the current state. Optional parameter. In order to ensure the best UX in the asynchronous mode, it is advised that the user change values only for the objects that he sees during the change and not when the change is processed (the state can change at this moment and so can current objects). Therefore, when calling this function, it is recommended to pass the state that was used to render the view in which the user initiated this change as the `currentState` parameter.
--   `close` - closes the form. Parameters:
-    -  `setState` - a state change request function.
--   `formCreated` - checks whether the form has been initialized (and, accordingly, whether the state has been filled). Returns a boolean value. Parameters:
-    -  `state` - a JS state object
--   `numberOfPendingRequests` - show how many change requests are currently queued. Returns a long type value. Parameters:
-    -  `state` - a JS state object
-
-As the names of object groups and properties, not names on the form are used, but [export/import](Structured_view.md#extid) names (which, however, match the names on forms if not explicitly defined). While working with a form via Form API, actions and properties created using operators for [object operations](Interactive_view.md#objectoperators) automatically get export/import names equal to the operator name with the object mapping removed: `NEW` and `DELETE` get `NEW` and `DELETE` (that is you can call `change(setState, {game : {NEW:true}})` for adding an object, for example), and `EDIT`, `NEWEDIT`, `VALUE`, and `INTERVAL` get `EDIT`, `NEWEDIT`, `VALUE`, and `INTERVAL` respectively. An operator with an explicitly specified class keeps the class, for example `NEW[Order]`. An export/import name set explicitly on the form is used instead. Also, when Form API is used, it automatically adds a property called `logMessage` to the form to which all dialog messages are written (including those generated when [constraints](Constraints.md) were violated).
-
 ## File API {#files}
 
-The platform also exposes a read-only **File API** for browsing the running application's classpath — its lsFusion source files and the resources packaged alongside them — over HTTP. It offers three operations: `list` (find files by name), `read` (fetch a file's contents), and `search` (find lines matching a regular expression). Like the [Form API](#form), it is served only by the web server, not by the application server's built-in HTTP server.
+The platform also exposes a read-only **File API** for browsing the running application's classpath — its lsFusion source files and the resources packaged alongside them — over HTTP. It offers three operations: `list` (find files by name), `read` (fetch a file's contents), and `search` (find lines matching a regular expression). It is served only by the web server, not by the application server's built-in HTTP server.
 
 A request is a `POST` to `/files/<operation>`, where `<operation>` is `list`, `read`, or `search`. The operation's arguments are passed as a JSON object in the request body. An empty body means no arguments, so each operation's defaults apply. The response body is the result as a JSON object (`application/json`), returned as-is with no wrapping envelope. [Authentication](#authentication) and the [`enableAPI`](Working_parameters.md) check work exactly as for the Action API, except that the per-action `@@noauth` / `@@api` annotations have no effect here, since no action is called.
 
@@ -403,7 +363,3 @@ for item in result['details']:
 #  11: price 5
 #  12: price 5
 ```
-
-### Form API (JavaScript)
-
-<iframe src="https://codesandbox.io/embed/vibrant-tharp-trcqt?fontsize=14" title="vibrant-tharp-trcqt" allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media" width="100%" height="500px" border="0" border-radius="4px" overflow="hidden" sandbox="allow-modals allow-forms allow-popups allow-scripts allow-same-origin"></iframe>
