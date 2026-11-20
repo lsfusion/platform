@@ -1,0 +1,11 @@
+MODULE UiRegistration;
+
+REQUIRE HttpRegistration;
+
+// registration switched on and off from the navigator, as an administrator does it in the web client
+NAVIGATOR {
+    NEW FOLDER uiRegistration 'UI registration' WINDOW toolbar {
+        NEW hrEnable;
+        NEW hrDisable;
+    }
+}

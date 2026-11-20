@@ -699,6 +699,15 @@ public abstract class UiTest {
         exec(0, action, params);
     }
 
+    // a page of the web client, as a browser that has not logged in gets it
+    protected static String webPage(String path) throws Exception {
+        HttpResponse<String> response = HTTP.send(HttpRequest.newBuilder(URI.create("http://localhost:" + webPort + path)).timeout(Duration.ofMinutes(1)).build(),
+                HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != 200)
+            throw new AssertionError(path + ": " + response.statusCode() + " " + response.body());
+        return response.body();
+    }
+
     // the server applies what the browser sent a moment after the click that sent it, so a check is retried for 10 s
     protected static void check(String action, String... params) throws Exception {
         exec(10_000, action, params);
