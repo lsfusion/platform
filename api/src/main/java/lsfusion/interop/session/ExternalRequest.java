@@ -12,7 +12,6 @@ import java.util.function.Function;
 
 public class ExternalRequest implements Serializable {
 
-    public final String[] returnNames;
     public final static String SINGLEBODYPARAMNAME = "body";
     public final String returnMultiType;
     public ExternalRequest(Param[] params) {
@@ -21,15 +20,14 @@ public class ExternalRequest implements Serializable {
     public ExternalRequest(Param[] params, String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues,
                            String scheme, String method, String webHost, Integer webPort, String contextPath, String servletPath,
                            String pathInfo, String query, String contentType, String sessionId) {
-        this(new String[0], params, headerNames, headerValues, cookieNames, cookieValues, null, null, null, scheme, method, webHost, webPort, contextPath, servletPath, pathInfo, query, contentType, sessionId, null, null, null, false, false);
+        this(params, headerNames, headerValues, cookieNames, cookieValues, null, null, null, scheme, method, webHost, webPort, contextPath, servletPath, pathInfo, query, contentType, sessionId, null, null, null, false, false);
     }
-    public ExternalRequest(String[] returnNames, Param[] params,
+    public ExternalRequest(Param[] params,
                            String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues,
                            String appHost, Integer appPort, String exportName, String scheme, String method, String webHost,
                            Integer webPort, String contextPath, String servletPath, String pathInfo, String query,
                            String contentType, String sessionId, byte[] body, String signature, String returnMultiType,
                            boolean needNotificationId, boolean isInteractiveClient) {
-        this.returnNames = returnNames;
         this.returnMultiType = returnMultiType;
         this.params = params;
         this.headerNames = headerNames;
