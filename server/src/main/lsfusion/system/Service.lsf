@@ -959,7 +959,9 @@ getClientSettings(User user) + WHEN user IS User THEN {
         disableActionsIfReadonly = valueSetting('disableActionsIfReadonly'),
         enableShowingRecentlyLogMessages = valueSetting('enableShowingRecentlyLogMessages'),
         pushNotificationPublicKey = pushPublicKey(),
-        webAgentToken = webAgentToken(),
+        // only to an authenticated call : a call without a login carries the anonymous token, whatever user it runs as,
+        // and a context with no token at all gets none either
+        webAgentToken = webAgentToken() IF currentAuthToken() != 'anonymous',
         maxRequestQueueSize = valueSetting('maxRequestQueueSize'),
         maxStickyLeft = valueSetting('maxStickyLeft'),
         jasperReportsIgnorePageMargins = valueSetting('jasperReportsIgnorePageMargins'),
