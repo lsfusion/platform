@@ -263,8 +263,8 @@ public class ResourceUtils {
             return null;
         if(fullPath != null)
             fullPath.set(resourcePath.substring(1));
-        try {
-            return result.apply(ResourceUtils.getResourceAsStream(resourcePath, multipleUsages));
+        try (InputStream stream = ResourceUtils.getResourceAsStream(resourcePath, multipleUsages)) {
+            return result.apply(stream);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
@@ -301,13 +301,16 @@ public class ResourceUtils {
 //            if(!(multipleUsages)) { // if we have "not init" read and we are not in devMode, ignore caches to have better DX
                 boolean simpleFile = fileName.equals(BaseUtils.getFileNameAndExtension(fileName));
 
-                String template = BaseUtils.replaceFileName(fileName, ".*", true);
+                String folder = FilenameUtils.getFullPath(fileName);
+                String extension = BaseUtils.getFileExtension(fileName);
+                String template = folder + ".*\\." + extension; // the cache key : ends with the extension, as clearResourceCaches expects
 
                 // computeIfAbsent, and not get + put : the walk below reads every entry of every jar on the classpath, so a plain
                 // check-then-act lets every module-parsing thread that misses at the same moment repeat the same half-second scan
-                String extension = "." + FilenameUtils.getExtension(fileName); // the template is <path>.*\.<extension>, so a match has to end with it
                 Pair<List<String>, Map<String, String>> cachedResources = cachedFoundResourcePathes.computeIfAbsent(template, t -> {
-                    List<String> resources = ResourceUtils.getResources(Collections.singletonList(Pattern.compile(".*/" + t)), false, extension);
+                    // the template's folder and extension quoted : the name is matched as it is written
+                    Pattern pattern = Pattern.compile(".*/" + Pattern.quote(folder) + ".*\\." + Pattern.quote(extension));
+                    List<String> resources = ResourceUtils.getResources(Collections.singletonList(pattern), false, "." + extension); // a match ends with the extension
                     return new Pair<>(resources, simpleFile ? BaseUtils.groupListFirst(BaseUtils::getFileNameAndExtension, resources) : null);
                 });
 
