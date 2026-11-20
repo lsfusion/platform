@@ -1,5 +1,13 @@
 package lsfusion.tests;
 
+import lsfusion.base.remote.RMIUtils;
+import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ComputerInfo;
+import lsfusion.interop.connection.ConnectionInfo;
+import lsfusion.interop.connection.UserInfo;
+import lsfusion.interop.logics.remote.RemoteLogicsInterface;
+import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
+import lsfusion.interop.session.ExternalRequest;
 import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -29,6 +37,7 @@ public class ExternalApiAccessIT {
 
     private static Process server;
     private static int httpPort;
+    private static RemoteLogicsInterface logics;
 
     @BeforeClass
     public static void startServer() throws Exception {
@@ -39,6 +48,7 @@ public class ExternalApiAccessIT {
                 "settings.enableAPI=1",
                 "lsfusion.server.devmode=false"); // which would set enableAPI to 2 whatever is given
         TestServer.waitStarted(server, log);
+        logics = RMIUtils.<RemoteLogicsLoaderInterface>rmiLookup("localhost", ports[1], "default", "RemoteLogicsLoader").getLogics();
     }
 
     @AfterClass
@@ -133,6 +143,69 @@ public class ExternalApiAccessIT {
         }
     }
 
+    // a role's own enableAPI decides for its users, where it closes the API the server opens and where it opens the API
+    // the server closes : on every way into the API - an action run by its name, a script, an action's body, an MCP
+    // tool. The users' calls take turns : a call is made by a session of its own or by one the API's pool keeps after a
+    // call of the other user, whichever the pool has back by then
+    @Test
+    public void aRolesEnableAPIDecidesForItsUsers() throws Exception {
+        String closed = userToken("eaaRoleClosed", "0");
+        String own = userToken("eaaRoleOwn", null);
+        for (int round = 0; round < 3; round++) {
+            assertLetIn(own);
+            assertDisabled(closed);
+        }
+
+        try {
+            Assert.assertEquals(200, post("/exec?action=HttpRoleSettings.hrsServer&p=0", "").statusCode());
+            String open = userToken("eaaRoleOpen", "1");
+            for (int round = 0; round < 3; round++) {
+                assertLetIn(open);
+                assertDisabled(own);
+            }
+        } finally {
+            Assert.assertEquals(200, post("/exec?action=HttpRoleSettings.hrsServer", "").statusCode());
+        }
+    }
+
+    private static String userToken(String login, String enableAPI) throws Exception {
+        HttpResponse<String> user = post("/exec?action=HttpRoleSettings.hrsUser&p=" + login + (enableAPI != null ? "&p=" + enableAPI : ""), "");
+        Assert.assertEquals(user.body(), 200, user.statusCode());
+        return user.body();
+    }
+
+    private static void assertLetIn(String token) throws Exception {
+        for (HttpResponse<String> response : apiCalls(token))
+            Assert.assertEquals(response.uri() + " answered " + response.body(), "pong", response.statusCode() == 200 ? response.body() : null);
+        JSONObject tool = mcpEval(token);
+        Assert.assertFalse(tool.toString(), tool.optBoolean("isError"));
+        Assert.assertEquals("pong", tool.getJSONObject("structuredContent").getJSONArray("results").getJSONObject(0).getString("value"));
+    }
+
+    private static void assertDisabled(String token) throws Exception {
+        for (HttpResponse<String> response : apiCalls(token))
+            Assert.assertTrue(response.uri() + " answered " + response.statusCode() + " " + response.body(), response.statusCode() == 500 && response.body().contains("Api is disabled"));
+        JSONObject tool = mcpEval(token);
+        Assert.assertTrue(tool.toString(), tool.optBoolean("isError") && tool.toString().contains("Api is disabled"));
+    }
+
+    private static HttpResponse<String>[] apiCalls(String token) throws Exception {
+        String authorization = "Bearer " + token;
+        return new HttpResponse[]{
+                post("/exec?action=HttpRoleSettings.hrsPing", "", "text/plain", authorization),
+                post("/eval", "run() { RETURN 'pong'; }", "text/plain", authorization),
+                post("/eval/action", "RETURN 'pong';", "text/plain", authorization)};
+    }
+
+    private static JSONObject mcpEval(String token) throws Exception {
+        String request = "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"lsfusion_eval\",\"arguments\":"
+                + "{\"script\":" + JSONObject.quote("run() { RETURN 'pong'; }") + ",\"params\":[]}}}";
+        JSONObject response = new JSONObject(logics.mcp(new AuthenticationToken(token), new ConnectionInfo(new ComputerInfo("localhost", "127.0.0.1"), UserInfo.NULL),
+                new ExternalRequest(new ExternalRequest.Param[0], null, null, null, null, null, null, null, null, null, null, null, null, null, null), request).json);
+        Assert.assertTrue(response.toString(), response.has("result"));
+        return response.getJSONObject("result");
+    }
+
     // the server writes its logs into the folder it is started in
     private static String evalLog() throws Exception {
         Path log = BASE.resolve("logs/eval.log");
@@ -160,11 +233,15 @@ public class ExternalApiAccessIT {
     }
 
     private static HttpResponse<String> post(String path, String body, String contentType) throws Exception {
-        return HTTP.send(
-                HttpRequest.newBuilder(URI.create("http://localhost:" + httpPort + path))
-                        .timeout(Duration.ofMinutes(1))
-                        .header("Content-Type", contentType + "; charset=UTF-8")
-                        .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8)).build(),
-                HttpResponse.BodyHandlers.ofString());
+        return post(path, body, contentType, null);
+    }
+
+    private static HttpResponse<String> post(String path, String body, String contentType, String authorization) throws Exception {
+        HttpRequest.Builder request = HttpRequest.newBuilder(URI.create("http://localhost:" + httpPort + path))
+                .timeout(Duration.ofMinutes(1))
+                .header("Content-Type", contentType + "; charset=UTF-8");
+        if (authorization != null)
+            request.header("Authorization", authorization);
+        return HTTP.send(request.POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8)).build(), HttpResponse.BodyHandlers.ofString());
     }
 }

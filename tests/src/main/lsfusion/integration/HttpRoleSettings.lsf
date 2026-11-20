@@ -1,0 +1,35 @@
+MODULE HttpRoleSettings;
+
+REQUIRE Security, Authentication, Service, Reflection;
+
+// the server's enableAPI and a role's own one, set as an administrator sets them. Open to the calls of
+// ExternalApiAccessIT, which are anonymous on a server that lets only an authenticated call in
+
+// a user of a role of its own with the given enableAPI (NULL - the server's), and a token given to the user. The role
+// cannot open the interpreter, which opens the API to its users whatever enableAPI is, so that the setting alone decides
+hrsUser (STRING login, STRING enableAPI) {
+    NEWSESSION {
+        NEW r = UserRole {
+            sid(r) <- login;
+            NEW u = CustomUser {
+                login(u) <- login;
+                in(u, r) <- TRUE;
+            }
+            baseValue(setting('enableAPI'), r) <- enableAPI;
+            dataPermission(r, navigatorElementCanonicalName('System.interpreter')) <- Permission.forbid;
+        }
+        APPLY;
+    }
+    generateAuthToken(login);
+    RETURN resultAuthToken();
+} @@noauth;
+
+hrsServer (STRING enableAPI) {
+    baseValue(setting('enableAPI')) <- enableAPI;
+    APPLY;
+} @@noauth;
+
+// an action of the logics with no annotations
+hrsPing () {
+    RETURN 'pong';
+}
