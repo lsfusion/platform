@@ -56,7 +56,7 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
                 currentGroup = ListFact.mList();
 
             }
-            currentGroup.add("'" + value + "'," + valueSource);
+            currentGroup.add(source.getSyntax().getStringLiteral(value) + "," + valueSource);
             currentShowIf = showIf;
         }
 

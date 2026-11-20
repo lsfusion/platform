@@ -1061,7 +1061,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private boolean indexExists(String indexName) throws SQLException, SQLHandledException {
-        String queryString = "SELECT indexname FROM pg_indexes WHERE indexname = '" + indexName + "' AND schemaname = 'public'";
+        String queryString = "SELECT indexname FROM pg_indexes WHERE indexname = " + syntax.getStringLiteral(indexName) + " AND schemaname = 'public'";
 
         ImRevMap<String, String> propertyNames = MapFact.singletonRev("indexname", "indexname");
         ImMap<String, Reader<?>> propertyReaders = MapFact.singleton("indexname", StringClass.instance);
@@ -1134,7 +1134,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private void createMatchIndex(StoredTable table, ImOrderMap<Field, Boolean> fields, String dbName, String columns, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
         if(DataAdapter.hasTrgmExtension()) {
             createIndex(table, getIndexName(table, syntax, dbName, fields, MATCH.suffix()),
-                    " USING GIN (to_tsvector(" + (indexOptions.language != null ? ("'" + indexOptions.language + "', ") : "") + columns + "))", logger, ifNotExists);
+                    " USING GIN (to_tsvector(" + (indexOptions.language != null ? (syntax.getStringLiteral(indexOptions.language) + ", ") : "") + columns + "))", logger, ifNotExists);
         }
     }
 
@@ -1276,7 +1276,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public boolean columnExists(StoredTable table, Field field) throws SQLException, SQLHandledException {
-        return (Integer) executeSelect("SELECT CASE WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name ILIKE '" + table.getName(syntax) + "' AND column_name ILIKE '" + field.getName(syntax) + "') THEN 1 ELSE 0 END AS cnt", OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, MapFact.EMPTY(), 0,
+        return (Integer) executeSelect("SELECT CASE WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name ILIKE " + syntax.getStringLiteral(table.getName(syntax)) + " AND column_name ILIKE " + syntax.getStringLiteral(field.getName(syntax)) + ") THEN 1 ELSE 0 END AS cnt", OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, MapFact.EMPTY(), 0,
                 MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", IntegerClass.instance),
                 MapFact.<String, String>EMPTYREV(), MapFact.EMPTY()).singleKey().singleValue() == 1;
     }
@@ -4141,7 +4141,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                     privateConnection.temporary.resetDeadRows(table); // it is a brand new relation on the new connection
             }
             // on the new connection while the session is still on the old one : it is the last thing here that can fail, and nothing is switched over until it has not
-            privateConnection.updateContext(true, contextProvider, newConnection);
+            privateConnection.updateContext(true, contextProvider, syntax, newConnection);
         } catch (Throwable t) {
             // the move is off, and physically so : what it had already created on the new connection comes off again. Left there, a slot's copy sits under a name the pool records on the old
             // server, and every later move of that slot here fails on it - a temporary table's sits on a backend that goes back to the pool with an inventory that does not know it
@@ -4332,7 +4332,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     };
     public static void uploadTableToConnection(final String table, SQLSyntax syntax, final JDBCTable tableData, final Connection sqlTo, final OperationOwner owner) throws SQLException {
         final KeyField keyCount = new KeyField("row", ValueExpr.COUNTCLASS);
-        final ImRevMap<String, PropertyField> properties = tableData.fields.getSet().mapRevValues((String value) -> new PropertyField(value, tableData.fieldTypes.get(value)));
+        final ImRevMap<String, PropertyField> properties = tableData.fields.getSet().mapRevValues((String value) -> {
+            if (!syntax.isFieldName(value))
+                throw new RuntimeException("Column name of a table file is not an SQL column name: " + value);
+            return new PropertyField(value, tableData.fieldTypes.get(value));
+        });
         
         TypePool typePool = NOTYPES; 
         

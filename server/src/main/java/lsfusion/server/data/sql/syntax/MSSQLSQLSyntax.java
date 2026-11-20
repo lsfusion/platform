@@ -147,6 +147,11 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
         return escapeID(fieldName);
     }
 
+    @Override
+    public boolean isFieldName(String name) {
+        return !name.isEmpty() && name.indexOf('"') < 0;
+    }
+
     public String getGlobalTableName(String tableName) {
         return escapeID(tableName);
     }
@@ -327,7 +332,7 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
 
     @Override
     public String getRenameColumn(String table, String columnName, String newColumnName) {
-        return "EXEC sp_rename '" + table + "." + columnName + "','" + newColumnName + "','COLUMN'";
+        return "EXEC sp_rename " + getStringLiteral(table + "." + columnName) + "," + getStringLiteral(newColumnName) + ",'COLUMN'";
     }
 
     public static class Recursion implements BinarySerializable {

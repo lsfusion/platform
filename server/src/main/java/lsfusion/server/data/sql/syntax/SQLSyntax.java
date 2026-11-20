@@ -184,6 +184,8 @@ public interface SQLSyntax {
     String getMetaName(String name);
 
     String getFieldName(String name);
+    // whether getFieldName writes this name as one column name of exactly this name
+    boolean isFieldName(String name);
 
     String getTableName(String tableName);
 
@@ -235,6 +237,9 @@ public interface SQLSyntax {
 
     String getRecursion(ImList<FunctionType> types, String recName, String initialSelect, String stepSelect, String stepSmallSelect, int smallLimit, String fieldDeclare, String outerParams, TypeEnvironment typeEnv);
     String wrapSubQueryRecursion(String string);
+
+    // a string written into the SQL text as a string literal, whatever characters it holds
+    String getStringLiteral(String string);
 
     String getTableTypeName(SessionTable.TypeStruct tableType);
 

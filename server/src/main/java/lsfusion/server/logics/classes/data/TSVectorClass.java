@@ -118,7 +118,7 @@ public class TSVectorClass extends DataClass<Array> implements DBType {
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, CastType castType) {
         if(typeFrom instanceof StringClass) {
             String language = ThreadLocalContext.getBusinessLogics().getSearchLanguage();
-            return "to_tsvector('" + language + "'::regconfig, " + value + ")";
+            return "to_tsvector(" + syntax.getStringLiteral(language) + "::regconfig, " + value + ")";
         }
         return super.getCast(value, syntax, typeEnv, typeFrom, castType);
     }

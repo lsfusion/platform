@@ -36,28 +36,28 @@ public class MatchWhere extends BinaryWhere<MatchWhere> {
         throw new RuntimeException("not supported");
     }
 
-    public static String getPrefixSearchVector(String source, String language) {
-        return "to_tsvector('" + language + "', " + source + ")";
+    public static String getPrefixSearchVector(SQLSyntax syntax, String source, String language) {
+        return "to_tsvector(" + syntax.getStringLiteral(language) + ", " + source + ")";
     }
     public static String getPrefixSearchQuery(SQLSyntax syntax, String source, String language) {
         return getPrefixSearchQuery(syntax, source, language, false);
     }
     public static String getPrefixSearchQuery(SQLSyntax syntax, String source, String language, boolean exact) {
-        return syntax.getPrefixSearchQuery(exact) + "('" + language + "', " + source + ", '" + Settings.get().getMatchSearchSeparator() + "')";
+        return syntax.getPrefixSearchQuery(exact) + "(" + syntax.getStringLiteral(language) + ", " + source + ", " + syntax.getStringLiteral(Settings.get().getMatchSearchSeparator()) + ")";
     }
     public static String getPrefixSearchLikeQuery(SQLSyntax syntax, String search, String match) {
         return syntax.getPrefixSearchLikeQuery() + "(" + search + "," + match + ")";
     }
     public static String getMatch(SQLSyntax syntax, String search, String match, String language, boolean isTSVectorType, boolean isTSQueryType) {
-        return (isTSVectorType ? search : getPrefixSearchVector(search, language)) + " @@ " + (isTSQueryType ? match : getPrefixSearchQuery(syntax, match, language));
+        return (isTSVectorType ? search : getPrefixSearchVector(syntax, search, language)) + " @@ " + (isTSQueryType ? match : getPrefixSearchQuery(syntax, match, language));
     }
     public static String getRank(SQLSyntax syntax, String search, String match, String language) {
-         return "ts_rank_cd(" + getPrefixSearchVector(search, language) + "," + getPrefixSearchQuery(syntax, match, language, false) + ") + " +
-                "ts_rank_cd(" + getPrefixSearchVector(search, language) + "," + getPrefixSearchQuery(syntax, match, language, true) + ") * 2 + " +
+         return "ts_rank_cd(" + getPrefixSearchVector(syntax, search, language) + "," + getPrefixSearchQuery(syntax, match, language, false) + ") + " +
+                "ts_rank_cd(" + getPrefixSearchVector(syntax, search, language) + "," + getPrefixSearchQuery(syntax, match, language, true) + ") * 2 + " +
                  getPrefixSearchLikeQuery(syntax, search, match);
     }
     public static String getHighlight(SQLSyntax syntax, String search, String match, String language) {
-        return "ts_headline('" + language + "'," + search + "," + getPrefixSearchQuery(syntax, match, language) + ")";
+        return "ts_headline(" + syntax.getStringLiteral(language) + "," + search + "," + getPrefixSearchQuery(syntax, match, language) + ")";
     }
 
     @Override

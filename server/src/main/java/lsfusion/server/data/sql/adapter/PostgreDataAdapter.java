@@ -150,7 +150,7 @@ public class PostgreDataAdapter extends DataAdapter {
         // обязательно нужно создавать на основе template0, так как иначе у template1 может быть другая кодировка и ошибка
         executeEnsure(connect, "CREATE DATABASE " + quoteDBName(dataBase) + " WITH TEMPLATE template0 ENCODING='UTF8' ");
 
-        executeEnsure(connect, "ALTER DATABASE " + quoteDBName(dataBase) + " SET TIMEZONE='" + TimeZone.getDefault().getID() + "'");
+        executeEnsure(connect, "ALTER DATABASE " + quoteDBName(dataBase) + " SET TIMEZONE=" + syntax.getStringLiteral(TimeZone.getDefault().getID()));
 
         connect.close();
     }

@@ -124,7 +124,7 @@ public class TimeClass extends HasTimeClass<LocalTime> {
     }
 
     public String getString(Object value, SQLSyntax syntax) {
-        return "'" + value + "'";
+        return syntax.getStringLiteral(value.toString());
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {

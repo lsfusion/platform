@@ -56,13 +56,18 @@ public class FirebirdSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
+    public boolean isFieldName(String name) {
+        return name.equals("row") || super.isFieldName(name);
+    }
+
+    @Override
     public String getAnalyzeSessionTable(String table) {
         return "EXECUTE BLOCK AS " +
                 "DECLARE variable_index_name VARCHAR(31); " +
                 "BEGIN " +
                 "  FOR SELECT RDB$INDEX_NAME " +
                 "      FROM RDB$INDICES " +
-                "      WHERE RDB$RELATION_NAME = '" + table + "'" +
+                "      WHERE RDB$RELATION_NAME = " + getStringLiteral(table) +
                 "      INTO :variable_index_name DO " +
                 "  BEGIN " +
                 "    EXECUTE STATEMENT 'SET STATISTICS INDEX ' || variable_index_name || ';'; " +

@@ -26,13 +26,13 @@ public class ExConnection {
     }
 
     private String timeZone;
-    public void updateContext(boolean noCache, SQLSessionContextProvider contextProvider) throws SQLException {
-        updateContext(noCache, contextProvider, sql);
+    public void updateContext(boolean noCache, SQLSessionContextProvider contextProvider, SQLSyntax syntax) throws SQLException {
+        updateContext(noCache, contextProvider, syntax, sql);
     }
     // on a connection that is not this one's yet : a restart sets the context of the connection it is about to take over while it is still holding the old one
-    public void updateContext(boolean noCache, SQLSessionContextProvider contextProvider, Connection sql) throws SQLException {
+    public void updateContext(boolean noCache, SQLSessionContextProvider contextProvider, SQLSyntax syntax, Connection sql) throws SQLException {
         LocalePreferences localePreferences = contextProvider.getLocalePreferences();
-        String newTimeZone = localePreferences != null ? ("'" + localePreferences.timeZone + "'") : "DEFAULT";
+        String newTimeZone = localePreferences != null ? syntax.getStringLiteral(localePreferences.timeZone) : "DEFAULT";
         if (noCache || timeZone == null || !timeZone.equals(newTimeZone)) {
             timeZone = newTimeZone;
 

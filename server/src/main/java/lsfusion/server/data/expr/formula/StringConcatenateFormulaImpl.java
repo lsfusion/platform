@@ -83,7 +83,7 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl implements
         for (int i = 1; i < exprCount; i++) {
             String exprSource = getExprSource(source, type, i);
 
-            result = syntax.getStringCFunc() + "(" + result + "," + exprSource + ",'" + separator + "')";
+            result = syntax.getStringCFunc() + "(" + result + "," + exprSource + "," + syntax.getStringLiteral(separator) + ")";
         }
         return type.getCast("(" + result + ")", syntax, source.getMEnv());
     }

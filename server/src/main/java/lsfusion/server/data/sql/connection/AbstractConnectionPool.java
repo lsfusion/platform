@@ -193,7 +193,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
                 usedConnections.put(connection, new WeakReference<>(object));
             }
         }
-        connection.updateContext(false, contextProvider);
+        connection.updateContext(false, contextProvider, getSyntax());
         return connection;
     }
 

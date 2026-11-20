@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class JDBCTable {
     public final boolean singleRow;
@@ -56,6 +57,15 @@ public class JDBCTable {
     public static class JDBCDataClass extends DataClass<Object> implements DBType {
         private final int sqlType;
         private final String sqlName; // тут конечно стремновато, в разных СУБД могут разные имена, но чудес не бывает
+
+        // a name, plain or quoted, dotted with a schema, with sizes and array brackets, and then only the words that are a part
+        // of a type's name: character varying(10), timestamp(6) with time zone, numeric(10,2), int4[], "public"."My type",
+        // INTERVAL DAY(2) TO SECOND(6), INT UNSIGNED
+        private static final String NAME = "(?:[A-Za-z_\\P{ASCII}][A-Za-z0-9_$\\P{ASCII}]*+|\"(?:[^\"]|\"\")++\")";
+        private static final String SIZES = "(?:\\s*\\(\\s*(?:\\d++|(?i:max))(?:\\s*,\\s*\\d++)*+\\s*\\))?(?:\\s*\\[\\d*+\\])*+";
+        private static final String TYPE_WORD = "(?i:with|without|local|time|zone|varying|precision|unsigned|signed|zerofill|to|year|month|day|hour|minute|second)\\b";
+        private static final Pattern TYPE_NAME = Pattern.compile(NAME + "(?:\\." + NAME + ")*+" + SIZES + "(?:\\s+" + TYPE_WORD + SIZES + ")*+");
+        private static final int MAX_TYPE_NAME = 256;
         
         public JDBCDataClass(int sqlType, String sqlName) {
             super(LocalizedString.create("JDBC"));
@@ -106,6 +116,9 @@ public class JDBCTable {
             return this;
         }
         public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
+            // written into SQL only if it is a type name
+            if (sqlName.length() > MAX_TYPE_NAME || !TYPE_NAME.matcher(sqlName).matches())
+                throw new RuntimeException("Column type of a table file is not an SQL type name: " + sqlName);
             return sqlName;
         }
         public int getSQL(SQLSyntax syntax) {
