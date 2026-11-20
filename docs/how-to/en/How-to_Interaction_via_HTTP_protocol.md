@@ -111,7 +111,7 @@ http://localhost:7651/exec?action=Location.createCity
 
 Body of the HTTP request will be passed as a parameter of the type `FILE`. The values read from the `countryId` and `name` parameters are written to the local properties `cy` and `ne` respectively.
 
-If there is no country with the corresponding code, then the [`RETURN` operator](../paradigm/Exit_RETURN.md) aborts execution and returns a JSON similar to that described in the previous example. This JSON is built by the [`JSON` operator](../language/JSON_operator.md), and by default the value of `RETURN` is passed in the response (see [results](../paradigm/Access_from_an_external_system.md#httpresult)).
+If there is no country with the corresponding code, then the [`RETURN` operator](../paradigm/Exit_RETURN.md) aborts execution and returns a JSON similar to that described in the previous example. This JSON is built by the [`JSON` operator](../language/JSON_operator.md), and the value of `RETURN` is passed in the response (see [results](../paradigm/Access_from_an_external_system.md#httpresult)).
 
 If all the actions are completed successfully, the corresponding "OK message" is returned in response.
 
@@ -506,7 +506,7 @@ The server wraps the received text into a module of its own that depends on ever
     RETURN count();
     ```
 
-By default the response carries the value of `RETURN` (see [results](../paradigm/Access_from_an_external_system.md#httpresult)). `RETURN` delivers its value from any place in the action, a `NEWSESSION` block and a point after `APPLY` included. An `APPLY` cancelled by a [constraint](../paradigm/Constraints.md) does not fail the request: the changes are not saved and the action goes on, so without the check below the example would return the count with the unsaved city. The action checks `canceled[]` right after `APPLY` and, if the apply was cancelled, returns the text of `applyMessage[]`:
+The response carries the value of `RETURN` (see [results](../paradigm/Access_from_an_external_system.md#httpresult)). `RETURN` delivers its value from any place in the action, a `NEWSESSION` block and a point after `APPLY` included. An `APPLY` cancelled by a [constraint](../paradigm/Constraints.md) does not fail the request: the changes are not saved and the action goes on, so without the check below the example would return the count with the unsaved city. The action checks `canceled[]` right after `APPLY` and, if the apply was cancelled, returns the text of `applyMessage[]`:
 
 ```lsf
 run() {
