@@ -13,7 +13,7 @@ setWebHookViber(Account account) {
     httpHeaders('X-Viber-Auth-Token') <- token(account);
     
     EXTERNAL HTTP POST 'https://chatapi.viber.com/pa/set_webhook' HEADERS httpHeaders 
-        PARAMS JSONFILE('\{ "url":"' + webServerUrl() + '/exec/webHookViber?botid=' + LONG(account) + '", "event_types":["unsubscribed","conversation_started"], "send_name": true, "send_photo": false\}') TO result;
+        PARAMS JSONFILE('\{ "url":"' + Reflection.webServerUrl() + '/exec/webHookViber?botid=' + LONG(account) + '", "event_types":["unsubscribed","conversation_started"], "send_name": true, "send_photo": false\}') TO result;
     
     LOCAL status = INTEGER();
     LOCAL status_message = STRING();

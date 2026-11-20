@@ -493,7 +493,7 @@ FORM printBlankPageLandscape;
 // --------------------------- File links --------------------------- //
 
 META defineFileLink (caption, fileType, property, class1)
-    fileLink caption (class1 param1) = fileType (webServerUrl() + '/readFile?sid=' + [ REFLECTION CANONICALNAME property[class1]]() + '&p=' + param1) IF property(param1); 
+    fileLink caption (class1 param1) = fileType (Reflection.webServerUrl() + '/readFile?sid=' + [ REFLECTION CANONICALNAME property[class1]]() + '&p=' + param1) IF property(param1); 
 END
 
 // --------------------------- Server options --------------------------- //

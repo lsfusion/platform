@@ -228,11 +228,9 @@ public class MainController {
 
         JSONObject jsonResponse = sendRequest(logicsProvider, jsonArray, request, "Authentication.resetPassword");
         if (jsonResponse.has("success")) {
-            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success")
-                    + " " + jsonResponse.optString("email"));
+            request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", jsonResponse.optString("success"));
         } else if (jsonResponse.has("error")) {
-            String[] error = jsonResponse.optString("error").split(":");
-            request.getSession(true).setAttribute("RESET_PASSWORD_EXCEPTION", error.length > 1 ? error[1] : error[0]);
+            request.getSession(true).setAttribute("RESET_PASSWORD_EXCEPTION", jsonResponse.optString("error"));
             return getRedirectUrl("/forgot-password", null, request);
         }
         return getRedirectUrl("/login", null, request);

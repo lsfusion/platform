@@ -11,7 +11,7 @@ setWebHookTelegram(Account account) {
     LOCAL result = JSONFILE();
         
     EXTERNAL HTTP POST 'https://api.telegram.org/bot' + token(account) + '/setWebhook'
-        BODYURL 'url=' + webServerUrl() + '/exec/webHookTelegram?botid=' + LONG(account) TO result;
+        BODYURL 'url=' + Reflection.webServerUrl() + '/exec/webHookTelegram?botid=' + LONG(account) TO result;
     
     LOCAL ok = BOOLEAN();
     LOCAL description = STRING();

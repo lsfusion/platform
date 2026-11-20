@@ -4,7 +4,7 @@ REQUIRE Messenger;
 
 EXTEND CLASS Messenger { skype 'Skype' }
 isSkype(Account a) = messenger(a) == Messenger.skype;
-webHookUrl(Account a) = webServerUrl() + '/exec/webHookSkype?botid=' + LONG(a) CHARWIDTH 100;
+webHookUrl(Account a) = Reflection.webServerUrl() + '/exec/webHookSkype?botid=' + LONG(a) CHARWIDTH 100;
 
 GROUP from;
 GROUP conversation;

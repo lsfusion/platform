@@ -11,7 +11,7 @@ EXTEND CLASS Messenger { whatsapp 'Whatsapp' }
 isWhatsapp(Account a) = messenger(a) == Messenger.whatsapp;
 
 //url for configuring webhook
-webhookUrl() = webServerUrl() + '/exec/webHookWhatsapp';
+webhookUrl() = Reflection.webServerUrl() + '/exec/webHookWhatsapp';
 
 //should be the same as entered while configuring webhook
 verifyToken = DATA STRING();
