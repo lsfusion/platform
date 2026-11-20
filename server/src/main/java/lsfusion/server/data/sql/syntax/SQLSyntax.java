@@ -172,6 +172,8 @@ public interface SQLSyntax {
     String getMetaName(String name);
 
     String getFieldName(String name);
+    // whether getFieldName writes this name as one column name of exactly this name
+    boolean isFieldName(String name);
 
     String getTableName(String tableName);
 

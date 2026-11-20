@@ -56,6 +56,11 @@ public class FirebirdSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
+    public boolean isFieldName(String name) {
+        return name.equals("row") || super.isFieldName(name);
+    }
+
+    @Override
     public String getAnalyzeSessionTable(String table) {
         return "EXECUTE BLOCK AS " +
                 "DECLARE variable_index_name VARCHAR(31); " +

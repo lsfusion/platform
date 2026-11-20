@@ -3593,7 +3593,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     };
     public static void uploadTableToConnection(final String table, SQLSyntax syntax, final JDBCTable tableData, final Connection sqlTo, final OperationOwner owner) throws SQLException {
         final KeyField keyCount = new KeyField("row", ValueExpr.COUNTCLASS);
-        final ImRevMap<String, PropertyField> properties = tableData.fields.getSet().mapRevValues((String value) -> new PropertyField(value, tableData.fieldTypes.get(value)));
+        final ImRevMap<String, PropertyField> properties = tableData.fields.getSet().mapRevValues((String value) -> {
+            if (!syntax.isFieldName(value))
+                throw new RuntimeException("Column name of a table file is not an SQL column name: " + value);
+            return new PropertyField(value, tableData.fieldTypes.get(value));
+        });
         
         TypePool typePool = NOTYPES; 
         

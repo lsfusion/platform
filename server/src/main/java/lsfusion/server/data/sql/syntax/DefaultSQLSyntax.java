@@ -421,6 +421,19 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return name;
     }
 
+    // letters, digits, underscores and dollars, not starting with a digit or a dollar, any non-ASCII character counting
+    // as a letter
+    public boolean isFieldName(String name) {
+        if (name.isEmpty())
+            return false;
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (!(c >= 0x80 || c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_' || i > 0 && (c >= '0' && c <= '9' || c == '$')))
+                return false;
+        }
+        return true;
+    }
+
     protected String escapeID(String ID) {
         return '"' + ID + '"';
     }
