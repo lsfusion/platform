@@ -14,8 +14,15 @@ import org.jdom.*;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -206,11 +213,34 @@ public class XMLNode implements Node<XMLNode> {
         }
     }
 
+    // the JDK's own XML parser, with its limits on entity expansions
+    private static final String JDK_SAX_PARSER_FACTORY = "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl";
+
+    // a parsed document is read on its own: an external DTD or entity resolves to nothing, entity expansions are limited
+    public static SAXBuilder createSecureSAXBuilder() {
+        SAXBuilder builder = new SAXBuilder() {
+            @Override
+            protected XMLReader createParser() throws JDOMException {
+                try {
+                    SAXParserFactory factory = SAXParserFactory.newInstance(JDK_SAX_PARSER_FACTORY, ClassLoader.getSystemClassLoader());
+                    factory.setNamespaceAware(true);
+                    factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+                    factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+                    return factory.newSAXParser().getXMLReader();
+                } catch (ParserConfigurationException | SAXException e) {
+                    throw new JDOMException("Could not create an XML parser", e);
+                }
+            }
+        };
+        builder.setEntityResolver((publicId, systemId) -> new InputSource(new StringReader("")));
+        return builder;
+    }
+
     //check if it's XML inside
     private static List<Content> parseObject(String str, boolean escapeInnerXML) {
         if (!escapeInnerXML && str.contains("<") && str.contains("/") && str.contains(">")) {
             try {
-                List<Content> children = new ArrayList<>(new SAXBuilder().build(IOUtils.toInputStream("<wrap>" + str + "</wrap>")).getRootElement().getContent());
+                List<Content> children = new ArrayList<>(createSecureSAXBuilder().build(IOUtils.toInputStream("<wrap>" + str + "</wrap>")).getRootElement().getContent());
                 children.forEach(Content::detach);
                 return children;
             } catch (JDOMException | IOException ignored) {
