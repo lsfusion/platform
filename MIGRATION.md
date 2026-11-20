@@ -98,8 +98,9 @@ with `Api is disabled. It can be enabled by using setting enableAPI > 0.` What s
 
 - an action annotated `@@api` - for an authenticated user, as `1` used to allow it;
 - an action annotated `@@noauth`, and a request with a valid signature, as before;
-- any call of a user who has access to the `System.interpreter` navigator form, since that user can
-  already execute any code through the interpreter.
+- any call of a user who can run code in the interpreter - has access to the `System.interpreter`
+  navigator form, the `View` and `Change` statuses of its `executeScript` action and the UI
+  (`enableUI` is not `0`) - since that user can already execute any code through the interpreter.
 
 What an upgrading application can notice: an external system that calls actions over HTTP gets the
 error above for every action without `@@api`. The fix is to annotate the actions the external

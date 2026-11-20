@@ -168,6 +168,32 @@ public class ExternalApiAccessIT {
         }
     }
 
+    // at enableAPI=0 the API is open to a user who can run code in the interpreter, as that user can run any code there
+    // anyway - and only to such a user : one who may open the interpreter but may change nothing or may not see its run,
+    // so cannot run it, or who has no UI at all, gets no API by it
+    @Test
+    public void theInterpreterOpensTheAPIOnlyToAUserWhoCanRunIt() throws Exception {
+        String runs = interpreterUserToken("eaaInterpreterRuns", null);
+        String readOnly = interpreterUserToken("eaaInterpreterReadOnly", "readonly");
+        String noView = interpreterUserToken("eaaInterpreterNoView", "noview");
+        String noUI = interpreterUserToken("eaaInterpreterNoUI", "noui");
+        try {
+            Assert.assertEquals(200, post("/exec?action=HttpRoleSettings.hrsServer&p=0", "").statusCode());
+            assertLetIn(runs);
+            assertDisabled(readOnly);
+            assertDisabled(noView);
+            assertDisabled(noUI);
+        } finally {
+            Assert.assertEquals(200, post("/exec?action=HttpRoleSettings.hrsServer", "").statusCode());
+        }
+    }
+
+    private static String interpreterUserToken(String login, String kind) throws Exception {
+        HttpResponse<String> user = post("/exec?action=HttpRoleSettings.hrsInterpreterUser&p=" + login + (kind != null ? "&p=" + kind : ""), "");
+        Assert.assertEquals(user.body(), 200, user.statusCode());
+        return user.body();
+    }
+
     private static String userToken(String login, String enableAPI) throws Exception {
         HttpResponse<String> user = post("/exec?action=HttpRoleSettings.hrsUser&p=" + login + (enableAPI != null ? "&p=" + enableAPI : ""), "");
         Assert.assertEquals(user.body(), 200, user.statusCode());

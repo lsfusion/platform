@@ -24,6 +24,30 @@ hrsUser (STRING login, STRING enableAPI) {
     RETURN resultAuthToken();
 } @@noauth;
 
+// a user of a role of its own that may open the interpreter from the navigator, and a token given to the user. kind :
+// 'readonly' - the role may change nothing, the interpreter's run among it, 'noview' - the role may not see the run,
+// 'noui' - the role's enableUI is 0, NULL - none of them, the user can run code in the interpreter
+hrsInterpreterUser (STRING login, STRING kind) {
+    NEWSESSION {
+        NEW r = UserRole {
+            sid(r) <- login;
+            NEW u = CustomUser {
+                login(u) <- login;
+                in(u, r) <- TRUE;
+            }
+            IF kind = 'readonly' THEN
+                dataPermissionChange(r, propertyGroup('System_root')) <- Permission.forbid;
+            IF kind = 'noview' THEN
+                dataPermissionView(r, actionCanonicalName('System.executeScript[System.Script]')) <- Permission.forbid;
+            IF kind = 'noui' THEN
+                baseValue(setting('enableUI'), r) <- '0';
+        }
+        APPLY;
+    }
+    generateAuthToken(login);
+    RETURN resultAuthToken();
+} @@noauth;
+
 hrsServer (STRING enableAPI) {
     baseValue(setting('enableAPI')) <- enableAPI;
     APPLY;

@@ -1,10 +1,12 @@
 package lsfusion.server.physics.admin.authentication.security.policy;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
+import lsfusion.server.physics.admin.Settings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,14 +34,15 @@ public class SecurityPolicy {
         return checkPermission(policy -> policy.checkNavigatorPermission(permissionElement));
     }
 
-    /** True iff this policy lets the user open the {@code System.interpreter} form (from
-     *  {@code utils/Eval.lsf}). The form itself is the meaningful privilege — once open it
-     *  hosts every script / action / form / java-body execution wrapper. Used to derive
-     *  HTTP API access: if the user can execute arbitrary lsf via the browser, blocking
-     *  HTTP API on the same account is security theatre. */
+    /** True iff the user can run a script in the {@code System.interpreter} form (from {@code utils/Eval.lsf}): has the
+     *  UI ({@code enableUI}, the user's role's), may open the form from the navigator, and may see and run its
+     *  {@code executeScript}, the run the web client draws. Used to derive HTTP API access: the API gives such a user
+     *  nothing the interpreter does not, while a user who may open the form but not run it gets no API by it. */
     public boolean canDeriveAPIAccess(BusinessLogics bl) {
         NavigatorElement form = bl.findNavigatorElement("System.interpreter");
-        return form != null && checkNavigatorPermission(form);
+        LA<?> run = bl.findAction("System.executeScript[System.Script]");
+        return Settings.get().getEnableUI() > 0 && form != null && run != null && checkNavigatorPermission(form)
+                && checkPropertyViewPermission(run.action) && checkPropertyChangePermission(run.action, run.action);
     }
 
     public boolean checkPropertyViewPermission(ActionOrProperty property) {

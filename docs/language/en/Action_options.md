@@ -127,7 +127,7 @@ Action annotation. Begins with `@@`. The following annotations are supported:
 
     - `@@api`
 
-        When the API is disabled by `enableAPI=0`, allows authenticated external requests for this action. Authenticated users who have access to the `System.interpreter` navigator form can also use the external API at `enableAPI=0`, even without this annotation.
+        When the API is disabled by `enableAPI=0`, allows authenticated external requests for this action. Authenticated users who can run code in the [interpreter](../paradigm/Interpreter.md) can also use the external API at `enableAPI=0`, even without this annotation.
 
     - `@@ui`
 
