@@ -402,8 +402,8 @@ public class FileUtils {
 
         assert !fileName.startsWith("/");
         String innerFileName = fileName;
-        if(useDownload && ID != null)
-            innerFileName = BaseUtils.replaceFileNameAndExtension(fileName, ID);
+        if(useDownload && ID != null) // a file per address: one content under two names is written twice, so a write of one never cuts a read of the other
+            innerFileName = fileName + "/" + ID;
 
         if(!innerPath.isEmpty()) {
             filePath += "/" + innerPath;

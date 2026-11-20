@@ -128,7 +128,18 @@ public class WrittenFilesTest {
 
         assertEquals(200, download(url).status);
         assertEquals(404, download(url.replace("style.css?", "style.html?")).status); // the same file under another name and type
-        assertEquals(404, download(url.substring(0, url.indexOf("style.css")) + css.getID() + "?dumb=0").status); // the name it is stored under
+        assertEquals(404, download(url.substring(0, url.indexOf('?')) + "/" + css.getID() + "?dumb=0").status); // the name it is stored under
+    }
+
+    @Test
+    public void writesAVersionUnderEachNameApart() throws IOException { // so a first write of one never cuts a read of the other
+        String ID = "image" + System.nanoTime();
+        String add = FileUtils.saveImageFile("icons/add.png", out -> out.write("add".getBytes(StandardCharsets.UTF_8)), ID, settings(), false);
+        String gif = FileUtils.saveImageFile("icons/add.gif", out -> out.write("gif".getBytes(StandardCharsets.UTF_8)), ID, settings(), false);
+
+        assertEquals("add", download(add).body());
+        assertEquals("gif", download(gif).body());
+        assertEquals("add", download(add).body());
     }
 
     @Test
