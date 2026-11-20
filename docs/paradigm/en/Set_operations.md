@@ -20,16 +20,21 @@ The table below shows the currently supported types of aggregate functions:
 |`SUM`                  |`NULL`       |operand              |result = result (+) operand|result|+|number|
 |`MAX`                  |`NULL`       |operand              |result = max(result, operand)|result|+|any comparable|
 |`MIN`                  |`NULL`       |operand              |result = min(result, operand)|result|+|any comparable|
+|`EQUAL` / `AGGR` / `NAGGR`|`NULL`    |operand              |result = max(result, operand)|result|+|any|
+|`OR`                   |`NULL`       |operand              |result = result OR operand|result|+|logical|
 |`CONCAT`               |`NULL`       |separator, operand   |result = CONCAT separator, result, operand|result|-|string|
 |`LAST` / `PREV`        |`NULL`       |where, operand       |result = IF where THEN operand ELSE result|result|-|any|
+|`CUSTOM`               |defined by the DBMS function|operand1, ..., operandN|defined by the DBMS function|defined by the DBMS function|depends on the function|any|
 
 For string concatenation, an object collection takes part in the aggregation only when both its operand and its separator are not `NULL`.
 
+`EQUAL`, `AGGR`, and `NAGGR` are calculated the same way as `MAX`, but they assume that the operand has one value within a group (`EQUAL`) or that a group has one object collection and the operand is one of its objects (`AGGR`, `NAGGR`). For `EQUAL` and `AGGR`, grouping creates a [constraint](Constraints.md) for this. If the operand values are not comparable, for example files, any of them is taken instead of the maximum.
+
 From the perspective of determining the set of object collections and the result display method, four main operators for working with sets can be distinguished:
 
--   [Group (`GROUP`)](Grouping_GROUP.md) — divides the object collections into groups and computes one result per group.
--   [Partition/order (`PARTITION ... ORDER`)](Partitioning_sorting_PARTITION_..._ORDER.md) — also groups the object collections, but computes a result for each object collection, over the part of its group up to its own position in the order.
--   [Recursion (`RECURSION`)](Recursion_RECURSION.md) — builds a set recursively from an initial value and a repeated step, then aggregates over the result.
+-   [Group (`GROUP`)](Grouping_GROUP.md) — divides the object collections into groups and computes one result per group. Supports all types of aggregate functions except `PREV` and `OR`.
+-   [Partition/order (`PARTITION ... ORDER`)](Partitioning_sorting_PARTITION_..._ORDER.md) — also groups the object collections, but computes a result for each object collection, over the part of its group up to its own position in the order. Supports `SUM`, `LAST`, `PREV`, and `CUSTOM`.
+-   [Recursion (`RECURSION`)](Recursion_RECURSION.md) — builds a set recursively from an initial value and a repeated step, then aggregates over the result. Chooses the type of aggregate function by the class of the values: `SUM` for numeric and `OR` for logical ones. Under the default policy, which does not allow cycles, logical values are replaced with ones and summed as well.
 -   [Distribution (`UNGROUP`)](Distribution_UNGROUP.md) — the inverse of grouping: spreads a value across the object collections of a group so that grouping the results by sum gives — or, in non-strict mode, approximates — that value.
 
 ### Operation correctness {#correct}
