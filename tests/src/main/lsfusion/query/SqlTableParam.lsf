@@ -1,0 +1,55 @@
+MODULE SqlTableParam;
+
+REQUIRE TestUtils;
+
+// a TABLE parameter is a table of the query whose column names are plain SQL names and whose column types are type
+// names; a table with any other column name or type is refused (the tables are empty: they need no rows to show that)
+
+stpCount = DATA LOCAL INTEGER (INTEGER);
+stpCountFile = DATA LOCAL FILE ();
+stpRefused = DATA LOCAL BOOLEAN ();
+
+// refused with the given message
+stpQuery (FILE table, STRING message) {
+    stpRefused() <- NULL;
+    TRY {
+        INTERNAL DB 'SELECT 1 AS n FROM $1' PARAMS table TO stpCountFile;
+    } CATCH {
+        stpRefused() <- messageCaughtException() LIKE '%' + message + '%';
+    }
+}
+
+testStpColumnNames 'A TABLE parameter whose column names are plain names is a table, one with a name of other characters is refused' () {
+    INTERNAL DB 'SELECT 1 AS "nameItem", 2 AS "наименование", 3 AS "a_1$" WHERE FALSE' TO exportFile;
+    INTERNAL DB 'SELECT 1 + COUNT(nameItem) + COUNT(наименование) + COUNT(a_1$) AS n FROM $1' PARAMS exportFile() TO stpCountFile;
+    IMPORT FROM stpCountFile() TO stpCount = n;
+    assertEquals((GROUP MAX stpCount(INTEGER i)), 1, 'the query counts the columns by their names');
+
+    INTERNAL DB 'SELECT 1 AS "a b" WHERE FALSE' TO exportFile;
+    stpQuery(exportFile(), 'of a table file is not an SQL column name');
+    assertTrue(stpRefused(), 'the table with a column name of two words is refused');
+}
+
+stpType = DATA LOCAL STRING ();
+stpTypeFile = DATA LOCAL FILE ();
+// a TABLE file of one column v of the SQL type stpType
+stpWriteTypeFile INTERNAL <{
+    String type = (String) findProperty("stpType[]").read(context);
+    byte[] bytes = lsfusion.server.logics.form.stat.struct.plain.JDBCTable.serialize(false, lsfusion.base.col.SetFact.singletonOrder("v"),
+            field -> new lsfusion.server.logics.form.stat.struct.plain.JDBCTable.JDBCDataClass(java.sql.Types.OTHER, type),
+            lsfusion.base.col.ListFact.EMPTY());
+    findProperty("stpTypeFile[]").change(new lsfusion.base.file.FileData(new lsfusion.base.file.RawFileData(bytes), "table"), context);
+}>;
+
+testStpColumnType 'A TABLE parameter whose column type is a type name is a table, one with more than a type name is refused' () {
+    stpType() <- 'character varying(10)';
+    stpWriteTypeFile();
+    INTERNAL DB 'SELECT 1 + COUNT(v) AS n FROM $1' PARAMS stpTypeFile() TO stpCountFile;
+    IMPORT FROM stpCountFile() TO stpCount = n;
+    assertEquals((GROUP MAX stpCount(INTEGER i)), 1, 'the table with a type name is a table of its column');
+
+    stpType() <- 'integer x';
+    stpWriteTypeFile();
+    stpQuery(stpTypeFile(), 'of a table file is not an SQL type name');
+    assertTrue(stpRefused(), 'the table with a word after its column type is refused');
+}
