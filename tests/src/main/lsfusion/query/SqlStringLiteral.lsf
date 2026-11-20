@@ -1,0 +1,29 @@
+MODULE SqlStringLiteral;
+
+REQUIRE TestUtils;
+
+// a string that the code of a logic puts into a query - a CONCAT separator, a key of JSON FROM - is the string it is in
+// the query, whatever characters it holds: a quote, a backslash, a backslash before a quote
+
+sslA = DATA LOCAL STRING (INTEGER);
+sslB = DATA LOCAL STRING (INTEGER);
+sslR = DATA LOCAL STRING (INTEGER);
+
+testSslConcatSeparator 'A CONCAT separator with a quote or a backslash joins the values with itself' () {
+    sslA(1) <- 'a';
+    sslB(1) <- 'b';
+    sslR(INTEGER i) <- CONCAT '\'', sslA(i), sslB(i) WHERE sslA(i);
+    assertEquals(sslR(1), 'a\'b', 'joined by a quote: ' + sslR(1));
+    sslR(INTEGER i) <- CONCAT '\\', sslA(i), sslB(i) WHERE sslA(i);
+    assertEquals(sslR(1), 'a\\b', 'joined by a backslash: ' + sslR(1));
+    sslR(INTEGER i) <- CONCAT '\\\'', sslA(i), sslB(i) WHERE sslA(i);
+    assertEquals(sslR(1), 'a\\\'b', 'joined by a backslash and a quote: ' + sslR(1));
+}
+
+testSslJsonKey 'A key of JSON FROM with a quote or a backslash is the key of the JSON' () {
+    sslA(1) <- 'a';
+    sslR(INTEGER i) <- STRING(JSON FROM 'it\'s' = sslA(i)) WHERE sslA(i);
+    assertEquals(sslR(1), STRING(JSON('\{"it\'s":"a"\}')), 'the JSON with a quote in its key: ' + sslR(1));
+    sslR(INTEGER i) <- STRING(JSON FROM 'a\\b' = sslA(i)) WHERE sslA(i);
+    assertEquals(sslR(1), STRING(JSON('\{"a\\\\b":"a"\}')), 'the JSON with a backslash in its key: ' + sslR(1));
+}
