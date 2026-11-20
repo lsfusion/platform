@@ -268,6 +268,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
+    public String getClientCredentials() throws RemoteException {
+        return securityManager.getClientCredentials();
+    }
+
+    @Override
     public long generateID() throws RemoteException {
         return dbManager.generateID();
     }

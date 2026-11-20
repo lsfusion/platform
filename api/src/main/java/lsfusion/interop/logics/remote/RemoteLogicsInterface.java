@@ -23,6 +23,8 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     // authentication
     AuthenticationToken authenticateUser(Authentication authentication) throws RemoteException;
+    // the login providers the web client offers, with their client secrets : a JSON array, or null when there are none
+    String getClientCredentials() throws RemoteException;
 
     // stateful interfaces
     RemoteNavigatorInterface createNavigator(AuthenticationToken token, NavigatorInfo navigatorInfo) throws RemoteException;

@@ -334,6 +334,14 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    public String getClientCredentials() {
+        try (DataSession session = createSession()) {
+            return (String) authenticationLM.clientCredentials.read(session);
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public AuthenticationToken authenticateUser(Authentication authentication, ExecutionStack stack) {
         try (DataSession session = createSession()) {
             String userName = authentication.getUserName();

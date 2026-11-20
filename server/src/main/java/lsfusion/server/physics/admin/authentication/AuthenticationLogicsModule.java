@@ -75,6 +75,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP allowOnlyGroupUsers;
 
     public LP webClientSecret;
+    public LP clientCredentials;
 
     // OAuth-server: client registry
     public LP clientIdOAuthClient;
@@ -219,6 +220,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         allowOnlyGroupUsers = findProperty("allowOnlyGroupUsers[]");
 
         webClientSecret = findProperty("webClientSecretKey[]");
+        clientCredentials = findProperty("clientCredentials[]");
 
         // OAuth-server lookups
         clientIdOAuthClient = findProperty("clientId[OAuthClient]");
