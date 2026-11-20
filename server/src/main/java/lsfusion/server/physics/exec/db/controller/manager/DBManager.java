@@ -1723,6 +1723,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 migrateReflectionProperties(session, oldDBStructure);
                 apply(session);
 
+                if (!isFirstStart && oldDBStructure.version < 42) { // the start then generates a new one, see SecurityManager.initSecret
+                    startLog("Dropping the token key");
+                    getBusinessLogics().authenticationLM.secret.change((Object) null, session);
+                    apply(session);
+                }
+
                 newDBStructure.writeConcreteClasses(outDB);
 
                 try {
@@ -3340,7 +3346,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public static int oldDBStructureVersion = 0;
-    public static int newDBStructureVersion = 41;
+    public static int newDBStructureVersion = 42;
 
     private class OldDBStructure extends DBStructure<String> {
 
