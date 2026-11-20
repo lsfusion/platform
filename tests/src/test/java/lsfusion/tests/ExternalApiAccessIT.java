@@ -82,28 +82,28 @@ public class ExternalApiAccessIT {
         }
     }
 
-    // registerUser is open to an anonymous call, as the registration page calls it : a switched off registration is
-    // switched off for the call too, and the user is not created
+    // registerUser is open to an anonymous call, as the registration page calls it : registration is switched off on a
+    // new database, for the call too, and the user is not created - until an administrator switches it on
     @Test
-    public void aDisabledRegistrationRegistersNoOneByTheApi() throws Exception {
+    public void aNewDatabaseRegistersNoOneByTheApi() throws Exception {
         String user = "[{\"login\":\"eaaRegistered\",\"password\":\"eaaPassword1\",\"firstName\":\"First\",\"lastName\":\"Last\",\"email\":\"eaa@example.com\"}]";
 
-        HttpResponse<String> disable = post("/exec?action=HttpRegistration.hrDisable", "");
-        Assert.assertEquals(disable.body(), 200, disable.statusCode());
-        try {
-            HttpResponse<String> refused = post("/exec?action=Authentication.registerUser", user, "application/json");
-            Assert.assertEquals(refused.body(), 200, refused.statusCode());
-            JSONObject answer = new JSONObject(refused.body());
-            Assert.assertTrue(refused.body(), answer.has("error") && !answer.has("success"));
-        } finally {
-            post("/exec?action=HttpRegistration.hrEnable", "");
-        }
+        HttpResponse<String> refused = post("/exec?action=Authentication.registerUser", user, "application/json");
+        Assert.assertEquals(refused.body(), 200, refused.statusCode());
+        JSONObject refusal = new JSONObject(refused.body());
+        Assert.assertTrue(refused.body(), refusal.has("error") && !refusal.has("success"));
 
-        // the login is still free
-        HttpResponse<String> registered = post("/exec?action=Authentication.registerUser", user, "application/json");
-        Assert.assertEquals(registered.body(), 200, registered.statusCode());
-        JSONObject answer = new JSONObject(registered.body());
-        Assert.assertTrue(registered.body(), answer.has("success") && !answer.has("error"));
+        HttpResponse<String> enable = post("/exec?action=HttpRegistration.hrEnable", "");
+        Assert.assertEquals(enable.body(), 200, enable.statusCode());
+        try {
+            // the login is still free
+            HttpResponse<String> registered = post("/exec?action=Authentication.registerUser", user, "application/json");
+            Assert.assertEquals(registered.body(), 200, registered.statusCode());
+            JSONObject answer = new JSONObject(registered.body());
+            Assert.assertTrue(registered.body(), answer.has("success") && !answer.has("error"));
+        } finally {
+            post("/exec?action=HttpRegistration.hrDisable", "");
+        }
     }
 
     // a script sent to run is logged with who sent it before it is compiled : one that is refused is there too
