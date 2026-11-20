@@ -437,7 +437,7 @@ WHEN CHANGED (lsfParams(STRING s)) DO {
     resetServerSettingsCacheAction();
 }
 
-WHEN CHANGED (logicsName()) OR CHANGED (displayName()) OR CHANGED (logicsLogo()) OR CHANGED (logicsIcon()) OR CHANGED (PWAIcon()) DO {
+WHEN CHANGED (logicsName()) OR CHANGED (displayName()) OR CHANGED (logicsLogo()) OR CHANGED (logicsIcon()) OR CHANGED (PWAIcon()) OR CHANGED (disableRole('selfRegister')) DO {
     resetServerSettingsCacheAction();
 }
 getServerSettings() ABSTRACT CASE @@noauth;
