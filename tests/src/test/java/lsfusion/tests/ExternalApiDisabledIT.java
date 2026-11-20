@@ -101,15 +101,15 @@ public class ExternalApiDisabledIT {
             Assert.assertFalse(token, token.isEmpty());
             // what the web client asks right after the login, by the token
             new JSONObject(call("Authentication.getCurrentUserLocale", "", "Authorization", "Bearer " + token));
-            // a resource of the logics read by a link
-            String resource = call("Utils.getResource&p=HttpRegistration.lsf", "", "Authorization", "Bearer " + token);
-            Assert.assertTrue(resource, resource.startsWith("MODULE HttpRegistration;"));
 
             HttpResponse<String> anonymous = post("Authentication.getAuthToken", "");
             Assert.assertEquals(anonymous.body(), 401, anonymous.statusCode());
-            // an action that is not opened to the API, for the same user
-            HttpResponse<String> closed = post("HttpRegistration.hrNotOpened", "", "Authorization", "Bearer " + token);
-            Assert.assertTrue(closed.statusCode() + " " + closed.body(), closed.statusCode() != 200 && closed.body().contains("Api is disabled"));
+            // actions that are not opened to the API, for the same user : one of the test logics, and the one a link
+            // /file/<name> outside the web server's own files is sent to
+            for (String action : new String[]{"HttpRegistration.hrNotOpened", "Utils.getResource&p=HttpRegistration.lsf"}) {
+                HttpResponse<String> closed = post(action, "", "Authorization", "Bearer " + token);
+                Assert.assertTrue(action + ": " + closed.statusCode() + " " + closed.body(), closed.statusCode() != 200 && closed.body().contains("Api is disabled"));
+            }
         } finally {
             noauth("HttpRegistration.hrDisable", "");
         }
