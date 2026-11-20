@@ -198,6 +198,30 @@ public class WrittenFilesTest {
     }
 
     @Test
+    public void keepsAnUploadInTheUploadFolder() throws Exception {
+        assertEquals(0, upload("SID1", "x/dummy").status);
+        assertEquals(0, upload("SID1", "x/../../outside.txt").status);
+
+        assertFalse(new File(folder.getRoot(), "outside.txt").exists());
+        assertTrue(new File(FileUtils.APP_UPLOAD_FOLDER_PATH, "outside.txt").exists());
+    }
+
+    @Test
+    public void keepsAnUploadWithAFolderInItsSidInTheUploadFolder() throws Exception {
+        assertEquals(0, upload("x/a", "page.txt").status);
+
+        assertFalse(new File(FileUtils.APP_UPLOAD_FOLDER_PATH, "x").exists());
+        assertTrue(new File(FileUtils.APP_UPLOAD_FOLDER_PATH, "a_page.txt").exists());
+    }
+
+    @Test
+    public void readsBackAnUploadByTheNameItWasGiven() throws Exception { // though it is kept under the last part of that name
+        assertEquals(0, upload("SID4", "x/data.txt").status);
+        Object value = FileUtils.readUploadFileAndDelete(new GFilesDTO("SID4_x/data.txt", "data.txt", false, false, false));
+        assertEquals("hello", new String(((RawFileData) value).getBytes(), StandardCharsets.UTF_8));
+    }
+
+    @Test
     public void readsBackOnlyAnUploadedFile() throws Exception {
         File other = folder.newFile("other.txt");
         Files.write(other.toPath(), "other".getBytes(StandardCharsets.UTF_8));

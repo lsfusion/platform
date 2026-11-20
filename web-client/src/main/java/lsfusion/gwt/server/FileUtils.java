@@ -359,9 +359,14 @@ public class FileUtils {
         return "upload/" + fileName;
     }
 
+    // the name an upload is kept and read back under: right in the upload folder, whatever folders the name is given with
+    public static String getUploadFileName(String name) {
+        return new File(name).getName();
+    }
+
     public static Object readUploadFileAndDelete(GFilesDTO filesObj) {
         Result<Object> result = new Result<>();
-        if(!readFile(getUploadAddress(filesObj.filePath), true, false, inStream ->
+        if(!readFile(getUploadAddress(getUploadFileName(filesObj.filePath)), true, false, inStream ->
                 result.set(BaseUtils.filesToBytes(false, filesObj.storeName, filesObj.custom, filesObj.named, new String[]{filesObj.fileName}, new String[]{filesObj.filePath}, new InputStream[]{inStream}))))
             throw new IllegalStateException("No uploaded file " + filesObj.filePath);
         return result.result;
