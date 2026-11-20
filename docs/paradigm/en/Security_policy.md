@@ -35,7 +35,7 @@ Fig. 3. Detailed property description
 - `Auto-reconnect on connection lost` – when the connection to the application server is dropped, the client reconnects to it automatically, without asking the user for confirmation.
 - `Forms on client’s startup` - for a role it is possible to define the forms that will be opened immediately after the user logs into the program. For this purpose, on the `Navigator` tab, in the `Number on client’s startup` field for the required forms the number in order is specified (see Fig. 2).
 - ` Maximize on client's startup` - on logging in, the program will be opened in the full screen mode ( the navigation menu will be hidden)
-- `Disable role` - access rights configured for the role will not be applicable. For the `selfRegister` role this flag also turns off self-registration on the login page (see the [system roles](System_Security.md#systemRoles)). 
+- `Disable role` - access rights and [working parameter](Working_parameters.md) values configured for the role will not be applicable. For the `selfRegister` role this flag also turns off self-registration on the login page (see the [system roles](System_Security.md#systemRoles)). 
 
 
 #### Navigator Tab
