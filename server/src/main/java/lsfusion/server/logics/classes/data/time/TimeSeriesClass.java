@@ -108,17 +108,11 @@ public abstract class TimeSeriesClass<T extends Temporal> extends FormatClass<T>
         return getFormat(pattern).format(value);
     }
 
-    protected abstract String getIntervalString();
+    // the SQL interval between two neighbouring values, null if the class has none
+    public abstract String getIntervalStepString();
 
     public boolean hasInterval() {
         return getIntervalStepString() != null;
-    }
-    public String getIntervalStepString() {
-        String intervalString = getIntervalString();
-        if(intervalString == null)
-            return null;
-
-        return "interval '" + intervalString + "'";
     }
 
         @Override

@@ -30,18 +30,18 @@ public abstract class HasTimeClass<T extends Temporal> extends TimeSeriesClass<T
     }
 
     @Override
-    public String getIntervalString() {
+    public String getIntervalStepString() {
         if(millisLength.isUnlimited() || millisLength.getValue() == 0)
-            return "1 second";
+            return "interval '1 second'";
 
         if(millisLength.getValue() == 1)
-            return "100 milliseconds";
+            return "interval '100 milliseconds'";
 
         if(millisLength.getValue() == 2)
-            return "10 milliseconds";
+            return "interval '10 milliseconds'";
 
         if(millisLength.getValue() == 3)
-            return "1 milliseconds";
+            return "interval '1 milliseconds'";
 
         return null;
     }

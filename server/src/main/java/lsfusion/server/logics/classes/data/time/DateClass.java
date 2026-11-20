@@ -187,8 +187,8 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
     }
 
     @Override
-    protected String getIntervalString() {
-        return "1 day";
+    public String getIntervalStepString() {
+        return "interval '1 day'";
     }
 
     @Override

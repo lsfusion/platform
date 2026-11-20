@@ -149,7 +149,7 @@ public class GlobalTempTablePool {
 
         List<String> tables = new ArrayList<>();
         try (Statement statement = connection.createStatement();
-             ResultSet result = statement.executeQuery("SELECT tablename FROM pg_tables WHERE schemaname = '" + SCHEMA + "' AND tablename LIKE E'n" + node + "\\\\_t\\\\_%' ESCAPE E'\\\\'")) {
+             ResultSet result = statement.executeQuery("SELECT tablename FROM pg_tables WHERE schemaname = " + adapter.syntax.getStringLiteral(SCHEMA) + " AND tablename LIKE " + adapter.syntax.getStringLiteral("n" + node + "\\_t\\_%") + " ESCAPE E'\\\\'")) {
             while (result.next())
                 tables.add(SCHEMA + "." + result.getString(1)); // the catalog answers with the relation alone, and everything here goes by the name a statement would use
         }

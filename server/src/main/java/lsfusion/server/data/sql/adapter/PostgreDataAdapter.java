@@ -160,14 +160,13 @@ public class PostgreDataAdapter extends DataAdapter {
         // if there is no subscription on the slave removing replication slot
         LogSequenceNumber logSequenceNumber = readSlaveLSN(server);
         if(logSequenceNumber == DataAdapter.NO_SUBSCRIPTION)
-            executeEnsure(master, "SELECT pg_drop_replication_slot('" + getSlotName(server) + "');\n");
+            executeEnsure(master, "SELECT pg_drop_replication_slot(" + syntax.getStringLiteral(getSlotName(server)) + ");\n");
 
         boolean isFirstStart = false;
         try {
-            // escape ' so a dataBase/host/user/password containing one can't break out of this SQL string literal
             executeEnsureWithException(server, "CREATE SUBSCRIPTION " + DB_SUBSRIPTION + "\n" +
-                    "                CONNECTION '" + getMasterLibpqConnectionString().replace("'", "''") + "'\n" +
-                    "                PUBLICATION " + DB_SUBSRIPTION + " WITH (slot_name = '" + getSlotName(server) + "', enabled = false);");
+                    "                CONNECTION " + syntax.getStringLiteral(getMasterLibpqConnectionString()) + "\n" +
+                    "                PUBLICATION " + DB_SUBSRIPTION + " WITH (slot_name = " + syntax.getStringLiteral(getSlotName(server)) + ", enabled = false);");
             isFirstStart = true;
         } catch (SQLException e) {
             if (PSQLState.PROTOCOL_VIOLATION.getState().equals(e.getSQLState()) && e.getMessage().contains("wal_level") && e.getMessage().contains("logical")) {
@@ -281,7 +280,7 @@ public class PostgreDataAdapter extends DataAdapter {
         String sql =
                 "SELECT latest_end_lsn " +
                         "FROM pg_stat_subscription " +
-                        "WHERE subname = '" + DB_SUBSRIPTION + "'";
+                        "WHERE subname = " + syntax.getStringLiteral(DB_SUBSRIPTION);
         try (Statement stmt = slave.ensureConnection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) {
@@ -295,7 +294,7 @@ public class PostgreDataAdapter extends DataAdapter {
         String sql =
                 "SELECT EXTRACT(EPOCH FROM (now() - last_msg_receipt_time)) AS lag_seconds\n" +
                         "FROM pg_stat_subscription " +
-                        "WHERE subname = '" + DB_SUBSRIPTION + "'";
+                        "WHERE subname = " + syntax.getStringLiteral(DB_SUBSRIPTION);
         try (Statement stmt = slave.ensureConnection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) {
@@ -321,7 +320,7 @@ public class PostgreDataAdapter extends DataAdapter {
         String sql =
                 "SELECT bool_and(srsubstate IN ('r','s')) AS all_tables_synced" +
                         " FROM pg_subscription_rel" +
-                        " WHERE srsubid = (SELECT oid FROM pg_subscription WHERE subname = '" + DB_SUBSRIPTION + "');";
+                        " WHERE srsubid = (SELECT oid FROM pg_subscription WHERE subname = " + syntax.getStringLiteral(DB_SUBSRIPTION) + ");";
         try (Statement stmt = slave.ensureConnection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) {
