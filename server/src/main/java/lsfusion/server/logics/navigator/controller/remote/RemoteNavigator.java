@@ -43,6 +43,7 @@ import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.logics.action.flow.LSFStatusException;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
@@ -716,6 +717,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     @Override
     public Pair<RemoteFormInterface, String> createFormExternal(String json) {
+        refuseFormAPI();
 
         JSONObject jsonObject = new JSONObject(json);
         String name = jsonObject.optString("name");
@@ -985,6 +987,12 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 threads.addAll(form.getContextThreads());
             return threads;
         }
+    }
+
+    // the Form API is deprecated and closed for now, its code kept : the web server answers /form itself, and the calls
+    // it made are refused here, for any rmi client
+    public static void refuseFormAPI() {
+        throw new LSFStatusException("The Form API is disabled", 403);
     }
 
     public static void checkEnableUI(AuthenticationToken token) {

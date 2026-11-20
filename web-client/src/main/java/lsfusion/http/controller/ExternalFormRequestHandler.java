@@ -17,6 +17,7 @@ import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 
@@ -30,6 +31,15 @@ public class ExternalFormRequestHandler extends ExternalRequestHandler {
 
     private final NavigatorProvider logicsAndNavigatorProvider;
     private final FormProvider formProvider;
+
+    // the Form API is deprecated and closed for now, its code kept : a request is answered here, before the application
+    // server is looked up or a navigator, a form or ids are made for it (the server refuses an rmi client's calls itself)
+    @Override
+    public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setContentType("text/plain; charset=UTF-8");
+        response.getWriter().print("The Form API is disabled");
+    }
 
     @Override
     protected void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws Exception {
