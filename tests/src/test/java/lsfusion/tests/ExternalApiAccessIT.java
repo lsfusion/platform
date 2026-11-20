@@ -14,15 +14,11 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.net.URI;
 import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.UUID;
 
 import static lsfusion.tests.TestServer.BASE;
@@ -32,8 +28,6 @@ import static lsfusion.tests.TestServer.BASE;
 public class ExternalApiAccessIT {
 
     private static final String DATABASE = "lsfusion_test_api_" + ProcessHandle.current().pid();
-
-    private static final HttpClient HTTP = HttpClient.newHttpClient();
 
     private static Process server;
     private static int httpPort;
@@ -292,11 +286,7 @@ public class ExternalApiAccessIT {
     }
 
     private static HttpResponse<String> post(String path, String body, String contentType, String authorization) throws Exception {
-        HttpRequest.Builder request = HttpRequest.newBuilder(URI.create("http://localhost:" + httpPort + path))
-                .timeout(Duration.ofMinutes(1))
-                .header("Content-Type", contentType + "; charset=UTF-8");
-        if (authorization != null)
-            request.header("Authorization", authorization);
-        return HTTP.send(request.POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8)).build(), HttpResponse.BodyHandlers.ofString());
+        String[] headers = authorization != null ? new String[] {"Authorization", authorization} : new String[0];
+        return TestServer.post(httpPort, path, body, contentType, headers);
     }
 }

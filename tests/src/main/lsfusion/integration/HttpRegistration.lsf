@@ -3,7 +3,8 @@ MODULE HttpRegistration;
 REQUIRE Security;
 
 // registration switched off and on as an administrator does it, by the role of the self-registered users. Open to the
-// calls of ExternalApiAccessIT, which are anonymous on a server that lets only an authenticated call in
+// calls of ExternalApiAccessIT and ExternalApiDisabledIT, which are anonymous on a server that lets only an
+// authenticated call in, or only what an action opens by its annotations
 hrDisable () {
     disableRole(userRoleSID('selfRegister')) <- TRUE;
     APPLY;
@@ -12,3 +13,8 @@ hrEnable () {
     disableRole(userRoleSID('selfRegister')) <- NULL;
     APPLY;
 } @@noauth;
+
+// an action that opens itself to no call : what a server that lets in only what an action opens refuses
+hrNotOpened () {
+    RETURN 1;
+}

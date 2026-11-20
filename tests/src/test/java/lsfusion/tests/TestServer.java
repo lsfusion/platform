@@ -3,6 +3,11 @@ package lsfusion.tests;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -90,6 +95,19 @@ class TestServer {
              Statement statement = connection.createStatement()) {
             statement.execute("DROP DATABASE IF EXISTS " + database + " WITH (FORCE)");
         }
+    }
+
+    private static final HttpClient HTTP = HttpClient.newHttpClient();
+
+    // a request to a test server's http port, as an integration sends it : the headers given in name - value pairs
+    static HttpResponse<String> post(int port, String path, String body, String contentType, String... headers) throws Exception {
+        HttpRequest.Builder request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
+                .timeout(Duration.ofMinutes(1))
+                .header("Content-Type", contentType + "; charset=UTF-8")
+                .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8));
+        for (int i = 0; i < headers.length; i += 2)
+            request.header(headers[i], headers[i + 1]);
+        return HTTP.send(request.build(), HttpResponse.BodyHandlers.ofString());
     }
 
     // all open at once : taken one by one, each closed before the next is opened, two of them could get the same port
