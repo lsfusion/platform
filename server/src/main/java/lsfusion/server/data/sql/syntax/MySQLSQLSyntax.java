@@ -9,6 +9,12 @@ public class MySQLSQLSyntax extends DefaultSQLSyntax {
     private MySQLSQLSyntax() {
     }
 
+    // a backslash is an escape character in a MySQL literal
+    @Override
+    public String getStringLiteral(String string) {
+        return "'" + string.replace("\\", "\\\\").replace("'", "''") + "'";
+    }
+
     public boolean allowViews() {
         return false;
     }

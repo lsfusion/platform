@@ -76,7 +76,7 @@ public abstract class AJSONClass extends FileBasedClass<String> implements DBTyp
 
     @Override
     public String getString(Object value, SQLSyntax syntax) {
-        return AStringClass.getDBString(value);
+        return syntax.getStringLiteral(value.toString());
     }
 
     @Override

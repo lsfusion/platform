@@ -37,7 +37,7 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
             Type type = source.getType(i);
             if(type != null)
                 valueSource = type.formatJSONSource(valueSource, source.getSyntax());
-            return "'" + value + "'," + valueSource;
+            return source.getSyntax().getStringLiteral(value) + "," + valueSource;
         }, ",");
 
         return returnString ? "notEmpty(json_strip_nulls( json_build_object(" + fields + ")))" :

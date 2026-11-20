@@ -62,7 +62,7 @@ public class FirebirdSQLSyntax extends DefaultSQLSyntax {
                 "BEGIN " +
                 "  FOR SELECT RDB$INDEX_NAME " +
                 "      FROM RDB$INDICES " +
-                "      WHERE RDB$RELATION_NAME = '" + table + "'" +
+                "      WHERE RDB$RELATION_NAME = " + getStringLiteral(table) +
                 "      INTO :variable_index_name DO " +
                 "  BEGIN " +
                 "    EXECUTE STATEMENT 'SET STATISTICS INDEX ' || variable_index_name || ';'; " +

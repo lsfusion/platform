@@ -377,7 +377,7 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
 
         typeEnv.addNeedRecursion(types);
         String recursionName = genRecursionName(BaseUtils.immutableCast(types));
-        return recursionName + "('" + recName + "'" +
+        return recursionName + "(" + getStringLiteral(recName) +
                 ",'(" + escapeSql(initialSelect) + ")'" + ",'(" + escapeSql(stepSelect) + ")'" +
                 ",'(" + escapeSql(stepSmallSelect) + ")'" + "," + smallLimit +
                 (outerParams.length() == 0 ? "" : "," + outerParams) + ") recursion (" + fieldDeclare + ")";
@@ -386,6 +386,14 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
     @Override
     public String wrapSubQueryRecursion(String string) {
         return escapeSql(string);
+    }
+
+    // a backslash is an escape character in an E'' literal, whatever standard_conforming_strings is
+    @Override
+    public String getStringLiteral(String string) {
+        if(string.indexOf('\\') >= 0)
+            return "E'" + string.replace("\\", "\\\\").replace("'", "''") + "'";
+        return super.getStringLiteral(string);
     }
 
     private String escapeSql(String sql) {
@@ -447,7 +455,7 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
     @Override
     public String getDeadlockPriority(Long priority) {
         assert false; // actually this approach doesn't work
-        return "SET LOCAL deadlock_timeout to " + (priority != null ? ("'" + Math.round(BaseUtils.pow(2.0, priority) * 1000.0) + "ms'") : "DEFAULT");
+        return "SET LOCAL deadlock_timeout to " + (priority != null ? getStringLiteral(Math.round(BaseUtils.pow(2.0, priority) * 1000.0) + "ms") : "DEFAULT");
     }
 
     @Override

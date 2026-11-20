@@ -25,17 +25,17 @@ public class ExConnection {
         this.lastTempTablesActivity = currentTime;
     }
 
-    public void restartConnection(Connection newConnection, SQLSessionContextProvider contextProvider) throws SQLException {
+    public void restartConnection(Connection newConnection, SQLSessionContextProvider contextProvider, SQLSyntax syntax) throws SQLException {
         this.sql = newConnection;
 
-        updateContext(contextProvider);
+        updateContext(contextProvider, syntax);
     }
 
     private String timeZone;
-    public void updateContext(SQLSessionContextProvider contextProvider) throws SQLException {
+    public void updateContext(SQLSessionContextProvider contextProvider, SQLSyntax syntax) throws SQLException {
         LocalePreferences localePreferences = contextProvider.getLocalePreferences();
 
-        String newTimeZone = localePreferences != null ? ("'" + localePreferences.timeZone + "'") : "DEFAULT";
+        String newTimeZone = localePreferences != null ? syntax.getStringLiteral(localePreferences.timeZone) : "DEFAULT";
         if (timeZone == null || !timeZone.equals(newTimeZone)) {
             timeZone = newTimeZone;
 

@@ -252,7 +252,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
                 }
             }.execute();
         }
-        connection.updateContext(contextProvider);
+        connection.updateContext(contextProvider, getSyntax());
         return connection;
     }
 

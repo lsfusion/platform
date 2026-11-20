@@ -489,6 +489,12 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public String getStringLiteral(String string) {
+        return "'" + string.replace("'", "''") + "'";
+    }
+
+    @Override
     public String wrapSubQueryRecursion(String string) {
         return string;
     }

@@ -86,10 +86,10 @@ public class StringConcatenateFormulaImpl extends AbstractFormulaImpl implements
 
             if (Settings.get().isUseSafeStringAgg()) {
                 result = "CASE WHEN " + result + " IS NOT NULL" +
-                        " THEN " + result + " " + syntax.getStringConcatenate() + " (CASE WHEN " + exprSource + " IS NOT NULL THEN '" + separator + "' " + syntax.getStringConcatenate() + " " + exprSource + " ELSE '' END)" +
+                        " THEN " + result + " " + syntax.getStringConcatenate() + " (CASE WHEN " + exprSource + " IS NOT NULL THEN " + syntax.getStringLiteral(separator) + " " + syntax.getStringConcatenate() + " " + exprSource + " ELSE '' END)" +
                         " ELSE " + exprSource + " END";
             } else {
-                result = syntax.getStringCFunc() + "(" + result + "," + exprSource + ",'" + separator + "')";
+                result = syntax.getStringCFunc() + "(" + result + "," + exprSource + "," + syntax.getStringLiteral(separator) + ")";
             }
         }
         return type.getCast("(" + result + ")", syntax, source.getMEnv());

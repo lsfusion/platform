@@ -108,10 +108,6 @@ public abstract class AStringClass extends TextBasedClass<String> {
         return string.length() <= Settings.get().getMaxInlineStringLength() && !string.contains("'") && !string.contains("\\") && !string.contains(String.valueOf(SQLSession.paramPrefix));
     }
 
-    public static String getDBString(Object value) {
-        return "'" + value + "'";
-    }
-
     public boolean isSafeString(Object value) {
         return isDBSafeString(value);
     }
@@ -187,7 +183,7 @@ public abstract class AStringClass extends TextBasedClass<String> {
     }
 
     public String getString(Object value, SQLSyntax syntax) {
-        return getDBString(value);
+        return syntax.getStringLiteral(value.toString());
     }
 
     @Override

@@ -920,7 +920,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private boolean indexExists(String indexName) throws SQLException, SQLHandledException {
-        String queryString = "SELECT indexname FROM pg_indexes WHERE indexname = '" + indexName + "' AND schemaname = 'public'";
+        String queryString = "SELECT indexname FROM pg_indexes WHERE indexname = " + syntax.getStringLiteral(indexName) + " AND schemaname = 'public'";
 
         ImRevMap<String, String> propertyNames = MapFact.singletonRev("indexname", "indexname");
         ImMap<String, Reader<?>> propertyReaders = MapFact.singleton("indexname", StringClass.instance);
@@ -993,7 +993,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private void createMatchIndex(StoredTable table, ImOrderMap<Field, Boolean> fields, String dbName, String columns, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
         if(DataAdapter.hasTrgmExtension()) {
             createIndex(table, getIndexName(table, syntax, dbName, fields, MATCH.suffix()),
-                    " USING GIN (to_tsvector(" + (indexOptions.language != null ? ("'" + indexOptions.language + "', ") : "") + columns + "))", logger, ifNotExists);
+                    " USING GIN (to_tsvector(" + (indexOptions.language != null ? (syntax.getStringLiteral(indexOptions.language) + ", ") : "") + columns + "))", logger, ifNotExists);
         }
     }
 
@@ -1139,7 +1139,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public boolean columnExists(StoredTable table, Field field) throws SQLException, SQLHandledException {
-        return (Integer) executeSelect("SELECT CASE WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name ILIKE '" + table.getName(syntax) + "' AND column_name ILIKE '" + field.getName(syntax) + "') THEN 1 ELSE 0 END AS cnt", OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, MapFact.EMPTY(), 0,
+        return (Integer) executeSelect("SELECT CASE WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name ILIKE " + syntax.getStringLiteral(table.getName(syntax)) + " AND column_name ILIKE " + syntax.getStringLiteral(field.getName(syntax)) + ") THEN 1 ELSE 0 END AS cnt", OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, MapFact.EMPTY(), 0,
                 MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", IntegerClass.instance),
                 MapFact.<String, String>EMPTYREV(), MapFact.EMPTY()).singleKey().singleValue() == 1;
     }
@@ -3432,7 +3432,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
                 // если все ок, подменяем connection
                 privateConnection.sql = newConnection;
-                privateConnection.restartConnection(newConnection, contextProvider);
+                privateConnection.restartConnection(newConnection, contextProvider, syntax);
                 privateConnection.timeScore = 0;
                 privateConnection.lengthScore = 0;
                 long currentTime = System.currentTimeMillis();

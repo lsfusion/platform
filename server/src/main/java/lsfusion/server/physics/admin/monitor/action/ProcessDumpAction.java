@@ -241,7 +241,7 @@ public abstract class ProcessDumpAction extends InternalAction {
             throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         Map<Integer, List<Object>> lockingMap = getPostgresLockMap(context);
 
-        String originalQuery = String.format("SELECT * FROM pg_stat_activity WHERE datname='%s'" + (onlyActive ? " AND state!='idle'" : ""), context.getBL().getDataBaseName());
+        String originalQuery = "SELECT * FROM pg_stat_activity WHERE datname=" + context.getDbSyntax().getStringLiteral(context.getBL().getDataBaseName()) + (onlyActive ? " AND state!='idle'" : "");
 
         MExclSet<String> keyNames = SetFact.mExclSet();
         keyNames.exclAdd("numberrow");
