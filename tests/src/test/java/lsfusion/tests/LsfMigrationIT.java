@@ -16,10 +16,11 @@ import java.util.Arrays;
 
 import static lsfusion.tests.TestServer.BASE;
 
-/** The migration file, which a start of the server applies to the database an earlier start left. Each test starts the
- *  server several times on a database of its own, each time with one of the logics in tests/migration: v1 before the
- *  renames, v2 after them, with the migration.script that names them. That takes a few minutes, so the tests run only
- *  with -Dlsf.migrationTests=true. An action is called through the external http /exec, as in the behaviour tests. */
+/** What a start of the server does to the database an earlier start left: the migration file, the token key. Each test
+ *  starts the server several times on a database of its own, each time with one of the logics in tests/migration: v1
+ *  before the renames, v2 after them, with the migration.script that names them; tokenkey for the token key. That takes
+ *  a few minutes, so the tests run only with -Dlsf.migrationTests=true. An action is called through the external http
+ *  /exec, as in the behaviour tests. */
 public class LsfMigrationIT {
 
     private static final HttpClient HTTP = HttpClient.newHttpClient();
@@ -35,9 +36,9 @@ public class LsfMigrationIT {
     public void lightStartKeepsRenames() throws Exception {
         String database = "lsfusion_test_" + ProcessHandle.current().pid() + "_light";
         try {
-            run(database, "v1", false, "migrationSeed");
-            run(database, "v2", true, "migrationCheck");
-            run(database, "v2", false, "migrationCheck");
+            run(database, "v1", "MigrationRename", false, "migrationSeed");
+            run(database, "v2", "MigrationRename", true, "migrationCheck");
+            run(database, "v2", "MigrationRename", false, "migrationCheck");
         } finally {
             TestServer.dropDatabase(database);
         }
@@ -48,26 +49,40 @@ public class LsfMigrationIT {
     public void fullStartKeepsRenames() throws Exception {
         String database = "lsfusion_test_" + ProcessHandle.current().pid() + "_full";
         try {
-            run(database, "v1", false, "migrationSeed");
-            run(database, "v2", false, "migrationCheck");
+            run(database, "v1", "MigrationRename", false, "migrationSeed");
+            run(database, "v2", "MigrationRename", false, "migrationCheck");
+        } finally {
+            TestServer.dropDatabase(database);
+        }
+    }
+
+    // the token key is kept from start to start, and made anew once by the start on a database of an older structure
+    @Test
+    public void tokenKeyMadeAnewOnOlderStructure() throws Exception {
+        String database = "lsfusion_test_" + ProcessHandle.current().pid() + "_tokenkey";
+        try {
+            run(database, "tokenkey", "TokenKeyRestart", false, "tkrSeed");
+            run(database, "tokenkey", "TokenKeyRestart", false, "tkrKeptThenOlderStructure");
+            run(database, "tokenkey", "TokenKeyRestart", false, "tkrMadeAnew");
+            run(database, "tokenkey", "TokenKeyRestart", false, "tkrKept");
         } finally {
             TestServer.dropDatabase(database);
         }
     }
 
     // starts the server with the logics, calls the action and stops the server, leaving the database to the next start
-    private static void run(String database, String logics, boolean lightStart, String action) throws Exception {
+    private static void run(String database, String logics, String topModule, boolean lightStart, String action) throws Exception {
         String start = (lightStart ? "light" : "full") + " start with " + logics;
         Path log = BASE.resolve("target/migration/" + database + "-" + logics + "-" + (lightStart ? "light" : "full") + ".log");
         int[] ports = TestServer.freePorts(4);
         Process server = TestServer.start(database, ports, log, Arrays.asList(BASE.resolve("target/classes"), BASE.resolve("migration/" + logics)),
-                "logics.topModule=MigrationRename", // target/classes is there for TestUtils, and holds every other test module too
+                "logics.topModule=" + topModule, // target/classes is there for TestUtils, and holds every other test module too
                 "settings.enableAPI=2", // anonymous, so that the action needs no user
                 "lsfusion.server.lightstart=" + lightStart);
         try {
             TestServer.waitStarted(server, log);
             HttpResponse<String> response = HTTP.send(
-                    HttpRequest.newBuilder(URI.create("http://localhost:" + ports[0] + "/exec?action=" + URLEncoder.encode("MigrationRename." + action + "[]", "UTF-8")))
+                    HttpRequest.newBuilder(URI.create("http://localhost:" + ports[0] + "/exec?action=" + URLEncoder.encode(topModule + "." + action + "[]", "UTF-8")))
                             .timeout(Duration.ofMinutes(10)).POST(HttpRequest.BodyPublishers.noBody()).build(),
                     HttpResponse.BodyHandlers.ofString());
             Assert.assertEquals(action + " after the " + start + "\n" + response.body(), 200, response.statusCode());

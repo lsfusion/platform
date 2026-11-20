@@ -1,0 +1,32 @@
+MODULE TokenKeyRestart;
+
+REQUIRE Authentication, TestUtils;
+
+// the key that signs the server's tokens across starts of the server on one database: a start keeps it, and the start on
+// a database left by a platform of an older database structure makes it anew, once
+
+tkrSeen = DATA TEXT ();
+
+tkrSeed () {
+    tkrSeen() <- secret();
+    APPLY;
+}
+
+tkrKept () {
+    assertNotNull(secret(), 'no key');
+    assertEquals(secret(), tkrSeen(), 'the key was made anew');
+}
+
+// the database as a platform of structure version 700 leaves it: the structure version is the int after the leading 'v'
+// of the structure the database keeps
+tkrKeptThenOlderStructure () {
+    tkrKept();
+    INTERNAL DB r!'UPDATE global SET struct = overlay(struct placing int4send(700) from 2 for 4)'!;
+}
+
+tkrMadeAnew () {
+    assertNotNull(secret(), 'no key');
+    assertTrue(secret() != tkrSeen(), 'the key was kept');
+    tkrSeen() <- secret();
+    APPLY;
+}
