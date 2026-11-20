@@ -40,15 +40,7 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
 
         String displayName = BaseUtils.getFileName(fileName);
 
-        String version = request.getParameter("version");
-        if (version != null) {
-            if (version.contains("..")) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("Illegal characters in version parameter: '..'");
-                return;
-            }
-            fileName = BaseUtils.replaceFileNameAndExtension(fileName, version);
-        }
+        String address = FileUtils.getDownloadAddress(prefix.substring(1) + fileName, request.getParameter("version"));
 
         Charset charset = ExternalUtils.downloadCharset;
         response.setContentType(ExternalUtils.getContentType(extension, charset).toString());
@@ -59,8 +51,11 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         // in theory e-tag and last modified may be send but since we're using "version" it's not that necessary
 
         // it seems that the browser might resend the request (for concurrent reading or whatever)
-        FileUtils.readFile(FileUtils.APP_DOWNLOAD_FOLDER_PATH, fileName, !staticFile, true, inStream -> {
+        if(!FileUtils.readFile(address, !staticFile, true, inStream -> {
             ByteStreams.copy(inStream, response.getOutputStream());
-        });
+        })) {
+            response.setHeader("Cache-Control", "no-store"); // not cached as the files are (urlrewrite.xml): a file may be saved under this URL later
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 }

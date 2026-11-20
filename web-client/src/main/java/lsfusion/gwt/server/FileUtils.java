@@ -37,6 +37,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -69,45 +70,58 @@ public class FileUtils {
     public static String DOWNLOAD_HANDLER = "file";
 
     private static final ScheduledExecutorService closeExecutor = Executors.newScheduledThreadPool(5);
-    private static void scheduleCloseFile(File file, long delay) {
+    private static void scheduleCloseFile(String address, WrittenFile writtenFile, long delay) {
         closeExecutor.schedule(() -> {
             try {
-                deleteFile(file);
+                deleteFile(address, writtenFile);
             } catch (Throwable e) { // we need to suppress to not stop scheduler
             }
         }, delay, TimeUnit.MILLISECONDS);
     }
 
-    public static void readFile(String relativePath, String fileName, boolean close, boolean scheduleClose, EConsumer<InputStream, IOException> consumer) {
-        File file = createFile(relativePath, fileName);
+    // the files this web server wrote, by the address it gave each (the URL after DOWNLOAD_HANDLER it issued, or
+    // getUploadAddress): only they are read back
+    private static final Map<String, WrittenFile> writtenFiles = new ConcurrentHashMap<>();
 
-        try(FileInputStream inStream = new FileInputStream(file)) {
-            consumer.accept(inStream);
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
+    // false if no file is written under that address, or WrittenFile.read refuses it
+    public static boolean readFile(String address, boolean close, boolean scheduleClose, EConsumer<InputStream, IOException> consumer) {
+        WrittenFile writtenFile = writtenFiles.get(address);
+        if(writtenFile == null)
+            return false;
+        if(!writtenFile.read(consumer)) {
+            writtenFiles.remove(address, writtenFile); // so the next save writes it again
+            return false;
         }
 
         if(close) {
             if(scheduleClose)
-                scheduleCloseFile(file, 5000);
+                scheduleCloseFile(address, writtenFile, 5000);
             else
-                deleteFile(file);
+                deleteFile(address, writtenFile);
         }
+        return true;
     }
-    public static Runnable writeFile(String relativePath, boolean override, String fileName, EConsumer<OutputStream, IOException> consumer) {
-        File file = createFile(relativePath, fileName);
-
-        if(override || !file.exists()) {
-            try(FileOutputStream outStream = org.apache.commons.io.FileUtils.openOutputStream(file)) {
-                consumer.accept(outStream);
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            }
+    public static Runnable writeFile(String address, String relativePath, boolean override, String fileName, EConsumer<OutputStream, IOException> consumer) {
+        // one save at a time makes the file of an address, the others take it; one not of this server's writing is written over, whatever lies there
+        WrittenFile writtenFile = writtenFiles.compute(address, (a, written) -> override || written == null || !written.exists() ? new WrittenFile(createFile(relativePath, fileName), consumer) : written);
+        write(address, writtenFile);
+        return () -> deleteFile(address, writtenFile);
+    }
+    // a file that fails to be written is not kept under its address
+    private static void write(String address, WrittenFile writtenFile) {
+        try {
+            writtenFile.write();
+        } catch (RuntimeException e) {
+            writtenFiles.remove(address, writtenFile);
+            throw e;
         }
-        return () -> deleteFile(file);
     }
     public static File createFile(String relativePath, String fileName) {
         return new File(relativePath, fileName);
+    }
+    private static void deleteFile(String address, WrittenFile writtenFile) {
+        if(writtenFiles.remove(address, writtenFile)) // not when the file was written again since
+            deleteFile(writtenFile.file);
     }
     private static void deleteFile(File file) {
         try { // maybe its better to do it with some delay, but now there's no request retry for action files (except maybe beep), and form should be already closed
@@ -333,10 +347,20 @@ public class FileUtils {
         saveImageFile(file, null, true, STATIC_IMAGE_SUBFOLDER_SUBPATH, imagePath, rUrl);
     }
 
+    public static String getDownloadAddress(String path, String version) {
+        return version != null ? path + "?version=" + version : path;
+    }
+
+    // an uploaded file is in the upload folder under its name, and is read back by that name only
+    public static String getUploadAddress(String fileName) {
+        return "upload/" + fileName;
+    }
+
     public static Object readUploadFileAndDelete(GFilesDTO filesObj) {
         Result<Object> result = new Result<>();
-        readFile(APP_UPLOAD_FOLDER_PATH, filesObj.filePath, true, false, inStream ->
-                result.set(BaseUtils.filesToBytes(false, filesObj.storeName, filesObj.custom, filesObj.named, new String[]{filesObj.fileName}, new String[]{filesObj.filePath}, new InputStream[]{inStream})));
+        if(!readFile(getUploadAddress(filesObj.filePath), true, false, inStream ->
+                result.set(BaseUtils.filesToBytes(false, filesObj.storeName, filesObj.custom, filesObj.named, new String[]{filesObj.fileName}, new String[]{filesObj.filePath}, new InputStream[]{inStream}))))
+            throw new IllegalStateException("No uploaded file " + filesObj.filePath);
         return result.result;
     }
 
@@ -386,7 +410,8 @@ public class FileUtils {
             url += innerPath + "/";
         }
 
-        Runnable closer = writeFile(filePath, override, innerFileName, consumer);
+        String address = getDownloadAddress(extraPath + "/" + (innerPath.isEmpty() ? "" : innerPath + "/") + fileName, useDownload ? ID : null);
+        Runnable closer = writeFile(address, filePath, override, innerFileName, consumer);
         if(rCloser != null)
             rCloser.set(closer);
 

@@ -37,10 +37,12 @@ public class UploadFileRequestHandler implements HttpRequestHandler {
 
             // in upload there is no savedTempFiles mechanism, since we don't identify the user who uploads the file
             for (FileItem item : items) {
-                if (!item.isFormField())
-                    FileUtils.writeFile(FileUtils.APP_UPLOAD_FOLDER_PATH, true, sid + "_" + item.getName(), fos -> {
+                if (!item.isFormField()) {
+                    String fileName = sid + "_" + item.getName();
+                    FileUtils.writeFile(FileUtils.getUploadAddress(fileName), FileUtils.APP_UPLOAD_FOLDER_PATH, true, fileName, fos -> {
                         fos.write(item.get());
                     });
+                }
             }
         } catch (Exception e) {
             Throwable cause = e.getCause();
