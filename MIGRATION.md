@@ -2,6 +2,33 @@
 
 ## 7.0
 
+### A password reset mail is sent only when Web Server URL is set
+
+`resetPassword`, which the web client's forgot password page calls, builds the link of its mail from
+Web Server URL of the options (`webServerUrl[]` of the `Reflection` module, on the `options` form,
+`Administration > Application > Options`). While it is not set, a reset sends no mail and answers
+`Password reset is not available: Web Server URL is not set in the options`. Once it is set, a reset
+answers the same `success` whatever login or e-mail is entered, without the e-mail address; a user
+gets at most one reset mail a minute, and a reset token is good for an hour after its mail is sent.
+
+What an upgrading application can notice: password reset stops working until Web Server URL is set -
+to the address the web client is opened at, with its context path and no trailing slash
+(`https://example.com/app`). The messengers' webhooks use the same address: where it is already set
+for them, check that it is the one users open the web client at. A client that read `email` from the
+answer of `resetPassword`, or took its `error` for an unknown login, now gets the same `success` for
+every login once the address is set. There is no setting to go back.
+
+`webServerUrl[]` is now declared in `Authentication` too: a stored copy, filled from
+`Reflection.webServerUrl()` at the first start and following its changes; the options form still
+writes `Reflection`'s. In a later version `Reflection`'s is dropped and `Authentication`'s becomes a
+data property in the same column, which keeps the value for a database that has started with the
+copy. A module that sees both declarations and names `webServerUrl()` without a namespace, where
+neither its own namespace nor its `PRIORITY` namespaces resolve it, now fails to start with
+`ambiguous name 'webServerUrl'` and has to name one of them: a read either -
+`Reflection.webServerUrl()` until `Reflection`'s is dropped, as the platform's own readers do - a
+write (`<-`) only `Reflection.webServerUrl()`, the one on the options form. `defineFileLink` names
+`Reflection.webServerUrl()`.
+
 ### Strings longer than 1000 characters are passed to the database as parameters
 
 A string value in a query - of a string class, `JSON` or `XML` - was written into the query text as

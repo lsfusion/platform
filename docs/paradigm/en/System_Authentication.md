@@ -105,6 +105,8 @@ The lookups `oauthClient[STRING]` and `oauthRefreshToken[STRING]` find a client 
 
 **Web client**: the web client gets the provider configuration from the server directly, not through the API. `webClientSecretKey[]` is the shared secret the web client presents to log in a user whom a provider has authenticated.
 
+**Web server**: `webServerUrl[]` is the address of the web server set on the `options` form, as `webServerUrl[]` of [`Reflection`](System_Reflection.md), and stored here. The password reset mails lead to it.
+
 ### Two-factor authentication settings {#twoFactor}
 
 `use2FA[]` switches two-factor authentication on. `twoFaRateLimitSeconds[]` limits how often a code can be requested, `twoFaExpirySeconds[]` is how long an issued code stays valid (300 seconds by default), and `twoFaMaxAttempts[]` caps the verification attempts (3 by default): the last wrong code drops the code, and the user logs in with the password again.
@@ -118,8 +120,8 @@ These actions are HTTP endpoints (marked with `@@api` or `@@noauth`). The ones m
 | Action                            | What it does                                                                  |
 |-----------------------------------|-------------------------------------------------------------------------------|
 | `registerUser[JSONFILE]`          | creates a `CustomUser` from a login, password, name, and email, after checking password strength and login uniqueness |
-| `resetPassword[JSONFILE]`         | issues a reset token for the user found by login or email and emails the reset link |
-| `changePassword[JSONFILE]`        | sets a new password for the user holding the given reset token               |
+| `resetPassword[JSONFILE]`         | issues a reset token for the user found by login or email and emails the reset link, which leads to the web server at `webServerUrl[]`; while that address is not set, it sends nothing and answers with an error. Once the address is set, it answers the same `success` whether or not such a user exists, with no e-mail address, and sends a user at most one mail a minute: a second reset within it sends nothing, and the token of the first mail stays good |
+| `changePassword[JSONFILE]`        | sets a new password for the user holding the given reset token; a token is good for an hour after its mail is sent |
 | `send2FACode[JSONFILE]`           | generates a two-factor code (rate-limited) and emails it to the user of the given token, the one the password gave |
 | `verify2FACode[JSONFILE]`         | checks a submitted two-factor code of the user of the given token against the stored one and its expiry, counting the wrong ones, and exports a token of the user for the right one |
 | `getCurrentUserLocale[]`          | exports the current user's `language[CustomUser]` and `country[CustomUser]`   |
