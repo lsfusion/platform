@@ -101,10 +101,12 @@ public class FileUtils {
         }
         return true;
     }
-    public static Runnable writeFile(String address, String relativePath, boolean override, String fileName, EConsumer<OutputStream, IOException> consumer) {
+    // lazy - written when first read: an app image takes a while to make, and many are never asked for
+    public static Runnable writeFile(String address, String relativePath, boolean override, boolean lazy, String fileName, EConsumer<OutputStream, IOException> consumer) {
         // one save at a time makes the file of an address, the others take it; one not of this server's writing is written over, whatever lies there
         WrittenFile writtenFile = writtenFiles.compute(address, (a, written) -> override || written == null || !written.exists() ? new WrittenFile(createFile(relativePath, fileName), consumer) : written);
-        write(address, writtenFile);
+        if(!lazy)
+            write(address, writtenFile);
         return () -> deleteFile(address, writtenFile);
     }
     // a file that fails to be written is not kept under its address
@@ -224,7 +226,8 @@ public class FileUtils {
 
     // static image (app or web-client) with the fullpath (with the extension inside)
     private static String saveImageFile(EConsumer<OutputStream, IOException> file, String ID, boolean override, String imagesFolder, String fullPath, Result<String> rUrl) {
-        return saveDownloadFile(useDownloadForAppResources, override, DownloadStoreType.STATIC, imagesFolder, fullPath, null, rUrl, file, ID);
+        // an app image is versioned, so is not written over, and is written when first read; the web client's own are written at the start
+        return saveDownloadFile(useDownloadForAppResources, override, !override, DownloadStoreType.STATIC, imagesFolder, fullPath, null, rUrl, file, ID);
     }
 
     private static BufferedImage getBufferedImage(Image img, boolean gray) {
@@ -371,10 +374,10 @@ public class FileUtils {
     }
 
     private static String saveDownloadFile(boolean useDownload, DownloadStoreType storeType, String innerPath, String fullPath, Result<Runnable> rCloser, RawFileData fileData, String ID) {
-        return saveDownloadFile(useDownload, false, storeType, innerPath, fullPath, rCloser, null, fileData::write, ID);
+        return saveDownloadFile(useDownload, false, false, storeType, innerPath, fullPath, rCloser, null, fileData::write, ID);
     }
 
-    private static String saveDownloadFile(boolean useDownload, boolean override, DownloadStoreType storeType, String innerPath, String fileName, Result<Runnable> rCloser, Result<String> rUrl, EConsumer<OutputStream, IOException> consumer, String ID) {
+    private static String saveDownloadFile(boolean useDownload, boolean override, boolean lazy, DownloadStoreType storeType, String innerPath, String fileName, Result<Runnable> rCloser, Result<String> rUrl, EConsumer<OutputStream, IOException> consumer, String ID) {
         String filePath;
         String url;
         String extraPath = null;
@@ -411,7 +414,7 @@ public class FileUtils {
         }
 
         String address = getDownloadAddress(extraPath + "/" + (innerPath.isEmpty() ? "" : innerPath + "/") + fileName, useDownload ? ID : null);
-        Runnable closer = writeFile(address, filePath, override, innerFileName, consumer);
+        Runnable closer = writeFile(address, filePath, override, lazy, innerFileName, consumer);
         if(rCloser != null)
             rCloser.set(closer);
 

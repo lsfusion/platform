@@ -13,7 +13,7 @@ import java.security.NoSuchAlgorithmException;
 // a file the web server wrote, with the SHA-256 of what it wrote: read back only while it still has it
 class WrittenFile {
     public final File file;
-    private volatile EConsumer<OutputStream, IOException> writer; // not written yet
+    private volatile EConsumer<OutputStream, IOException> writer; // not written yet: written when first read
     private byte[] digest;
 
     public WrittenFile(File file, EConsumer<OutputStream, IOException> writer) {

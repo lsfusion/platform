@@ -80,7 +80,7 @@ public class WrittenFilesTest {
     public void writesAnAddressOnceWhenSavedTwiceAtOnce() throws Exception { // the second save takes the first one's file, read once it is written
         String address = "static/once/x" + System.nanoTime() + ".txt";
         CountDownLatch writing = new CountDownLatch(1), written = new CountDownLatch(1);
-        Thread first = new Thread(() -> FileUtils.writeFile(address, tempDir.getPath(), false, address, out -> {
+        Thread first = new Thread(() -> FileUtils.writeFile(address, tempDir.getPath(), false, false, address, out -> {
             writing.countDown();
             try {
                 written.await();
@@ -93,7 +93,7 @@ public class WrittenFilesTest {
         writing.await();
 
         int[] writes = new int[1];
-        Thread second = new Thread(() -> FileUtils.writeFile(address, tempDir.getPath(), false, address, out -> writes[0]++));
+        Thread second = new Thread(() -> FileUtils.writeFile(address, tempDir.getPath(), false, false, address, out -> writes[0]++));
         second.start();
         second.join(200); // done by now if it writes the file itself, waiting for the first one's write otherwise
         written.countDown();
@@ -108,7 +108,7 @@ public class WrittenFilesTest {
     public void keepsNoAddressWhoseWriteFailed() throws IOException { // so the next save writes it
         String address = "static/failed/x" + System.nanoTime() + ".txt";
         try {
-            FileUtils.writeFile(address, tempDir.getPath(), false, address, out -> {
+            FileUtils.writeFile(address, tempDir.getPath(), false, false, address, out -> {
                 throw new IOException("no space left");
             });
             fail("a failed write is passed over");
@@ -116,7 +116,7 @@ public class WrittenFilesTest {
             assertEquals(404, download("file/" + address + "?dumb=0").status);
         }
 
-        FileUtils.writeFile(address, tempDir.getPath(), false, address, out -> out.write("saved".getBytes(StandardCharsets.UTF_8)));
+        FileUtils.writeFile(address, tempDir.getPath(), false, false, address, out -> out.write("saved".getBytes(StandardCharsets.UTF_8)));
         assertEquals("saved", download("file/" + address + "?dumb=0").body());
     }
 
@@ -129,6 +129,28 @@ public class WrittenFilesTest {
         assertEquals(200, download(url).status);
         assertEquals(404, download(url.replace("style.css?", "style.html?")).status); // the same file under another name and type
         assertEquals(404, download(url.substring(0, url.indexOf('?')) + "/" + css.getID() + "?dumb=0").status); // the name it is stored under
+    }
+
+    @Test
+    public void writesAnImageWhenFirstAskedFor() throws IOException { // and over what lies there then, left by the previous start, say
+        String ID = "image" + System.nanoTime();
+        for (String path : new String[]{"app/test/icons/x.png/", "static/app/test/icons/x.png/"}) { // the folder without and with a folder per store
+            File planted = new File(tempDir, path + ID);
+            planted.getParentFile().mkdirs();
+            Files.write(planted.toPath(), "other".getBytes(StandardCharsets.UTF_8));
+        }
+
+        int[] writes = new int[1];
+        String url = FileUtils.saveImageFile("icons/x.png", out -> {
+            writes[0]++;
+            out.write("image".getBytes(StandardCharsets.UTF_8));
+        }, ID, settings(), false);
+        assertEquals(0, writes[0]);
+
+        for (int i = 0; i < 2; i++) {
+            assertEquals("image", download(url).body());
+            assertEquals(1, writes[0]);
+        }
     }
 
     @Test
