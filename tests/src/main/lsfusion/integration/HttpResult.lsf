@@ -1,0 +1,24 @@
+MODULE HttpResult;
+
+REQUIRE TestUtils;
+
+// a call over http is answered with the result of the action it calls
+
+hrAnswer () { RETURN 'answer'; }
+hrOther () = 'other';
+
+// what an action of this module answers over http, or what the call fails with
+hrResponse = DATA LOCAL STRING ();
+hrCall (STRING request) {
+    hrResponse() <- NULL;
+    TRY {
+        EXTERNAL HTTP GET origin() + '/exec?action=HttpResult.' + request TO hrResponse;
+    } CATCH {
+        hrResponse() <- messageCaughtException();
+    }
+}
+
+testCallAnswersWithItsResult 'A call is answered with the result of the action it calls' () {
+    hrCall('hrAnswer&return=HttpResult.hrOther');
+    assertTrue(hrResponse() = 'answer', 'The call answered ' + (OVERRIDE hrResponse(), 'nothing'));
+}
