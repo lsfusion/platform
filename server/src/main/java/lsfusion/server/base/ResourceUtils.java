@@ -295,11 +295,14 @@ public class ResourceUtils {
 //            if(!(multipleUsages)) { // if we have "not init" read and we are not in devMode, ignore caches to have better DX
                 boolean simpleFile = fileName.equals(BaseUtils.getFileNameAndExtension(fileName));
 
-                String template = BaseUtils.replaceFileName(fileName, ".*", true);
+                String folder = FilenameUtils.getFullPath(fileName);
+                String extension = BaseUtils.getFileExtension(fileName);
+                String template = folder + ".*\\." + extension; // the cache key : ends with the extension, as clearResourceCaches expects
 
                 Pair<List<String>, Map<String, String>> cachedResources = cachedFoundResourcePathes.get(template);
                 if(cachedResources == null) {
-                    Pattern pattern = Pattern.compile(".*/" + template);
+                    // the template's folder and extension quoted : the name is matched as it is written
+                    Pattern pattern = Pattern.compile(".*/" + Pattern.quote(folder) + ".*\\." + Pattern.quote(extension));
                     List<String> resources = ResourceUtils.getResources(pattern);
                     cachedResources = new Pair<>(resources, simpleFile ? BaseUtils.groupListFirst(BaseUtils::getFileNameAndExtension, resources) : null);
                     cachedFoundResourcePathes.put(template, cachedResources);
