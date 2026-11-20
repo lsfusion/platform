@@ -48,6 +48,47 @@ hrsInterpreterUser (STRING login, STRING kind) {
     RETURN resultAuthToken();
 } @@noauth;
 
+// a user of two roles of its own, and a token given to the user. The first role is disabled, with the given enableAPI
+// (first); it is made first, so it is the one whose settings the user would get if it were not disabled. The second
+// has the given enableAPI (second, NULL - the server's) and cannot open the interpreter, which opens the API to its
+// users whatever enableAPI is - the first cannot forbid it, as a disabled role's permissions do not apply
+hrsDisabledFirstRoleUser (STRING login, STRING first, STRING second) {
+    NEWSESSION {
+        NEW r = UserRole {
+            sid(r) <- login;
+            baseValue(setting('enableAPI'), r) <- first;
+            disableRole(r) <- TRUE;
+            NEW next = UserRole {
+                sid(next) <- login + 'Next';
+                baseValue(setting('enableAPI'), next) <- second;
+                dataPermission(next, navigatorElementCanonicalName('System.interpreter')) <- Permission.forbid;
+                NEW u = CustomUser {
+                    login(u) <- login;
+                    in(u, r) <- TRUE;
+                    in(u, next) <- TRUE;
+                }
+            }
+        }
+        APPLY;
+    }
+    generateAuthToken(login);
+    RETURN resultAuthToken();
+} @@noauth;
+
+// the role whose settings a user without an enabled role of its own gets: by default - default, and NULL - the server's
+// settings - once default is disabled, read in a session that is not applied
+hrsFallbackRole = DATA LOCAL STRING ();
+hrsFallbackRoles () {
+    NEWSESSION NESTED (hrsFallbackRole) {
+        NEW u = CustomUser {
+            hrsFallbackRole() <- OVERRIDE sid(firstRole(u)), 'NULL';
+            disableRole(userRoleSID('default')) <- TRUE;
+            hrsFallbackRole() <- hrsFallbackRole() + ' ' + (OVERRIDE sid(firstRole(u)), 'NULL');
+        }
+    }
+    RETURN hrsFallbackRole();
+} @@noauth;
+
 hrsServer (STRING enableAPI) {
     baseValue(setting('enableAPI')) <- enableAPI;
     APPLY;

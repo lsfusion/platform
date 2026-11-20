@@ -188,6 +188,35 @@ public class ExternalApiAccessIT {
         }
     }
 
+    // a disabled role gives its users none of its working parameters, as it gives them none of its permissions : they
+    // get the ones of their next role - an enableAPI of the disabled role opens no API the server closes, and closes
+    // none the next role opens
+    @Test
+    public void aDisabledRolesEnableAPIDoesNotApply() throws Exception {
+        try {
+            Assert.assertEquals(200, post("/exec?action=HttpRoleSettings.hrsServer&p=0", "").statusCode());
+            assertDisabled(disabledFirstRoleUserToken("eaaDisabledOpens", "1", null));
+            assertLetIn(disabledFirstRoleUserToken("eaaDisabledCloses", "0", "1"));
+        } finally {
+            Assert.assertEquals(200, post("/exec?action=HttpRoleSettings.hrsServer", "").statusCode());
+        }
+    }
+
+    // the same for the default role a user without an enabled role of its own falls back to : disabled, it gives no
+    // settings, and the server's apply
+    @Test
+    public void aDisabledDefaultRoleGivesNoSettings() throws Exception {
+        HttpResponse<String> roles = post("/exec?action=HttpRoleSettings.hrsFallbackRoles", "");
+        Assert.assertEquals(roles.body(), 200, roles.statusCode());
+        Assert.assertEquals("default NULL", roles.body());
+    }
+
+    private static String disabledFirstRoleUserToken(String login, String first, String second) throws Exception {
+        HttpResponse<String> user = post("/exec?action=HttpRoleSettings.hrsDisabledFirstRoleUser&p=" + login + "&p=" + first + (second != null ? "&p=" + second : ""), "");
+        Assert.assertEquals(user.body(), 200, user.statusCode());
+        return user.body();
+    }
+
     private static String interpreterUserToken(String login, String kind) throws Exception {
         HttpResponse<String> user = post("/exec?action=HttpRoleSettings.hrsInterpreterUser&p=" + login + (kind != null ? "&p=" + kind : ""), "");
         Assert.assertEquals(user.body(), 200, user.statusCode());
