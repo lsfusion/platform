@@ -103,7 +103,7 @@ The module keeps the configuration for the external authentication mechanisms.
 
 The lookups `oauthClient[STRING]` and `oauthRefreshToken[STRING]` find a client and a refresh token by their string keys. The token-lifetime tunables `oauthAccessTokenExpiration[]`, `oauthRefreshTokenExpiration[]`, `oauthAuthCodeExpiration[]` (in minutes) override the built-in defaults when set. The form `oauthClient` edits one registered client.
 
-**Web client**: `webClientSecretKey[]` is the shared secret the web client presents to fetch the provider configuration.
+**Web client**: the web client gets the provider configuration from the server directly, not through the API. `webClientSecretKey[]` is the shared secret the web client presents to log in a user whom a provider has authenticated.
 
 ### Two-factor authentication settings
 
@@ -120,7 +120,6 @@ These actions are HTTP endpoints (marked with `@@api`). The ones marked `@@noaut
 | `changePassword[JSONFILE]`        | sets a new password for the user holding the given reset token               |
 | `send2FACode[JSONFILE]`           | generates a two-factor code (rate-limited) and emails it to the user         |
 | `verify2FACode[JSONFILE]`         | checks a submitted two-factor code against the stored one and its expiry      |
-| `getClientCredentials[STRING]`    | returns the OAuth2 provider configuration when the supplied secret matches `webClientSecretKey[]` |
 | `getCurrentUserLocale[]`          | exports the current user's `language[CustomUser]` and `country[CustomUser]`   |
 | `syncUsers[ISTRING, JSONFILE]`    | reconciles the logins a client has stored, returning the ones that exist and are not locked |
 | `getAuthToken[]`                  | exports the current request's authentication token                            |
