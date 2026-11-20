@@ -35,9 +35,6 @@ in '{security.in}' = DATA BOOLEAN (CustomUser, UserRole);
 
 TABLE userUserRole (User, UserRole);
 has '{security.in}' (User user, UserRole role) = in(user, role) OR overIn(user, role) MATERIALIZED;
-//firstRole need for Settings
-firstRole(User user) = OVERRIDE (GROUP MIN UserRole role IF has(user, role) AND NOT sid(role) = 'default'), 
-                                            userRoleSID('default') LAZY;
 userRoles '{security.user.roles}' (User user) = GROUP CONCAT name(UserRole role) IF has(user, role), ', ' ORDER name(role) CHARWIDTH 15 LAZY;
 
 rolesCount(User user) = GROUP SUM 1 IF has(user, UserRole role) MATERIALIZED;
@@ -56,6 +53,10 @@ onUserRegister(User user) + {
 
 disableRole '{security.user.role.disable.role}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
 disableRole(STRING roleSID) = disableRole(userRoleSID(roleSID)) LAZY;
+
+//firstRole need for Settings: a disabled role's settings do not apply, as its permissions do not
+firstRole(User user) = OVERRIDE (GROUP MIN UserRole role IF has(user, role) AND NOT sid(role) = 'default' AND NOT disableRole(role)), 
+                                            (userRoleSID('default') IF NOT disableRole('default')) LAZY;
 
 registrationDisabled() += disableRole('selfRegister');
 
