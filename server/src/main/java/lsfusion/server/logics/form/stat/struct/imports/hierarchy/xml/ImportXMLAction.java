@@ -45,7 +45,7 @@ public class ImportXMLAction extends ImportHierarchicalAction<XMLNode> {
         }
     }
 
-    public Element findRootNode(RawFileData file, String root, String charset) throws JDOMException, IOException {
+    public static Element findRootNode(RawFileData file, String root, String charset) throws JDOMException, IOException {
         //if charset is not provided, it's getting from xml header (<?xml version="1.0" encoding="utf-8"?>)
         SAXBuilder builder = XMLNode.createSecureSAXBuilder();
         Document doc = charset != null ? builder.build(new InputStreamReader(new BOMInputStream(file.getInputStream()), charset)) : builder.build(file.getInputStream());

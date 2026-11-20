@@ -15,11 +15,15 @@ import lsfusion.server.logics.form.stat.struct.hierarchy.PropertyGroupParseNode;
 import org.apache.commons.io.IOUtils;
 import org.jdom2.*;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaderJAXPFactory;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.jetbrains.annotations.NotNull;
+import org.xml.sax.InputSource;
 
+import javax.xml.XMLConstants;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -287,12 +291,15 @@ public class XMLNode implements Node<XMLNode> {
         }
     }
 
-    // hardened against XXE (CVE-2021-33813-class issue, see GH #1728): external entity resolution disabled, used for all untrusted XML parsing
+    // the JDK's own XML parser, with its limits on entity expansions
+    private static final String JDK_SAX_PARSER_FACTORY = "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl";
+
+    // a parsed document is read on its own: an external DTD or entity resolves to nothing, entity expansions are limited
     public static SAXBuilder createSecureSAXBuilder() {
-        SAXBuilder builder = new SAXBuilder();
-        builder.setFeature("http://xml.org/sax/features/external-general-entities", false);
-        builder.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-        builder.setExpandEntities(false);
+        SAXBuilder builder = new SAXBuilder(new XMLReaderJAXPFactory(JDK_SAX_PARSER_FACTORY, ClassLoader.getSystemClassLoader(), false));
+        builder.setEntityResolver((publicId, systemId) -> new InputSource(new StringReader("")));
+        builder.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         return builder;
     }
 
