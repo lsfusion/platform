@@ -88,7 +88,7 @@ getResource(STRING path) {
     exportFile() <- resource();
     headersTo('Cache-Control') <- 'public, max-age=86400';
     headersTo('Content-Disposition') <- 'inline';
-} @@api;
+}
 
 resourcePaths = DATA LOCAL STRING (STRING);
 readResourcePaths (STRING pattern, BOOLEAN fullPaths)  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourcePathsAction';
