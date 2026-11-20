@@ -9,6 +9,7 @@ import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public interface BaseImage extends Serializable {
 
@@ -149,13 +150,17 @@ public interface BaseImage extends Serializable {
             changes.put(values[0], values.length > 1 || prevClass.endsWith("=") ? null : false);
         }
 
-        String[] classes = newClasses != null ? GwtClientUtils.splitUnquotedSpace(newClasses) : new String[0];
-        for (String newClass : classes) {
+        NativeStringMap<Boolean> named = new NativeStringMap<>();
+        ArrayList<String> classes = new ArrayList<>();
+        for (String newClass : newClasses != null ? GwtClientUtils.splitUnquotedSpace(newClasses) : new String[0]) {
             String[] values = GwtClientUtils.splitUnquotedEqual(newClass);
+            if (named.put(values[0], true) != null)
+                continue;
+            classes.add(newClass);
             if (changes.remove(values[0]) == null)
                 changes.put(values[0], values.length > 1 ? GwtClientUtils.unquote(values[1]) : (newClass.endsWith("=") ? "" : true));
         }
-        element.setPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE + postfix, classes);
+        element.setPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE + postfix, classes.toArray(new String[0]));
 
         return changes;
     }
