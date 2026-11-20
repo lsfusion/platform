@@ -257,8 +257,8 @@ public class ResourceUtils {
             return null;
         if(fullPath != null)
             fullPath.set(resourcePath.substring(1));
-        try {
-            return result.apply(ResourceUtils.getResourceAsStream(resourcePath, multipleUsages));
+        try (InputStream stream = ResourceUtils.getResourceAsStream(resourcePath, multipleUsages)) {
+            return result.apply(stream);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
