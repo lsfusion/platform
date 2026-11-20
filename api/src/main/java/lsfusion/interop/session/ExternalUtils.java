@@ -87,7 +87,6 @@ public class ExternalUtils {
     public static final String ACTION_CN_PARAM = "action";
     public static final String SCRIPT_PARAM = "script";
     public static final String PARAMS_PARAM = "p";
-    public static final String RETURN_PARAM = "return";
     public static final String RETURNMULTITYPE_PARAM = "returnmultitype";
 
     public static final String SIGNATURE_PARAM = "signature";
@@ -102,7 +101,7 @@ public class ExternalUtils {
         return (script ? "1" : "0") + "," + actionParam + paramsString;
     }
 
-    public static final List<String> PARAMS = Arrays.asList(ACTION_CN_PARAM, SCRIPT_PARAM, PARAMS_PARAM, RETURN_PARAM, RETURNMULTITYPE_PARAM, SIGNATURE_PARAM);
+    public static final List<String> PARAMS = Arrays.asList(ACTION_CN_PARAM, SCRIPT_PARAM, PARAMS_PARAM, RETURNMULTITYPE_PARAM, SIGNATURE_PARAM);
 
     public static ExecInterface getExecInterface(RemoteLogicsInterface remoteLogics, Result<String> sessionID, Result<Boolean> closeSession, SessionContainer sessionContainer, AuthenticationToken token, ConnectionInfo connectionInfo) {
         if(sessionID != null) {
@@ -197,7 +196,6 @@ public class ExternalUtils {
 
         ImList<ExternalRequest.Param> params = ListFact.add(queryParams, bodyParams);
 
-        ImList<String> returns = getParameterValues(parsedQueryParams, RETURN_PARAM);
         String returnMultiType = getParameterValue(parsedQueryParams, RETURNMULTITYPE_PARAM);
 
         String signature = getParameterValue(parsedQueryParams, SIGNATURE_PARAM);
@@ -210,7 +208,7 @@ public class ExternalUtils {
             isInteractiveClient = secFetchMode != null && secFetchMode.equals("navigate");            ;
         }
 
-        ExternalRequest request = new ExternalRequest(returns.toArray(new String[returns.size()]), params.toArray(new ExternalRequest.Param[params.size()]),
+        ExternalRequest request = new ExternalRequest(params.toArray(new ExternalRequest.Param[params.size()]),
                 headerNames, headerValues, cookieNames, cookieValues, logicsHost, logicsPort, logicsExportName, scheme, method, webHost, webPort,
                 contextPath, servletPath, pathInfo, query, requestContentType != null ? requestContentType.toString() : null, sessionId, body,
                 signature, returnMultiType, needNotificationId, isInteractiveClient);

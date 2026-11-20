@@ -38,8 +38,7 @@ import java.util.Map;
  * contextPath, sessionId, body, …) is propagated into the request the eval action runs
  * against, so scripts that read e.g. {@code headers[<name>]} or {@code cookies[<name>]}
  * see the same values they'd see from a regular {@code /eval} call. The HTTP envelope
- * inherits verbatim; {@code params} is replaced with the tool args (positional array);
- * {@code returnNames} is intentionally left empty.
+ * inherits verbatim; {@code params} is replaced with the tool args (positional array).
  */
 public class MCPEvalTool {
 
@@ -117,10 +116,6 @@ public class MCPEvalTool {
      * verbatim from the {@code envelope} the web handler captured for the inbound /mcp
      * call, so the script can consult those attributes the same way a /eval-driven script
      * would. {@code params} is replaced with the tool's args (positional array).
-     * {@code returnNames} is intentionally empty — letting MCP clients pick which
-     * properties to read by compound name would be implicit scope creep, so the
-     * result-read path falls through to lsFusion's standard `RETURN`-or-`export*`
-     * selection (the script controls what comes back).
      */
     private static ExternalRequest buildRequest(JSONObject args, ExternalRequest envelope) {
         ExternalRequest.Param[] params = getParams(args.opt("params"));
@@ -136,17 +131,11 @@ public class MCPEvalTool {
             throw new IllegalArgumentException("`context` is no parameter of the tool: called over `/mcp` the action runs on the server, and called by the application's page where the user works - in the navigator, or in a form with `form`");
         }
 
-        // No `returnNames` here on purpose — the script controls what comes back via
-        // `RETURN` (idiomatic) or, when a serialized export is needed, EXPORT / PRINT TO /
-        // direct `exportFile() <- ...`. Letting the tool read arbitrary properties by
-        // compound name would be implicit scope creep (anything visible in the schema), and
-        // a script-side `RETURN expr;` / `EXPORT FROM Module.someProp;` is more explicit.
         // Inherit HTTP metadata from the envelope so the script sees the same shape /eval
         // provides. MESSAGE / PRINT MESSAGE output is captured server-side unconditionally
         // (RemoteConnection always pushes a log processor on the non-interactive path) and
         // surfaced to MCP clients via ResultExternalResponse.logMessages.
-        return new ExternalRequest(/*returnNames=*/ new String[0],
-                params,
+        return new ExternalRequest(params,
                 envelope.headerNames, envelope.headerValues, envelope.cookieNames, envelope.cookieValues,
                 envelope.appHost, envelope.appPort, envelope.exportName,
                 envelope.scheme, envelope.method, envelope.webHost, envelope.webPort,

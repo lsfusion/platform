@@ -541,7 +541,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
     // What the MCP eval tool answers for what the action returned - every result as an external call has it, and the
     // status. It is one structure, so it goes as a value of the JSON class, which the page parses into the object
     private ClientAction readMCPResult(ExecutionEnvironment env, Action<?> action, ConnectionContext context) throws SQLException, SQLHandledException, IOException {
-        Object answer = MCPEvalTool.render(RemoteConnection.readResult(getControllerBL(), context, new String[0], null, action, env, null));
+        Object answer = MCPEvalTool.render(RemoteConnection.readResult(getControllerBL(), context, null, action, env, null));
         return new ControllerResultClientAction(null, new byte[][] {FormChanges.serializeConvertFileValue(answer, context)}, new byte[][] {TypeSerializer.serializeType(JSONClass.instance)});
     }
 

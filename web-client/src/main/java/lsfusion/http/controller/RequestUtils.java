@@ -134,7 +134,6 @@ public class RequestUtils {
         String sessionId = session != null ? session.getId() : "";
 
         return new ExternalRequest(
-                new String[0],
                 new ExternalRequest.Param[0],
                 info.headerNames, info.headerValues, info.cookieNames, info.cookieValues,
                 logicsHost, sessionObject.connection.port, sessionObject.connection.exportName,

@@ -68,10 +68,6 @@ testCallSeesExtendCode 'A call through the Action API sees what the code of the 
         hecEval('run() \{ RETURN hecAnswer(); \}');
         hecAnswered('42', 'A script');
 
-        // a property is returned with no check of its own, so it is the application's only
-        hecGet('/exec?action=hecTwice&p=21&return=hecAnswer');
-        hecFailed('Return property hecAnswer was not found', 'A property of the code as the result');
-
         // no priority, as in a script evaluated in a client
         hecGet('/exec?action=hecLogics&p=1');
         hecFailed('Ambiguous element \'hecLogics\'', 'A name both declare');

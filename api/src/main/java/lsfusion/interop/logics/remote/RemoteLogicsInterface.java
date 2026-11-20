@@ -44,7 +44,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     // The `request` envelope carries the inbound HTTP request's metadata (headers, cookies,
     // scheme, host, contextPath, sessionId, etc.) — same shape /eval already provides — so
     // scripts running through `lsfusion_eval` can read those attributes via standard lsFusion
-    // properties (`headers[name]`, `cookies[name]`, etc.). Its `params`/`returnNames` are
+    // properties (`headers[name]`, `cookies[name]`, etc.). Its `params` are
     // irrelevant — eval supplies its own from tool args.
     MCPResult mcp(AuthenticationToken token, ConnectionInfo connectionInfo, ExternalRequest request, String body) throws RemoteException;
 
