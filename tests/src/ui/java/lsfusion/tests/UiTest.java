@@ -81,7 +81,7 @@ public abstract class UiTest {
             "user.language=en", "user.country=US", "user.timezone=UTC"}; // the captions and formats follow the server, not the browser
 
     private static Process server, web; // the test server and the web container
-    private static int httpPort, webPort;
+    private static int httpPort, rmiPort, webPort;
     private static Playwright playwright;
     private static Browser browser;
     private static String container; // the browser's, with -Dui.browser=docker
@@ -139,6 +139,7 @@ public abstract class UiTest {
 
         int[] ports = TestServer.freePorts(6); // the server's four, the web container's and docker's browser's: taken at once, none comes twice
         httpPort = ports[0];
+        rmiPort = ports[1];
         webPort = ports[4];
         Path serverLog = UI.resolve("server.log");
         server = TestServer.start(DATABASE, ports, serverLog, BASE.resolve("target/classes"), SERVER_SETTINGS);
@@ -679,6 +680,11 @@ public abstract class UiTest {
         Locator editor = cell.locator("input");
         editor.fill(text);
         editor.press("Enter");
+    }
+
+    // the server's rmi port, which the web client and the desktop client call the server at
+    protected static int rmiPort() {
+        return rmiPort;
     }
 
     protected static void exec(String action, String... params) throws Exception {

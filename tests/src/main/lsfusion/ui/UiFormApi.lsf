@@ -1,0 +1,14 @@
+MODULE UiFormApi;
+
+REQUIRE System;
+
+// the form UiFormApiIT asks the Form API to open by its name, and opens by its navigator element to ask the Form API to
+// change it
+
+FORM uiFormApiForm 'Form API';
+
+NAVIGATOR {
+    NEW FOLDER uiFormApi 'Form API' WINDOW toolbar {
+        NEW uiFormApiForm;
+    }
+}
