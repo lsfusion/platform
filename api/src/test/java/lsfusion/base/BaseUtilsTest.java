@@ -5,8 +5,10 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Random;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 
 public class BaseUtilsTest {
     private final static char UNBREAKABLE_SPACE = '\u00a0';
@@ -50,5 +52,29 @@ public class BaseUtilsTest {
 
     private String spaced(String s) {
         return s.replace(' ', UNBREAKABLE_SPACE);
+    }
+
+    @Test
+    public void testGeneratePasswordUsesStrongRandom() {
+        int length = 32;
+        long before, after;
+        String password;
+        int calls = 0;
+        do { // a call that took longer - the first one, which initializes the class, or one paused - is made again
+            before = System.nanoTime();
+            password = BaseUtils.generatePassword(length, false, false);
+            after = System.nanoTime();
+        } while (after - before > 1_000_000 && ++calls < 100);
+
+        for (long seed = before; seed <= after; seed++)
+            assertFalse(password.equals(passwordOf(new Random(seed), length)));
+    }
+
+    private String passwordOf(Random random, int length) {
+        String characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        StringBuilder password = new StringBuilder(length);
+        for (int i = 0; i < length; i++)
+            password.append(characters.charAt(random.nextInt(characters.length())));
+        return password.toString();
     }
 }

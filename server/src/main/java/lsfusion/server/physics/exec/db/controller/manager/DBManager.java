@@ -1844,6 +1844,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         migrateNavigatorElements(session, oldDBStructure);
                     }
 
+                    if (!isFirstStart && oldDBStructure.version < 702) { // the start then generates a new one, see SecurityManager.initSecret
+                        startLog("Dropping the token key");
+                        getBusinessLogics().authenticationLM.secret.change((Object) null, session);
+                        apply(session);
+                    }
+
 
                         startLog("Recalculating materializations");
                         Set<Long> oldClassIDs = new HashSet<>();
@@ -3746,7 +3752,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     // - Version format: "Nxx", where N represents the major platform version,
     //   followed by two digits (xx) indicating the specific version within that major version.
     // Example: "702" corresponds to major version 7, database structure version 2.
-    public static int newDBStructureVersion = 700;
+    public static int newDBStructureVersion = 702;
 
     private class OldDBStructure extends DBStructure<String> {
 
