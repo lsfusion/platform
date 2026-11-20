@@ -29,7 +29,7 @@ import java.util.concurrent.CountDownLatch;
 import static org.junit.Assert.*;
 
 // the web server reads back (serves for download, or takes as an uploaded value) only a file it has written itself, by the
-// address it gave it - not whatever lies in or is put into its folders
+// address it gave it, and only while its content is unchanged - not whatever lies in or is put into its folders
 public class WrittenFilesTest {
 
     @Rule
@@ -140,6 +140,29 @@ public class WrittenFilesTest {
         assertEquals("add", download(add).body());
         assertEquals("gif", download(gif).body());
         assertEquals("add", download(add).body());
+    }
+
+    @Test
+    public void doesNotServeAWrittenFileChangedAfterwards() throws IOException {
+        String url = saveLogo();
+        File written = findFile(tempDir, ".png");
+        Files.write(written.toPath(), "something else".getBytes(StandardCharsets.UTF_8));
+
+        assertEquals(404, download(url).status);
+    }
+
+    @Test
+    public void servesABigWrittenFileOnlyWhileUnchanged() throws IOException { // checked by an extra read, not in memory
+        byte[] bytes = new byte[2 * 1024 * 1024];
+        new java.util.Random().nextBytes(bytes);
+        String url = FileUtils.saveApplicationFile(new FileData(new RawFileData(bytes), "bin"));
+        Response response = download(url);
+        assertEquals(200, response.status);
+        assertArrayEquals(bytes, response.body.toByteArray());
+
+        bytes[bytes.length - 1]++;
+        Files.write(findFile(tempDir, ".bin").toPath(), bytes);
+        assertEquals(404, download(url).status);
     }
 
     @Test
