@@ -68,8 +68,8 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
                 response.getWriter().write("Illegal version parameter");
                 return;
             }
-            fileName = BaseUtils.replaceFileNameAndExtension(fileName, version);
         }
+        String address = FileUtils.getDownloadAddress(storeSubdir + "/" + fileName, version);
 
         // Defense-in-depth path-traversal check that applies to every branch (`temp`, `static`,
         // `dev`, `mcp`). Tomcat normalizes `..` segments in the URI by default, but we don't
@@ -95,9 +95,12 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         // in theory e-tag and last modified may be send but since we're using "version" it's not that necessary
 
         // it seems that the browser might resend the request (for concurrent reading or whatever)
-        FileUtils.readFile(storeRoot, fileName, !staticFile, true, inStream -> {
+        if(!FileUtils.readFile(address, !staticFile, true, inStream -> {
             ByteStreams.copy(inStream, response.getOutputStream());
-        });
+        })) {
+            response.setHeader("Cache-Control", "no-store"); // not cached as the files are (urlrewrite.xml): a file may be saved under this URL later
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 
     /**

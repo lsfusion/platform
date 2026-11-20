@@ -245,6 +245,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- used here directly; declared before gwt-dev, whose own older copy of commons-io would otherwise come first on the
+             test classpath and break commons-fileupload (the war has no gwt-dev) -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
 
         <!--required for correct Jasper report generation-->
         <dependency>

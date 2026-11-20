@@ -37,6 +37,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -69,48 +70,68 @@ public class FileUtils {
     public static String DOWNLOAD_HANDLER = "file";
 
     private static final ScheduledExecutorService closeExecutor = Executors.newScheduledThreadPool(5);
-    private static void scheduleCloseFile(File file, long delay) {
+    private static void scheduleCloseFile(String address, WrittenFile writtenFile, long delay) {
         closeExecutor.schedule(() -> {
             try {
-                deleteFile(file);
+                deleteFile(address, writtenFile);
             } catch (Throwable e) { // we need to suppress to not stop scheduler
             }
         }, delay, TimeUnit.MILLISECONDS);
     }
 
-    public static void readFile(String relativePath, String fileName, boolean close, boolean scheduleClose, EConsumer<InputStream, IOException> consumer) {
-        File file = createFile(relativePath, fileName);
+    // the web server's temp folder: the files to download right in it, the uploads in a folder of their own
+    public static void setTempFolder(String tempFolder) {
+        APP_DOWNLOAD_FOLDER_PATH = tempFolder;
+        APP_UPLOAD_FOLDER_PATH = tempFolder + "/upload";
+    }
 
-        try(FileInputStream inStream = new FileInputStream(file)) {
-            consumer.accept(inStream);
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
+    // the files this web server wrote, by the address it gave each (the URL after DOWNLOAD_HANDLER it issued, or
+    // getUploadAddress): only they are read back
+    private static final Map<String, WrittenFile> writtenFiles = new ConcurrentHashMap<>();
+
+    // false if no file is written under that address, or WrittenFile.read refuses it
+    public static boolean readFile(String address, boolean close, boolean scheduleClose, EConsumer<InputStream, IOException> consumer) {
+        WrittenFile writtenFile = writtenFiles.get(address);
+        if(writtenFile == null)
+            return false;
+        if(!writtenFile.read(consumer)) {
+            writtenFiles.remove(address, writtenFile); // so the next save writes it again
+            return false;
         }
 
         if(close) {
             if(scheduleClose)
-                scheduleCloseFile(file, 5000);
+                scheduleCloseFile(address, writtenFile, 5000);
             else
-                deleteFile(file);
+                deleteFile(address, writtenFile);
         }
+        return true;
     }
-    public static Runnable writeFile(String relativePath, boolean override, String fileName, EConsumer<OutputStream, IOException> consumer) {
-        File file = createFile(relativePath, fileName);
-
-        if(override || !file.exists()) {
-            try(FileOutputStream outStream = org.apache.commons.io.FileUtils.openOutputStream(file)) {
-                consumer.accept(outStream);
-            } catch (IOException | RuntimeException e) {
-                deleteFile(file); // a half-written file is of no use (and a streamed one can be gigabytes)
-                throw Throwables.propagate(e);
-            }
+    // lazy - written when first read: an app image takes a while to make, and many are never asked for
+    public static Runnable writeFile(String address, String relativePath, boolean override, boolean lazy, String fileName, EConsumer<OutputStream, IOException> consumer) {
+        // one save at a time makes the file of an address, the others take it; one not of this server's writing is written over, whatever lies there
+        WrittenFile writtenFile = writtenFiles.compute(address, (a, written) -> override || written == null || !written.exists() ? new WrittenFile(createFile(relativePath, fileName), consumer) : written);
+        if(!lazy)
+            write(address, writtenFile);
+        return () -> deleteFile(address, writtenFile);
+    }
+    // a file that fails to be written is not kept under its address
+    private static void write(String address, WrittenFile writtenFile) {
+        try {
+            writtenFile.write();
+        } catch (RuntimeException e) {
+            writtenFiles.remove(address, writtenFile);
+            throw e;
         }
-        return () -> deleteFile(file);
     }
     public static File createFile(String relativePath, String fileName) {
         return new File(relativePath, fileName);
     }
-    private static void deleteFile(File file) {
+    private static void deleteFile(String address, WrittenFile writtenFile) {
+        if(writtenFiles.remove(address, writtenFile)) // not when the file was written again since
+            deleteFile(writtenFile.file);
+    }
+    static void deleteFile(File file) {
         try { // maybe its better to do it with some delay, but now there's no request retry for action files (except maybe beep), and form should be already closed
             GLoggers.invocationLogger.info("deleting file: " + file.getName());
             if (!file.delete()) {
@@ -305,7 +326,8 @@ public class FileUtils {
 
     // static image (app or web-client) with the fullpath (with the extension inside)
     private static String saveImageFile(EConsumer<OutputStream, IOException> file, String ID, boolean override, String imagesFolder, String fullPath, Result<String> rUrl) {
-        return saveDownloadFile(useDownloadForAppResources, override, DownloadStoreType.STATIC, imagesFolder, fullPath, null, rUrl, file, ID);
+        // an app image is versioned, so is not written over, and is written when first read; the web client's own are written at the start
+        return saveDownloadFile(useDownloadForAppResources, override, !override, DownloadStoreType.STATIC, imagesFolder, fullPath, null, rUrl, file, ID);
     }
 
     private static BufferedImage getBufferedImage(Image img, boolean gray) {
@@ -428,10 +450,25 @@ public class FileUtils {
         saveImageFile(file, null, true, STATIC_IMAGE_SUBFOLDER_SUBPATH, imagePath, rUrl);
     }
 
+    public static String getDownloadAddress(String path, String version) {
+        return version != null ? path + "?version=" + version : path;
+    }
+
+    // an uploaded file is in the upload folder under its name, and is read back by that name only
+    public static String getUploadAddress(String fileName) {
+        return "upload/" + fileName;
+    }
+
+    // the name an upload is kept and read back under: right in the upload folder, whatever folders the name is given with
+    public static String getUploadFileName(String name) {
+        return new File(name).getName();
+    }
+
     public static Object readUploadFileAndDelete(GFilesDTO filesObj) {
         Result<Object> result = new Result<>();
-        readFile(APP_UPLOAD_FOLDER_PATH, filesObj.filePath, true, false, inStream ->
-                result.set(BaseUtils.filesToBytes(false, filesObj.storeName, filesObj.custom, filesObj.named, new String[]{filesObj.fileName}, new String[]{filesObj.filePath}, new InputStream[]{inStream})));
+        if(!readFile(getUploadAddress(getUploadFileName(filesObj.filePath)), true, false, inStream ->
+                result.set(BaseUtils.filesToBytes(false, filesObj.storeName, filesObj.custom, filesObj.named, new String[]{filesObj.fileName}, new String[]{filesObj.filePath}, new InputStream[]{inStream}))))
+            throw new IllegalStateException("No uploaded file " + filesObj.filePath);
         return result.result;
     }
 
@@ -442,10 +479,10 @@ public class FileUtils {
     }
 
     private static String saveDownloadFile(boolean useDownload, DownloadStoreType storeType, String innerPath, String fullPath, Result<Runnable> rCloser, RawFileData fileData, String ID) {
-        return saveDownloadFile(useDownload, false, storeType, innerPath, fullPath, rCloser, null, fileData::write, ID);
+        return saveDownloadFile(useDownload, false, false, storeType, innerPath, fullPath, rCloser, null, fileData::write, ID);
     }
 
-    private static String saveDownloadFile(boolean useDownload, boolean override, DownloadStoreType storeType, String innerPath, String fileName, Result<Runnable> rCloser, Result<String> rUrl, EConsumer<OutputStream, IOException> consumer, String ID) {
+    private static String saveDownloadFile(boolean useDownload, boolean override, boolean lazy, DownloadStoreType storeType, String innerPath, String fileName, Result<Runnable> rCloser, Result<String> rUrl, EConsumer<OutputStream, IOException> consumer, String ID) {
         String filePath;
         String url;
         String extraPath = null;
@@ -478,15 +515,16 @@ public class FileUtils {
 
         assert !fileName.startsWith("/");
         String innerFileName = fileName;
-        if(useDownload && ID != null)
-            innerFileName = BaseUtils.replaceFileNameAndExtension(fileName, ID);
+        if(useDownload && ID != null) // a file per address: one content under two names is written twice, so a write of one never cuts a read of the other
+            innerFileName = fileName + "/" + ID;
 
         if(!innerPath.isEmpty()) {
             filePath += "/" + innerPath;
             url += innerPath + "/";
         }
 
-        Runnable closer = writeFile(filePath, override, innerFileName, consumer);
+        String address = getDownloadAddress(extraPath + "/" + (innerPath.isEmpty() ? "" : innerPath + "/") + fileName, useDownload ? ID : null);
+        Runnable closer = writeFile(address, filePath, override, lazy, innerFileName, consumer);
         if(rCloser != null)
             rCloser.set(closer);
 
@@ -516,9 +554,10 @@ public class FileUtils {
     // the same, but the file is written by the writer (streamed, since it can be bigger than the memory)
     public static String saveActionFile(EConsumer<OutputStream, IOException> writer, String extension, String displayName) {
         String fileID = BaseUtils.randomString(15);
+        // the name and the extension come from the data: only their last part goes into the path
         if(displayName != null)
-            fileID = fileID + "/" + displayName;
-        return saveDownloadFile(true, false, DownloadStoreType.TEMP, "", BaseUtils.addExtension(fileID, extension), null, null, writer, null);
+            fileID = fileID + "/" + BaseUtils.getFileNameAndExtension(displayName);
+        return saveDownloadFile(true, false, false, DownloadStoreType.TEMP, "", BaseUtils.addExtension(fileID, BaseUtils.getFileNameAndExtension(extension)), null, null, writer, null);
     }
 
     private static String saveStaticDataFile(FileData fileData, String displayName, boolean noAuth, Map<String, Pair<String, Runnable>> cacheMap) {
@@ -535,9 +574,10 @@ public class FileUtils {
 
         RawFileData rawFile = fileData.getRawFile();
         String fileID = isStatic ? rawFile.getID() : BaseUtils.randomString(15);
+        // the name and the extension come from the data: only their last part goes into the path
         if(displayName != null)
-            fileID = fileID + "/" + displayName;
-        String fileName = BaseUtils.addExtension(fileID, fileData.getExtension());
+            fileID = fileID + "/" + BaseUtils.getFileNameAndExtension(displayName);
+        String fileName = BaseUtils.addExtension(fileID, BaseUtils.getFileNameAndExtension(fileData.getExtension()));
 
         Function<Result<Runnable>, String> saveData = (rCloser) ->  saveDownloadFile(true, isStatic ? DownloadStoreType.STATIC : DownloadStoreType.TEMP, noAuth ? NOAUTH_FOLDER_PREFIX : "", fileName, rCloser, rawFile, null);
 

@@ -241,6 +241,16 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <!-- no JSP is run by a request (only forwarded to as a view), the dispatcher is REQUEST by default -->
+    <filter>
+        <filter-name>jspRequestFilter</filter-name>
+        <filter-class>lsfusion.http.controller.JspRequestFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>jspRequestFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
 <!--  moved this character encoding filter from applicationContext-security.xml to use the utf-8 encoding for all requests, not just authorised requests -->
     <filter>
         <filter-name>characterEncodingFilter</filter-name>
