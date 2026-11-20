@@ -61,8 +61,6 @@ public class ExternalApiDisabledIT {
     public void theCallsBeforeALoginRun() throws Exception {
         // the login page, the registration, password and two-factor pages, before they are drawn
         noauth("Service.getServerSettings[]", "");
-        // the login page's OAuth providers, read by the web client's secret
-        noauth("Authentication.getClientCredentials&p=secretKey", "");
         // the password pages : a reset of a user that does not exist, a change by a token that was never given. The web
         // client names the actions that take its json with their signature
         noauth("Authentication.resetPassword[JSONFILE]", "[{\"userNameOrEmail\":\"eadNobody\"}]");

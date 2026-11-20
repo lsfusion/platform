@@ -1,0 +1,16 @@
+MODULE HttpWebClientLogin;
+
+REQUIRE Authentication;
+
+// a login provider of the web client, set up and removed by ExternalApiAccessIT : @@noauth, as that test's calls are
+// anonymous on a server that lets only an authenticated call in
+hwlConfigure () {
+    clientId(auth('github')) <- 'hwlClientId';
+    clientSecret(auth('github')) <- 'hwlClientSecret';
+    APPLY;
+} @@noauth;
+hwlReset () {
+    clientId(auth('github')) <- NULL;
+    clientSecret(auth('github')) <- NULL;
+    APPLY;
+} @@noauth;

@@ -8,6 +8,7 @@ import lsfusion.interop.connection.UserInfo;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
 import lsfusion.interop.session.ExternalRequest;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -253,6 +254,26 @@ public class ExternalApiAccessIT {
                 new ExternalRequest(new ExternalRequest.Param[0], null, null, null, null, null, null, null, null, null, null, null, null, null, null), request).json);
         Assert.assertTrue(response.toString(), response.has("result"));
         return response.getJSONObject("result");
+    }
+
+    // the server gives the web client the providers it offers for login : none while none is configured, then the
+    // configured one, with its client secret
+    @Test
+    public void theServerGivesTheLoginProviders() throws Exception {
+        Assert.assertNull(logics.getClientCredentials());
+
+        post("/exec?action=HttpWebClientLogin.hwlConfigure", "");
+        try {
+            JSONArray providers = new JSONArray(logics.getClientCredentials());
+            Assert.assertEquals(providers.toString(), 1, providers.length());
+            JSONObject provider = providers.getJSONObject(0);
+            Assert.assertEquals("github", provider.getString("id"));
+            Assert.assertEquals("hwlClientId", provider.getString("clientId"));
+            Assert.assertEquals("hwlClientSecret", provider.getString("clientSecret"));
+            Assert.assertFalse(provider.toString(), provider.has("jwkSetUri"));
+        } finally {
+            post("/exec?action=HttpWebClientLogin.hwlReset", "");
+        }
     }
 
     // the server writes its logs into the folder it is started in
