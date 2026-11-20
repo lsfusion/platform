@@ -79,6 +79,12 @@ public class FileUtils {
         }, delay, TimeUnit.MILLISECONDS);
     }
 
+    // the web server's temp folder: the files to download right in it, the uploads in a folder of their own
+    public static void setTempFolder(String tempFolder) {
+        APP_DOWNLOAD_FOLDER_PATH = tempFolder;
+        APP_UPLOAD_FOLDER_PATH = tempFolder + "/upload";
+    }
+
     // the files this web server wrote, by the address it gave each (the URL after DOWNLOAD_HANDLER it issued, or
     // getUploadAddress): only they are read back
     private static final Map<String, WrittenFile> writtenFiles = new ConcurrentHashMap<>();

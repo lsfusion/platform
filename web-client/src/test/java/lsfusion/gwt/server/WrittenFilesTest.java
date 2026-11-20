@@ -35,13 +35,12 @@ public class WrittenFilesTest {
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
-    private File tempDir; // both the download and the upload folder, as the web server has them
+    private File tempDir; // the web server's temp folder
 
     @Before
     public void setUp() throws IOException {
         tempDir = folder.newFolder("work");
-        FileUtils.APP_DOWNLOAD_FOLDER_PATH = tempDir.getPath();
-        FileUtils.APP_UPLOAD_FOLDER_PATH = tempDir.getPath();
+        FileUtils.setTempFolder(tempDir.getPath());
     }
 
     @Test
@@ -212,6 +211,17 @@ public class WrittenFilesTest {
 
         assertFalse(new File(FileUtils.APP_UPLOAD_FOLDER_PATH, "x").exists());
         assertTrue(new File(FileUtils.APP_UPLOAD_FOLDER_PATH, "a_page.txt").exists());
+    }
+
+    @Test
+    public void keepsUploadsApartFromTheFilesToDownload() throws Exception { // an upload named as a file to download does not take its place
+        RawFileData data = new RawFileData(("form file " + Math.random()).getBytes(StandardCharsets.UTF_8));
+        String url = FileUtils.saveFormFile(new FileData(data, "txt"), null, null);
+        assertEquals(0, upload("SID5", "/" + data.getID() + ".txt").status);
+
+        Response response = download(url);
+        assertEquals(200, response.status);
+        assertTrue(response.body().startsWith("form file "));
     }
 
     @Test
