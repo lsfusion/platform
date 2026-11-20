@@ -277,6 +277,7 @@ createSystemUserRoles() {
         NEW ur = UserRole {
             sid(ur) <- 'selfRegister';
             name(ur) <- ISTRING[100] ('{security.user.role.new.user}');
+            disableRole(ur) <- TRUE;
             dataPermission(ur, navigatorElementCanonicalName('System.root')) <- Permission.forbid;        
             dataPermission(ur, navigatorElementCanonicalName('Authentication.account')) <- Permission.permit;          
         }
