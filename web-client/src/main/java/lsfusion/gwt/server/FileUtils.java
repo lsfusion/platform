@@ -470,9 +470,10 @@ public class FileUtils {
 
         RawFileData rawFile = fileData.getRawFile();
         String fileID = isStatic ? rawFile.getID() : BaseUtils.randomString(15);
+        // the name and the extension come from the data: only their last part goes into the path
         if(displayName != null)
-            fileID = fileID + "/" + displayName;
-        String fileName = BaseUtils.addExtension(fileID, fileData.getExtension());
+            fileID = fileID + "/" + BaseUtils.getFileNameAndExtension(displayName);
+        String fileName = BaseUtils.addExtension(fileID, BaseUtils.getFileNameAndExtension(fileData.getExtension()));
 
         Function<Result<Runnable>, String> saveData = (rCloser) ->  saveDownloadFile(true, isStatic ? DownloadStoreType.STATIC : DownloadStoreType.TEMP, noAuth ? NOAUTH_FOLDER_PREFIX : "", fileName, rCloser, rawFile, null);
 

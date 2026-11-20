@@ -197,6 +197,16 @@ public class WrittenFilesTest {
     }
 
     @Test
+    public void keepsADisplayNameInsideItsFolder() throws IOException { // a name with folders in it, from the data, stays in the file's folder
+        FileData data = new FileData(new RawFileData(("named " + Math.random()).getBytes(StandardCharsets.UTF_8)), "txt");
+        FileUtils.saveFormFile(data, "plain", null); // the file's own folder is there then
+        String url = FileUtils.saveFormFile(data, "../../named", null);
+
+        assertFalse(new File(folder.getRoot(), "named.txt").exists());
+        assertEquals(200, download(url).status);
+    }
+
+    @Test
     public void keepsAnUploadInTheUploadFolder() throws Exception {
         assertEquals(0, upload("SID1", "x/dummy").status);
         assertEquals(0, upload("SID1", "x/../../outside.txt").status);
