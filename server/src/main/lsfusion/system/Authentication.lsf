@@ -108,8 +108,10 @@ setSHA256Password(CustomUser customUser, STRING str)  {
     sha256Password(customUser) <- calculatedHash();
 }
 passwordResetToken = DATA STRING (CustomUser);
+// when the token was sent
 expiryPasswordResetTokenDate = DATA DATETIME (CustomUser);
-userByPassResetToken(STRING str) = GROUP NAGGR CustomUser cu BY passwordResetToken(cu) IF cu IS CustomUser;
+// a token is good for an hour after it is sent
+userByPassResetToken(STRING str) = GROUP NAGGR CustomUser cu BY passwordResetToken(cu) IF expiryPasswordResetTokenDate(cu) > subtractSeconds(currentDateTime(), 3600);
 
 // tokens
 currentAuthToken = NATIVE TEXT();    
@@ -333,39 +335,47 @@ registerUser(JSONFILE user) {
     }
 } @@api @@noauth;
 
+// the address of the web server, as it is set in the options : Reflection.webServerUrl, which implements this property
+// (Reflection requires this module), stored here as well. It moves here : later Reflection's is dropped and this one
+// becomes DATA STRING () with the same field, which keeps the value for a database that has started with this stored
+// copy, and the readers of Reflection's (the messengers, defineFileLink) name this one. The field is named as the
+// default naming policy (FullDBNamingPolicy) names it, and stays when this property becomes DATA; without it
+// ShortDBNamingPolicy would give both properties the field webServerUrl of one table, which the start refuses
+webServerUrl '{reflection.web.server.url}' = ABSTRACT STRING () MATERIALIZED 'Authentication_webServerUrl';
+
 resetPassword(JSONFILE input) {
+    // the link of the mail leads to the web server address set in the options
+    IF NOT webServerUrl() THEN {
+        EXPORT FROM error = '{password.reset.not.configured}';
+        RETURN;
+    }
     IMPORT FROM input FIELDS STRING userNameOrEmail DO {
         LOCAL token = STRING();
-        LOCAL NESTED success = BOOLEAN();
         LOCAL NESTED subject = STRING();
         LOCAL NESTED body = STRING();
-        LOCAL NESTED email = STRING();
         TRY {
-            FOR email(CustomUser cu) == userNameOrEmail OR login(cu) == userNameOrEmail DO {
+            // one mail a minute at most, the token of the last one stays good meanwhile
+            FOR (email(CustomUser cu) == userNameOrEmail OR login(cu) == userNameOrEmail) AND NOT expiryPasswordResetTokenDate(cu) > subtractSeconds(currentDateTime(), 60) DO {
                 token() <- randomUUID();
                 passwordResetToken(cu) <- token();
                 expiryPasswordResetTokenDate(cu) <- currentDateTime();
-                FOR STRING href = CONCAT '', webPath(), '/change-password', '?token=', token(), IF query() != '' THEN (CONCAT '', '&', query()) DO {
+                FOR STRING href = CONCAT '', webServerUrl(), '/change-password', '?token=', token(), IF query() != '' THEN (CONCAT '', '&', query()) DO {
                     subject() <- '$I{resetPasswordSubject.html}';
                     body() <- '$I{resetPasswordBody.html}';    
                 }
                 APPLY;
-                IF NOT canceled() THEN {
+                IF NOT canceled() THEN
                     EMAIL 
                         SUBJECT subject()
                         TO email(cu)
-                        BODY body();
-                    success() <- TRUE;
-                }
-                email() <- email(cu);
+                        BODY body()
+                        NOWAIT;
             }
-            IF success() THEN {
-                EXPORT FROM success = '{password.reset.email.sent}', email = email();  
-            } ELSE {
-                EXPORT FROM error = '{password.reset.error}';
-            }
+            // the same answer whatever is asked for : whether a login or an address is known is not told
+            EXPORT FROM success = '{password.reset.email.sent}';
         } CATCH {
-            EXPORT FROM error = messageCaughtException();
+            printToLog(messageCaughtException());
+            EXPORT FROM error = '{password.reset.error}';
         }
     }
 } @@api @@noauth;

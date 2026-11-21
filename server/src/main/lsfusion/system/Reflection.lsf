@@ -110,6 +110,9 @@ CONSTRAINT SET (userLoggable(Property p)) AND overMaxStatsProperty() AND stats(p
            MESSAGE '{reflection.constraint.max.stats.property} ' + overMaxStatsProperty();
            
 webServerUrl '{reflection.web.server.url}' = DATA BPSTRING[100]();
+// stored in Authentication too, where the address moves : this property is to be dropped, and Authentication's to become
+// the DATA property
+Authentication.webServerUrl() += STRING(Reflection.webServerUrl());
 
 form '{reflection.form.navigator.element}' = DATA Form (NavigatorElement);
 action '{reflection.action.navigator.element}' = DATA Action (NavigatorAction);
