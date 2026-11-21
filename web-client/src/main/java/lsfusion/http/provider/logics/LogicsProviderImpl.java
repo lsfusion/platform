@@ -32,10 +32,13 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
     private static final String hostKey = "host";
     private static final String portKey = "port";
     private static final String exportNameKey = "exportName";
+    private static final String allowedHostsKey = "allowedHosts";
 
     private String host; // default host
     private int port; // default port
     private String exportName; // default export name
+
+    private AllowedHosts allowedHosts = new AllowedHosts(""); // besides the default host; when not configured, the local subnets
 
     public LogicsProviderImpl(ServletContext servletContext) {
         this.servletContext = servletContext;
@@ -67,6 +70,11 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
         if (exportNameProperty != null)
             exportName = exportNameProperty;
 
+        String allowedHosts = servletContext.getInitParameter(allowedHostsKey);
+        String allowedHostsProperty = getSystemProperty("app.allowed.hosts");
+        if (allowedHostsProperty != null)
+            allowedHosts = allowedHostsProperty;
+
         if (host == null || port == null || exportName == null)
             throw new IllegalStateException(hostKey + " or " + portKey + " or " + exportNameKey + " parameters aren't set in web.xml");
 
@@ -76,6 +84,7 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
         setHost(host);
         setPort(Integer.parseInt(port));
         setExportName(exportName);
+        setAllowedHosts(allowedHosts != null ? new AllowedHosts(allowedHosts) : AllowedHosts.getLocalSubnets());
     }
 
     public void setHost(String host) {
@@ -90,17 +99,39 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
         this.exportName = exportName;
     }
 
-    // needed to recode exception
+    public void setAllowedHosts(AllowedHosts allowedHosts) {
+        this.allowedHosts = allowedHosts;
+    }
+
+    private boolean isAllowed(String host) {
+        host = AllowedHosts.getCanonical(host);
+        return host.equals(AllowedHosts.getCanonical(this.host)) || allowedHosts.contains(host);
+    }
+
+    @Override
+    public <R> R runRequest(LogicsConnection connection, LogicsRunnable<R> runnable) throws AppServerNotAvailableException, RemoteException {
+        if (connection.port < 1 || connection.port > 65535 || !isAllowed(connection.host))
+            throw new AppServerNotAvailableException("Application server [" + connection.host + ":" + connection.port + "] is not allowed");
+        return super.runRequest(connection, runnable);
+    }
+
+    // needed to recode exception; why an application server is not available goes to the log only
     private <R> R runRequestDispatch(LogicsConnection logicsConnection, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException {
         try {
             return runRequest(logicsConnection, runnable);
         } catch (AppServerNotAvailableException e) {
-            throw new AppServerNotAvailableDispatchException(e.getMessage());
+            logger.error(getLogLine(e.getMessage()));
+            throw new AppServerNotAvailableDispatchException("Application server is not available");
         }
     }
 
+    static String getLogLine(String message) { // the host and the export name come from the request
+        message = message.replaceAll("[\\p{Cntrl}\\u0085\\u2028\\u2029]", "?");
+        return message.length() > 500 ? message.substring(0, 497) + "..." : message;
+    }
+
     private LogicsConnection getLogicsConnection(String host, Integer port, String exportName) {
-        return new LogicsConnection(host != null ? host : this.host, port != null ? port : this.port, exportName != null ? exportName : this.exportName);
+        return new LogicsConnection(AllowedHosts.getCanonical(host != null ? host : this.host), port != null ? port : this.port, exportName != null ? exportName : this.exportName);
     }
 
     private LogicsConnection getLogicsConnection(HttpServletRequest request) {
@@ -119,7 +150,7 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
 
     public ServerSettings getServerSettings(final HttpServletRequest request, boolean noCache) {
         try {
-            return runRequest(getLogicsConnection(request), (sessionObject, retry) -> getServerSettings(request, noCache, sessionObject));
+            return runRequestDispatch(getLogicsConnection(request), (sessionObject, retry) -> getServerSettings(request, noCache, sessionObject));
         } catch (Throwable t) {
             return null;
         }
