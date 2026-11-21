@@ -157,17 +157,21 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             this.adminUserRole = (DataObject) securityLM.userRoleSID.readClasses(session, new DataObject(admin));
             this.readOnlyUserRole = (DataObject) securityLM.userRoleSID.readClasses(session, new DataObject("readonly"));
 
-            this.adminUser = initUser(admin, session);
+            this.adminUser = initUser(admin, initialAdminPassword, false, session);
 
-            this.anonymousUser = initUser("anonymous", session);
+            // the calls without a login run as this user (outside the dev mode), and nobody logs in as it : it is created
+            // locked and with no password, as the selfRegister role is created disabled - an administrator unlocks it
+            this.anonymousUser = initUser("anonymous", null, true, session);
         }
     }
 
-    private DataObject initUser(String admin, DataSession session) throws SQLException, SQLHandledException {
+    private DataObject initUser(String admin, String password, boolean locked, DataSession session) throws SQLException, SQLHandledException {
         DataObject adminUser = readUser(admin, session);
 
         if (adminUser == null) {
-            adminUser = addUser(admin, initialAdminPassword, session);
+            adminUser = addUser(admin, password, session);
+            if (locked)
+                authenticationLM.isLockedCustomUser.change(true, session, adminUser);
             apply(session);
 
             // to update classes after apply
@@ -220,7 +224,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     protected DataObject addUser(String login, String defaultPassword, DataSession session) throws SQLException, SQLHandledException {
         DataObject userObject = session.addObject(authenticationLM.customUser);
         authenticationLM.loginCustomUser.change(login, session, userObject);
-        authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", defaultPassword.trim(), UserInfo.salt), session, userObject);
+        if (defaultPassword != null)
+            authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", defaultPassword.trim(), UserInfo.salt), session, userObject);
         return userObject;
     }
 
@@ -294,7 +299,11 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         if (claimed2FA != null && claimed2FA != token.use2FA)
             throw new AuthenticationException("Token use2FA claim mismatch");
 
-        return body.getSubject();
+        // a call with no token runs as the default user (getUser), one with a token - as the user the token names
+        String login = body.getSubject();
+        if (login == null)
+            throw new AuthenticationException("Token names no user");
+        return login;
 //        u.setId(Long.parseLong((String) body.get("userId")));
     }
 
