@@ -10,8 +10,9 @@ setWebHookTelegramResult = DATA LOCAL STRING();
 setWebHookTelegram(Account account) {
     LOCAL result = JSONFILE();
         
+    newWebHookSecret(account);
     EXTERNAL HTTP POST 'https://api.telegram.org/bot' + token(account) + '/setWebhook'
-        BODYURL 'url=' + Reflection.webServerUrl() + '/exec/webHookTelegram?botid=' + LONG(account) TO result;
+        BODYURL 'url=' + Reflection.webServerUrl() + '/exec/webHookTelegram?botid=' + LONG(account) + '&secret_token=' + webHookSecret(account) TO result;
     
     LOCAL ok = BOOLEAN();
     LOCAL description = STRING();
@@ -21,7 +22,8 @@ setWebHookTelegram(Account account) {
     }
 }
 skipSetWebHookTelegram = ABSTRACT BOOLEAN(Account);
-WHEN SET (Account a IS Account) AND isTelegram(a) AND NOT skipSetWebHookTelegram(a) DO {
+hasWebHook(Account a) += WHEN isTelegram(a) AND NOT skipSetWebHookTelegram(a) THEN TRUE;
+registerWebHook(Account a) + WHEN isTelegram(a) THEN {
     setWebHookTelegram(a);
     IF setWebHookTelegramResult() THEN {
         MESSAGE setWebHookTelegramResult() NOWAIT;
@@ -52,16 +54,23 @@ PROPERTIES() IN from senderFirstName EXTID 'first_name', senderUsername EXTID 'u
 PROPERTIES() IN privateChat id, type, first_name, username, title
 PROPERTIES() IN channelChat channelId EXTID 'id', channelUsername EXTID 'username', channelTitle EXTID 'title';
 
+// the secret_token of setWebhook, which Telegram sends in a header with every delivery, in the case of the name the
+// web server gives
+secretTokenTelegram() = GROUP MAX headers(TEXT name) IF lower(name) == 'x-telegram-bot-api-secret-token';
 webHookTelegram(JSONFILE f) {
-    
+    IF NOT isWebHookCall(Messenger.telegram, secretTokenTelegram()) THEN {
+        statusHttpTo() <- 403;
+        RETURN;
+    }
+
     IMPORT webHookTelegram JSON FROM f;
     
     LOCAL chat = Chat();
-    chat() <- chatIdAccount(account(LONG(params('botid'))), IF channelId() THEN channelId() ELSE id());
+    chat() <- chatIdAccount(webHookAccount(), IF channelId() THEN channelId() ELSE id());
     IF NOT chat() THEN {
         NEW chat = Chat {
             chat() <- chat;
-            account(chat) <- account(LONG(params('botid')));
+            account(chat) <- webHookAccount();
             id(chat()) <- IF channelId() THEN channelId() ELSE id();
         }
     }

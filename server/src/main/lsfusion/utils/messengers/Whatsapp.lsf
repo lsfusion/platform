@@ -1,6 +1,6 @@
 MODULE Whatsapp;
 
-REQUIRE Messenger;
+REQUIRE Messenger, SystemEvents;
 
 //When setting up at https://developers.facebook.com/ you have to manually enter webhookUrl and verifyToken,
 //and every 24 hours copy a new accessToken from there. It's possible to generate permanent token, 
@@ -10,8 +10,17 @@ REQUIRE Messenger;
 EXTEND CLASS Messenger { whatsapp 'Whatsapp' }
 isWhatsapp(Account a) = messenger(a) == Messenger.whatsapp;
 
+//one for the app, as webhookUrl
+webHookSecret = DATA STRING();
+onStarted() + {
+    IF NOT webHookSecret() THEN {
+        generateUUID();
+        webHookSecret() <- generatedUUID();
+    }
+}
+
 //url for configuring webhook
-webhookUrl() = Reflection.webServerUrl() + '/exec/webHookWhatsapp';
+webhookUrl() = Reflection.webServerUrl() + '/exec/webHookWhatsapp?secret=' + webHookSecret();
 
 //should be the same as entered while configuring webhook
 verifyToken = DATA STRING();
@@ -60,6 +69,11 @@ FORM messages
     FILTERS imported(contacts);
 
 webHookWhatsapp(JSONFILE f) {
+    IF NOT webHookSecret() == params('secret') THEN {
+        statusHttpTo() <- 403;
+        RETURN;
+    }
+
     IF(f) THEN {
         IMPORT messages JSON FROM f;
         FOR from(INTEGER i) DO {
@@ -163,4 +177,4 @@ sendTemplateMessage(Chat c) {
 };
 
 EXTEND FORM messengers
-    PROPERTIES PANEL SHOWIF isWhatsapp(a) verifyToken(), accessToken(a), phoneNumberId(a), sendTemplateMessage(c) DRAW a;
+    PROPERTIES PANEL SHOWIF isWhatsapp(a) webhookUrl(), verifyToken(), accessToken(a), phoneNumberId(a), sendTemplateMessage(c) DRAW a;
