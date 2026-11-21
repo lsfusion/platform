@@ -568,16 +568,28 @@ public class FileUtils {
         return saveStaticDataFile(fileData, displayName, false, cacheMap);
     }
 
+    // a name in a file's folder, the last part of its URL too: "file" for one that names no file there - empty, "." or "..",
+    // and "_" for ";" and "%", which the web server's request firewall rejects in a URL
+    private static String getFileNameInFolder(String name) {
+        name = name.replace(';', '_').replace('%', '_');
+        return name.isEmpty() || name.equals(".") || name.equals("..") ? "file" : name;
+    }
+
+    // the path of a file from the data: its ID with the extension, or, with a display name, the name with the extension in the ID's folder
+    private static String getDataFileName(String fileID, String displayName, String extension) {
+        // the name and the extension come from the data: only their last part goes into the path
+        extension = BaseUtils.getFileNameAndExtension(extension);
+        if(displayName == null)
+            return getFileNameInFolder(BaseUtils.addExtension(fileID, extension));
+        return fileID + "/" + getFileNameInFolder(BaseUtils.addExtension(BaseUtils.getFileNameAndExtension(displayName), extension));
+    }
+
     private static String saveDataFile(boolean isStatic, boolean noAuth, Map<String, Pair<String, Runnable>> cacheMap, FileData fileData, String displayName) {
         // we don't want to override file, since it's name is based on base64Hash or random
         assert !(noAuth && !isStatic); // noAuth => isStatic
 
         RawFileData rawFile = fileData.getRawFile();
-        String fileID = isStatic ? rawFile.getID() : BaseUtils.randomString(15);
-        // the name and the extension come from the data: only their last part goes into the path
-        if(displayName != null)
-            fileID = fileID + "/" + BaseUtils.getFileNameAndExtension(displayName);
-        String fileName = BaseUtils.addExtension(fileID, BaseUtils.getFileNameAndExtension(fileData.getExtension()));
+        String fileName = getDataFileName(isStatic ? rawFile.getID() : BaseUtils.randomString(15), displayName, fileData.getExtension());
 
         Function<Result<Runnable>, String> saveData = (rCloser) ->  saveDownloadFile(true, isStatic ? DownloadStoreType.STATIC : DownloadStoreType.TEMP, noAuth ? NOAUTH_FOLDER_PREFIX : "", fileName, rCloser, rawFile, null);
 
