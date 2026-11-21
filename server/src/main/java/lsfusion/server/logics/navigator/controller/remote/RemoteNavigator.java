@@ -783,6 +783,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
+    // the actions the platform's clients run by their names that are not elements of the navigator : the start of a
+    // client. No other action is run by a name a client gives
+    private static final ImSet<String> CLIENT_ACTIONS = SetFact.toSet("SystemEvents.onClientStartedApply[]");
+
     private void runAction(DataSession session, String canonicalName, boolean isNavigatorAction, ExecutionStack stack) throws SQLException, SQLHandledException {
         final LA<?> action;
         if (isNavigatorAction) {
@@ -798,6 +802,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
             action = new LA(((NavigatorAction) element).getAction());
         } else {
+            if (!CLIENT_ACTIONS.contains(canonicalName)) {
+                throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.action.not.found}"));
+            }
+
             action = businessLogics.findAction(canonicalName);
         }
         action.execute(session, stack);
