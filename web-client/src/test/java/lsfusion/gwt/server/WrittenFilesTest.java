@@ -207,6 +207,25 @@ public class WrittenFilesTest {
     }
 
     @Test
+    public void savesAFileWhoseDisplayNameNamesNoFile() throws IOException { // a display name whose last part with the extension is empty, "." or "..": saved as "file"
+        for (String[] nameAndExtension : new String[][]{{".", ""}, {"..", ""}, {"", ""}, {"x/", ""}, {"x/..", ""}, {"", "."}}) {
+            String displayName = nameAndExtension[0], extension = nameAndExtension[1];
+            String content = "unnamed " + Math.random();
+            FileData data = new FileData(new RawFileData(content.getBytes(StandardCharsets.UTF_8)), extension);
+            String formUrl = FileUtils.saveFormFile(data, displayName, null);
+            assertEquals(content, download(formUrl).body());
+            assertEquals(content, download(FileUtils.saveFormFile(data, "named", null)).body()); // the same content under a name
+            String actionUrl = FileUtils.saveActionFile(data.getRawFile(), extension, displayName);
+            assertEquals(content, download(actionUrl).body());
+            for (String url : new String[]{formUrl, actionUrl})
+                assertTrue(url.endsWith("/file?dumb=0"));
+        }
+
+        FileData data = new FileData(new RawFileData(("unnamed " + Math.random()).getBytes(StandardCharsets.UTF_8)), "txt");
+        assertTrue(FileUtils.saveFormFile(data, "", null).endsWith("/.txt?dumb=0")); // a name of a file there is kept as it is
+    }
+
+    @Test
     public void keepsAnUploadInTheUploadFolder() throws Exception {
         assertEquals(0, upload("SID1", "x/dummy").status);
         assertEquals(0, upload("SID1", "x/../../outside.txt").status);
