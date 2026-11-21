@@ -112,6 +112,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP oauth2ClientName;
 
     public LP use2FA;
+    public LP twoFaExpiry;
+    public LP login2FA;
 
     public LP language;
     public LP country;
@@ -254,6 +256,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         oauth2ClientName = findProperty("clientName[OAuth2]");
 
         use2FA = findProperty("use2FA[]");
+        twoFaExpiry = findProperty("twoFaExpiry[]");
+        login2FA = findProperty("login2FA[]");
 
         language = findProperty("language[CustomUser]");
         country = findProperty("country[CustomUser]");

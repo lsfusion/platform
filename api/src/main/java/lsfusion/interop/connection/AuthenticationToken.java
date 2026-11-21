@@ -7,6 +7,7 @@ public class AuthenticationToken implements Serializable {
     // current implementation - jwt global signed stateless token
     public final String string;
 
+    // the token of a password whose user has the second factor: it is good only for the check of the code
     public final boolean use2FA;
     
     public static final AuthenticationToken ANONYMOUS = new AuthenticationToken("anonymous");

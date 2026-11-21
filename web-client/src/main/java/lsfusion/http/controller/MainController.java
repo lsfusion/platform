@@ -15,6 +15,7 @@ import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.authentication.LSFClientRegistrationRepository;
 import lsfusion.http.authentication.LSFRemoteAuthenticationProvider;
+import lsfusion.http.authentication.TwoFactorAuthenticationFilter;
 import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.http.provider.logics.LogicsProviderImpl;
 import lsfusion.http.provider.navigator.NavigatorProvider;
@@ -185,7 +186,11 @@ public class MainController {
 
         JSONObject jsonResponse = sendRequest(logicsProvider, user, request, "Authentication.registerUser");
         if (jsonResponse.has("success")) {
-            SecurityContextHolder.getContext().setAuthentication(getAuthentication(request, username, password, authenticationProvider));
+            try {
+                SecurityContextHolder.getContext().setAuthentication(getAuthentication(request, username, password, authenticationProvider));
+            } catch (TwoFactorAuthenticationFilter.TwoFactorRequiredException e) {
+                // the user signs in on the login page, which asks for the code
+            }
         } else if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("REGISTRATION_EXCEPTION", new AuthenticationException(jsonResponse.optString("error")));
             Map<String, String> userData = new HashMap<>();

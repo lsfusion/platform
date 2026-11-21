@@ -279,26 +279,26 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    private Claims parseClaims(String token) {
+        try {
+            return Jwts.parser()
+                    .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (Exception e) {
+            throw new AuthenticationException(String.format("Failed to parse token %s: %s", token, e.getMessage()));
+        }
+    }
+
     public String parseToken(AuthenticationToken token) {
         if(token.isAnonymous())
             return null;
 
-        Claims body;
-        try {
-            body = Jwts.parser()
-                    .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
-                    .build()
-                    .parseSignedClaims(token.string)
-                    .getPayload();
-        } catch (Exception e) {
-            throw new AuthenticationException(String.format("Failed to parse token %s: %s", token.string, e.getMessage()));
-        }
-
-        // Integrity check: if the claim is present in the JWT, it must match the token wrapper field.
-        // Absent claim means an older token that was issued before this check was added — accepted as-is.
-        Boolean claimed2FA = body.get(CLAIM_USE_2FA, Boolean.class);
-        if (claimed2FA != null && claimed2FA != token.use2FA)
-            throw new AuthenticationException("Token use2FA claim mismatch");
+        Claims body = parseClaims(token.string);
+        // the token of a password whose user has the second factor: it is good only for the check of the code (parse2FAToken)
+        if (body.get(CLAIM_USE_2FA) != null)
+            throw new AuthenticationException("The second factor of the authentication is not passed");
 
         // a call with no token runs as the default user (getUser), one with a token - as the user the token names
         String login = body.getSubject();
@@ -306,6 +306,17 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             throw new AuthenticationException("Token names no user");
         return login;
 //        u.setId(Long.parseLong((String) body.get("userId")));
+    }
+
+    // the login of the token of a password whose user has the second factor, null for any other token
+    public String parse2FAToken(String token) {
+        Claims body;
+        try {
+            body = parseClaims(token);
+        } catch (AuthenticationException e) {
+            return null;
+        }
+        return body.get(CLAIM_USE_2FA) != null ? body.getSubject() : null;
     }
 
     public static final String CLAIM_USE_2FA = "2fa";
@@ -421,7 +432,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             if (authenticationLM.isLockedCustomUser.read(session, userObjectAndLogin.first) != null) {
                 throw new LockedException();
             }
-            return generateToken(userObjectAndLogin.second, null, use2FA);
+            // the token of a user with the second factor is good only for the check of the code, so it lives as long as the code
+            return generateToken(userObjectAndLogin.second, use2FA ? ((Integer) authenticationLM.twoFaExpiry.read(session) + 59) / 60 : null, use2FA);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
