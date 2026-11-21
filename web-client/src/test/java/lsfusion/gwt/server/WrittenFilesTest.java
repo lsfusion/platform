@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
@@ -226,6 +227,21 @@ public class WrittenFilesTest {
     }
 
     @Test
+    public void servesAFileWithSemicolonsOrPercentsInItsName() throws IOException { // ";" and "%" in a URL are rejected before the request gets to the download: "_" instead
+        for (String[] nameExtensionAndSaved : new String[][]{{"a;b", "txt", "/a_b.txt"}, {"10%", "txt", "/10_.txt"}, {"x", "t;x%t", "/x.t_x_t"}, {null, "t;x%t", ".t_x_t"}}) {
+            String displayName = nameExtensionAndSaved[0], extension = nameExtensionAndSaved[1], saved = nameExtensionAndSaved[2] + "?dumb=0";
+            String content = "named " + Math.random();
+            FileData data = new FileData(new RawFileData(content.getBytes(StandardCharsets.UTF_8)), extension);
+            String formUrl = FileUtils.saveFormFile(data, displayName, null);
+            assertEquals(content, download(formUrl).body());
+            String actionUrl = FileUtils.saveActionFile(data.getRawFile(), extension, displayName);
+            assertEquals(content, download(actionUrl).body());
+            for (String url : new String[]{formUrl, actionUrl})
+                assertTrue(url, url.endsWith(saved));
+        }
+    }
+
+    @Test
     public void keepsAnUploadInTheUploadFolder() throws Exception {
         assertEquals(0, upload("SID1", "x/dummy").status);
         assertEquals(0, upload("SID1", "x/../../outside.txt").status);
@@ -303,7 +319,8 @@ public class WrittenFilesTest {
         String pathInfo = URLDecoder.decode(path.substring(FileUtils.DOWNLOAD_HANDLER.length()), "UTF-8");
 
         Response response = new Response();
-        new DownloadFileRequestHandler().handleRequest(request(pathInfo, parameters, null, null), response.proxy());
+        // through the request firewall every request to the web server passes
+        new DownloadFileRequestHandler().handleRequest(new StrictHttpFirewall().getFirewalledRequest(request("/" + path, pathInfo, parameters, null, null)), response.proxy());
         return response;
     }
 
@@ -315,13 +332,14 @@ public class WrittenFilesTest {
         parameters.put("sid", sid);
 
         Response response = new Response();
-        new UploadFileRequestHandler().handleRequest(request(null, parameters, "multipart/form-data; boundary=" + boundary, body), response.proxy());
+        new UploadFileRequestHandler().handleRequest(request(null, null, parameters, "multipart/form-data; boundary=" + boundary, body), response.proxy());
         return response;
     }
 
-    private static HttpServletRequest request(String pathInfo, Map<String, String> parameters, String contentType, byte[] body) {
+    private static HttpServletRequest request(String requestURI, String pathInfo, Map<String, String> parameters, String contentType, byte[] body) {
         return (HttpServletRequest) Proxy.newProxyInstance(WrittenFilesTest.class.getClassLoader(), new Class[]{HttpServletRequest.class}, (proxy, method, args) -> {
             switch (method.getName()) {
+                case "getRequestURI": return requestURI;
                 case "getPathInfo": return pathInfo;
                 case "getParameter": return parameters.get((String) args[0]);
                 case "getMethod": return "POST";

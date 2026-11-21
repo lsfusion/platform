@@ -464,8 +464,10 @@ public class FileUtils {
         return saveStaticDataFile(fileData, displayName, false, cacheMap);
     }
 
-    // a name in a file's folder: "file" for one that names no file there - empty, "." or ".."
+    // a name in a file's folder, the last part of its URL too: "file" for one that names no file there - empty, "." or "..",
+    // and "_" for ";" and "%", which the web server's request firewall rejects in a URL
     private static String getFileNameInFolder(String name) {
+        name = name.replace(';', '_').replace('%', '_');
         return name.isEmpty() || name.equals(".") || name.equals("..") ? "file" : name;
     }
 
@@ -474,7 +476,7 @@ public class FileUtils {
         // the name and the extension come from the data: only their last part goes into the path
         extension = BaseUtils.getFileNameAndExtension(extension);
         if(displayName == null)
-            return BaseUtils.addExtension(fileID, extension);
+            return getFileNameInFolder(BaseUtils.addExtension(fileID, extension));
         return fileID + "/" + getFileNameInFolder(BaseUtils.addExtension(BaseUtils.getFileNameAndExtension(displayName), extension));
     }
 
