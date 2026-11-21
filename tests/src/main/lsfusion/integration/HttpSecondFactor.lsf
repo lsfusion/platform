@@ -1,0 +1,49 @@
+MODULE HttpSecondFactor;
+
+REQUIRE Authentication, Email;
+
+// the second factor as an administrator sets it up: switched on, and a mail account the code is sent by - switched off,
+// as the test server sends no mail. Open to anonymous calls, as ExternalApiAccessIT's server lets only an authenticated
+// call in
+hsfOn () {
+    use2FA() <- TRUE;
+    IF NOT defaultInboxAccount() THEN
+        NEW a = Account {
+            name(a) <- 'hsf';
+            isDefaultInbox(a) <- TRUE;
+            disable(a) <- TRUE;
+        }
+    APPLY;
+} @@noauth;
+
+hsfOff () {
+    use2FA() <- NULL;
+    DELETE Account a WHERE name(a) == 'hsf';
+    APPLY;
+} @@noauth;
+
+// a user the second factor applies to: one with an e-mail
+hsfUser (STRING login, STRING password) {
+    NEW u = CustomUser {
+        login(u) <- login;
+        email(u) <- login + '@example.com';
+        setSHA256Password(u, password);
+    }
+    APPLY;
+} @@noauth;
+
+// the code the mail would carry
+hsfSetCode (STRING login, STRING code) {
+    code2FA(customUserLogin(login)) <- code;
+    expiry2FA(customUserLogin(login)) <- sumSeconds(currentDateTime(), 300);
+    APPLY;
+} @@noauth;
+
+hsfCode (STRING login) {
+    RETURN OVERRIDE code2FA(customUserLogin(login)), 'none';
+} @@noauth;
+
+// who a call runs as
+hsfWho () {
+    RETURN currentUserLogin();
+}

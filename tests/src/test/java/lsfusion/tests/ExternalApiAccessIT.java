@@ -5,6 +5,7 @@ import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ComputerInfo;
 import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.connection.UserInfo;
+import lsfusion.interop.connection.authentication.PasswordAuthentication;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
 import lsfusion.interop.session.ExternalRequest;
@@ -20,6 +21,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Base64;
 import java.util.UUID;
 
 import static lsfusion.tests.TestServer.BASE;
@@ -29,6 +31,7 @@ import static lsfusion.tests.TestServer.BASE;
 public class ExternalApiAccessIT {
 
     private static final String DATABASE = "lsfusion_test_api_" + ProcessHandle.current().pid();
+    private static final String SECOND_FACTOR_PASSWORD = "eaaPassword1";
 
     private static Process server;
     private static int httpPort;
@@ -274,6 +277,99 @@ public class ExternalApiAccessIT {
         } finally {
             post("/exec?action=HttpWebClientLogin.hwlReset", "");
         }
+    }
+
+    // a user who logs in with the password and a code from the mail: the password alone, in the API's Basic login, runs
+    // nothing as the user
+    @Test
+    public void aPasswordAloneRunsNothingAsAUserWithTheSecondFactor() throws Exception {
+        String login = secondFactorUser("eaaSecondFactorBasic");
+        try {
+            String basic = "Basic " + Base64.getEncoder().encodeToString((login + ":" + SECOND_FACTOR_PASSWORD).getBytes(StandardCharsets.UTF_8));
+            HttpResponse<String> who = post("/exec?action=HttpSecondFactor.hsfWho", "", "text/plain", basic);
+            Assert.assertEquals(who.body(), 401, who.statusCode());
+        } finally {
+            secondFactorOff();
+        }
+    }
+
+    // the code is checked by the token the password login gave: a wrong code counts, the last allowed one drops the
+    // code, the right code gives a token the calls run as the user with
+    @Test
+    public void theCodeIsCheckedForTheUserOfThePasswordsToken() throws Exception {
+        String login = secondFactorUser("eaaSecondFactorCode");
+        try {
+            String token = logics.authenticateUser(new PasswordAuthentication(login, SECOND_FACTOR_PASSWORD)).string;
+
+            setCode(login, "123456");
+            Assert.assertEquals("invalid", verify(token, "654321").optString("error"));
+            Assert.assertEquals("invalid", verify(token, "654321").optString("error"));
+            Assert.assertEquals("attempts", verify(token, "654321").optString("error"));
+            Assert.assertEquals("expired", verify(token, "123456").optString("error"));
+
+            setCode(login, "123456");
+            JSONObject passed = verify(token, "123456");
+            Assert.assertEquals(passed.toString(), "ok", passed.optString("success"));
+
+            HttpResponse<String> who = post("/exec?action=HttpSecondFactor.hsfWho", "", "text/plain", "Bearer " + passed.getString("token"));
+            Assert.assertEquals(who.body(), 200, who.statusCode());
+            Assert.assertEquals(login, who.body());
+        } finally {
+            secondFactorOff();
+        }
+    }
+
+    // a code is sent for the user of the token the password login gave
+    @Test
+    public void theCodeIsSentForTheUserOfThePasswordsToken() throws Exception {
+        String login = secondFactorUser("eaaSecondFactorSend");
+        try {
+            String token = logics.authenticateUser(new PasswordAuthentication(login, SECOND_FACTOR_PASSWORD)).string;
+            post(json2FA("send2FACode"), "[{\"token\":" + JSONObject.quote(token) + "}]", "application/json");
+            Assert.assertNotEquals("none", code(login));
+        } finally {
+            secondFactorOff();
+        }
+    }
+
+    // a login of its own for each test, the second factor switched on for the users with an e-mail. The login reads the
+    // setting through a cache the server flushes every second: the test goes on once the password asks for the code
+    private static String secondFactorUser(String prefix) throws Exception {
+        String login = prefix + System.nanoTime();
+        Assert.assertEquals(200, post("/exec?action=HttpSecondFactor.hsfOn", "").statusCode());
+        HttpResponse<String> user = post("/exec?action=HttpSecondFactor.hsfUser&p=" + login + "&p=" + SECOND_FACTOR_PASSWORD, "");
+        Assert.assertEquals(user.body(), 200, user.statusCode());
+        long deadline = System.currentTimeMillis() + 10_000;
+        while (!logics.authenticateUser(new PasswordAuthentication(login, SECOND_FACTOR_PASSWORD)).use2FA) {
+            if (System.currentTimeMillis() > deadline)
+                throw new AssertionError("the password of " + login + " does not ask for the code");
+            Thread.sleep(200);
+        }
+        return login;
+    }
+
+    private static void secondFactorOff() throws Exception {
+        Assert.assertEquals(200, post("/exec?action=HttpSecondFactor.hsfOff", "").statusCode());
+    }
+
+    private static void setCode(String login, String code) throws Exception {
+        Assert.assertEquals(200, post("/exec?action=HttpSecondFactor.hsfSetCode&p=" + login + "&p=" + code, "").statusCode());
+    }
+
+    private static String code(String login) throws Exception {
+        HttpResponse<String> code = post("/exec?action=HttpSecondFactor.hsfCode&p=" + login, "");
+        Assert.assertEquals(code.body(), 200, code.statusCode());
+        return code.body();
+    }
+
+    private static String json2FA(String action) throws Exception {
+        return "/exec?action=" + URLEncoder.encode("Authentication." + action + "[JSONFILE]", "UTF-8");
+    }
+
+    private static JSONObject verify(String token, String code) throws Exception {
+        HttpResponse<String> answer = post(json2FA("verify2FACode"), "[{\"token\":" + JSONObject.quote(token) + ",\"code\":" + JSONObject.quote(code) + "}]", "application/json");
+        Assert.assertEquals(answer.body(), 200, answer.statusCode());
+        return new JSONObject(answer.body());
     }
 
     // the server writes its logs into the folder it is started in
