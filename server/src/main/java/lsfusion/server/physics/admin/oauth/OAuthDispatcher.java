@@ -1,5 +1,6 @@
 package lsfusion.server.physics.admin.oauth;
 
+import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.oauth.OAuthOperations;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -254,7 +255,12 @@ public class OAuthDispatcher {
             // an authenticated session — but defend in depth.
             throw new OAuthException("access_denied", "Authentication required");
         }
-        String userLogin = securityManager.parseToken(userToken);
+        String userLogin;
+        try {
+            userLogin = securityManager.parseToken(userToken);
+        } catch (AuthenticationException e) {
+            throw new OAuthException("access_denied", "Authentication required");
+        }
         if (userLogin == null) {
             throw new OAuthException("access_denied", "Authentication required");
         }
@@ -275,9 +281,11 @@ public class OAuthDispatcher {
             DataObject clientObj = lookupClient(session, clientId);
             requireRedirectURIAllowed(session, clientObj, redirectURI);
 
-            DataObject userObj = securityManager.readUser(userLogin, session);
-            if (userObj == null) {
-                throw new OAuthException("access_denied", "User not found: " + userLogin);
+            DataObject userObj;
+            try { // the user the token lets in : found and not locked (SecurityManager.getUser)
+                userObj = securityManager.getUser(userLogin, session);
+            } catch (AuthenticationException e) {
+                throw new OAuthException("access_denied", e.getMessage());
             }
 
             code = randomToken(OPAQUE_TOKEN_BYTES);
@@ -327,6 +335,7 @@ public class OAuthDispatcher {
             if (!clientId.equals(codeClientId)) {
                 throw new OAuthException("invalid_grant", "code does not belong to this client");
             }
+            requireNotLocked(session, codeEntry.user);
             String userLogin = (String) lm.loginCustomUser.read(session, codeEntry.user);
 
             String refreshToken = randomToken(OPAQUE_TOKEN_BYTES);
@@ -375,6 +384,7 @@ public class OAuthDispatcher {
             }
 
             DataObject userObj = (DataObject) lm.userOAuthRefreshToken.readClasses(session, oldRtObj);
+            requireNotLocked(session, userObj);
             String userLogin = (String) lm.loginCustomUser.read(session, userObj);
 
             // Rotate: revoke the old token and issue a fresh one atomically. Sliding expiry —
@@ -462,8 +472,10 @@ public class OAuthDispatcher {
      * lsfusion.http.authentication.LSFAuthTokenFilter} wraps the raw header bytes into a
      * non-anonymous {@code AuthenticationToken} without verifying anything, so without this
      * server-side parse a malformed bearer would silently slip past as "non-anonymous".
+     * The user the token names has to be let in too (found and not locked,
+     * {@link SecurityManager#getUser}), as a connection by the token checks it.
      */
-    private JSONObject validateToken(AuthenticationToken token, JSONObject request) {
+    private JSONObject validateToken(AuthenticationToken token, JSONObject request) throws SQLException, SQLHandledException {
         boolean headerPresent = request.optBoolean("header_present", false);
 
         // Authorization header was sent but produced an anonymous-string token — that's a
@@ -484,12 +496,12 @@ public class OAuthDispatcher {
             return new JSONObject().put("user", "anonymous");
         }
 
+        String userLogin;
         try {
-            String userLogin = securityManager.parseToken(token);
+            userLogin = securityManager.parseToken(token);
             if (userLogin == null) {
                 throw new OAuthException("invalid_token", "Token validation returned null");
             }
-            return new JSONObject().put("user", userLogin);
         } catch (OAuthException e) {
             throw e;
         } catch (Exception e) {
@@ -500,6 +512,13 @@ public class OAuthDispatcher {
             // beat sanitized opacity in this deployment.
             throw new OAuthException("invalid_token", e.getMessage());
         }
+
+        try (DataSession session = createSession()) {
+            securityManager.getUser(userLogin, session);
+        } catch (AuthenticationException e) {
+            throw new OAuthException("invalid_token", e.getMessage());
+        }
+        return new JSONObject().put("user", userLogin);
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────
@@ -590,6 +609,14 @@ public class OAuthDispatcher {
                 .put("client_name", nvl((String) lm.clientNameOAuthClient.read(session, clientObj), ""))
                 .put("redirect_uris", redirectURIs)
                 .put("trusted", trusted != null && trusted);
+    }
+
+    // a code or a refresh token given to a user who is locked since gives no token, as a login of that user gives none
+    // (SecurityManager.authenticateUser)
+    private void requireNotLocked(DataSession session, DataObject user) throws SQLException, SQLHandledException {
+        if (getAuthLM().isLockedCustomUser.read(session, user) != null) {
+            throw new OAuthException("invalid_grant", "User is locked");
+        }
     }
 
     /**
