@@ -89,6 +89,8 @@ When executing an http request, it is often necessary to identify the user on wh
     -   At the first stage, you need to execute the `Authentication.getAuthToken[]` action with basic authentication. The result of this action will be an authentication token with a fixed lifetime (one day [by default](Working_parameters.md#authTokenExpiration)). An example of a request:  `http://localhost/exec?action=getAuthToken`.
     -   The token you receive can be used for authentication during its lifetime by passing it in the `Authorization: Bearer <token>` header (similarly to JWT which is used in the current implementation of the platform for generating authentication tokens).
 
+On the web server, a request with the session cookie of the web client runs as the user logged in to the web client only when the browser tells that it comes from a page of the web client itself: by the `Sec-Fetch-Site` header, which it sends over `https` and to `localhost`, or else by the `Origin` header, or else by the `Referer` header, which a page or a link may tell the browser not to send. A request with none of these headers runs as well, unless it is a `GET` or `HEAD`. Any other request with the session cookie is refused with `403`, unless it has an `Authorization` header of its own (`Basic` or `Bearer`). So a link to the API, including the link the web client gives to share a form, runs for a logged-in user only when it is opened from a page of the web client, not when it is typed into the address bar, opened from a bookmark, or opened from a page of another site or from another application, such as a mail client or a chat.
+
 ## Examples
 
 ### Action API (Python)

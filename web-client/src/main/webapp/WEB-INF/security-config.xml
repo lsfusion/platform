@@ -7,9 +7,9 @@
 
     <!-- API security-->
     <!-- API doesn't need to redirect to login.jsp and the real authentication process is on app server-->
-    <!-- unlike ant matcher, regex respects ? so we need this odd regex-->
+    <!-- unlike ant matcher, regex respects ? so we need this odd regex; (?s): . matches a line break in the path too -->
     <b:bean id="apiRequestMatcher" class="org.springframework.security.web.util.matcher.RegexRequestMatcher">
-        <b:constructor-arg value="^/(((exec|eval)($|\?.*|/.*))|(form($|\?.*)))"/>
+        <b:constructor-arg value="(?s)^/(((exec|eval)($|\?.*|/.*))|(form($|\?.*)))"/>
         <b:constructor-arg><b:null/></b:constructor-arg>
     </b:bean>
     <b:bean id="apiTokenRequestMatcher" class="org.springframework.security.web.util.matcher.AndRequestMatcher">
@@ -33,6 +33,8 @@
         <http-basic/>
         <csrf disabled="true"/>
 
+        <!-- a request on a logged-in session of the web client: where it comes from is checked, see the filter -->
+        <custom-filter after="SECURITY_CONTEXT_FILTER" ref="crossSiteRequestFilter"/>
         <custom-filter after="FORM_LOGIN_FILTER" ref="urlAuthenticationFilter"/>
     </http>
 
@@ -125,6 +127,7 @@
     <b:bean id="tokenFilter" class="lsfusion.http.authentication.LSFAuthTokenFilter">
         <b:constructor-arg ref="authenticationManager"/>
     </b:bean>
+    <b:bean id="crossSiteRequestFilter" class="lsfusion.http.authentication.LSFCrossSiteRequestFilter"/>
     <!-- authenticate user when anonymousUI is enabled, and no auth provided -->
     <b:bean id="anonymousFilter" class="lsfusion.http.authentication.LSFAuthAnonymousFilter">
         <b:constructor-arg ref="authenticationManager"/>
