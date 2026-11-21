@@ -540,8 +540,8 @@ FORM dialogColorThemes '{authentication.color.themes}'
 
 // -------------------------- Forms ---------------------------- //
 
-// sync user logins saved on client 
-syncUsers ABSTRACT LIST (ISTRING[100], JSONFILE) @@noauth;
+// sync user logins saved on client, after a login
+syncUsers ABSTRACT LIST (ISTRING[100], JSONFILE) @@api;
 syncUsers (ISTRING[100] computer, JSONFILE users) + { 
     LOCAL syncSavedUser = BPSTRING[100](INTEGER);
     IMPORT FROM users TO syncSavedUser=value;

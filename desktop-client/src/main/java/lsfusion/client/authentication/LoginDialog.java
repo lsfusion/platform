@@ -229,7 +229,23 @@ public class LoginDialog extends JDialog {
         pack();
     }
 
-    private static void syncUsers(RemoteLogicsInterface remoteLogics, Result<List<UserInfo>> userInfos) {
+    // after a login : the saved users, synchronized by the token of the user logged in to the server
+    public static void syncUsers(LogicsConnection serverInfo, UserInfo userInfo, List<UserInfo> userInfos, AuthenticationToken token) {
+        final Result<List<UserInfo>> rUserInfos = new Result<>(userInfos);
+        try {
+            LogicsProvider.instance.runRequest(serverInfo, (sessionObject, retry) -> {
+                syncUsers(sessionObject.remoteLogics, token, rUserInfos);
+                return null;
+            });
+        } catch (Throwable e) {
+            ClientLoggers.clientLogger.error("Failed to synchronize users", e);
+            return;
+        }
+
+        storeServerAndUserInfos(serverInfo, userInfo, rUserInfos.result);
+    }
+
+    private static void syncUsers(RemoteLogicsInterface remoteLogics, AuthenticationToken token, Result<List<UserInfo>> userInfos) {
         if (remoteLogics != null) {
             JSONArray users = new JSONArray();
             for (UserInfo userInfo : userInfos.result) {
@@ -238,7 +254,7 @@ public class LoginDialog extends JDialog {
             ExternalRequest.Param computerParam = ExternalRequest.getSystemParam(MainController.computerName);
             ExternalRequest.Param fileParam = ExternalRequest.getSystemParam(users.toString());
             try {
-                ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, MainController.getConnectionInfo(), "Authentication.syncUsers[ISTRING[100], JSONFILE]", new ExternalRequest(new ExternalRequest.Param[]{computerParam, fileParam}));
+                ExternalResponse result = remoteLogics.exec(token, MainController.getConnectionInfo(), "Authentication.syncUsers[ISTRING[100], JSONFILE]", new ExternalRequest(new ExternalRequest.Param[]{computerParam, fileParam}));
                 List<Object> currentUsers = new JSONArray(LogicsSessionObject.getStringResult(result, null)).toList();
                 List<UserInfo> newUserInfos = new ArrayList<>();
                 for (UserInfo userInfo : userInfos.result) {
@@ -416,7 +432,8 @@ public class LoginDialog extends JDialog {
         pack();
     }
 
-    public static Pair<LogicsConnection, UserInfo> login(LogicsConnection serverInfo, UserInfo userInfo, String warningMsg) {
+    // the server, the user and the saved users (synchronized after the login)
+    public static Pair<LogicsConnection, Pair<UserInfo, List<UserInfo>>> login(LogicsConnection serverInfo, UserInfo userInfo, String warningMsg) {
 
         // restoring saved server and user info (if no initializing empty)
         Pair<LogicsConnection, Pair<UserInfo, List<UserInfo>>> restoredData = restoreServerAndUserInfos();
@@ -442,23 +459,10 @@ public class LoginDialog extends JDialog {
         if(loginDialog.serverInfo == null)
             return null;            
         
-        Pair<LogicsConnection, UserInfo> result = new Pair<>(loginDialog.serverInfo, loginDialog.userInfo);
-
-        // synchronizing userInfos
-        final Result<List<UserInfo>> rUserInfos = new Result<>(userInfos);
-        try {
-            LogicsProvider.instance.runRequest(serverInfo, (sessionObject, retry) -> {
-                syncUsers(sessionObject.remoteLogics, rUserInfos);
-                return null;
-            });
-        } catch (Throwable e) {
-            ClientLoggers.clientLogger.error("Failed to synchronize users", e);
-        }
-
         // saving server and user info
-        storeServerAndUserInfos(result.first, result.second, rUserInfos.result);
+        storeServerAndUserInfos(loginDialog.serverInfo, loginDialog.userInfo, userInfos);
 
-        return result;
+        return new Pair<>(loginDialog.serverInfo, new Pair<>(loginDialog.userInfo, userInfos));
     }
 
     private void setupUI() {
