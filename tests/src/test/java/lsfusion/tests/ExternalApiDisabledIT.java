@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static lsfusion.tests.TestServer.BASE;
@@ -80,8 +81,6 @@ public class ExternalApiDisabledIT {
         noauth("Authentication.verify2FACode[JSONFILE]", "[{\"username\":\"eadNobody\",\"code\":\"000000\"}]");
         // the link to the desktop client the login page shows, which the browser follows with no login
         noauth("Security.generateJnlp&p=800m", "");
-        // the desktop client's login dialog, for the logins it keeps
-        noauth("Authentication.syncUsers&p=eadComputer", "[{\"value\":\"admin\"}]");
         // the navigator's settings : asked after the login, though anyone may ask them
         noauth("Service.getClientSettings[]", "");
         noauth("Service.getInitSettings[]", "");
@@ -174,6 +173,19 @@ public class ExternalApiDisabledIT {
         }
     }
 
+    // the desktop client asks which of the logins its login dialog keeps are of users that can log in : after the login,
+    // by the token of the user logged in. A call with no login is refused alike for a login that exists and for one
+    // that does not
+    @Test
+    public void theSavedLoginsAreSyncedOnlyAfterALogin() throws Exception {
+        HttpResponse<String> existing = post("Authentication.syncUsers&p=eadComputer", savedLogins("admin"));
+        HttpResponse<String> missing = post("Authentication.syncUsers&p=eadComputer", savedLogins("eadNobody"));
+        Assert.assertEquals(existing.body(), 401, existing.statusCode());
+        Assert.assertEquals(missing.body(), 401, missing.statusCode());
+
+        Assert.assertEquals(List.of("admin"), syncUsers(savedLogins("admin", "eadNobody")));
+    }
+
     // as the web client reads it after the login, by a navigator of its own
     private static String navigatorAgentToken(AuthenticationToken token) throws Exception {
         NavigatorInfo info = new NavigatorInfo(new SessionInfo(new ConnectionInfo(new ComputerInfo("localhost", "127.0.0.1"), UserInfo.NULL),
@@ -209,8 +221,20 @@ public class ExternalApiDisabledIT {
 
     // by the desktop client's call, which keeps of the logins it is given those of the users that can log in
     private static boolean userExists(String login) throws Exception {
-        JSONArray logins = new JSONArray(noauth("Authentication.syncUsers&p=eadComputer", new JSONArray().put(new JSONObject().put("value", login)).toString()));
-        return logins.length() > 0;
+        return !syncUsers(savedLogins(login)).isEmpty();
+    }
+
+    // the logins as the desktop client sends them
+    private static String savedLogins(String... logins) {
+        return new JSONArray(logins).toString();
+    }
+
+    private static String syncToken;
+    // the desktop client's call after the login, by the token of a user of its own
+    private static List<Object> syncUsers(String savedLogins) throws Exception {
+        if (syncToken == null)
+            syncToken = noauth("HttpRoleSettings.hrsUser&p=eadSyncUser", "");
+        return new JSONArray(call("Authentication.syncUsers&p=eadComputer", savedLogins, "Authorization", "Bearer " + syncToken)).toList();
     }
 
     // an anonymous call that has to run : its answer
