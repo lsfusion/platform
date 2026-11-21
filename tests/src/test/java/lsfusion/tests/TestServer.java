@@ -110,6 +110,11 @@ class TestServer {
         return HTTP.send(request.build(), HttpResponse.BodyHandlers.ofString());
     }
 
+    static HttpResponse<String> get(int port, String path) throws Exception {
+        return HTTP.send(HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)).timeout(Duration.ofMinutes(1)).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+    }
+
     // all open at once : taken one by one, each closed before the next is opened, two of them could get the same port
     static int[] freePorts(int count) throws IOException {
         List<ServerSocket> sockets = new ArrayList<>();

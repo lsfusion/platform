@@ -1,0 +1,35 @@
+MODULE HttpMessengers;
+
+REQUIRE Telegram, Viber, Skype, Whatsapp;
+
+// an account of each messenger with a known secret of its webhook address, set up by ExternalApiAccessIT : @@noauth, as
+// that test's calls are anonymous on a server that lets only an authenticated call in
+hmAccount (STRING name) = GROUP MAX Account a IF name(a) == name;
+
+hmSetUp () {
+    IF NOT hmAccount('hmTelegram') THEN {
+        NEW t = Account { name(t) <- 'hmTelegram'; token(t) <- 'hm'; }
+        NEW v = Account { name(v) <- 'hmViber'; token(v) <- 'hm'; }
+        NEW s = Account { name(s) <- 'hmSkype'; token(s) <- 'hm'; }
+        NEW w = Account { name(w) <- 'hmWhatsapp'; token(w) <- 'hm'; }
+        APPLY; // before the messengers are set : a new account of a messenger registers its address with the messenger
+
+        messenger(hmAccount('hmTelegram')) <- Messenger.telegram;
+        webHookSecret(hmAccount('hmTelegram')) <- 'hmTelegramSecret';
+        messenger(hmAccount('hmViber')) <- Messenger.viber;
+        webHookSecret(hmAccount('hmViber')) <- 'hmViberSecret';
+        messenger(hmAccount('hmSkype')) <- Messenger.skype;
+        webHookSecret(hmAccount('hmSkype')) <- 'hmSkypeSecret';
+        messenger(hmAccount('hmWhatsapp')) <- Messenger.whatsapp;
+        phoneNumberId(hmAccount('hmWhatsapp')) <- 'hmPhone';
+        webHookSecret() <- 'hmWhatsappSecret';
+        verifyToken() <- 'hmVerify';
+        APPLY;
+    }
+    EXPORT JSON FROM telegram = LONG(hmAccount('hmTelegram')), viber = LONG(hmAccount('hmViber')), skype = LONG(hmAccount('hmSkype'));
+} @@noauth;
+
+hmChat (STRING accountName, STRING chatId) {
+    EXPORT JSON FROM chats = (GROUP SUM 1 IF name(account(Chat c)) == accountName AND id(c) == chatId),
+                     messages = (GROUP SUM 1 IF name(account(chat(Message m))) == accountName AND id(chat(m)) == chatId);
+} @@noauth;

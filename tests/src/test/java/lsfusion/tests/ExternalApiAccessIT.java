@@ -372,6 +372,110 @@ public class ExternalApiAccessIT {
         return new JSONObject(answer.body());
     }
 
+    // a messenger calls the webhook of an account with the secret it was given with the address - Telegram in a header,
+    // the others in the address : a call without that secret - none, another one, the one of an account of another
+    // messenger, Telegram's in the address - is answered 403 and changes nothing
+    @Test
+    public void aTelegramWebhookCallIsTakenOnlyWithTheSecretOfItsAddress() throws Exception {
+        JSONObject accounts = messengerAccounts();
+        String webhook = "/exec/webHookTelegram?botid=" + accounts.getLong("telegram");
+        String header = "X-Telegram-Bot-Api-Secret-Token";
+        String update = "{\"update_id\":1,\"message\":{\"message_id\":1,\"from\":{\"id\":101,\"first_name\":\"Hm\",\"username\":\"hm\"}," +
+                "\"chat\":{\"id\":101,\"first_name\":\"Hm\",\"username\":\"hm\",\"type\":\"private\"},\"date\":0,\"text\":\"hm\"}}";
+
+        assertWebhookStatus(webhook, update, 403);
+        assertWebhookStatus(webhook + "&secret=hmTelegramSecret", update, 403);
+        assertWebhookStatus(webhook, update, 403, header, "hmWrongSecret");
+        assertWebhookStatus("/exec/webHookTelegram?botid=" + accounts.getLong("viber"), update, 403, header, "hmViberSecret");
+        assertChat("hmTelegram", "101", 0, 0);
+        assertChat("hmViber", "101", 0, 0);
+
+        assertWebhookStatus(webhook, update, 200, header, "hmTelegramSecret");
+        assertChat("hmTelegram", "101", 1, 1);
+    }
+
+    @Test
+    public void aViberWebhookCallIsTakenOnlyWithTheSecretOfItsAddress() throws Exception {
+        String webhook = "/exec/webHookViber?botid=" + messengerAccounts().getLong("viber");
+        String message = "{\"event\":\"message\",\"sender\":{\"id\":\"hmv\",\"name\":\"Hm\"},\"message\":{\"text\":\"hm\"}}";
+        String unsubscribed = "{\"event\":\"unsubscribed\",\"user_id\":\"hmv\"}";
+
+        // the check of the address that Viber makes while registering it, before the secret of that address is saved
+        assertWebhookStatus(webhook + "&secret=hmNotSavedSecret", "{\"event\":\"webhook\",\"timestamp\":1,\"message_token\":1}", 200);
+
+        assertWebhookStatus(webhook, message, 403);
+        assertChat("hmViber", "hmv", 0, 0);
+        assertWebhookStatus(webhook + "&secret=hmViberSecret", message, 200);
+        assertChat("hmViber", "hmv", 1, 1);
+
+        assertWebhookStatus(webhook, unsubscribed, 403);
+        assertWebhookStatus(webhook + "&secret=hmWrongSecret", unsubscribed, 403);
+        assertChat("hmViber", "hmv", 1, 1);
+        assertWebhookStatus(webhook + "&secret=hmViberSecret", unsubscribed, 200);
+        assertChat("hmViber", "hmv", 0, 0);
+    }
+
+    @Test
+    public void aSkypeWebhookCallIsTakenOnlyWithTheSecretOfItsAddress() throws Exception {
+        String webhook = "/exec/webHookSkype?botid=" + messengerAccounts().getLong("skype");
+        String add = "{\"action\":\"add\",\"serviceUrl\":\"https://hm.invalid/\",\"from\":{\"name\":\"Hm\"},\"conversation\":{\"id\":\"hms\"},\"text\":\"hm\"}";
+        String remove = "{\"action\":\"remove\",\"conversation\":{\"id\":\"hms\"}}";
+
+        assertWebhookStatus(webhook, add, 403);
+        assertChat("hmSkype", "hms", 0, 0);
+        assertWebhookStatus(webhook + "&secret=hmSkypeSecret", add, 200);
+        assertChat("hmSkype", "hms", 1, 1);
+
+        assertWebhookStatus(webhook, remove, 403);
+        assertChat("hmSkype", "hms", 1, 1);
+        assertWebhookStatus(webhook + "&secret=hmSkypeSecret", remove, 200);
+        assertChat("hmSkype", "hms", 0, 0);
+    }
+
+    // Whatsapp calls one address for the application, which carries the one secret of the application
+    @Test
+    public void aWhatsappWebhookCallIsTakenOnlyWithTheSecretOfItsAddress() throws Exception {
+        messengerAccounts();
+        String webhook = "/exec/webHookWhatsapp";
+        String notification = "{\"object\":\"whatsapp_business_account\",\"entry\":[{\"id\":\"1\",\"changes\":[{\"field\":\"messages\",\"value\":{" +
+                "\"messaging_product\":\"whatsapp\",\"metadata\":{\"display_phone_number\":\"1\",\"phone_number_id\":\"hmPhone\"}," +
+                "\"contacts\":[{\"profile\":{\"name\":\"Hm\"},\"wa_id\":\"hmw\"}]," +
+                "\"messages\":[{\"from\":\"hmw\",\"id\":\"1\",\"timestamp\":\"0\",\"type\":\"text\",\"text\":{\"body\":\"hm\"}}]}}]}]}";
+
+        assertWebhookStatus(webhook, notification, 403);
+        assertWebhookStatus(webhook + "?secret=hmWrongSecret", notification, 403);
+        assertChat("hmWhatsapp", "hmw", 0, 0);
+        assertWebhookStatus(webhook + "?secret=hmWhatsappSecret", notification, 200);
+        assertChat("hmWhatsapp", "hmw", 1, 1);
+
+        // the check of the address, which comes with no body
+        String verification = "&hub.mode=subscribe&hub.verify_token=hmVerify&hub.challenge=4242";
+        HttpResponse<String> refused = TestServer.get(httpPort, webhook + "?secret=hmWrongSecret" + verification);
+        Assert.assertEquals(refused.body(), 403, refused.statusCode());
+        HttpResponse<String> verified = TestServer.get(httpPort, webhook + "?secret=hmWhatsappSecret" + verification);
+        Assert.assertEquals(verified.body(), 200, verified.statusCode());
+        Assert.assertTrue(verified.body(), verified.body().contains("4242"));
+    }
+
+    private static JSONObject messengerAccounts() throws Exception {
+        HttpResponse<String> setUp = post("/exec?action=HttpMessengers.hmSetUp", "");
+        Assert.assertEquals(setUp.body(), 200, setUp.statusCode());
+        return new JSONObject(setUp.body());
+    }
+
+    private static void assertWebhookStatus(String path, String body, int status, String... headers) throws Exception {
+        HttpResponse<String> response = TestServer.post(httpPort, path, body, "application/json", headers);
+        Assert.assertEquals(path + "\n" + response.body(), status, response.statusCode());
+    }
+
+    private static void assertChat(String account, String chat, int chats, int messages) throws Exception {
+        HttpResponse<String> response = post("/exec?action=HttpMessengers.hmChat&p=" + account + "&p=" + chat, "");
+        Assert.assertEquals(response.body(), 200, response.statusCode());
+        JSONObject counts = new JSONObject(response.body());
+        Assert.assertEquals(account + " " + chat + " " + counts, chats, counts.optInt("chats"));
+        Assert.assertEquals(account + " " + chat + " " + counts, messages, counts.optInt("messages"));
+    }
+
     // the server writes its logs into the folder it is started in
     private static String evalLog() throws Exception {
         Path log = BASE.resolve("logs/eval.log");

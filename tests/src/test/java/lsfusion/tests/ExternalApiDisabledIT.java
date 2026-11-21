@@ -85,11 +85,12 @@ public class ExternalApiDisabledIT {
         // the navigator's settings : asked after the login, though anyone may ask them
         noauth("Service.getClientSettings[]", "");
         noauth("Service.getInitSettings[]", "");
-        // the messengers' webhooks, with events of no bot this server has
-        noauth("Telegram.webHookTelegram", "{\"update_id\":1}");
+        // the messengers' webhooks, with events of no bot this server has : without the secret of a bot's address the
+        // webhook itself answers 403, all but Viber's check of an address it registers
         noauth("Viber.webHookViber", "{\"event\":\"webhook\"}");
-        noauth("Skype.webHookSkype", "{\"action\":\"eadNone\"}");
-        noauth("Whatsapp.webHookWhatsapp", "{\"entry\":[]}");
+        refusedByAction("Telegram.webHookTelegram", "{\"update_id\":1}");
+        refusedByAction("Skype.webHookSkype", "{\"action\":\"eadNone\"}");
+        refusedByAction("Whatsapp.webHookWhatsapp", "{\"entry\":[]}");
     }
 
     // what the registration page sends is refused on a new database, and a user registered once an administrator switches
@@ -215,6 +216,12 @@ public class ExternalApiDisabledIT {
     // an anonymous call that has to run : its answer
     private static String noauth(String action, String body) throws Exception {
         return call(action, body);
+    }
+
+    // an anonymous call the API lets in (it refuses with 401), which the action itself refuses
+    private static void refusedByAction(String action, String body) throws Exception {
+        HttpResponse<String> response = post(action, body);
+        Assert.assertEquals(action + ": " + response.body(), 403, response.statusCode());
     }
 
     private static String call(String action, String body, String... headers) throws Exception {
