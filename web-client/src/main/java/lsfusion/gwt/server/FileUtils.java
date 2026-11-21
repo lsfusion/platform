@@ -641,13 +641,12 @@ public class FileUtils {
         String fileID = BaseUtils.randomString(24);
         // Strip any directory part. FilenameUtils.getBaseName also strips the trailing
         // extension, so e.g. "report.xlsx" → "report" — the script's caller may have included
-        // it accidentally, the extension below restores it. Empty after sanitize ⇒ fall back
-        // to "file" so the URL always has the `<nonce>/<basename>` shape the validator
-        // expects (a missing basename segment would be self-rejected as a 400 on download).
+        // it accidentally, the extension below restores it. A base name that names no file in
+        // `<nonce>/` - empty, or "." / ".." (of ".." / "...") - falls back to "file", so the URL
+        // always has the `<nonce>/<basename>` shape the validator expects (a missing basename
+        // segment would be self-rejected as a 400 on download).
         String displayName = namedFile.getName();
-        String safeName = displayName == null ? null : BaseUtils.getFileName(displayName);
-        if (safeName == null || safeName.isEmpty()) safeName = "file";
-        fileID = fileID + "/" + safeName;
+        fileID = fileID + "/" + getFileNameInFolder(displayName == null ? "" : BaseUtils.getFileName(displayName));
         String safeExt = sanitizeMCPExtension(fileData.getExtension());
         String fileName = BaseUtils.addExtension(fileID, safeExt == null ? "" : safeExt);
 

@@ -220,6 +220,16 @@ public class WrittenFilesTest {
     }
 
     @Test
+    public void savesAnMCPFileNamedByDotsAsAFile() throws IOException { // its base name, with no extension, would be its folder or the one above
+        for (String name : new String[]{"..", "..."}) {
+            String content = "result " + Math.random();
+            String url = FileUtils.saveMCPFile(new NamedFileData(new FileData(new RawFileData(content.getBytes(StandardCharsets.UTF_8)), ""), name));
+            assertTrue(url.endsWith("/file?dumb=0"));
+            assertEquals(content, download(url).body());
+        }
+    }
+
+    @Test
     public void keepsADisplayNameInsideItsFolder() throws IOException { // a name with folders in it, from the data, stays in the file's folder
         FileData data = new FileData(new RawFileData(("named " + Math.random()).getBytes(StandardCharsets.UTF_8)), "txt");
         FileUtils.saveFormFile(data, "plain", null); // the file's own folder is there then
