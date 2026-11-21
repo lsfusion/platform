@@ -451,7 +451,7 @@ clearPassResetToken () + {
 }
 
 // lock
-isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser) LAZY;
+isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser) LAZY WAIT;
 isLockedLogin (login) = isLocked(customUserLogin(lower(login)));
 
 // Current User
