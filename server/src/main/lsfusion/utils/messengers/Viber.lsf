@@ -12,8 +12,9 @@ setWebHookViber(Account account) {
     LOCAL httpHeaders = STRING(STRING);
     httpHeaders('X-Viber-Auth-Token') <- token(account);
     
+    newWebHookSecret(account);
     EXTERNAL HTTP POST 'https://chatapi.viber.com/pa/set_webhook' HEADERS httpHeaders 
-        PARAMS JSONFILE('\{ "url":"' + Reflection.webServerUrl() + '/exec/webHookViber?botid=' + LONG(account) + '", "event_types":["unsubscribed","conversation_started"], "send_name": true, "send_photo": false\}') TO result;
+        PARAMS JSONFILE('\{ "url":"' + Reflection.webServerUrl() + '/exec/webHookViber?botid=' + LONG(account) + '&secret=' + webHookSecret(account) + '", "event_types":["unsubscribed","conversation_started"], "send_name": true, "send_photo": false\}') TO result;
     
     LOCAL status = INTEGER();
     LOCAL status_message = STRING();
@@ -22,7 +23,8 @@ setWebHookViber(Account account) {
         setWebHookViberResult() <- status_message();
     }
 }
-WHEN SET (Account a IS Account) AND isViber(a) DO {
+hasWebHook(Account a) += WHEN isViber(a) THEN TRUE;
+registerWebHook(Account a) + WHEN isViber(a) THEN {
     setWebHookViber(a);
     IF setWebHookViberResult() THEN {
         MESSAGE setWebHookViberResult() NOWAIT;
@@ -50,14 +52,22 @@ FORM webHookViber
 webHookViber(JSONFILE f) {
     
     IMPORT webHookViber JSON FROM f;
+
+    // the check of the address Viber makes while it is registered comes before its secret is saved, and changes nothing
+    IF event() == 'webhook' THEN
+        RETURN;
+    IF NOT isWebHookCall(Messenger.viber, params('secret')) THEN {
+        statusHttpTo() <- 403;
+        RETURN;
+    }
     
     IF event() == 'subscribed' OR event() == 'message' THEN {        
         LOCAL chat = Chat();
-        chat() <- chatIdAccount(account(LONG(params('botid'))), IF event() == 'subscribed' THEN userId() ELSE senderId());
+        chat() <- chatIdAccount(webHookAccount(), IF event() == 'subscribed' THEN userId() ELSE senderId());
         IF NOT chat() THEN {
             NEW chat = Chat {
                 chat() <- chat;
-                account(chat) <- account(LONG(params('botid')));
+                account(chat) <- webHookAccount();
                 id(chat()) <- IF event() == 'subscribed' THEN userId() ELSE senderId();
             }
         }
@@ -70,7 +80,7 @@ webHookViber(JSONFILE f) {
             from(message) <- OVERRIDE userName(), senderName();
         }
     } ELSE IF event() == 'unsubscribed' THEN {
-        DELETE Chat c WHERE id(c) == user_id() AND account(c) == account(LONG(params('botid')));
+        DELETE Chat c WHERE id(c) == user_id() AND account(c) == webHookAccount();
     }
  
     APPLY;

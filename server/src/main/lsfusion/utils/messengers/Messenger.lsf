@@ -21,6 +21,16 @@ messenger '{messenger.messenger}' = DATA Messenger (Account);
 captionMessenger '{messenger.messenger}' (Account a) = caption(messenger(a));
 token '{messenger.token}' = DATA STRING (Account) NONULL CHARWIDTH 50;
 
+// is given to the messenger with the account's webhook address : a webhook call is taken only with it
+webHookSecret = DATA STRING (Account);
+newWebHookSecret (Account a) {
+    generateUUID();
+    webHookSecret(a) <- generatedUUID();
+}
+// the account a webhook call names
+webHookAccount () = account(LONG(params('botid')));
+isWebHookCall (Messenger m, TEXT secret) = messenger(webHookAccount()) == m AND webHookSecret(webHookAccount()) == secret;
+
 CLASS Chat '{messenger.chat}';
 TABLE chat (Chat);
 
@@ -67,6 +77,17 @@ synchronizeChatsAction '{messenger.account.synchronize}' (Account a) {
     APPLY;
 }
 
+hasWebHook = ABSTRACT CASE BOOLEAN (Account);
+registerWebHook ABSTRACT CASE (Account);
+WHEN SET (Account a IS Account) AND hasWebHook(a) DO {
+    registerWebHook(a);
+}
+
+registerWebHookAction '{messenger.account.register.webhook}' (Account a) {
+    registerWebHook(a);
+    APPLY;
+}
+
 openFile '{system.open.file}' (Message m) {
     open(file(m));
 }
@@ -75,6 +96,7 @@ FORM messengers '{messenger.messengers}'
     OBJECTS a = Account
     PROPERTIES(a) READONLY name, captionMessenger, token 
     PROPERTIES(a) NEWSESSION synchronizeChatsAction TOOLBAR SHOWIF isSynchronize(messenger(a)), NEW, EDIT, DELETE 
+    PROPERTIES(a) NEWSESSION registerWebHookAction TOOLBAR SHOWIF hasWebHook(a)
     OBJECTS c = Chat
     PROPERTIES(c) READONLY id, captionChatType, name, title SHOWIF showTitle(messenger(a)), DELETE CHANGEABLE
     PROPERTIES(c) PANEL newMessage, sendMessage, newAttachment

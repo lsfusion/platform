@@ -4,7 +4,7 @@ REQUIRE Messenger;
 
 EXTEND CLASS Messenger { skype 'Skype' }
 isSkype(Account a) = messenger(a) == Messenger.skype;
-webHookUrl(Account a) = Reflection.webServerUrl() + '/exec/webHookSkype?botid=' + LONG(a) CHARWIDTH 100;
+webHookUrl(Account a) = Reflection.webServerUrl() + '/exec/webHookSkype?botid=' + LONG(a) + '&secret=' + webHookSecret(a) CHARWIDTH 100;
 
 GROUP from;
 GROUP conversation;
@@ -22,17 +22,20 @@ FORM webHookSkype
 clientSecretSkype 'Client Secret' = DATA STRING (Account) CHARWIDTH 25;
 baseUrlSkype = DATA STRING (Chat);
 webHookSkype(JSONFILE f) {
-    printToLog(STRING(f));
-    
+    IF NOT isWebHookCall(Messenger.skype, params('secret')) THEN {
+        statusHttpTo() <- 403;
+        RETURN;
+    }
+
     IMPORT webHookSkype JSON FROM f;
     
     IF action() == 'add' THEN {
         LOCAL chat = Chat();
-        chat() <- chatIdAccount(account(LONG(params('botid'))), conversationId());
+        chat() <- chatIdAccount(webHookAccount(), conversationId());
         IF NOT chat() THEN {
             NEW chat = Chat {
                 chat() <- chat;
-                account(chat) <- account(LONG(params('botid')));
+                account(chat) <- webHookAccount();
                 id(chat()) <- conversationId();
             }
         }
@@ -46,7 +49,7 @@ webHookSkype(JSONFILE f) {
             from(message) <- OVERRIDE fromName();
         }
     } ELSE IF action() == 'remove' THEN {
-        DELETE Chat c WHERE id(c) == conversationId() AND account(c) == account(LONG(params('botid')));
+        DELETE Chat c WHERE id(c) == conversationId() AND account(c) == webHookAccount();
     }
  
     APPLY;
