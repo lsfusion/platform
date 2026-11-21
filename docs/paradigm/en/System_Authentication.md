@@ -125,7 +125,7 @@ These actions are HTTP endpoints (marked with `@@api` or `@@noauth`). The ones m
 | `send2FACode[JSONFILE]`           | generates a two-factor code (rate-limited) and emails it to the user of the given token, the one the password gave |
 | `verify2FACode[JSONFILE]`         | checks a submitted two-factor code of the user of the given token against the stored one and its expiry, counting the wrong ones, and exports a token of the user for the right one |
 | `getCurrentUserLocale[]`          | exports the current user's `language[CustomUser]` and `country[CustomUser]`   |
-| `syncUsers[ISTRING, JSONFILE]`    | reconciles the logins a client has stored, returning the ones that exist and are not locked |
+| `syncUsers[ISTRING, JSONFILE]`    | after a login, reconciles the logins a client has stored, returning the ones that exist and are not locked |
 | `getAuthToken[]`                  | exports the current request's authentication token                            |
 
 `onUserRegister[User]` is an abstract list of actions run for each newly registered user, available for extension.

@@ -465,13 +465,15 @@ public class MainController {
     }
 
     public static boolean loginAndAuthenticateUser(String warningMsg, UserInfo userInfo) {
+        List<UserInfo> savedUserInfos = null; // the users the login dialog keeps, if it is shown
         if(serverInfo == null || userInfo == null) { // if there is no user or server, ask user
-            Pair<LogicsConnection, UserInfo> serverAndUserInfo = LoginDialog.login(serverInfo, userInfo, warningMsg);
+            Pair<LogicsConnection, Pair<UserInfo, List<UserInfo>>> serverAndUserInfo = LoginDialog.login(serverInfo, userInfo, warningMsg);
             if(serverAndUserInfo == null)
                 return false;
             
             setServerInfo(serverAndUserInfo.first);
-            userInfo = serverAndUserInfo.second;
+            userInfo = serverAndUserInfo.second.first;
+            savedUserInfos = serverAndUserInfo.second.second;
         }
         try {
             assert authToken == null;
@@ -483,7 +485,9 @@ public class MainController {
         } catch (Exception e) {
             return loginAndAuthenticateUser(e.getMessage(), null);
         }
-        
+
+        if(savedUserInfos != null && !authToken.isAnonymous())
+            LoginDialog.syncUsers(serverInfo, userInfo, savedUserInfos, authToken);
         return true;
     }
     
