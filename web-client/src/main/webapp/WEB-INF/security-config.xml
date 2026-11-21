@@ -122,7 +122,9 @@
         <b:constructor-arg ref="servletContext"/>
         <b:constructor-arg ref="lsfClientRegistrationRepository"/>
     </b:bean>
-    <b:bean id="failureLoginHandler" class="lsfusion.http.authentication.LSFAuthenticationFailureHandler"/>
+    <b:bean id="failureLoginHandler" class="lsfusion.http.authentication.LSFAuthenticationFailureHandler">
+        <b:constructor-arg ref="logicsProvider"/>
+    </b:bean>
 
     <b:bean id="successLogoutHandler" class="lsfusion.http.authentication.LSFSimpleUrlLogoutSuccessHandler"/>
 
@@ -152,6 +154,7 @@
 
     <b:bean id="twoFactorAuthFilter" class="lsfusion.http.authentication.TwoFactorAuthenticationFilter">
         <b:constructor-arg ref="logicsProvider"/>
+        <b:constructor-arg ref="successLoginHandler"/>
     </b:bean>
 
 </b:beans>

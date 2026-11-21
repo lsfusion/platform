@@ -264,7 +264,7 @@ public class WrittenFilesTest {
     }
 
     private static ServerSettings settings() {
-        return new ServerSettings("test", null, null, null, null, null, null, false, 0, false, null, false, null, null, null, null, false);
+        return new ServerSettings("test", null, null, null, null, null, null, false, 0, false, null, false, null, null, null, false);
     }
 
     private static File findFile(File folder, String suffix) throws IOException {

@@ -202,13 +202,11 @@ public class LogicsSessionObject {
             List<Pair<String, RawFileData>> noAuthResourcesBeforeSystem = getFileData(json, "noAuthResourcesBeforeSystem");
             List<Pair<String, RawFileData>> noAuthResourcesAfterSystem = getFileData(json, "noAuthResourcesAfterSystem");
 
-            Integer twoFaMaxAttempts = !json.has("twoFaMaxAttempts") ? null : json.optInt("twoFaMaxAttempts");
-
             boolean hideAPIErrorStackTrace = json.optBoolean("hideAPIErrorStackTrace");
 
             serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, PWAIcon, platformVersion, apiVersion, inDevMode,
                     sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, noAuthResourcesBeforeSystem, noAuthResourcesAfterSystem,
-                    twoFaMaxAttempts, hideAPIErrorStackTrace);
+                    hideAPIErrorStackTrace);
         }
         return serverSettings;
     }

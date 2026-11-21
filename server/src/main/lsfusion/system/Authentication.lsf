@@ -161,10 +161,16 @@ use2FA '{authentication.use.2fa}' = DATA BOOLEAN() LAZY;
 twoFaRateLimitSeconds '{authentication.2fa.rate.limit}' = DATA INTEGER() LAZY;
 twoFaExpirySeconds '{authentication.2fa.expiry}' = DATA INTEGER() LAZY;
 twoFaMaxAttempts '{authentication.2fa.max.attempts}' = DATA INTEGER() LAZY;
+twoFaExpiry = OVERRIDE twoFaExpirySeconds(), 300;
 
 code2FA = DATA STRING (CustomUser);
 expiry2FA = DATA DATETIME (CustomUser);
 lastInitiated2FA = DATA DATETIME (CustomUser);
+failedAttempts2FA = DATA INTEGER (CustomUser);
+
+// the login of the token a password login gave to a user with the second factor, NULL for any other token
+login2FA = DATA LOCAL NESTED ISTRING ();
+readLogin2FA(token) INTERNAL 'lsfusion.server.physics.admin.authentication.action.ReadLogin2FAAction' (TEXT) NULL;
 
 webClientSecretKey 'Web-client secret key' = DATA STRING (); 
 
@@ -333,54 +339,82 @@ changePassword(JSONFILE input) {
     }
 } @@api @@noauth;
 
-// Code is generated on the server side; no code travels from web-client.
-// Rate-limited to 1 request per minute per user.
+// lock
+isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser) LAZY;
+isLockedLogin (login) = isLocked(customUserLogin(lower(login)));
+
+result2FA = DATA LOCAL NESTED STRING ();
+
+// The code is generated on the server and mailed to the user of the token (the one the password login gave), at most once
+// in twoFaRateLimitSeconds.
 send2FACode(JSONFILE input) {
-    IMPORT FROM input FIELDS STRING username DO {
+    IMPORT FROM input FIELDS TEXT token DO {
+        readLogin2FA(token);
         TRY {
-            FOR login(CustomUser cu) == username DO {
-                IF lastInitiated2FA(cu) AND lastInitiated2FA(cu) >= subtractSeconds(currentDateTime(), OVERRIDE twoFaRateLimitSeconds(), 60) THEN {
-                    EXPORT FROM error = '{two.fa.rate.limit}';
-                } ELSE {
-                    APPLY {
+            APPLY SERIALIZABLE { // requests sent at once generate one code
+                result2FA() <- NULL;
+                FOR login(CustomUser cu) == login2FA() DO {
+                    IF lastInitiated2FA(cu) >= subtractSeconds(currentDateTime(), OVERRIDE twoFaRateLimitSeconds(), 60) THEN
+                        result2FA() <- 'wait';
+                    ELSE {
+                        result2FA() <- 'new';
                         code2FA(cu) <- lpad(TEXT(randInt(1000000)), 6, '0');
-                        expiry2FA(cu) <- sumSeconds(currentDateTime(), OVERRIDE twoFaExpirySeconds(), 300);
+                        expiry2FA(cu) <- sumSeconds(currentDateTime(), twoFaExpiry());
                         lastInitiated2FA(cu) <- currentDateTime();
+                        failedAttempts2FA(cu) <- NULL;
                     }
+                }
+            }
+            IF canceled() THEN
+                result2FA() <- NULL;
+
+            IF result2FA() == 'new' THEN {
+                FOR login(CustomUser cu) == login2FA() DO
                     EMAIL
                         SUBJECT '$I{2FACodeSubject.html}'
                         TO email(cu)
                         BODY '$I{2FACodeBody.html}';
-                    
-                    EXPORT FROM success = 'ok';
-                }
-            }
+                EXPORT FROM success = 'ok';
+            } ELSE IF result2FA() == 'wait' THEN
+                EXPORT FROM error = '{two.fa.rate.limit}';
         } CATCH {
             EXPORT FROM error = messageCaughtException();
         }
     }
-} @@api @@noauth;
+} @@noauth;
 
+// Checks the code of the user of the token (the one the password login gave). A wrong code is counted, and after
+// twoFaMaxAttempts of them the code is dropped; the answer to the right one carries the user's token.
 verify2FACode(JSONFILE input) {
-    LOCAL result = STRING();
-    IMPORT FROM input FIELDS STRING username, STRING code DO {
-        FOR login(CustomUser cu) == username DO {
-            IF code2FA(cu) AND expiry2FA(cu) >= currentDateTime() THEN {
-                IF code2FA(cu) == code THEN {
-                    APPLY {
-                        code2FA(cu) <- NULL;
-                        expiry2FA(cu) <- NULL;
-                    }
-                    EXPORT FROM success = 'ok';
-                } ELSE {
-                    EXPORT FROM error = 'invalid';
+    IMPORT FROM input FIELDS TEXT token, STRING code DO {
+        readLogin2FA(token);
+        APPLY SERIALIZABLE { // checks sent at once are counted one after another
+            result2FA() <- NULL;
+            FOR login(CustomUser cu) == login2FA() AND NOT isLocked(cu) AND code2FA(cu) AND expiry2FA(cu) >= currentDateTime() DO {
+                IF code2FA(cu) == code THEN
+                    result2FA() <- 'ok';
+                ELSE IF (OVERRIDE failedAttempts2FA(cu), 0) + 1 < (OVERRIDE twoFaMaxAttempts(), 3) THEN {
+                    result2FA() <- 'invalid';
+                    failedAttempts2FA(cu) <- (OVERRIDE failedAttempts2FA(cu), 0) + 1;
+                } ELSE
+                    result2FA() <- 'attempts';
+
+                IF result2FA() != 'invalid' THEN {
+                    code2FA(cu) <- NULL;
+                    expiry2FA(cu) <- NULL;
+                    failedAttempts2FA(cu) <- NULL;
                 }
-            } ELSE {
-                EXPORT FROM error = 'expired';
             }
         }
+        IF canceled() THEN
+            result2FA() <- NULL;
+        IF result2FA() == 'ok' THEN {
+            generateAuthToken(login2FA());
+            EXPORT FROM success = 'ok', token = resultAuthToken();
+        } ELSE
+            EXPORT FROM error = OVERRIDE result2FA(), 'expired';
     }
-} @@api @@noauth;
+} @@noauth;
 
 clearPassResetToken ABSTRACT LIST ( ) ;
 clearPassResetToken () + { 
@@ -392,10 +426,6 @@ clearPassResetToken () + {
         APPLY;
 	}
 }
-
-// lock
-isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser) LAZY;
-isLockedLogin (login) = isLocked(customUserLogin(lower(login)));
 
 // Current User
 currentUser = NATIVE User ();
@@ -774,6 +804,8 @@ reloginLoginUser()  {
         IF user() THEN {
             IF isLocked(user()) THEN {
                 MESSAGE '{authentication.relogin.user.locked}';
+            } ELSE IF use2FA() AND email(user()) THEN { // the code is asked for by the login page only
+                MESSAGE '{authentication.relogin.user.two.fa}';
             } ELSE {
                 calculateBase64Hash('SHA-256', password);
                 IF sha256Password(user()) == calculatedHash() THEN {
@@ -814,6 +846,8 @@ reloginPassword(CustomUser customUser)  {
     DIALOG reloginPasswordUser OBJECTS password INPUT DO {
         IF isLocked(customUser) THEN {
             MESSAGE '{authentication.relogin.user.locked}';
+        } ELSE IF use2FA() AND email(customUser) THEN { // the code is asked for by the login page only
+            MESSAGE '{authentication.relogin.user.two.fa}';
         }  ELSE {
                 calculateBase64Hash('SHA-256', password);
                 IF sha256Password(customUser)==calculatedHash() THEN {

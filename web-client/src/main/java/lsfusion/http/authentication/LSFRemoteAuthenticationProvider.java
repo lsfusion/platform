@@ -25,6 +25,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Locale;
@@ -54,11 +55,17 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
         final String username = authentication.getPrincipal().toString();
         final String password = authentication.getCredentials().toString();
         HttpServletRequest request = getHttpServletRequest();
+        HttpSession session = request.getSession(false);
+        if (session != null) // a login by the password drops the code step an earlier one left
+            session.removeAttribute(TwoFactorAuthenticationFilter.USER);
+
+        Pair<AuthenticationToken, Locale> authLocale;
         try {
-            Pair<AuthenticationToken, Locale> authLocale = runRequest(request, (sessionObject, retry) -> {
+            authLocale = runRequest(request, (sessionObject, retry) -> {
                 try {
                     AuthenticationToken authToken = sessionObject.remoteLogics.authenticateUser(new PasswordAuthentication(username, password));
-                    return new Pair<>(authToken, getUserLocale(sessionObject, authentication, authToken, request));
+                    // the token of a user with the second factor runs nothing as the user until the code is checked
+                    return new Pair<>(authToken, authToken.use2FA ? null : getUserLocale(sessionObject, authentication, authToken, request));
                 } catch (LoginException le) {
                     throw new UsernameNotFoundException(le.getMessage());
                 } catch (LockedException le) {
@@ -67,14 +74,17 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
                     throw new RuntimeException(le.getMessage());
                 }
             });
-
-            return new LSFAuthenticationToken(username, password, authLocale.first, authLocale.second);
         } catch (Throwable e) {
             Map<String, String> userData = new HashMap<>();
             userData.put("username", username);
             request.getSession(true).setAttribute("USER_DATA", userData);
             throw new InternalAuthenticationServiceException(e.getMessage()); //need to throw AuthenticationException for SpringSecurity to redirect to /login
         }
+
+        if (authLocale.first.use2FA)
+            throw new TwoFactorAuthenticationFilter.TwoFactorRequiredException(new LSFAuthenticationToken(username, null, authLocale.first, null));
+
+        return new LSFAuthenticationToken(username, password, authLocale.first, authLocale.second);
     }
 
     public boolean supports(Class<? extends Object> authentication) {

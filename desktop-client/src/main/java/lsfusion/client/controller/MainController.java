@@ -9,6 +9,7 @@ import lsfusion.base.SystemUtils;
 import lsfusion.base.classloader.RemoteClassLoader;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.remote.ZipClientSocketFactory;
+import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.SingleInstance;
 import lsfusion.client.StartupProperties;
 import lsfusion.client.authentication.LoginDialog;
@@ -475,7 +476,10 @@ public class MainController {
         try {
             assert authToken == null;
             final UserInfo fUserInfo = userInfo;
-            authToken = runRequest((sessionObject, retry) -> fUserInfo.isAnonymous() ? AuthenticationToken.ANONYMOUS : sessionObject.remoteLogics.authenticateUser(new PasswordAuthentication(fUserInfo.name, fUserInfo.password)));
+            AuthenticationToken token = runRequest((sessionObject, retry) -> fUserInfo.isAnonymous() ? AuthenticationToken.ANONYMOUS : sessionObject.remoteLogics.authenticateUser(new PasswordAuthentication(fUserInfo.name, fUserInfo.password)));
+            if (token.use2FA) // the code of the second factor is asked for by the web client's login page only
+                throw new RuntimeException(ClientResourceBundle.getString("errors.second.factor.required"));
+            authToken = token;
         } catch (Exception e) {
             return loginAndAuthenticateUser(e.getMessage(), null);
         }
