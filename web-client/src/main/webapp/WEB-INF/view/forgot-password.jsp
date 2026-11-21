@@ -1,5 +1,6 @@
 <%@ page import="lsfusion.base.ServerMessages" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page isELIgnored="false" %>
 <%@ taglib prefix="lsf" uri="writeResources" %>
@@ -9,9 +10,9 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-        <title>${title}</title>
+        <title>${fn:escapeXml(title)}</title>
         <lsf:writeResources resources="${resourcesBeforeSystem}"/>
-        <link rel="shortcut icon" href="${logicsIcon}"/>
+        <link rel="shortcut icon" href="${fn:escapeXml(logicsIcon)}"/>
         <link rel="stylesheet" media="only screen and (min-device-width: 601px)" href="static/noauth/css/login.css"/>
         <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
         <lsf:writeResources resources="${resourcesAfterSystem}"/>
@@ -19,7 +20,7 @@
     <body onload="document.forgotPassword.usernameOrEmail.focus();">
         <div class="main">
             <div class="header">
-                <img id="logo" class="logo" src="${logicsLogo}" alt="LSFusion">
+                <img id="logo" class="logo" src="${fn:escapeXml(logicsLogo)}" alt="LSFusion">
                 <div class="title">
                     <%= ServerMessages.getString(request, "password.recovery") %>
                 </div>
@@ -28,11 +29,11 @@
     
                 <%
                     String query = request.getQueryString();
-                    String queryString = query == null || query.isEmpty() ? "" : ("?" + query);
+                    pageContext.setAttribute("queryString", query == null || query.isEmpty() ? "" : ("?" + query));
                 %>
                 <form id="forgot-password-form"
                       name="forgotPassword"
-                      action="forgot-password<%=queryString%>"
+                      action="forgot-password${fn:escapeXml(queryString)}"
                       method="POST">
                     <fieldset>
                         <div class="label-and-field">
@@ -45,15 +46,15 @@
                 </form>
                 <c:if test="${not empty RESET_PASSWORD_EXCEPTION}">
                     <div class="error-block round">
-                            ${sessionScope["RESET_PASSWORD_EXCEPTION"]}
+                            ${fn:escapeXml(sessionScope["RESET_PASSWORD_EXCEPTION"])}
                     </div>
                     <c:remove var="RESET_PASSWORD_EXCEPTION" scope="session"/>
                 </c:if>
             </div>
             <div class="footer">
-                <a class="main-page-link link" href="${loginPage}"><%= ServerMessages.getString(request, "login.page") %></a>
+                <a class="main-page-link link" href="${fn:escapeXml(loginPage)}"><%= ServerMessages.getString(request, "login.page") %></a>
                 <div class="client-version">
-                    ${apiVersion}
+                    ${fn:escapeXml(apiVersion)}
                 </div>
             </div>
         </div>

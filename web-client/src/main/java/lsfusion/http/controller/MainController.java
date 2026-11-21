@@ -45,6 +45,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.HtmlUtils;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -149,8 +150,9 @@ public class MainController {
 
     @RequestMapping(value = "/push-notification", method = RequestMethod.GET)
     public String pushNotification(ModelMap model, HttpServletRequest request) {
-        model.addAttribute("id", request.getParameter(GwtSharedUtils.NOTIFICATION_PARAM));
-        model.addAttribute("query", getQueryPreservingParameters(Collections.singletonList(GwtSharedUtils.NOTIFICATION_PARAM), request));
+        // the page's script gets the id as a number and the query as a string literal
+        model.addAttribute("id", BaseUtils.parseInt(request.getParameter(GwtSharedUtils.NOTIFICATION_PARAM)));
+        model.addAttribute("query", getScriptString(getQueryPreservingParameters(Collections.singletonList(GwtSharedUtils.NOTIFICATION_PARAM), request)));
         addNoAuthStandardModelAttributes(model, request, getAndCheckServerSettings(request, checkVersionError, false));
         return "push-notification";
     }
@@ -528,7 +530,7 @@ public class MainController {
         } catch (Throwable e) {
             addStandardModelAttributes(model, request, rServerSettings.result);
             model.addAttribute("errorMessage", e.getMessage());
-            model.addAttribute("redirectURL", getDirectUrl("/main", request));
+            model.addAttribute("redirectURL", getScriptString(getDirectUrl("/main", request))); // a string literal of the page's script
             return "app-not-available";
         }
 
@@ -544,13 +546,19 @@ public class MainController {
     }
 
     private String getJNLPUrls(HttpServletRequest request, ServerSettings serverSettings) {
-        String directUrl = getDirectUrl("/exec", "action=Security.generateJnlp", request); //we use generateJnlp without params because linux mint cut from url '%5'
+        // the links are markup: the address goes into them escaped, and literally
+        String directUrl = HtmlUtils.htmlEscape(getDirectUrl("/exec", "action=Security.generateJnlp", request)); //we use generateJnlp without params because linux mint cut from url '%5'
         String localizedString = ServerMessages.getString(request, "run.desktop.client");
         return serverSettings != null ? serverSettings.jnlpUrls == null ? "" :
                 serverSettings.jnlpUrls
-                        .replaceAll("\\{runDesktopQuery}", directUrl)
-                        .replaceAll("\\{run.desktop.client}", localizedString)
-                : "<a href=" + directUrl + ">" + localizedString + "</a>";
+                        .replace("{run.desktop.client}", localizedString)
+                        .replace("{runDesktopQuery}", directUrl) // the last, so that nothing changes what the address holds
+                : "<a href=\"" + directUrl + "\">" + localizedString + "</a>";
+    }
+
+    // a string literal of a page's script: no "<" in the value ends or escapes the script element
+    private static String getScriptString(String value) {
+        return JSONObject.quote(value).replace("<", "\\u003c");
     }
 
     public static Authentication getAuthentication(HttpServletRequest request, String userName, String password, LSFRemoteAuthenticationProvider authenticationProvider) {

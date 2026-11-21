@@ -1,6 +1,7 @@
 <%@ page import="lsfusion.base.ServerMessages" %>
 <%@ page import="lsfusion.base.ServerUtils" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page isELIgnored="false" %>
 <%@ taglib prefix="lsf" uri="writeResources" %>
@@ -11,9 +12,9 @@
         <link rel="manifest" href="manifest">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-        <title>${title}</title>
+        <title>${fn:escapeXml(title)}</title>
         <lsf:writeResources resources="${resourcesBeforeSystem}"/>
-        <link rel="shortcut icon" href="${logicsIcon}" />
+        <link rel="shortcut icon" href="${fn:escapeXml(logicsIcon)}" />
         <link rel="stylesheet" media="only screen and (min-device-width: 601px)" href="static/noauth/css/login.css"/>
         <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
 
@@ -30,7 +31,7 @@
     <body onload="if (document.loginForm && document.loginForm.username) document.loginForm.username.focus();">
         <div class="main">
             <div class="header">
-                <img id="logo" class="logo" src="${logicsLogo}" alt="LSFusion">
+                <img id="logo" class="logo" src="${fn:escapeXml(logicsLogo)}" alt="LSFusion">
                 <div class="title">
                     <%= ServerMessages.getString(request, "sign.in.title") %>
                 </div>
@@ -39,23 +40,23 @@
 
                 <%
                     String query = request.getQueryString();
-                    String queryString = query == null || query.isEmpty() ? "" : ("?" + query);
+                    pageContext.setAttribute("queryString", query == null || query.isEmpty() ? "" : ("?" + query));
                 %>
 
                 <c:if test="${empty sessionScope['2fa_user']}">
                     <form id="login-form"
                           name="loginForm"
                           method="POST"
-                          action="login_check<%=queryString%>" >
+                          action="login_check${fn:escapeXml(queryString)}" >
                         <fieldset>
                             <div class="label-and-field">
                                 <label for="username"><%= ServerMessages.getString(request, "login") %></label>
-                                <input autocapitalize="off" type="text" id="username" name="username" class="round full-width-box" value="${username}"/>
+                                <input autocapitalize="off" type="text" id="username" name="username" class="round full-width-box" value="${fn:escapeXml(username)}"/>
                             </div>
                             <div class="label-and-field">
                                 <div class="password-labels-container">
                                     <label for="password"><%= ServerMessages.getString(request, "password") %></label>
-                                    <a class="link" href="${forgotPasswordPage}" tabindex="1"><%= ServerMessages.getString(request, "password.forgot") %></a>
+                                    <a class="link" href="${fn:escapeXml(forgotPasswordPage)}" tabindex="1"><%= ServerMessages.getString(request, "password.forgot") %></a>
                                 </div>
                                 <input type="password" id="password" name="password" class="round full-width-box"/>
                             </div>
@@ -69,7 +70,7 @@
                             }
                         %>
                         <div class="error-block round">
-                                ${SPRING_SECURITY_LAST_EXCEPTION}
+                                ${fn:escapeXml(SPRING_SECURITY_LAST_EXCEPTION)}
                         </div>
                         <c:remove var="SPRING_SECURITY_LAST_EXCEPTION" scope="session"/>
                     </c:if>
@@ -77,7 +78,7 @@
                         <div class="reg-block">
                             <%= ServerMessages.getString(request, "no.account") %>
                             &#32;
-                            <a class="link" href="${registrationPage}"><%= ServerMessages.getString(request, "register") %></a>.
+                            <a class="link" href="${fn:escapeXml(registrationPage)}"><%= ServerMessages.getString(request, "register") %></a>.
                         </div>
                     </c:if>
                     <c:if test="${not empty urls}">
@@ -85,14 +86,14 @@
                             <div class="oauth-title"><%= ServerMessages.getString(request, "sign.in.with") %></div>
                             <div class="oauth-links">
                                 <c:forEach var="url" items="${urls}">
-                                    <a href="${url.value}" class="oauth-link fa-brands fa-solid fa-${url.key}" title="${url.key}"></a>
+                                    <a href="${fn:escapeXml(url.value)}" class="oauth-link fa-brands fa-solid fa-${fn:escapeXml(url.key)}" title="${fn:escapeXml(url.key)}"></a>
                                 </c:forEach>
                             </div>
                         </div>
                     </c:if>
                 </c:if>
                 <c:if test="${not empty sessionScope['2fa_user']}">
-                    <form id="submit-2fa-form" method="POST" action="2fa<%=queryString%>">
+                    <form id="submit-2fa-form" method="POST" action="2fa${fn:escapeXml(queryString)}">
                         <div class="label-and-field">
                             <label for="code"><%= ServerMessages.getString(request, "two.fa.code") %></label>
                             <input class="full-width-box" id="code" type="text" name="code" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')" inputmode="numeric" />
@@ -114,14 +115,14 @@
                     </div>
                 </c:if>
                 <c:if test="${not empty sessionScope['2fa_user']}">
-                    <form id="cancel-2fa-form" method="POST" action="2fa<%=queryString%>">
+                    <form id="cancel-2fa-form" method="POST" action="2fa${fn:escapeXml(queryString)}">
                         <input type="hidden" name="cancel" value="true"/>
 
                         <input type="submit" class="cancel-two-factor main-page-link" value="<%= ServerMessages.getString(request, "login.page") %>" >
                     </form>
                 </c:if>
                 <div class="client-version">
-                    ${apiVersion}
+                    ${fn:escapeXml(apiVersion)}
                 </div>
             </div>
         </div>
