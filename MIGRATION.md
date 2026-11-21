@@ -150,6 +150,18 @@ from `$2` now gets the second value there; it has to take the first one from `$1
 bound by name are not affected, and neither is the code passed in the query string, in an
 `application/x-www-form-urlencoded` body or as the whole body. There is no setting to go back.
 
+### A messenger webhook call is taken only with the secret of its address
+
+The `Telegram`, `Viber` and `Whatsapp` modules now give the messenger a secret with the delivery
+address (Telegram as the secret token of the registration), and the receiving actions answer a call
+without it with the status 403, changing nothing - see [Messengers](docs/paradigm/en/Utils_Messengers.md#receiving).
+
+What an upgrading application can notice: an address registered before has no secret, so the
+messages stop coming in until it is registered again - for a Telegram or Viber account by the
+`Register webhook` button of the `messengers` form (`registerWebHookAction[Account]`), for Whatsapp by
+entering `webhookUrl[]`, shown on that form, in the settings of the Meta app. There is no setting to
+go back.
+
 ### The execution order of global events follows from the logic
 
 The order in which global events run is built at startup from the dependencies between them, and
