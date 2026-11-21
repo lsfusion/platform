@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
 
 import static lsfusion.tests.TestServer.BASE;
@@ -60,6 +61,17 @@ public class ExternalApiAccessIT {
     public void aNoauthActionRunsWithoutLogin() throws Exception {
         HttpResponse<String> response = post("/exec?action=" + URLEncoder.encode("Service.getServerSettings[]", "UTF-8"), "");
         Assert.assertEquals(response.body(), 200, response.statusCode());
+    }
+
+    // an error is answered as text, whatever its message says
+    @Test
+    public void anErrorIsAnsweredAsText() throws Exception {
+        String name = "eaa<b>NoAction</b>";
+        HttpResponse<String> response = TestServer.get(httpPort, "/exec?action=" + URLEncoder.encode(name, "UTF-8"));
+        Assert.assertEquals(response.body(), 404, response.statusCode());
+        List<String> contentTypes = response.headers().allValues("Content-Type");
+        Assert.assertTrue(contentTypes.toString(), contentTypes.size() == 1 && contentTypes.get(0).startsWith("text/plain;"));
+        Assert.assertTrue(response.body(), response.body().contains(name));
     }
 
     // the annotations of a script's run are written by whoever sends the script, not by the developer
