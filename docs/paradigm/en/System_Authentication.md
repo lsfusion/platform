@@ -69,7 +69,7 @@ Lookups: `customUserLogin[ISTRING]` finds a user by login (case-insensitively), 
 | `setSHA256Password[CustomUser, STRING]`   | hashes the given password and writes it to `sha256Password[CustomUser]`      |
 | `passwordResetToken[CustomUser]` / `expiryPasswordResetTokenDate[CustomUser]` | the one-time password-reset token and its issue time |
 | `userByPassResetToken[STRING]`            | finds the user holding the given reset token                                 |
-| `code2FA[CustomUser]` / `expiry2FA[CustomUser]` / `lastInitiated2FA[CustomUser]` | the current two-factor code, its expiry, and the time the last code was issued |
+| `code2FA[CustomUser]` / `expiry2FA[CustomUser]` / `lastInitiated2FA[CustomUser]` / `failedAttempts2FA[CustomUser]` | the current two-factor code, its expiry, the time the last code was issued, and the number of wrong codes entered for it |
 | `getAuthToken[]`                          | exports the current request's authentication token (an API action)           |
 | `generateAuthToken[User]` / `generateAuthToken[User, INTEGER]` | issues a new authentication token for a user, with an optional expiration in minutes |
 
@@ -105,21 +105,23 @@ The lookups `oauthClient[STRING]` and `oauthRefreshToken[STRING]` find a client 
 
 **Web client**: the web client gets the provider configuration from the server directly, not through the API. `webClientSecretKey[]` is the shared secret the web client presents to log in a user whom a provider has authenticated.
 
-### Two-factor authentication settings
+### Two-factor authentication settings {#twoFactor}
 
-`use2FA[]` switches two-factor authentication on. `twoFaRateLimitSeconds[]` limits how often a code can be requested, `twoFaExpirySeconds[]` is how long an issued code stays valid, and `twoFaMaxAttempts[]` caps the verification attempts.
+`use2FA[]` switches two-factor authentication on. `twoFaRateLimitSeconds[]` limits how often a code can be requested, `twoFaExpirySeconds[]` is how long an issued code stays valid (300 seconds by default), and `twoFaMaxAttempts[]` caps the verification attempts (3 by default): the last wrong code drops the code, and the user logs in with the password again.
+
+With it on, a user with an email whose password the platform checks logs in with the password on the web client's login page, which then asks for the code sent by email. The password gives such a user a token that is good only for checking the code, for as long as the code is valid; a login with the password anywhere else — `Authorization: Basic`, the `user` and `password` parameters of a web client address, the desktop client — is refused for such a user. A program that calls the API as such a user authenticates with a token instead (`Authorization: Bearer`, the token from `generateAuthToken[User, INTEGER]`).
 
 ### API actions
 
-These actions are HTTP endpoints (marked with `@@api`). The ones marked `@@noauth` are reachable without prior authentication. They read their input from a `JSONFILE` and write the outcome through `EXPORT FROM`.
+These actions are HTTP endpoints (marked with `@@api` or `@@noauth`). The ones marked `@@noauth` are reachable without prior authentication. They read their input from a `JSONFILE` and write the outcome through `EXPORT FROM`.
 
 | Action                            | What it does                                                                  |
 |-----------------------------------|-------------------------------------------------------------------------------|
 | `registerUser[JSONFILE]`          | creates a `CustomUser` from a login, password, name, and email, after checking password strength and login uniqueness |
 | `resetPassword[JSONFILE]`         | issues a reset token for the user found by login or email and emails the reset link |
 | `changePassword[JSONFILE]`        | sets a new password for the user holding the given reset token               |
-| `send2FACode[JSONFILE]`           | generates a two-factor code (rate-limited) and emails it to the user         |
-| `verify2FACode[JSONFILE]`         | checks a submitted two-factor code against the stored one and its expiry      |
+| `send2FACode[JSONFILE]`           | generates a two-factor code (rate-limited) and emails it to the user of the given token, the one the password gave |
+| `verify2FACode[JSONFILE]`         | checks a submitted two-factor code of the user of the given token against the stored one and its expiry, counting the wrong ones, and exports a token of the user for the right one |
 | `getCurrentUserLocale[]`          | exports the current user's `language[CustomUser]` and `country[CustomUser]`   |
 | `syncUsers[ISTRING, JSONFILE]`    | reconciles the logins a client has stored, returning the ones that exist and are not locked |
 | `getAuthToken[]`                  | exports the current request's authentication token                            |

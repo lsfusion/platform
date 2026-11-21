@@ -173,7 +173,7 @@ Three actions export the server configuration to clients as JSON. All are declar
 
 | Action                          | What it exports                                                                         |
 |---------------------------------|------------------------------------------------------------------------------------------|
-| `getServerSettings[]`           | the pre-login configuration: application name and graphics, platform / API version, the self-registration flag (`disableRegistration` — the `disableRole[UserRole]` flag of the `selfRegister` [role](System_Security.md#systemRoles)) and the two-factor flags, the no-auth resources, and the relevant `lsfParams` |
+| `getServerSettings[]`           | the pre-login configuration: application name and graphics, platform / API version, the self-registration flag (`disableRegistration` — the `disableRole[UserRole]` flag of the `selfRegister` [role](System_Security.md#systemRoles)), the no-auth resources, and the relevant `lsfParams` |
 | `getInitSettings[]`             | the web-client init resources loaded on client startup                                   |
 | `getClientSettings[]`           | the per-user client configuration: colors, fonts, locale, picker ranges, and the many `valueSetting` / `valueSettingBoolean`-driven client options |
 

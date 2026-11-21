@@ -196,7 +196,7 @@ A call that does not use `session` is stateless, but it still takes resources: i
 
 When executing an http request, it is often necessary to identify the user on whose behalf the specified action will be executed. At the moment, two types of authentication are supported by the platform:
 
--   [Basic identification](https://en.wikipedia.org/wiki/Basic_access_authentication) - the user name and password are passed in an encoded form in the `Authorization: Basic <credentials>` heading.
+-   [Basic identification](https://en.wikipedia.org/wiki/Basic_access_authentication) - the user name and password are passed in an encoded form in the `Authorization: Basic <credentials>` heading. It is refused for a user with [two-factor authentication](System_Authentication.md#twoFactor), who authenticates with a token.
 -   Token-based authentication consists of two stages:
     -   At the first stage, you need to execute the `Authentication.getAuthToken[]` action with basic authentication. The result of this action will be an authentication token with a fixed lifetime (one day [by default](Working_parameters.md#authTokenExpiration)). An example of a request:  `http://localhost/exec?action=getAuthToken`.
     -   The token you receive can be used for authentication during its lifetime by passing it in the `Authorization: Bearer <token>` header (similarly to JWT which is used in the current implementation of the platform for generating authentication tokens).
