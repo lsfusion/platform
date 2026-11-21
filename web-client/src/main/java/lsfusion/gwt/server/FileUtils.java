@@ -618,7 +618,8 @@ public class FileUtils {
      * temp-download store and produce a URL the MCP client can GET. The store mode is TEMP, so
      * {@link DownloadFileRequestHandler}'s existing delete-after-read (5s lag) cleans up after a
      * successful fetch — we only add a longer scheduled cleanup for the orphan case (URL was
-     * issued but the client never fetched). Both deletes are idempotent and silent.
+     * issued but the client never fetched). Both deletes go through the written-files registry,
+     * so whichever comes second is a no-op.
      *
      * <p>The URL itself is the credential here: a 24-char {@code [0-9A-Z]} nonce inside the
      * path (~124 bits of entropy). The {@code /file/temp/mcp/**} chain is configured
@@ -650,14 +651,11 @@ public class FileUtils {
         String safeExt = sanitizeMCPExtension(fileData.getExtension());
         String fileName = BaseUtils.addExtension(fileID, safeExt == null ? "" : safeExt);
 
-        String url = saveDownloadFile(true, DownloadStoreType.TEMP, "mcp", fileName, null, rawFile, null);
+        Result<Runnable> rCloser = new Result<>();
+        String url = saveDownloadFile(true, DownloadStoreType.TEMP, "mcp", fileName, rCloser, rawFile, null);
 
-        // Schedule TTL cleanup for the orphan case (URL never fetched). Idempotent — if the
-        // download handler already deleted the file after a successful read, this is a no-op.
-        // Physical layout: saveDownloadFile writes to APP_DOWNLOAD_FOLDER_PATH/<storeType>/<innerPath>/<fileName>,
-        // so for TEMP + innerPath="mcp" the on-disk file lives under APP_DOWNLOAD_FOLDER_PATH/temp/mcp/...
-        File file = createFile(APP_DOWNLOAD_FOLDER_PATH + "/" + TEMP_PATH + "/mcp", fileName);
-        closeExecutor.schedule(() -> silentDeleteIfExists(file), MCP_ORPHAN_TTL_MINUTES, TimeUnit.MINUTES);
+        // not fetched within the TTL - deleted and forgotten, as after a download
+        closeExecutor.schedule(rCloser.result, MCP_ORPHAN_TTL_MINUTES, TimeUnit.MINUTES);
         return url;
     }
 
@@ -676,22 +674,5 @@ public class FileUtils {
         if (trimmed.indexOf('/') >= 0 || trimmed.indexOf('\\') >= 0) return null;
         if (trimmed.contains("..")) return null;
         return trimmed;
-    }
-
-    /**
-     * Delete a file if it still exists, then try to remove its (now empty) per-file random-id
-     * directory through the shared {@link #cleanupEmptyParentSubdir} helper (which refuses to
-     * touch storage roots, so this is safe even when {@code APP_UPLOAD_FOLDER_PATH} aliases
-     * the download folder). Swallows missing-file / I/O errors at every step — orphan TTL
-     * cleanup races with delete-after-read on a successful download, and either side ending in
-     * a no-op is fine.
-     */
-    private static void silentDeleteIfExists(File file) {
-        try {
-            if (file.exists()) file.delete();
-            cleanupEmptyParentSubdir(file);
-        } catch (Throwable ignored) {
-            // file's in temp dir; eventual cleanup is best-effort
-        }
     }
 }

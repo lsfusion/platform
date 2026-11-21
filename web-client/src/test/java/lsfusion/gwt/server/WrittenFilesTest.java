@@ -1,6 +1,7 @@
 package lsfusion.gwt.server;
 
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
 import lsfusion.http.controller.file.DownloadFileRequestHandler;
@@ -195,6 +196,27 @@ public class WrittenFilesTest {
         assertEquals(404, download(url.replace("file/static/", "file/temp/")).status);
         assertTrue(written.exists());
         assertEquals(200, download(url).status);
+    }
+
+    @Test
+    public void forgetsAnMCPFileNotFetchedInTime() throws Exception { // its URL serves nothing afterwards, whatever lies at its path
+        byte[] bytes = ("result " + Math.random()).getBytes(StandardCharsets.UTF_8);
+        String url;
+        int ttl = FileUtils.MCP_ORPHAN_TTL_MINUTES;
+        FileUtils.MCP_ORPHAN_TTL_MINUTES = 0;
+        try {
+            url = FileUtils.saveMCPFile(new NamedFileData(new FileData(new RawFileData(bytes), "txt"), "result"));
+        } finally {
+            FileUtils.MCP_ORPHAN_TTL_MINUTES = ttl;
+        }
+        File written = new File(tempDir, URLDecoder.decode(url.substring(FileUtils.DOWNLOAD_HANDLER.length() + 1, url.indexOf('?')), "UTF-8"));
+        for (long deadline = System.currentTimeMillis() + 10000; written.getParentFile().exists() && System.currentTimeMillis() < deadline; ) // the file and its folder
+            Thread.sleep(10);
+        assertFalse(written.exists());
+
+        written.getParentFile().mkdirs();
+        Files.write(written.toPath(), bytes); // the same content again
+        assertEquals(404, download(url).status);
     }
 
     @Test
