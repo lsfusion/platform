@@ -553,11 +553,7 @@ public class FileUtils {
 
     // the same, but the file is written by the writer (streamed, since it can be bigger than the memory)
     public static String saveActionFile(EConsumer<OutputStream, IOException> writer, String extension, String displayName) {
-        String fileID = BaseUtils.randomString(15);
-        // the name and the extension come from the data: only their last part goes into the path
-        if(displayName != null)
-            fileID = fileID + "/" + BaseUtils.getFileNameAndExtension(displayName);
-        return saveDownloadFile(true, false, false, DownloadStoreType.TEMP, "", BaseUtils.addExtension(fileID, BaseUtils.getFileNameAndExtension(extension)), null, null, writer, null);
+        return saveDownloadFile(true, false, false, DownloadStoreType.TEMP, "", getDataFileName(BaseUtils.randomString(15), displayName, extension), null, null, writer, null);
     }
 
     private static String saveStaticDataFile(FileData fileData, String displayName, boolean noAuth, Map<String, Pair<String, Runnable>> cacheMap) {

@@ -218,7 +218,9 @@ public class WrittenFilesTest {
             assertEquals(content, download(FileUtils.saveFormFile(data, "named", null)).body()); // the same content under a name
             String actionUrl = FileUtils.saveActionFile(data.getRawFile(), extension, displayName);
             assertEquals(content, download(actionUrl).body());
-            for (String url : new String[]{formUrl, actionUrl})
+            String streamedUrl = FileUtils.saveActionFile(out -> out.write(data.getRawFile().getBytes()), extension, displayName);
+            assertEquals(content, download(streamedUrl).body());
+            for (String url : new String[]{formUrl, actionUrl, streamedUrl})
                 assertTrue(url.endsWith("/file?dumb=0"));
         }
 
