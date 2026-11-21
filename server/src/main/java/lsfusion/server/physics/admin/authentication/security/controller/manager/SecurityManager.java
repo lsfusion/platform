@@ -180,6 +180,9 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     // LDAP or OAuth authentication
     private Pair<DataObject, String> initAndUpdateUser(DataSession session, ExecutionStack stack, String userName, Supplier<String> password, String firstName, String lastName, String email, List<String> roles, boolean rolesOnlyIfNew, Map<String, String> attributes) throws SQLException, SQLHandledException {
         Pair<DataObject, String> userObjectAndLogin = readUser(userName, email, session);
+        // a locked user is refused before anything of it is changed
+        if (userObjectAndLogin != null && authenticationLM.isLockedCustomUser.read(session, userObjectAndLogin.first) != null)
+            throw new LockedException();
 
         if (userObjectAndLogin == null || userObjectAndLogin.second == null) {
             if(rolesOnlyIfNew && securityLM.disableRoleSID.read(session, new DataObject(roles.get(0))) != null) // if selfRegister is disabled
@@ -249,6 +252,9 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             if(user == null) {
                 throw new AuthenticationException(String.format("User with login %s not found", login));
             }
+            // a locked user is not given a token (authenticateUser), and is not let in by a token given before either
+            if(authenticationLM.isLockedCustomUser.read(session, user) != null)
+                throw new AuthenticationException(getString("exceptions.user.locked"));
             return user;
         }
         return getDefaultLoginUser();
