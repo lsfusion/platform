@@ -1,0 +1,49 @@
+MODULE LockedUser;
+
+REQUIRE Authentication;
+
+// what LockedUserIT calls on a server that lets only what an action opens by its annotations in : users who are locked,
+// the user every call without a login runs as, and what the server keeps of them
+
+// the login of the user a call runs as : opened to a logged in user's call, and to a call without a login
+luLogin () { RETURN login(currentUser()); } @@api;
+luLoginNoauth () { RETURN login(currentUser()); } @@noauth;
+
+luUser (ISTRING login) = customUserLogin(login);
+luLocked (ISTRING login) { RETURN IF isLocked(luUser(login)) THEN 'locked' ELSE 'open'; } @@noauth;
+luPassword (ISTRING login) { RETURN IF sha256Password(luUser(login)) THEN 'set' ELSE 'none'; } @@noauth;
+luFirstName (ISTRING login) { RETURN OVERRIDE firstName(luUser(login)), 'none'; } @@noauth;
+
+// as an administrator does it in the users form : adds a user, gives a user an e-mail (the one it has after that), locks a
+// user (with no password, as the user of the calls without a login is created), unlocks one with a password
+luNewUser (ISTRING login) {
+    NEW u = CustomUser {
+        login(u) <- login;
+    }
+    APPLY;
+} @@noauth;
+luSetEmail (ISTRING login, STRING email) {
+    email(luUser(login)) <- email;
+    APPLY;
+    RETURN email(luUser(login));
+} @@noauth;
+luLock (ISTRING login) {
+    isLocked(luUser(login)) <- TRUE;
+    sha256Password(luUser(login)) <- NULL;
+    APPLY;
+} @@noauth;
+luUnlock (ISTRING login, STRING password) {
+    isLocked(luUser(login)) <- NULL;
+    setSHA256Password(luUser(login), password);
+    APPLY;
+} @@noauth;
+
+// a token issued for a login, as an application issues one, and one issued for no login
+luToken (STRING login) {
+    generateAuthToken(login);
+    RETURN resultAuthToken();
+} @@noauth;
+luTokenOfNoLogin () {
+    generateAuthToken(NULL);
+    RETURN resultAuthToken();
+} @@noauth;
