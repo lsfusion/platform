@@ -48,7 +48,6 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
                 }
             } else {
                 response.setStatus(nvl(e instanceof RemoteInternalException ? ((RemoteInternalException) e).status : null, HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
-                response.setContentType(ExternalUtils.getHtmlContentType(ExternalUtils.javaCharset).toString());
 
                 //we know that there will be a re-request, so we do not write in response - we can call getWriter() only once
                 if(!(e instanceof NoSuchObjectException) || retry) {
@@ -74,7 +73,9 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
         }
     }
 
+    // an error is answered as text, whatever its message says
     private void writeResponse(HttpServletResponse response, String message) {
+        response.setContentType(ExternalUtils.getStringContentType(ExternalUtils.javaCharset).toString());
         try { // in theory here can be changed exception (despite of the fact that remote call is wrapped into RemoteExceptionAspect)
             response.getWriter().print(message);
         } catch (IOException e) {

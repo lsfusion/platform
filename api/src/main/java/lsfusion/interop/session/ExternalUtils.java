@@ -277,7 +277,7 @@ public class ExternalUtils {
         return ContentType.create(ContentType.APPLICATION_FORM_URLENCODED.getMimeType(), charset);
     }
 
-    private static ContentType getStringContentType(Charset charset) {
+    public static ContentType getStringContentType(Charset charset) {
         return ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), charset);
     }
 
