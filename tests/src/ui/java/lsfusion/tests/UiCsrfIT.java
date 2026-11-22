@@ -1,12 +1,11 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.APIResponse;
-import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.PlaywrightException;
 import com.microsoft.playwright.Response;
 import com.microsoft.playwright.options.FormData;
 import com.microsoft.playwright.options.RequestOptions;
-import com.microsoft.playwright.options.SameSiteAttribute;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -18,20 +17,19 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-// The API requests of a browser logged in to the web client run as the user from the web client's own pages, not from
-// a page of another site. "Another site" is a page server of the test's own: on
-// localhost it is another origin of the same site (another port), on 127.0.0.1 another site. A server on the loopback,
-// not a page Playwright answers itself: the browser takes such a page for one outside the machine and refuses its
-// requests to localhost (Local Network Access). Each request records the user it ran as under a tag of its own
+// The API requests of a browser logged in to the web client run as the user from the web client's own pages only: not
+// from a page of another site, nor when the user opens the address. "Another site" is a page server of the test's own:
+// on localhost it is another origin of the same site (another port), on 127.0.0.1 another site. A server on the
+// loopback, not a page Playwright answers itself: the browser takes such a page for one outside the machine and refuses
+// its requests to localhost (Local Network Access). Each request records the user it ran as under a tag of its own
 // (UiCsrf.lsf), or nothing when it did not run
 public class UiCsrfIT extends UiTest {
-
-    private static final String SITE_COOKIE = "LSFUSION_SAME_SITE"; // LSFCrossSiteRequestFilter's
 
     private static HttpServer pages;
 
@@ -68,11 +66,6 @@ public class UiCsrfIT extends UiTest {
                 .setForm(FormData.create().set("username", "admin").set("password", "")).setMaxRedirects(0)));
     }
 
-    // a client that keeps the session's cookie alone: every answer sets the site cookie again
-    private void dropSiteCookie() {
-        page.context().clearCookies(new BrowserContext.ClearCookiesOptions().setName(SITE_COOKIE));
-    }
-
     private static String sessionCookie(APIResponse response) {
         return response.headersArray().stream().filter(header -> header.name.equalsIgnoreCase("Set-Cookie") && header.value.startsWith("JSESSIONID="))
                 .map(header -> header.value).findFirst().orElseThrow(() -> new AssertionError("no session cookie in the answer: " + response.headersArray()));
@@ -99,21 +92,39 @@ public class UiCsrfIT extends UiTest {
         return "Basic " + Base64.getEncoder().encodeToString(("admin:" + password).getBytes(StandardCharsets.UTF_8));
     }
 
-    // a page of another site opens the web client's address as a page, and the web client answers it - an action that
-    // returns nothing answers with a file the browser downloads. Returns the answer. A tab of its own, as the page an
-    // answer loads may still be loading when the next address is opened; the address is opened after the evaluate
+    // a page at the first address opens the web client's address as a page, and the web client answers it - an action
+    // that returns nothing answers with a file the browser downloads. Returns the answer. A tab of its own, as the page
+    // an answer loads may still be loading when the next address is opened; the address is opened after the evaluate
     // returns, which a fast navigation would cut off
-    private Response follow(String url) {
+    private Response follow(String from, String url) {
         Page tab = page.context().newPage();
-        tab.navigate(pages("127.0.0.1"));
-        return tab.waitForResponse(response -> response.request().isNavigationRequest(),
+        tab.navigate(from);
+        return tab.waitForResponse(response -> response.url().equals(url),
                 () -> tab.evaluate("url => { setTimeout(() => { location.href = url; }); }", url));
     }
 
-    // a page of another site opens the address as a page: the request did not run (checked first, as a request that ran
-    // tells more than the answer's status), and the web client refused it. Returns the answer
-    private Response assertRefused(String tag, String url) throws Exception {
-        Response response = follow(url);
+    // a page of another site opens the web client's address as a page
+    private Response follow(String url) {
+        return follow(pages("127.0.0.1"), url);
+    }
+
+    // the user opens the web client's address in the browser - typed, a bookmark, a link another application hands to
+    // it -, a navigation no page starts. Returns the answer
+    private Response open(String url) {
+        Page tab = page.context().newPage();
+        return tab.waitForResponse(response -> response.url().equals(url), () -> {
+            try {
+                tab.navigate(url);
+            } catch (PlaywrightException e) { // an action that ran answers with a file, which the tab does not show
+                if (!e.getMessage().contains("Download is starting"))
+                    throw e;
+            }
+        });
+    }
+
+    // the request did not run (checked first, as a request that ran tells more than the answer's status), and the web
+    // client refused it. Returns the answer
+    private static Response assertRefused(String tag, Response response) throws Exception {
         ranAs(tag, "none");
         assertEquals(403, response.status());
         return response;
@@ -162,67 +173,74 @@ public class UiCsrfIT extends UiTest {
     public void otherSiteLinkOpensNoAction() throws Exception {
         login();
         String action = tag("link"), eval = tag("evalLink"), execEval = tag("execEvalLink");
-        assertRefused(action, webClient() + record(action));
-        assertRefused(eval, webClient() + evalLink(eval));
-        assertRefused(execEval, webClient() + "/exec" + evalLink(execEval));
+        assertRefused(action, follow(webClient() + record(action)));
+        assertRefused(eval, follow(webClient() + evalLink(eval)));
+        assertRefused(execEval, follow(webClient() + "/exec" + evalLink(execEval)));
+    }
+
+    // an address the user opens in the browser runs as the user neither an action nor a script: the browser tells it
+    // from no other request a page does not start
+    @Test
+    public void userOpenedLinkOpensNoAction() throws Exception {
+        login();
+        String action = tag("openedLink"), eval = tag("openedEvalLink");
+        assertEquals("none", assertRefused(action, open(webClient() + record(action))).request().allHeaders().get("sec-fetch-site"));
+        assertRefused(eval, open(webClient() + evalLink(eval)));
     }
 
     // over plain http to a host other than localhost - the machine's name - a browser describes a GET neither by
-    // Sec-Fetch-Site nor by an Origin, and a link of another site comes with the session's cookie, but not with the
-    // site cookie the login's answer set, SameSite=Strict
+    // Sec-Fetch-Site nor by an Origin: a link of a page of the web client runs as the user, by the Referer it comes
+    // with, and neither a link of another site nor an address the user opens does
     @Test
-    public void plainHttpLinkOpensNoAction() throws Exception {
-        String web = webClient().replace("localhost", InetAddress.getLocalHost().getHostName());
+    public void plainHttpLinkRunsByReferer() throws Exception {
+        String web = webClient().replace("localhost", InetAddress.getLocalHost().getHostName().toLowerCase(Locale.ROOT)); // as the browser has it
         login(web);
-        Object siteCookie = page.context().cookies(web).stream().filter(cookie -> cookie.name.equals(SITE_COOKIE)).map(cookie -> cookie.sameSite).findFirst().orElse(null);
-        String link = tag("plainHttpLink");
-        Map<String, String> sent = assertRefused(link, web + record(link)).request().allHeaders();
-        assertEquals(Arrays.asList(SameSiteAttribute.STRICT, null, null, true, false), Arrays.asList(siteCookie, sent.get("sec-fetch-site"),
-                sent.get("origin"), sent.get("cookie").contains("JSESSIONID="), sent.get("cookie").contains(SITE_COOKIE)));
+        String own = tag("plainHttpOwnLink"), other = tag("plainHttpLink"), opened = tag("plainHttpOpened");
+        Map<String, String> sent = follow(web + "/main", web + record(own)).request().allHeaders();
+        ranAs(own, "admin");
+        assertEquals(Arrays.asList(null, null, true), Arrays.asList(sent.get("sec-fetch-site"), sent.get("origin"), sent.get("referer").startsWith(web + "/")));
+        assertRefused(other, follow(web + record(other)));
+        assertRefused(opened, open(web + record(opened)));
     }
 
-    // a request no browser describes - no Sec-Fetch-Site, no Origin -, as a client other than a browser sends it, or a
-    // browser over plain http to a host other than localhost: with the site cookie, which a client with a cookie jar
-    // keeps and a browser sends with a request the user opens or a page of the web client sends, it runs as the user, a
-    // GET of a script included; a POST runs without it as well
+    // a request no browser describes - no Sec-Fetch-Site, no Origin -, as a client other than a browser sends it: a GET
+    // runs as the user with a Referer of the web client and not without it; a POST runs without it as well
     @Test
-    public void undescribedRequestRunsWithSiteCookie() throws Exception {
-        page.navigate(pages("127.0.0.1")); // no page of the web client sets the site cookie again
+    public void undescribedRequestRunsByReferer() throws Exception {
         login();
-        String action = tag("plainAction"), evalLink = tag("plainEvalLink"), evalPost = tag("plainEvalPost");
-        page.context().request().get(webClient() + record(action));
-        page.context().request().get(webClient() + evalLink(evalLink));
-        dropSiteCookie();
+        String action = tag("plainAction"), evalLink = tag("plainEvalLink"), refused = tag("plainRefused"), evalPost = tag("plainEvalPost");
+        RequestOptions own = RequestOptions.create().setHeader("Referer", webClient() + "/main");
+        page.context().request().get(webClient() + record(action), own);
+        page.context().request().get(webClient() + evalLink(evalLink), own);
+        int refusedStatus = page.context().request().get(webClient() + record(refused)).status();
         page.context().request().post(webClient() + "/eval", RequestOptions.create().setForm(FormData.create().set("script", script(evalPost))));
         ranAs(action, "admin");
         ranAs(evalLink, "admin");
+        ranAs(refused, "none");
+        assertEquals(403, refusedStatus);
         ranAs(evalPost, "admin");
     }
 
-    // a client with a token of its own that keeps the session cookie /exec and /eval answer with, but not the site
-    // cookie: its request is not checked and runs, a GET of a script included
+    // a client with a token of its own that keeps the session cookie /exec and /eval answer with: its request is not
+    // checked and runs, a GET of a script with no Referer included
     @Test
     public void tokenRequestRunsAsToken() throws Exception {
         login();
         page.navigate(webClient() + "/main");
         String token = (String) page.evaluate("() => fetch('/exec?action=Authentication.getAuthToken', { method: 'POST' }).then(response => response.text())");
-        page.navigate(pages("127.0.0.1")); // no page of the web client sets the site cookie again
         String eval = tag("tokenEvalLink");
-        dropSiteCookie();
         page.context().request().get(webClient() + evalLink(eval), RequestOptions.create().setHeader("Authorization", "Bearer " + token));
         ranAs(eval, "admin");
     }
 
-    // a client with a Basic login of its own that keeps the session cookie as well, but not the site cookie: its GET of
-    // a script runs as the login, its password checked though the login is the session's user's
+    // a client with a Basic login of its own that keeps the session cookie as well: its GET of a script with no Referer
+    // runs as the login, its password checked though the login is the session's user's
     @Test
     public void basicRequestRunsAsLogin() throws Exception {
         page.navigate(pages("127.0.0.1")); // a wrong password drops the session's login, under no page of the web client
         login();
         String right = tag("rightPassword"), wrong = tag("wrongPassword");
-        dropSiteCookie();
         page.context().request().get(webClient() + evalLink(right), RequestOptions.create().setHeader("Authorization", basic("")));
-        dropSiteCookie();
         assertEquals(401, page.context().request().get(webClient() + evalLink(wrong), RequestOptions.create().setHeader("Authorization", basic("wrong"))).status());
         ranAs(right, "admin");
         ranAs(wrong, "none");

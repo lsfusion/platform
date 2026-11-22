@@ -16,17 +16,15 @@ import java.util.List;
 
 import static lsfusion.base.BaseUtils.firstWord;
 
-// The web client's cookies of the browser's session. A response sets the site cookie (LSFCrossSiteRequestFilter)
-// unless its request has it. The session's cookie is SameSite=Lax (see web.xml), and Tomcat sets a SameSite only by a
-// CookieProcessor of the context file, which an installed web client has apart from the war. So the session's
-// Set-Cookie, which the container adds when a request creates the session or changes its id, gets one here unless it
-// has one. The filter stands first, so that every filter and servlet after it gets the session through it.
+// The session's cookie is SameSite=Lax (see web.xml), and Tomcat sets a SameSite only by a CookieProcessor of the
+// context file, which an installed web client has apart from the war. So the session's Set-Cookie, which the container
+// adds when a request creates the session or changes its id, gets one here unless it has one. The filter stands first,
+// so that every filter and servlet after it gets the session through it.
 public class LSFSessionCookieFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
                                     @NonNull FilterChain chain) throws ServletException, IOException {
-        LSFCrossSiteRequestFilter.setSiteCookie(request, response);
         chain.doFilter(new HttpServletRequestWrapper(request) {
             @Override
             public HttpSession getSession() {

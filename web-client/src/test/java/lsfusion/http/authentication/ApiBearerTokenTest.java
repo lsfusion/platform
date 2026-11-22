@@ -1,19 +1,13 @@
 package lsfusion.http.authentication;
 
-import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.connection.AuthenticationToken;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.mock.web.MockServletContext;
 import org.springframework.security.core.context.SecurityContextImpl;
-import org.springframework.web.context.support.XmlWebApplicationContext;
 
-import javax.servlet.Filter;
 import javax.servlet.http.HttpServletRequest;
-import java.lang.reflect.Proxy;
 import java.util.Locale;
 
 import static org.junit.Assert.assertEquals;
@@ -23,24 +17,9 @@ import static org.springframework.security.web.context.HttpSessionSecurityContex
 // The web server's security as security-config.xml declares it: an API request with an "Authorization: Bearer" token
 // runs as that token, its security context neither read from the request's HTTP session nor saved there - the session
 // keeps the user it has, none or a logged-in one
-public class ApiBearerTokenTest {
+public class ApiBearerTokenTest extends ApiSecurityTest {
 
     private static final String FILE = "/file/static/a.js"; // needs a login
-
-    private static Filter security;
-
-    @BeforeClass
-    public static void loadSecurity() {
-        XmlWebApplicationContext context = new XmlWebApplicationContext();
-        context.setServletContext(new MockServletContext());
-        context.setConfigLocation("file:src/main/webapp/WEB-INF/security-config.xml");
-        Object logicsProvider = Proxy.newProxyInstance(LogicsProvider.class.getClassLoader(), new Class[]{LogicsProvider.class}, (proxy, method, args) -> {
-            throw new UnsupportedOperationException(method.getName());
-        });
-        context.addBeanFactoryPostProcessor(beanFactory -> beanFactory.registerSingleton("logicsProvider", logicsProvider));
-        context.refresh();
-        security = context.getBean("springSecurityFilterChain", Filter.class);
-    }
 
     @Test
     public void tokenDoesNotLogTheSessionIn() throws Exception {

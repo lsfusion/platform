@@ -22,8 +22,14 @@ public class ExternalRequestHandlerTest {
         assertNull(openedAfterLogin("cross-site"));
     }
 
+    // the address bar, a bookmark, a link another application hands to the browser
+    @Test
+    public void userOpenedRequestNotOpenedAfterLogin() throws Exception {
+        assertNull(openedAfterLogin("none"));
+    }
+
     // over plain http to a host other than localhost a browser sends no Sec-Fetch-Site, and a link of another site
-    // comes without the site cookie
+    // comes without the Referer of the web client
     @Test
     public void plainHttpLinkNotOpenedAfterLogin() throws Exception {
         assertNull(openedAfterLogin(null));

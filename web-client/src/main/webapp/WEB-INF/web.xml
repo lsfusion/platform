@@ -230,8 +230,8 @@
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
 
-    <!-- a response sets the site cookie, and in a container other than Jetty the session's cookie gets SameSite=Lax
-         unless it has a SameSite; it stands first, see the filter -->
+    <!-- in a container other than Jetty the session's cookie gets SameSite=Lax unless it has a SameSite; it stands
+         first, see the filter -->
     <filter>
         <filter-name>LSFSessionCookieFilter</filter-name>
         <filter-class>lsfusion.http.authentication.LSFSessionCookieFilter</filter-class>
