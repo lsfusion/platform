@@ -74,7 +74,7 @@ Editing the form and calling the server also differ along two more axes — whet
 | group | methods | gate | how an object is passed |
 | --- | --- | --- | --- |
 | editing the form | `<group>.change` / `<property>.change` / `<property>.exec`; on the form's controller, `changeObject` / `changeOrders` / … ([across containers](Form_and_navigator_controllers.md#across-containers)) | none | the target row — a data row (`row`), a raw handle (`row.objects`), or its key (a member's only); an object as a value (FK) — its id |
-| calling the server | `exec` / `eval` / `evalAction` / `change` on the form's controller, `form` | `@@api` / admin rights / the form's `CUSTOMS` | an object — its id |
+| calling the server | `exec` / `eval` / `evalAction` / `change` on the form's controller, `form` | `@@api` or the form's `CUSTOMS` (`exec`, `change`) / the right to run code in the interpreter | an object — its id |
 
 A custom view normally reads state from `props.data` and changes it through the form-edit members — including running an action drawn on the form with `controller.<action>.exec()`. Its members change what the view draws — rows, their current row and the selected ones, sortings, filters, tree nodes and the toolbar. There is no member for a tab or container the platform draws: place a form action with [`ACTIVATE TAB`](ACTIVATE_operator.md), [`COLLAPSE CONTAINER`](COLLAPSE_operator.md) or [`EXPAND CONTAINER`](EXPAND_operator.md) in the view's container and run it through its member. The form's server calls (`exec` / `eval` / `evalAction` / `change`) are an escape hatch, used only for what the form does not express — ad-hoc server computation, a global write, or creating an object.
 

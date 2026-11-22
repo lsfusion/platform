@@ -30,7 +30,7 @@ Client code changes the form's state as a user does: it selects the current obje
 
 Besides editing the form, client code can call actions and change properties on the server by name, and execute lsFusion code. On a form these calls run in its session: a change is visible to following calls and is saved with the form's changes. In the navigator each call runs in a new session.
 
-By default such calls are checked as [access from an external system](Access_from_an_external_system.md): actions and properties exposed to the external API are allowed, as are calls by a user with admin rights. A form can additionally allow its client code to call selected actions and properties. Executing arbitrary code remains subject to the API access check.
+By default such calls are checked as [access from an external system](Access_from_an_external_system.md): actions and properties exposed to the external API are allowed, as are calls by a user who can run code in the [interpreter](Interpreter.md). A form can additionally allow its client code to call selected actions and properties. Executing arbitrary code remains subject to the API access check.
 
 ### Components the platform draws inside {#platform-components}
 
