@@ -372,9 +372,7 @@ public class FormChanges {
             prefixes[k] = parts[k * 2];
             if (k * 2 + 1 < parts.length) {
                 String name = parts[k * 2 + 1];
-                if (name.startsWith(inlineSerializedImageSeparator)) {
-                    files[k] = IOUtils.deserializeAppImage(name.substring(inlineSerializedImageSeparator.length()));
-                } else if (name.startsWith(inlineImageSeparator)) {
+                if (name.startsWith(inlineImageSeparator)) {
                     files[k] = AppServerImage.getAppImage(AppServerImage.createActionImage(name.substring(inlineImageSeparator.length())).get(context));
                 } else if (name.startsWith(inlineDataFileSeparator)) {
                     int separatorLength = inlineDataFileSeparator.length();

@@ -434,10 +434,7 @@ public class AppServerImage {
         pool.writeImageIcon(outStream, getAppImage(image));
     }
 
-    public static String convertFileValue(AppServerImage image, boolean asImage) throws IOException {
-        if(asImage)
-            return ScriptedStringUtils.wrapSerializedImage(IOUtils.serializeAppImage(getAppImage(image)));
-        else
-            return ScriptedStringUtils.wrapResource(image.imagePath);
+    public static String convertFileValue(AppServerImage image) {
+        return ScriptedStringUtils.wrapResource(image.imagePath);
     }
 }
