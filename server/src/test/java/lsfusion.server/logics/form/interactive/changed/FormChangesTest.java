@@ -62,6 +62,24 @@ public class FormChangesTest {
     }
 
     @Test
+    public void anImageNameThatCameWithDataReadsOnlyAnImageFile() throws IOException {
+        FormChanges.NeedImage image = new FormChanges.NeedImage(null, AppServerImage::createActionImage);
+        assertNotNull(((AppImage) FormChanges.convertFileValue(image, "images/add.png;x", null)).getImage(ColorTheme.DEFAULT));
+        try {
+            FormChanges.convertFileValue(image, RESOURCE + ";x", null);
+            fail("a file that is not an image is read as an image");
+        } catch (FileNotFoundException e) { // not read
+        }
+    }
+
+    @Test
+    public void anIconThatIsNotAnImageFileIsLeftOut() throws IOException {
+        String icon = "an icon of no image.txt";
+        assertNull(AppServerImage.convertFileValue(AppServerImage.createActionImage(icon + ";x").get(null)));
+        assertFalse(ScriptedStringUtils.isWrapped(icon));
+    }
+
+    @Test
     public void anObjectSerializedIntoAStringIsNotRead() throws IOException {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(bytes);
