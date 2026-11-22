@@ -5,8 +5,12 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -377,24 +381,56 @@ public class ScriptedStringUtils {
             literals.add("STRING(" + currentLiteral + ")");
         } else if (state == StringInterpolateState.INLINE) {
             literals.add(quote(INLINE_PREFIX + currentLiteral + CLOSE_CH));
-        } else if (state == StringInterpolateState.RESOURCE) {
-            literals.add(quote(wrapResource(currentLiteral)));
+        } else if (state == StringInterpolateState.RESOURCE) { // a literal is added to the wrapped ones once it is parsed, see ScriptingLogicsModule.addWrapped
+            literals.add(quote(inline(currentLiteral)));
         } else if (state == StringInterpolateState.IMAGE) {
-            literals.add(quote(wrapImage(currentLiteral)));
+            literals.add(quote(inline(inlineImageSeparator + currentLiteral)));
         } else
             assert false;
     }
 
-    public static String wrapResource(String currentLiteral) {
-        return inlineFileSeparator + currentLiteral + inlineFileSeparator;
+    // a resource or an image put between two separators by the platform itself, not by data : only such one is read when a value is sent to a client
+    private static final Set<String> wrapped = ConcurrentHashMap.newKeySet();
+
+    public static String wrapResource(String name) {
+        return wrap(name);
     }
 
-    public static String wrapImage(String currentLiteral) {
-        return inlineFileSeparator + inlineImageSeparator + currentLiteral + inlineFileSeparator;
+    public static String wrapImage(String name) {
+        return wrap(inlineImageSeparator + name);
+    }
+
+    private static String wrap(String content) {
+        wrapped.add(content);
+        return inline(content);
+    }
+
+    private static String inline(String content) {
+        return inlineFileSeparator + content + inlineFileSeparator;
+    }
+
+    // what a literal of a module puts between pairs of separators
+    public static List<String> getWrapped(String literal) {
+        if (!literal.contains(inlineFileSeparator)) // optimization
+            return Collections.emptyList();
+
+        List<String> names = new ArrayList<>();
+        String[] parts = literal.split(inlineFileSeparator, -1);
+        for (int i = 1; i + 1 < parts.length; i += 2)
+            names.add(parts[i]);
+        return names;
+    }
+
+    public static void addWrapped(Collection<String> names) {
+        wrapped.addAll(names);
+    }
+
+    public static boolean isWrapped(String content) {
+        return wrapped.contains(content);
     }
 
     public static String wrapFile(String fileType, String data) {
-        return inlineFileSeparator + inlineDataFileSeparator + fileType + inlineDataFileSeparator + data + inlineFileSeparator;
+        return inline(inlineDataFileSeparator + fileType + inlineDataFileSeparator + data);
     }
 
     private static String flushCurrentLiteral(List<String> literals, String currentLiteral) {

@@ -3724,6 +3724,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                     return Pair.create(addStringInterpolateProp(str, lineNumber, context, dynamic), null);
                 } else {
                     LocalizedString lstr = transformLocalizedStringLiteral((String) value);
+                    addWrapped(lstr);
                     lp = addUnsafeCProp(getStringConstClass(lstr), lstr);
                     return Pair.create(new LPWithParams(lp), new LPLiteral(lstr));
                 }
@@ -3737,6 +3738,15 @@ public class ScriptingLogicsModule extends LogicsModule {
             case NULL: lp =  baseLM.vnull; break;
         }
         return Pair.create(new LPWithParams(lp), new LPLiteral(value));
+    }
+
+    protected void addWrapped(LocalizedString literal) {
+        if (!literal.needToBeLocalized())
+            addWrapped(ScriptedStringUtils.getWrapped(literal.getSourceString()));
+    }
+
+    protected void addWrapped(Collection<String> names) {
+        ScriptedStringUtils.addWrapped(names);
     }
 
     protected LPWithParams addStringInlineProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {

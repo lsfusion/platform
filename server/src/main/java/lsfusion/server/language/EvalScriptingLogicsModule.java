@@ -29,6 +29,7 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,6 +46,10 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
                                  List<String> instNames, List<LocalizedString> instCaptions, List<String> images, List<String> parentNames, boolean isComplex,
                                  DebugInfo.DebugPoint point) throws ScriptingErrorLog.SemanticErrorException {
         emitEvalError("CLASS statement");
+    }
+
+    @Override
+    protected void addWrapped(Collection<String> names) { // a script is compiled before its access is checked, and its text can come with data
     }
 
     @Override

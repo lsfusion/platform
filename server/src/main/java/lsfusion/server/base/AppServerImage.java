@@ -435,6 +435,6 @@ public class AppServerImage {
     }
 
     public static String convertFileValue(AppServerImage image) {
-        return ScriptedStringUtils.wrapResource(image.imagePath);
+        return image.imagePath != null ? ScriptedStringUtils.wrapResource(image.imagePath) : null; // an icon of font classes only has no file
     }
 }

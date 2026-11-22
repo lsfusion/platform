@@ -22,6 +22,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.ScriptedStringUtils;
 import lsfusion.server.language.converters.KeyStrokeConverter;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ConcreteClass;
@@ -373,7 +374,7 @@ public class FormChanges {
             if (k * 2 + 1 < parts.length) {
                 String name = parts[k * 2 + 1];
                 if (name.startsWith(inlineImageSeparator)) {
-                    files[k] = AppServerImage.getAppImage(AppServerImage.createActionImage(name.substring(inlineImageSeparator.length())).get(context));
+                    files[k] = AppServerImage.getAppImage(AppServerImage.createActionImage(checkWrapped(name).substring(inlineImageSeparator.length())).get(context));
                 } else if (name.startsWith(inlineDataFileSeparator)) {
                     int separatorLength = inlineDataFileSeparator.length();
                     int endFileType = name.indexOf(inlineDataFileSeparator, separatorLength);
@@ -386,12 +387,19 @@ public class FormChanges {
                     removeRaw[k * 2 + 1] = true;
                 } else { // resource file
                     Result<String> fullPath = new Result<>();
-                    files[k] = new StringWithFiles.Resource(ResourceUtils.findResourceAsFileData(name, false, true, fullPath, null), fullPath.result);
+                    files[k] = new StringWithFiles.Resource(ResourceUtils.findResourceAsFileData(checkWrapped(name), false, true, fullPath, null), fullPath.result);
                 }
             }
         }
 
         return new StringWithFiles(prefixes, files, removeRaw != null ? getRawString(parts, removeRaw) : string);
+    }
+
+    // a name that came with data is not found
+    private static String checkWrapped(String content) throws FileNotFoundException {
+        if (!ScriptedStringUtils.isWrapped(content))
+            throw new FileNotFoundException(content);
+        return content;
     }
 
     // we need to remove files from strings, because otherwise writeUTF will fail
