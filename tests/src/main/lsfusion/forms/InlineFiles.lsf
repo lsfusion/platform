@@ -1,0 +1,54 @@
+MODULE InlineFiles;
+
+REQUIRE TestUtils, SystemEvents;
+
+// a string value sent to a client reads a resource named between two inline file separators only when a literal of a
+// module, or of a script that runs, put it there, never when the name came with data or with a script that is only
+// compiled. Before the fix any name was read
+
+inlineFilesRead = DATA LOCAL TEXT ();
+readInlineFiles INTERNAL 'lsfusion.tests.ReadInlineFilesAction' (TEXT);
+
+// one separator: a literal with no pair of them puts nothing between two
+inlineFileSeparator = '<PQWERJUQMASPRETQT/>';
+
+testInlineFilesLiteralResource 'A resource a literal of a module names is read' () {
+    readInlineFiles('a$R{inline/InlineFiles.txt}b');
+    assertEquals(inlineFilesRead(), 'resource inline/InlineFiles.txt', 'a resource a module names read ' + inlineFilesRead());
+}
+
+testInlineFilesDataResource 'A resource name that comes with data is not found' () {
+    readInlineFiles('a' + inlineFileSeparator() + 'inline/InlineFilesData.txt' + inlineFileSeparator() + 'b');
+    assertEquals(inlineFilesRead(), 'not found', 'a resource name that came with data read ' + inlineFilesRead());
+}
+
+inlineFilesEvaluated = DATA LOCAL TEXT ();
+testInlineFilesScriptResource 'A resource a literal of a script names is read once the script runs' () {
+    EVAL 'run() \{ inlineFilesEvaluated() <- \'a\$R\{inline/InlineFilesEval.txt\}b\'; \}';
+    assertTrue(inlineFilesEvaluated() LIKE 'a%b', 'the script set ' + inlineFilesEvaluated());
+    readInlineFiles(inlineFilesEvaluated());
+    assertEquals(inlineFilesRead(), 'resource inline/InlineFilesEval.txt', 'a resource a script names read ' + inlineFilesRead());
+}
+
+// /eval compiles a script before it checks the script's access
+compileInlineFiles INTERNAL 'lsfusion.tests.CompileInlineFilesAction' (TEXT);
+testInlineFilesCompiledScriptResource 'A resource a literal of a script names is not found while the script is only compiled' () {
+    compileInlineFiles('run() \{ inlineFilesEvaluated() <- \'a\$R\{inline/InlineFilesCompiled.txt\}b\'; \}');
+    readInlineFiles('a' + inlineFileSeparator() + 'inline/InlineFilesCompiled.txt' + inlineFileSeparator() + 'b');
+    assertEquals(inlineFilesRead(), 'not found', 'a resource a compiled script names read ' + inlineFilesRead());
+}
+
+// a customization code is compiled to be checked before it is saved (compileExtendCode), running nothing of it
+inlineFilesNote = DATA LOCAL TEXT ();
+FORM inlineFilesForm PROPERTIES() inlineFilesNote;
+testInlineFilesCheckedCustomizationResource 'A resource a literal of a customization names is not found while the code is only checked' () {
+    compileExtendCode('inlineFilesCustomized() = \'a\$R\{inline/InlineFilesCustomized.txt\}b\';');
+    assertNull(extendCodeError(), 'the application code does not compile: ' + extendCodeError());
+    readInlineFiles('a' + inlineFileSeparator() + 'inline/InlineFilesCustomized.txt' + inlineFileSeparator() + 'b');
+    assertEquals(inlineFilesRead(), 'not found', 'a resource a checked application code names read ' + inlineFilesRead());
+
+    compileExtendCode('InlineFiles.inlineFilesForm', NULL, 'inlineFilesFormCustomized() = \'a\$R\{inline/InlineFilesFormCustomized.txt\}b\';');
+    assertNull(extendCodeError(), 'the form code does not compile: ' + extendCodeError());
+    readInlineFiles('a' + inlineFileSeparator() + 'inline/InlineFilesFormCustomized.txt' + inlineFileSeparator() + 'b');
+    assertEquals(inlineFilesRead(), 'not found', 'a resource a checked form code names read ' + inlineFilesRead());
+}
