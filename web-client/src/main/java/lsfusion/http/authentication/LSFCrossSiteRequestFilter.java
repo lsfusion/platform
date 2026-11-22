@@ -28,7 +28,7 @@ public class LSFCrossSiteRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
                                     @NonNull FilterChain chain) throws ServletException, IOException {
-        if (ridesOnSession(request) && !isAllowed(request)) {
+        if (!LSFAuthenticationToken.getAppServerToken().isAnonymous() && !isAllowed(request)) {
             if (!hasBasicLogin(request)) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.setContentType("text/plain;charset=UTF-8");
@@ -39,11 +39,6 @@ public class LSFCrossSiteRequestFilter extends OncePerRequestFilter {
             SecurityContextHolder.clearContext();
         }
         chain.doFilter(request, response);
-    }
-
-    // a request with a Bearer token runs as the token's user (LSFAuthTokenFilter)
-    private static boolean ridesOnSession(HttpServletRequest request) {
-        return !LSFAuthenticationToken.getAppServerToken().isAnonymous() && LSFAuthTokenFilter.getBearerToken(request) == null;
     }
 
     // an Authorization header the Basic filter reads (BasicAuthenticationConverter)

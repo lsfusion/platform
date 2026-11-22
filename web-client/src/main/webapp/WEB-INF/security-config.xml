@@ -8,14 +8,33 @@
     <!-- API security-->
     <!-- API doesn't need to redirect to login.jsp and the real authentication process is on app server-->
     <!-- unlike ant matcher, regex respects ? so we need this odd regex-->
+    <b:bean id="apiRequestMatcher" class="org.springframework.security.web.util.matcher.RegexRequestMatcher">
+        <b:constructor-arg value="^/(((exec|eval|files)($|\?.*|/.*))|((form|mcp)($|\?.*)))"/>
+        <b:constructor-arg><b:null/></b:constructor-arg>
+    </b:bean>
+    <b:bean id="apiTokenRequestMatcher" class="org.springframework.security.web.util.matcher.AndRequestMatcher">
+        <b:constructor-arg>
+            <b:list>
+                <b:ref bean="apiRequestMatcher"/>
+                <b:ref bean="tokenFilter"/>
+            </b:list>
+        </b:constructor-arg>
+    </b:bean>
+
+    <!-- a request with a token runs as the token: its security context is neither read from the HTTP session nor saved there -->
+    <http request-matcher-ref="apiTokenRequestMatcher" create-session="stateless" entry-point-ref="restAuthenticationEntryPoint">
+        <csrf disabled="true"/>
+
+        <custom-filter before="FORM_LOGIN_FILTER" ref="tokenFilter"/>
+    </http>
+
     <!-- we're trying to avoid creating sessions (it's important for REST requests, otherwise session will be created every time with authenticated request) -->
-    <http request-matcher="regex" pattern="^/(((exec|eval|files)($|\?.*|/.*))|((form|mcp)($|\?.*)))" create-session="never">
+    <http request-matcher-ref="apiRequestMatcher" create-session="never">
         <http-basic/>
         <csrf disabled="true"/>
 
         <!-- a request on a logged-in session of the web client: where it comes from is checked, see the filter -->
         <custom-filter after="SECURITY_CONTEXT_FILTER" ref="crossSiteRequestFilter"/>
-        <custom-filter before="FORM_LOGIN_FILTER" ref="tokenFilter"/>
         <custom-filter after="FORM_LOGIN_FILTER" ref="urlAuthenticationFilter"/>
     </http>
 

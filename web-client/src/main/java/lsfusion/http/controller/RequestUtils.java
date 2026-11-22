@@ -125,8 +125,8 @@ public class RequestUtils {
                 && !sessionObject.connection.host.equals("127.0.0.1")
                 ? sessionObject.connection.host : request.getServerName();
 
-        // getSession(false): MCP is wired through the security chain with `create-session=
-        // never`, so most calls (tools/list, file tools, anonymous tools/call) ride without
+        // getSession(false): MCP is wired through the security chains with `create-session=
+        // never` or `stateless`, so most calls (tools/list, file tools, anonymous tools/call) ride without
         // an HttpSession. Calling getSession() unconditionally would conjure one for every
         // such request and defeat that contract. When no session exists we surface "" — the
         // ExternalRequest envelope expects a non-null sessionId field shape.

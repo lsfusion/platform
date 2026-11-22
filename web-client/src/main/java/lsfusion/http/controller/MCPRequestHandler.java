@@ -37,10 +37,10 @@ import java.util.Map;
  * ({@code headers[name]} / {@code cookies[name]} / etc.).
  *
  * <p>Auth: pulls the caller's {@link AuthenticationToken} via the existing
- * {@link LSFAuthenticationToken#getAppServerToken} flow. The {@code /mcp} security chain
- * runs http-basic + bearer-token filter + URL-auth filter (no session cookie path —
- * {@code create-session=never}), so all valid auth comes from {@code Authorization} header
- * or query params. Anonymous = no valid auth on the request; we treat that as the
+ * {@link LSFAuthenticationToken#getAppServerToken} flow. A {@code /mcp} request with a Bearer
+ * token runs in a security chain of its own ({@code create-session=stateless}), any other one
+ * in the chain of http-basic + URL-auth filter and the web client's session ({@code create-session=never}).
+ * Anonymous = no valid auth on the request; we treat that as the
  * discovery-trigger condition and respond 401 + {@code WWW-Authenticate}, redirecting MCP
  * clients into the OAuth flow at {@code /.well-known/oauth-protected-resource}.
  *
