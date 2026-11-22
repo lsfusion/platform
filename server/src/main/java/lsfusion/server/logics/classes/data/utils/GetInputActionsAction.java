@@ -16,7 +16,6 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
@@ -45,14 +44,14 @@ public class GetInputActionsAction extends InternalAction {
                         JSONObject resultAction = new JSONObject();
                         resultAction.put("action", inputAction.id);
                         resultAction.put("title", ""); // title is mandatory
-                        resultAction.put("icon", AppServerImage.convertFileValue(inputAction.action.get(context.getRemoteContext()), false));
+                        resultAction.put("icon", AppServerImage.convertFileValue(inputAction.action.get(context.getRemoteContext())));
 
                         resultActions.put(resultAction);
                     }
             }
 
             findProperty("inputActions[]").change(resultActions.toString(), context);
-        } catch (ScriptingErrorLog.SemanticErrorException | IOException e) {
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
     }

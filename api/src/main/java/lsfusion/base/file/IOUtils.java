@@ -270,14 +270,4 @@ public class IOUtils {
     public static ByteArrayInputStream deserializeStream(String image) {
         return new ByteArrayInputStream(Base64.decodeBase64(image));
     }
-
-    public static String serializeAppImage(AppImage image) throws IOException {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        writeAppImage(new DataOutputStream(outStream), image);
-        return serializeStream(outStream);
-    }
-
-    public static AppImage deserializeAppImage(String image) throws IOException {
-        return readAppImage(new DataInputStream(deserializeStream(image)));
-    }
 }

@@ -397,10 +397,6 @@ public class ScriptedStringUtils {
         return inlineFileSeparator + inlineDataFileSeparator + fileType + inlineDataFileSeparator + data + inlineFileSeparator;
     }
 
-    public static String wrapSerializedImage(String currentLiteral) {
-        return inlineFileSeparator + inlineSerializedImageSeparator + currentLiteral + inlineFileSeparator;
-    }
-
     private static String flushCurrentLiteral(List<String> literals, String currentLiteral) {
         if (!currentLiteral.isEmpty()) {
             literals.add(quote(currentLiteral));

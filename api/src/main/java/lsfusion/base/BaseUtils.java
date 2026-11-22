@@ -2351,8 +2351,6 @@ public class BaseUtils {
 
     public static final String inlineImageSeparator = "<GFDTRGDFSAFADXZW/>";
 
-    public static final String inlineSerializedImageSeparator = "<DFSRKNFDVSDRRES/>";
-
     public static final String inlineDataFileSeparator = "<FDDGRTFSJAOWMDSKCCXA/>"; // we want separators as tags to have no problem with ts vectors
 
     public static <T> T executeWithTimeout(Callable<T> callable, Long timeout, Supplier<ExecutorService> serviceSupplier, Consumer<Future<T>> onFailedOrInterrupted) {
