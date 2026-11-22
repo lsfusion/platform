@@ -1,5 +1,6 @@
 <%@ page import="lsfusion.base.ServerMessages" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page isELIgnored="false" %>
 
@@ -8,25 +9,25 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>${title}</title>
-        <link rel="shortcut icon" href="${logicsIcon}" />
+        <title>${fn:escapeXml(title)}</title>
+        <link rel="shortcut icon" href="${fn:escapeXml(logicsIcon)}" />
         <link rel="stylesheet" media="only screen and (min-device-width: 601px)" href="static/noauth/css/login.css"/>
         <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
     </head>
     <body>
         <div class="main">
             <div class="header">
-                <img id="logo" class="logo" src="${logicsLogo}" alt="LSFusion">
+                <img id="logo" class="logo" src="${fn:escapeXml(logicsLogo)}" alt="LSFusion">
             </div>
             <div class="content">
                 <div class="error-block restricted-error round">
                     <%= ServerMessages.getString(request, "login.unsuccessful") %><br/>
-                    <%= ServerMessages.getString(request, "login.caused") %>: ${error}
+                    <%= ServerMessages.getString(request, "login.caused") %>: ${fn:escapeXml(error)}
                 </div>
             </div>
             <div class="footer">
                 <div class="client-version">
-                    ${apiVersion}
+                    ${fn:escapeXml(apiVersion)}
                 </div>
             </div>
         </div>

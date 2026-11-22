@@ -1,11 +1,12 @@
 <%@ page import="lsfusion.base.ServerMessages" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <title>${title}</title>
-    <link rel="shortcut icon" href="${logicsIcon}"/>
+    <title>${fn:escapeXml(title)}</title>
+    <link rel="shortcut icon" href="${fn:escapeXml(logicsIcon)}"/>
     <link rel="stylesheet" media="only screen and (min-device-width: 601px)" href="static/noauth/css/login.css"/>
     <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
 
@@ -26,7 +27,7 @@
                         timeToReconnect = timeToReconnect - 1;
                     } else {
                         timeToReconnect = 5;
-                        window.location.href = "${redirectURL}";
+                        window.location.href = ${redirectURL};
                         clear();
                     }
 
@@ -47,19 +48,19 @@
 <body onload="init()">
     <div class="main">
         <div class="header">
-            <img id="logo" class="logo" src="${logicsLogo}" alt="LSFusion">
+            <img id="logo" class="logo" src="${fn:escapeXml(logicsLogo)}" alt="LSFusion">
             <div class="title">
                 <%= ServerMessages.getString(request, "app.server.unavailable") %>
             </div>
         </div>
         <div class="content">
-            <div class="appNotAvailable"> ${errorMessage} </div>
+            <div class="appNotAvailable"> ${fn:escapeXml(errorMessage)} </div>
             <div class="appNotAvailable appNotAvailableReconnect"><%= ServerMessages.getString(request, "app.server.unavailable.reconnect.after") %> <span id="reconnectTime">5</span> <%= ServerMessages.getString(request, "app.server.unavailable.reconnect.after.seconds") %> <button id="startStopButton" onclick="invertIntervalState()"><span id="timerAction"><%= ServerMessages.getString(request, "app.server.unavailable.timer.stop") %></span> <%= ServerMessages.getString(request, "app.server.unavailable.timer") %></button></div>
         </div>
         <div class="footer">
-            <a class="main-page-link link" href="${loginPage}"><%= ServerMessages.getString(request, "login.page") %></a>
+            <a class="main-page-link link" href="${fn:escapeXml(loginPage)}"><%= ServerMessages.getString(request, "login.page") %></a>
             <div class="client-version">
-                ${apiVersion}
+                ${fn:escapeXml(apiVersion)}
             </div>
         </div>
     </div>

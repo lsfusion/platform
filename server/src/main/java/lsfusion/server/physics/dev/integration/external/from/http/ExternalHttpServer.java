@@ -382,7 +382,7 @@ public class ExternalHttpServer extends MonitorServer {
 
         private void sendErrorResponse(HttpExchange request, int status, String response) throws IOException {
             Charset bodyCharset = ExternalUtils.defaultBodyCharset;
-            request.getResponseHeaders().add("Content-Type", "text/html; charset=" + bodyCharset.name());
+            request.getResponseHeaders().set("Content-Type", ExternalUtils.getStringContentType(bodyCharset).toString());
             request.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             byte[] responseBytes = response.getBytes(bodyCharset);
             request.sendResponseHeaders(status, responseBytes.length);
