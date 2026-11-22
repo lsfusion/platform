@@ -74,7 +74,6 @@ public class MainController {
         this.navigatorProvider = navigatorProvider;
     }
 
-    private final Map<String, String> oauth2AuthenticationUrls = new HashMap<>();
     private static final String authorizationRequestBaseUri = "/oauth2/authorization/";
     private final Result<String> checkVersionError = new Result<>();
 
@@ -461,6 +460,7 @@ public class MainController {
         addNoAuthStandardModelAttributes(model, request, serverSettings);
 
         try {
+            Map<String, String> oauth2AuthenticationUrls = new HashMap<>(); // the links of this request, with its query
             clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(),
                     getDirectUrl(authorizationRequestBaseUri + registration.getRegistrationId(), request)));
             model.addAttribute("urls", oauth2AuthenticationUrls);

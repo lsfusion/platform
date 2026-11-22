@@ -7,10 +7,13 @@ import lsfusion.http.provider.logics.LogicsProvider;
 import lsfusion.interop.logics.ServerSettings;
 import org.json.JSONTokener;
 import org.junit.Test;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.ui.ModelMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
 
@@ -22,8 +25,9 @@ import static org.junit.Assert.assertNull;
 // What the controller makes of a request's values for a page that writes them as they are: the notification page's
 // script gets the id as a number and the query as a string literal, the script of the page of an unavailable server
 // its address as a string literal - a string literal holds the value as it is, with no "<" in it -, the login page the
-// links to the desktop client with the address in them escaped and as it is. The requests are fakes, with a query a
-// browser would not send as it is, and so is the application server
+// links to the desktop client with the address in them escaped and as it is, and the links to the OAuth clients with
+// the query of its own request. The requests are fakes, with a query a browser would not send as it is, and so is the
+// application server
 public class MainControllerTest {
 
     private static final String QUERY = "x=\"</script><!--\\";
@@ -57,6 +61,17 @@ public class MainControllerTest {
                 model.get("jnlpUrls"));
     }
 
+    // one controller serves all the requests
+    @Test
+    public void loginPageLinksTheOAuthClientsWithItsQuery() {
+        MainController controller = controller(server(null, oauthClient("google")));
+        ModelMap first = new ModelMap(), second = new ModelMap();
+        controller.processLogin(first, request(null, "x=1"));
+        controller.processLogin(second, request(null, "x=2"));
+        assertEquals(Collections.singletonMap("google", "/oauth2/authorization/google?x=1"), first.get("urls"));
+        assertEquals(Collections.singletonMap("google", "/oauth2/authorization/google?x=2"), second.get("urls"));
+    }
+
     private static void assertScriptString(String value, Object literal) {
         assertFalse(String.valueOf(literal), String.valueOf(literal).contains("<"));
         JSONTokener tokener = new JSONTokener((String) literal);
@@ -77,18 +92,24 @@ public class MainControllerTest {
         });
     }
 
-    // an application server of the web client's version with the links to the desktop client of the template, and with
-    // no OAuth clients
-    private static LogicsProvider server(String jnlpUrls) {
+    // an application server of the web client's version with the links to the desktop client of the template and the
+    // OAuth clients
+    private static LogicsProvider server(String jnlpUrls, ClientRegistration... oauthClients) {
         ServerSettings settings = new ServerSettings(null, null, null, null, null, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion(),
                 false, 0, false, jnlpUrls, false, null, null, null, false);
         return fake(LogicsProvider.class, (method, args) -> {
             switch (method) {
                 case "getServerSettings": return settings;
-                case "runRequest": return Collections.emptyList();
+                case "runRequest": return Arrays.asList(oauthClients);
                 default: return null;
             }
         });
+    }
+
+    private static ClientRegistration oauthClient(String id) {
+        return ClientRegistration.withRegistrationId(id).clientId("client").authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .redirectUriTemplate("{baseUrl}/{action}/oauth2/code/{registrationId}")
+                .authorizationUri("https://oauth.test/authorize").tokenUri("https://oauth.test/token").build();
     }
 
     private static HttpServletRequest request(String notificationId, String query) {
