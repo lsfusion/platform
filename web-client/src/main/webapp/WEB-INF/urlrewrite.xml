@@ -34,9 +34,10 @@
     </rule>
     <!-- non static file, need for 'save as' dialog. Exclude /temp/mcp/ via negative lookahead
          — those MCP capability URLs are caught by the dedicated rule above with no-store. -->
+    <!-- a file of one user: cached by that user's browser only, not by a cache shared with others (a proxy, a CDN) -->
+    <!-- no Expires: a cache that reads Expires and not Cache-Control would keep the file for everyone -->
     <rule match-type="regex">
         <from>.*\/temp\/(?!mcp\/).*</from>
-        <set type="response-header" name="Cache-Control">public, max-age=3600</set>
-        <set type="expires">1 hour</set>
+        <set type="response-header" name="Cache-Control">private, max-age=3600</set>
     </rule>
 </urlrewrite>
