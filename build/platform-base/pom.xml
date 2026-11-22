@@ -69,7 +69,7 @@
         <jackson.version>2.22.4</jackson.version>
         <jackson.annotations.version>2.22</jackson.annotations.version>
 
-        <spring.version>5.3.39</spring.version>
+        <spring.version>7.0.9</spring.version>
         <spring.security.version>5.8.16</spring.security.version>
 
         <aspectj.version>1.9.2</aspectj.version>
