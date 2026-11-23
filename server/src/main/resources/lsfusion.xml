@@ -174,10 +174,21 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
+    <!-- right before initModuleOrderTask, the first to need the database (it reads the code of the module LogicsExtendCode), and right after initModuleDependenciesTask, so that nothing runs beside it : waiting for PostgreSQL to be up, it would hold back the report of any task failing beside it (a failed task is reported only once every running task is done) -->
+    <bean id="ensureDBTask" class="lsfusion.server.physics.exec.db.controller.init.EnsureDBTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="initModuleDependenciesTask"/>
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
     <bean id="initModuleOrderTask" class="lsfusion.server.physics.dev.module.controller.init.InitModuleOrderTask">
         <property name="dependencies">
             <set>
                 <ref bean="initModuleDependenciesTask"/>
+                <ref bean="ensureDBTask"/> <!-- the code of the module LogicsExtendCode is read from the database -->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -348,17 +359,6 @@
                 <ref bean="markRecursionsTask"/> <!-- since JoinAction.isRecursive is used in a lot of methods -->
             </set>
         </property>
-    </bean>
-
-    <!-- no earlier than initReflectionEventsTask, the first to need the database : waiting for PostgreSQL to be up, it holds back the report of any task failing beside it (a failed task is reported only once every running task is done) -->
-    <bean id="ensureDBTask" class="lsfusion.server.physics.exec.db.controller.init.EnsureDBTask">
-        <property name="dependencies">
-            <set>
-                <ref bean="finalizeTask"/>
-                <ref bean="initIndicesTask"/>
-            </set>
-        </property>
-        <property name="BL" ref="businessLogics"/>
     </bean>
 
     <bean id="initReflectionEventsTask" class="lsfusion.server.physics.admin.reflection.controller.init.InitReflectionEventsTask">

@@ -261,7 +261,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         this.path = lsfPath;
     }
 
-    protected ScriptingLogicsModule(String code, BaseLogicsModule baseModule, BusinessLogics BL) {
+    // a module of no file : a code evaluated at run time, the module LogicsExtendCode
+    // (BusinessLogics.createLogicsExtendCodeModule)
+    public ScriptingLogicsModule(String code, BaseLogicsModule baseModule, BusinessLogics BL) {
         assert code != null;
         
         setBaseLogicsModule(baseModule);

@@ -457,14 +457,31 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public void initModuleOrders() {
         modules.fillNameToModules();
-        if (!isRedundantString(topModule)) {
-            modules.filterWithTopModule(topModule);
-        }
         modules.setOrderDependencies(orderDependencies);
-        modules.orderModules();
+        modules.orderModules(topModule, createLogicsExtendCodeModule());
 
         fillNamespaceToModules();
         fillModulesVisibleAndOrder();
+    }
+
+    // the module of the code kept in SystemEvents.logicsExtendCode[] : a module of the logics over all its other
+    // modules, so its code declares what any module may - classes and their tables, stored data, events,
+    // onStarted() + {} - and is synchronized with the database as theirs is. The code is read as the logics is about
+    // to be built, so a change of it takes effect at the next start. With no code the module is there all the same,
+    // empty : were it dropped with its code, db.denyDropModules might deny that. A module nothing but its REQUIRE
+    // brought in is dropped with the code, and db.denyDropModules may deny that drop
+    private static final String LOGICS_EXTEND_CODE_MODULE = "LogicsExtendCode";
+
+    // made for ModuleList.orderModules, which keeps the modules its code requires as well and puts it over them all once
+    // they are ordered. The header goes on the first line of the code, so the lines of the module are the code's; the
+    // module, which has no file, is named for its errors, and its header is parsed here, as InitModuleDependenciesTask
+    // parsed the others'
+    private ScriptingLogicsModule createLogicsExtendCodeModule() {
+        String code = nvl(getDbManager().readLogicsExtendCode(), "");
+        ScriptingLogicsModule module = new ScriptingLogicsModule("MODULE " + LOGICS_EXTEND_CODE_MODULE + "; " + code, LM, this);
+        module.getErrLog().setModuleId(LOGICS_EXTEND_CODE_MODULE);
+        module.runInit(ScriptingLogicsModule::initModuleDependencies);
+        return module;
     }
 
     private void fillNamespaceToModules() {

@@ -104,6 +104,16 @@ public class ExternalApiAccessIT {
         }
     }
 
+    // the code of the module LogicsExtendCode is saved, and dropped, only by a call that may evaluate a script : a drop
+    // changes the logics as a code does
+    @Test
+    public void theLogicsCodeRequiresTheRightToEvaluate() throws Exception {
+        Assert.assertEquals("refused", post("/exec?action=ExtendCodeRights.ecrSaveLogics", "").body());
+        Assert.assertEquals("saved", postAsAdmin("/exec?action=ExtendCodeRights.ecrSaveLogics", "").body());
+        Assert.assertEquals("refused", post("/exec?action=ExtendCodeRights.ecrDropLogics", "").body());
+        Assert.assertEquals("dropped", postAsAdmin("/exec?action=ExtendCodeRights.ecrDropLogics", "").body());
+    }
+
     // a form is built of the code saved, not of one its session wrote and did not save, for any call
     @Test
     public void aFormIsBuiltOfTheSavedCode() throws Exception {

@@ -1,0 +1,26 @@
+MODULE StartCodeCalls;
+
+REQUIRE SystemEvents;
+
+// the code of the module LogicsExtendCode (SystemEvents.logicsExtendCode[]) and the code of the connections for all
+// users, saved by a call through the Action API. The first is compiled with the logics at the next start
+// (StartExtendCodeIT)
+sccSetLogics (TEXT code) {
+    logicsExtendCode() <- code;
+    APPLY;
+}
+sccSetConnection (TEXT code) {
+    dataExtendCode() <- code;
+    APPLY;
+}
+
+// a resource the code names in a literal, named by data between two separators, as a string sent to a client reads it
+// (ReadInlineFilesAction) : found only once a literal of a module names it, not while the code of the module is only
+// saved. One separator in a literal puts nothing between two
+inlineFilesRead = DATA LOCAL TEXT ();
+readInlineFiles INTERNAL 'lsfusion.tests.ReadInlineFilesAction' (TEXT);
+sccSeparator = '<PQWERJUQMASPRETQT/>';
+sccResourceNamed () {
+    readInlineFiles('a' + sccSeparator() + 'StartCodeResource.txt' + sccSeparator() + 'b');
+    RETURN inlineFilesRead();
+}

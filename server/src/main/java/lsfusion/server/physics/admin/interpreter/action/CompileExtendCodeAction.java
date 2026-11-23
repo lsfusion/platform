@@ -18,7 +18,9 @@ import static lsfusion.base.BaseUtils.nvl;
 // failed with to extendCodeError[] (NULL if it compiles): a code that does not compile is not saved - where it is used,
 // such a code is skipped. Whatever the compilation throws is what it failed with : an error of the code, or a check of
 // what the code makes (the objects of a form, the copy of the navigator). A code runs as a script does, so one of a user
-// who may not evaluate a script (UserController.canEvaluate) is not compiled, and not saved either
+// who may not evaluate a script (UserController.canEvaluate) is not compiled, and not saved either. A code compiled only
+// with the whole logics, as the server starts, is not compiled here - only the right of its user is checked -, and an
+// error of it stops the start
 public abstract class CompileExtendCodeAction extends InternalAction {
     protected CompileExtendCodeAction(SystemEventsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);

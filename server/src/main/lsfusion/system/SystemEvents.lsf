@@ -1138,7 +1138,7 @@ extendCode(STRING sid) = PREV(extendCode(form(sid)));
 // and let go as a code is applied (WAIT), for a connection made right after that to take the code that was saved
 connectionExtendCode (User user) = CONCAT '\n', dataExtendCode(), dataExtendCode(user) LAZY WAIT;
 
-// what the compilation failed with, or that the user may not write a code, NULL if the code compiles
+// what the compilation failed with, or that the user may not write a code, NULL if neither
 extendCodeError = DATA LOCAL TEXT ();
 // compile a code as it is compiled where it is used, running nothing of it: a form's (by its canonical name) under the
 // connection's code given before it, as the form opens in a connection that code customizes, the connection's as a
@@ -1312,6 +1312,41 @@ customizeNavigatorUser(TEXT code) {
 NAVIGATOR {
     system {
         NEW customize[] BEFORE performance SHOWIF isWeb();
+    }
+}
+
+// the code of the module LogicsExtendCode (BusinessLogics.createLogicsExtendCodeModule), read before the logics is
+// built (DBManager.readLogicsExtendCode) : so the table and the field are named here
+TABLE logicsExtendCode 'SystemEvents_logicsExtendCode' () NODEFAULT;
+logicsExtendCode = DATA TEXT () TABLE logicsExtendCode MATERIALIZED 'SystemEvents_logicsExtendCode';
+
+// a change of the code changes the logics, and so does a drop, which drops what the module declares : a drop is checked
+// with the code dropped. Nothing is compiled - a module of the logics is compiled with the whole logics, as the server starts
+compileLogicsExtendCode INTERNAL 'lsfusion.server.physics.admin.interpreter.action.CompileLogicsExtendCodeAction' (TEXT);
+WHEN CHANGED(logicsExtendCode()) DO {
+    compileLogicsExtendCode(OVERRIDE logicsExtendCode(), PREV(logicsExtendCode()));
+    refuseExtendCode();
+}
+
+FORM customizeLogics '{logics.customize.start}' IMAGE 'settings'
+    PROPERTIES logicsExtendCode '{logics.customize.start}' = jsonCode(logicsExtendCode()) CUSTOM 'interpreter' ON CHANGE {
+        INPUT s = TEXT DO
+            logicsExtendCode() <- nullEmpty(fieldText(JSON((s)), 'text'));
+    }
+;
+
+DESIGN customizeLogics {
+    PROPERTY(logicsExtendCode) {
+        fill = 1;
+        captionVertical = TRUE;
+        charHeight = 30;
+        charWidth = 50;
+    }
+}
+
+NAVIGATOR {
+    system {
+        NEW customizeLogics AFTER customize SHOWIF isWeb();
     }
 }
 

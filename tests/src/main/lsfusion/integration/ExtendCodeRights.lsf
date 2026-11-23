@@ -25,6 +25,24 @@ ecrWrite (STRING kind) {
     }
 } @@noauth;
 
+// the code of the module LogicsExtendCode, saved and dropped by the external API test with no login and authenticated :
+// both need the right to evaluate a script, a drop changing the logics as a code does. What remains is read in a new
+// session
+ecrSaveLogics () {
+    logicsExtendCode() <- ecrMarker();
+    APPLY;
+    NEWSESSION {
+        RETURN IF logicsExtendCode() THEN 'saved' ELSE 'refused';
+    }
+} @@noauth;
+ecrDropLogics () {
+    logicsExtendCode() <- NULL;
+    APPLY;
+    NEWSESSION {
+        RETURN IF logicsExtendCode() THEN 'refused' ELSE 'dropped';
+    }
+} @@noauth;
+
 // a form with a code saved and another one its session writes : the export shows which one the form is built of
 FORM ecrForm;
 ecrSavedCode() = 'ecrFromSaved() = \'ecrSavedMark\';\nEXTEND FORM ecrForm PROPERTIES() ecrFromSaved';

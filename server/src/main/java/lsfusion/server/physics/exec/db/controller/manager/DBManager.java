@@ -144,8 +144,10 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Savepoint;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -3276,6 +3278,35 @@ public class DBManager extends LogicsManager implements InitializingBean {
         ImplementTable table = LM.tableFactory.getImplementTablesMap().get(tableName); // need to pack table after column is deleted
         if (table != null)
             sql.packTable(table, OperationOwner.unknown, TableOwner.global);
+    }
+
+    // the table of SystemEvents.logicsExtendCode[] and its field, both named so in SystemEvents.lsf for the read below
+    private static final String LOGICS_EXTEND_CODE_DB_NAME = "SystemEvents_logicsExtendCode";
+
+    // the code of the module LogicsExtendCode (BusinessLogics.createLogicsExtendCodeModule) : read before the logics is
+    // built, so not through a property but from its table, over a connection of its own - no session has a server yet.
+    // Null in a dry run, which opens no connection, and with no table or no field yet - a new database, the first start
+    // of a version that has none
+    public String readLogicsExtendCode() {
+        if (Settings.get().isDryRun())
+            return null;
+
+        SQLSyntax syntax = adapter.getSyntax();
+        try {
+            String select = "SELECT " + syntax.getFieldName(LOGICS_EXTEND_CODE_DB_NAME) + " FROM " + syntax.getTableName(LOGICS_EXTEND_CODE_DB_NAME);
+            Result<String> code = new Result<>();
+            adapter.runMaintenance(adapter.getMaster(), connection -> {
+                try (Statement statement = connection.createStatement(); ResultSet result = statement.executeQuery(select)) {
+                    if (result.next())
+                        code.set(result.getString(1));
+                }
+            });
+            return code.result;
+        } catch (SQLException e) {
+            if (syntax.isTableDoesNotExist(e) || "42703".equals(e.getSQLState())) // undefined_column
+                return null;
+            throw Throwables.propagate(e);
+        }
     }
 
     // может вызываться до инициализации DBManager

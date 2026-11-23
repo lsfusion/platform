@@ -39,12 +39,28 @@ public class ModuleList {
         this.orderDependencies = orderDependencies;
     }
     
-    public void orderModules() {
+    // the modules of the logics, in order, and a module over them all : with top modules given, only the system modules,
+    // the top modules and what they and that module require are kept
+    public void orderModules(String topModuleNames, LogicsModule overModule) {
+        if (!isRedundantString(topModuleNames))
+            filterWithTopModule(topModuleNames, overModule);
 //        outDotFile();
         Map<String, List<String>> graph = buildModuleGraphWithOrderDependencies();
         modules = dfsTopologicalSort(graph);
+        addOver(overModule);
     }
     
+    // a module over all the others, once they are ordered : it requires every one of them, so it comes last and sees
+    // every name. What its header requires is replaced : the parse of the module checks that each is one of them
+    private void addOver(LogicsModule module) {
+        LinkedHashSet<String> requiredNames = new LinkedHashSet<>();
+        for (LogicsModule required : modules)
+            requiredNames.add(required.getName());
+        module.setRequiredNames(requiredNames);
+        add(module);
+        putName(module);
+    }
+
     private Map<String, List<String>> buildModuleGraphWithOrderDependencies() {
         Map<String, List<String>> graph = buildModuleGraph();
 
@@ -57,12 +73,16 @@ public class ModuleList {
         return graph;
     }
     
-    public void filterWithTopModule(String topModuleNames) {
+    private void filterWithTopModule(String topModuleNames, LogicsModule overModule) {
         Set<LogicsModule> remainingModules = new HashSet<>();
         Queue<LogicsModule> queue = new LinkedList<>();
 
         // First, we always add system modules
         remainingModules.addAll(systemModules);
+
+        // what the module over all the others requires, which its code may give : not the module itself, which is added
+        // once the others are ordered
+        queue.add(overModule);
 
         // comma-separated list of (independent) top modules, same convention as db.allowDropTables / db.allowDropModules
         for (String topModuleName : topModuleNames.split(",")) {
@@ -241,12 +261,15 @@ public class ModuleList {
 
     public void fillNameToModules() {
         nameToModule.clear();
-        for (LogicsModule module : modules) {
-            if (nameToModule.containsKey(module.getName())) {
-                throw new RuntimeException(String.format("[error]:\tmodule '%s' has already been added", module.getName()));
-            }
-            nameToModule.put(module.getName(), module);
+        for (LogicsModule module : modules)
+            putName(module);
+    }
+
+    private void putName(LogicsModule module) {
+        if (nameToModule.containsKey(module.getName())) {
+            throw new RuntimeException(String.format("[error]:\tmodule '%s' has already been added", module.getName()));
         }
+        nameToModule.put(module.getName(), module);
     }
 
 }

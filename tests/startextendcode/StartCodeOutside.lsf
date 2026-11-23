@@ -1,0 +1,7 @@
+MODULE StartCodeOutside;
+
+REQUIRE System;
+
+// a module the classpath has and the top module does not require : the logics has it only once the logics' code
+// requires it - the module LogicsExtendCode goes over the modules of the logics only (StartExtendCodeIT)
+sccOutside () { RETURN 'outside'; }
