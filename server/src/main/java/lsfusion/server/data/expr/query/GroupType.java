@@ -248,8 +248,10 @@ public abstract class GroupType implements AggrType {
             this.valueNull = valueNull;
         }
 
-        public boolean needsOrderTiebreak() { // the custom function is a black box
-            return setOrdered;
+        // an ordered-set aggregate (WITHIN GROUP) takes the ordered expressions as its arguments, so a key appended to them changes the function called
+        // (percentile_cont(0.5) WITHIN GROUP (ORDER BY x, key) does not exist), and its result depends only on the ordered values anyway
+        public boolean needsOrderTiebreak() {
+            return false;
         }
 
         public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {

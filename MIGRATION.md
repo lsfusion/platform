@@ -357,7 +357,7 @@ the places to fix are then in the assert log, under the same messages.
 
 ### Deterministic order-dependent aggregations
 
-Order-dependent aggregations and row picks (`GROUP LAST` / `CONCAT` / ordered `CUSTOM`,
+Order-dependent aggregations and row picks (`GROUP LAST` / `CONCAT`,
 `TOP` picks, the order-sensitive `PARTITION` types, `GROUP AGGR` / `NAGGR` / `EQUAL` on
 duplicate `BY` keys, assignments with extra `WHERE` parameters, the `FOR ... NEW`
 numbering) now implicitly append the object order as the `ORDER` tiebreak

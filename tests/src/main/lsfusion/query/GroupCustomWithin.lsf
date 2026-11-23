@@ -1,0 +1,55 @@
+MODULE GroupCustomWithin;
+
+REQUIRE TestUtils;
+
+// GROUP CUSTOM ... WITHIN ORDER calls an ordered-set aggregate with the listed arguments and order (#2008: the form
+// without arguments before WITHIN stopped the server from starting with an IndexOutOfBoundsException, and the other
+// one passed the aggregate an extra ordered argument, so that reading it failed in the database)
+
+CLASS GroupCustomWithinTeam 'Team';
+CLASS GroupCustomWithinGame 'Game';
+gcwTeam 'Team' = DATA GroupCustomWithinTeam (GroupCustomWithinGame);
+gcwGoals 'Goals' = DATA INTEGER (GroupCustomWithinGame);
+
+gcwMedian () = GROUP CUSTOM DOUBLE 'percentile_cont' 0.5 WITHIN ORDER gcwGoals(GroupCustomWithinGame g);
+gcwMode () = GROUP CUSTOM INTEGER 'mode' WITHIN ORDER gcwGoals(GroupCustomWithinGame g);
+
+gcwTeamMedian (GroupCustomWithinTeam t) = GROUP CUSTOM DOUBLE 'percentile_cont' 0.5 WITHIN ORDER gcwGoals(GroupCustomWithinGame g) IF gcwTeam(g) = t;
+gcwTeamMode (GroupCustomWithinTeam t) = GROUP CUSTOM INTEGER 'mode' WITHIN ORDER gcwGoals(GroupCustomWithinGame g) IF gcwTeam(g) = t;
+
+gcwMedianBy (GroupCustomWithinTeam t) = GROUP CUSTOM DOUBLE 'percentile_cont' 0.5 WITHIN ORDER gcwGoals(GroupCustomWithinGame g) BY gcwTeam(g);
+
+gcwNewGame (GroupCustomWithinTeam t, INTEGER goals) {
+    NEW g = GroupCustomWithinGame {
+        gcwTeam(g) <- t;
+        gcwGoals(g) <- goals;
+    }
+}
+
+testGroupCustomWithin 'GROUP CUSTOM ... WITHIN ORDER' () {
+    NEW t = GroupCustomWithinTeam {
+        NEW other = GroupCustomWithinTeam {
+            // the team scores 5, 7 and 7 goals, the other one 1, 2, 2, 2 and 10: all the games give 1, 2, 2, 2, 5, 7, 7, 10
+            gcwNewGame(t, 5);
+            gcwNewGame(t, 7);
+            gcwNewGame(t, 7);
+            gcwNewGame(other, 1);
+            gcwNewGame(other, 2);
+            gcwNewGame(other, 2);
+            gcwNewGame(other, 2);
+            gcwNewGame(other, 10);
+            // applied: read over the changes of the session, the 0.5 of percentile_cont is not a direct argument the database takes
+            APPLY;
+
+            assertEquals(gcwMedian(), 3.5, 'percentile_cont over all the games');
+            assertEquals(gcwMode(), 2, 'mode over all the games');
+
+            assertEquals(gcwTeamMedian(t), 7.0, 'percentile_cont over the games of a team');
+            assertEquals(gcwTeamMode(t), 7, 'mode over the games of a team');
+            assertEquals(gcwTeamMedian(other), 2.0, 'percentile_cont over the games of another team');
+
+            assertEquals(gcwMedianBy(t), 7.0, 'percentile_cont BY team');
+            assertEquals(gcwMedianBy(other), 2.0, 'percentile_cont BY another team');
+        }
+    }
+}

@@ -3483,13 +3483,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LPWithParams> notNullParams = mergeLists(whereProps, removeList(mainProps, type.getSkipWhereIndex()), groupProps);
         boolean ordersNotNull = doesExtendContext(0, notNullParams, orderProps);
 
-        LPWithParams patchedWhere = patchExtendParams(notNullParams, orderProps, ordersNotNull, newContext, oldContextSize, debugPoint);
+        // an ordered-set aggregate (WITHIN ORDER) evaluates its main expressions once per group, as direct arguments, and aggregates the ordered ones, and an aggregate can have no main expressions at all,
+        // so the class check goes into the first ordered expression, which keeps its value where the check passes
+        boolean patchOrder = whereProp == null && type instanceof CustomGroupingType && (mainProps.isEmpty() || ((CustomGroupingType) type).setOrdered);
+        LPWithParams patchedWhere = patchExtendParams(patchOrder ? mergeLists(singletonList(orderProps.get(0)), notNullParams) : notNullParams, orderProps, ordersNotNull, newContext, oldContextSize, debugPoint);
         if (orderIgnored && !orderProps.isEmpty()) {
             patchedWhere = addScriptedIfProp(mergeLists(singletonList(patchedWhere), orderProps));
             orderProps = Collections.emptyList();
         }
         if(whereProp != null || (type == GroupingType.AGGR || type == GroupingType.NAGGR))
             whereProp = patchedWhere;
+        else if(patchOrder)
+            orderProps.set(0, patchedWhere);
         else
             mainProps.set(0, patchedWhere);
 
