@@ -166,8 +166,9 @@ public abstract class GController {
     public void controllerCallbackResult(long requestIndex, JavaScriptObject result) {
         resolveControllerCallback(controllerCallbacks, requestIndex, result);
     }
-    public void controllerCallbackException(long requestIndex, String message, boolean cancelled) {
-        rejectControllerCallback(controllerCallbacks, requestIndex, message, cancelled);
+    // whether a call waited for it
+    public boolean controllerCallbackException(long requestIndex, String message, boolean cancelled) {
+        return rejectControllerCallback(controllerCallbacks, requestIndex, message, cancelled);
     }
     private static native void resolveControllerCallback(JavaScriptObject callbacks, double requestIndex, JavaScriptObject result) /*-{
         var cb = callbacks[requestIndex];
@@ -176,13 +177,15 @@ public abstract class GController {
             cb.resolve(result == null ? undefined : result); // no/null server value -> JS undefined
         }
     }-*/;
-    private static native void rejectControllerCallback(JavaScriptObject callbacks, double requestIndex, String message, boolean cancelled) /*-{
+    private static native boolean rejectControllerCallback(JavaScriptObject callbacks, double requestIndex, String message, boolean cancelled) /*-{
         var cb = callbacks[requestIndex];
         if(cb) {
             delete callbacks[requestIndex];
             var error = new Error(message || "Cancelled");
             error.cancelled = cancelled;
             cb.reject(error);
+            return true;
         }
+        return false;
     }-*/;
 }

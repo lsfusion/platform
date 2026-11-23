@@ -242,9 +242,27 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     private long executeNavigatorAction(final String actionSID, final int type, final Runnable action, Boolean suppressForbidDuplicate, boolean sync, ClientPushAsyncResult pushAsyncResult) {
+        return executeNavigatorRequest("executeNavigatorAction", (requestIndex, lastReceivedRequestIndex) ->
+                remoteNavigator.executeNavigatorAction(requestIndex, lastReceivedRequestIndex, actionSID, type, pushAsyncResult != null ? pushAsyncResult.serialize() : null),
+                action, suppressForbidDuplicate, sync);
+    }
+
+    // a call of an action by its name the client makes itself : through the navigator's controller, as JS code makes one
+    public void executeAction(String actionName) {
+        executeNavigatorRequest("exec", (requestIndex, lastReceivedRequestIndex) ->
+                remoteNavigator.exec(requestIndex, lastReceivedRequestIndex, actionName, new Object[0], null),
+                null, null, true);
+    }
+
+    // a request to the navigator that it answers with a server response
+    private interface NavigatorRequest {
+        ServerResponse run(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;
+    }
+
+    private long executeNavigatorRequest(String name, NavigatorRequest navigatorRequest, final Runnable action, Boolean suppressForbidDuplicate, boolean sync) {
         if (action != null) {
             if (lock.tryAcquire()) {
-                return tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate, sync, pushAsyncResult);
+                return tryExecuteNavigatorRequest(name, navigatorRequest, suppressForbidDuplicate, sync);
             } else {
                 SwingUtils.invokeLater(() -> {
                     Timer timer = new Timer(1000, e -> action.run());
@@ -255,7 +273,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             }
         } else {
             lock.acquireUninterruptibly();
-            return tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate, sync, pushAsyncResult);
+            return tryExecuteNavigatorRequest(name, navigatorRequest, suppressForbidDuplicate, sync);
         }
     }
 
@@ -278,12 +296,12 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         });
     }
 
-    private long tryExecuteNavigatorAction(final String actionSID, final int type, final Boolean suppressForbidDuplicate, boolean sync, ClientPushAsyncResult pushAsyncResult) {
+    private long tryExecuteNavigatorRequest(String name, NavigatorRequest navigatorRequest, final Boolean suppressForbidDuplicate, boolean sync) {
         try {
-            RmiRequest<ServerResponse> request = new RmiRequest<ServerResponse>("executeNavigatorAction") {
+            RmiRequest<ServerResponse> request = new RmiRequest<ServerResponse>(name) {
                 @Override
                 protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
-                    return remoteNavigator.executeNavigatorAction(requestIndex, lastReceivedRequestIndex, actionSID, type, pushAsyncResult != null ? pushAsyncResult.serialize() : null);
+                    return navigatorRequest.run(requestIndex, lastReceivedRequestIndex);
                 }
 
                 @Override

@@ -60,10 +60,12 @@ onStoppingApply() {
     APPLY;
 }
 
+// the clients run it as they start, by its name through the navigator's controller, which lets in an action of the API
+// for a logged-in user whatever enableAPI is
 onClientStartedApply() {
     onClientStarted();
     APPLY;
-}
+} @@api;
 
 platformVersion = DATA TEXT();
 platformBuildNumber = DATA INTEGER();
@@ -210,11 +212,12 @@ toggleNavigatorPinMode '{system.events.navigator.pin.toggle}' () {
 }
 navigatorPinModeClass = ABSTRACT VALUE STRING();
 
+// the web client's log pin button runs it, as the clients' start runs onClientStartedApply
 toggleLogsPinMode '{system.events.logs.pin.toggle}' () {
     designEnvLogsPinMode(currentDesignEnv()) <- NOT logsPinMode();
     useClientLogsPinMode(currentDesignEnv()) <- TRUE;
     apply();
-}
+} @@api;
 
 needReload = DATA LOCAL BOOLEAN();
 WHEN LOCAL CHANGED (captionTheme(DesignEnv de)) OR CHANGED (captionNavbar(de)) OR CHANGED (mobileMode(de))

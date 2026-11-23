@@ -22,7 +22,7 @@ title: 'SystemEvents'
 | `onWebClientInit[STRING]`        | список по ресурсу с ключом-путём к CSS / JS-ресурсу, выполняется при инициализации веб-клиента  |
 | `onLoginInit[STRING]`            | список по ресурсу, выполняется на странице входа                                               |
 
-`notFirstStart[]` — хранимый признак того, что сервер уже запускался, а `firstStart[]` — его отрицание, выбирающее первый запуск. У каждого обработчика есть обёртка `…Apply` (`onInitApply[]`, `onStartedApply[]`, `onFinallyStartedApply[]`, `onStoppingApply[]`, `onClientStartedApply[]`), которая выполняет список и фиксирует изменения через `APPLY`. `onStartedApply[]` дополнительно запускает `onFirstStarted[]` на первом запуске и устанавливает `notFirstStart[]`.
+`notFirstStart[]` — хранимый признак того, что сервер уже запускался, а `firstStart[]` — его отрицание, выбирающее первый запуск. У каждого обработчика есть обёртка `…Apply` (`onInitApply[]`, `onStartedApply[]`, `onFinallyStartedApply[]`, `onStoppingApply[]`, `onClientStartedApply[]`), которая выполняет список и фиксирует изменения через `APPLY`. `onStartedApply[]` дополнительно запускает `onFirstStarted[]` на первом запуске и устанавливает `notFirstStart[]`. Веб- и десктоп-клиент выполняют `onClientStartedApply[]` при запуске, а веб-клиент — `toggleLogsPinMode[]` при нажатии кнопки закрепления окна логов, оба через контроллер навигатора. Оба действия помечены `@@api`, поэтому вошедший пользователь выполняет их при любом значении `enableAPI`, в том числе через внешний API.
 
 ### Версии
 

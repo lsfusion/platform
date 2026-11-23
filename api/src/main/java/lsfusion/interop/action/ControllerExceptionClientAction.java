@@ -13,4 +13,9 @@ public class ControllerExceptionClientAction extends ControllerCallbackClientAct
         this.message = message;
         this.cancelled = cancelled;
     }
+
+    @Override
+    public Object dispatch(ClientActionDispatcher dispatcher) {
+        throw new RuntimeException(message);
+    }
 }

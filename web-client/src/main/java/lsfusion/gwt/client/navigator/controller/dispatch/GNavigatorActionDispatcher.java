@@ -149,9 +149,11 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
         gController.controllerCallbackResult(getDispatchingIndex(), GController.getResult(action));
     }
 
+    // an error no call of the controller waits for - of a call the client makes itself - is shown as the base does
     @Override
     public void execute(GControllerExceptionAction action) {
-        gController.controllerCallbackException(getDispatchingIndex(), action.message, action.cancelled);
+        if (!gController.controllerCallbackException(getDispatchingIndex(), action.message, action.cancelled))
+            super.execute(action);
     }
 
     @Override

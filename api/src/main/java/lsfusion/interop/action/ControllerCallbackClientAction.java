@@ -9,14 +9,14 @@ import java.io.IOException;
  *    ⇒ no/undefined value) -> onResult;
  *  - {@link ControllerExceptionClientAction} — a business/property/cancel error -> onException.
  *
- * Web-only: produced by RemoteForm for browser-originated controller calls and converted to a GWT action via
- * {@code @Converter}; it never reaches a desktop client, so {@link #dispatch} is unsupported.
+ * The web client converts them to GWT actions via {@code @Converter}. The desktop client calls a controller only for
+ * itself, with no JS callback: it drops a result and raises an error.
  */
 public abstract class ControllerCallbackClientAction implements ClientAction {
 
 
     @Override
     public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        throw new UnsupportedOperationException("controller callback actions are web-only");
+        return null;
     }
 }

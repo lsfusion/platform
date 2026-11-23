@@ -185,7 +185,7 @@ public abstract class MainFrame extends JFrame {
             //need to allow JRPDFExporter using system fonts
             FontFactory.registerDirectories();
 
-            frame.executeNavigatorAction("SystemEvents.onClientStartedApply[]", 0, null, null);
+            frame.executeAction("SystemEvents.onClientStartedApply[]");
         } catch (Throwable e) {
             closeSplashScreen();
             logger.error(getString("client.error.application.initialization"), e);

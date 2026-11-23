@@ -19,6 +19,7 @@ import lsfusion.gwt.client.action.printer.GPrintFileAction;
 import lsfusion.gwt.client.action.printer.GWriteToPrinterAction;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
+import lsfusion.gwt.client.base.exception.RemoteMessageDispatchException;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.log.GLog;
@@ -382,12 +383,14 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     public void execute(GUpdateEditValueAction action) {
     }
 
+    // a controller's answer no call waits for : a result is dropped, an error is shown as a failed request's
     @Override
     public void execute(GControllerResultAction action) {
     }
 
     @Override
     public void execute(GControllerExceptionAction action) {
+        showErrorMessage(new RemoteMessageDispatchException(action.message), getPopupOwner());
     }
 
     @Override

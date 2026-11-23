@@ -23,6 +23,7 @@ import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorAction;
+import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorControllerExecAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorRequestCountingAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.VoidNavigatorAction;
@@ -891,12 +892,19 @@ public abstract class FormsController {
         }
     }
 
-    public void executeAction(String actionSID, Runnable onRequestFinished) {
-        executeNavigatorAction(actionSID, false, true, 0, onRequestFinished, null);
+    // a call of an action by its name the client makes itself : through the navigator's controller, as JS code makes one,
+    // but sync
+    public void executeAction(String actionName, Runnable onRequestFinished) {
+        syncDispatch(new NavigatorControllerExecAction(actionName, new ArrayList<>(), null), new ServerResponseCallback(false) {
+            @Override
+            protected Runnable getOnRequestFinished() {
+                return onRequestFinished;
+            }
+        });
     }
     // there is no event when the element is activated from code rather than by a click, and then no modifier is held
     public void executeNavigatorAction(GNavigatorElement element, NativeEvent event, boolean sync) {
-        Function<GPushAsyncResult, Long> execute = push -> executeNavigatorAction(element.canonicalName, event != null && event.getCtrlKey(), sync, 1, null, push);
+        Function<GPushAsyncResult, Long> execute = push -> executeNavigatorAction(element.canonicalName, event != null && event.getCtrlKey(), sync, 1, push);
         if (element.asyncExec != null)
             element.asyncExec.exec(this, null, null, event instanceof Event ? (Event) event : null, new GAsyncExecutor(getDispatcher(), execute, sync));
         else
@@ -914,19 +922,11 @@ public abstract class FormsController {
             }
             executeVoidAction(-1);
         } else
-            executeNavigatorAction(notification, false, true, 2, null, null);
+            executeNavigatorAction(notification, false, true, 2, null);
     }
-    public long executeNavigatorAction(String actionSID, boolean disableForbidDuplicate, boolean sync, int type, Runnable onRequestFinished, GPushAsyncResult pushAsyncResult) {
+    public long executeNavigatorAction(String actionSID, boolean disableForbidDuplicate, boolean sync, int type, GPushAsyncResult pushAsyncResult) {
         ExecuteNavigatorAction navigatorAction = new ExecuteNavigatorAction(actionSID, type, pushAsyncResult);
-        ServerResponseCallback callback = new ServerResponseCallback(disableForbidDuplicate) {
-            @Override
-            protected Runnable getOnRequestFinished() {
-                if(onRequestFinished != null)
-                    return onRequestFinished;
-
-                return super.getOnRequestFinished();
-            }
-        };
+        ServerResponseCallback callback = new ServerResponseCallback(disableForbidDuplicate);
         if(sync)
             return syncDispatch(navigatorAction, callback);
         else

@@ -657,7 +657,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 }
             } else {
                 try (DataSession session = createSession()) {
-                    runAction(session, actionSID, type == 1, pushAsyncResult, stack);
+                    runAction(session, actionSID, pushAsyncResult, stack);
                 }
             }
         });
@@ -855,23 +855,18 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
-    private void runAction(DataSession session, String canonicalName, boolean isNavigatorAction, byte[] pushAsyncResult, ExecutionStack stack) throws SQLException, SQLHandledException {
-        final Action<?> action;
-        if (isNavigatorAction) {
-            final NavigatorElement element = getNavigator().getElement(canonicalName);
+    private void runAction(DataSession session, String canonicalName, byte[] pushAsyncResult, ExecutionStack stack) throws SQLException, SQLHandledException {
+        final NavigatorElement element = getNavigator().getElement(canonicalName);
 
-            if (!(element instanceof NavigatorAction)) {
-                throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.action.not.found}"));
-            }
-
-            if (!securityPolicy.checkNavigatorPermission(element)) {
-                throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.not.enough.permissions}"));
-            }
-
-            action = ((NavigatorAction) element).getAction();
-        } else {
-            action = businessLogics.findAction(canonicalName).action;
+        if (!(element instanceof NavigatorAction)) {
+            throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.action.not.found}"));
         }
+
+        if (!securityPolicy.checkNavigatorPermission(element)) {
+            throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.not.enough.permissions}"));
+        }
+
+        final Action<?> action = ((NavigatorAction) element).getAction();
         PushAsyncResult asyncResult = AsyncEventExec.deserializePush(pushAsyncResult,
                 () -> Action.getAsyncExec(action.getAsyncEventExec(false), getRemoteContext()));
         action.execute(MapFact.EMPTY(), session, stack, null, asyncResult);
