@@ -43,7 +43,6 @@ grammar LsfLogics;
     import lsfusion.server.language.form.FormPropertyOptions;
     import lsfusion.server.language.form.ScriptingFormEntity;
     import lsfusion.server.language.form.ScriptingFormEntity.RegularFilterInfo;
-    import lsfusion.server.language.form.design.Bounds;
     import lsfusion.server.language.form.design.ScriptingFormView;
     import lsfusion.server.language.form.object.ScriptingTreeGroup;
     import lsfusion.server.language.form.object.ScriptingGroupObject;
@@ -5895,16 +5894,10 @@ setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object v
         }
 	;
 
-componentPropertyValue returns [Object value] //commented literals are in designPropertyObject
-	:   //c=colorLiteral { $value = $c.val; }
-    //|   s=localizedStringLiteralNoID { $value = $s.val; }
-	//|   i=intLiteral { $value = $i.val; }
-	//|   d=doubleLiteral { $value = $d.val; }
-	|   dim=dimensionLiteral { $value = $dim.val; }
+componentPropertyValue returns [Object value]
+	:   dim=dimensionLiteral { $value = $dim.val; }
 	|   {";".equals(input.LT(2).getText())}?=> b=booleanLiteral { $value = $b.val; }
 	|   {";".equals(input.LT(2).getText())}?=> tb=tbooleanLiteral { $value = $tb.val; }
-	|   intB=boundsIntLiteral { $value = $intB.val; }
-	|   doubleB=boundsDoubleLiteral { $value = $doubleB.val; }
 	|   alignment=flexAlignmentLiteral { $value = $alignment.val; }
 	|   prop=designPropertyObject { $value = BaseUtils.nvl($prop.literal, $prop.property); }
 	;
@@ -6373,14 +6366,6 @@ tbooleanLiteral returns [boolean val]
 
 dimensionLiteral returns [Dimension val]
 	:	'(' x=intLiteral ',' y=intLiteral ')' { $val = new Dimension($x.val, $y.val); }
-	;
-
-boundsIntLiteral returns [Insets val]
-	:	'(' top=intLiteral ',' left=intLiteral ',' bottom=intLiteral ',' right=intLiteral ')' { $val = new Insets($top.val, $left.val, $bottom.val, $right.val); }
-	;
-
-boundsDoubleLiteral returns [Bounds val]
-	:	'(' top=doubleLiteral ',' left=doubleLiteral ',' bottom=doubleLiteral ',' right=doubleLiteral ')' { $val = new Bounds($top.val, $left.val, $bottom.val, $right.val); }
 	;
 
 codeLiteral returns [String val]
