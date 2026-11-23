@@ -265,7 +265,8 @@ C. FEEDBACK / REPORTING (`lsfusion_report_feedback`)
 4. Date and time literals MUST use the underscore formats:
    `2001_01_31` (`DATE`), `2001_01_31_14:30[:00]`
    (`DATETIME`), `14:30[:00]` (`TIME`). An ISO-style
-   `2001-01-31` is NOT a date literal.
+   `2001-01-31` or a slash-separated `31/01/2001` is NOT
+   a date literal: both are integer arithmetic.
 
 5. An expression whose comma is NOT enclosed in brackets of
    its own — `OVERRIDE a, b`, `CONCAT sep, a, b`,

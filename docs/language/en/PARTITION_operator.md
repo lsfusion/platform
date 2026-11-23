@@ -38,7 +38,7 @@ The `PARTITION` operator creates a property that, for each object collection, ei
 
 The window of a group consists of the object collections for which all main expressions and all group expressions are non-`NULL`. The window does not depend on where the property is used: the `WHERE` of an assignment of its value or a filter on a form selects among the computed values, and the collections outside that condition still take part in the window. A collection whose main expression is `NULL` neither receives a value nor takes a position in the order. With an order unique within the group, `PARTITION SUM 1 IF cond ORDER x` numbers the collections where `cond` holds consecutively from 1.
 
-The `BY` block describes the groups into which object collections are split. If the `BY` block is not specified, all object collections are considered to belong to the same group. A parameter of the created property does not split the groups by itself: only the values of the `BY` expressions do, so object collections that differ only in a parameter absent from `BY` fall into one window. Where a `WHERE` condition follows the expression — in the [`CHANGE`](CHANGE_operator.md) and [`EXPORT`](EXPORT_operator.md) operators — the `BY` block, like the other blocks of the operator, is written before `WHERE`.
+The `BY` block describes the groups into which object collections are split. If the `BY` block is not specified, all object collections are considered to belong to the same group. A parameter of the created property does not split the groups by itself: only the values of the `BY` expressions do, so object collections that differ only in a parameter absent from `BY` fall into one window. The same applies to a parameter of the upper context used in a main or order expression — for example, a parameter of the action or of the loop in which the operator is used: it becomes a parameter of the created property, so its fixed outer value selects among the computed values instead of restricting the window. To split the groups by its value, the parameter is specified in `BY`. Where a `WHERE` condition follows the expression — in the [`CHANGE`](CHANGE_operator.md) and [`EXPORT`](EXPORT_operator.md) operators — the `BY` block, like the other blocks of the operator, is written before `WHERE`.
 
 The `ORDER` block defines the order in which the aggregate function will be calculated or the distribution will take place. If this function is [non-commutative](../paradigm/Set_operations.md), the specified order must be uniquely determined. If a new parameter (not used earlier in the `PARTITION` and `BY` options and in the upper context) is declared in the expressions defining the order, the condition of non-`NULL`ness of all these expressions is automatically added when calculating the resulting value.
 
@@ -91,7 +91,7 @@ The `TOP` and `OFFSET` blocks restrict the subset of records selected inside eac
 
 - `DESC`
 
-    Keyword. Specifies a reverse iteration order for object collections.
+    Keyword. Specifies a reverse iteration order for object collections: the direction is reversed for every order expression of the list.
 
 - `orderExpr1, ..., orderExprK`
 
@@ -146,4 +146,11 @@ discountSum 'Discount by line' (OrderDetail d) =
                 ORDER sum(d), d
                 BY order(d);
 ;
+
+// numbering the lines of the order passed to the action: the parameter o is specified in BY.
+// Without it the numbering would run across the lines of all orders
+lineIndex = DATA LOCAL INTEGER (OrderDetail);
+numberLines (Order o) {
+    lineIndex(OrderDetail d) <- PARTITION SUM 1 IF order(d) = o ORDER d BY o WHERE order(d) = o;
+}
 ```

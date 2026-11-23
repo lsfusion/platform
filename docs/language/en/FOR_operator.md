@@ -43,7 +43,7 @@ In the case when the operator contains a `NEW` block, and no condition is specif
 
 - `DESC`
 
-    Keyword. Specifies a reverse iteration order for object collections. 
+    Keyword. Specifies a reverse iteration order for object collections: the direction is reversed for every order expression of the list.
 
 - `orderExpr1, ..., orderExprN`
 
@@ -126,6 +126,15 @@ createDetails (Order o)  {
     FOR in(Sku s) TOP 100 NEW d = OrderDetail DO {
         order(d) <- o;
         sku(d) <- s;
+    }
+}
+
+showLastSkus ()  {
+    // DESC is written once, before the order expressions, and reverses the order by each of them:
+    // by id descending, then by the Sku itself descending. A DESC after an expression
+    // (ORDER id(s) DESC, s) is not accepted here
+    FOR in(Sku s) ORDER DESC id(s), s TOP 3 DO {
+        MESSAGE 'Sku ' + id(s);
     }
 }
 ```

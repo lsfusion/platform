@@ -108,7 +108,7 @@ When exporting to **JSON**, a string value that starts and ends with a square or
 
 - `DESC`
 
-    Keyword. Specifies reverse sort order. By default, ascending sort is used.
+    Keyword. Specifies the reverse sort order for the preceding expression. By default, ascending sort is used.
 
 - `topExpr`
 

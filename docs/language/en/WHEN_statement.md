@@ -44,7 +44,7 @@ but it also has [a number of advantages](../paradigm/Simple_event.md).
 
 - `DESC`
 
-    Keyword. Specifies a reverse iteration order for object collections. 
+    Keyword. Specifies a reverse iteration order for object collections: the direction is reversed for every order expression of the list.
 
 - `orderExpr1, ..., orderExprM`
 

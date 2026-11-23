@@ -86,7 +86,7 @@ The `WHERE` block defines a condition under which an object collection will part
 
 - `DESC`
 
-    Keyword. Specifies a reverse iterate order for object collections. 
+    Keyword. Specifies a reverse iteration order for object collections: the direction is reversed for every order expression of the list.
 
 - `orderExpr1, ..., orderExprK`
 

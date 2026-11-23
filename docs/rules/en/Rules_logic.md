@@ -24,7 +24,11 @@ title: 'Rules: domain logic'
 
 3. The assistant MUST assume standard `NULL` propagation
    for property expressions:
-   if any parameter is `NULL`, the result is `NULL`.
+   if any operand is `NULL`, the result is `NULL`.
+   A `NULL` argument acts only through the operands that use
+   it: with a `DATA` property `a`, `OVERRIDE a(x, d), b(x)` is
+   `b(x)` for a `NULL` date `d`. To get `NULL`, use
+   `(OVERRIDE a(x, d), b(x)) IF d IS DATE`.
 
    Exceptions that do NOT nullify on a single `NULL` operand:
    the selection operators — `OVERRIDE`, which returns the first
@@ -343,10 +347,11 @@ title: 'Rules: domain logic'
    the property: to number rows separately for each `loc` in
    `idx(loc, x) <- PARTITION SUM 1 IF cond(loc, x) ORDER x`, the
    assistant MUST add `BY loc`. Without it the numbering runs
-   across all values of `loc`. Rows whose summed expression is
-   `NULL` are not in the window, so `SUM 1 IF cond` by itself
-   numbers, under a unique order, the rows where `cond` holds
-   from 1.
+   across all values of `loc`. So it is with `idx(x) <- ...`
+   where `loc` is an action or loop parameter. Rows whose
+   summed expression is `NULL` are not in the window, so
+   `SUM 1 IF cond` by itself numbers, under a unique order,
+   the rows where `cond` holds from 1.
 
 ## Actions and assignment
 
@@ -799,6 +804,8 @@ title: 'Rules: domain logic'
    on the operator, or declare the property itself
    `DATA LOCAL NESTED`, which carries it over
    without being listed on the operator.
+   A local not carried over is `NULL` in the new session
+   until set: `f(picked()) <- v` silently changes nothing.
    Neither route works under `NEWSQL`: on a connection
    of its own it migrates nothing, so the assistant
    MUST NOT combine `NEWSQL` with a dependency on
