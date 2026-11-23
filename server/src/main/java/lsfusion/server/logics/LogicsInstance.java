@@ -3,6 +3,7 @@ package lsfusion.server.logics;
 import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.server.base.AspectWeaving;
 import lsfusion.server.base.controller.manager.LifecycleManager;
 import lsfusion.server.base.controller.remote.RmiManager;
 import lsfusion.server.base.controller.stack.NestedThreadException;
@@ -201,6 +202,8 @@ public class LogicsInstance implements InitializingBean {
     public void start() {
         startLog("Logics instance is starting...");
         try {
+            AspectWeaving.check();
+
             ThreadInfo threadInfo = EventThreadInfo.START();
             Runnable beforeAspect = () -> ThreadLocalContext.aspectBeforeLifecycle(this, threadInfo);
             Runnable afterAspect = () -> ThreadLocalContext.aspectAfterLifecycle(threadInfo);
