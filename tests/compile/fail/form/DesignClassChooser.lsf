@@ -1,0 +1,16 @@
+MODULE DesignClassChooser;
+
+REQUIRE System;
+
+// CLASSCHOOSER is no selector of DESIGN: the class chooser it named was removed in 5.0, and the selector, still
+// parsed, failed at the start with "component is not found" (#2013)
+
+CLASS Store;
+
+FORM stores
+    OBJECTS s = Store
+;
+
+DESIGN stores {
+    MOVE CLASSCHOOSER(s);
+}
