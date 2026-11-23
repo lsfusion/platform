@@ -1131,31 +1131,25 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @Override
     @IdentityStrongLazy
     public LP getObjIntervalProp(FormEntity formEntity, ObjectEntity objectFrom, ObjectEntity objectTo, LP intervalProperty, LP fromIntervalProperty, LP toIntervalProperty) {
-        LP value = intervalProperty;
-
-        boolean named = formEntity.isNamed();
-        boolean isDataPanel = objectFrom.groupTo.isPanel() && ((GroupObjectEntity) objectTo.groupTo).isPanel();
-        if(named || isDataPanel)
-            value = wrapObjProperty(value); // wrapping because all other form operators create new actions / properties or we need a selector action
-        if (named) {
+        LP value = wrapObjProperty(intervalProperty); // wrapping because all other form operators create new actions / properties and we need a selector action
+        if (formEntity.isNamed()) {
             String name = intervalPrefix + getFormPrefix(formEntity) + getObjectPrefix(objectFrom) + getObjectPrefix(objectTo); // issue #47
             makePropertyPublic(value, name, objectFrom.baseClass.getResolveSet(), objectTo.baseClass.getResolveSet());
         }
 
-        if(isDataPanel) {
-            DataClass dataClass = (IntervalClass) intervalProperty.getActionOrProperty().getValueClass(AlgType.defaultType);
+        // as in getObjValueProp, the selector does not depend on whether the objects are in a panel: their view type is not final while the form is being built
+        DataClass dataClass = (IntervalClass) intervalProperty.getActionOrProperty().getValueClass(AlgType.defaultType);
 
-            LP targetProp = getRequestedValueProperty(dataClass);
+        LP targetProp = getRequestedValueProperty(dataClass);
 
-            LA<?> input = addObjInputAProp(dataClass, targetProp, objectFrom);
+        LA<?> input = addObjInputAProp(dataClass, targetProp, objectFrom);
 
-            ActionMapImplement<?, ClassPropertyInterface> request = PropertyFact.createRequestAction(SetFact.<ClassPropertyInterface>EMPTY(), input.getImplement(),
-                    PropertyFact.createListAction(SetFact.<ClassPropertyInterface>EMPTY(),
-                            objectFrom.getSeekPanelAction(this, addJProp(fromIntervalProperty, targetProp)),
-                            objectTo.getSeekPanelAction(this, addJProp(toIntervalProperty, targetProp))), null);
+        ActionMapImplement<?, ClassPropertyInterface> request = PropertyFact.createRequestAction(SetFact.<ClassPropertyInterface>EMPTY(), input.getImplement(),
+                PropertyFact.createListAction(SetFact.<ClassPropertyInterface>EMPTY(),
+                        objectFrom.getSeekPanelAction(this, addJProp(fromIntervalProperty, targetProp)),
+                        objectTo.getSeekPanelAction(this, addJProp(toIntervalProperty, targetProp))), null);
 
-            setSelector(objectFrom, value, request);
-        }
+        setSelector(objectFrom, value, request);
 
         return value;
     }

@@ -1,0 +1,37 @@
+MODULE IntervalObjectOperator;
+
+REQUIRE Time;
+
+// the INTERVAL object operator on a form used to stop the module from loading with "NF COLLECTION RESTARTED"
+// (fixed for #1957), whether the objects are in a panel or in a list, of one group object or of two
+CLASS IntervalOperatorItem;
+intervalOperatorName = DATA STRING[50] (IntervalOperatorItem);
+
+FORM intervalOperatorPanel
+    OBJECTS dates = (d1 = DATE, d2 = DATE) PANEL
+    PROPERTIES period 'Period' = INTERVAL(d1, d2)
+;
+
+FORM intervalOperatorList
+    OBJECTS i = IntervalOperatorItem
+    PROPERTIES(i) intervalOperatorName
+    OBJECTS dates = (d1 = DATE, d2 = DATE)
+    PROPERTIES INTERVAL(d1, d2), VALUE(d1)
+;
+
+FORM intervalOperatorSeparate
+    OBJECTS t1 = DATETIME PANEL, t2 = DATETIME PANEL
+    PROPERTIES VALUE(t1), INTERVAL(t1, t2), VALUE(t2)
+;
+
+// and when an extension adds it to objects declared before, or a form built from the form adds it
+EXTEND FORM intervalOperatorPanel
+    PROPERTIES INTERVAL(d2, d1)
+    OBJECTS d3 = DATE PANEL
+    PROPERTIES INTERVAL(d1, d3)
+;
+
+FORM intervalOperatorComposed
+    FORMS intervalOperatorPanel
+    PROPERTIES composedPeriod = INTERVAL(d1, d2)
+;
