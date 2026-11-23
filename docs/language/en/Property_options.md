@@ -105,11 +105,11 @@ annotationSetting
 
     Keywords marking the property's calculation as complex (`COMPLEX`) or explicitly not (`NOCOMPLEX`). If neither is specified, the property is complex only when it depends on a complex property, so the mark is inherited along a chain of dependencies up to a property marked `NOCOMPLEX`. For a complex property the platform itself does not turn on the automatic caching of changes (see `HINT` below) while the value of at least one of its parameters is known in advance (see `limitHintIncrementValueComplexity` in the [working parameters](../paradigm/Working_parameters.md)). An explicit `HINT` still forces it.
 
-    A property marked `COMPLEX` is, in addition, always read in advance, as with the `PREREAD` option: a query that needs its value for known values of all its parameters gets that value from a separate query executed first. When the values of not all its parameters are known, the property is computed by a separate subquery of the query that reads it as soon as its complexity exceeds the working parameter `limitComplexWrapComplexity` instead of the general `limitWrapComplexity`. A condition or an order by the value of the property is then applied to the result of the subquery, and the definition of the property is not expanded into them.
+    A property marked `COMPLEX` is, in addition, read in advance, as with the `PREREAD` option (see below). Such a property is computed by a separate subquery of the query that reads it as soon as its complexity exceeds the working parameter `limitComplexWrapComplexity` instead of the general `limitWrapComplexity`. A condition or an order by the value of the property is then applied to the result of the subquery, and the definition of the property is not expanded into them.
 
 - `PREREAD`
 
-    Keyword that makes the property's value be read in advance during change processing, instead of being recomputed inline.
+    Keyword that makes the property's value be read in advance: the value that a query needs for known values of all the property's parameters is read separately, before that query, and is put into it as a constant. Only a property for which the classes of all the parameters can be inferred from its definition is read in advance. For such a property with neither this option nor `COMPLEX` the value is read separately only when its complexity exceeds the working parameter `limitHintPrereadComplexity`. The `disablePrereadValues` parameter turns reading in advance off, with this option as well.
 
 - `HINT | NOHINT`
 
