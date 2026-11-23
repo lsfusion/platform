@@ -2,7 +2,12 @@ package lsfusion.tests;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.remote.RMIUtils;
+import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.ControllerCallbackClientAction;
+import lsfusion.interop.action.ControllerExceptionClientAction;
+import lsfusion.interop.action.ControllerResultClientAction;
 import lsfusion.interop.base.exception.LoginException;
+import lsfusion.interop.base.exception.RemoteInternalException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ComputerInfo;
 import lsfusion.interop.connection.ConnectionInfo;
@@ -36,8 +41,8 @@ import static lsfusion.tests.TestServer.BASE;
  *  webhooks - on a server of its own that lets the API in only for what an action opens by its annotations
  *  (enableAPI=0, the default): what is called before a login is opened by @@noauth, what a logged in user calls by
  *  @@api. A call the API refused would fail here, where the web client takes a refusal of some of them for an empty
- *  answer. Also the first login of an OAuth provider's user while registration is switched off, and whom the
- *  navigator's settings give the web agent's token. */
+ *  answer. Also the first login of an OAuth provider's user while registration is switched off, whom the
+ *  navigator's settings give the web agent's token, and how a navigator runs an action a client names. */
 public class ExternalApiDisabledIT {
 
     private static final String DATABASE = "lsfusion_test_api0_" + ProcessHandle.current().pid();
@@ -188,16 +193,65 @@ public class ExternalApiDisabledIT {
 
     // as the web client reads it after the login, by a navigator of its own
     private static String navigatorAgentToken(AuthenticationToken token) throws Exception {
-        NavigatorInfo info = new NavigatorInfo(new SessionInfo(new ConnectionInfo(new ComputerInfo("localhost", "127.0.0.1"), UserInfo.NULL),
-                ExternalRequest.EMPTY), null, null, null, null, null, null, null, null, null,
-                BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
-        RemoteNavigatorInterface navigator = RMIUtils.<RemoteLogicsLoaderInterface>rmiLookup("localhost", rmiPort, "default", "RemoteLogicsLoader")
-                .getLogics().createNavigator(token, info);
+        RemoteNavigatorInterface navigator = navigator(token);
         try {
             return LogicsSessionObject.getClientSettings(ExternalRequest.EMPTY, navigator, null).webAgentToken;
         } finally {
             navigator.close();
         }
+    }
+
+    // a navigator runs an action by its name only through its controller, which lets it in as the API does : the clients'
+    // own calls, of the API, run for a logged-in user who may not run code - there and over HTTP -, another action is
+    // refused, and a name executeNavigatorAction is given as no notification is taken for an element's
+    @Test
+    public void aNavigatorRunsAnActionByItsNameOnlyThroughItsController() throws Exception {
+        String token = noauth("HttpRoleSettings.hrsUser&p=eadNavigatorUser", "");
+        RemoteNavigatorInterface navigator = navigator(new AuthenticationToken(token));
+        try {
+            Assert.assertNull(exec(navigator, 0, "SystemEvents.onClientStartedApply[]"));
+            Assert.assertNull(exec(navigator, 1, "SystemEvents.toggleLogsPinMode[]"));
+            for (String clientCall : new String[]{"SystemEvents.onClientStartedApply[]", "SystemEvents.toggleLogsPinMode[]"})
+                call(clientCall, "", "Authorization", "Bearer " + token);
+
+            String runs = noauth("HttpNavigatorAction.hnaReadRuns", "");
+            Assert.assertTrue(exec(navigator, 2, "HttpNavigatorAction.hnaRun[]").contains("enableAPI"));
+            String notFound = refusal(navigator, 3, "HttpNavigatorAction.hnaNoElement", 1);
+            Assert.assertEquals(notFound, refusal(navigator, 4, "HttpNavigatorAction.hnaRun[]", 0));
+            Assert.assertEquals(notFound, refusal(navigator, 5, "HttpNavigatorAction.hnaApiRun[]", 0));
+            Assert.assertEquals(runs, noauth("HttpNavigatorAction.hnaReadRuns", ""));
+        } finally {
+            navigator.close();
+        }
+    }
+
+    // a call of an action by its name through a navigator's controller, as the clients make their own : the message it is
+    // refused with, null if the action ran
+    private static String exec(RemoteNavigatorInterface navigator, long requestIndex, String name) throws Exception {
+        ControllerCallbackClientAction answer = null;
+        for (ClientAction action : navigator.exec(requestIndex, -1, name, new Object[0], null).actions)
+            if (action instanceof ControllerCallbackClientAction) {
+                Assert.assertNull(answer);
+                answer = (ControllerCallbackClientAction) action;
+            }
+        if (answer instanceof ControllerExceptionClientAction)
+            return ((ControllerExceptionClientAction) answer).message;
+        Assert.assertTrue(answer instanceof ControllerResultClientAction);
+        return null;
+    }
+
+    // the message a navigator refuses a call of an element, or of a notification, with
+    private static String refusal(RemoteNavigatorInterface navigator, long requestIndex, String name, int type) {
+        return Assert.assertThrows(RemoteInternalException.class, () -> navigator.executeNavigatorAction(requestIndex, -1, name, type, null)).getMessage();
+    }
+
+    // a navigator of its own, as a client makes one after the login
+    private static RemoteNavigatorInterface navigator(AuthenticationToken token) throws Exception {
+        NavigatorInfo info = new NavigatorInfo(new SessionInfo(new ConnectionInfo(new ComputerInfo("localhost", "127.0.0.1"), UserInfo.NULL),
+                ExternalRequest.EMPTY), null, null, null, null, null, null, null, null, null,
+                BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
+        return RMIUtils.<RemoteLogicsLoaderInterface>rmiLookup("localhost", rmiPort, "default", "RemoteLogicsLoader")
+                .getLogics().createNavigator(token, info);
     }
 
     // as the web client names a provider's user, and with the web client's secret

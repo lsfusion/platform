@@ -1,0 +1,18 @@
+MODULE HttpNavigatorAction;
+
+// actions that are no elements of the navigator - one not of the API, one of it -, and how many times they ran, read by
+// ExternalApiDisabledIT
+hnaRuns = DATA INTEGER ();
+
+hnaRun () {
+    hnaRuns() <- (OVERRIDE hnaRuns(), 0) + 1;
+    APPLY;
+}
+
+hnaApiRun () {
+    hnaRun();
+} @@api;
+
+hnaReadRuns () {
+    RETURN OVERRIDE hnaRuns(), 0;
+} @@noauth;

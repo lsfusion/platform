@@ -130,6 +130,26 @@ public class UiWindowsLayoutIT extends UiTest {
         assertEquals(true, page.evaluate("() => Object.keys(localStorage).some(key => key.endsWith('_System.log'))"));
     }
 
+    // the log window's pin button pins the window and unpins it - the web client runs the button's action by its name,
+    // through the navigator's controller, and the answer gives the window its class. The pin is kept for the design
+    // environment, so it is pressed back whatever happens. The button is clicked by its event: an unpinned log window
+    // shows it on hover only
+    @Test
+    public void theLogsPinButtonPinsTheLogWindow() {
+        Locator log = page.locator(".navbar:has(.nav-log-pin)");
+        Locator pin = log.locator(".nav-log-pin");
+        assertThat(log).containsClass(LOG_UNPINNED); // the server's default
+        try {
+            pin.dispatchEvent("click");
+            assertThat(log).not().containsClass(LOG_UNPINNED);
+        } finally {
+            if (!log.getAttribute("class").contains(LOG_UNPINNED))
+                pin.dispatchEvent("click");
+        }
+        assertThat(log).containsClass(LOG_UNPINNED);
+    }
+    private static final String LOG_UNPINNED = "navbar-always-hide-unpinned";
+
     // the reset run by an element of the navigator - not by a form's button, which runs it as well - puts back the declared
     // size of a window the user dragged: here System.toolbar's width, the navigator pinned entirely, which makes the toolbar
     // a window beside the forms. The pin mode is kept for the design environment, so it is switched back whatever happens
