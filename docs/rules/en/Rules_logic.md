@@ -799,17 +799,17 @@ title: 'Rules: domain logic'
 
 3. If inner logic depends on upper-session local state
    such as selections, marks, or import buffers,
-   the assistant MUST carry that state explicitly
+   the assistant MUST carry it explicitly
    through `NESTED (...)` or `NESTED LOCAL`
    on the operator, or declare the property itself
-   `DATA LOCAL NESTED`, which carries it over
-   without being listed on the operator.
+   `DATA LOCAL NESTED`, which needs no listing.
    A local not carried over is `NULL` in the new session
    until set: `f(picked()) <- v` silently changes nothing.
-   Neither route works under `NEWSQL`: on a connection
-   of its own it migrates nothing, so the assistant
-   MUST NOT combine `NEWSQL` with a dependency on
-   upper-session local state.
+   Under `NEWSQL` inner logic MUST NOT depend on
+   upper-session local state: on a separate connection
+   nothing is migrated. A single value SHOULD be passed
+   as an action or loop parameter, even with `NEWSQL`.
+   The parameter needs no `NESTED`.
 
 4. A successful `APPLY` clears the session, and with it
    every plain `LOCAL` property in it: after such an

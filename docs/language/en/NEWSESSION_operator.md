@@ -54,7 +54,7 @@ The `NEWSESSION` operator creates an action that executes the other action in a 
 
 - `action`
 
-    A [context-dependent action operator](Action_operators.md#contextdependent) that defines an action to be executed in the new session.
+    A [context-dependent action operator](Action_operators.md#contextdependent) that defines an action to be executed in the new session. The parameters it uses keep their values in the new session, including with `NEWSQL`: they need no `NESTED` and are not specified in its property list.
 
 ### Examples
 
@@ -107,6 +107,19 @@ countCurrencies ()  {
         currencyCount() <- GROUP SUM 1 IF Currency c IS Currency;
     }
     MESSAGE currencyCount(); // the value computed in the new session
+}
+
+// pass values into the new session as parameters: date (a parameter of the action)
+// and c (a parameter of FOR) keep their values there without NESTED.
+// If date were first assigned to a local property day[] that is not migrated,
+// day[] would start with NULL in each new session, and rateDate(c) <- day() would write NULL
+rateDate = DATA DATE (Currency);
+updateRateDates (DATE date)  {
+    FOR Currency c IS Currency DO
+        NEWSESSION {
+            rateDate(c) <- date;
+            APPLY;
+        }
 }
 
 // fix the new session to a specific form
