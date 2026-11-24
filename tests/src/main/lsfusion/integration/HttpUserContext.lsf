@@ -1,6 +1,6 @@
 MODULE HttpUserContext;
 
-REQUIRE TestUtils, Authentication, Security;
+REQUIRE TestUtils, Authentication, Security, SystemEvents;
 
 // a call through the Action API with a token is a connection of the user the token names, made with what the user is
 // when the call is made - by a session the server builds for it, or by one of its pool that a call of the same user left
@@ -153,5 +153,22 @@ testPoolKeepsTheContextOfAnotherUser 'A session of the pool is taken as it is af
         hucDropUser('hucKept');
         hucDropUser('hucOther');
         hucDropRole('hucKept');
+    }
+}
+
+testPoolTakesTheUsersCode 'A call made by a session of the pool sees the code saved for its user at the moment' () {
+    hucNewUser('hucCoded');
+    TRY {
+        hucCall('HttpUserContext.hucNothing');
+        assertTrue(statusHttp() = 200, 'A call of the user answered ' + (OVERRIDE STRING(statusHttp()), 'nothing'));
+
+        NEWSESSION {
+            dataExtendCode(CustomUser u) <- 'hucCoded() \{ RETURN 42; \}' WHERE login(u) = 'hucCoded';
+            APPLY;
+        }
+        hucCallPooled('hucCoded');
+        hucAnswered('42', 'An action of the code saved for the user');
+    } FINALLY {
+        hucDropUser('hucCoded');
     }
 }

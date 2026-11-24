@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static lsfusion.tests.TestServer.BASE;
 
@@ -82,9 +83,9 @@ public class ExternalApiAccessIT {
     }
 
     // what the code that customizes the application declares is opened to the callers by its own annotations, as an
-    // action of the logics is : by @@noauth here, on a server that lets only an authenticated call in. A call takes the
-    // code its session is built with, so the calls after the save open sessions of the stateful API of their own, of names
-    // no call has used : the server drops a closed session after it has answered
+    // action of the logics is : by @@noauth here, on a server that lets only an authenticated call in. The calls after the
+    // save open sessions of the stateful API of their own, of names no call has used : the server drops a closed session
+    // after it has answered
     @Test
     public void aNoauthActionOfACustomizationRunsWithoutLogin() throws Exception {
         String code = "eaaOpen() { RETURN 7; } @@noauth;\neaaClosed() { RETURN 8; }";
@@ -507,6 +508,35 @@ public class ExternalApiAccessIT {
             if (System.currentTimeMillis() > deadline)
                 throw new AssertionError("no entry of " + text + " in the eval log");
             Thread.sleep(200);
+        }
+    }
+
+    // a session of the pool builds its context, the code with it, once and serves many calls one after another : a broken
+    // code fails, and is logged, once for the session, not once for every call. The calls are let apart for a session to be
+    // back in the pool before the next one comes; it is returned asynchronously, so a call can still get another session -
+    // each fails once, and they are far fewer than the calls. The calls are anonymous, made with no token
+    @Test
+    public void aBrokenCustomizationIsNotCompiledOnEveryCall() throws Exception {
+        HttpResponse<String> set = post("/exec?action=HttpExtendCode.hecSetBroken&p=" + URLEncoder.encode("eaaBroken( {", "UTF-8"), "");
+        Assert.assertEquals(set.body(), 200, set.statusCode());
+        try {
+            int calls = 20;
+            long before = brokenCodeLogged();
+            for (int i = 0; i < calls; i++) {
+                Thread.sleep(200);
+                HttpResponse<String> call = post("/exec?action=HttpExtendCode.hecNothing", "");
+                Assert.assertEquals(call.body(), 200, call.statusCode());
+            }
+            long failed = brokenCodeLogged() - before;
+            Assert.assertTrue("the broken code failed " + failed + " times in " + calls + " calls", failed > 0 && failed < calls / 2);
+        } finally {
+            post("/exec?action=HttpExtendCode.hecReset", "");
+        }
+    }
+
+    private static long brokenCodeLogged() throws Exception {
+        try (Stream<String> lines = Files.lines(BASE.resolve("target/server-api.log"), StandardCharsets.UTF_8)) {
+            return lines.filter(line -> line.contains("Application customization code is broken")).count();
         }
     }
 

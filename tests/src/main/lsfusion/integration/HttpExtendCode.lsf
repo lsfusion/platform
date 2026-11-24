@@ -4,8 +4,8 @@ REQUIRE TestUtils, SystemEvents;
 
 // a call through the Action API is a connection of its user as a client is, so the code that customizes the application
 // for the user (SystemEvents.dataExtendCode[]) customizes the call : an action the code declares is called by its name,
-// and a script the call sends sees what the code declares. A call takes the code its session is built with, so every
-// call of the test opens a session of the stateful API of its own (session=..._close) : one built after the code is saved
+// and a script the call sends sees what the code declares. Every call of the test opens a session of the stateful API of
+// its own (session=..._close) : one built after the code is saved, whatever the pool holds (HttpUserContext tests that)
 
 // an action the code of the test declares under the same name : called by the bare name it is neither, with the
 // namespace this one
@@ -18,13 +18,15 @@ hecSet (TEXT code) {
     APPLY;
 } @@noauth;
 hecReset () { hecSet(NULL); } @@noauth;
+// an action of the logics such a server lets an anonymous call run
+hecNothing () { } @@noauth;
 // a code that does not compile is refused when it is saved, so one saved before that, or broken since by a change of the
 // logics, is stored past the refusal
 hecSetBroken (TEXT code) {
     setNoCancelInTransaction();
     hecSet(code);
     dropNoCancelInTransaction();
-}
+} @@noauth;
 // what the server answers a call, or what the call fails with. Each call opens a session of a name no call has used : the
 // server drops a closed session after it has answered, and a later call of the same name could still find it
 hecResponse = DATA LOCAL STRING ();

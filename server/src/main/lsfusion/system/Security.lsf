@@ -69,11 +69,12 @@ connectionContextVersion = DATA STRING (User) LAZY WAIT;
 // whether the apply changes what the connection of a user builds its context of : each module adds what it declares.
 // Here : a role given or taken, a role of the user disabled, renamed or given another sid - the policy, the roles'
 // names and the first of them, the default role being the first of a user with no other, given it or
-// not -, and the user's name
+// not -, the user's name, and the code that customizes the application, the user's own and the one for all users
 changedConnectionContext = ABSTRACT VALUE BOOLEAN (User);
 changedConnectionContext(User u) += TRUE IF (GROUP SUM 1 IF CHANGED(has(u, UserRole r)) OR (has(u, r) AND
         (CHANGED(disableRole(r)) OR CHANGED(name(r)) OR CHANGED(sid(r))))) OR
-    (CHANGED(disableRole('default')) AND u IS User) OR CHANGED(logName(u));
+    (CHANGED(disableRole('default')) AND u IS User) OR CHANGED(logName(u)) OR
+    CHANGED(dataExtendCode(u)) OR (CHANGED(dataExtendCode()) AND u IS User);
 WHEN changedConnectionContext(User u) DO
     connectionContextVersion(u) <- STRING(randomUUID());
 
