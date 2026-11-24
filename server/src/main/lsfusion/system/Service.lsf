@@ -917,9 +917,6 @@ getInitSettings() {
 
 getClientSettings(User user) ABSTRACT CASE;
 getClientSettings(User user) + WHEN user IS User THEN {
-    LOCAL colorThemeName = STRING();
-    colorThemeName() <- name(colorTheme(currentDesignEnv()));
-    
     EXPORT JSON FROM
         currentUserName = (OVERRIDE currentUserName(), '(без имени)'),
         fontSize = fontSize(user),
@@ -933,7 +930,7 @@ getClientSettings(User user) + WHEN user IS User THEN {
         suppressOnFocusChange = IF suppressOnFocusChange(user) THEN (IF suppressOnFocusChange(user) == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('suppressOnFocusChange'),
         devMode = inDevMode() OR (devMode(user)),
         projectLSFDir = projectLSFDir(),
-        colorThemeString = IF (colorThemeName()) THEN substrFrom(colorThemeName(), strpos(colorThemeName(), '.') + 1),
+        colorThemeString = basicName(colorTheme(currentDesignEnv())), // not name, which for a theme is its caption
         useBootstrap = useBootstrap(),
         size = basicName(size()), 
         selectedRowBackground = (OVERRIDE selectedRowBackgroundColor(user), selectedRowBackgroundColor()),

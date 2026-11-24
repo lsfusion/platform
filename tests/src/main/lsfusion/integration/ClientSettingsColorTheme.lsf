@@ -1,0 +1,41 @@
+MODULE ClientSettingsColorTheme;
+
+REQUIRE TestUtils, Service;
+
+// The color theme the navigator's settings give a client, which starts in it: the one chosen for the design environment,
+// or else the one the client reported, by the name a client knows a theme by - light or dark -, not by the caption a
+// user sees (#2019). The settings gave the caption, which no client takes for a theme: a user who had chosen the dark
+// theme, or whose browser asked for it, got a light page on every load
+
+csctTheme = DATA LOCAL STRING ();
+
+// the theme in the settings, as a client reads them after the login
+csctRead () {
+    getClientSettings();
+    csctTheme() <- NULL;
+    IMPORT JSON FROM exportFile() TO () csctTheme = 'colorThemeString';
+}
+
+testChosenThemeIsInTheClientSettings 'The client settings give the color theme chosen for the design environment' () {
+    designEnvColorTheme(currentDesignEnv()) <- ColorTheme.dark;
+    csctRead();
+    assertEquals(csctTheme(), 'dark', 'the chosen dark theme is given as ' + csctTheme());
+
+    // the chosen theme, not the one the client reported
+    clientColorTheme(currentDesignEnv()) <- ColorTheme.dark;
+    designEnvColorTheme(currentDesignEnv()) <- ColorTheme.light;
+    csctRead();
+    assertEquals(csctTheme(), 'light', 'the chosen light theme of a dark client is given as ' + csctTheme());
+}
+
+testClientThemeIsInTheClientSettingsWhenNoneIsChosen 'The client settings give the color theme of the client when none is chosen' () {
+    designEnvColorTheme(currentDesignEnv()) <- NULL;
+    clientColorTheme(currentDesignEnv()) <- ColorTheme.dark;
+    csctRead();
+    assertEquals(csctTheme(), 'dark', 'the dark theme of the client is given as ' + csctTheme());
+
+    // no theme at all, which a client takes for the light one
+    clientColorTheme(currentDesignEnv()) <- NULL;
+    csctRead();
+    assertNull(csctTheme(), 'no theme is given as ' + csctTheme());
+}

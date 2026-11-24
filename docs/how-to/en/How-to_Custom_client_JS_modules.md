@@ -51,4 +51,13 @@ For a full styling system beyond static class names, add a runtime CSS-in-JS lib
 
 Native CSS (nesting, custom properties) and CSS modules cover most of what a preprocessor was used for. If you do need a CSS preprocessor (Sass/SCSS, Less, Stylus) or a utility framework (Tailwind, UnoCSS), generate the CSS with a separate step and ship the result as a plain stylesheet through `onWebClientInit`.
 
+### Colors for the dark theme {#dark-theme-colors}
+
+We need the colors of a component to follow the color theme of the interface. The solution uses the `data-bs-theme` attribute of the page's root element ([Styles](../language/Client_JavaScript_modules.md#styles)). The basic rules give the colors of the light theme, and the rules addressed by the attribute override them in the dark one.
+
+```css
+.board { background: #ffffff; color: #212529; }
+[data-bs-theme="dark"] .board { background: #212529; color: #dee2e6; }
+```
+
 This page covers the generic packaging of any custom browser JavaScript. For the React-specific views and the controller calls a custom view makes back into the server, see [React views](../language/React_views.md) and [Form and navigator controllers](../language/Form_and_navigator_controllers.md).

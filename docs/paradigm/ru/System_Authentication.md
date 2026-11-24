@@ -15,8 +15,11 @@ title: 'Authentication'
 | `currentDesignEnv[]`                      | текущая среда оформления: `currentComputer[]` при установленном `storeNavigatorSettingsForComputer[]`, иначе `currentUser[]` |
 | `ColorTheme`                              | класс с двумя [статическими объектами](Static_objects.md), `light` и `dark`                                       |
 | `designEnvColorTheme[DesignEnv]`          | цветовая тема, выбранная для среды оформления                                               |
+| `clientColorTheme[DesignEnv]`             | системная [цветовая тема](User_interface.md#appearance), о которой клиент последний раз сообщил для среды оформления |
 | `colorTheme[DesignEnv]`                   | итоговая тема: `designEnvColorTheme[DesignEnv]`, если задана, иначе `clientColorTheme[DesignEnv]` |
 | `isDarkTheme[]`                           | признак, что `colorTheme[DesignEnv]` текущей среды равна `ColorTheme.dark`                  |
+
+Клиент запускается с темой `colorTheme[DesignEnv]` текущей среды оформления, а если она равна `NULL` — со светлой темой. Поэтому из кода тема задаётся пользователю изменением `designEnvColorTheme[DesignEnv]` этого пользователя, если настройки хранятся для пользователей (`storeNavigatorSettingsForComputer[]` не установлен). Клиенты среды оформления получают её изменённую тему при следующем запуске. Сразу, при применении изменения, переключается только клиент, в котором оно сделано, если эта среда оформления для него текущая.
 
 `name[ColorTheme]` возвращает название темы, а `colorThemeName[DesignEnv]` — название выбранной темы. Форма `dialogColorThemes` показывает две темы для выбора.
 

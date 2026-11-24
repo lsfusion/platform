@@ -62,7 +62,7 @@ title: 'SystemEvents'
 | `userFiltersManualApplyMode[DesignEnv]` / `userFiltersManualApplyMode[]` | применение пользовательских фильтров вручную, а не по мере ввода |
 | `dontShowCloseButtonOnInactiveTab[DesignEnv]` / `dontShowCloseButtonOnInactiveTab[]` | скрывает кнопку закрытия на неактивных вкладках     |
 
-`ColorTheme` (светлая / тёмная / авто) переключается действием `toggleColorTheme[]`, которое для текущей среды переходит светлая → тёмная → авто, применяет и обновляет форму. Режим закрепления навигатора переключается действием `toggleNavigatorPinMode[]`.
+Цветовая тема (светлая / тёмная / авто) переключается действием `toggleColorTheme[]`, которое для текущей среды переводит `designEnvColorTheme[DesignEnv]`, объявленное в [Authentication](System_Authentication.md), по кругу светлая → тёмная → авто (тема не выбрана, и действует [системная](User_interface.md#appearance) тема), применяет и обновляет форму. Режим закрепления навигатора переключается действием `toggleNavigatorPinMode[]`.
 
 Форма `design` редактирует оформление текущей среды (`captionTheme[DesignEnv]`, `captionSize[DesignEnv]`, `captionNavbar[DesignEnv]` и переключатели выше) и перезагружает клиент при применении, если изменилась настройка, требующая перезагрузки. `showDesign[]` открывает её плавающим окном. В окне `system` навигатора модуль добавляет пункты `showDesign`, `toggleNavigatorPinMode` и `toggleColorTheme`.
 

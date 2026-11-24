@@ -160,3 +160,5 @@ For a full styling system beyond static class names, a **runtime CSS-in-JS** lib
 CSS preprocessors (Sass/SCSS, Less, Stylus) and utility frameworks that generate CSS from a build step (Tailwind, UnoCSS) are **not** part of this build — plain bundling runs the esbuild binary only, with no Node or plugin phase.
 
 A standalone stylesheet that is not part of the build can still be shipped as a plain file and loaded through the [`onWebClientInit`](INTERNAL_operator.md) action, like the CSS of a classic custom component.
+
+While the dark [color theme](../paradigm/User_interface.md#appearance) is on, the root element of the web client's page (`<html>`) carries the attribute `data-bs-theme` with the value `dark`, so a CSS rule can be addressed to that theme: `[data-bs-theme="dark"] .board { ... }`. With the light theme the attribute is absent or has the value `light`. The attribute changes as the theme is switched, without a reload of the page.

@@ -15,8 +15,11 @@ A *design environment* is the entity that personal interface settings (navigator
 | `currentDesignEnv[]`                      | the current design environment: `currentComputer[]` when `storeNavigatorSettingsForComputer[]` is set, otherwise `currentUser[]` |
 | `ColorTheme`                              | a class with two [static objects](Static_objects.md), `light` and `dark`                                         |
 | `designEnvColorTheme[DesignEnv]`          | the color theme chosen for a design environment                                             |
+| `clientColorTheme[DesignEnv]`             | the system [color theme](User_interface.md#appearance) that a client last reported for a design environment |
 | `colorTheme[DesignEnv]`                   | the resolved theme: `designEnvColorTheme[DesignEnv]` if set, otherwise `clientColorTheme[DesignEnv]` |
 | `isDarkTheme[]`                           | flag set when `colorTheme[DesignEnv]` of the current design environment equals `ColorTheme.dark` |
+
+A client starts with `colorTheme[DesignEnv]` of the current design environment, and with the light theme if that is `NULL`. A theme is therefore given to a user from code by changing `designEnvColorTheme[DesignEnv]` of that user, provided the settings are stored for users (`storeNavigatorSettingsForComputer[]` is not set). The clients of a design environment get its changed theme the next time they start. Only the client the change was made in switches at once, when the change is applied, if the design environment is its current one.
 
 `name[ColorTheme]` returns the theme caption, while `colorThemeName[DesignEnv]` returns the name of the chosen theme. The form `dialogColorThemes` lists the two themes for selection.
 

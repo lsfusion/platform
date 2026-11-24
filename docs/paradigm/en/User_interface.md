@@ -26,6 +26,8 @@ Appearance settings are set in the user profile and in the appearance settings f
 | Font size | percent | the font size of the interface |
 | Colors | color choice | the color of the selected row and cell, the active cell, and the table grid lines |
 
+The system color theme is the color scheme a client last reported for the user (for the computer, if the settings are stored for it): the web client reports the scheme of its browser, and the desktop client that of the operating system on Windows and macOS and the light scheme on other systems. Until a client has reported one, the theme is light.
+
 The size is chosen on the client side by the pixel area of the viewport, its width multiplied by its height: *tiny* at or below the [working parameter](Working_parameters.md) `maxPixelTinySize` (`748800`, for example 1280×585), *mini* at or below `maxPixelMiniSize` (`1121280`, for example 1536×730), and *normal* above that.
 
 ### Regional settings

@@ -62,7 +62,7 @@ Each setting has a per-environment value (`designEnv…`), a server-wide default
 | `userFiltersManualApplyMode[DesignEnv]` / `userFiltersManualApplyMode[]` | applies user filters manually rather than as typed      |
 | `dontShowCloseButtonOnInactiveTab[DesignEnv]` / `dontShowCloseButtonOnInactiveTab[]` | hides the close button on inactive tabs           |
 
-`ColorTheme` (light / dark / auto) is toggled by `toggleColorTheme[]`, which cycles light → dark → auto for the current environment, applies, and refreshes the form. The navigator pin mode is cycled by `toggleNavigatorPinMode[]`.
+The color theme (light / dark / auto) is toggled by `toggleColorTheme[]`, which cycles `designEnvColorTheme[DesignEnv]`, declared in [Authentication](System_Authentication.md), light → dark → auto (no theme chosen, which leaves the [system](User_interface.md#appearance) theme) for the current environment, applies, and refreshes the form. The navigator pin mode is cycled by `toggleNavigatorPinMode[]`.
 
 The `design` form edits the current environment's appearance (`captionTheme[DesignEnv]`, `captionSize[DesignEnv]`, `captionNavbar[DesignEnv]`, and the toggles above) and reloads the client on apply when a setting that needs a reload changed. `showDesign[]` opens it as a floating window. In the navigator's `system` window the module adds the `showDesign`, `toggleNavigatorPinMode`, and `toggleColorTheme` entries.
 
