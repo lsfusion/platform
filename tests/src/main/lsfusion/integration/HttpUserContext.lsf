@@ -1,6 +1,6 @@
 MODULE HttpUserContext;
 
-REQUIRE TestUtils, Authentication, Security, SystemEvents;
+REQUIRE TestUtils, Authentication, Security, SystemEvents, Reflection;
 
 // a call through the Action API with a token is a connection of the user the token names, made with what the user is
 // when the call is made - by a session the server builds for it, or by one of its pool that a call of the same user left
@@ -153,6 +153,33 @@ testPoolKeepsTheContextOfAnotherUser 'A session of the pool is taken as it is af
         hucDropUser('hucKept');
         hucDropUser('hucOther');
         hucDropRole('hucKept');
+    }
+}
+
+testPoolTakesTheRolesDroppedPolicy 'A call made by a session of the pool is made with the policy a role has after a large change of it' () {
+    hucNewUser('hucDropped');
+    hucNewRole('hucDropped', 'hucDropped');
+    hucNewRole('hucDroppedToo', 'hucDropped');
+    TRY {
+        hucCall('HttpUserContext.hucBuilt');
+        LOCAL built = STRING ();
+        built() <- hucResponse();
+        hucCallPooled('HttpUserContext.hucBuilt');
+        hucAnswered(built(), 'A call of the user changed in nothing');
+
+        // a change of more than a hundred permissions of a role drops the policy the server keeps for the role, to be read
+        // anew (Security.lsf) : the roles of the user stay as they were. Two roles of the user at once : its version is
+        // written once
+        NEWSESSION {
+            dataPermissionChange(UserRole r, PropertyGroup g) <- Permission.forbid WHERE (sid(r) = 'hucDropped' OR sid(r) = 'hucDroppedToo') AND g = propertyGroup('System_root');
+            APPLY;
+        }
+        hucCallPooled('HttpUserContext.hucBuilt');
+        assertTrue(statusHttp() = 200 AND NOT hucResponse() = built(), 'A call after the policy of a role of the user was dropped answered ' + (OVERRIDE hucResponse(), STRING(statusHttp()), 'nothing'));
+    } FINALLY {
+        hucDropUser('hucDropped');
+        hucDropRole('hucDropped');
+        hucDropRole('hucDroppedToo');
     }
 }
 

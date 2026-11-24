@@ -66,13 +66,15 @@ registrationDisabled() += disableRole('selfRegister');
 // LAZY WAIT, as the version is : the apply that changes it drops the values it changes at once, so the context the next
 // call builds is of the new ones
 connectionContextVersion = DATA STRING (User) LAZY WAIT;
+// a role whose policy the server drops in the apply, to read it anew : a context keeps the policy it was built with
+droppedSecurityPolicy = DATA LOCAL BOOLEAN (UserRole);
 // whether the apply changes what the connection of a user builds its context of : each module adds what it declares.
-// Here : a role given or taken, a role of the user disabled, renamed or given another sid - the policy, the roles'
-// names and the first of them, the default role being the first of a user with no other, given it or
+// Here : a role given or taken, a role of the user disabled, renamed, given another sid or its policy dropped - the
+// policy, the roles' names and the first of them, the default role being the first of a user with no other, given it or
 // not -, the user's name, and the code that customizes the application, the user's own and the one for all users
 changedConnectionContext = ABSTRACT VALUE BOOLEAN (User);
 changedConnectionContext(User u) += TRUE IF (GROUP SUM 1 IF CHANGED(has(u, UserRole r)) OR (has(u, r) AND
-        (CHANGED(disableRole(r)) OR CHANGED(name(r)) OR CHANGED(sid(r))))) OR
+        (CHANGED(disableRole(r)) OR CHANGED(name(r)) OR CHANGED(sid(r)) OR CHANGED(droppedSecurityPolicy(r))))) OR
     (CHANGED(disableRole('default')) AND u IS User) OR CHANGED(logName(u)) OR
     CHANGED(dataExtendCode(u)) OR (CHANGED(dataExtendCode()) AND u IS User);
 WHEN changedConnectionContext(User u) DO
@@ -122,6 +124,11 @@ TABLE userRolePropertyGroup (UserRole, PropertyGroup);
 updatePermissionUserRoleNavigatorElement  INTERNAL 'lsfusion.server.logics.navigator.UpdatePermissionAction' (UserRole, STRING, STRING);
 updatePermissionUserRoleActionOrProperty  INTERNAL 'lsfusion.server.logics.property.UpdatePermissionAction' (UserRole, STRING, BOOLEAN, STRING, STRING);
 dropCachedSecurityPolicy  INTERNAL 'lsfusion.server.logics.DropCachedSecurityPolicyAction' (UserRole);
+// the server drops the policy it keeps for a role, to read it anew, and the apply marks the role for the contexts built with it
+dropSecurityPolicy (UserRole ur) {
+    dropCachedSecurityPolicy(ur);
+    droppedSecurityPolicy(ur) <- TRUE;
+}
 
 META initPropertyPermission (type, permissionCaption)
     dataPermission###type = DATA Permission (UserRole, PropertyGroup);
@@ -139,7 +146,7 @@ META initPropertyPermission (type, permissionCaption)
     permission###type (UserRole ur, ActionOrProperty p) = OVERRIDE dataPermission###type(ur, p), nearestParentPermission###type(ur, parent(p));
     
     WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permission###type(ur, ActionOrProperty p))) > 100 DO
-        dropCachedSecurityPolicy(ur);
+        dropSecurityPolicy(ur);
     WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permission###type(ur, ActionOrProperty p))) <= 100 NOINLINE DO
         FOR CHANGED (permission###type(ur, ActionOrProperty p)) DO
             updatePermissionUserRoleActionOrProperty(ur, canonicalName(p), isProperty(p), name(permission###type(ur, p)), ''##type);
@@ -171,7 +178,7 @@ foregroundPermission (UserRole ur, NavigatorElement e) = parentPermissionForegro
 
 permission (UserRole ur, NavigatorElement e) = OVERRIDE dataPermission(ur, e), nearestParentPermission(ur, e);
 WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permission(ur, NavigatorElement ne))) > 100 DO
-    dropCachedSecurityPolicy(ur);
+    dropSecurityPolicy(ur);
 WHEN UserRole ur IS UserRole AND (GROUP SUM 1 IF CHANGED(permission(ur, NavigatorElement ne))) <= 100 NOINLINE DO
     FOR CHANGED (permission(ur, NavigatorElement ne)) DO
         updatePermissionUserRoleNavigatorElement(ur, canonicalName(ne), name(permission(ur, ne)));
