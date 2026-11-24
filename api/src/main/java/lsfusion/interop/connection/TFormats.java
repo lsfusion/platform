@@ -1,6 +1,7 @@
 package lsfusion.interop.connection;
 
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
@@ -54,7 +55,7 @@ public class TFormats {
         dateParser = DateTimeFormatter.ofPattern(datePattern);
         timeParser = DateTimeFormatter.ofPattern(timePattern);
         dateTimeParser = DateTimeFormatter.ofPattern(dateTimePattern);
-        zDateTimeParser = DateTimeFormatter.ofPattern(dateTimePattern);
+        zDateTimeParser = DateTimeFormatter.ofPattern(dateTimePattern).withZone(timeZone != null ? timeZone.toZoneId() : ZoneId.systemDefault());
 
         dateFormatter = dateParser;
         timeFormatter = timeParser;

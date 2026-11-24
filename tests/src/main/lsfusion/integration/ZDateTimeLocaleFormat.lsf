@@ -1,0 +1,28 @@
+MODULE ZDateTimeLocaleFormat;
+
+REQUIRE TestUtils, Utils, Service;
+
+// With useISOTimeFormatsInIntegration off, EXPORT and IMPORT write and read ZDATETIME in the date and time format of the
+// locale, in the user's time zone (#2022). The locale formatter had no time zone, and writing an instant failed
+
+zdtlfAt = DATA LOCAL ZDATETIME (INTEGER);
+zdtlfImported = DATA LOCAL ZDATETIME (INTEGER);
+zdtlfImportedAny = GROUP MAX zdtlfImported(INTEGER r);
+zdtlfText = DATA LOCAL STRING ();
+
+testZDateTimeLocaleFormat 'EXPORT and IMPORT CSV of ZDATETIME in the locale format' () {
+    zdtlfAt(1) <- ZDATETIME(2026_11_01_12:30);
+
+    pushSetting('useISOTimeFormatsInIntegration', 'false');
+    TRY {
+        EXPORT CSV NOHEADER FROM zdtlfAt(i) WHERE zdtlfAt(i);
+        fileToString(exportFile(), 'UTF-8');
+        zdtlfText() <- resultString();
+        IMPORT CSV NOHEADER FROM exportFile() TO zdtlfImported;
+    } FINALLY {
+        popSetting('useISOTimeFormatsInIntegration'); // the setting is the thread's, which serves the tests after this one
+    }
+
+    assertTrue(zdtlfText() AND NOT isSubstring(zdtlfText(), 'Z'), 'the locale format, not ISO (an instant in UTC with Z): ' + zdtlfText());
+    assertEquals(zdtlfImportedAny(), zdtlfAt(1), 'read back: ' + zdtlfText());
+}
