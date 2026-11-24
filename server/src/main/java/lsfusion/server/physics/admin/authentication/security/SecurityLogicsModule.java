@@ -16,6 +16,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule {
     public LP userRoleSID;
     public LP firstRoleUser;
     public LP userRolesUser;
+    public LP connectionContextVersion;
     public LP inCustomUserUserRole;
     public LP hasUserRole;
     public LA<?> createSystemUserRoles;
@@ -49,6 +50,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule {
         userRoleSID = findProperty("userRoleSID[STRING[30]]");
         firstRoleUser = findProperty("firstRole[User]");
         userRolesUser = findProperty("userRoles[User]");
+        connectionContextVersion = findProperty("connectionContextVersion[User]");
         inCustomUserUserRole = findProperty("in[CustomUser,UserRole]");
         hasUserRole = findProperty("has[User,UserRole]");
         createSystemUserRoles = findAction("createSystemUserRoles[]");

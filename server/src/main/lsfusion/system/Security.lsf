@@ -35,7 +35,7 @@ in '{security.in}' = DATA BOOLEAN (CustomUser, UserRole);
 
 TABLE userUserRole (User, UserRole);
 has '{security.in}' (User user, UserRole role) = in(user, role) OR overIn(user, role) MATERIALIZED;
-userRoles '{security.user.roles}' (User user) = GROUP CONCAT name(UserRole role) IF has(user, role), ', ' ORDER name(role) CHARWIDTH 15 LAZY;
+userRoles '{security.user.roles}' (User user) = GROUP CONCAT name(UserRole role) IF has(user, role), ', ' ORDER name(role) CHARWIDTH 15 LAZY WAIT;
 
 rolesCount(User user) = GROUP SUM 1 IF has(user, UserRole role) MATERIALIZED;
 
@@ -56,9 +56,26 @@ disableRole(STRING roleSID) = disableRole(userRoleSID(roleSID)) LAZY WAIT;
 
 //firstRole need for Settings: a disabled role's settings do not apply, as its permissions do not
 firstRole(User user) = OVERRIDE (GROUP MIN UserRole role IF has(user, role) AND NOT sid(role) = 'default' AND NOT disableRole(role)), 
-                                            (userRoleSID('default') IF NOT disableRole('default')) LAZY;
+                                            (userRoleSID('default') IF NOT disableRole('default')) LAZY WAIT;
 
 registrationDisabled() += disableRole('selfRegister');
+
+// a version of what the connection of a user builds its context of (RemoteConnection.initUserContext), new as any of it
+// changes : a session of the pool of the Action API is reused while its user's version is the one its context was built
+// at (RemoteSession). A new version is a random one, so two applies at once give two. What the contexts are read of is
+// LAZY WAIT, as the version is : the apply that changes it drops the values it changes at once, so the context the next
+// call builds is of the new ones
+connectionContextVersion = DATA STRING (User) LAZY WAIT;
+// whether the apply changes what the connection of a user builds its context of : each module adds what it declares.
+// Here : a role given or taken, a role of the user disabled, renamed or given another sid - the policy, the roles'
+// names and the first of them, the default role being the first of a user with no other, given it or
+// not -, and the user's name
+changedConnectionContext = ABSTRACT VALUE BOOLEAN (User);
+changedConnectionContext(User u) += TRUE IF (GROUP SUM 1 IF CHANGED(has(u, UserRole r)) OR (has(u, r) AND
+        (CHANGED(disableRole(r)) OR CHANGED(name(r)) OR CHANGED(sid(r))))) OR
+    (CHANGED(disableRole('default')) AND u IS User) OR CHANGED(logName(u));
+WHEN changedConnectionContext(User u) DO
+    connectionContextVersion(u) <- STRING(randomUUID());
 
 // Forms
 FORM userRolesDialog '{security.user.roles}'

@@ -1,0 +1,157 @@
+MODULE HttpUserContext;
+
+REQUIRE TestUtils, Authentication, Security;
+
+// a call through the Action API with a token is a connection of the user the token names, made with what the user is
+// when the call is made - by a session the server builds for it, or by one of its pool that a call of the same user left
+// (RemoteSession.equalsConnectionContext). Every test has a user of its own : a token is of the user's login, the same
+// for one given within the same second, so another test's session of the pool would hold the test's token too. The
+// changes of a test are applied in sessions of their own : an apply drops the local values, the token among them
+
+hucNothing () { }
+
+// a user of the test, and a token given to it
+hucNewUser (STRING login) {
+    NEWSESSION {
+        NEW u = CustomUser {
+            login(u) <- login;
+        }
+        APPLY;
+    }
+    generateAuthToken(login);
+}
+hucDropUser (STRING login) {
+    NEWSESSION {
+        DELETE CustomUser u WHERE login(u) = login;
+        APPLY;
+    }
+}
+
+// what the server answers a call the user makes with its token
+hucHeaders (STRING name) = 'Bearer ' + resultAuthToken() IF name = 'Authorization';
+hucResponse = DATA LOCAL STRING ();
+hucCall (STRING action) {
+    hucResponse() <- NULL;
+    statusHttp() <- NULL;
+    TRY {
+        EXTERNAL HTTP GET origin() + '/exec?action=' + action HEADERS hucHeaders TO hucResponse;
+    } CATCH {
+    }
+}
+// the call of the user after a change of it, once the session its call before left is back in the pool - the server
+// returns it after it has answered. The only session of the token there, it is the one the pool offers the call
+hucWaitPooled (STRING token) INTERNAL 'lsfusion.tests.WaitPooledAPISessionAction' (STRING);
+hucCallPooled (STRING action) {
+    hucWaitPooled(resultAuthToken());
+    hucCall(action);
+}
+
+hucAnswered (STRING answer, STRING call) {
+    assertTrue(hucResponse() = answer, call + ' answered ' + (OVERRIDE hucResponse(), STRING(statusHttp()), 'nothing'));
+}
+
+// a role of a test, given to its user or not
+hucNewRole (STRING sid, STRING login) {
+    NEWSESSION {
+        NEW r = UserRole {
+            sid(r) <- sid;
+            name(r) <- sid;
+            in(CustomUser u, r) <- TRUE WHERE login(u) = login;
+        }
+        APPLY;
+    }
+}
+hucDropRole (STRING sid) {
+    NEWSESSION {
+        DELETE UserRole r WHERE sid(r) = sid;
+        APPLY;
+    }
+}
+
+// the role a call is made with : the first of the user's roles, its settings the call's
+hucRoleRead = DATA LOCAL LONG ();
+hucReadRole INTERNAL <{ findProperty("HttpUserContext.hucRoleRead[]").change(context.getSession().user.getCurrentUserRole(), context); }>;
+hucRole () {
+    hucReadRole();
+    RETURN hucRoleRead();
+}
+
+testPoolTakesTheUsersRoles 'A call made by a session of the pool is made with the roles its user has at the moment' () {
+    hucNewUser('hucGiven');
+    hucNewRole('hucGiven', NULL);
+    TRY {
+        hucCall('HttpUserContext.hucRole');
+        hucAnswered(STRING(LONG(userRoleSID('default'))), 'A call of the user with no role of its own');
+
+        NEWSESSION {
+            in(CustomUser u, UserRole r) <- TRUE WHERE login(u) = 'hucGiven' AND sid(r) = 'hucGiven';
+            APPLY;
+        }
+        hucCallPooled('HttpUserContext.hucRole');
+        hucAnswered(STRING(LONG(userRoleSID('hucGiven'))), 'A call of the user given a role');
+    } FINALLY {
+        hucDropUser('hucGiven');
+        hucDropRole('hucGiven');
+    }
+}
+
+// whether the context the call is made with was built since the call before : a connection makes the info it is logged
+// with anew once its context is built
+hucBuiltRead = DATA LOCAL INTEGER ();
+hucReadBuilt INTERNAL <{ findProperty("HttpUserContext.hucBuiltRead[]").change(System.identityHashCode(lsfusion.server.base.controller.thread.ThreadLocalContext.get().getLogInfo()), context); }>;
+hucBuilt () {
+    hucReadBuilt();
+    RETURN hucBuiltRead();
+}
+
+testPoolTakesTheUsersDisabledRole 'A call made by a session of the pool is made with no role of its user disabled since' () {
+    hucNewUser('hucDisabled');
+    hucNewRole('hucDisabledFirst', 'hucDisabled');
+    hucNewRole('hucDisabled', 'hucDisabled');
+    TRY {
+        hucCall('HttpUserContext.hucBuilt');
+        LOCAL built = STRING ();
+        built() <- hucResponse();
+        assertTrue(statusHttp() = 200, 'A call of the user answered ' + (OVERRIDE STRING(statusHttp()), 'nothing'));
+        // the session of the pool is taken as it is while the user stays as it was
+        hucCallPooled('HttpUserContext.hucBuilt');
+        hucAnswered(built(), 'A call of the user changed in nothing');
+
+        // the role stays the user's, and it is not the user's first : the names and the first of the roles stay, what changes is
+        // only the security policy a call is made with
+        NEWSESSION {
+            disableRole(UserRole r) <- TRUE WHERE sid(r) = 'hucDisabled';
+            APPLY;
+        }
+        hucCallPooled('HttpUserContext.hucBuilt');
+        assertTrue(statusHttp() = 200 AND NOT hucResponse() = built(), 'A call after a role of the user was disabled answered ' + (OVERRIDE hucResponse(), STRING(statusHttp()), 'nothing'));
+    } FINALLY {
+        hucDropUser('hucDisabled');
+        hucDropRole('hucDisabledFirst');
+        hucDropRole('hucDisabled');
+    }
+}
+
+testPoolKeepsTheContextOfAnotherUser 'A session of the pool is taken as it is after a change of another user' () {
+    hucNewUser('hucOther');
+    hucNewUser('hucKept'); // the token of the calls
+    hucNewRole('hucKept', NULL);
+    TRY {
+        hucCall('HttpUserContext.hucBuilt');
+        LOCAL built = STRING ();
+        built() <- hucResponse();
+        assertTrue(statusHttp() = 200, 'A call of the user answered ' + (OVERRIDE STRING(statusHttp()), 'nothing'));
+
+        NEWSESSION {
+            in(CustomUser u, UserRole r) <- TRUE WHERE login(u) = 'hucOther' AND sid(r) = 'hucKept';
+            APPLY;
+        }
+        assertTrue(TRUE IF (GROUP SUM 1 IF has(CustomUser u, UserRole r) AND login(u) = 'hucOther' AND sid(r) = 'hucKept'), 'The other user was not given the role');
+        hucCallPooled('HttpUserContext.hucBuilt');
+        hucAnswered(built(), 'A call after another user was given a role');
+    } FINALLY {
+        hucDropUser('hucKept');
+        hucDropUser('hucOther');
+        hucDropRole('hucKept');
+    }
+}

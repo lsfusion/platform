@@ -91,7 +91,7 @@ customUserLower(ISTRING[100] login) = customUserLowerLogin(login) @@deprecated('
 customUserNormalized(ISTRING[100] login) = customUserLogin(login);
 
 //customUserNormalized (ISTRING[100] login) = customUserLower(lower(login)) LAZY;
-logName (CustomUser user) = OVERRIDE name(user), login(user) LAZY;
+logName (CustomUser user) = OVERRIDE name(user), login(user) LAZY WAIT;
 
 // password
 sha256Password '{authentication.password}' = DATA STRING[100] (CustomUser) ECHO LAZY WAIT;

@@ -1,5 +1,6 @@
 package lsfusion.server.logics.action.session.controller.remote;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.interop.action.ClientAction;
@@ -12,6 +13,7 @@ import lsfusion.interop.session.SessionInfo;
 import lsfusion.interop.session.remote.RemoteSessionInterface;
 import lsfusion.server.base.controller.context.Context;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
@@ -24,6 +26,7 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class RemoteSession extends RemoteConnection implements RemoteSessionInterface {
@@ -53,9 +56,22 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
             } catch (AuthenticationException e) {
                 return false;
             }
-            return true;
+            return Objects.equals(readContextVersion(), contextVersion); // and what the context of its user is built of, which may have changed since
         }
         return false;
+    }
+
+    // the version of what the context of the user is built of (Security.connectionContextVersion) this context was built at,
+    // read before anything of it. The version is LAZY WAIT : the server keeps its value, so it is read with no session, as a
+    // rule with no query
+    private Object contextVersion;
+    private Object readContextVersion() {
+        LP version = businessLogics.securityLM.connectionContextVersion;
+        try {
+            return dbManager.readLazyValue(version.property, version.getMapValues(user)).getValue();
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
     }
     @Override
     public void initConnectionContext(AuthenticationToken token, ConnectionInfo connectionInfo, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -77,6 +93,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
     private boolean userContextInitialized;
     @Override
     protected void initUserContext(UserInfo userInfo, DataSession session, ExecutionStack stack) throws SQLException, SQLHandledException {
+        contextVersion = readContextVersion();
         changeUserContext(userInfo, session);
         try {
             initUserContext(session);
