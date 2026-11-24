@@ -429,6 +429,18 @@ public class ExecutionStackAspect {
         return getStackString(Thread.currentThread(), false, false); // не concurrent по определению
     }
 
+    public static List<Object> getStackArgs() {
+        List<Object> result = new ArrayList<>();
+        StackAndTime stackAndTime = executionStack.get(Thread.currentThread());
+        if(stackAndTime != null)
+            for(ExecutionStackItem item : stackAndTime.stack.getUnsync())
+                if(item instanceof AspectStackItem) {
+                    result.add(item.joinPoint.getThis());
+                    result.addAll(Arrays.asList(item.joinPoint.getArgs()));
+                }
+        return result;
+    }
+
     public static String getExStackTrace() {
         return ExceptionUtils.getExStackTrace(ExceptionUtils.getStackTrace(), getStackString());
     }

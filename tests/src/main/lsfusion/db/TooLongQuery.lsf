@@ -1,0 +1,74 @@
+MODULE TooLongQuery;
+
+REQUIRE TestUtils, Service;
+
+// #1915
+
+CLASS TlqEvent;
+TABLE tlqEvent (TlqEvent);
+
+tlqDate = DATA DATE (TlqEvent);
+tlqKind1 = DATA STRING[10] (TlqEvent);
+tlqKind2 = DATA STRING[10] (TlqEvent);
+tlqKind3 = DATA STRING[10] (TlqEvent);
+
+tlqKey (TlqEvent e) = OVERRIDE tlqKind1(e) + '-' + tlqKind2(e) + '-' + tlqKind3(e), tlqKind1(e) + '-' + tlqKind3(e),
+                               tlqKind2(e) + '-' + tlqKind3(e), tlqKind1(e), tlqKind2(e), tlqKind3(e);
+tlqHead (STRING k) = GROUP MIN tlqDate(TlqEvent e) BY tlqKey(e) MATERIALIZED;
+
+tlqApply (STRING limit) {
+    pushSetting('queryLengthLimit', limit);
+    TRY {
+        APPLY;
+    } CATCH {
+    } FINALLY {
+        popSetting('queryLengthLimit');
+    }
+    assertTrue(messageCaughtException() LIKE '%TOO LONG QUERY%', 'the apply failed with ' + (OVERRIDE messageCaughtException(), 'nothing'));
+}
+
+testTooLongQueryNamesMaterializedProperty 'TOO LONG QUERY names the materialized property whose update it is' () {
+    FOR iterate(INTEGER i, 1, 3) NEW e = TlqEvent DO {
+        tlqDate(e) <- 2026_01_01;
+        tlqKind1(e) <- 'k1' IF i = 1;
+        tlqKind3(e) <- 'k3';
+    }
+    tlqApply('700');
+    assertTrue(messageCaughtException() LIKE '%PROPERTY : TooLongQuery.tlqHead%', 'TOO LONG QUERY does not name tlqHead : ' + messageCaughtException());
+}
+
+CLASS TlqRow;
+TABLE tlqRow (TlqRow);
+
+tlqData1 = DATA STRING[10] (TlqRow);
+tlqData2 = DATA STRING[10] (TlqRow);
+tlqData3 = DATA STRING[10] (TlqRow);
+tlqData4 = DATA STRING[10] (TlqRow);
+tlqData5 = DATA STRING[10] (TlqRow);
+tlqData6 = DATA STRING[10] (TlqRow);
+tlqData7 = DATA STRING[10] (TlqRow);
+tlqData8 = DATA STRING[10] (TlqRow);
+tlqData9 = DATA STRING[10] (TlqRow);
+tlqData10 = DATA STRING[10] (TlqRow);
+tlqData11 = DATA STRING[10] (TlqRow);
+tlqData12 = DATA STRING[10] (TlqRow);
+
+testTooLongQueryNamesSavedPropertiesTogether 'TOO LONG QUERY names the properties of a table an apply saves together' () {
+    FOR iterate(INTEGER i, 1, 3) NEW r = TlqRow DO {
+        tlqData1(r) <- 'v1';
+        tlqData2(r) <- 'v2';
+        tlqData3(r) <- 'v3';
+        tlqData4(r) <- 'v4';
+        tlqData5(r) <- 'v5';
+        tlqData6(r) <- 'v6';
+        tlqData7(r) <- 'v7';
+        tlqData8(r) <- 'v8';
+        tlqData9(r) <- 'v9';
+        tlqData10(r) <- 'v10';
+        tlqData11(r) <- 'v11';
+        tlqData12(r) <- 'v12';
+    }
+    tlqApply('2000');
+    assertTrue(messageCaughtException() LIKE '%PROPERTIES : %TooLongQuery.tlqData%', 'TOO LONG QUERY does not name the saved properties : ' + messageCaughtException());
+    assertFalse(messageCaughtException() LIKE '%READING%', 'TOO LONG QUERY names a saved property as read : ' + messageCaughtException());
+}
