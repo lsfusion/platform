@@ -1,0 +1,63 @@
+MODULE WordTemplates;
+
+REQUIRE TestUtils, Word;
+
+// A template's entry of the table type fills the rows of the template's table, and one of the list type the items of
+// its list: a row or an item for each line of the entry's value. The entries of these types are told from the plain
+// ones by the static name of the type (#2020). Read as the name a type shows - its caption -, it told none, and every
+// entry was filled as a plain one: its key replaced by the whole value
+
+// a .docx of a table with one row of two cells, the first of them holding the first key, and under it an item of the
+// list 1 - a paragraph with that numbering id - holding the second
+wtTemplate = DATA LOCAL WORDFILE ();
+wtMakeTemplate INTERNAL 'lsfusion.tests.MakeWordTemplateAction' (STRING, STRING);
+
+// what a .docx shows : the cells of its first table by their row and column, the paragraphs of its body by their number,
+// all from 0, and the list a paragraph is an item of, by its numbering id
+wtCell = DATA LOCAL STRING (INTEGER, INTEGER);
+wtParagraph = DATA LOCAL STRING (INTEGER);
+wtList = DATA LOCAL INTEGER (INTEGER);
+wtRead INTERNAL 'lsfusion.tests.ReadWordTextsAction' (WORDFILE);
+
+// the template above filled by one entry, and what the result shows
+wtFill (STRING entryKey, Type entryType, TEXT entryValue) {
+    NEW t = Template {
+        wtMakeTemplate('ROWS', 'ITEMS');
+        file(t) <- wtTemplate();
+        NEW e = TemplateEntry {
+            template(e) <- t;
+            key(e) <- entryKey;
+            type(e) <- entryType;
+            value(e) <- entryValue;
+        }
+        process(t);
+    }
+    wtRead(resultTemplate());
+}
+
+testTableEntryFillsTheRows 'A table entry of a Word template fills a row of the table for each line of its value' () {
+    wtFill('ROWS', Type.table, 'a;b\nc;d');
+    assertEquals(wtCell(0, 0), 'a', 'the first cell of the first row is ' + wtCell(0, 0));
+    assertEquals(wtCell(0, 1), 'b', 'the second cell of the first row is ' + wtCell(0, 1));
+    assertEquals(wtCell(1, 0), 'c', 'the first cell of the second row is ' + wtCell(1, 0));
+    assertEquals(wtCell(1, 1), 'd', 'the second cell of the second row is ' + wtCell(1, 1));
+    assertNull(wtCell(2, 0), 'a third row is ' + wtCell(2, 0));
+    // the list, which the entry is not of, is as it was
+    assertEquals(wtParagraph(0), 'ITEMS', 'the list item is ' + wtParagraph(0));
+}
+
+testListEntryFillsTheItems 'A list entry of a Word template fills an item of the list for each line of its value' () {
+    wtFill('ITEMS', Type.list, 'one\ntwo');
+    assertEquals(wtParagraph(0), 'one', 'the first item is ' + wtParagraph(0));
+    assertEquals(wtParagraph(1), 'two', 'the second item is ' + wtParagraph(1));
+    assertTrue(wtList(0) == 1 AND wtList(1) == 1, 'a paragraph made for a line of the value is no item of the list of the template');
+    assertNull(wtParagraph(2), 'a third item is ' + wtParagraph(2));
+    // the table, which the entry is not of, is as it was
+    assertEquals(wtCell(0, 0), 'ROWS', 'the first cell of the table is ' + wtCell(0, 0));
+}
+
+testPlainEntryReplacesItsKey 'A plain entry of a Word template replaces its key by its value' () {
+    wtFill('ROWS', Type.plain, 'a;b');
+    assertEquals(wtCell(0, 0), 'a;b', 'the first cell of the table is ' + wtCell(0, 0));
+    assertNull(wtCell(1, 0), 'a second row is ' + wtCell(1, 0));
+}
