@@ -166,3 +166,5 @@ notLaterCount 'Not later' (Doc d) = GROUP SUM 1 IF lePeriod(Doc dd, d);
 ```
 
 The straightforward condition `ord(dd) <= ord(d)` compares two multi-branch selections with each other: on compilation the product of their branches is expanded, so with more granularities and heavier branch properties the query text grows multiplicatively and can exceed the maximum query length. The branch-wise comparison compares each granularity only with itself: in a mixed pair one operand of each comparison is `NULL`, so the pair is not counted — here exactly the required semantics. Rewriting the comparison this way is possible only when values of different branches must not be compared with each other. Otherwise, store the composed ordinal by marking the property [`MATERIALIZED`](../paradigm/Materializations.md).
+
+The compilation of a query can also slow down when the definition of one multi-branch selection is expanded several times in an expression — for example, when the selection is passed to a property that references its parameter several times (see [Rules: physical model](../rules/Rules_physical.md)).
