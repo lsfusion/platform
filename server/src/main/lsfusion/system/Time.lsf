@@ -17,8 +17,8 @@ toDateTime(DATE date, TIME time) = [ FORMULA DATETIME '$1 + $2' ](date AS DATE, 
 toSeconds(TIME time) = [ FORMULA LONG 'CAST(trunc(extract(epoch from ($1))) AS bigint)' ](time AS TIME);
 toTime(INTEGER seconds) = [ FORMULA TIME 'TIME \'00:00\' + INTERVAL \'1 second\' * $1' ](seconds AS INTEGER);
 
-toDateTime(LONG millis) = FORMULA DATETIME PG 'to_timestamp(CAST($1 AS NUMERIC),\'UTC\')::timestamp';
-toZDateTime(LONG millis) = FORMULA ZDATETIME PG 'to_timestamp(CAST($1 AS NUMERIC))';
+toDateTime(LONG seconds) = FORMULA DATETIME PG 'to_timestamp(CAST($1 AS NUMERIC)) AT TIME ZONE \'Etc/UTC\'';
+toZDateTime(LONG seconds) = FORMULA ZDATETIME PG 'to_timestamp(CAST($1 AS NUMERIC))';
 
 currentTime '{time.current.time}' = toTime(currentDateTime());
 currentTime '{time.current.time}' (INTEGER millisLength) = FORMULA TIME PG 'LOCALTIME($1)';

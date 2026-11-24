@@ -1,0 +1,27 @@
+MODULE EpochTimeZone;
+
+REQUIRE TestUtils, Time;
+
+// #2023
+
+epochTzSet(STRING tz) = FORMULA STRING 'set_config(\'TimeZone\', $1, true)';
+epochTzCurrent = FORMULA STRING 'current_setting(\'TimeZone\')';
+
+testEpochTimeZone 'toDateTime / toZDateTime of epoch seconds under a POSIX session time zone' () {
+    assertEquals(toDateTime(LONG(1700000000)), 2023_11_14_22:13:20, 'toDateTime(LONG)');
+
+    LOCAL epochTzZone = STRING();
+    LOCAL epochTzDateTime = DATETIME();
+    LOCAL epochTzMillis = LONG();
+
+    APPLY NESTED LOCAL {
+        epochTzZone() <- epochTzSet('UTC+5');
+        epochTzZone() <- epochTzCurrent();
+        epochTzDateTime() <- toDateTime(LONG(1700000000));
+        epochTzMillis() <- getMilliSeconds(toZDateTime(LONG(1700000000)));
+    }
+
+    assertEquals(epochTzZone(), 'UTC+5', 'the session time zone in the transaction');
+    assertEquals(epochTzDateTime(), 2023_11_14_22:13:20, 'toDateTime(LONG) under UTC+5');
+    assertEquals(epochTzMillis(), 1700000000000l, 'toZDateTime(LONG) under UTC+5, back in epoch milliseconds');
+}
