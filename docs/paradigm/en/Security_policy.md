@@ -61,6 +61,8 @@ The status set for a tree branch automatically applies to child branches. If nec
 
 Fig. 5. Result of setting access to forms
 
+An element the [customization code](System_SystemEvents.md) of the application adds to the navigator is not in this tree, and no access can be set for it: the roles do not restrict it, even inside a folder closed for the role.
+
 #### Properties Tab
 
 The `Properties` tab displays all the form elements available in the system: fields, buttons, checkboxes, etc. Like the Forms themselves, Properties are presented in tree and table form.

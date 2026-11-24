@@ -29,7 +29,9 @@ public class SecurityPolicy {
     }
 
     public boolean checkNavigatorPermission(NavigatorElement navigatorElement) {
-        // a permission is given to an element of the logics, and a client whose navigator is customized draws and runs copies of them
+        // a permission is given to an element of the logics, and a client whose navigator is customized draws and runs copies of them.
+        // An element a customization's code adds, or a copy of it, has no original in the logics' navigator : no role has a permission
+        // for it, so no role restricts it, even in a folder closed for the role. Known, and left so for now
         NavigatorElement permissionElement = navigatorElement.getCustomizeElement();
         return checkPermission(policy -> policy.checkNavigatorPermission(permissionElement));
     }
