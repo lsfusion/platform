@@ -23,6 +23,7 @@ import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.logics.LogicsSessionObject;
@@ -120,6 +121,7 @@ public class MainController {
         String screenWidth = null;
         String screenHeight = null;
         String scale = null;
+        String colorTheme = null;
 
         Cookie[] cookies = request.getCookies();
         if(cookies != null) {
@@ -130,6 +132,8 @@ public class MainController {
                     screenHeight = cookie.getValue();
                 }else if(cookie.getName().equals("LSFUSION_SCALE")) {
                     scale = cookie.getValue();
+                } else if (colorTheme == null && cookie.getName().equals("LSFUSION_CLIENT_COLOR_THEME")) { // the first one: a browser sends the cookie of the longest path first, this client's before that of a client mounted above it
+                    colorTheme = cookie.getValue();
                 }
             }
         }
@@ -141,6 +145,9 @@ public class MainController {
         }
         if (scale != null) {
             clientInfo.scale = Double.parseDouble(scale);
+        }
+        if (colorTheme != null) {
+            clientInfo.colorTheme = ColorTheme.get(colorTheme);
         }
 
         remoteNavigator.updateClientInfo(clientInfo);
@@ -533,7 +540,7 @@ public class MainController {
                 rServerSettings.set(settings);
                 try {
                     String result = navigatorProvider.createNavigator(sessionObject, request);
-                    rInitSettings.set(getInitSettings(navigatorProvider.getNavigatorSessionObject(result).remoteNavigator, settings, request, new ClientInfo(1366, 768, 1.0, ClientType.WEB_DESKTOP, true)));
+                    rInitSettings.set(getInitSettings(navigatorProvider.getNavigatorSessionObject(result).remoteNavigator, settings, request, new ClientInfo(1366, 768, 1.0, null, ClientType.WEB_DESKTOP, true)));
                     return result;
                 } catch (RemoteMessageException e) {
                     request.getSession().setAttribute(AUTHENTICATION_EXCEPTION, new InternalAuthenticationServiceException(e.getMessage()));

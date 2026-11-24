@@ -52,7 +52,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 
         return new ConnectionInfo(new ComputerInfo(hostName, remoteAddress),
                 new UserInfo(clientLocale.getLanguage(), clientLocale.getCountry(), LocaleContextHolder.getTimeZone(),
-                        BaseUtils.getDatePattern(), BaseUtils.getTimePattern(), null)
+                        BaseUtils.getDatePattern(), BaseUtils.getTimePattern())
         );
     }
 

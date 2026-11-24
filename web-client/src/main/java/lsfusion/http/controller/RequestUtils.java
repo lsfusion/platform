@@ -82,9 +82,7 @@ public class RequestUtils {
         Cookie timeFormat = WebUtils.getCookie(request, "LSFUSION_CLIENT_TIME_FORMAT");
         Cookie dateFormat = WebUtils.getCookie(request, "LSFUSION_CLIENT_DATE_FORMAT");
 
-        Cookie colorTheme = WebUtils.getCookie(request, "LSFUSION_CLIENT_COLOR_THEME");
-
-        return new ConnectionInfo(new ComputerInfo(hostName, getHostAddress(request)), new UserInfo(clientLocale.getLanguage(), clientLocale.getCountry(), timeZone != null ? TimeZone.getTimeZone(URLDecoder.decode(timeZone.getValue())) : null, dateFormat != null ? URLDecoder.decode(dateFormat.getValue()) : null, timeFormat != null ? URLDecoder.decode(timeFormat.getValue()) : null, colorTheme != null ? colorTheme.getValue() : null));
+        return new ConnectionInfo(new ComputerInfo(hostName, getHostAddress(request)), new UserInfo(clientLocale.getLanguage(), clientLocale.getCountry(), timeZone != null ? TimeZone.getTimeZone(URLDecoder.decode(timeZone.getValue())) : null, dateFormat != null ? URLDecoder.decode(dateFormat.getValue()) : null, timeFormat != null ? URLDecoder.decode(timeFormat.getValue()) : null));
     }
 
     /**

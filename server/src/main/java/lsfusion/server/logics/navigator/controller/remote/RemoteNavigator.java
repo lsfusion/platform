@@ -161,14 +161,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return new RemoteNavigatorContext(this);
     }
 
-    private void saveNavigatorUserContext(String clientColorTheme, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
-        if(clientColorTheme != null) {
-            DataObject designEnv = businessLogics.authenticationLM.storeNavigatorSettingsForComputer.read(session) != null ? computer : user;
-            businessLogics.authenticationLM.clientColorTheme.change(businessLogics.authenticationLM.colorTheme.getDataObject(clientColorTheme), session, designEnv);
-            session.applyException(businessLogics, stack);
-        }
-    }
-
     private void initNavigatorUserContext(DataSession session) throws SQLException, SQLHandledException {
         useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session) != null;
         contentWordWrap = businessLogics.systemEventsLM.contentWordWrap.read(session) != null;
@@ -185,8 +177,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         super.initConnectionContext(token, connectionInfo, stack);
 
         try(DataSession session = createSession()) {
-            saveNavigatorUserContext(connectionInfo.userInfo.clientColorTheme, stack, session);
-
             initNavigatorUserContext(session);
         }
     }
@@ -433,6 +423,13 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             businessLogics.systemEventsLM.screenWidthConnection.change(clientInfo.screenWidth, session, getConnection());
             businessLogics.systemEventsLM.screenHeightConnection.change(clientInfo.screenHeight, session, getConnection());
             businessLogics.systemEventsLM.scaleConnection.change(clientInfo.scale, session, getConnection());
+
+            // the system color theme of the design environment: a client reports it as it starts, before it reads its
+            // settings; the request for a web client's page gives only the one of the browser's load before, if any
+            if(clientInfo.colorTheme != null) {
+                DataObject designEnv = businessLogics.authenticationLM.storeNavigatorSettingsForComputer.read(session) != null ? computer : user;
+                businessLogics.authenticationLM.clientColorTheme.change(businessLogics.authenticationLM.colorTheme.getDataObject(clientInfo.colorTheme.getSid()), session, designEnv);
+            }
 
             if(clientInfo.initial) {
                 businessLogics.systemEventsLM.initCurrentSize.execute(session, getStack());

@@ -8,6 +8,7 @@ import lsfusion.base.SystemUtils;
 import lsfusion.client.SplashScreen;
 import lsfusion.client.base.log.ClientLoggers;
 import lsfusion.client.base.view.SwingDefaults;
+import lsfusion.client.controller.DarkModeDetector;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.client.controller.remote.ReconnectWorker;
@@ -21,6 +22,7 @@ import lsfusion.interop.action.ICleanListener;
 import lsfusion.interop.base.exception.AppServerNotAvailableException;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteMessageException;
+import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.connection.TFormats;
@@ -94,7 +96,7 @@ public abstract class MainFrame extends JFrame {
                                         DisplayMode dm = devices[0].getDefaultConfiguration().getDevice().getDisplayMode();
                                         double scale = dm.getWidth() / bounds.getWidth();
 
-                                        remoteNavigator.updateClientInfo(new ClientInfo(width, height, scale, ClientType.NATIVE_DESKTOP, false));
+                                        remoteNavigator.updateClientInfo(new ClientInfo(width, height, scale, DarkModeDetector.isDarkMode() ? ColorTheme.DARK : ColorTheme.LIGHT, ClientType.NATIVE_DESKTOP, false));
 
                                         return remoteNavigator;
                                     });

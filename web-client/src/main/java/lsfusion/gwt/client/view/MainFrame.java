@@ -703,7 +703,7 @@ public class MainFrame implements EntryPoint {
 
         boolean prefetching = GwtClientUtils.isPrefetching();
 
-        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth, screenHeight, scale, prefetching), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
+        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth, screenHeight, scale, isDarkColorScheme() ? GColorTheme.DARK : GColorTheme.LIGHT, prefetching), new PriorityErrorHandlingCallback<InitializeNavigatorResult>(popupOwner) {
             @Override
             public void onSuccess(InitializeNavigatorResult result) {
                 GClientSettings gClientSettings = result.gClientSettings;
@@ -765,6 +765,11 @@ public class MainFrame implements EntryPoint {
 
     private static native double getScale()/*-{
         return window.devicePixelRatio;
+    }-*/;
+
+    // the color scheme the browser asks for, which is the system color theme
+    private static native boolean isDarkColorScheme()/*-{
+        return !!$wnd.matchMedia && $wnd.matchMedia('(prefers-color-scheme: dark)').matches;
     }-*/;
 
     public static void openNavigatorMenu() {

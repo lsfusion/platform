@@ -22,6 +22,7 @@ import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.gwt.server.convert.ClientNavigatorToGwtConverter;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.http.controller.MainController;
+import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.logics.ServerSettings;
@@ -107,7 +108,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
     public InitializeNavigatorResult executeEx(InitializeNavigator action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
         getNavigatorSessionObject(action).initialized = action.prefetching ? 1 : 2;
         RemoteNavigatorInterface remoteNavigator = getRemoteNavigator(action);
-        return new InitializeNavigatorResult(getClientSettings(remoteNavigator, getServerSettings(action), servlet, new ClientInfo(action.width, action.height, action.scale, ClientType.WEB_DESKTOP, false)), getNavigatorInfo(remoteNavigator, servlet, action.sessionID));
+        return new InitializeNavigatorResult(getClientSettings(remoteNavigator, getServerSettings(action), servlet, new ClientInfo(action.width, action.height, action.scale, ColorTheme.valueOf(action.colorTheme.name()), ClientType.WEB_DESKTOP, false)), getNavigatorInfo(remoteNavigator, servlet, action.sessionID));
     }
 
     private static Map<String, String> getVersionedColorThemesCss(MainDispatchServlet servlet) throws RemoteException {

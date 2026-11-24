@@ -429,7 +429,7 @@ public class MainController {
     }
 
     public static ConnectionInfo getConnectionInfo() {
-        return new ConnectionInfo(new ComputerInfo(computerName, SystemUtils.getLocalHostIP()), new lsfusion.interop.connection.UserInfo(Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(), TimeZone.getDefault(), BaseUtils.getDatePattern(), BaseUtils.getTimePattern(), DarkModeDetector.isDarkMode() ? "dark" : "light"));
+        return new ConnectionInfo(new ComputerInfo(computerName, SystemUtils.getLocalHostIP()), new lsfusion.interop.connection.UserInfo(Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(), TimeZone.getDefault(), BaseUtils.getDatePattern(), BaseUtils.getTimePattern()));
     }
 
     public static LogicsConnection serverInfo;

@@ -1,0 +1,12 @@
+MODULE UiColorTheme;
+
+REQUIRE Authentication;
+
+// the color theme chosen for the user of UiColorThemeIT's pages, who is the user of its /exec calls too: chosen as code
+// chooses it, in a session of its own, so that no page is told. No theme given - none is chosen
+uiColorThemeChoose (STRING theme) {
+    designEnvColorTheme(currentDesignEnv()) <- CASE
+        WHEN theme = 'dark' THEN ColorTheme.dark
+        WHEN theme = 'light' THEN ColorTheme.light;
+    APPLY;
+}
