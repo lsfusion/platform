@@ -518,8 +518,10 @@ public class MCPDispatcher {
                 .put("inputSchema", input);
     }
 
-    // Proxied to the central server (A). Schema mirrors mcp/tools/feedback.py::FeedbackReport
-    // — keep in sync; the central server validates authoritatively.
+    // Proxied to the central server (A). Schema mirrors mcp/tools/feedback.py::FeedbackReport, its
+    // maxLength / maxItems included, and the description mirrors mcp/server.py — keep in sync; the
+    // central server validates authoritatively and refuses a report over a cap. mcp's drift test
+    // compares the caps with central's and the description with central's word for word.
     private static JSONObject reportFeedbackDescriptor() {
         JSONArray targets = arr("how-to", "rules", "brief", "paradigm", "language",
                 "code-bug", "rag-retrieval", "eval-error-message");
@@ -527,56 +529,56 @@ public class MCPDispatcher {
                 .put("type", "object")
                 .put("properties", new JSONObject()
                         .put("primary_target", enumProp("Main artifact to change.", targets))
-                        .put("secondary_targets", arrProp(enumProp("", targets), "Other plausibly-affected artifacts."))
-                        .put("suggested_change", strProp("Concrete suggestion (depersonalized)."))
+                        .put("secondary_targets", arrProp(enumProp("", targets), "Other plausibly-affected artifacts.").put("maxItems", 30))
+                        .put("suggested_change", strProp("Concrete suggestion (depersonalized).").put("maxLength", 4000))
                         .put("confidence", enumProp("How confident the agent is.", arr("low", "medium", "high")))
-                        .put("rationale", strProp("Why, briefly.")))
+                        .put("rationale", strProp("Why, briefly.").put("maxLength", 2000)))
                 .put("required", arr("primary_target", "suggested_change"));
         JSONObject expectation = new JSONObject()
                 .put("type", "object")
                 .put("properties", new JSONObject()
-                        .put("expected", strProp("What the agent expected (depersonalized)."))
-                        .put("actual", strProp("What actually happened (depersonalized).")))
+                        .put("expected", strProp("What the agent expected (depersonalized).").put("maxLength", 2000))
+                        .put("actual", strProp("What actually happened (depersonalized).").put("maxLength", 2000)))
                 .put("required", arr("expected", "actual"));
         JSONObject evalError = new JSONObject()
                 .put("type", "object")
                 .put("properties", new JSONObject()
-                        .put("message", strProp("The error text (depersonalized)."))
+                        .put("message", strProp("The error text (depersonalized).").put("maxLength", 4000))
                         .put("phase", enumProp("Where it surfaced.", arr("syntax", "semantic", "runtime", "unknown")))
-                        .put("code_excerpt", strProp("Tiny abstracted snippet if essential — NO full source / project code."))
-                        .put("normalized_message", strProp("Optional normalized form (ids/literals stripped) for clustering.")))
+                        .put("code_excerpt", strProp("Tiny abstracted snippet if essential — NO full source / project code.").put("maxLength", 2000))
+                        .put("normalized_message", strProp("Optional normalized form (ids/literals stripped) for clustering.").put("maxLength", 2000)))
                 .put("required", arr("message"));
         JSONObject retrieveQuery = new JSONObject()
                 .put("type", "object")
                 .put("properties", new JSONObject()
-                        .put("query", strProp("The query text."))
-                        .put("returned_sources", arrProp(new JSONObject().put("type", "string"), "Doc branches/files it surfaced, if noted."))
+                        .put("query", strProp("The query text.").put("maxLength", 2000))
+                        .put("returned_sources", arrProp(new JSONObject().put("type", "string"), "Doc branches/files it surfaced, if noted.").put("maxItems", 30))
                         .put("usefulness", enumProp("How useful the result was for this error.", arr("helpful", "irrelevant", "misleading", "incomplete"))))
                 .put("required", arr("query"));
         JSONObject toolContext = new JSONObject()
                 .put("type", "object")
                 .put("properties", new JSONObject()
-                        .put("eval_server_kind", strProp("Eval server kind."))
-                        .put("eval_server_version", strProp("Eval server version.")));
+                        .put("eval_server_kind", strProp("Eval server kind.").put("maxLength", 100))
+                        .put("eval_server_version", strProp("Eval server version.").put("maxLength", 100)));
         JSONObject report = new JSONObject()
                 .put("type", "object")
                 .put("properties", new JSONObject()
-                        .put("agent_journey_id", strProp("Agent-generated id grouping this task's errors/queries."))
+                        .put("agent_journey_id", strProp("Agent-generated id grouping this task's errors/queries.").put("maxLength", 200))
                         .put("signal_type", enumProp("What kind of reinforcement signal this is (routing hint, not the decision).",
                                 arr("doc-gap", "expectation-mismatch", "unclear-error", "missing-capability", "rag-retrieval", "other")))
-                        .put("problem_summary", strProp("Short depersonalized task description."))
+                        .put("problem_summary", strProp("Short depersonalized task description.").put("maxLength", 2000))
                         .put("recommendation", recommendation)
                         .put("expectation", expectation)
-                        .put("eval_errors", arrProp(evalError, "Errors hit while running lsFusion code via eval."))
-                        .put("retrieve_queries", arrProp(retrieveQuery, "retrieve_docs queries tried while fixing the error."))
-                        .put("retrieved_docs_summary", arrProp(new JSONObject().put("type", "string"), "Short PUBLIC summaries of retrieved docs (no chunk bodies)."))
+                        .put("eval_errors", arrProp(evalError, "Errors hit while running lsFusion code via eval.").put("maxItems", 50))
+                        .put("retrieve_queries", arrProp(retrieveQuery, "retrieve_docs queries tried while fixing the error.").put("maxItems", 50))
+                        .put("retrieved_docs_summary", arrProp(new JSONObject().put("type", "string"), "Short PUBLIC summaries of retrieved docs (no chunk bodies).").put("maxItems", 30))
                         .put("final_outcome", enumProp("How the task ended (guards against survivorship bias).",
                                 arr("fixed", "not_fixed", "workaround", "abandoned", "unknown")))
                         .put("tool_context", toolContext)
-                        .put("client_dedup_hint", strProp("Optional agent hint; the SERVER computes the canonical dedup_fingerprint."))
-                        .put("lsfusion_version", strProp("lsFusion version, if known."))
-                        .put("deployment_kind", strProp("Deployment kind, if known."))
-                        .put("agent", strProp("Reporting agent and model, e.g. 'claude-code, claude-opus-4-5'."))
+                        .put("client_dedup_hint", strProp("Optional agent hint; the SERVER computes the canonical dedup_fingerprint.").put("maxLength", 200))
+                        .put("lsfusion_version", strProp("lsFusion version, if known.").put("maxLength", 100))
+                        .put("deployment_kind", strProp("Deployment kind, if known.").put("maxLength", 100))
+                        .put("agent", strProp("Reporting agent and model, e.g. 'claude-code, claude-opus-4-5'.").put("maxLength", 100))
                         .put("n_eval_attempts", new JSONObject().put("type", "integer").put("description", "Number of eval attempts.")))
                 .put("required", arr("agent_journey_id", "signal_type", "problem_summary", "recommendation"));
         JSONObject input = new JSONObject()
@@ -587,7 +589,7 @@ public class MCPDispatcher {
         return new JSONObject()
                 .put("name", TOOL_REPORT_FEEDBACK)
                 .put("description",
-                        "Submit ONE anonymous, depersonalized reinforcement-quality signal so lsFusion docs / RAG / eval diagnostics / the platform can be improved. Use `signal_type` to say what kind: a documentation gap, an expectation-mismatch (you expected lsFusion to behave/mean X but it was actually Y — fill `expectation`), an unclear/unactionable `eval` error, a missing capability, a RAG miss, or other. Follow the workflow rule from `lsfusion_get_guidance`: at the end of a task that hit action-affecting friction, OFFER the report in one line instead of silently skipping it, and call this after the user consents (consent may be given in advance, by the user or by the project's rules). One call per finding. Send NO source code, file paths, schema/table/customer names, or secrets — only the depersonalized journey and a recommendation. The feedback is a suggestion, not a decision. Returns `{report_id, status, dedup_fingerprint}`.")
+                        "Submit ONE anonymous, depersonalized reinforcement-quality signal so lsFusion docs / RAG / eval diagnostics / the platform can be improved. Use `signal_type` to say what kind: a documentation gap, an expectation-mismatch (you expected lsFusion to behave/mean X but it was actually Y — fill `expectation`), an unclear/unactionable `eval` error, a missing capability, a RAG miss, or other. Follow the workflow rule from `lsfusion_get_guidance`: at the end of a task that hit action-affecting friction, OFFER the report in one line instead of silently skipping it, and call this after the user consents (consent may be given in advance, by the user or by the project's rules). One call per finding. Send NO source code, file paths, schema/table/customer names, or secrets — only the depersonalized journey (eval errors, the doc queries you tried, expected-vs-actual, how you resolved it) and a recommendation. The feedback is a suggestion, not a decision. LIMITS: the schema gives the cap on the length of each text field and list — `code_excerpt` takes at most 2000 characters, `eval_errors` at most 50 entries, `retrieve_queries` at most 50 — and the whole report, as UTF-8 JSON, may take at most 64 KiB. Returns `{report_id, status, dedup_fingerprint, detail}`. `status` is one of three: `recorded` — the report is stored; `rejected` — it is not, and `detail` says why: when a part of the report is over its limit, shorten that part and send the report again, while any other reason is a problem on the server's side, so do not keep resending; `disabled` — this server takes no reports, so send none.")
                 .put("inputSchema", input);
     }
 
