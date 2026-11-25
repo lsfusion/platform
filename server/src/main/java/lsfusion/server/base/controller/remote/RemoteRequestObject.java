@@ -383,10 +383,10 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             ClientAction terminal;
             try {
                 controllerGate(false); // gate BEFORE evaluateRun, no @api for a dynamic script
-                LA<?> la = getControllerBL().evaluateRun(script, getCustomizeLM(), evalAction); // evalAction: true -> wrap body into run(); false -> script defines its own run (typed params)
-                if(la == null)
+                Pair<LA, ExecutionStack> run = getControllerBL().evaluateRun(script, getCustomizeLM(), evalAction, stack); // evalAction: true -> wrap body into run(); false -> script defines its own run (typed params)
+                if(run.first == null)
                     throw new RuntimeException("Eval 'run' action was not found");
-                terminal = runControllerAction(la, params, options, stack);
+                terminal = runControllerAction(run.first, params, options, run.second);
             } catch (Exception e) {
                 terminal = new ControllerExceptionClientAction(controllerMessage(e), false);
             }

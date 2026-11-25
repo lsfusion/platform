@@ -158,6 +158,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.function.IntFunction;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -238,8 +239,13 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     // a script a request brings (/eval, the code of a page, a form a client describes) : evaluated on a form or in a
     // connection that is customized, it sees what the code of the customization declares - the module the request's
     // object gives (RemoteRequestObject.getCustomizeLM)
-    public LA<?> evaluateRun(String script, EvalScriptingLogicsModule customizeLM, boolean action) {
-        return LM.evaluateRun(script, EvalUtils.getParentLMs(customizeLM), action).first;
+    public Pair<LA, UnaryOperator<ExecutionStack>> evaluateRun(String script, EvalScriptingLogicsModule customizeLM, boolean action) {
+        return LM.evaluateRun(script, EvalUtils.getParentLMs(customizeLM), action);
+    }
+
+    // the same, with the stack its run action runs in
+    public Pair<LA, ExecutionStack> evaluateRun(String script, EvalScriptingLogicsModule customizeLM, boolean action, ExecutionStack stack) {
+        return LM.evaluateRun(script, EvalUtils.getParentLMs(customizeLM), action, stack);
     }
 
     public void setTopModule(String topModule) {

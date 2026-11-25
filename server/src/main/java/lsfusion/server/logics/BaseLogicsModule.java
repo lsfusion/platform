@@ -35,6 +35,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
+import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.LocalNestedType;
@@ -117,6 +118,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.function.IntFunction;
 
 import static com.google.common.collect.Iterables.size;
@@ -1443,9 +1445,16 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     // before it is compiled : the scripts that are refused or fail are there too. Every line of an entry but its first is
     // indented, so that nothing a client sends - a script, the name of its computer - reads as an entry of its own. It is
     // out of the cache of evaluate, so a script run again is logged again
-    public Pair<LA, EvalScriptingLogicsModule> evaluateRun(String script, Set<EvalScriptingLogicsModule> parentLMs, boolean action) {
+    public Pair<LA, UnaryOperator<ExecutionStack>> evaluateRun(String script, Set<EvalScriptingLogicsModule> parentLMs, boolean action) {
         ServerLoggers.evalLogger.info(((action ? "EVAL ACTION" : "EVAL") + " - " + ThreadLocalContext.get().getLogInfo() + ":\n" + script).replaceAll("\\R", "\n\t"));
         return EvalUtils.evaluateAndFindAction(BL, parentLMs, script, action);
+    }
+
+    // the same, with the stack its run action runs in : a stack of the script's module over the given one, made only for
+    // an action that is there to run
+    public Pair<LA, ExecutionStack> evaluateRun(String script, Set<EvalScriptingLogicsModule> parentLMs, boolean action, ExecutionStack stack) {
+        Pair<LA, UnaryOperator<ExecutionStack>> run = evaluateRun(script, parentLMs, action);
+        return new Pair<>(run.first, run.first != null ? run.second.apply(stack) : null);
     }
 
     // a code is compiled once, kept by its text and what it is compiled under : a script that is run, and the code that

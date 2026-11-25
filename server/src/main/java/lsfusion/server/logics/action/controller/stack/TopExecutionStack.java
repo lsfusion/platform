@@ -15,14 +15,9 @@ import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClasses
 public class TopExecutionStack implements NewThreadExecutionStack {
 
     private final String threadId;
-    private final EvalScriptingLogicsModule evalLM;
 
     public TopExecutionStack(String threadId) {
-        this(threadId, null);
-    }
-    public TopExecutionStack(String threadId, EvalScriptingLogicsModule evalLM) {
         this.threadId = threadId;
-        this.evalLM = evalLM;
     }
 
     @Override
@@ -80,8 +75,9 @@ public class TopExecutionStack implements NewThreadExecutionStack {
         return threadId + "@" + System.identityHashCode(this);
     }
 
+    // a thread's root keeps no script's module : it is in the stack the script's code runs in (EvalExecutionStack)
     @Override
     public EvalScriptingLogicsModule getEvalLM() {
-        return evalLM;
+        return null;
     }
 }

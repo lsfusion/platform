@@ -15,10 +15,8 @@ import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
-import lsfusion.server.logics.action.controller.stack.SameThreadExecutionStack;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
-import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -55,29 +53,6 @@ public class EvalAction<P extends PropertyInterface> extends SystemAction {
         return paramInterfaces.<ObjectValue>mapList(context.getKeys()).toArray(new ObjectValue[paramInterfaces.size()]);
     }
 
-    private class EvalStack extends SameThreadExecutionStack {
-
-        private final EvalScriptingLogicsModule evalLM;
-        private final DataSession session;
-
-        public EvalStack(EvalScriptingLogicsModule evalLM, DataSession session, ExecutionStack upStack) {
-            super(upStack);
-
-            this.evalLM = evalLM;
-            this.session = session;
-        }
-
-        @Override
-        protected DataSession getSession() {
-            return session;
-        }
-
-        @Override
-        public EvalScriptingLogicsModule getEvalLM() {
-            return evalLM;
-        }
-    }
-
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         String script = getScript(context);
@@ -89,8 +64,8 @@ public class EvalAction<P extends PropertyInterface> extends SystemAction {
         EvalScriptingLogicsModule stackEvalLM = stack.getEvalLM();
         if (stackEvalLM != null)
             parentLMs.add(stackEvalLM);
-        Pair<LA, EvalScriptingLogicsModule> evalResult = context.getBL().LM.evaluateRun(script, parentLMs, action);
-        return evalResult.first.execute(context.override(new EvalStack(evalResult.second, context.getSession(), stack)), getParams(context));
+        Pair<LA, ExecutionStack> evalResult = context.getBL().LM.evaluateRun(script, parentLMs, action, stack);
+        return evalResult.first.execute(context.override(evalResult.second), getParams(context));
     }
     @Override
     public boolean hasFlow(ChangeFlowType type, ImSet<Action<?>> recursiveAbstracts) {

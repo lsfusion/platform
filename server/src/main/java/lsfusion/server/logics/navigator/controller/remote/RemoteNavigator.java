@@ -637,9 +637,9 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     private void evaluateRun(String script) throws SQLException, SQLHandledException {
         try (DataSession session = createSession()) {
-            LA runAction = businessLogics.evaluateRun(script, getCustomizeLM(), false);
-            if (runAction != null) {
-                runAction.execute(session, getStack());
+            Pair<LA, ExecutionStack> run = businessLogics.evaluateRun(script, getCustomizeLM(), false, getStack());
+            if (run.first != null) {
+                run.first.execute(session, run.second);
             }
         }
     }

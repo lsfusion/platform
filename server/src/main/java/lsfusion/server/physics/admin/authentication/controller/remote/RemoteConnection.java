@@ -64,6 +64,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.function.UnaryOperator;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 import static lsfusion.base.BaseUtils.nvl;
@@ -484,7 +485,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                         actionPathInfo = actionName.substring(lastSlash + 1);
                     }
                     if (action != null) {
-                        return executeExternal(action, actionName, actionPathInfo, false, request);
+                        return executeExternal(action, actionName, actionPathInfo, false, UnaryOperator.identity(), request);
                     } else {
                         throw new LSFStatusException(String.format("Action %s was not found", actionName), 404);
                     }
@@ -500,9 +501,9 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
         return logFromExternalSystemRequest(() -> {
             if (script != null) {
-                LA<?> runAction = businessLogics.evaluateRun(script, getCustomizeLM(), action);
-                if(runAction != null) {
-                    return executeExternal(runAction, paramScript.value, null, true, request);
+                Pair<LA, UnaryOperator<ExecutionStack>> run = businessLogics.evaluateRun(script, getCustomizeLM(), action);
+                if(run.first != null) {
+                    return executeExternal(run.first, paramScript.value, null, true, run.second, request);
                 } else {
                     throw new RuntimeException("Action with name 'run' was not found");
                 }
@@ -595,7 +596,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         return null;
     }
 
-    private ExternalResponse executeExternal(LA<?> property, Object actionParam, String actionPathInfo, boolean script, ExternalRequest request) {
+    // wrapStack : wraps the stack the action is run in - a script's code runs in a stack of its module over it
+    private ExternalResponse executeExternal(LA<?> property, Object actionParam, String actionPathInfo, boolean script, UnaryOperator<ExecutionStack> wrapStack, ExternalRequest request) {
         boolean isInteractive = !property.action.hasAnnotation("noui")
                 && (property.action.hasAnnotation("ui")
                 || request.isInteractiveClient && property.action.hasFlow(ChangeFlowType.INTERACTIVEAPI));
@@ -610,7 +612,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 @Override
                 public void run(ExecutionEnvironment env, ExecutionStack stack, PushAsyncResult asyncResult) {
                     try {
-                        RemoteConnection.this.executeExternal(property, request, actionPathInfo, env, stack);
+                        RemoteConnection.this.executeExternal(property, request, actionPathInfo, env, wrapStack.apply(stack));
                     } catch (Throwable t) {
                         throw Throwables.propagate(t);
                     }
@@ -651,7 +653,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                 try (ExecSession execSession = getExecSession()) {
                     DataSession dataSession = execSession.dataSession;
 
-                    executeExternal(property, request, actionPathInfo, dataSession, getStack());
+                    executeExternal(property, request, actionPathInfo, dataSession, wrapStack.apply(getStack()));
 
                     return readResult(businessLogics, getContext().getConnectionContext(), request.returnMultiType, property.action, dataSession, formatLogMessages(logProcessor.messages));
                 }

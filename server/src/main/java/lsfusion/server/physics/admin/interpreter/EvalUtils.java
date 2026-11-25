@@ -10,6 +10,8 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.action.controller.stack.EvalExecutionStack;
+import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.LazyProperty;
@@ -17,6 +19,7 @@ import lsfusion.server.logics.property.LazyProperty;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.UnaryOperator;
 
 public class EvalUtils {
     private static final AtomicLong uniqueNameCounter = new AtomicLong(0);
@@ -41,11 +44,11 @@ public class EvalUtils {
         return parentLMs;
     }
 
-    public static Pair<LA, EvalScriptingLogicsModule> evaluateAndFindAction(BusinessLogics BL, Set<EvalScriptingLogicsModule> parentLMs, String script, boolean action) {
+    public static Pair<LA, UnaryOperator<ExecutionStack>> evaluateAndFindAction(BusinessLogics BL, Set<EvalScriptingLogicsModule> parentLMs, String script, boolean action) {
         if(script != null && script.startsWith("\uFEFF"))
             script = script.substring(1);
         EvalScriptingLogicsModule module = BL.LM.evaluate(action ? EvalActionParser.parse(script) : script, parentLMs, false);
-        return new Pair<>(findAction(module, "run"), module);
+        return findAction(module, "run");
     }
     
     private static class WrapResult {
@@ -106,9 +109,11 @@ public class EvalUtils {
         return module;
     }
 
-    public static LA findAction(EvalScriptingLogicsModule module, String action) {
+    // the action, and how to wrap the stack it will be run in into a stack of the script's module : past here the module
+    // goes on only inside that stack
+    public static Pair<LA, UnaryOperator<ExecutionStack>> findAction(EvalScriptingLogicsModule module, String action) {
         try {
-            return module.findAction(module.getNamespace() + '.' + action);
+            return new Pair<>(module.findAction(module.getNamespace() + '.' + action), upStack -> new EvalExecutionStack(module, upStack));
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new UnsupportedOperationException(); // should not be since there is no currentParser in module
         } catch (ScriptErrorException e) {  // we don't need stack for ScriptErrorException, since it is obvious, so will convert it to scriptParsingException
