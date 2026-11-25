@@ -1447,7 +1447,18 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 ImMap<String, String> propertySelect = queries.mapValues(value -> value.getSource(fromPropertySelect.result, compiled.getMapPropertyReaders(), query, syntax, mSubEnv, exprs.get(value).getType()));
                 ImSet<String> areKeyValues = group.filterValues(compiled.arePropValues).keys();
 
-                return getSQLQuery("(" + getGroupSelect(fromSelect, keySelect, propertySelect, whereSelect.result, SetFact.EMPTY(), areKeyValues) + ")", compiled.sql.baseCost, subQueries.result, mSubEnv, groupWhere, false);
+                // a direct argument of an ordered-set aggregate may use only grouped columns, so one that is a value of the
+                // query but not of the select it is read from (a column of a union of the tables and the session changes, say)
+                // is grouped by too, which keeps the groups, as it is one value in all of them (#2018); one that depends on the
+                // keys is left to the database to refuse, as grouping by it would split the groups
+                MSet<String> mGroupedSelect = SetFact.mSet();
+                for (GroupExpr.Query groupQuery : queries.valueIt())
+                    if (groupQuery.type.hasDirectArguments())
+                        for (Expr expr : groupQuery.exprs)
+                            if (expr.isValue() && !compiled.arePropValues.contains(expr))
+                                mGroupedSelect.add(fromPropertySelect.result.get(expr));
+
+                return getSQLQuery("(" + getGroupSelect(fromSelect, keySelect.toOrderMap(), propertySelect.toOrderMap(), whereSelect.result, SetFact.EMPTY(), areKeyValues, mGroupedSelect.immutable()) + ")", compiled.sql.baseCost, subQueries.result, mSubEnv, groupWhere, false);
             }
 
             protected Where getInnerWhere() {
@@ -1738,6 +1749,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
 
         protected String getGroupSelect(String fromSelect, ImOrderMap<String, String> keySelect, ImOrderMap<String, String> propertySelect, ImCol<String> whereSelect, ImCol<String> havingSelect, final ImSet<String> areKeyValues) {
+            return getGroupSelect(fromSelect, keySelect, propertySelect, whereSelect, havingSelect, areKeyValues, SetFact.EMPTY());
+        }
+        // groupedSelect: what the select is grouped by besides the keys, being one value in a group
+        protected String getGroupSelect(String fromSelect, ImOrderMap<String, String> keySelect, ImOrderMap<String, String> propertySelect, ImCol<String> whereSelect, ImCol<String> havingSelect, final ImSet<String> areKeyValues, ImSet<String> groupedSelect) {
             String groupBy;
             boolean supportGroupNumbers = syntax.supportGroupNumbers();
             ImOrderMap<String, String> fixedKeySelect = keySelect;
@@ -1758,6 +1773,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 }
             } else
                 groupBy =  BaseUtils.evl((supportGroupNumbers ? ListFact.consecutiveList(keySelect.size()) : fixedKeySelect.values().toList()).toString(","), "3+2");
+            if(!groupedSelect.isEmpty())
+                groupBy = (groupBy.isEmpty() ? "" : groupBy + ",") + groupedSelect.toString(",");
             return syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect, propertySelect), whereSelect.toString(" AND "), "", groupBy, havingSelect.toString(" AND "), "", "", false);
         }
         protected String getGroupSelect(String fromSelect, ImMap<String, String> keySelect, ImMap<String, String> propertySelect, ImCol<String> whereSelect, ImCol<String> havingSelect, ImSet<String> areKeyValues) {

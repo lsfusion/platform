@@ -38,8 +38,8 @@ testGroupCustomWithin 'GROUP CUSTOM ... WITHIN ORDER' () {
             gcwNewGame(other, 2);
             gcwNewGame(other, 2);
             gcwNewGame(other, 10);
-            // applied: read over the changes of the session, the 0.5 of percentile_cont is not a direct argument the database takes
-            APPLY;
+            // not applied, so it is all read over the changes of the session (#2018: the database refused the 0.5 of
+            // percentile_cont there, as it was taken from the rows of the union of the tables and the changes)
 
             assertEquals(gcwMedian(), 3.5, 'percentile_cont over all the games');
             assertEquals(gcwMode(), 2, 'mode over all the games');

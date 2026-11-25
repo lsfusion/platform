@@ -254,6 +254,10 @@ public abstract class GroupType implements AggrType {
             return false;
         }
 
+        public boolean hasDirectArguments() {
+            return setOrdered;
+        }
+
         public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
             return getAggrSource(aggrFunc, exprs.toString(","), orders, syntax, setOrdered);
         }
@@ -335,6 +339,12 @@ public abstract class GroupType implements AggrType {
 
     public int getSkipWhereIndex() {
         return -1;
+    }
+
+    // the expressions of an ordered-set aggregate (WITHIN GROUP) are its direct arguments, evaluated once per group,
+    // which the database lets use only grouped columns
+    public boolean hasDirectArguments() {
+        return false;
     }
 
     public boolean hasSingle() {
