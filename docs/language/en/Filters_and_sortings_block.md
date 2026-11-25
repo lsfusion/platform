@@ -198,7 +198,9 @@ USER | FIXED
 
 An order block adds sorts to the form that will be automatically applied when any data are read on it. One block can list an arbitrary number of sorts separated by a comma.
 
-For each object group, user sorts are applied before fixed sorts, wherever they are written. Sorts of the same type written in one block are applied in the order in which they are written.
+For each object group, user sorts are applied before fixed sorts, wherever they are written. Sorts of the same type added by one block are applied in the order in which they are written.
+
+If the form already has a sort of the same type by the same property (a user sort by the same property on the form, a fixed sort by the same property with the same objects as arguments), the block does not add another one: the existing sort takes the direction given in the block and keeps its place, and with `FIRST` it is moved before the sorts added earlier together with the other sorts of the block. A fixed sort is recognized as the same one when it is written as the name of a property on the form or as a property with different objects of the form as its arguments. Another expression, such as `priority(group(s))`, is as a rule a new property every time it is written, so writing it again adds one more sort.
 
 A sort for a property being added to the form can also be defined with the `ORDER` option in the [property and action block](Properties_and_actions_block.md).
 
@@ -206,7 +208,7 @@ A sort for a property being added to the form can also be defined with the `ORDE
 
 - `FIRST`
 
-    Keyword. Without `FIRST`, the sorts of the block are added after the sorts of the same type added to the form earlier. With `FIRST`, they are added before them: user sorts before the user ones, fixed sorts before the fixed ones.
+    Keyword. Without `FIRST`, the new sorts of the block are added after the sorts of the same type added to the form earlier. With `FIRST`, they are added before them: user sorts before the user ones, fixed sorts before the fixed ones.
 
 - `expression1, ..., expressionN`
 
@@ -255,5 +257,11 @@ EXTEND FORM skuList
     // While there are no user sorts, active products come first. If the user sorts the products by the group name,
     // active products come first among the products with the same group name
     ORDERS FIRST active(s) DESC
+;
+
+EXTEND FORM skuList
+    // The form already has a fixed sort by name(s), so no new sort is added:
+    // that sort becomes descending and remains the last of the fixed sorts
+    ORDERS name(s) FIXED DESC
 ;
 ```

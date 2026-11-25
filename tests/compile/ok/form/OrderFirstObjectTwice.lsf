@@ -1,0 +1,14 @@
+MODULE OrderFirstObjectTwice;
+
+REQUIRE System;
+
+// a property with one object passed to it twice is a new property every time it is resolved, so a block has to resolve
+// each of its entries once: a FIRST block, which first adds its orders and then moves them to the front, would not find
+// the order it has just added (#2028)
+CLASS FirstTwiceItem;
+firstTwiceRank = DATA INTEGER (FirstTwiceItem, FirstTwiceItem);
+
+FORM orderFirstObjectTwice
+    OBJECTS i = FirstTwiceItem
+    ORDERS FIRST firstTwiceRank(i, i) DESC
+;

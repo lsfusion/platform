@@ -13,6 +13,7 @@ public interface NFOrderMap<K, V> extends NF {
     void addFirst(K key, V value, Version version);
     void add(K key, V value, FindIndex<K> finder, Version version);
     void add(K key, V value, Version version);
+    void set(K key, V value, Version version); // add, but a key the map has gets the value, keeping its place
 
     void add(NFOrderMap<K, V> map, Function<K, K> mapping, Version version);
     

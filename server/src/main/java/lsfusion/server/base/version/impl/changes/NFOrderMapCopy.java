@@ -19,9 +19,9 @@ public class NFOrderMapCopy<K, V> implements NFOrderMapChange<K, V> {
     @Override
     public void proceedOrderMap(List<K> keysList, List<V> valuesList, Version version) {
         ImOrderMap<K, V> nf = map.getNFCopy(version);
-        for(int i = 0, size = nf.size(); i < size; i++) {
-            keysList.add(mapping.apply(nf.getKey(i)));
-            valuesList.add(nf.getValue(i));
-        }
+        // set, not add to the list: the map built of the list gave a key it had the first place and the last value
+        // anyway, but the key was in the list twice, and a move after the copy took only one of the two out
+        for(int i = 0, size = nf.size(); i < size; i++)
+            new NFMapSet<>(mapping.apply(nf.getKey(i)), nf.getValue(i)).proceedOrderMap(keysList, valuesList, version);
     }
 }

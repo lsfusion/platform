@@ -537,7 +537,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     public void addFixedOrder(OrderEntity order, boolean descending, Version version) {
-        fixedOrders.add(order, descending, version);
+        fixedOrders.set(order, descending, version); // an order the form has takes the direction and keeps its place
     }
 
     public void addRegularFilterGroup(RegularFilterGroupEntity group, Version version) {
@@ -1677,7 +1677,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     public void addDefaultOrder(PropertyDrawEntity property, boolean descending, Version version) {
-        defaultOrders.add(property, descending, version);
+        defaultOrders.set(property, descending, version); // an order the form has takes the direction and keeps its place
     }
 
     public void addDefaultOrderFirst(PropertyDrawEntity property, boolean descending, Version version) {

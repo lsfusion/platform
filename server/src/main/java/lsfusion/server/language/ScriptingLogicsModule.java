@@ -1214,6 +1214,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public static class PropertyDrawOrPropertyExpr {
         public PropertyDrawEntity propertyDraw;
         public LPWithParams propertyExpr;
+        public LPTrivialLA la; // a property with objects as its arguments, where propertyExpr is a new property made of it - for objects that are not in the form's order
         public ImOrderSet<String> mapping;
         public Boolean fixed;
         public String text; // as written, for an error to name it by

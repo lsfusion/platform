@@ -1,0 +1,166 @@
+MODULE RepeatedOrders;
+
+REQUIRE TestUtils;
+
+// an ORDERS entry by a property the form already has an order of that type by is no second order: it gives the order
+// the form has its direction, and the order keeps its place - with FIRST it moves to the front as well. Without FIRST
+// such an entry used to be dropped, so the form kept the first direction, and an extension could not turn an order of
+// the form it extends (#2028)
+
+CLASS RoItem 'Item';
+roName 'Name' = DATA STRING[20] (RoItem);
+roQty 'Qty' = DATA INTEGER (RoItem);
+roPrice 'Price' = DATA INTEGER (RoItem);
+
+// the user orders a group opens with are the form's, so ORDERS reads them: which, in which place and direction
+roOrders = DATA LOCAL JSON ();
+
+FORM roUser 'A user order written again'
+    OBJECTS i = RoItem
+    PROPERTIES(i) READONLY name = roName, qty = roQty, price = roPrice
+    ORDERS qty, name, price DESC
+;
+
+EXTEND FORM roUser
+    ORDERS name DESC
+;
+
+testUserOrderTakesTheLaterDirection 'A later entry gives a user order its direction, and the order keeps its place' () {
+    SHOW roUser NOWAIT { ORDERS roUser.i TO roOrders; };
+    assertEquals(STRING(roOrders()), STRING(JSON(r'[{"property": "qty", "desc": false}, {"property": "name", "desc": true}, {"property": "price", "desc": true}]')),
+                 'the form opened with the orders ' + STRING(roOrders()));
+}
+
+FORM roOption 'The ORDER option, then an entry of the order block'
+    OBJECTS i = RoItem
+    PROPERTIES(i) READONLY qty = roQty ORDER, name = roName ORDER DESC, price = roPrice ORDER DESC
+    ORDERS name
+;
+
+testOrderOptionTakesTheLaterDirection 'An entry of the order block gives the order of an ORDER option its direction' () {
+    SHOW roOption NOWAIT { ORDERS roOption.i TO roOrders; };
+    assertEquals(STRING(roOrders()), STRING(JSON(r'[{"property": "qty", "desc": false}, {"property": "name", "desc": false}, {"property": "price", "desc": true}]')),
+                 'the form opened with the orders ' + STRING(roOrders()));
+}
+
+FORM roFirst 'An order written again with FIRST'
+    OBJECTS i = RoItem
+    PROPERTIES(i) READONLY name = roName, qty = roQty
+    ORDERS qty DESC, name
+    ORDERS FIRST name DESC
+;
+
+testFirstMovesAnOrderOfTheForm 'A FIRST entry gives an order of the form its direction and moves it to the front' () {
+    SHOW roFirst NOWAIT { ORDERS roFirst.i TO roOrders; };
+    assertEquals(STRING(roOrders()), STRING(JSON(r'[{"property": "name", "desc": true}, {"property": "qty", "desc": true}]')),
+                 'the form opened with the orders ' + STRING(roOrders()));
+}
+
+// a block that writes an entry twice gives the order the direction of the second one, with FIRST as without it: a
+// FIRST block went in from its end, entry by entry, and so its first entry was the last to give the direction
+FORM roFirstTwice 'An entry written twice in a FIRST block'
+    OBJECTS i = RoItem
+    PROPERTIES(i) READONLY name = roName, qty = roQty, price = roPrice
+    ORDERS price
+    ORDERS FIRST name, qty, name DESC
+;
+
+testFirstBlockTakesTheLaterDirection 'An entry written twice in a FIRST block gives the direction of the second one' () {
+    SHOW roFirstTwice NOWAIT { ORDERS roFirstTwice.i TO roOrders; };
+    assertEquals(STRING(roOrders()), STRING(JSON(r'[{"property": "name", "desc": true}, {"property": "qty", "desc": false}, {"property": "price", "desc": false}]')),
+                 'the form opened with the orders ' + STRING(roOrders()));
+}
+
+FORM roEmbedded 'A form to embed'
+    OBJECTS i = RoItem
+    PROPERTIES(i) READONLY name = roName, qty = roQty
+    ORDERS name DESC
+;
+
+// EXTEND FORMS brings the order of the embedded form by a property the form orders by itself. It is that order, written
+// once more: it gives the direction, and the order stays where the form has it
+FORM roEmbedding 'An order of the form written again by a form it embeds'
+    OBJECTS i = RoItem
+    PROPERTIES(i) READONLY name = roName, qty = roQty, price = roPrice
+    ORDERS qty, name, price
+    EXTEND FORMS roEmbedded
+;
+
+testEmbeddedFormGivesTheDirection 'An order of an embedded form gives the order the form has its direction' () {
+    SHOW roEmbedding NOWAIT { ORDERS roEmbedding.i TO roOrders; };
+    assertEquals(STRING(roOrders()), STRING(JSON(r'[{"property": "qty", "desc": false}, {"property": "name", "desc": true}, {"property": "price", "desc": false}]')),
+                 'the form opened with the orders ' + STRING(roOrders()));
+}
+
+// ... and an entry after it turns that order as any other
+FORM roEmbeddingAgain 'An order of an embedded form written again'
+    OBJECTS i = RoItem
+    PROPERTIES(i) READONLY name = roName, qty = roQty
+    ORDERS qty, name
+    EXTEND FORMS roEmbedded
+    ORDERS name
+;
+
+testOrderOfAnEmbeddedFormTakesTheLaterDirection 'A later entry gives an order of an embedded form its direction' () {
+    SHOW roEmbeddingAgain NOWAIT { ORDERS roEmbeddingAgain.i TO roOrders; };
+    assertEquals(STRING(roOrders()), STRING(JSON(r'[{"property": "qty", "desc": false}, {"property": "name", "desc": false}]')),
+                 'the form opened with the orders ' + STRING(roOrders()));
+}
+
+// ... a FIRST entry too: it moved the order to the front, but left it the direction of the embedded form
+FORM roEmbeddingFirst 'An order of an embedded form written again with FIRST'
+    OBJECTS i = RoItem
+    PROPERTIES(i) READONLY name = roName, qty = roQty
+    ORDERS qty, name
+    EXTEND FORMS roEmbedded
+    ORDERS FIRST name
+;
+
+testFirstMovesAnOrderOfAnEmbeddedForm 'A FIRST entry gives an order of an embedded form its direction and moves it to the front' () {
+    SHOW roEmbeddingFirst NOWAIT { ORDERS roEmbeddingFirst.i TO roOrders; };
+    assertEquals(STRING(roOrders()), STRING(JSON(r'[{"property": "name", "desc": false}, {"property": "qty", "desc": false}]')),
+                 'the form opened with the orders ' + STRING(roOrders()));
+}
+
+roCurrent = DATA LOCAL RoItem ();
+
+// ORDERS does not read the fixed orders, so here the rows tell: the first row is the current object of a form just
+// opened
+FORM roFixed 'A fixed order written again'
+    OBJECTS i = RoItem
+    PROPERTIES(i) READONLY name = roName, qty = roQty
+    ORDERS qty FIXED DESC, name FIXED
+    ORDERS name FIXED DESC
+    EVENTS ON CHANGE i { roCurrent() <- i; }
+;
+
+testFixedOrderTakesTheLaterDirection 'A later entry gives a fixed order its direction, and the order keeps its place' () {
+    NEW a = RoItem { roName(a) <- 'A'; roQty(a) <- 9; } // the first row if the later entry is dropped: by qty descending, then by name
+    NEW b = RoItem { roName(b) <- 'B'; roQty(b) <- 9; } // ... if it turns the order by name, where that order is
+    NEW c = RoItem { roName(c) <- 'C'; roQty(c) <- 4; } // ... if it moves that order to the front as well
+    SHOW roFixed NOWAIT;
+    assertEquals(roName(roCurrent()), 'B', 'the first row is ' + roName(roCurrent()) + ', not B, the first by qty descending, then by name descending');
+}
+
+// a property with objects as its arguments is one order wherever the objects stand in it. With the objects not in the
+// order the form declares them in, the entry was a new property every time it was written, and so one more order
+roQtyOf (RoItem item, RoItem other) = roQty(item) IF other IS RoItem;
+
+FORM roArguments 'A fixed order by a property with the objects in an order of its own, written again'
+    OBJECTS o = RoItem PANEL
+    OBJECTS i = RoItem
+    PROPERTIES(i) READONLY name = roName
+    ORDERS roQtyOf(i, o)
+    ORDERS roQtyOf(i, o) DESC
+    EVENTS ON CHANGE i { roCurrent() <- i; }
+;
+
+testOrderByArgumentsInAnotherOrderTakesTheLaterDirection 'A later entry gives its direction to an order by a property with the objects in an order of its own' () {
+    NEW a = RoItem { roName(a) <- 'A'; roQty(a) <- 2; } // the first row if the later entry is one more order: by qty
+    NEW b = RoItem { roName(b) <- 'B'; roQty(b) <- 9; } // ... if it turns the order: by qty descending
+    NEW c = RoItem {
+        roName(c) <- 'C'; roQty(c) <- 4;
+        SHOW roArguments OBJECTS o = c NOWAIT;
+    }
+    assertEquals(roName(roCurrent()), 'B', 'the first row is ' + roName(roCurrent()) + ', not B, the first by qty descending');
+}

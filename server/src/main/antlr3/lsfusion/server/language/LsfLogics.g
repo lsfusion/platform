@@ -1710,6 +1710,7 @@ propertyDrawOrPropertyExpr returns [PropertyDrawOrPropertyExpr result = new Prop
 					$result.mapping = self.getUsedNames(context, $expr.property.usedParams);
 				$result.propertyDraw = $formStatement::form.getUserPropertyDraw($result.mapping, $expr.property, $expr.la, $expr.id, self.getVersion());
 				$result.propertyExpr = $expr.property;
+				$result.la = $expr.la;
 				$result.text = $expr.text;
 			}
 		}

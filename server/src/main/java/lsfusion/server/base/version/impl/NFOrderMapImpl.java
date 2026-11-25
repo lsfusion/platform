@@ -8,6 +8,7 @@ import lsfusion.server.base.version.FindIndex;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.impl.changes.NFMapAdd;
 import lsfusion.server.base.version.impl.changes.NFMapMove;
+import lsfusion.server.base.version.impl.changes.NFMapSet;
 import lsfusion.server.base.version.impl.changes.NFOrderMapChange;
 import lsfusion.server.base.version.impl.changes.NFOrderMapCopy;
 import lsfusion.server.base.version.interfaces.NFOrderMap;
@@ -75,6 +76,11 @@ public class NFOrderMapImpl<K, V> extends NFChangeImpl<NFOrderMapChange<K, V>, I
 
     public void add(K key, V value, Version version) {
         addChange(new NFMapAdd<>(key, value), version);
+    }
+
+    @Override
+    public void set(K key, V value, Version version) {
+        addChange(new NFMapSet<>(key, value), version);
     }
 
     @Override

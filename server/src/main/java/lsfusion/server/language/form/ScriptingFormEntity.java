@@ -670,7 +670,8 @@ public class ScriptingFormEntity {
         Boolean descending = options.getDescending();
         if(descending != null) {
             if (nvl(options.getFixedOrder(), false)) {
-                addFixedOrder(property.getOrder(), property.getSID(), descending, false, version);
+                checkFixedOrder(property.getOrder(), property.getSID());
+                form.addFixedOrder(property.getOrder(), descending, version);
             } else {
                 form.addDefaultOrder(property, descending, version);
             }
@@ -892,43 +893,58 @@ public class ScriptingFormEntity {
 
     public void addScriptedDefaultOrder(List<ScriptingLogicsModule.PropertyDrawOrPropertyExpr> properties, List<Boolean> orders,
                                         boolean first, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        if (first) {
-            for (int i = properties.size() - 1; i >= 0; --i) {
-                addScriptedDefaultOrder(properties.get(i), orders.get(i), true, version);
-            }
-        } else {
-            for (int i = 0; i < properties.size(); ++i) {
-                addScriptedDefaultOrder(properties.get(i), orders.get(i), false, version);
+        // what each entry orders by, in the order the block writes them, with the direction: an entry it writes twice
+        // is one order, with the direction of the second
+        OrderedMap<Object, Boolean> blockOrders = new OrderedMap<>();
+        for (int i = 0; i < properties.size(); ++i) {
+            blockOrders.put(getScriptedOrder(properties.get(i)), orders.get(i));
+        }
+        List<Map.Entry<Object, Boolean>> blockEntries = new ArrayList<>(blockOrders.entrySet());
+        if (first) { // a FIRST block goes in from its end, each order before those after it
+            Collections.reverse(blockEntries);
+        }
+        for (Map.Entry<Object, Boolean> entry : blockEntries) {
+            if (entry.getKey() instanceof PropertyDrawEntity) {
+                form.addUserOrder((PropertyDrawEntity) entry.getKey(), entry.getValue(), first, version);
+            } else {
+                form.addFixedOrder((PropertyObjectEntity<?>) entry.getKey(), entry.getValue(), first, version);
             }
         }
     }
 
-    private void addScriptedDefaultOrder(ScriptingLogicsModule.PropertyDrawOrPropertyExpr property, Boolean order, boolean first,
-                                         Version version) throws ScriptingErrorLog.SemanticErrorException {
+    // what an entry orders by: a property of the form for a user order, a property with its objects for a fixed one
+    private Object getScriptedOrder(ScriptingLogicsModule.PropertyDrawOrPropertyExpr property) throws ScriptingErrorLog.SemanticErrorException {
         boolean explicitFixed = property.fixed != null && property.fixed;
         PropertyDrawEntity propertyDraw = explicitFixed ? null : property.propertyDraw;
         if (explicitFixed || (property.fixed == null && propertyDraw == null)) {
+            PropertyObjectEntity<?> fixedOrder = null;
             if (property.propertyDraw != null) {
-                addFixedOrder(property.propertyDraw.getOrder(), property.text, order, first, version);
+                fixedOrder = property.propertyDraw.getOrder();
             } else if (property.propertyExpr != null) {
-                PropertyObjectEntity<?> fixedOrderProperty = form.addPropertyObject(property.propertyExpr.getLP(), getMappingObjects(property.mapping));
-                addFixedOrder(fixedOrderProperty, property.text, order, first, version);
+                // a property with objects as its arguments is taken as PROPERTIES takes it, by the property itself: the
+                // expression is a new property when the objects are not in the form's order, and so would be a new
+                // order every time it is written. Not with an object passed twice: that is a new property either way
+                fixedOrder = property.la != null && property.la.action instanceof ScriptingLogicsModule.FormPropertyUsage
+                                && property.la.action.mapping.size() == property.mapping.size()
+                        ? addPropertyObject((ScriptingLogicsModule.FormPropertyUsage) property.la.action)
+                        : form.addPropertyObject(property.propertyExpr.getLP(), getMappingObjects(property.mapping));
             } else {
                 LM.getErrLog().emitUnableToResolveFixedOrderPropertyError(LM.getParser());
             }
-        } else if (propertyDraw != null) {
-            form.addUserOrder(propertyDraw, order, first, version);
-        } else {
+            checkFixedOrder(fixedOrder, property.text);
+            return fixedOrder;
+        }
+        if (propertyDraw == null) {
             LM.getErrLog().emitUnableToResolveUserOrderPropertyError(LM.getParser());
         }
+        return propertyDraw;
     }
 
     // a fixed order is applied to the lowest object group among those its property takes: with none there is no group
     // to apply it to, and the form fails as it is opened
-    private void addFixedOrder(PropertyObjectEntity<?> order, String text, boolean descending, boolean first, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    private void checkFixedOrder(PropertyObjectEntity<?> order, String text) throws ScriptingErrorLog.SemanticErrorException {
         if (order.getObjects().isEmpty())
             LM.getErrLog().emitFixedOrderWithoutObjectsError(LM.getParser(), text);
-        form.addFixedOrder(order, descending, first, version);
     }
 
     public PropertyDrawEntity getUserPropertyDraw(ImOrderSet<String> mapping, ScriptingLogicsModule.LPWithParams property, ScriptingLogicsModule.LPTrivialLA trivialLA,
