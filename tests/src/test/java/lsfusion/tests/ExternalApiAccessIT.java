@@ -84,6 +84,16 @@ public class ExternalApiAccessIT {
         Assert.assertEquals(response.body(), 401, response.statusCode());
     }
 
+    // a script's action runs in a stack of its module, as EVAL runs it : an EVAL inside the script sees what the script
+    // declares
+    @Test
+    public void anEvalInsideAScriptSeesWhatTheScriptDeclares() throws Exception {
+        String authorization = "Bearer " + userToken("eaaNestedEval", null);
+        HttpResponse<String> response = post("/eval", "eaaOuter = DATA LOCAL INTEGER ();\nrun() { EVAL 'run() \\{ eaaOuter() <- 7; \\}'; RETURN eaaOuter(); }", "text/plain", authorization);
+        Assert.assertEquals(response.body(), 200, response.statusCode());
+        Assert.assertEquals("7", response.body());
+    }
+
     // a code of every kind is saved only by a call that may evaluate a script : an authenticated one, not one with no login
     @Test
     public void writingCustomizationCodeRequiresTheRightToEvaluate() throws Exception {
