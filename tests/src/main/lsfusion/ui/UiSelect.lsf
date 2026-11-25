@@ -53,6 +53,25 @@ DESIGN uiSelectPicked {
     NEW board FIRST { custom = 'UiSelectPicker'; MOVE BOX(o); }
 }
 
+// #1923: a status whose choice a constraint's CHECKED BY restricts - Lost is left out -, changed by its value through the
+// React view (UiSelectChecked): a value the filter leaves out is refused, not written as NULL
+uiSelectCheckedOf = DATA UiSelectStatus (UiSelectOrder);
+uiSelectCheckedStatus 'Checked status' (UiSelectOrder o) = uiSelectStatusName(uiSelectCheckedOf(o));
+CONSTRAINT uiSelectStatusName(uiSelectCheckedOf(UiSelectOrder o)) = 'Lost' CHECKED BY uiSelectCheckedOf[UiSelectOrder]
+    MESSAGE 'An order cannot be Lost';
+
+FORM uiSelectChecked 'Checked'
+    OBJECTS o = UiSelectOrder
+    PROPERTIES(o) READONLY uiSelectNumber
+    PROPERTIES(o) checkedStatus = uiSelectCheckedStatus PANEL
+    FILTERS uiSelectShown(o)
+    ORDERS uiSelectNumber(o)
+;
+
+DESIGN uiSelectChecked {
+    NEW board FIRST { custom = 'UiSelectChecked'; MOVE BOX(o); }
+}
+
 // the platform's own element of a selection (select.js) in each of its kinds the server picks: the element - a list of
 // radio buttons or check boxes, buttons standing apart, a button group, a drop-down list, an input looking the options
 // up by the text typed -, the selection - of one value that has to be there, of one value or none, of several values -,
@@ -277,6 +296,7 @@ NAVIGATOR {
     NEW FOLDER uiSelect 'UI select' WINDOW toolbar {
         NEW uiSelectPlaced;
         NEW uiSelectPicked;
+        NEW uiSelectChecked;
         NEW uiSelectList;
         NEW uiSelectButton;
         NEW uiSelectButtonGroup;
@@ -305,7 +325,8 @@ uiSelectSeedOptions () {
     }
 }
 
-// the options; two orders shown from now on, the first New and red, the second with no status and no tag
+// the options; two orders shown from now on, the first New (its checked status too) and red, the second with no status
+// and no tag
 uiSelectSeed (STRING[50] first, STRING[50] second) {
     uiSelectSeedOptions();
     uiSelectShown(UiSelectOrder o) <- NULL;
@@ -313,6 +334,7 @@ uiSelectSeed (STRING[50] first, STRING[50] second) {
         uiSelectNumber(o) <- first;
         uiSelectShown(o) <- TRUE;
         uiSelectStatusOf(o) <- uiSelectStatus('New');
+        uiSelectCheckedOf(o) <- uiSelectStatus('New');
         uiSelectIn(o, UiSelectTag t) <- TRUE WHERE uiSelectTagName(t) = 'red';
     }
     NEW o = UiSelectOrder {
@@ -325,6 +347,13 @@ uiSelectSeed (STRING[50] first, STRING[50] second) {
 uiSelectCheckStatus (STRING[50] number, STRING[30] expected) {
     assertEquals(uiSelectNameStatus(uiSelectOrder(number)), expected, CONCAT ' ', 'the status of', number, 'is',
                  (OVERRIDE uiSelectNameStatus(uiSelectOrder(number)), 'none'), 'not', expected);
+}
+
+// the checked status of an order, none when it has none
+uiSelectCheckCheckedStatus (STRING[50] number, STRING[30] expected) {
+    LOCAL status = STRING[30] ();
+    status() <- OVERRIDE uiSelectCheckedStatus(uiSelectOrder(number)), 'none';
+    assertEquals(status(), expected, CONCAT ' ', 'the checked status of', number, 'is', status(), 'not', expected);
 }
 
 uiSelectCheckTags (STRING[50] number, STRING expected) {

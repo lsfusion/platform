@@ -91,6 +91,27 @@ public class UiSelectIT extends UiTest {
         close(form);
     }
 
+    // #1923: a value the CHECKED BY filter of the property leaves out, sent by its value, is refused - the property keeps
+    // the value it had, rather than getting NULL, which the constraint lets through -; a value the filter leaves in is
+    // written, and an explicit null still clears it
+    @Test
+    public void aValueOutsideTheCheckedByFilterIsRefused() throws Exception {
+        String[] orders = seed();
+        Locator form = open("UiSelect.uiSelect", "UiSelect.uiSelectChecked");
+        view.waitFor("data.o.checkedStatus.value === 'New'");
+        text(form, "cs by value Done").click();
+        view.waitFor("data.o.checkedStatus.value === 'Done'");
+        text(form, "cs by value Lost").click();
+        save(form);
+        check("UiSelect.uiSelectCheckCheckedStatus", orders[0], "Done");
+        view.waitFor("data.o.checkedStatus.value === 'Done'");
+        text(form, "cs clear").click();
+        view.waitFor("data.o.checkedStatus.value === null");
+        save(form);
+        check("UiSelect.uiSelectCheckCheckedStatus", orders[0], "none");
+        close(form);
+    }
+
     // a pick of several values through the view: the options checked from now on - one more, then one more and one less
     // in one call, by their value as the property has it, the values joined by its separator, which the view is given
     // too, with all the options

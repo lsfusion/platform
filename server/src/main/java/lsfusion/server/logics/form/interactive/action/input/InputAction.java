@@ -221,7 +221,13 @@ public class InputAction extends SystemExplicitAction {
         ImList<ObjectValue> userValues = userValue.getValues();
         MList<ObjectValue> mValues = ListFact.mList(userValues.size());
         for (int i = 0; i < userValues.size(); i++) {
-            mValues.add(resolveValue(context, userValues.get(i)));
+            ObjectValue value = userValues.get(i);
+            ObjectValue resolved = resolveValue(context, value);
+            // a value the list does not offer (its filters, CHECKED BY and LIST ... WHERE, included) is refused rather than
+            // taken for NULL: only an explicit NULL clears, and a NULL would pass the very constraint that filtered the value out
+            if (resolved.isNull() && !value.isNull())
+                return null; // cancel
+            mValues.add(resolved);
         }
         return mValues.immutableList();
     }

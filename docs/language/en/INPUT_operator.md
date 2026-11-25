@@ -45,7 +45,7 @@ image [KEYPRESS key] [TOOLBAR [quickAccess1 ... quickAccessN]] action
 
 The `INPUT` operator creates an action that requests a value of the given class from the user. For a custom class, without an explicit `LIST`, interactive input opens the class selection form, while a programmatically supplied value is interpreted as the object's id.
 
-The `LIST` block limits the values offered for selection to a specific set. The set is supplied either by a property (`listExpr`), whose values are offered to the user, or by an action (`listAction`), which produces them for the value being entered (allowed for a built-in class only). The `WHERE` block narrows this set further by a given condition. For a value of a numeric class the web client builds no suggestion list.
+The `LIST` block limits the values offered for selection to a specific set. The set is supplied either by a property (`listExpr`), whose values are offered to the user, or by an action (`listAction`), which produces them for the value being entered (allowed for a built-in class only). The `WHERE` block narrows this set further by a given condition. For a custom class the set also restricts a value the client passes without the selection form, for example from a custom component: a value outside the set is refused, and the input ends as cancelled (an explicit `NULL` is still input as `NULL`). For a value of a numeric class the web client builds no suggestion list.
 
 The `CUSTOM` block replaces the default input editor with a custom one rendered by a given client-side function. The `ACTIONS` block adds extra buttons next to the input control, each running its own action when pressed.
 

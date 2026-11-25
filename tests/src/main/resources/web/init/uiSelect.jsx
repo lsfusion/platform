@@ -73,3 +73,15 @@ function UiSelectPicker(props) {
         </div>)}
     </div>;
 }
+
+// #1923: the checked status of the current order changed by its value - Done, Lost, which the CHECKED BY filter of
+// UiSelect.lsf leaves out, and null to clear it; it hands on what it is given as it draws, window.uiSelectData
+function UiSelectChecked(props) {
+    const { data, controller } = props;
+    window.uiSelectData = data;
+    return <div>
+        <button onClick={() => controller.o.checkedStatus.change('Done')}>cs by value Done</button>
+        <button onClick={() => controller.o.checkedStatus.change('Lost')}>cs by value Lost</button>
+        <button onClick={() => controller.o.checkedStatus.change(null)}>cs clear</button>
+    </div>;
+}
