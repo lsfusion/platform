@@ -30,6 +30,7 @@ import org.junit.Test;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +59,9 @@ public class ExternalApiDisabledIT {
         Path log = BASE.resolve("target/server-api0.log");
         server = TestServer.start(DATABASE, ports, log, BASE.resolve("target/classes"),
                 "settings.enableAPI=0",
+                // a language whose names of days and months are not Latin (#2024: the link to the desktop client wrote its
+                // Last-Modified in it, which the HTTP port of the server refused)
+                "user.setLanguage=ru",
                 // the periodic drop of the values the server keeps, which a change does not drop itself : run as the
                 // server starts, then an hour later
                 "settings.flushAsyncValuesCaches=3600",
@@ -84,8 +88,11 @@ public class ExternalApiDisabledIT {
         // the two-factor page, for a user that does not exist
         noauth("Authentication.send2FACode[JSONFILE]", "[{\"username\":\"eadNobody\"}]");
         noauth("Authentication.verify2FACode[JSONFILE]", "[{\"username\":\"eadNobody\",\"code\":\"000000\"}]");
-        // the link to the desktop client the login page shows, which the browser follows with no login
-        noauth("Security.generateJnlp&p=800m", "");
+        // the link to the desktop client the login page shows, which the browser follows with no login : its Last-Modified
+        // is an HTTP date, whatever the language of the server
+        HttpResponse<String> jnlp = post("Security.generateJnlp&p=800m", "");
+        Assert.assertEquals(jnlp.body(), 200, jnlp.statusCode());
+        DateTimeFormatter.RFC_1123_DATE_TIME.parse(jnlp.headers().firstValue("Last-Modified").orElseThrow());
         // the navigator's settings : asked after the login, though anyone may ask them
         noauth("Service.getClientSettings[]", "");
         noauth("Service.getInitSettings[]", "");
