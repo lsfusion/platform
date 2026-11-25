@@ -34,6 +34,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
+import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.LocalNestedType;
@@ -112,6 +113,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import static com.google.common.collect.Iterables.size;
 import static lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils.intervalPrefix;
@@ -1393,7 +1395,14 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public Pair<LA, EvalScriptingLogicsModule> evaluateRun(String script, EvalScriptingLogicsModule parentLM, boolean action) {
+    public Pair<LA, UnaryOperator<ExecutionStack>> evaluateRun(String script, EvalScriptingLogicsModule parentLM, boolean action) {
         return EvalUtils.evaluateAndFindAction(BL, parentLM, script, action);
+    }
+
+    // the same, with the stack its run action runs in : a stack of the script's module over the given one, made only for
+    // an action that is there to run
+    public Pair<LA, ExecutionStack> evaluateRun(String script, EvalScriptingLogicsModule parentLM, boolean action, ExecutionStack stack) {
+        Pair<LA, UnaryOperator<ExecutionStack>> run = evaluateRun(script, parentLM, action);
+        return new Pair<>(run.first, run.first != null ? run.second.apply(stack) : null);
     }
 }

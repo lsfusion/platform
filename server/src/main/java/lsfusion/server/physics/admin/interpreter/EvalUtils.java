@@ -10,6 +10,8 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.action.controller.stack.EvalExecutionStack;
+import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -17,6 +19,7 @@ import lsfusion.server.logics.property.LazyProperty;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.UnaryOperator;
 
 public class EvalUtils {
     private static final AtomicLong uniqueNameCounter = new AtomicLong(0);
@@ -25,7 +28,7 @@ public class EvalUtils {
         return "UNIQUE" + uniqueNameCounter.incrementAndGet() + "NSNAME";
     }
 
-    public static Pair<LA, EvalScriptingLogicsModule> evaluateAndFindAction(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String script, boolean action) {
+    public static Pair<LA, UnaryOperator<ExecutionStack>> evaluateAndFindAction(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String script, boolean action) {
         return evaluateAndFindAction(BL, parentLM, null, null, null, null, false, action ? EvalActionParser.parse(script) : script, "run");
     }
     
@@ -39,7 +42,9 @@ public class EvalUtils {
         }
     }
 
-    public static Pair<LA, EvalScriptingLogicsModule> evaluateAndFindAction(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String namespace, String require, String priorities, final ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script, String action) {
+    // the action, and how to wrap the stack it will be run in into a stack of the script's module : past here the module
+    // goes on only inside that stack
+    public static Pair<LA, UnaryOperator<ExecutionStack>> evaluateAndFindAction(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String namespace, String require, String priorities, final ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script, String action) {
         String name = getUniqueName();
         String parentModule = parentLM != null ? parentLM.getName() : null;
         WrapResult wrapResult = wrapScript(BL, parentModule, namespace, require, priorities, script, name);
@@ -75,7 +80,7 @@ public class EvalUtils {
         }
 
         try {
-            return new Pair<>(module.findAction(module.getNamespace() + '.' + action), module);
+            return new Pair<>(module.findAction(module.getNamespace() + '.' + action), upStack -> new EvalExecutionStack(module, upStack));
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new UnsupportedOperationException(); // should not be since there is no currentParser in module
         } catch (ScriptErrorException e) {  // we don't need stack for ScriptErrorException, since it is obvious, so will convert it to scriptParsingException

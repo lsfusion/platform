@@ -225,6 +225,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return LM.evaluateRun(script, null, action).first;
     }
 
+    // the same, with the stack its run action runs in
+    public Pair<LA, ExecutionStack> evaluateRun(String script, boolean action, ExecutionStack stack) {
+        return LM.evaluateRun(script, null, action, stack);
+    }
+
     public void setTopModule(String topModule) {
         this.topModule = topModule;
     }

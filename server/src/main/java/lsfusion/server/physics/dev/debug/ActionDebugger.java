@@ -56,6 +56,7 @@ import java.net.URLClassLoader;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 import static java.util.Arrays.asList;
 import static lsfusion.server.physics.dev.debug.ActionDelegationType.*;
@@ -373,8 +374,8 @@ public class ActionDebugger implements DebuggerService {
 
         ExecutionContext<PropertyInterface> watchContext = context.override(MapFact.<PropertyInterface, ObjectValue>EMPTY(), (FormEnvironment<PropertyInterface>) null);
 
-        Pair<LA<PropertyInterface>, Boolean> evalResult = evalAction(namespace, require, priorities, expression, paramsWithClasses, locals, watchContext.isPrevEventScope(), context.getBL());
-        LA<PropertyInterface> evalAction = evalResult.first;
+        Pair<Pair<LA, UnaryOperator<ExecutionStack>>, Boolean> evalResult = evalAction(namespace, require, priorities, expression, paramsWithClasses, locals, watchContext.isPrevEventScope(), context.getBL());
+        Pair<LA, UnaryOperator<ExecutionStack>> evalStub = evalResult.first;
         boolean forExHack = evalResult.second; // hack для выяснения есть расширение контекста или нет (чтобы знать пустой список или null светить)
 
         final MOrderExclSet<ImMap<String, ObjectValue>> mResult = SetFact.mOrderExclSet();
@@ -382,7 +383,7 @@ public class ActionDebugger implements DebuggerService {
         watchContext.setWatcher(value -> mResult.exclAdd(value.remove(externalParamNames)));
 
         ObjectValue[] orderedValues = paramsWithClasses.keyOrderSet().mapOrderMap(paramsWithValues).valuesList().toArray(new ObjectValue[paramsWithClasses.size()]);
-        evalAction.execute(watchContext, orderedValues);
+        evalStub.first.execute(watchContext.override(evalStub.second.apply(watchContext.stack)), orderedValues);
 
         ImOrderSet<ImMap<String, ObjectValue>> result = mResult.immutableOrder();
         if(result.size() == 0) {
@@ -400,7 +401,7 @@ public class ActionDebugger implements DebuggerService {
     }
 
     @IdentityLazy
-    private Pair<LA<PropertyInterface>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, BusinessLogics bl) {
+    private Pair<Pair<LA, UnaryOperator<ExecutionStack>>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, BusinessLogics bl) {
         
         String paramString = "";
         for (int i = 0, size = paramWithClasses.size(); i < size; i++) {
@@ -422,12 +423,12 @@ public class ActionDebugger implements DebuggerService {
 
         watchHack.set(false);
 
-        LA la = EvalUtils.evaluateAndFindAction(bl, null, namespace, require, priorities, locals, prevEventScope, script, "evalStub").first;
+        Pair<LA, UnaryOperator<ExecutionStack>> evalStub = EvalUtils.evaluateAndFindAction(bl, null, namespace, require, priorities, locals, prevEventScope, script, "evalStub");
 
         boolean forExHack = watchHack.get();
         watchHack.set(null);
 
-        return new Pair<>((LA<PropertyInterface>) la, forExHack);
+        return new Pair<>(evalStub, forExHack);
     }
 
     private static ActionWatchEntry getWatchEntry(ImMap<String, ObjectValue> row, String valueName) {
