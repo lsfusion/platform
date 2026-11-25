@@ -6335,15 +6335,6 @@ intLiteral returns [int val]
 		ui=uintLiteral  { $val = isMinus ? -$ui.val : $ui.val; }
 	;
 
-doubleLiteral returns [double val]
-@init {
-	boolean isMinus = false;
-}
-	:	(MINUS {isMinus=true;})?
-		ud=UNUMERIC_LITERAL { $val = self.createScriptedDouble($ud.text); }
-		{ if (isMinus) $val = -$val; }
-	;
-
 dateLiteral returns [LocalDate val]
 	:	date=DATE_LITERAL { $val = self.dateLiteralToDate($date.text); }
 	;
