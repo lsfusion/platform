@@ -58,7 +58,11 @@ To define a filter, you must specify a property that will be used as a filter co
 
 ### Orders {#sort}
 
-By default, in all object group views, object collections are displayed in a certain non-deterministic order, which is determined by the specific implementation of the platform (most often, internal identifiers are used to determine the order). If necessary, the developer can define this order explicitly by specifying a list of properties on the form that will be used as orders. At the same time, for each property in this list, you can specify whether the order should be ascending or descending (by default, the ascending option is used).
+By default, the object collections of a group are read in ascending order of the objects of the group, taken in the order in which they are listed in the group. An object of a [user class](User_classes.md) is compared by its internal identifier. If necessary, the developer can define the order explicitly by specifying a list of properties that will be used as *orders*. At the same time, for each property in this list, you can specify whether the order should be ascending or descending (by default, the ascending option is used).
+
+There are two types of orders: *user* orders and *fixed* orders. Only a property on the form can be a user order. In the [interactive view](Interactive_view.md#userfilters) it is applied to the [display group](#drawgroup) of this property, and the user can change the user orders of an object group and add their own. A fixed order can also be a property that is not added to the form. A fixed order, and in the [static view](Static_view.md) a user order as well, is applied to the object group that is the last for the set of objects which the property of the order takes as input, that is, in the same way as a [filter](#filters). A fixed order is not shown to the user, and the user cannot change it.
+
+The object collections of a group are ordered by its user orders first, then by its fixed orders (the orders of each type form a separate list and are applied in its order), and finally by the objects of the group, as when there are no orders. A change of the user orders does not affect the fixed orders, which are still applied after the user ones. Thus the order in which the object collections of a group are read is always uniquely determined.
 
 `NULL` value is always considered to be the smallest value. 
 

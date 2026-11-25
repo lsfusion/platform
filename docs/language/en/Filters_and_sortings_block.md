@@ -196,15 +196,17 @@ USER | FIXED
 
 ### Description
 
-An order block adds orderings to the form that will be automatically applied when any data are read on it. One block can list an arbitrary number of properties on the form separated by a comma in any sequence.
+An order block adds sorts to the form that will be automatically applied when any data are read on it. One block can list an arbitrary number of sorts separated by a comma.
 
-An ordering for a property being added to the form can also be defined with the `ORDER` option in the [property and action block](Properties_and_actions_block.md).
+For each object group, user sorts are applied before fixed sorts, wherever they are written. Sorts of the same type written in one block are applied in the order in which they are written.
+
+A sort for a property being added to the form can also be defined with the `ORDER` option in the [property and action block](Properties_and_actions_block.md).
 
 ### Parameters
 
 - `FIRST`
 
-    Keyword. Specifies that these sorts will be applied first, before all others.
+    Keyword. Without `FIRST`, the sorts of the block are added after the sorts of the same type added to the form earlier. With `FIRST`, they are added before them: user sorts before the user ones, fixed sorts before the fixed ones.
 
 - `expression1, ..., expressionN`
 
@@ -222,17 +224,36 @@ An ordering for a property being added to the form can also be defined with the 
 
     Keywords that define the sort type:
     `USER` is a user sort (default for names of properties on the form) that can be overridden from the UI. Property must be added to the form in advance.
-    `FIXED` is a fixed sort defined only in form code (default for other expressions).
+    `FIXED` is a fixed sort defined only in form code (default for other expressions): it is not shown to the user, and the user cannot change it.
 
 ### Examples
 
 ```lsf
 EXTEND FORM onStock // extending the previously created form with balances
-    ORDERS name(s) // enabling ordering by warehouse name in the warehouse list
-    ORDERS groupName, onStock(st, s) DESC // enabling ordering in ascending order of the group name, and inside
-                                          // in descending order of the balance in the warehouse
-                                          // it should be noted that the property is the property name on the 
-                                          // form groupName, not just the property name nameGroupSku
+    ORDERS name(st) // enabling a sort by warehouse name in the warehouse list
+    // Enabling a sort in ascending order of the group name, and inside in descending order of the balance
+    // in the warehouse. The form gives nameGroup(s) the name groupName, and the sort by this name is a user sort.
+    // If nameGroup(s) were written here, the sort by the group name would be fixed and the balance would come first
+    ORDERS groupName, onStock(st, s) DESC
     ORDERS name(s) FIXED // fixed sort that is not replaced by user sorting
+;
+
+priority 'Priority' = DATA INTEGER (Group);
+
+FORM skuList 'Products' // creating a form with a list of products
+    OBJECTS s = Sku
+    PROPERTIES(s) READONLY groupName = nameGroup, name
+    // Enabling a fixed composite sort: by the priority of the group, then by the group name and the product name.
+    // The priority of the group is not on the form, so its expression defines a fixed sort. The properties on the form
+    // are marked FIXED: without it they would be user sorts and would be applied before the priority
+    // of the group, as in the block ORDERS groupName, name(s), priority(group(s))
+    ORDERS priority(group(s)), groupName FIXED, name(s) FIXED
+;
+
+EXTEND FORM skuList
+    // Adding a sort before the fixed sorts added earlier.
+    // While there are no user sorts, active products come first. If the user sorts the products by the group name,
+    // active products come first among the products with the same group name
+    ORDERS FIRST active(s) DESC
 ;
 ```

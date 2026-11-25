@@ -117,7 +117,7 @@ FORM orders 'Orders'
 
 It should be noted that the dates in this case should always be selected (by default, the current date will be set when the form is opened). But it is possible not to select a customer.
 
-Also, note that what is set in `ORDER BY` is not an expression but a specific property added to the form. Thus, we cannot order by a property that has not been added to the form.
+Also, note that in `ORDERS do DESC` the date is specified by its name on the form, so the sort is a [user sort](../language/Filters_and_sortings_block.md#sort) and the user can change it. The block `ORDERS date(o) DESC` would give the same initial order with a fixed sort, since `date(o)` is not the name of a property on this form. A fixed sort can also be defined by a property that is not added to the form. The user cannot change a fixed sort, and user sorts are applied before it: if the user sorts the orders by the customer column on a form with such a sort, the orders with the same customer name still go from the latest to the earliest.
 
 ## Example 4
 

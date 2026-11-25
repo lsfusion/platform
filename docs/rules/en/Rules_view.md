@@ -27,6 +27,12 @@ title: 'Rules: view logic'
 
    An expression MAY be placed into `ORDERS` as a fixed
    sorting the user neither sees nor changes.
+   [User sortings are applied before fixed ones](../paradigm/Form_structure.md#sort),
+   wherever they stand in the list. So to give such an
+   expression priority over a sorting by a form property of
+   the same object group in one `ORDERS` block, the assistant
+   MUST write the expression before that sorting and mark the
+   sorting `FIXED`.
 
 3. The assistant MUST NOT use `INPUT` inside actions
    added directly to a form through `PROPERTIES`,
