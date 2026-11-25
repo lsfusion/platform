@@ -2085,6 +2085,26 @@ public class Settings implements Cloneable {
         this.disableSyncStatProps = disableSyncStatProps;
     }
 
+    private boolean disableSyncComplexityProps = false;
+
+    public boolean isDisableSyncComplexityProps() {
+        return disableSyncComplexityProps;
+    }
+
+    public void setDisableSyncComplexityProps(boolean disableSyncComplexityProps) {
+        this.disableSyncComplexityProps = disableSyncComplexityProps;
+    }
+
+    private int syncPropsWarnTime = 30; // in seconds; 0 = no warning
+
+    public int getSyncPropsWarnTime() {
+        return syncPropsWarnTime;
+    }
+
+    public void setSyncPropsWarnTime(int syncPropsWarnTime) {
+        this.syncPropsWarnTime = syncPropsWarnTime;
+    }
+
     // если сильно "наобъединяться" бОльшая вероятность, что не слишком умная СУБД сделает неправильный план (впрочем после materialized subqueries должно уйти)
     // в запросе выполнения всегда объединять join'ы с одинаковой статистикой, а не только при превышении порога
     // проблема в "орел-решка", когда есть очень волатильная статистика (0 или очень большая статистика), сейчас берется пессимистичный вариант основным, к нему присоединяются "хорошие" варианты с индексом что не очень хорошо

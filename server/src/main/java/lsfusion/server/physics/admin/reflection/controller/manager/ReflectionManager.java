@@ -41,6 +41,7 @@ import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.SystemProperties;
+import lsfusion.server.physics.admin.log.StartStepWatchdog;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.admin.reflection.ReflectionLogicsModule;
 import lsfusion.server.physics.dev.integration.service.*;
@@ -471,7 +472,10 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         LP nameByObject = actions ? reflectionLM.canonicalNameAction : reflectionLM.canonicalNameProperty;
         ImportKey<?> keyProperty = new ImportKey(customClass, objectByName.getMapping(canonicalNamePropertyField));
 
-        try {
+        // building the expression of a property can take minutes (exponential where normalization), so the property the step is stuck on
+        // is named in the log; the expression is built once for both values, so skipping only one of them moves the time to the other
+        String skipHint = "disableSyncComplexityProps and disableSyncStatProps together skip building its expression";
+        try (StartStepWatchdog watchdog = new StartStepWatchdog(actions ? "Synchronizing actions" : "Synchronizing properties", Settings.get().getSyncPropsWarnTime())) {
             List<List<Object>> dataProperty = new ArrayList<>();
             for (ActionOrProperty actionOrProperty : businessLogics.getOrderActionOrProperties()) {
                 if (needsToBeSynchronized(actionOrProperty)) {
@@ -489,7 +493,14 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                         
                         if(actionOrProperty instanceof Property) {
                             Property property = (Property)actionOrProperty;
-                            complexityProperty = property.getComplexity();
+                            if(!Settings.get().isDisableSyncComplexityProps()) {
+                                watchdog.start("the complexity of " + property.getCanonicalName(), skipHint);
+                                try {
+                                    complexityProperty = property.getComplexity();
+                                } finally {
+                                    watchdog.finish();
+                                }
+                            }
                             if (property.mapTable != null) {
                                 tableSID = property.mapTable.table.getName();
                                 fieldSID = property.field.getName();
@@ -503,6 +514,16 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                     } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
                     }
 
+                    Long statsProperty = Stat.DEFAULT.getCount();
+                    if(actionOrProperty instanceof Property && !Settings.get().isDisableSyncStatProps()) {
+                        watchdog.start("the statistics of " + actionOrProperty.getCanonicalName(), skipHint);
+                        try {
+                            statsProperty = DBManager.getPropertyInterfaceStat((Property) actionOrProperty);
+                        } finally {
+                            watchdog.finish();
+                        }
+                    }
+
                     String annotations = actionOrProperty.annotations != null ? actionOrProperty.annotations.toString(" ") : null;
                     dataProperty.add(asList(actionOrProperty.getCanonicalName(), fieldSID, ThreadLocalContext.localize(actionOrProperty.caption),
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).isLoggable() ? true : null,
@@ -510,7 +531,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).userNotNull ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).disableInputList ? true : null,
                             returnClass, classProperty, complexityProperty, tableSID, annotations,
-                            Stat.restrictLongValuesInStat(Settings.get().isDisableSyncStatProps() || !(actionOrProperty instanceof Property) ? Stat.DEFAULT.getCount() : DBManager.getPropertyInterfaceStat((Property)actionOrProperty))));
+                            Stat.restrictLongValuesInStat(statsProperty)));
                 }
             }
 
