@@ -6,10 +6,12 @@ import lsfusion.base.file.IOUtils;
 import org.apache.hc.client5.http.classic.methods.*;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.cookie.CookieStore;
+import org.apache.hc.client5.http.cookie.MalformedCookieException;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.cookie.BasicClientCookie;
+import org.apache.hc.client5.http.impl.cookie.LaxExpiresHandler;
 import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
 import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
@@ -30,7 +32,8 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -143,7 +146,10 @@ public class ExternalHttpUtils {
                 String paramValue = rawCookieParam[1].trim();
 
                 if (paramName.equalsIgnoreCase("expires")) {
-                    cookie.setMaxAge((int) (parseDate(paramValue).getTime() - System.currentTimeMillis()));
+                    Instant expires = parseExpires(paramValue);
+                    // max-age is in seconds : 0 deletes the cookie, and one that expires later than it reaches is kept as long as it does
+                    if (expires != null)
+                        cookie.setMaxAge((int) Math.min(Integer.MAX_VALUE, Math.max(0, Duration.between(Instant.now(), expires).getSeconds())));
                 } else if (paramName.equalsIgnoreCase("max-age")) {
                     cookie.setMaxAge(Integer.parseInt(paramValue));
                 } else if (paramName.equalsIgnoreCase("domain")) {
@@ -175,11 +181,11 @@ public class ExternalHttpUtils {
                 String paramValue = rawCookieParam[1].trim();
 
                 if (paramName.equalsIgnoreCase("expires")) {
-                    cookie.setExpiryDate(parseDate(paramValue));
+                    Instant expires = parseExpires(paramValue);
+                    if (expires != null)
+                        cookie.setExpiryDate(expires);
                 } else if (paramName.equalsIgnoreCase("max-age")) {
-                    long maxAge = Long.parseLong(paramValue);
-                    Date expiryDate = new Date(System.currentTimeMillis() + maxAge);
-                    cookie.setExpiryDate(expiryDate);
+                    cookie.setExpiryDate(Instant.now().plusSeconds(Long.parseLong(paramValue)));
                 } else if (paramName.equalsIgnoreCase("domain")) {
                     cookie.setDomain(paramValue);
                 } else if (paramName.equalsIgnoreCase("path")) {
@@ -192,11 +198,15 @@ public class ExternalHttpUtils {
         return cookie;
     }
 
-    private static Date parseDate(String value) {
+    // Expires as a browser reads it (RFC 6265): in English whatever the language, in any of the forms servers send; null if
+    // it is no date, as a browser then leaves the attribute out
+    private static Instant parseExpires(String value) {
+        BasicClientCookie cookie = new BasicClientCookie("", "");
         try {
-            return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ssZZZ").parse(value);
-        } catch (java.text.ParseException e) {
+            LaxExpiresHandler.INSTANCE.parse(cookie, value);
+        } catch (MalformedCookieException e) {
             return null;
         }
+        return cookie.getExpiryInstant();
     }
 }
