@@ -29,46 +29,48 @@ title: 'Rules: domain logic'
    it: with a `DATA` property `a`, `OVERRIDE a(x, d), b(x)` is
    `b(x)` for a `NULL` date `d`. To get `NULL`, use
    `(OVERRIDE a(x, d), b(x)) IF d IS DATE`.
+   In `GROUP`, however, an upper parameter `d` in an aggregate
+   operand is a grouping: `NULL` has no group, even with
+   `NOT d OR ...`. A value for that case MUST be selected
+   outside `GROUP` (`IF d THEN ... ELSE ...`), see
+   [composition](../paradigm/Composition_JOIN.md#null).
 
-   Exceptions that do NOT nullify on a single `NULL` operand:
-   the selection operators — `OVERRIDE`, which returns the first
-   non-`NULL` operand, and `IF ... THEN ... ELSE`, whose
-   CONDITION is the `NULL`-tolerant part: a `NULL` condition
-   takes the `ELSE` branch, while a non-`NULL` one returns the
-   `THEN` value as it is, so `IF TRUE THEN NULL ELSE 1` is
-   `NULL` —
-   `MIN` / `MAX`, the `NULL`-tolerant arithmetic `(+)` / `(-)`
-   (numeric operands only, it does not concatenate strings),
-   the `CONCAT` concatenation
-   (a `NULL` operand is skipped together with its separator),
+   Exceptions that do NOT nullify on one `NULL` operand:
+   the selection operators — `OVERRIDE` (returns the first
+   non-`NULL` operand) and `IF ... THEN ... ELSE`, which
+   returns the selected value as is (`ELSE` for a `NULL`
+   condition, `THEN` otherwise), so
+   `IF TRUE THEN NULL ELSE 1` is `NULL` —
+   `MIN` / `MAX`, the arithmetic `(+)` / `(-)`
+   (numeric only: it does not concatenate strings),
+   `CONCAT` (concatenation skips `NULL` with its separator),
    and `GROUP` aggregates (`GROUP SUM`, `GROUP MAX`, etc.) —
-   a `NULL` operand or value is skipped instead of propagating.
-   `OR`, `NOT` and `XOR` do not propagate either: they read a
-   non-`NULL` operand as `TRUE`, so `NULL OR TRUE` is `TRUE`
-   and `NOT NULL` is `TRUE`. `AND` is the one that does —
-   it returns `TRUE` only when both operands are non-`NULL`,
-   so `TRUE AND NULL` is `NULL`.
-   `GROUP LAST` skips a `NULL` only while it has no `WHERE`,
-   where non-`NULL`ness of the aggregated expression is what
-   serves as the condition. Given an explicit `WHERE`, a row
-   satisfying it contributes its value even when that value
-   is `NULL`.
+   a `NULL` operand or value is skipped.
+   `OR`, `NOT` and `XOR` do not propagate either: a non-`NULL`
+   operand reads as `TRUE`, so `NULL OR TRUE` and `NOT NULL`
+   are `TRUE`. `AND` does: it is `TRUE` only when both
+   operands are non-`NULL`, so `TRUE AND NULL` is `NULL`.
+   `GROUP LAST` skips a `NULL` only without `WHERE`, when
+   non-`NULL`ness of the aggregated expression is the
+   condition. With `WHERE`, each matching row contributes its
+   value, including `NULL`.
 
    These exceptions still yield `NULL` when:
    - every operand or aggregated value is `NULL` — except
-     `NOT`, whose whole point is to answer `TRUE` there;
+     `NOT`, which answers `TRUE` there;
    - `(+)` / `(-)` or `GROUP SUM` produces `0`
-     (a zero result is returned as `NULL`).
+     (zero is returned as `NULL`).
 
-   A custom formula (`FORMULA`) is executed as written, and the
-   platform does not check that it follows the rules of its form.
+   A custom formula (`FORMULA`) runs as written. The platform
+   does not check it against its form's rules.
    Without the trailing `NULL` the SQL
-   text MUST return `NULL` when any argument is `NULL`: on an
-   SQL function that returns a value for `NULL` input (`concat`,
-   `COALESCE`, `string_to_array` with a `NULL` delimiter) an
-   explicit check is needed (`CASE WHEN $2 IS NULL THEN NULL
-   ELSE ... END`). With the trailing `NULL` it MUST return a
-   non-`NULL` value when at least one argument is non-`NULL`, see
+   text MUST return `NULL` when any argument is `NULL`: an
+   SQL function returning a value for `NULL` input (`concat`,
+   `COALESCE`, `string_to_array` with a `NULL` delimiter) needs
+   an explicit check (`CASE WHEN $2 IS NULL THEN NULL
+   ELSE ... END`). With the trailing `NULL` the SQL text MUST
+   return a non-`NULL` value when any argument is
+   non-`NULL`, see
    [custom formula](../paradigm/Custom_formula_FORMULA.md#null).
 
 4. The assistant MUST NOT use `GROUP` with a `BY` block

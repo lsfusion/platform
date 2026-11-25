@@ -13,7 +13,7 @@ Properties are either *data* or *calculated* properties. The values of a [data p
 
 ### Absence of a value {#null}
 
-Instead of an object, a property can return the special value `NULL`, which means there is no value: for example, a data property is `NULL` for every object collection for which nothing has been written to it.
+Instead of an object, a property can return the special value `NULL`, which means there is no value: for example, a data property is `NULL` for every object collection for which nothing has been written to it. The value of a parameter can be `NULL` as well — for example, in a [composition](Composition_JOIN.md#null), when a property is applied to the value of another property — and the property does not necessarily return `NULL` then.
 
 ### Value and parameter classes {#type}
 
