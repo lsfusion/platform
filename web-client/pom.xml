@@ -337,10 +337,6 @@
             <artifactId>spring-webmvc</artifactId>
         </dependency>
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.bfr.client</groupId>
             <artifactId>gwt-selection</artifactId>
         </dependency>
