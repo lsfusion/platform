@@ -14,9 +14,10 @@ title: 'How-to'
 7.  [Integration](How-to_Integration.md): Description of interactions with 3rd party systems.
 8.  [Metaprogramming](How-to_Metaprogramming.md): The mechanism for generating reusable code based on [metacode](../paradigm/Metaprogramming.md).
 9.  [Physical model](How-to_Physical_model.md): Definition of a scheme for storing data in a relational database.
-10. [Internationalization](How-to_Internationalization.md): Description of the naming rules for system elements in different languages.
-11. [Adding new fonts](How-to_Adding_New_Fonts.md): Description of adding new fonts for JasperReports.
-12. [Logging](How-to_Logging.md): Writing to the platform logs from lsFusion and Java code.
-13. [Use Cases](How-to_Use_Cases.md): Common use cases.
+10. [Heavy computations](How-to_Heavy_computations.md): Restricting an expensive computation to the objects it is needed for.
+11. [Internationalization](How-to_Internationalization.md): Description of the naming rules for system elements in different languages.
+12. [Adding new fonts](How-to_Adding_New_Fonts.md): Description of adding new fonts for JasperReports.
+13. [Logging](How-to_Logging.md): Writing to the platform logs from lsFusion and Java code.
+14. [Use Cases](How-to_Use_Cases.md): Common use cases.
 
   
