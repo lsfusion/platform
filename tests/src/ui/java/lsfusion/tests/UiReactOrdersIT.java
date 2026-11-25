@@ -293,8 +293,8 @@ public class UiReactOrdersIT extends UiTest {
     }
 
     // a FILTER from an action is applied on the server at once - FILTERS right after it reads the new condition - and
-    // the rows filtered, and a FILTER of nothing takes it off, FILTERS reading no condition - an empty value -, with
-    // nothing sent back and no FILTERS user event (#1856)
+    // the rows filtered, and a FILTER of nothing takes it off, FILTERS reading no condition - an empty list, []
+    // (#2029) -, with nothing sent back and no FILTERS user event (#1856)
     @Test
     public void aFilterFromAnActionIsAppliedWithNothingSentBack() throws Exception {
         String s = seed();
@@ -307,7 +307,7 @@ public class UiReactOrdersIT extends UiTest {
         assertJson(read, "[{\"compare\":\">\",\"negation\":false,\"property\":\"sQty\",\"value\":\"2\"}]");
         action(form, "uiRorFilterNone").click();
         assertThat(names).hasText(new String[] {"Apple " + s, "Banana " + s, "Cherry " + s});
-        assertJson(read, "Empty string");
+        assertJson(read, "[]");
         // a request of the user's after them: what would have been sent back by then is
         header(form, "sName").dblclick();
         assertThat(names).hasText(new String[] {"Cherry " + s, "Banana " + s, "Apple " + s});
@@ -532,8 +532,8 @@ public class UiReactOrdersIT extends UiTest {
     }
 
     // the JSON a panel property shows, which the platform indents, compacted and with the keys of each object sorted -
-    // the server writes them in no order of its own -, or the text it shows for what is no JSON, "Empty string" for an
-    // empty value, until it is exactly this, failing with what it is then
+    // the server writes them in no order of its own -, or the text it shows for what is no JSON, until it is exactly
+    // this, failing with what it is then
     private static final String JSON = "value => { const text = value.textContent.trim(); try {"
             + " return JSON.stringify(JSON.parse(text), (key, item) => item && typeof item === 'object'"
             + " && !Array.isArray(item) ? Object.fromEntries(Object.entries(item).sort()) : item);"

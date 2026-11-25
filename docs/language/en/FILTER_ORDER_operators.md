@@ -39,7 +39,7 @@ The value is in a serialized form that depends on the element:
 
 `ORDERS` and `FILTERS` write the keys of each item in the order listed above, so a `JSONTEXT` property, which keeps the text as it is written, gets the same text for the same orders or filters.
 
-When the group object has no user orders or no user filters, `ORDERS` and `FILTERS` write an empty `JSON` value of zero length — not `NULL` and not `[]`: a test for `NULL` does not detect it, and the web client shows it as an empty string. `ORDER` and `FILTER` take all three alike: an empty value, `[]` and `NULL` each clear the user orders or the user filters of the group object.
+When the group object has no user orders, `ORDERS` writes an empty list, `[]`, not `NULL`, and so does `FILTERS` when it has no user filters. `ORDER` and `FILTER` take all three alike: `[]`, `NULL` and an empty string each clear the user orders or the user filters of the group object.
 
 An item's `property`, when specified, must name a property of the form. Otherwise, the action fails with an error. `ORDER` and `FILTER` skip an item with no `property` or one naming a property the user cannot view under the [security policy](../paradigm/Security_policy.md), a property of another group object, or a property with the `COLUMNS` option, since an item names no column.
 

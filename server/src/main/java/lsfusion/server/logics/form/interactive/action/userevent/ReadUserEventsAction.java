@@ -31,13 +31,10 @@ public abstract class ReadUserEventsAction<T> extends SystemExplicitAction {
         if (filterEventProperty == null) {
             filterEventProperty = getDefaultToProperty(context.getBL());
         }
-        String writeObject = null;
-        if (!objects.isEmpty()) {
-            // always writing JSON array for proper import into orders/filters form
-            writeObject = new JSONArray(objects).toString();
-        }
+        // always writing JSON array for proper import into orders/filters form - an empty one for no items: a value of
+        // zero length is no JSON, and the database refuses it
         Charset jsonCharset = ExternalUtils.jsonCharset;
-        writeResult(filterEventProperty, writeObject != null ? new RawFileData(writeObject, jsonCharset) : RawFileData.EMPTY, "json", context, jsonCharset.toString());
+        writeResult(filterEventProperty, new RawFileData(new JSONArray(objects).toString(), jsonCharset), "json", context, jsonCharset.toString());
     }
 
     public abstract List<JSONObject> createJSON(T items);

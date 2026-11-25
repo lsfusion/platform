@@ -65,6 +65,33 @@ testFilterTakesBackFilters 'FILTER takes back what FILTERS wrote' () {
     assertEquals(STRING(uofFiltersAgain()), STRING(uofFilters()), 'FILTERS read ' + STRING(uofFiltersAgain()) + ' after FILTER of ' + STRING(uofFilters()));
 }
 
+// a group with no user orders, or no user filters, has an empty list of them, and ORDERS and FILTERS write it as one:
+// []. They wrote a value of zero length, which is no JSON - the database refused to convert it and to store it (#2029)
+testReadOfNoneIsAnEmptyList 'ORDERS and FILTERS of a group with no user orders and no user filters write []' () {
+    SHOW uofItems NOWAIT {
+        ORDERS uofItems.i TO uofOrders;
+        FILTERS uofItems.i TO uofFilters;
+        ORDERS uofItems.i TO uofOrdersText;
+        FILTERS uofItems.i TO uofFiltersText;
+    };
+    assertEquals(STRING(uofOrders()), '[]', 'ORDERS wrote ' + STRING(uofOrders()));
+    assertEquals(STRING(uofFilters()), '[]', 'FILTERS wrote ' + STRING(uofFilters()));
+    assertEquals(STRING(uofOrdersText()), '[]', 'ORDERS wrote the text ' + STRING(uofOrdersText()));
+    assertEquals(STRING(uofFiltersText()), '[]', 'FILTERS wrote the text ' + STRING(uofFiltersText()));
+}
+
+uofOrdersAgain = DATA LOCAL JSON ();
+
+testOrderTakesBackNoOrders 'ORDER takes back the empty list ORDERS wrote: the group has no user orders again' () {
+    SHOW uofItems NOWAIT {
+        ORDERS uofItems.i TO uofOrders;
+        ORDER uofItems.i FROM (JSON FROM property = 'qty', desc = TRUE);
+        ORDER uofItems.i FROM uofOrders();
+        ORDERS uofItems.i TO uofOrdersAgain;
+    };
+    assertEquals(STRING(uofOrdersAgain()), '[]', 'ORDERS read ' + STRING(uofOrdersAgain()) + ' after ORDER of the empty list');
+}
+
 // JSON given by a literal is a raw literal (FILTER_ORDER_operators.md): in a plain one {...} is a localization
 // identifier, replaced, with no translation, by itself without the braces - no JSON any more (and one with a space
 // inside the braces does not compile at all)
