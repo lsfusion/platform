@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     private EvalScriptingLogicsModule parentLM;
@@ -48,8 +49,16 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
         emitEvalError("CLASS statement");
     }
 
+    // a script is compiled before its access is checked, and its text can come with data : what its literals wrap is added once its code runs (EvalExecutionStack)
+    private final Set<String> wrappedNames = ConcurrentHashMap.newKeySet();
+
     @Override
-    protected void addWrapped(Collection<String> names) { // a script is compiled before its access is checked, and its text can come with data
+    protected void addWrapped(Collection<String> names) {
+        wrappedNames.addAll(names);
+    }
+
+    public void addWrapped() {
+        super.addWrapped(wrappedNames);
     }
 
     @Override
