@@ -23,7 +23,6 @@ import java.net.Socket;
 import java.net.URLEncoder;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -36,39 +35,27 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static lsfusion.tests.TestServer.BASE;
-
-/** The mails of the password pages, on a server of its own with the API's default access (enableAPI=0) and a mail
- *  server of the test's own : the link of a reset mail, and the token in it. */
+/** The mails of the password pages, on the server of DefaultApiIT, with the API's default access (enableAPI=0), and a
+ *  mail server of the test's own : the link of a reset mail, and the token in it. */
 public class PasswordResetIT {
-
-    private static final String DATABASE = "lsfusion_test_reset_" + ProcessHandle.current().pid();
 
     // the address of the web server, as an administrator sets it in the options
     private static final String ADDRESS = "http://web.example:8080/app";
 
-    private static Process server;
     private static int httpPort;
     private static MailServer mails;
 
     @BeforeClass
     public static void startServer() throws Exception {
         mails = new MailServer();
-        int[] ports = TestServer.freePorts(4);
-        httpPort = ports[0];
-        Path log = BASE.resolve("target/server-reset.log");
-        server = TestServer.start(DATABASE, ports, log, BASE.resolve("target/classes"),
-                "settings.enableAPI=0",
-                "lsfusion.server.devmode=false"); // which would set enableAPI to 2 whatever is given
-        TestServer.waitStarted(server, log);
+        DefaultApiIT.start();
+        httpPort = DefaultApiIT.httpPort;
         call("HttpPasswordReset.hprMailBy&p=" + mails.port(), "");
         call("HttpPasswordReset.hprAddress&p=" + URLEncoder.encode(ADDRESS, "UTF-8"), "");
     }
 
     @AfterClass
-    public static void stopServer() throws Exception {
-        if (server != null)
-            TestServer.stop(server, DATABASE);
+    public static void stopMails() throws Exception {
         if (mails != null)
             mails.close();
     }
@@ -224,7 +211,8 @@ public class PasswordResetIT {
 
     // an smtp server that keeps the text of each message it is sent, by recipient
     private static final class MailServer implements AutoCloseable {
-        private final ServerSocket socket = new ServerSocket(0);
+        // by freePorts : not a port a server of the other fork is about to take
+        private final ServerSocket socket = new ServerSocket(TestServer.freePorts(1)[0]);
         private final Map<String, BlockingQueue<String>> mails = new ConcurrentHashMap<>();
 
         MailServer() throws IOException {

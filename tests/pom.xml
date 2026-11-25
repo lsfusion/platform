@@ -71,9 +71,16 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${surefire.version}</version>
                 <configuration>
+                    <!-- two classes at a time, each in a jvm of its own : what a class takes is mostly the start of its
+                         server, which keeps a few cores busy, and the classes do not share a database or a port -->
+                    <forkCount>2</forkCount>
                     <excludes>
                         <!-- the browser tests need the ui profile -->
                         <exclude>**/Ui*IT.java</exclude>
+                        <!-- run by DefaultApiIT, on its server -->
+                        <exclude>**/LockedUserIT.java</exclude>
+                        <exclude>**/ExternalApiDisabledIT.java</exclude>
+                        <exclude>**/PasswordResetIT.java</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -158,8 +165,16 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
+                            <!-- one class at a time : the browser tests share one server, web container and browser,
+                                 whose files lie in target/ui -->
+                            <forkCount>1</forkCount>
                             <!-- the browser tests run along with the others -->
-                            <excludes combine.self="override"/>
+                            <excludes combine.self="override">
+                                <!-- run by DefaultApiIT, on its server -->
+                                <exclude>**/LockedUserIT.java</exclude>
+                                <exclude>**/ExternalApiDisabledIT.java</exclude>
+                                <exclude>**/PasswordResetIT.java</exclude>
+                            </excludes>
                             <systemPropertyVariables>
                                 <!-- the war of the checkout under test, built by web-client beside it -->
                                 <ui.war>${project.basedir}/../web-client/target/lsfusion-client-${project.version}.war</ui.war>

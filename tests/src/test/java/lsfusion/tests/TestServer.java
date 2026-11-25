@@ -7,11 +7,14 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -115,16 +118,33 @@ class TestServer {
                 HttpResponse.BodyHandlers.ofString());
     }
 
-    // all open at once : taken one by one, each closed before the next is opened, two of them could get the same port
-    static int[] freePorts(int count) throws IOException {
-        List<ServerSocket> sockets = new ArrayList<>();
-        try {
-            for (int i = 0; i < count; i++)
-                sockets.add(new ServerSocket(0));
-            return sockets.stream().mapToInt(ServerSocket::getLocalPort).toArray();
-        } finally {
-            for (ServerSocket socket : sockets)
-                socket.close();
+    // all open at once : taken one by one, each closed before the next is opened, two of them could get the same port.
+    // And none picked lately by a jvm of this run : a port is closed between its pick and the server's bind, which comes
+    // a minute or more later, and meanwhile the system may hand it to the other fork of the run, which picks its ports
+    // the same way - so the ports picked are kept in a file, under a lock : the last thousand, the earlier runs' that
+    // target/ still has included
+    static synchronized int[] freePorts(int count) throws IOException {
+        try (FileChannel channel = FileChannel.open(BASE.resolve("target/ports.lock"), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+             FileLock lock = channel.lock()) {
+            Path file = BASE.resolve("target/ports.txt");
+            List<String> picked = Files.exists(file) ? new ArrayList<>(Files.readAllLines(file)) : new ArrayList<>();
+            int[] ports = new int[count];
+            List<ServerSocket> sockets = new ArrayList<>();
+            try {
+                for (int i = 0; i < count; ) {
+                    ServerSocket socket = new ServerSocket(0);
+                    sockets.add(socket);
+                    if (!picked.contains(String.valueOf(socket.getLocalPort()))) {
+                        picked.add(String.valueOf(socket.getLocalPort()));
+                        ports[i++] = socket.getLocalPort();
+                    }
+                }
+            } finally {
+                for (ServerSocket socket : sockets)
+                    socket.close();
+            }
+            Files.write(file, picked.subList(Math.max(0, picked.size() - 1000), picked.size()));
+            return ports;
         }
     }
 

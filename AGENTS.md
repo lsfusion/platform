@@ -107,6 +107,14 @@ build and run when asked for with `-Dmaven.test.skip=false`, as Jenkins asks for
 - **migration** — what a start does with the database an earlier start left, such as applying `migration.script`: `LsfMigrationIT` starts the server several times on a database of its own, each time with the logics of a directory of `tests/migration/`, and calls an action of that logics through `/exec` after each start. Several starts take minutes, so these tests run only with `-Dlsf.migrationTests=true`;
 - **browser** — for what only the web client shows: a class `Ui<Theme>IT extends UiTest` in `tests/src/ui/java/lsfusion/tests/`, with the forms and actions it works on in `tests/src/main/lsfusion/ui/Ui<Theme>.lsf` (failsafe, the `ui` profile). `UiTest` starts a server of its own, the web client's war in a web container and a browser driven by Playwright, once for all the browser tests of a run, and opens `/main` for each test in a browser context of its own. The test opens its form through the navigator (`open`), finds what it works on with `form`, `cell` and `row`, types with `edit`, and calls the module's actions through `/exec`: `exec` seeds its data, `check` runs an assertion, retried for 10 s, since the server gets what the browser sent a moment after the click. The module prefixes its names and begins none with `test`, which `LsfServerIT` would call as a test; its forms sit in a navigator folder of its own, each under an element named as the form. A test seeds its data in the test method, under names no other attempt has (`System.nanoTime()`): what a failed attempt saved stays in the database for the rerun.
 
+A class of its own in `tests/src/test/java`, with a server started with settings of its own, is the last resort: every
+deploy pays the start of its server, however few tests it holds. A check that a `test*` action can make is written as
+one; one that needs a client or settings of its own goes into a class whose server has the settings, such as the
+classes `DefaultApiIT` runs on one server with the API's default access, and only settings no server has yet make a
+server of its own. Failsafe runs the classes in parallel, each in a JVM of its own (one at a time with `-Pui`, as the
+browser tests share their files): a class takes its ports from `TestServer.freePorts` and names its database after its
+JVM's pid.
+
 Locally, run the tests a change adds or changes and no others. A fix's test is written and run before the fix, to
 see it fail: after the fix, that takes undoing it and rebuilding. For a change to the platform's own `.lsf` modules
 (`server/src/main/lsfusion/`) that has no behaviour test of its own, run one, any: no build compiles those modules,

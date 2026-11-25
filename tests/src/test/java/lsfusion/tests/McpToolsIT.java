@@ -52,7 +52,8 @@ public class McpToolsIT {
 
     @BeforeClass
     public static void startServer() throws Exception {
-        center = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+        // by freePorts : not a port a server of the other fork is about to take
+        center = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), TestServer.freePorts(1)[0]), 0);
         center.createContext("/mcp", exchange -> {
             String method = exchange.getRequestMethod().equals("POST")
                     ? new JSONObject(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8)).getString("method")

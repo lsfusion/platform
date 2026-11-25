@@ -22,57 +22,33 @@ import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.SessionInfo;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.tests.TestServer.BASE;
-
 /** The calls the platform itself makes through the external API - its web client, its desktop client, the messengers'
- *  webhooks - on a server of its own that lets the API in only for what an action opens by its annotations
+ *  webhooks - on the server of DefaultApiIT, which lets the API in only for what an action opens by its annotations
  *  (enableAPI=0, the default): what is called before a login is opened by @@noauth, what a logged in user calls by
  *  @@api. A call the API refused would fail here, where the web client takes a refusal of some of them for an empty
  *  answer. Also the first login of an OAuth provider's user while registration is switched off, whom the
  *  navigator's settings give the web agent's token, and how a navigator runs an action a client names. */
 public class ExternalApiDisabledIT {
 
-    private static final String DATABASE = "lsfusion_test_api0_" + ProcessHandle.current().pid();
-
-    private static Process server;
     private static int httpPort, rmiPort;
 
     @BeforeClass
     public static void startServer() throws Exception {
-        int[] ports = TestServer.freePorts(4);
-        httpPort = ports[0];
-        rmiPort = ports[1];
-        Path log = BASE.resolve("target/server-api0.log");
-        server = TestServer.start(DATABASE, ports, log, BASE.resolve("target/classes"),
-                "settings.enableAPI=0",
-                // a language whose names of days and months are not Latin (#2024: the link to the desktop client wrote its
-                // Last-Modified in it, which the HTTP port of the server refused)
-                "user.setLanguage=ru",
-                // the periodic drop of the values the server keeps, which a change does not drop itself : run as the
-                // server starts, then an hour later
-                "settings.flushAsyncValuesCaches=3600",
-                "lsfusion.server.devmode=false"); // which would set enableAPI to 2 whatever is given
-        TestServer.waitStarted(server, log);
-    }
-
-    @AfterClass
-    public static void stopServer() throws Exception {
-        if (server != null)
-            TestServer.stop(server, DATABASE);
+        DefaultApiIT.start();
+        httpPort = DefaultApiIT.httpPort;
+        rmiPort = DefaultApiIT.rmiPort;
     }
 
     // what is called with no user logged in, each by whom : every one of them is run, though an anonymous call of an

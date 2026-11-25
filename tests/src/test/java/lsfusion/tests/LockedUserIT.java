@@ -9,65 +9,39 @@ import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
 import lsfusion.interop.oauth.OAuthOperations;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-import static lsfusion.tests.TestServer.BASE;
-
-/** Users who are locked, on a server of its own that lets only what an action opens by its annotations in (enableAPI=0,
- *  the default), with a universal password: a locked user gets in by nothing - a password, an OAuth provider's login, a
- *  token, the OAuth server's codes and tokens - and the user every call without a login runs as is created locked, while
- *  a call without a login still runs as it, until an administrator unlocks it. */
+/** Users who are locked, on the server of DefaultApiIT, which lets only what an action opens by its annotations in
+ *  (enableAPI=0, the default), with a universal password: a locked user gets in by nothing - a password, an OAuth
+ *  provider's login, a token, the OAuth server's codes and tokens - and the user every call without a login runs as is
+ *  created locked, while a call without a login still runs as it, until an administrator unlocks it. */
 public class LockedUserIT {
 
-    private static final String DATABASE = "lsfusion_test_locked_" + ProcessHandle.current().pid();
-    private static final String UNIVERSAL_PASSWORD = "luUniversal1";
+    static final String UNIVERSAL_PASSWORD = "luUniversal1"; // the server's, see DefaultApiIT
     private static final String EMAIL = "lu@example.com";
     private static final String REDIRECT_URI = "https://localhost/lu";
     private static final String CODE_VERIFIER = "lu-code-verifier-0123456789-0123456789-0123456789";
 
-    private static Process server;
     private static int httpPort, rmiPort;
     // the user of the calls without a login as a new database has it, before any test changes it
     private static String createdLocked, createdPassword;
 
     @BeforeClass
     public static void startServer() throws Exception {
-        startServer("target/server-locked.log");
+        DefaultApiIT.start();
+        httpPort = DefaultApiIT.httpPort;
+        rmiPort = DefaultApiIT.rmiPort;
         createdLocked = call("luLocked&p=anonymous");
         createdPassword = call("luPassword&p=anonymous");
-    }
-
-    // on the same database each time
-    private static void startServer(String logName) throws Exception {
-        int[] ports = TestServer.freePorts(4);
-        httpPort = ports[0];
-        rmiPort = ports[1];
-        Path log = BASE.resolve(logName);
-        server = TestServer.start(DATABASE, ports, log, BASE.resolve("target/classes"),
-                "settings.enableAPI=0",
-                "settings.universalPassword=" + UNIVERSAL_PASSWORD,
-                // the periodic drop of the values the server keeps, which a change does not drop itself : run as the
-                // server starts, then an hour later
-                "settings.flushAsyncValuesCaches=3600",
-                "lsfusion.server.devmode=false"); // which would set enableAPI to 2 whatever is given
-        TestServer.waitStarted(server, log);
-    }
-
-    @AfterClass
-    public static void stopServer() throws Exception {
-        if (server != null)
-            TestServer.stop(server, DATABASE);
     }
 
     // with no password, and a call without a login runs as it
@@ -158,8 +132,9 @@ public class LockedUserIT {
             call("luUnlock&p=anonymous&p=luPassword1");
             Assert.assertEquals("anonymous", call("luLogin", "Authorization", basic("anonymous", "luPassword1")));
 
-            TestServer.kill(server);
-            startServer("target/server-locked-restart.log");
+            DefaultApiIT.restart("target/server-api0-restart.log");
+            httpPort = DefaultApiIT.httpPort;
+            rmiPort = DefaultApiIT.rmiPort;
             Assert.assertEquals("open", call("luLocked&p=anonymous"));
             Assert.assertEquals("anonymous", call("luLogin", "Authorization", basic("anonymous", "luPassword1")));
         } finally {
