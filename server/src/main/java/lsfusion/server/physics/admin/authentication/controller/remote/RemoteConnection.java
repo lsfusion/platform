@@ -96,13 +96,28 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     // the module of the code that customizes the application for the connection's user, null when there is no code
     protected EvalScriptingLogicsModule customizeLM;
+    // whether the connection takes the code at all : one made with customize=false among the parameters of its request
+    // takes none - a client so started is the way back from a code that compiles and still leaves the editor of the code
+    // out of reach
+    private final boolean customize;
 
     public RemoteConnection(int port, String sID, LogicsInstance logicsInstance, AuthenticationToken token, SessionInfo sessionInfo, ExecutionStack upStack) throws RemoteException, SQLException, SQLHandledException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         super(port, upStack, sID, SyncType.NOSYNC);
 
+        this.customize = isCustomized(sessionInfo.externalRequest);
+
         initContext(logicsInstance);
 
         initConnectionContext(token, sessionInfo.connectionInfo, upStack);
+    }
+
+    // the request the connection is made with : the page of a client, a call of the program interface. A session of that
+    // interface's pool is taken by the calls that follow as it was made, as with the rest of its context
+    private static boolean isCustomized(ExternalRequest request) {
+        for (ExternalRequest.Param param : request.params)
+            if ("customize".equals(param.name) && "false".equals(param.value))
+                return false;
+        return true;
     }
     
     protected abstract FormController createFormController();
@@ -135,7 +150,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     protected void initCustomize(DataSession session) throws SQLException, SQLHandledException {
-        String code = readCustomizeCode(session);
+        String code = customize ? readCustomizeCode(session) : null;
         EvalScriptingLogicsModule customizeLM = null;
         if (code != null) {
             try {

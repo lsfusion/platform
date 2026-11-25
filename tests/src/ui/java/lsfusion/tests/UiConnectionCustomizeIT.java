@@ -1,6 +1,7 @@
 package lsfusion.tests;
 
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.PlaywrightException;
 import com.microsoft.playwright.assertions.LocatorAssertions;
 import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.WaitForSelectorState;
@@ -16,6 +17,7 @@ import static org.junit.Assert.assertTrue;
 // code made, and the navigator of the logics is back once the code is dropped (UiConnectionCustomize.lsf).
 // The code is written in the dialog a form's code is written in (SystemEvents.customizeForm).
 // What draws its windows and lays them out, and what it schedules, are the copy's too.
+// A client can be started without the code, the way to that dialog when the code hides it.
 // What the code declares, a script evaluated in that client sees.
 // And a call by its name, made in that client, finds.
 public class UiConnectionCustomizeIT extends UiTest {
@@ -323,13 +325,77 @@ public class UiConnectionCustomizeIT extends UiTest {
     }
 
     private Locator personalEditor(Locator editor) {
-        return editor.locator("[lsfusion-container='PROPERTY(extendCodeCurrentUser)'] .ace_editor");
+        return codeEditor(editor, "extendCodeCurrentUser");
     }
 
-    // the code written into the editor's "For me" : the editor sends its text a moment after it changes, and the dialog
-    // is closed once the server has it
+    // a field of the editor - extendCodeCurrentUser is its "For me", extendCodeAll its "For all"
+    private Locator codeEditor(Locator editor, String property) {
+        return editor.locator("[lsfusion-container='PROPERTY(" + property + ")'] .ace_editor");
+    }
+
+    // a code that compiles can still leave its editor out of reach : this one moves the editor's element into a folder of a
+    // window it hides
+    private static final String HIDING =
+            "WINDOW uiCcHidden 'Hidden' HORIZONTAL BOTTOM;\n" +
+            "HIDE WINDOW uiCcHidden;\n" +
+            "NAVIGATOR {\n" +
+            "    NEW FOLDER uiCcAway 'Away' WINDOW uiCcHidden {\n" +
+            "        MOVE SystemEvents.customize;\n" +
+            "    }\n" +
+            "}";
+
+    // so a client whose page asks for it - customize=false in the page's address - is started without the code, with the
+    // navigator of the logics : the editor is where the logics put it, and edits the code that was saved. The editor
+    // reloads the page at the same address, and a client started at the address without the parameter takes the code
+    // saved there
+    @Test
+    public void aClientStartedWithoutTheCodeReachesItsEditor() throws Exception {
+        exec("UiConnectionCustomize.uiCcSet", HIDING);
+        restart();
+        element("System.administration").click();
+        assertThat(element("System.performance")).isInViewport();
+        assertThat(element("SystemEvents.customize")).isHidden();
+
+        String address = page.url();
+        page.navigate(address + "?customize=false");
+        element("System.root").waitFor();
+        open("System.administration", element("SystemEvents.customize"));
+        Locator editor = form("SystemEvents.customizeForm");
+        assertEquals(HIDING, codeEditor(editor, "extendCodeAll").evaluate("ace => ace.parentElement.aceEditor.getValue()"));
+        // not the editor's default code, which it takes for no code
+        type(editor, "extendCodeAll", "NAVIGATOR {\n    " + FOLDER + " 'Fixed folder';\n}");
+        // the code is saved and the page reloaded at its address, so still without the code
+        page.evaluate("() => window.uiCcBeforeReload = true");
+        action(editor, "formOk").click();
+        page.waitForCondition(this::reloaded);
+        element("System.root").waitFor();
+        assertThat(element(FOLDER)).containsText("UI connection customize");
+
+        page.navigate(address);
+        element("System.root").waitFor();
+        assertThat(element(FOLDER)).containsText("Fixed folder");
+        open("System.administration", element("SystemEvents.customize"));
+        close(form("SystemEvents.customizeForm"));
+    }
+
+    // a page loaded anew has nothing of what the page before it was given
+    private boolean reloaded() {
+        try {
+            return page.evaluate("() => window.uiCcBeforeReload") == null;
+        } catch (PlaywrightException e) { // the page before is gone, and the new one is not there yet
+            return false;
+        }
+    }
+
+    // the code written into the editor's "For me"
     private void type(Locator editor, String code) {
-        Locator ace = personalEditor(editor);
+        type(editor, "extendCodeCurrentUser", code);
+    }
+
+    // into a field of the editor : the editor sends its text a moment after it changes, and the dialog is closed once the
+    // server has it
+    private void type(Locator editor, String property, String code) {
+        Locator ace = codeEditor(editor, property);
         answered(0, () -> {
             ace.evaluate("(ace, code) => ace.parentElement.aceEditor.setValue(code, 1)", code);
             page.waitForCondition(() -> code.equals(ace.evaluate("ace => ace.parentElement.currentValue")));
