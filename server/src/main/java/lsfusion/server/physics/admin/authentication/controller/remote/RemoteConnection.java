@@ -140,6 +140,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         if (code != null) {
             try {
                 customizeLM = evaluateCustomizeCode(businessLogics, code);
+                customizeLM.addWrapped();
             } catch (RuntimeException e) {
                 // the code is written by the users, and a client that cannot get its navigator cannot start : there would
                 // be no way back to the code from it. Whatever the code fails with - its own errors, a check of the

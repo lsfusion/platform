@@ -2,6 +2,7 @@ package lsfusion.server.base;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.MIMETypeUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
@@ -393,6 +394,11 @@ public class AppServerImage {
         return createImage(imagePath, Style.PROPERTY, (name, context) -> AppServerImage.createDefaultImage(Settings.get().getDefaultAutoImageRankingThreshold(), name, Style.PROPERTY, AppServerImage.getAutoName(() -> null, () -> name), defaultContext -> AUTO_ICON ? createActionImage(ACTION).get(defaultContext) : null, context));
     }
 
+    // an image's name can come with data (a property drawn as an image), so an image is read only from an image file
+    private static boolean isImageFile(String imagePath) {
+        return MIMETypeUtils.MIMETypeForFileExtension(BaseUtils.getFileExtension(imagePath).toLowerCase(Locale.ROOT)).startsWith("image/");
+    }
+
     @ManualLazy
     public AppImage getAppImage() throws IOException {
         if(appImage == null) {
@@ -401,6 +407,9 @@ public class AppServerImage {
             Map<ColorTheme, RawFileData> images = null;
             String fullImagePath = imagePath;
             if(imagePath != null && !AppImage.isImageURL(imagePath)) {
+                if(!isImageFile(imagePath))
+                    throw new FileNotFoundException(imagePath);
+
                 images = new HashMap<>();
 
                 for (ColorTheme colorTheme : ColorTheme.values()) {
@@ -444,6 +453,6 @@ public class AppServerImage {
         if(AppImage.isImageURL(image.imagePath))
             return image.imagePath;
         else
-            return ScriptedStringUtils.wrapResource(image.imagePath);
+            return image.imagePath != null && isImageFile(image.imagePath) ? ScriptedStringUtils.wrapResource(image.imagePath) : null; // an icon of font classes only, or not an image file, is left out
     }
 }

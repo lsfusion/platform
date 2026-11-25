@@ -1808,6 +1808,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
                 try {
                     // read in a connection the application is customized for, the code sees what that customization declares
                     FormEntity copyForm = getCustomizedForm(BL, session.user.getCustomizeLM(), extendCode);
+                    copyForm.customizeLM.addWrapped();
                     return new Pair<>(copyForm, getObjects().mapRevKeys((ObjectEntity obj) -> copyForm.getExEntity(obj)));
                 } catch (ScriptingErrorLog.SemanticErrorException | ScriptParsingException | ScriptErrorException e) {
                     // the customization code is written by the user, so a broken one must not make the form unopenable -

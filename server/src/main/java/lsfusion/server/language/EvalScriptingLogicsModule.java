@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 // a module made of a text while the server runs, after the logics is final : what it declares is its own, and what would
 // change the logics is refused
@@ -69,6 +70,18 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule implements 
                                  List<String> instNames, List<LocalizedString> instCaptions, List<String> images, List<String> parentNames, boolean isComplex,
                                  DebugInfo.DebugPoint point) throws ScriptingErrorLog.SemanticErrorException {
         emitEvalError("CLASS statement");
+    }
+
+    // a script is compiled before its access is checked, and its text can come with data : what its literals wrap is added once its code runs (EvalExecutionStack)
+    private final Set<String> wrappedNames = ConcurrentHashMap.newKeySet();
+
+    @Override
+    protected void addWrapped(Collection<String> names) {
+        wrappedNames.addAll(names);
+    }
+
+    public void addWrapped() {
+        super.addWrapped(wrappedNames);
     }
 
     @Override
