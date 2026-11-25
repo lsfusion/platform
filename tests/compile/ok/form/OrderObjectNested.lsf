@@ -1,0 +1,17 @@
+MODULE OrderObjectNested;
+
+REQUIRE System;
+
+// a fixed order that uses the form's object only inside a nested expression uses it all the same: it is applied to that
+// object's group (FixedOrderWithoutObjects is the one refused, #2027). And a user order needs no object of its own:
+// it is applied to the group its property is drawn in
+CLASS NestedOrderItem;
+nestedOrderName = DATA STRING[20] (NestedOrderItem);
+nestedOrderByName = DATA BOOLEAN ();
+nestedOrderRank = DATA INTEGER ();
+
+FORM orderObjectNested
+    OBJECTS i = NestedOrderItem
+    PROPERTIES() nestedOrderRank DRAW i
+    ORDERS (IF nestedOrderByName() THEN nestedOrderName(i) ELSE ''), nestedOrderRank()
+;

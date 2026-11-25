@@ -670,7 +670,7 @@ public class ScriptingFormEntity {
         Boolean descending = options.getDescending();
         if(descending != null) {
             if (nvl(options.getFixedOrder(), false)) {
-                form.addFixedOrder(property.getOrder(), descending, version);
+                addFixedOrder(property.getOrder(), property.getSID(), descending, false, version);
             } else {
                 form.addDefaultOrder(property, descending, version);
             }
@@ -909,10 +909,10 @@ public class ScriptingFormEntity {
         PropertyDrawEntity propertyDraw = explicitFixed ? null : property.propertyDraw;
         if (explicitFixed || (property.fixed == null && propertyDraw == null)) {
             if (property.propertyDraw != null) {
-                form.addFixedOrder(property.propertyDraw.getOrder(), order, first, version);
+                addFixedOrder(property.propertyDraw.getOrder(), property.text, order, first, version);
             } else if (property.propertyExpr != null) {
                 PropertyObjectEntity<?> fixedOrderProperty = form.addPropertyObject(property.propertyExpr.getLP(), getMappingObjects(property.mapping));
-                form.addFixedOrder(fixedOrderProperty, order, first, version);
+                addFixedOrder(fixedOrderProperty, property.text, order, first, version);
             } else {
                 LM.getErrLog().emitUnableToResolveFixedOrderPropertyError(LM.getParser());
             }
@@ -921,6 +921,14 @@ public class ScriptingFormEntity {
         } else {
             LM.getErrLog().emitUnableToResolveUserOrderPropertyError(LM.getParser());
         }
+    }
+
+    // a fixed order is applied to the lowest object group among those its property takes: with none there is no group
+    // to apply it to, and the form fails as it is opened
+    private void addFixedOrder(PropertyObjectEntity<?> order, String text, boolean descending, boolean first, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        if (order.getObjects().isEmpty())
+            LM.getErrLog().emitFixedOrderWithoutObjectsError(LM.getParser(), text);
+        form.addFixedOrder(order, descending, first, version);
     }
 
     public PropertyDrawEntity getUserPropertyDraw(ImOrderSet<String> mapping, ScriptingLogicsModule.LPWithParams property, ScriptingLogicsModule.LPTrivialLA trivialLA,

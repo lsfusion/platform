@@ -224,7 +224,7 @@ A sort for a property being added to the form can also be defined with the `ORDE
 
     Keywords that define the sort type:
     `USER` is a user sort (default for names of properties on the form) that can be overridden from the UI. Property must be added to the form in advance.
-    `FIXED` is a fixed sort defined only in form code (default for other expressions): it is not shown to the user, and the user cannot change it.
+    `FIXED` is a fixed sort defined only in form code (default for other expressions): it is not shown to the user, and the user cannot change it. Its expression must use at least one object of the form: a fixed sort is applied to the lowest object group among those its expression uses.
 
 ### Examples
 

@@ -1216,6 +1216,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         public LPWithParams propertyExpr;
         public ImOrderSet<String> mapping;
         public Boolean fixed;
+        public String text; // as written, for an error to name it by
     }
 
     public List<String> getParamNamesFromTypedParams(List<String> paramNames, List<TypedParameter> params, boolean innerPD) {

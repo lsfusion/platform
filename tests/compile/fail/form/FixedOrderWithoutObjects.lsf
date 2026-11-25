@@ -1,0 +1,27 @@
+MODULE FixedOrderWithoutObjects;
+
+REQUIRE System;
+
+// a fixed order that uses no object of the form: a fixed order is applied to the lowest object group among those it
+// uses, so this one has none to be applied to - the module compiled, and the form failed as it was opened (#2027).
+// It is refused however it is written: as an expression that is no property of the form, as a property of the form
+// marked FIXED, as the ORDER FIXED option of such a property
+CLASS FixedOrderItem;
+fixedOrderName = DATA STRING[20] (FixedOrderItem);
+fixedOrderRank = DATA INTEGER ();
+
+FORM fixedOrderExpression
+    OBJECTS i = FixedOrderItem
+    ORDERS fixedOrderName(i), fixedOrderRank() + 1 DESC
+;
+
+FORM fixedOrderProperty
+    OBJECTS i = FixedOrderItem
+    PROPERTIES() fixedOrderRank
+    ORDERS fixedOrderRank() FIXED
+;
+
+FORM fixedOrderOption
+    OBJECTS i = FixedOrderItem
+    PROPERTIES() rank = fixedOrderRank ORDER FIXED
+;

@@ -325,6 +325,13 @@ public class ScriptingErrorLog {
                 caption, filterGroup));
     }
 
+    // a fixed order is applied to the lowest object group among those its expression uses: one using no object has no
+    // group to be applied to, and the form fails as it is opened
+    public void emitFixedOrderWithoutObjectsError(ScriptParser parser, String order) throws SemanticErrorException {
+        emitSimpleError(parser, format("fixed order '%s' uses no object of the form: a fixed order is applied to the lowest" +
+                " object group among those it uses, so one using none has no group to be applied to", order));
+    }
+
     public void emitWrongKeyStrokeFormatError(ScriptParser parser, String ksLiteral) throws SemanticErrorException {
         emitSimpleError(parser, format("can't create keystroke from string '%s'", ksLiteral));
     }
