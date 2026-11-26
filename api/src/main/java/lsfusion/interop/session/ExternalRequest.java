@@ -157,7 +157,7 @@ public class ExternalRequest implements Serializable {
 
         // converting response from the web server to the client
         public Result convertFileValue(ConvertFileValue convertFileValue) {
-            assert value instanceof String || value instanceof FileData || value instanceof StringWithFiles || value instanceof StringWithFiles;
+            assert value instanceof String || value instanceof FileData || value instanceof StringWithFiles || value instanceof FileStringWithFiles;
             Object convertedValue = convertFileValue.convertFileValue(value);
             assert convertedValue instanceof String || convertedValue instanceof FileData;
             return new Result(convertedValue, name, fileName);
