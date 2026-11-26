@@ -37,6 +37,18 @@ testTooLongQueryNamesMaterializedProperty 'TOO LONG QUERY names the materialized
     assertTrue(messageCaughtException() LIKE '%PROPERTY : TooLongQuery.tlqHead%', 'TOO LONG QUERY does not name tlqHead : ' + messageCaughtException());
 }
 
+// #1915: an apply in a loop, which keeps a progress item of its own on the stack
+testTooLongQueryNamesPropertyInLoop 'TOO LONG QUERY names the materialized property when the apply is in a loop' () {
+    FOR iterate(INTEGER i, 1, 3) NEW e = TlqEvent DO {
+        tlqDate(e) <- 2026_01_01;
+        tlqKind1(e) <- 'k1' IF i = 1;
+        tlqKind3(e) <- 'k3';
+    }
+    FOR iterate(INTEGER i, 1, 1) DO
+        tlqApply('700');
+    assertTrue(messageCaughtException() LIKE '%PROPERTY : TooLongQuery.tlqHead%', 'TOO LONG QUERY does not name tlqHead : ' + messageCaughtException());
+}
+
 CLASS TlqRow;
 TABLE tlqRow (TlqRow);
 

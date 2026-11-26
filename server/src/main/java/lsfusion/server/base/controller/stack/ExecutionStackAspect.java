@@ -434,7 +434,7 @@ public class ExecutionStackAspect {
         StackAndTime stackAndTime = executionStack.get(Thread.currentThread());
         if(stackAndTime != null)
             for(ExecutionStackItem item : stackAndTime.stack.getUnsync())
-                if(item instanceof AspectStackItem) {
+                if(item instanceof AspectStackItem && item.joinPoint != null) { // a progress item pushed by a loop (FOR, WHILE) has no join point
                     result.add(item.joinPoint.getThis());
                     result.addAll(Arrays.asList(item.joinPoint.getArgs()));
                 }
