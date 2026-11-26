@@ -263,9 +263,8 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         for(Server server : servers)
             run.accept(server);
     }
-    public LogSequenceNumber ensureMaster(boolean cleanDB, SQLRunnable backwardCompatibility) throws Exception {
-        ensureDB(master, cleanDB);
-
+    // the database is ensured before, by a start step of its own (DBManager.ensureDB)
+    public LogSequenceNumber ensureMaster(SQLRunnable backwardCompatibility) throws Exception {
         startEnsureConnection(master);
 
         servers.add(master);

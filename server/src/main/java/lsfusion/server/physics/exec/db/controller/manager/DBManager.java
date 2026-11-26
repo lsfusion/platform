@@ -259,6 +259,19 @@ public class DBManager extends LogicsManager implements InitializingBean {
         addIndex(index, dbName, indexType);
     }
 
+    // the database of the logics, made if there is none, PostgreSQL waited for while it is not up (ensureDBTask). Nothing
+    // in a dry run, which opens no connection
+    public void ensureDB() {
+        if (Settings.get().isDryRun())
+            return;
+
+        try {
+            adapter.ensureDB(adapter.getMaster(), false);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public void initReflectionEvents() {
         if (Settings.get().isDryRun()) {
             return;
@@ -272,9 +285,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         try {
             ImplementTable.reflectionStatProps(() -> {
-                updateLSN(adapter.ensureMaster(false, () -> {
+                updateLSN(adapter.ensureMaster(() -> {
                     // splitting ensure function into two is necessary
-                    // to make "DROP FUNCTION"-s execute after ensureDB (to have an active connection)
+                    // to make "DROP FUNCTION"-s execute after startEnsureConnection (to have an active connection)
                     // but before ensureSqlFuncs.
 
                     SQLSession sql = getThreadLocalSql();

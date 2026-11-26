@@ -350,11 +350,23 @@
         </property>
     </bean>
 
+    <!-- no earlier than initReflectionEventsTask, the first to need the database : waiting for PostgreSQL to be up, it holds back the report of any task failing beside it (a failed task is reported only once every running task is done) -->
+    <bean id="ensureDBTask" class="lsfusion.server.physics.exec.db.controller.init.EnsureDBTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="finalizeTask"/>
+                <ref bean="initIndicesTask"/>
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
     <bean id="initReflectionEventsTask" class="lsfusion.server.physics.admin.reflection.controller.init.InitReflectionEventsTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeTask"/>
                 <ref bean="initIndicesTask"/> <!-- reading from db so need stored+indices initialized-->
+                <ref bean="ensureDBTask"/> <!-- ensureMaster connects to the database ensured there -->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
