@@ -288,6 +288,21 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         }
     }
 
+    // the navigator gets its dynamic captions and images only in responses to its own requests
+    public void executeVoidNavigatorAction() {
+        rmiQueue.asyncRequest(new RmiRequest<ServerResponse>("voidNavigatorAction") {
+            @Override
+            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
+                return remoteNavigator.voidNavigatorAction(requestIndex, lastReceivedRequestIndex, -1);
+            }
+
+            @Override
+            protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
+                processServerResponse(result);
+            }
+        });
+    }
+
     public boolean isInServerInvocation(long requestIndex) throws RemoteException {
         return rmiQueue.directRequest(requestIndex, new RmiRequest<Boolean>("isInServerInvocation") {
             protected Boolean doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
