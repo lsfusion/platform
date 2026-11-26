@@ -19,7 +19,10 @@ lsfusion.server.language.action.LA
 lsfusion.server.data.value.ObjectValue
 lsfusion.server.data.value.DataObject
 lsfusion.server.data.value.NullValue
+lsfusion.server.data.sql.exception.SQLHandledException
 lsfusion.server.logics.action.session.DataSession
+lsfusion.server.logics.property.data.SessionDataProperty
+lsfusion.base.lambda.set.FunctionSet
 lsfusion.server.logics.action.controller.context.ExecutionContext
 lsfusion.server.logics.action.controller.stack.ExecutionStack
 lsfusion.server.logics.classes.ValueClass
@@ -73,17 +76,17 @@ lsfusion.interop.server.RmiServerInterface
 - `readClasses(session, ObjectValue... params)` → `ObjectValue` — for object-class properties returns a `DataObject` with the concrete class set (or `NullValue`). Convenient when the value has to be passed straight into `LP.change` / `LA.execute` without rebuilding the class manually
 - `readClasses(context, ObjectValue... params)` → `ObjectValue`
 - `change(value, session, DataObject... params)` — write a Java value into the session
-- `change(value, context, DataObject... params)`
+- `change(value, context, DataObject... params)` — write a Java value into the current change session
 - `change(ObjectValue value, session, DataObject... params)` — write an object value (useful when copying a value read through `readClasses`)
 - `change(ObjectValue value, context, DataObject... params)`
 
 `LA<?>` — Java wrapper over an [action](../paradigm/Actions.md).
 - `execute(session, stack, ObjectValue... params)` — run with own session+stack
-- `execute(context, ObjectValue... params)` — run from inside an `InternalAction`
+- `execute(context, ObjectValue... params)` — run from inside an `InternalAction` in the current change session
 
 ### Object parameters
 
-`ObjectValue` — common base type for an object-class value: either `DataObject` (non-`NULL`) or `NullValue` (`NullValue.instance`).
+In `executeInternal`, arguments of user-defined classes are passed directly as `ObjectValue`. This is the common base type for a `DataObject` (non-`NULL`) or a `NullValue` (`NullValue.instance`).
 
 `DataObject(Object value, ConcreteClass cls)` — non-`NULL` parameter constructor with an explicit class (needed for instance for dates and user-defined classes). Neither `BusinessLogics.findClass(name)` (returns `CustomClass`) nor `LM.findClass(name)` (returns `ValueClass`) gives a `ConcreteClass` directly — for a user-defined class a cast to `ConcreteCustomClass` is required: `new DataObject(userId, (ConcreteCustomClass) BL.findClass("CustomUser"))`. For built-in classes use the `instance` field: `new DataObject(LocalDate.of(...), DateClass.instance)`. For a few built-in scalar types convenience one-arg constructors exist: `String`, `Integer`, `Long`, `Boolean`, `Double`.
 
@@ -92,12 +95,15 @@ lsfusion.interop.server.RmiServerInterface
 `DataSession` — change [session](../paradigm/Change_sessions.md), accumulates changes until applied. Opened through `EventServer.createSession()` or `dbManager.createSession()`. Implements `AutoCloseable` — properly used in try-with-resources, an unapplied session is rolled back.
 - `applyException(BL, stack)` — apply, throwing on failure
 - `applyMessage(BL, stack)` → `String` — apply, returning the error message or `null`
+- `void setNoCancelInTransaction(boolean noCancelInTransaction)` — pass `true` to suppress cancellation during a transaction that applies the session's changes
 
 ### `InternalAction`
 
 `InternalAction extends ExplicitAction` (`lsfusion.server.physics.dev.integration.internal.to.InternalAction`) — base class for an `INTERNAL` Java target. Constructor: `(ScriptingLogicsModule LM, ValueClass... classes)`.
 
-- `executeInternal(ExecutionContext<ClassPropertyInterface> context)` — the only override point, invoked on each run.
+The action's constructor must be public. Its first parameter must have the exact runtime class of the module that declares the action with `INTERNAL`. This is usually `ScriptingLogicsModule`. If the module has its own Java subclass, use that subclass. For an action with no parameters, the platform first looks for a constructor taking just the module. If that constructor is absent or the action has parameters, the platform looks for a constructor taking the module and a `ValueClass[]`.
+
+- `protected abstract void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException` — implement this method to run the Java code on each call.
 - `findProperty(name)` / `findAction(name)` / `findClass(name)` / `findGroup(name)` / `findForm(name)` — resolution through `LM`.
 - `getParam(int i, context)` → `Object` — positional parameter value.
 - `getParamValue(int i, context)` → `ObjectValue` — positional `ObjectValue`.
@@ -105,14 +111,16 @@ lsfusion.interop.server.RmiServerInterface
 - `allowNulls()` — override and return `true` so the action accepts `NULL` arguments (defaults to `false`).
 - Field `interfaces` — all `ClassPropertyInterface`s of the action (in declaration order).
 
-### `ExecutionContext`
+### `ExecutionContext` {#executioncontext}
 
-`ExecutionContext<P>` — per-call context inside `InternalAction.executeInternal`.
+`ExecutionContext<P>` provides the execution context for a call to `InternalAction.executeInternal`. In an inline Java fragment, `context` has the type `lsfusion.server.logics.action.controller.context.ExecutionContext<ClassPropertyInterface>`.
 - `getKeyObject(P key)` → `Object` — raw value, may be `null`
 - `getKeyValue(P key)` → `ObjectValue` — `DataObject` or `NullValue`
-- `getDataKeyValue(P key)` → `DataObject` — guaranteed non-`NULL` (for actions with `!allowNulls`)
+- `getDataKeyValue(P key)` → `DataObject` — use for actions that reject `NULL` arguments
 - `getBL()` → `BusinessLogics`
 - `getSession()` → current `DataSession`
+- `boolean apply() throws SQLException, SQLHandledException` — apply the current change session and return whether the apply succeeded
+- `void cancel(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException` — cancel changes in the current session. Outside an apply transaction, `keep` selects additional session-local properties whose values are retained
 - field `stack` → current `ExecutionStack` (`context.stack`, public field)
 - `messageSuccess(message, header)` / `messageError(message)` / `messageError(message, header)` — user-facing messages
 - `delayUserInteraction(ClientAction)` — deferred client action (runs after the current stack completes)

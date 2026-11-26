@@ -14,9 +14,8 @@ LANGUAGE — applies to docs/<lang>/language/
 
 Language documentation is organized by syntax constructions
 and by the interfaces
-that code in other languages receives and calls
-(JavaScript in the client
-and Java in the application server).
+that code or markup in other languages
+declares, receives, and calls.
 
 The articles on those interfaces
 sit in the `Other languages` subsection
@@ -24,14 +23,20 @@ sit in the `Other languages` subsection
 and the `Other languages` sidebar category),
 separate from the syntax.
 The subsection has one category
-per language
-(`JavaScript`, `Java`);
-a category MAY hold
+per language.
+The categories appear in the order
+`JavaScript`, `HTML`, `CSS`, `Java`, `JRXML`.
+A category whose language
+has one article
+links that article
+and has no items.
+A category MAY hold
 a category of its own
 for an interface
 specific to one technology
-of that language
-(`React` inside `JavaScript`).
+of that language.
+The `React` category
+sits inside `JavaScript`.
 
 For a syntax construction it MUST contain:
 - the language syntax itself
@@ -57,14 +62,15 @@ For a syntax construction it MUST contain:
   the paradigm
 
 For an interface
-that code in another language receives and calls,
+that code or markup in another language
+declares, receives, and calls,
 the article MUST contain
 the same basic explanation
 and, for each element
 of the interface,
 those of the following that apply:
 - its names
-  as that code writes them,
+  as they are written,
   how a name is formed
   from the element it stands for,
   and which names are reserved
@@ -79,14 +85,18 @@ those of the following that apply:
   including when
   an asynchronous result
   is fulfilled or rejected
+- which elements, attributes, and values
+  markup or templates can contain,
+  where they can appear,
+  and how they are interpreted
 - its refusals and errors:
   what is refused
   and how it is reported
 - its timing:
   when its data arrives
   or changes,
-  and when a call
-  takes effect
+  when a call takes effect,
+  or when markup or a template is processed
 - its availability:
   in which client or server context,
   under which kind of view,
@@ -127,10 +137,11 @@ as its subject —
 not the human-language name
 that abstraction prose uses;
 an article on an interface
-that code in another language receives and calls
+that code or markup in another language
+declares, receives, and calls
 likewise takes as its subject
 the interface's own names,
-in the form that code writes them.
+in the form they are written.
 Language documentation
 MUST describe
 what can be written
@@ -162,7 +173,8 @@ Language article structure convention:
   `Parameters`,
   `Examples`
 - an article on an interface
-  that code in another language receives and calls
+  that code or markup in another language
+  declares, receives, and calls
   uses none of these sections:
   after the definition
   it SHOULD have
@@ -170,13 +182,16 @@ Language article structure convention:
   per element of the interface
   (a part of the data,
   a group of members,
-  a component or a function),
+  a component, a function,
+  a markup or template element),
   each holding
   its description,
-  tables of its members or fields,
+  tables of its members, fields, or attributes
+  where applicable,
   and short examples of writing it
   (a declaration, a call,
-  the shape of its data) —
+  the shape of its data,
+  a markup or template fragment) —
   a whole component
   only where the element
   cannot be shown without one
@@ -274,7 +289,8 @@ Language article structure convention:
 Language file naming convention:
 - file names usually contain the syntax token in uppercase
 - an article on an interface
-  that code in another language receives and calls
+  that code or markup in another language
+  declares, receives, and calls
   takes a descriptive name,
   prefixed with the language or technology
   when the interface is specific to it
@@ -292,7 +308,8 @@ completing,
 or extending
 an article for a language syntax construction
 (or for an interface
-that code in another language receives and calls,
+that code or markup in another language
+declares, receives, and calls,
 leaving out the rules
 for `Syntax`, `Description`, `Parameters`,
 `Examples`, and syntax blocks),
@@ -995,17 +1012,20 @@ Completeness of research:
   the assistant MUST explicitly propose
   describing them as well
 - for an interface
-  that code in another language receives and calls,
+  that code or markup in another language
+  declares, receives, and calls,
   inspect and describe
   the ENTIRE interface
   the same way —
   every name,
   field,
   member,
+  markup or template rule,
   and refusal —
   in the runtime sources
   that build it
   and serve its calls
+  or process its markup or templates
   rather than in the grammar:
   for React,
   `server/src/main/resources/web/lsfusion-custom-registry.js`
@@ -1033,23 +1053,51 @@ Completeness of research:
   (`onWebClientInit`, the scan of `web/`),
   `build/web-compile-maven-plugin`
   and `web-client/src/main/java/lsfusion/gwt/server/JsxTransformer.java`;
-  the `form/…` paths
-  are under `web-client/src/main/java/lsfusion/gwt/client/`.
+  for `INTERNAL CLIENT` functions,
+  `controller/dispatch/GwtActionDispatcher.java`;
+  for HTML templates,
+  `server/src/main/java/lsfusion/server/base/Custom.java`,
+  `base/GwtClientUtils.java`, `base/view/PlacedViews.java`,
+  `form/design/view/TemplateContainerView.java`,
+  `navigator/view/TemplateNavigatorView.java` and `navigator/view/NavigatorButtons.java`;
+  for CSS,
+  `base/BaseImage.java`, `base/GwtClientUtils.java`,
+  `form/design/view/GAbstractContainerView.java`, `form/design/view/GFormLayout.java`,
+  `form/controller/GFormController.java`,
+  `form/property/table/view/GPropertyTableBuilder.java`,
+  `form/property/cell/view/CellRenderer.java`,
+  `form/property/panel/view/PropertyPanelRenderer.java`,
+  `form/object/table/view/GGridPropertyTableHeader.java`,
+  `form/object/table/view/GGridPropertyTableFooter.java`,
+  `base/view/NavigatorImageButton.java`, `navigator/window/view/WindowsController.java`,
+  `web-client/src/main/webapp/static/js/utils.js`
+  and the layout classes `form/design/view/flex/LinearContainerView.java`
+  and `base/view/FlexPanelImpl.java`.
+  The abbreviated client Java paths
+  are relative to `web-client/src/main/java/lsfusion/gwt/client/`.
 
   For the Java API,
   inspect the server classes listed in `Java_integration_API.md`
   under `server/src/main/java/lsfusion/server/`,
-  including `physics/dev/integration/internal/to/InternalAction.java`,
+  including `language/ScriptingLogicsModule.java`,
+  `physics/dev/integration/internal/to/InternalAction.java`,
+  `logics/action/ExplicitAction.java`,
   `logics/action/controller/context/ExecutionContext.java`,
+  `logics/action/controller/context/ExecutionEnvironment.java`,
   `base/controller/manager/EventServer.java`
   and its subclasses
   `base/controller/manager/MonitorServer.java`
   and `base/controller/remote/manager/RmiServer.java`,
   `language/property/LP.java` and `language/action/LA.java`,
   `logics/action/session/DataSession.java`,
+  `logics/property/data/SessionDataProperty.java`,
   `logics/action/controller/stack/ExecutionStack.java`,
   `base/controller/thread/ExecutorFactory.java`
-  and `base/controller/thread/ThreadLocalContext.java`
+  and `base/controller/thread/ThreadLocalContext.java`.
+
+  For JRXML report templates, inspect
+  `api/src/main/java/lsfusion/interop/form/print/ReportGenerator.java`
+  and `server/src/main/java/lsfusion/server/logics/form/stat/print/FormReportManager.java`.
 - validate a JSX or JS example
   of such an interface
   (see Examples in ../AGENTS.md)

@@ -19,7 +19,10 @@ lsfusion.server.language.action.LA
 lsfusion.server.data.value.ObjectValue
 lsfusion.server.data.value.DataObject
 lsfusion.server.data.value.NullValue
+lsfusion.server.data.sql.exception.SQLHandledException
 lsfusion.server.logics.action.session.DataSession
+lsfusion.server.logics.property.data.SessionDataProperty
+lsfusion.base.lambda.set.FunctionSet
 lsfusion.server.logics.action.controller.context.ExecutionContext
 lsfusion.server.logics.action.controller.stack.ExecutionStack
 lsfusion.server.logics.classes.ValueClass
@@ -73,17 +76,17 @@ lsfusion.interop.server.RmiServerInterface
 - `readClasses(session, ObjectValue... params)` → `ObjectValue` — для свойств объектного класса возвращает `DataObject` с правильным конкретным классом (или `NullValue`). Удобно, когда значение нужно сразу передать в `LP.change` / `LA.execute` без ручного восстановления класса
 - `readClasses(context, ObjectValue... params)` → `ObjectValue`
 - `change(value, session, DataObject... params)` — запись Java-значения в сессию
-- `change(value, context, DataObject... params)`
+- `change(value, context, DataObject... params)` — запись Java-значения в текущую сессию изменений
 - `change(ObjectValue value, session, DataObject... params)` — запись объектного значения (полезно при копировании значения, прочитанного через `readClasses`)
 - `change(ObjectValue value, context, DataObject... params)`
 
 `LA<?>` — Java-обёртка над [действием](../paradigm/Actions.md).
 - `execute(session, stack, ObjectValue... params)` — запуск с собственными session+stack
-- `execute(context, ObjectValue... params)` — запуск из `InternalAction`
+- `execute(context, ObjectValue... params)` — запуск из `InternalAction` в текущей сессии изменений
 
 ### Параметры-объекты
 
-`ObjectValue` — общий базовый тип для значения объектного класса: либо `DataObject` (не-`NULL`), либо `NullValue` (`NullValue.instance`).
+В `executeInternal` аргументы пользовательских классов передаются напрямую как `ObjectValue`. Это общий базовый тип для `DataObject` (значение, отличное от `NULL`) и `NullValue` (`NullValue.instance`).
 
 `DataObject(Object value, ConcreteClass cls)` — конструктор не-`NULL`-параметра с явным указанием класса (нужен, например, для дат и пользовательских классов). Ни `BusinessLogics.findClass(name)` (возвращает `CustomClass`), ни `LM.findClass(name)` (возвращает `ValueClass`) не дают `ConcreteClass` напрямую — для пользовательского класса требуется приведение к `ConcreteCustomClass`: `new DataObject(userId, (ConcreteCustomClass) BL.findClass("CustomUser"))`. Для встроенных классов используется их `instance`: `new DataObject(LocalDate.of(...), DateClass.instance)`. Для нескольких встроенных скалярных типов есть convenience-перегрузки без второго аргумента: `String`, `Integer`, `Long`, `Boolean`, `Double`.
 
@@ -92,12 +95,15 @@ lsfusion.interop.server.RmiServerInterface
 `DataSession` — [сессия изменений](../paradigm/Change_sessions.md), накапливает изменения до явного применения. Открывается через `EventServer.createSession()` или `dbManager.createSession()`. Реализует `AutoCloseable` — корректно использовать в `try`-with-resources, неприменённая сессия откатывается.
 - `applyException(BL, stack)` — применить, бросив исключение при ошибке
 - `applyMessage(BL, stack)` → `String` — применить, вернув текст ошибки или `null`
+- `void setNoCancelInTransaction(boolean noCancelInTransaction)` — при значении `true` подавляет отмену в транзакции применения изменений сессии
 
 ### `InternalAction`
 
 `InternalAction extends ExplicitAction` (`lsfusion.server.physics.dev.integration.internal.to.InternalAction`) — базовый класс Java-цели `INTERNAL`. Конструктор: `(ScriptingLogicsModule LM, ValueClass... classes)`.
 
-- `executeInternal(ExecutionContext<ClassPropertyInterface> context)` — единственная override-точка, вызывается на каждом запуске.
+Конструктор действия должен быть объявлен с модификатором `public`. Тип его первого параметра должен в точности совпадать с классом объекта модуля, в котором действие объявлено через `INTERNAL`. Обычно это `ScriptingLogicsModule`. Если у модуля есть собственный подкласс на Java, указывается этот подкласс. Для действия без параметров платформа сначала ищет конструктор, который принимает только модуль. Если такого конструктора нет или у действия есть параметры, платформа ищет конструктор, который принимает модуль и массив `ValueClass[]`.
+
+- `protected abstract void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException` — реализуйте этот метод, чтобы код на Java выполнялся при каждом вызове.
 - `findProperty(name)` / `findAction(name)` / `findClass(name)` / `findGroup(name)` / `findForm(name)` — резолвинг через `LM`.
 - `getParam(int i, context)` → `Object` — позиционный доступ к значению параметра.
 - `getParamValue(int i, context)` → `ObjectValue` — позиционный `ObjectValue`-доступ.
@@ -105,14 +111,16 @@ lsfusion.interop.server.RmiServerInterface
 - `allowNulls()` — переопределить и вернуть `true`, чтобы действие принимало `NULL`-аргументы (по умолчанию `false`).
 - Поле `interfaces` — все `ClassPropertyInterface` действия (в порядке объявления).
 
-### `ExecutionContext`
+### `ExecutionContext` {#executioncontext}
 
-`ExecutionContext<P>` — per-call контекст внутри `InternalAction.executeInternal`.
+`ExecutionContext<P>` задаёт контекст выполнения при вызове `InternalAction.executeInternal`. Во встраиваемом фрагменте Java параметр `context` имеет тип `lsfusion.server.logics.action.controller.context.ExecutionContext<ClassPropertyInterface>`.
 - `getKeyObject(P key)` → `Object` — исходное значение, может быть `null`
 - `getKeyValue(P key)` → `ObjectValue` — `DataObject` или `NullValue`
-- `getDataKeyValue(P key)` → `DataObject` — гарантированно не-`NULL` (для действий с `!allowNulls`)
+- `getDataKeyValue(P key)` → `DataObject` — для действий, которые отклоняют аргументы со значением `NULL`
 - `getBL()` → `BusinessLogics`
 - `getSession()` → текущая `DataSession`
+- `boolean apply() throws SQLException, SQLHandledException` — применить изменения текущей сессии и вернуть признак успешного применения
+- `void cancel(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException` — отменить изменения текущей сессии. Вне транзакции применения `keep` указывает дополнительные локальные свойства, значения которых нужно сохранить
 - поле `stack` → текущий `ExecutionStack` (`context.stack`, публичное поле)
 - `messageSuccess(message, header)` / `messageError(message)` / `messageError(message, header)` — пользовательские сообщения
 - `delayUserInteraction(ClientAction)` — отложенное клиентское действие (выполнится после завершения текущего стека)

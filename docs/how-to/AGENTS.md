@@ -27,7 +27,7 @@ How-to article structure convention:
   around concrete tasks
   and their solutions;
   for an interface
-  that code in another language receives and calls,
+  that code or markup in another language declares, receives, and calls,
   it MUST contain only
   usage scenarios
   that link

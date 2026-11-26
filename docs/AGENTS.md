@@ -16,7 +16,9 @@ when working on that type (auto-loaded for BOTH language versions, since the
 layout is type-first docs/<type>/{en,ru}/ — these are agent rules, not
 translated content):
 - LANGUAGE — docs/language/AGENTS.md   (syntax constructions and the
-  interfaces that code in other languages receives and calls)
+  interfaces that code or markup
+  in other languages
+  declares, receives, and calls)
 - PARADIGM — docs/paradigm/AGENTS.md   (abstractions and concepts)
 - HOW-TO   — docs/how-to/AGENTS.md      (task recipes)
 - RULES    — docs/rules/AGENTS.md       (AI task rules / coding recommendations;
@@ -213,22 +215,33 @@ The required order is:
 3) How-to
 
 Paradigm describes
-the abstractions;
+the abstractions.
+It states what the platform does
+and the concrete conventions
+needed to predict the result.
 Language describes
-their concrete realization:
+their concrete realization
 in lsFusion
-(its syntax constructions)
-or in other languages
-(the interfaces
-code written in them
-receives and calls).
-The specification of an interface
-that code in other languages
-receives and calls
-(JavaScript in the client
-and Java in the application server)
-is Language documentation,
-as is that of a syntax construction;
+(its syntax constructions),
+or through the interfaces
+that code or markup
+in other languages
+declares, receives, and calls.
+Where the abstraction
+and its realization
+cannot be separated,
+the description stays in Paradigm.
+For a separable interface,
+Paradigm keeps the basics
+(the types and entry points
+needed to explain the abstraction).
+Language specifies its details
+(full signatures, member lists,
+markup rules, and template rules).
+These interfaces cover
+JavaScript, HTML, and CSS in the client,
+and Java code and JRXML report templates
+in the application server.
 How-to about such an interface
 holds only usage scenarios
 that link the specification
@@ -278,8 +291,10 @@ RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
 2. RESEARCH FLOW
    The assistant MUST first determine
    which syntax constructions
-   (or interfaces that code in other languages
-   receives and calls)
+   (or interfaces
+   that code or markup
+   in other languages
+   declares, receives, and calls)
    are relevant.
 
    After that it MUST:
@@ -310,9 +325,12 @@ RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
    - `plugin-idea/src/com/lsfusion/lang/psi/LSFPsiImplUtil.java`
 
    For an interface
-   that code in other languages receives and calls,
+   that code or markup
+   in other languages
+   declares, receives, and calls,
    the primary source is the runtime code
-   that builds it and serves its calls
+   that builds it, serves its calls,
+   or processes its markup or templates
    (named in docs/language/AGENTS.md).
 
 4. SUPPLEMENTARY SOURCES

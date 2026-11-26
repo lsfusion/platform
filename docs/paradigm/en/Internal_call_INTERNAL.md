@@ -3,7 +3,7 @@ slug: "/Internal_call_INTERNAL"
 title: 'Internal call (INTERNAL)'
 ---
 
-The platform allows an lsFusion-based system to invoke code running inside its own deployment components — the application-server JVM, the user's web client, or the database the platform uses — using various types of internal calls, as the internal counterpart to [access to an external system](Access_to_an_external_system_EXTERNAL.md). The interface of such an access is the execution of code in the environment of the target component with specified parameters and, if necessary, the return of certain values as *results* written into the specified properties (without parameters). For call types where parameters and results cross a serialization boundary (`CLIENT`, `DB`), values must belong to [built-in classes](Built-in_classes.md). The Java target runs on the same JVM as the platform, so inside `executeInternal` objects of user-defined classes are passed as `DataObject` / `ObjectValue` directly, without serialization.
+The platform allows an lsFusion-based system to invoke code running inside its own deployment components — the application-server JVM, the user's web client, or the database the platform uses — using various types of internal calls, as the internal counterpart to [access to an external system](Access_to_an_external_system_EXTERNAL.md). The interface of such an access is the execution of code in the environment of the target component with specified parameters and, if necessary, the return of certain values as *results* written into the specified properties (without parameters). For call types where parameters and results cross a serialization boundary (`CLIENT`, `DB`), values must belong to [built-in classes](Built-in_classes.md). The Java target runs in the same JVM as the platform and receives objects of user-defined classes without serialization.
 
 ## Types of internal calls
 
@@ -11,15 +11,11 @@ The platform currently supports the following types of internal calls:
 
 ### Java - executing Java code in the application-server JVM {#java}
 
-The target is a Java class extending `lsfusion.server.physics.dev.integration.internal.to.InternalAction`. Its `executeInternal(ExecutionContext context)` method runs on each invocation. How the target is specified is covered by the `INTERNAL` operator.
+The target is a Java class extending `InternalAction`. Its `executeInternal` method runs on each call.
 
-The classes of the action's parameters and the behaviour for `NULL` arguments are defined by the `INTERNAL` operator. By default the action rejects `NULL` parameter values, and on the Java side `NULL` acceptance can also be controlled by overriding `allowNulls()`.
+The `INTERNAL` operator defines the action's parameter classes and whether it accepts `NULL` arguments. By default the action rejects `NULL` arguments.
 
-Inside the Java code the platform runtime is reached through the `context` parameter (the current change [session](Change_sessions.md), parameter values, and execution environment) and through the resolving methods of `InternalAction`. Returning results in this call type needs no separate mechanism: the Java code writes values directly into lsFusion properties from the body of the action itself, within the same change session.
-
-Inside `executeInternal(ExecutionContext<ClassPropertyInterface> context)` the full integration Java API is available — element lookup (`InternalAction.findProperty`/`findAction` or `context.getBL()`), action-parameter access (`context.getDataKeyValue` / `getKeyValue` / `getKeyObject` depending on `allowNulls()`), reading and writing properties (`LP.read` / `LP.change`), running other actions (`LA.execute`), session and apply control (`context.apply` / `context.cancel`, `session.applyException` / `applyMessage`, `setNoCancelInTransaction`), and user-facing messages (`context.messageSuccess` / `messageError` / `delayUserInteraction`). Changes made through `LP.change` / `LA.execute` land in the same change [session](Change_sessions.md) and are applied atomically with all dependent [events](Events.md), [constraints](Constraints.md), [aggregations](Aggregations.md), and [materializations](Materializations.md). The full catalog of classes, signatures, and threading rules is in [Java API for integrations](../language/Java_integration_API.md).
-
-Java access to the lsFusion system from objects that are not themselves `InternalAction`s — Spring bean components such as the scheduler and integration servers — is covered in [custom Spring bean (`EventServer`)](../language/Custom_Spring_bean_EventServer.md).
+The `context` parameter gives the Java code access to the platform runtime, including the current change [session](Change_sessions.md), parameter values, and the execution environment. The Java code returns results by writing values directly to lsFusion properties in the current change session. Those changes are applied atomically with all dependent [events](Events.md), [constraints](Constraints.md), [aggregations](Aggregations.md), and [materializations](Materializations.md).
 
 ### CLIENT - invoking code or a file in the user's web client {#client}
 
@@ -35,7 +31,11 @@ For this type of interaction, an SQL command is specified as a property value ev
 
 ## Language
 
-To declare an action or write an action statement implemented via an internal call, use the [`INTERNAL` operator](../language/INTERNAL_operator.md).
+Use the [`INTERNAL` operator](../language/INTERNAL_operator.md) to declare an action or write an action statement for an internal call. When declaring a Java action, specify the class or the inline Java fragment to execute.
+
+The [Java API for integrations](../language/Java_integration_API.md) describes the classes, method signatures, and threading rules for Java actions.
+
+A [custom Spring bean (`EventServer`)](../language/Custom_Spring_bean_EventServer.md) provides Java access to lsFusion for components such as the scheduler and integration servers.
 
 A JavaScript function called by `INTERNAL CLIENT` in the web client receives [the form or navigator controller](../language/Form_and_navigator_controllers.md): on a form it can change the form and call the server, and in the navigator it can call the server and activate navigator elements. [Client JavaScript modules](../language/Client_JavaScript_modules.md#named-exports-and-auto-registration) describe how such a function is exposed and found by name.
 
@@ -125,5 +125,3 @@ Wiring this class up from the lsFusion side:
 syncUserLogin 'Sync login from email' (CustomUser u)
     INTERNAL 'myapp.actions.SyncUserLoginAction';
 ```
-
-The type of the constructor's first parameter must match the runtime class of the `LogicsModule` from which the action is wired up via `INTERNAL` (the constructor is looked up by exact class): for most scripted modules this is `ScriptingLogicsModule`, for modules with their own Java subclass — that subclass.

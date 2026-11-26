@@ -30,10 +30,21 @@ It MUST:
   vs reused by reference;
   those mechanics
   (and their syntactic forms)
-  belong to the Language article,
-  as do the specifications
-  of interfaces
-  that code in other languages receives and calls
+  belong to the Language article
+- of an interface
+  that code or markup in other languages
+  declares, receives and calls,
+  keep only the basics —
+  the types and entry points
+  needed to explain the abstraction;
+  its full signatures,
+  member lists, markup rules
+  and template rules
+  belong to the Language article
+  (where the abstraction
+  and its realization
+  cannot be separated,
+  the description stays in Paradigm)
 - describe abstractions
   as independently as possible
   from the current language
@@ -139,7 +150,14 @@ Paradigm article structure convention:
   also belong here
   when they describe
   non-React code
-  used by the construction
+  used by the construction.
+  The `Language` section
+  MAY also link to the
+  `Other languages` article
+  that directly describes
+  how the abstraction is realized,
+  subject to the `React` rules below.
+  Each link needs a descriptive clause
 - a `React` section
   MUST appear only in
   `Custom_views.md`
@@ -249,6 +267,14 @@ Paradigm article structure convention:
   a React component
   or a JavaScript function —
   draws an element.
+  The body MAY also name
+  the types and entry points
+  of an interface in another language
+  needed to explain the abstraction
+  (for example `InternalAction`,
+  `executeInternal`, or `EventServer`),
+  subject to the React terminology
+  restrictions above.
   The release overview
   (`Whats_new.md`)
   is exempt from these two restrictions.
