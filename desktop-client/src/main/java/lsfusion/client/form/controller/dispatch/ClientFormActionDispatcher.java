@@ -6,6 +6,8 @@ import lsfusion.client.controller.dispatch.SwingClientActionDispatcher;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.view.ClientFormDockable;
+import lsfusion.client.view.DockableMainFrame;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
@@ -63,6 +65,13 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
 
     public void execute(RunEditReportClientAction action) {
         getFormController().runEditReport(action.customReportPathList);
+    }
+
+    @Override
+    public void execute(ChangeColorThemeClientAction action) {
+        super.execute(action);
+        // the navigator gets its dynamic captions and images (the color theme toggle) only in responses to its own requests
+        ((DockableMainFrame) MainFrame.instance).executeVoidNavigatorAction();
     }
 
     public void execute(HideFormClientAction action) {

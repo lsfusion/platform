@@ -111,6 +111,13 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
+    public void execute(GChangeColorThemeAction action) {
+        super.execute(action);
+        // the navigator gets its dynamic captions and images (the color theme toggle) only in responses to its own requests
+        form.getFormsController().executeVoidAction(-1);
+    }
+
+    @Override
     public void execute(GAsyncGetRemoteChangesAction action) {
         form.getRemoteChanges(action.forceLocalEvents);
     }
