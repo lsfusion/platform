@@ -221,10 +221,6 @@ To set up the design of the form, use the [`DESIGN` statement](../language/DESIG
 
 A JavaScript function named in an object group's `CUSTOM` option draws the group's rows and can [show the table's record next to an element it supplies when changing the current object](../language/Render_functions.md#controller-methods).
 
-### React
-
-A container of the design can be [drawn by a React component](../language/React_views.md) instead of the platform, and then the components inside it that the platform still draws are [placed by that component](../language/React_platform_components.md). A tree's table, a toolbar, filter controls, a filter group and a property's filter can be drawn by [a React component of their own](../language/React_component_views.md#component-views). An unselected tab and a collapsed container [hide what a React component draws](../language/React_form_behavior.md#hidden-view), and the component itself selects the tabs and collapses and expands the containers around it with actions of the form.
-
 ### Examples
 
 ```lsf

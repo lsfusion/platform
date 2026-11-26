@@ -24,6 +24,8 @@ A form being opened can be shown in one of the following ways:
 -   As a *popup* (`POPUP`) - the form is shown in a floating popup attached to the element it is opened from.
 -   In a *container* (`IN`) - the form is docked into a specified container of the form it is opened from.
 
+A [custom view of the forms window](Navigator_design.md#systemwindows) decides where a form opened as a tab is displayed.
+
 By default, forms in the synchronous mode are shown as windows, in the asynchronous mode – as tabs.
 
 A tab opened in the synchronous mode blocks the calling form until it is closed, or the navigator, if it is opened by the [navigator](Navigator.md) or by a client's [launch event](Launch_events.md) handler. If the calling form is itself shown as a window, the opened form is shown as a window instead of a tab.
@@ -66,10 +68,6 @@ Also, when calling the form, you can specify that it will be opened in a [new](N
 ### Language
 
 To open a form in the interactive view, use the [`SHOW` operator](../language/SHOW_operator.md). To show the form in the dialog mode, use the [`DIALOG` operator](../language/DIALOG_operator.md).
-
-### React
-
-A form opened as a tab in a forms window that a React component draws is [placed by that component](../language/React_windows.md#forms-window) as it chooses, and a form it places nowhere stays open and hidden.
 
 ### Examples
 

@@ -24,7 +24,9 @@ A form container can also be laid out with an HTML template: the platform puts c
 
 The platform keeps the form's objects, the groups' current objects, filters, sortings, property values and [change session](Change_sessions.md). Client code receives data for the part of the form it draws: the read sets of objects, current objects and property values. It can also use the property captions, colors and availability set by the design.
 
-Client code changes the form's state as a user does: it selects the current object, changes a property value or runs an action drawn on the form. A React component can also change a table's sortings and filters and, for a list outside a tree, the selection of rows and columns. Changing a property runs its change event, and the passed value replaces the user's input in a [value request](Value_request_REQUEST.md). The source of such a change is [custom client code](Form_events.md#source) (`CUSTOM`). Changes go through the ordinary form edit checks and require no access to the external API.
+A React component also receives the options of a property shown as a selection element and can ask the server for a property's asynchronous value list. Changes made by the handler of a [scheduled form event](Form_events.md#global) reach the custom view like any other change.
+
+Client code changes the form's state as a user does: it selects the current object, changes a property value or runs an action drawn on the form. A React component can also change a table's sortings and user filters, select a filter in a filter group, run toolbar actions and expand or collapse tree nodes. When it draws the rows of an object group outside a tree, it can read and change the same row and column selection that the [selection properties](Selection_SELECT.md) report. Changing a property runs its change event, and the passed value replaces the user's input in a [value request](Value_request_REQUEST.md). The source of such a change is [custom client code](Form_events.md#source) (`CUSTOM`). Changes go through the ordinary form edit checks and require no access to the external API.
 
 ### Calls to the server {#server-calls}
 
@@ -38,7 +40,7 @@ A React component drawing a container can leave some of its contents to the plat
 
 ### A hidden custom view {#hidden}
 
-A container with a custom view is hidden like any design component: for example, in an unselected tab or inside a collapsed container. While the form hides the container, the server does not read what its view draws unless a shown part of the form needs the same data. A form that is entirely off screen is read as usual.
+A container with a custom view is hidden like any design component: for example, in an unselected tab or inside a collapsed container. The component itself can select tabs and collapse or expand the containers around it by running form actions. While the form hides the container, the server does not read what its view draws unless a shown part of the form needs the same data. A form that is entirely off screen is read as usual.
 
 Components the platform draws that the React view does not place are not read unless a shown part of the form needs the same data. Their captions, images and comments continue to be read only when those labels are displayed outside the hidden contents. An action's labels and a list property's labels follow the visibility of the action or property itself. The server considers a container the React component draws itself shown until the component reports that it hides it.
 
@@ -56,10 +58,24 @@ Client code is kept as files in the project. They can be compiled during the pro
 
 The [JavaScript function](../language/Render_functions.md#render-function) named by `CUSTOM 'itemCards'` draws the rows of the item group.
 
-### React
+### React {#react}
 
-- [React views](../language/React_views.md) describe what a React component drawing a custom view receives and calls.
+- [Component selection](../language/React_views.md#selecting-the-component) explains how the design assigns a React component to draw a form container.
+- [A component's own view](../language/React_component_views.md#component-views) shows how to use a separate React component to draw a tree's table, a toolbar, filter controls, a filter group or a property's filter.
+- [A React component in `CUSTOM`](../language/React_component_views.md#form-custom) shows how a React component draws the rows of an object group in its custom list view or draws a property's value.
+- [Form projection](../language/React_projection.md) describes the state a React component receives for the part it draws, including object groups with their rows and current objects, property values, and the options of properties shown as selection elements.
+- [Value lookup](../language/Form_and_navigator_controllers.md#looking-up-values) shows how a React component asks the server for a property's asynchronous value list.
+- [Live data](../language/React_form_behavior.md#live-data) explains how changes made by the `SCHEDULE` handler reach a React component like any other change.
+- [The React view controller](../language/React_view_controller.md) describes how a React component changes current objects and property values and runs form actions.
+- [Changes to the current object and property values](../language/React_view_controller.md#changing-values) explains how a React component triggers property change events with the `CUSTOM` source and pushes a supplied value into a value request without prompting the user.
+- [Drawing trees](../language/React_trees_sortings_selection.md#trees) covers how a React component draws an object tree and expands or collapses its nodes.
+- [Drawing and changing sortings](../language/React_trees_sortings_selection.md#orders) covers the sortings of an object group drawn by a React component.
+- [Working with filters and the toolbar](../language/React_filters_and_toolbar.md) covers how a React component draws and changes user filters and filter groups, and how it draws the toolbar and runs its actions.
+- [Reading and changing the selection](../language/React_trees_sortings_selection.md#selection) covers how a React component drawing an object group's rows outside a tree reads and changes the selected rows and columns as the platform's table does.
 - [Form and navigator controllers](../language/Form_and_navigator_controllers.md) give a React component server calls and, on a form, changes to what other containers draw and batching of changes.
+- [Placing platform components](../language/React_platform_components.md) shows how a React component drawing a container places the children the platform draws.
+- [A hidden view](../language/React_form_behavior.md#hidden-view) describes how an unselected tab or a collapsed container hides what a React component draws and how the component selects tabs and collapses or expands containers around it through form actions.
+- [Keys and mouse bindings](../language/React_form_behavior.md#keys) are handled by the platform for the properties, actions and filter groups a React component draws, with the exception of bindings that need a platform cell.
 - [Client JavaScript modules](../language/Client_JavaScript_modules.md) describe the storage, build, loading and name lookup of React components.
 
 ### Examples

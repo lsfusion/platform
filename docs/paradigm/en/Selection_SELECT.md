@@ -11,13 +11,11 @@ The selection operators create [properties](Properties.md) that report the user'
 
 As long as the user has not selected any row, the property of an object collection returns `TRUE` for the current row of the object group. Once there is a selection, it returns `TRUE` for the selected rows that pass all the form's filter conditions. The selected rows are kept as a range in the current order of the object group, so changing the order recomputes the set of selected rows. The column the current cell belongs to counts as selected.
 
+For an object group outside a tree, these properties report the same selection when a [custom view](Custom_views.md#state) draws its rows.
+
 ### Language
 
 To declare these properties, use the [`SELECT`, `SELECT ACTIVE`, and `SELECT PROPERTY` operators](../language/Object_group_operator.md).
-
-### React
-
-A React component that draws the rows of an object group not in a tree [reads and changes the selected rows and columns](../language/React_trees_sortings_selection.md#selection) as the platform's table does.
 
 ### Examples
 

@@ -238,12 +238,6 @@ Enter в открытом редакторе фильтра подтвержда
 
 Опция `CUSTOM` группы объектов или свойства может задавать функцию JavaScript, которая рисует [строки группы](../language/Render_functions.md#object-group) или [значение свойства](../language/Render_functions.md#property) соответственно. Функция группы использует [контроллер группы объектов](../language/Render_functions.md#controller-methods), чтобы менять текущие объекты и значения свойств и запрашивать списки подсказок. Функция свойства использует [контроллер свойства](../language/Render_functions.md#property-controller), чтобы менять его значение и запрашивать списки подсказок. В опции `CUSTOM` свойства функция JavaScript, указанная после `CHANGE`, задаёт [редактор свойства](../language/Edit_functions.md#custom-editor).
 
-### React
-
-В пользовательском представлении списка компонент React может [рисовать строки группы объектов](../language/React_component_views.md#form-custom).
-
-Компонент React, который рисует часть формы, получает [состояние этой части](../language/React_projection.md): её группы объектов с их строками и текущими объектами и её свойства с их значениями, в том числе варианты свойства, показанного как элемент выбора. Через [свой контроллер](../language/React_view_controller.md) он меняет текущие объекты и значения свойств и выполняет действия, а [асинхронный список значений](../language/Form_and_navigator_controllers.md#looking-up-values) свойства запрашивает у сервера. Он может также рисовать [деревья объектов](../language/React_trees_sortings_selection.md#trees), [сортировки](../language/React_trees_sortings_selection.md#orders) группы объектов, её [пользовательские фильтры, группы фильтров и тулбар](../language/React_filters_and_toolbar.md) и менять их так же, как пользователь.
-
 ### Открытие формы
 
 Для отображения формы в интерактивном представлении используется соответствующий оператор [открытия формы](Open_form.md) в [интерактивном представлении](In_an_interactive_view_SHOW_DIALOG.md).

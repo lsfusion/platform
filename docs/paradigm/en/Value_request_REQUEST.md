@@ -13,6 +13,10 @@ The *value request* operator creates an [action](Actions.md) in which *requestin
 
     When the user inserts a value into a property cell using the OS tools, the platform triggers the change event of this property (`CHANGE`), and calls the corresponding handler on the server. In this case, the value that the user inserted is pushed as the request value.
 
+- Custom view
+
+    When a [custom view](Custom_views.md#state) supplies a value with a property change, the platform pushes it as the request value in place of the user's input.
+
 <a className="lsdoc-anchor" id="defaultChange"/>
 
 - Change event (`CHANGE`) [default handler](Form_events.md#default) for composition
@@ -49,10 +53,6 @@ Note that all [value input](Value_input.md) operators can be automatically "wrap
 The syntax of the value request operator is described by the [`REQUEST` operator](../language/REQUEST_operator.md).
 
 A value the JavaScript function named in a property's `CUSTOM` option passes through [the property's controller](../language/Render_functions.md#property-controller) is substituted for the user's input in the value request of the property's `ON CHANGE` action.
-
-### React
-
-A value that a React component passes when it changes a property through [its controller](../language/React_view_controller.md#changing-values) is pushed as the request value instead of the user's input, and the user is not asked for a value.
 
 ### Examples
 

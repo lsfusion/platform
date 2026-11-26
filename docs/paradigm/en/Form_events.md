@@ -9,7 +9,7 @@ While the application is running, there is a number of events for each form that
 
 -   `QUERYCLOSE` - the user tries to close the form by clicking on the corresponding button in the form header.
 -   `QUERYOK` - the user tries to close a modal form by double-clicking on any row in the table.
--   `SCHEDULE` - a timer on the client: the handler runs every given number of seconds while the form is shown on screen. This is how a form keeps its data current - a periodic refresh (polling, auto-update, live data): with `System.formRefresh` as the handler the form re-reads everything it shows. For a form in a background tab (on the web client also for a form under a modal dialog or one a React component does not place) a run is skipped. The timer keeps counting, and the next run comes once the form is shown again. The next period is counted from the end of the previous run, once its response has been processed, unless the form asks for a fixed pace, when it is counted from the start of the previous run. On the web client the request is asynchronous: it does not block the user's input and shows no [busy indicator](Interactive_view.md#busy).
+-   `SCHEDULE` - a timer on the client: the handler runs every given number of seconds while the form is shown on screen. This is how a form keeps its data current - a periodic refresh (polling, auto-update, live data): with `System.formRefresh` as the handler the form re-reads everything it shows. A run is skipped for a form in a background tab. On the web client, it is also skipped for a form under a modal dialog or a form the [custom view of its forms window](Navigator_design.md#systemwindows) leaves unplaced. The timer keeps counting, and the next run comes once the form is shown again. The next period is counted from the end of the previous run, once its response has been processed, unless the form asks for a fixed pace, when it is counted from the start of the previous run. On the web client the request is asynchronous: it does not block the user's input and shows no [busy indicator](Interactive_view.md#busy).
 
 #### For objects on the form
 
@@ -150,10 +150,6 @@ The `PASTE` and `CUSTOM` sources are *external changes*: the value did not come 
 ### Language
 
 To define the form event handlers, use the `ON` option in the `FORM` statement ([events](../language/Event_block.md) block, [properties and actions](../language/Properties_and_actions_block.md) block, [objects](../language/Object_blocks.md#objects) block), as well as in [property options](../language/Property_options.md). 
-
-### React
-
-The platform itself handles the [keys and mouse bindings](../language/React_form_behavior.md#keys) of the properties, actions and filter groups a React component draws, except those that need a cell of the platform's. What the handler of the `SCHEDULE` event changes [reaches the component](../language/React_form_behavior.md#live-data) like any other change. A React component drawing a custom view changes the values of properties on the form and runs their change events through [its controller](../language/React_view_controller.md#changing-values), and such a change has the `CUSTOM` source.
 
 ### Examples
 

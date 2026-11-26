@@ -137,59 +137,63 @@ Paradigm article structure convention:
   when they describe
   non-React code
   used by the construction
-- if a Language article
-  on an interface
-  a React component receives and calls
+- a `React` section
+  MUST appear only in
+  `Custom_views.md`
+  for a component
+  drawing part of a form
+  and `Navigator_design.md`
+  for the windows
+  and their layout.
+  Every Paradigm link
+  that covers an interface
+  a React component receives or calls
   (the `React_*.md` articles,
   `Form_and_navigator_controllers.md`
   for the controllers it is given,
   and `Client_JavaScript_modules.md`
   for the modules holding its code)
-  realizes the abstraction —
-  a React component draws it,
-  reads it,
-  changes it,
-  or is called by it
-  through that interface —
-  the Paradigm article
-  SHOULD also contain
-  a `React` section
-  (the same heading
-  in both language versions),
-  placed immediately
+  MUST appear
+  in the corresponding
+  `React` section.
+  Use the same heading
+  in both language versions.
+  Place it immediately
   after `Language`,
   or immediately
   before `Examples`
   if there is no `Language`,
   or last
   if neither exists,
-  at the same heading level,
-  that links
-  ONLY to those articles;
-  a link goes
-  only in the Paradigm article
-  that owns the concept
-  it covers,
-  not repeated
-  in a more general one,
-  and an overview article
+  at the same heading level.
+  The section MUST link
+  ONLY to those interface articles.
+  An overview article
   (`React_views.md`)
   MUST NOT be linked
   on top of
   a more specific article
-  that covers the aspect;
-  every link
+  that covers the aspect.
+  Use a bullet list.
+  Every link
   MUST be accompanied
   by a brief descriptive clause
   stating what the link covers
   for a React component,
   as in `Language`
   (bare link lists
-  are forbidden);
-  an article with only
-  classic or non-React
-  interface links
-  has no `React` section
+  are forbidden).
+  Other Paradigm articles
+  MAY state
+  in their body
+  how a custom view
+  affects the concept
+  they describe,
+  using paradigm terms
+  and linking
+  to the relevant section
+  of `Custom_views.md`
+  or `Navigator_design.md`
 - links to Language articles
   MUST appear
   ONLY in the article's
@@ -275,8 +279,7 @@ Paradigm article structure convention:
   their syntax,
   and their examples —
   SHOULD NOT carry
-  its own `Language`,
-  `React`,
+  its own `Language`
   or `Examples` section;
   those sections
   belong to the leaf
