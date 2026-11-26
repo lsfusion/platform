@@ -85,9 +85,7 @@ public class GenerateJNLPAction extends InternalAction {
                     .replace("${jnlp.vmargs}", memoryLimitVMArgs != null ? URLDecoder.decode(memoryLimitVMArgs, "utf-8") : (!isRedundantString(vmargs) ? vmargs : ""));
 
             //we use last-modified because jws doesn't support etag
-            // an HTTP date, so in English and in GMT whatever the language and the time zone of the server
-            String lastModified = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.ENGLISH).format(Instant.ofEpochSecond(jnlpString.hashCode()).atOffset(ZoneOffset.UTC));
-            findProperty("headersTo[TEXT]").change(lastModified, context, new DataObject("Last-Modified", StringClass.text));
+            findProperty("headersTo[TEXT]").change(getLastModified(jnlpString), context, new DataObject("Last-Modified", StringClass.text));
             findProperty("headersTo[TEXT]").change("attachment; filename=\"client.jnlp\"", context, new DataObject("Content-Disposition", StringClass.text));
             //without empty cache-control no application is created
             findProperty("headersTo[TEXT]").change("", context, new DataObject("Cache-Control", StringClass.text)); // with Cache-Control 'no-cache, no-store' application won't install
@@ -95,6 +93,13 @@ public class GenerateJNLPAction extends InternalAction {
         } catch (Exception e) {
             Throwables.propagate(e);
         }
+    }
+
+    // an HTTP date: English names and GMT, whatever the server's locale and time zone are
+    private static final DateTimeFormatter LAST_MODIFIED_FORMAT = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.ENGLISH).withZone(ZoneOffset.UTC);
+
+    static String getLastModified(String jnlpString) {
+        return LAST_MODIFIED_FORMAT.format(Instant.ofEpochSecond(jnlpString.hashCode()));
     }
 
     @Override
