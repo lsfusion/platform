@@ -5,6 +5,8 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
@@ -51,16 +53,33 @@ public class PopupForm extends EditingForm {
 
             if(prevForm != null)
                 prevForm.onFocus(false);
+
+            // the form leaves the page now, as a floating form's window does, while the popup goes a task later
+            // (see finishEditing)
+            RootPanel.get().remove(contentWidget);
         }
     }
 
-    protected Widget contentWidget;
+    protected final SimplePanel contentWidget;
     private Element parentElement;
     private Element popupElement;
 
     private FormContainer prevForm;
 
     JavaScriptObject tippy;
+
+    public void updatePosition() {
+        if(tippy != null)
+            GwtClientUtils.updateTippyPosition(tippy);
+    }
+
+    @Override
+    public void onAsyncInitialized() {
+        // actually it's already shown, but placed for the «Loading» placeholder, not for the form put in its place
+        updatePosition();
+
+        super.onAsyncInitialized();
+    }
 
     @Override
     public void show(GAsyncFormController asyncFormController) {
@@ -79,8 +98,8 @@ public class PopupForm extends EditingForm {
     protected void finishEditing(EndReason editFormCloseReason) {
         // NOT hidden here: finishing may itself have been entered from the popup's own hide, and hiding again from
         // inside that hide would run its commit a second time, before the edit is marked finished. Destroying takes
-        // the popup off the screen just as well - and it is done last, after the edit is finished, because it detaches
-        // the form's content and doing that mid-edit would tear it out from under the edit being finished
+        // the popup off the screen just as well - and it is done last, after the edit is finished, because before the
+        // edit's stop takes the form's content off the page destroying detaches it, which would tear it out mid-edit
         JavaScriptObject closing = tippy;
         tippy = null;
 
@@ -95,12 +114,12 @@ public class PopupForm extends EditingForm {
 
     @Override
     protected void setFormContent(Widget widget) {
-        this.contentWidget = widget;
+        contentWidget.setWidget(widget);
     }
 
     @Override
     protected void removeFormContent(Widget widget) {
-        this.contentWidget = null;
+        // setWidget replaces the form, and the editing's stop takes the whole body off the page
     }
 
     private PopupFormCellEditor cellEditor;
@@ -110,15 +129,15 @@ public class PopupForm extends EditingForm {
         return cellEditor;
     }
 
-    // none once its editing has stopped and taken the content out: a floating form handing the keyboard back asks a
-    // popup it was opened from whether it is still on the page
     @Override
     public Element getContentElement() {
-        return contentWidget != null ? contentWidget.getElement() : null;
+        return contentWidget.getElement();
     }
 
     public PopupForm(FormsController formsController, GFormController contextForm, long editRequestIndex, boolean async, Event editEvent, EditContext editContext) {
         super(formsController, contextForm, editRequestIndex, async, editEvent, editContext);
+
+        contentWidget = new SimplePanel();
 
         popupOwnerWidget = editContext.getPopupOwnerWidget();
     }

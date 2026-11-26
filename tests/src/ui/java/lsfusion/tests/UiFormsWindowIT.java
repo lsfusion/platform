@@ -622,6 +622,24 @@ public class UiFormsWindowIT extends UiTest {
         close(target);
     }
 
+    // a popup form answered after the client's «Loading» placeholder is drawn in its place, the keyboard in it
+    @Test
+    public void aPopupFormAnsweredLateIsDrawnInThePopupShownForIt() throws Exception {
+        Locator launcher = launcher(), third = form("UiFormsWindow.uiFormsWindowThird");
+        Locator popup = page.locator("[data-tippy-root]");
+        hold();
+        action(launcher, "uiFormsWindowThirdPopup").click();
+        assertThat(popup.locator(".loading-async-icon")).isVisible();
+        assertThat(popup.locator(".tippy-box")).isFocused(); // its fade-in over: then the popup takes the keyboard
+        release();
+        assertThat(popup.locator(third)).isVisible();
+        assertThat(popup.locator(".loading-async-icon")).hasCount(0);
+        assertThat(third.locator(":focus")).hasCount(1);
+        page.evaluate("() => document.activeElement.blur()");
+        assertThat(popup).hasCount(0);
+        assertThat(third).hasCount(0);
+    }
+
     // a form with two handlers of its close event, each opening the form already there with ACTIVATE: each handler
     // takes the activation the request carries and runs on - the form is not built again, both leave their mark -,
     // and the form closes. It is closed by its tab's close button: its Close button closes it with no close event

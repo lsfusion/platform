@@ -568,6 +568,8 @@ public abstract class FormsController {
 
                 if(fFormContainer instanceof ModalForm) // it's a hack but for now it's the best place
                     ((ModalForm)fFormContainer).initPreferredSize();
+                else if(fFormContainer instanceof PopupForm)
+                    ((PopupForm)fFormContainer).updatePosition();
                 return;
             }
 

@@ -342,6 +342,10 @@ uiFormsWindowBranchesOfTwoForms 'Branches of two forms' () {
 }
 EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowBranchesOfOneForm, uiFormsWindowBranchesOfTwoForms;
 
+// the form Third shown as a popup by the launcher's button, as the editor of the button's property
+uiFormsWindowThirdPopup 'Third, popup' () { SHOW uiFormsWindowThird POPUP; }
+EXTEND FORM uiFormsWindowLauncher PROPERTIES() uiFormsWindowThirdPopup;
+
 uiFormsWindowStored 'Stored' = DATA STRING[50] ();
 uiFormsWindowCloser 'Closer' = DATA LOCAL INTEGER ();
 uiFormsWindowPlain 'Plain' = DATA LOCAL INTEGER ();

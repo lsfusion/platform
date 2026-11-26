@@ -1138,6 +1138,12 @@ public class GwtClientUtils {
             tippy.enable();
     }-*/;
 
+    // a popup is placed when it is shown or given new content, not when the content it has changes its size
+    public static native void updateTippyPosition(JavaScriptObject tippy)/*-{
+        if (tippy.popperInstance)
+            tippy.popperInstance.forceUpdate();
+    }-*/;
+
     public static native void showTippy(JavaScriptObject tippy)/*-{
         tippy.show();
     }-*/;
