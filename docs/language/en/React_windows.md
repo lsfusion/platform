@@ -35,7 +35,7 @@ The window is then not given the classes with which the standard toolbar lays it
 | `root` | The canonical names of the elements drawn at the top level, in display order |
 | `byName` | Each element by canonical name |
 
-and each element carries:
+and each element contains:
 
 | Field | Meaning |
 | --- | --- |
@@ -47,13 +47,13 @@ and each element carries:
 | `selected` | Whether it is the selected element **of this window** |
 | `children` | The canonical names of its children that this window draws |
 
-An element declared [`NOCUSTOM`](NAVIGATOR_statement.md) is drawn by the platform, so what it draws is not projected: its entry carries `name`, `caption`, `image`, `hidden`, `children` and `platformDrawn: true`, and none of the rest. While its `hidden` is `true`, `<Platform>` hides the [place](#standard-button) of its button.
+An element declared [`NOCUSTOM`](NAVIGATOR_statement.md) is drawn by the platform, so what it draws is not projected: its entry contains `name`, `caption`, `image`, `hidden`, `children` and `platformDrawn: true`, and none of the rest. While its `hidden` is `true`, `<Platform>` hides the [place](#standard-button) of its button.
 
-The window is given the elements it is responsible for: an element that crossed into another window, and a subtree gated out because its parent is not selected, are absent — the same rule that decides what the standard toolbar draws. What that rule keeps, the projection keeps, hidden or not.
+The window is given the elements it is responsible for: an element assigned to another window, and a subtree excluded because its parent is not selected, are absent — the same rule that decides what the standard toolbar draws. What that rule keeps, the projection keeps, hidden or not.
 
-So a window can receive elements the module never declared. A folder's `WINDOW` names the window of its children, and a child that lands in another window is drawn there while the folder is selected. In the stock application this is how Administration works: the folder itself sits in `System.system`, and its sections are declared with `WINDOW toolbar PARENT`, so while it is selected in the top bar they, and their children, are drawn by `System.toolbar` — after `EXTEND WINDOW System.toolbar CUSTOM`, by your component.
+So a window can receive elements the module never declared. A folder's `WINDOW` names the window of its children, and a child assigned to another window is drawn there while the folder is selected. In the stock application this is how Administration works: the folder itself is in `System.system`, and its sections are declared with `WINDOW toolbar PARENT`, so while it is selected in the top bar they, and their children, are drawn by `System.toolbar` — after `EXTEND WINDOW System.toolbar CUSTOM`, by your component.
 
-A component that draws only the elements it knows about loses such sections. Everything the window was given is reached through `root` and `children`.
+A component that draws only the elements its code names does not draw such sections. Everything the window was given is reached through `root` and `children`.
 
 The component is drawn once the navigator has worked out the window's elements, and a window with none is drawn too, with `root` empty.
 
@@ -65,7 +65,7 @@ The component is drawn once the navigator has worked out the window's elements, 
 
 An element the component does not want to draw itself is placed with `<Platform name/>` — the tag that places a design child on a form, where `name` is the element's canonical name. The platform puts its own button inside, with its icon, caption, tooltip and click behavior, but not with what the standard toolbar's layout adds to it: its caption is not hidden until the mouse is over the window, as in an unpinned navigator, and it has no indent for its depth.
 
-Where the button goes, and how deep it looks, is up to the component. The [node itself](React_platform_components.md#custom-placement) is left as the component rendered it, without the marks a form's host is given.
+Where the button goes, and how deep it looks, is up to the component. The [node itself](React_platform_components.md#custom-placement) is left as the component rendered it, without the class and attribute assigned to a form's host.
 
 [`NOCUSTOM`](NAVIGATOR_statement.md#nocustom) selects the platform's button:
 
@@ -83,12 +83,12 @@ Five mistakes are reported in the page:
 - a name a second `<Platform>` places again;
 - a `<Platform>` given a `row` even though a button is placed whole.
 
-A name the window merely does not draw right now — an element `SHOWIF` hides, one gated out because its parent is not selected — is not a mistake and is not reported: the place waits, and is filled as soon as the window draws that element. Meanwhile:
+A name the window merely does not draw right now — an element `SHOWIF` hides, one excluded because its parent is not selected — is not a mistake and is not reported: the place waits, and is filled as soon as the window draws that element. Meanwhile:
 
 - the place of an element `SHOWIF` hides is hidden, as its entry's `hidden` says;
-- the place of an element gated out, which has no entry, stays empty.
+- the place of an excluded element, which has no entry, stays empty.
 
-Which window draws an element is not such a case: waiting for a button another window owns would wait for good.
+Which window draws an element is not such a case: a button assigned to another window will never be available in this window.
 
 #### An HTML template instead of a component {#navigator-template}
 
@@ -111,7 +111,7 @@ EXTEND WINDOW System.forms CUSTOM 'FormsBoard';
 
 The component never draws a form: it renders a place for the form it wants shown, and the platform moves that form's own view into it. `<Platform name/>` is that place, and `name` is the name the projection gives the form. It places the form's view the same way it places a [design child](React_platform_components.md#placing) and a [navigator element](#standard-button).
 
-Like a design child's [host](React_platform_components.md#custom-placement), the place carries the marks — the class `lsf-platform` and `data-lsf-sid` with the form's name — and the form's view fills it. A form whose place changes size is told so.
+Like a design child's [host](React_platform_components.md#custom-placement), the place has the class `lsf-platform` and the attribute `data-lsf-sid` with the form's name, and the form's view fills it. A form whose place changes size is notified.
 
 Three mistakes are reported in the page: a name no open form has, a second `<Platform>` for the same form, and a `<Platform>` given a `row` even though a form is placed whole.
 
@@ -129,7 +129,7 @@ Three mistakes are reported in the page: a name no open form has, a second `<Pla
 | `editModes` | Every edit mode, in the order the mode button offers them |
 | `fullScreen` | Whether System.forms is expanded to the full screen, the page drawing it alone; the component of another forms window always gets `false` |
 
-and each form carries:
+and each form has:
 
 | Field | Meaning |
 | --- | --- |
@@ -137,10 +137,10 @@ and each form carries:
 | `canonicalName` | The [canonical name](../paradigm/Naming.md#canonicalname) of the form, for a component that draws a particular form its own way |
 | `caption`, `image` | Its caption and icon, the current ones — the caption a tab shows. Drawn with [`<Caption value={e.caption}/>`](React_rendering.md#caption) and [`<Image value={e.image}/>`](React_rendering.md#image) |
 | `selected` | Whether it is this window's current form — the one its standard strip would show. The keyboard works in it when this window has the keyboard. With several `FORMS` windows, only one can have it at a time |
-| `loading` | Whether the form has not arrived from the server yet. Until it does, `caption` is the one the request that opened it carried and `image` is empty; the rest of the entry is there as always |
+| `loading` | Whether the form has not arrived from the server yet. Until it does, `caption` is the one in the request that opened it and `image` is empty; the rest of the entry is there as always |
 | `blocked` | Whether a form opened from this one is on top of it. Such a form cannot be closed, which is why the standard tab disables its close button |
 
-and each edit mode in `editModes` carries what the mode button shows it with:
+and each edit mode in `editModes` contains what the mode button shows it with:
 
 | Field | Meaning |
 | --- | --- |
@@ -197,7 +197,7 @@ EXTEND WINDOW System.log CUSTOM 'MessageLog';
 
 The component never draws a message: a message is markup the platform built — the text with its icon, or the table an action reported beside it — so the component renders a place for each message it wants shown, and the platform moves that markup in. `<Platform name/>` is that place, and `name` is the name the projection gives the message. It places the message's markup the same way it places a [design child](React_platform_components.md#placing), a [navigator element](#standard-button) and an [open form](#forms-window).
 
-Like a navigator button's, the [place](React_platform_components.md#custom-placement) is left as the component rendered it, without the marks a form's host gets.
+Like a navigator button's, the [place](React_platform_components.md#custom-placement) is left as the component rendered it, without the class and attribute assigned to a form's host.
 
 Three mistakes are reported in the page: a name no logged message has, a second `<Platform>` for the same message, and a `<Platform>` given a `row` even though a message is placed whole.
 
@@ -208,7 +208,7 @@ Three mistakes are reported in the page: a name no logged message has, a second 
 | `messages` | The names of the logged messages, newest first — the order the standard panel shows them in |
 | `byName` | Each message by name |
 
-and each message carries:
+and each message has:
 
 | Field | Meaning |
 | --- | --- |
@@ -217,13 +217,13 @@ and each message carries:
 | `time` | When the message arrived, in milliseconds — what the standard panel prints on its date line |
 | `failed` | Whether the message is an error — the panel's only distinction between two messages, and the one a component styles from |
 
-A message is markup, so what the projection carries is only what the standard panel writes itself beside that markup. The name is the platform's own: two messages can carry the same text, caption and second, so nothing about a message identifies it.
+A message is markup, so what the projection includes is only what the standard panel writes itself beside that markup. The name is the platform's own: two messages can have the same text, caption and second, so nothing about a message identifies it.
 
 `props.controller` has the [navigator controller](Form_and_navigator_controllers.md#navigator-controller) methods — `exec`, `eval`, `evalAction`, `change`, `activate` — for calls in the navigator's session. It also does the one thing only the platform can do to the log: `togglePin()` toggles the window's pin mode, the way the platform's pin button does. `togglePin` returns nothing and reports no completion, just as a click does not.
 
 Pinning is a setting of the display environment, shared with the desktop client, so the component asks the platform to change it. It is not told the current mode either, since the client is not — an unpinned window is unpinned by a class the server computes into the window.
 
-A message the component places nowhere is still logged and still in the projection: nothing drops one, exactly as the standard panel keeps every message it printed. So a component that shows only the last message, or only the failed ones, loses nothing — an earlier message placed again is shown as it was. There is no clearing and no dismissing, in the projection or in the controller, because the platform has none.
+A message the component places nowhere is still logged and still in the projection: none are removed, exactly as the standard panel keeps every message it printed. So a component that shows only the last message, or only the failed ones, loses nothing — an earlier message placed again is shown as it was. There is no clearing and no dismissing, in the projection or in the controller, because the platform has none.
 
 The window itself is still the platform's: the component draws inside it, so in the standard layout the window is hidden, popped out over the form and revealed when a message arrives exactly as before. When the windows are laid out by a [component of their own](#window-layout), the window is shown where that component places it.
 
@@ -258,24 +258,24 @@ Each entry in `byName` has:
 | --- | --- |
 | `name` | Its own canonical name, so a component that was handed the entry alone can still place the window |
 | `caption` | Its caption - the one the standard layout writes on the tab of windows that share a place. A window declared without a caption, as the system windows are, has its name |
-| `hidden` | Whether the standard layout would not show the window now: `HIDE WINDOW` hides it, or it is a navigator window with nothing to draw - the selected folder has no elements for it -, other than `System.root` and a window with a `CUSTOM`. While the entry says so, `<Platform>` hides the place. The component reads it to fold its own markup around the place |
+| `hidden` | Whether the standard layout would not show the window now: `HIDE WINDOW` hides it, or it is a navigator window with nothing to draw - the selected folder has no elements for it -, other than `System.root` and a window with a `CUSTOM`. While `hidden` is set in the entry, `<Platform>` hides the place. The component reads it to collapse its own markup around the place |
 | `vertical` | Whether the window draws its buttons in a column. The "Navbar: Vertical" design setting turns `System.logo`, `System.root` and `System.system` so, whoever lays them out |
 
 `props.controller` has the [navigator controller](Form_and_navigator_controllers.md#navigator-controller) methods — `exec`, `eval`, `evalAction`, `change`, `activate` — for calls in the navigator's session. The windows are drawn and changed by the platform, and nothing about their arrangement is the platform's.
 
-A window the component places nowhere is not shown, and lives on: its navigator buttons are refreshed, a form opened into it is open - hidden, as a background tab is -, its messages are logged. Placed later, it is shown as it is then. So a component that places only the windows it knows hides a window another module adds. A component meant to take any window places the rest by `data.windows`.
+A window the component places nowhere is not shown, and keeps working: its navigator buttons are refreshed, a form opened into it is open - hidden, as a background tab is -, its messages are logged. Placed later, it is shown as it is then. So a component that places only the windows it knows hides a window another module adds. A component meant to take any window places the rest by `data.windows`.
 
 What the standard layout does with its own panels is not done under a component:
 
 - the user dragging the border between windows and the sizes kept between sessions;
 - the tabs of windows that share a place;
 - the vertical navbar turning the top strip into a column;
-- the unpinned navigator and log popping out over the form.
+- the unpinned navigator and log appearing over the form.
 
-The pin modes are the standard layout's way of laying the navigator and the log out, so a window the component lays out is not given the classes that collapse it and pop it out over the form or show the top strip's captions only on hover: pinning there changes no layout.
+The pin modes are the standard layout's way of laying the navigator and the log out, so a window the component lays out is not given the classes that collapse it and display it over the form or show the top strip's captions only on hover: pinning there changes no layout.
 
 The full screen (`ALT+F11`) is as without a component: `System.forms` is drawn alone over the page, and the component is hidden meanwhile - still mounted, its state kept. It is not told of the full screen: `fullScreen` is projected to the [component](#forms-window) of `System.forms` alone.
 
-[`Service.resetWindowsLayout`](../paradigm/System_Service.md) leaves the full screen and puts back the windows' declared visibility, and it does not reach sizes the component keeps itself.
+[`Service.resetWindowsLayout`](../paradigm/System_Service.md) leaves the full screen and restores the windows' declared visibility, and it does not change sizes the component keeps itself.
 
 [Client availability](NAVIGATOR_statement.md#description).

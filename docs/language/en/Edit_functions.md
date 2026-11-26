@@ -13,7 +13,7 @@ By default the value is edited by the property's standard mechanism — a text i
 PROPERTIES(o) address CUSTOM CHANGE 'googleAutocomplete'
 ```
 
-The editor function, like the display function, is registered as a wrapper and returns an object of several functions. The editor kind is determined by which rendering function that object contains:
+The editor function, like the display function, is registered as a function that returns an object of several functions. The editor kind is determined by which rendering function that object contains:
 
 | function | editor |
 | --- | --- |
@@ -40,7 +40,7 @@ The editor controller provides:
 | `getColorThemeName()` | the current color theme name |
 | `form` | the [form controller](Form_and_navigator_controllers.md) |
 
-The committed value goes through the property's ordinary change channel — the same way as a value entered by the standard editor.
+The committed value uses the property's ordinary change mechanism — the same way as a value entered by the standard editor.
 
 Calling `commit()` on a window or replacement editor requires `getValue(element)`. Calling `commit(value)` skips `getValue` and converts the supplied value to the input type. The cancellation string `'canceled'` is recognized only as a result of `getValue`.
 

@@ -46,11 +46,11 @@ props.data.o.list.map(r => <Row key={r.key} row={r} />)
 
 Why per-row economy matters. When any single row changes, `props.data.<g>.list` is rebuilt as a new array reference, but the projection keeps the same object reference for every row that did not change (structural sharing) — only the rows whose contents changed get a new row object. A plain `list.map(r => <Row row={r}/>)` re-creates the `Row` element for every entry on any single-row change, so React re-renders all of them.
 
-The React `key` does not change this: it lets React preserve each row's element identity, DOM, and component state across renders, but it is not a render bail-out. The React Compiler does not help either — it memoizes the `.map` as one reactive scope keyed by the array reference, which has just changed, and it does not wrap the row children in `React.memo`, so every row still re-renders.
+The React `key` does not change this: it lets React preserve each row's element identity, DOM, and component state across renders, but it does not prevent re-rendering. The React Compiler does not help either — it memoizes the `.map` as one reactive scope keyed by the array reference, which has just changed, and it does not wrap the row children in `React.memo`, so every row still re-renders.
 
-`window.lsfusion.List` adds the missing per-row bail-out: it renders each row through a stable memoized wrapper that tracks that one row, so a value change re-renders only the changed row. The list itself is not re-walked when a row's value changes — only when rows are added, removed, or reordered —, so an update renders only what changed. What still grows with the number of rows is each mounted row's check of its own subscription, a lookup by its key.
+`window.lsfusion.List` skips re-rendering unchanged rows: it renders each row through a stable memoized wrapper that tracks that one row, so a value change re-renders only the changed row. The list itself is not iterated over again when a row's value changes — only when rows are added, removed, or reordered —, so an update renders only what changed. What still grows with the number of rows is each mounted row's check of its own subscription, a lookup by its key.
 
-To get a per-row bail-out by hand without `window.lsfusion.List`, declare the memoized row component once at module level and key by `row.key`:
+To skip re-rendering unchanged rows manually without `window.lsfusion.List`, declare the memoized row component once at module level and key by `row.key`:
 
 ```jsx
 const MRow = React.memo(Row);
@@ -72,7 +72,7 @@ When the view lays a group's rows out as a matrix rather than a list — a calen
 
 `useBucket(cellKey)` returns the array of row keys currently in that cell, in the group's display order, and subscribes the component to only that cell. Call it once per cell component, with that cell's fixed key (the usual hook rules). An empty cell always returns the same frozen empty array. The cell component resolves each row key to a row component that subscribes to its own row via `useData(d => d.<g>.byKey[rowKey])`.
 
-The view keeps the layout: it supplies the cell keys — so empty cells exist and render too, e.g. as drop targets — and the cell markup. The platform keeps the index and the render economy:
+The view keeps the layout: it supplies the cell keys — so empty cells exist and render too, e.g. as drop targets — and the cell markup. The platform maintains the index and limits what re-renders:
 
 - moving a row between cells re-renders only the old and the new cell;
 - editing a value that does not change the row's cell re-renders only that row's own component;
@@ -80,7 +80,7 @@ The view keeps the layout: it supplies the cell keys — so empty cells exist an
 
 The plain alternative — grouping `data.<g>.list` into cells by hand on each render — rebuilds every cell's array every time, so any change re-renders the whole board.
 
-When the cells form a flat list and each cell's markup lives in one component, the `<Buckets group cells bucketOf component/>` form does the mapping itself, the way `List` does for rows: one memoized wrapper per key in `cells`, and the cell component receives `cellKey`, `rowKeys`, `index`, and the pass-through props. Keep the explicit `<BucketScope>` + `useBucket` markup when the view itself lays out the grid — a two-axis matrix, axis headers, pinned columns:
+When the cells form a flat list and each cell's markup is defined in one component, the `<Buckets group cells bucketOf component/>` form does the mapping itself, the way `List` does for rows: one memoized wrapper per key in `cells`, and the cell component receives `cellKey`, `rowKeys`, `index`, and the pass-through props. Keep the explicit `<BucketScope>` + `useBucket` markup when the view itself lays out the grid — a two-axis matrix, axis headers, pinned columns:
 
 ```jsx
 const { Buckets } = window.lsfusion;
@@ -94,20 +94,20 @@ const Column = ({ cellKey, rowKeys }) => (
 <Buckets group="t" cells={STATUSES} bucketOf={t => t.status.value} component={Column} />
 ```
 
-Use bucketing for placing one group's rows into derived cells where only the membership matters — pivots, calendars, kanban boards, timetables, drag-and-drop grids. It does not compute per-cell aggregates: `useBucket` returns row keys, not sums or counts, and the cell component re-renders only when that cell's row-key array changes — live aggregates are what the [pivot table view type](../paradigm/Interactive_view.md#property) provides. For a plain one-to-one list of rows use `List`, and grouping only works over the group's own projected values.
+Use bucketing for placing one group's rows into derived cells where only the membership matters — pivots, calendars, kanban boards, timetables, drag-and-drop grids. It does not compute per-cell aggregates: `useBucket` returns row keys, not sums or counts, and the cell component re-renders only when that cell's row-key array changes — aggregates that update as the data changes are what the [pivot table view type](../paradigm/Interactive_view.md#property) provides. For a plain one-to-one list of rows use `List`, and grouping only works over the group's own projected values.
 
 ### Scroll tracking {#seek-on-scroll}
 
-A view that lays rows out in their own order — a card flow, a feed — can keep the page instead of reading all rows and let it follow the scroll, the way the standard table does.
+A view that lays rows out in their own order — a sequence of cards, a scrolling list — can keep the page instead of reading all rows and change the page as the user scrolls, the way the standard table does.
 
 `useSeekOnScroll(controller.<group>)` returns a function that marks each row's element. The hook watches which of them are on screen as the view's own box scrolls — the nearest element that scrolls the rows, looked for from a row up to the element the view is drawn in and no further — and follows the table's own rules:
 
 - while the current record is on screen, scrolling changes nothing;
-- when it leaves, it is reseated on the visible edge it left through, which is also what requests the next page;
-- on a page change the reseated row keeps its on-screen position, so nothing jumps under the eye;
+- when it leaves the visible area, the row at that edge becomes current, which also requests the next page;
+- on a page change the newly current row keeps its on-screen position, so the visible rows do not shift;
 - a current record moved from outside — a click, a programmatic seek — is scrolled into view instead.
 
-These rules hold under the same condition as the table's own, and meeting it is up to the developer: the page must hold more rows than the viewport can show — set `PAGESIZE` on the [`OBJECTS`](Object_blocks.md) block accordingly. The rows read then always extend a page beyond the current record, so it leaves the viewport — and is reseated, requesting the next page — before the scroller runs out of room at a loaded edge:
+These rules hold under the same condition as the table's own, and meeting it is up to the developer: the page must hold more rows than the viewport can show — set `PAGESIZE` on the [`OBJECTS`](Object_blocks.md) block accordingly. The rows read then always extend a page beyond the current record, so it leaves the viewport — and is replaced as current by the row at that edge, requesting the next page — before scrolling reaches the first or last loaded row:
 
 ```jsx
 const seekRef = useSeekOnScroll(controller.o, { enabled: follow });
@@ -143,7 +143,7 @@ The projected value is either an address or a ready element, since a font icon h
 
 ### Caption rendering {#caption}
 
-A caption the platform projects — a form's, a navigator element's, the one a message carries — is drawn by `Caption`:
+A caption the platform projects — a form's, a navigator element's, a message's — is drawn by `Caption`:
 
 ```jsx
 const { Caption } = window.lsfusion;
@@ -153,10 +153,10 @@ const { Caption } = window.lsfusion;
 
 A caption is either plain text or markup the platform built, and `Caption` draws whichever it was given, by the same rule the platform draws a caption of its own by: the value is markup when a tag appears anywhere in it. Printed as text, such a caption would show its own markup, so a view that prints `{e.caption}` itself is right only while the caption is plain text. A missing caption draws nothing.
 
-### Performance tiers {#performance-tiers}
+### Reducing re-renders {#performance-tiers}
 
-The two ways of [projection reading](React_projection.md#reading) compose into tiers, and each following one is only needed when the previous one's re-render becomes the cost:
+The two ways of [projection reading](React_projection.md#reading) combine into the following approaches, and each following one is only needed when re-rendering limits performance in the previous one:
 
 1. a small view — `props.data`, render everything;
-2. a longer list — `props.data` plus row components memoized at module level (`React.memo` bails out on the unchanged rows' stable references), or [`List`](#rendering-rows) which does exactly that;
-3. a big board — subscriptions down the tree: the root renders memoized columns and hands them no `data`, a column subscribes to its [bucket](#bucketing), a row to itself, so one edited value re-renders the root and one card.
+2. a longer list — `props.data` plus row components memoized at module level (`React.memo` skips re-rendering unchanged rows with stable references), or [`List`](#rendering-rows) which does exactly that;
+3. a big board — subscriptions down the tree: the root renders memoized columns and passes them no `data`, a column subscribes to its [bucket](#bucketing), a row to itself, so one edited value re-renders the root and one card.

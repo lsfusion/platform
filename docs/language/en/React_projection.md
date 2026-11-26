@@ -13,14 +13,14 @@ A page may be built of several React containers laid out by ordinary `DESIGN` co
 
 ### Entries, parts and nodes {#parts}
 
-Every property, group and container the projection carries is an object in `data`: read a value as `.value` and its attributes as sibling fields, and read a list property's column attributes at `data.<group>.<prop>`. The entries a container carries for properties and components are design data: each of them is there from the start, and whether the form shows it now is its [`hidden`](#display-options) field, never whether it is there.
+Every property, group and container the projection includes is an object in `data`: read a value as `.value` and its attributes as sibling fields, and read a list property's column attributes at `data.<group>.<prop>`. A container's entries for properties and components are design data: each of them is there from the start, and whether the form shows it now is its [`hidden`](#display-options) field, never whether it is there.
 
 `data` contains a group when the view draws a PART of that group, and holds exactly the parts it draws. A part of a group, or of a [tree](React_trees_sortings_selection.md#trees), is projected — its data, and the controller members that change it — in the React container where that part's component is, on the node of its group or tree there:
 
 | Component | Part | Node |
 | --- | --- | --- |
 | The group's grid, `GRID(<group>)`, or its tree, `GRID(TREE <tree>)` | The rows and the current object, and — of a group not in a tree — the [sortings](React_trees_sortings_selection.md#orders) | `data.<group>` |
-| A panel property — one the platform draws where the view places it | The property — one the platform draws as the [entry that labels it](React_platform_components.md#placing) (the entry of an action the platform draws only says whether the form shows it: its caption and image are its button's face) | `data.<group>`, or `data` itself for the empty group |
+| A panel property — one the platform draws where the view places it | The property — one the platform draws as the [entry that labels it](React_platform_components.md#placing) (the entry of an action the platform draws only indicates whether the form shows it: the platform displays its caption and image on its button) | `data.<group>`, or `data` itself for the empty group |
 | What `FILTERS(<group>)` holds | The [user filters](React_filters_and_toolbar.md#filters) | `data.<group>` |
 | `FILTERCONTROLS(<group>)` | The [filter controls](React_filters_and_toolbar.md#filter-controls) | `data.<group>` |
 | `FILTERGROUP(<filterGroup>)` | A [filter group](React_filters_and_toolbar.md#filter-groups) | `data.<group>` |
@@ -32,7 +32,7 @@ Every property, group and container the projection carries is an object in `data
 A group in `PANEL` view has only its panel properties and its filter groups: no rows, sortings, user filters,
 filter controls or toolbar — the platform shows none of them for it either.
 
-`data.<group>.properties` names every PROPERTY entry this node carries, shown or not, in the form's order — not everything on the node, which also holds what the projection itself defines (`list`, `byKey`, `keys`, `options`, `orders`) and is known by name rather than discovered.
+`data.<group>.properties` names every PROPERTY entry this node contains, shown or not, in the form's order — not everything on the node, which also holds what the projection itself defines (`list`, `byKey`, `keys`, `options`, `orders`) and is known by name rather than discovered.
 
 #### A component's place {#component-place}
 
@@ -58,7 +58,7 @@ Wherever the view draws the rows, `list`, `byKey` and `keys` are all present: th
 
 A grid (or a tree) the form hides with `SHOWIF` says so in [its own entry](#display-options), `data['GRID(g)'].hidden` — a tree's is `data['GRID(TREE t)']`, one for all its groups —, and its rows stay as the server last sent them, as the platform's own grid keeps them — the server may stop refreshing them while the grid is hidden — so draw them only while the grid is not hidden.
 
-Each row carries:
+Each row contains:
 
 | Field | Meaning |
 | --- | --- |
@@ -80,17 +80,17 @@ Asking [`<List>`](React_rendering.md#rendering-rows) for rows that are not there
 
 #### Properties and actions {#properties-and-actions}
 
-A group's panel properties are members of the group node in the container each property itself sits in, keyed by integration SID. The top level of `props.data` is the node of the empty group (the form level): each property of the empty group is a member of `props.data` directly, under its integration SID. A list property's column attributes are a member of the group too, at `data.<g>.<prop>` — one entry per column — while its per-row value and cell attributes live on each row.
+A group's panel properties are members of the group node in the container each property itself is in, keyed by integration SID. The top level of `props.data` is the node of the empty group (the form level): each property of the empty group is a member of `props.data` directly, under its integration SID. A list property's column attributes are a member of the group too, at `data.<g>.<prop>` — one entry per column — while its per-row value and cell attributes are on each row.
 
-Actions React draws are projected the same way as properties — an action drawn on a group is a field of each row (a list action) or of the group node (a panel action), an object of its attributes like a property, so `controller.<group>.<action>.exec(row)` runs it (a panel action's `.exec()` takes no row). Its `value` field is there too but carries nothing. An action the platform draws has only its entry, and the platform's button runs it.
+Actions React draws are projected the same way as properties — an action drawn on a group is a field of each row (a list action) or of the group node (a panel action), an object of its attributes like a property, so `controller.<group>.<action>.exec(row)` runs it (a panel action's `.exec()` takes no row). Its `value` field is there too but holds no value. An action the platform draws has only its entry, and the platform's button runs it.
 
 #### `COLUMNS` and coinciding names {#columns}
 
-A property grouped in columns (`COLUMNS`) cannot be projected: its values are addressed by a row-and-column key, and everything here — a row of `list`, an entry of `byKey`, a name on the controller — means one row. So a React container may not carry one — a column of the rows it draws, or a panel property or a property of the empty group standing in it: such a form is rejected when it is built, naming the property.
+A property grouped in columns (`COLUMNS`) cannot be projected: its values are addressed by a row-and-column key, and everything here — a row of `list`, an entry of `byKey`, a name on the controller — means one row. So a React container may not contain one — a column of the rows it draws, or a panel property or a property of the empty group standing in it: such a form is rejected when it is built, naming the property.
 
-Elsewhere on the form it stays as it is, and a React view simply has no name for it: the [controller](React_view_controller.md) carries what the projection carries, so what is not projected has no member. Declare an ordinary property if the view has to read those values.
+Elsewhere on the form it stays as it is, and a React view simply has no name for it: the [controller](React_view_controller.md) includes the same entries as the projection, so what is not projected has no member. Declare an ordinary property if the view has to read those values.
 
-Where a name does not single out one property in a view, the form is rejected the same way: two properties of a projected group may share an integration name only when their entries land in different containers, and each view then means the one its own node carries. Within one container they may not, because one entry and one member cannot stand for two properties; nor anywhere, one drawn by the platform included, when a view draws a part that names a property of the group ([Reserved names](#reserved-names)). Give one of them an explicit `EXTID`.
+Where a name does not single out one property in a view, the form is rejected the same way: two properties of a projected group may share an integration name only when their entries are in different containers, and each view then means the one its own node contains. Within one container they may not, because one entry and one member cannot stand for two properties; nor anywhere, one drawn by the platform included, when a view draws a part that names a property of the group ([Reserved names](#reserved-names)). Give one of them an explicit `EXTID`.
 
 #### Paged reading {#paged-reading}
 
@@ -126,7 +126,7 @@ An interval's bounds are milliseconds since 1970: a bound of an `INTERVAL[ZDATET
 
 ### Reserved names {#reserved-names}
 
-The reservation follows what a row or a node carries:
+The reservation depends on what a row or a node contains:
 
 | Where | Reserved |
 | --- | --- |
@@ -138,17 +138,17 @@ The reservation follows what a row or a node carries:
 | The node of a group in `LIST` view where `TOOLBARSYSTEM(<group>)` is, unless the design hides it (`visible = FALSE`) | The names of all the [toolbar](React_filters_and_toolbar.md#toolbar)'s buttons, whatever the design's `show…` flags say: `manual`, `updatePending`, `update`, `filterControlsVisible`, `listView`, `listViews`, `getCount`, `getSum`, `export` |
 | A group's node where `FILTERGROUP(<filterGroup>)` is | The [filter group](React_filters_and_toolbar.md#filter-groups)'s own name, as a property's |
 | A group's node where a property's filter, `FILTER(<property>)`, is drawn | `filter` |
-| The top level, where the node of the empty group is the controller itself as well | What the [controller](React_view_controller.md) carries beside its members: `form`, `batch` |
+| The top level, where the node of the empty group is the controller itself as well | What the [controller](React_view_controller.md) includes beside its members: `form`, `batch` |
 
 A tree's own `current` and `expandCurrent` and its sortings, where its rows are drawn, and its user filters, filter controls and toolbar write their names on [its node](React_trees_sortings_selection.md#trees). A container carrying just a panel property of the group has none of the names of the other parts, so a property called `list` is refused there by nothing.
 
 `__proto__` is reserved everywhere: assigning it does not add a field, it replaces the object's prototype. There is no `meta` object anywhere.
 
-A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built. So is a form in which a group whose rows or user filters a view draws, or its toolbar with the sum, carries one name on two properties anywhere, one drawn by the platform included: a [sorting](React_trees_sortings_selection.md#orders), a [condition](React_filters_and_toolbar.md#filters) or the [toolbar](React_filters_and_toolbar.md#toolbar)'s `getSum` names the group's property by that name. Give it an explicit `EXTID`, or rename it.
+A form whose projected integration SID takes a reserved name, or where two projected items claim the same name at one data level, is rejected with an explicit error when it is built. So is a form in which a group whose rows or user filters a view draws, or its toolbar with the sum, has two properties with the same name anywhere, one drawn by the platform included: a [sorting](React_trees_sortings_selection.md#orders), a [condition](React_filters_and_toolbar.md#filters) or the [toolbar](React_filters_and_toolbar.md#toolbar)'s `getSum` names the group's property by that name. Give it an explicit `EXTID`, or rename it.
 
 A property such a container draws or places has to have a name at all - the view reaches it by that name alone, its entry and its `<Platform>` alike: one declared `NOEXTID` is rejected the same way - give it an `EXTID`.
 
-A name that is empty or carries a dot is rejected too — a qualified name, `o.note`, is split at its last dot —, and so is a group of several objects with no name of its own, `OBJECTS (d = X, t = Y)`, wherever the view carries a part of it: its SID joins the objects' names with dots, so name it, `OBJECTS pair = (d = X, t = Y)`.
+A name that is empty or contains a dot is rejected too — a qualified name, `o.note`, is split at its last dot —, and so is a group of several objects with no name of its own, `OBJECTS (d = X, t = Y)`, wherever the view includes a part of it: its SID joins the objects' names with dots, so name it, `OBJECTS pair = (d = X, t = Y)`.
 
 A property or action the platform draws is named as any other, and all of this holds for it.
 
@@ -156,17 +156,17 @@ A property or action the platform draws is named as any other, and all of this h
 
 The component reads the projection in one of two ways, and the choice is about who re-renders when data changes.
 
-`props.data` is the whole snapshot. The component re-renders — with a fresh `data` — whenever anything in its scope changes, and renders everything it draws from the new snapshot. For a small view this is the whole story: no hooks, a plain function of the data, and [`OrderBoard`](React_views.md#the-component) is written this way. It is also how the scope is read as a whole — its top-level entries enumerated, the containers read. `useData()` with no selector returns the same snapshot.
+`props.data` is the whole snapshot. The component re-renders — with a new `data` — whenever anything in its scope changes, and renders everything it draws from the new snapshot. For a small view this is sufficient: no hooks, a plain function of the data, and [`OrderBoard`](React_views.md#the-component) is written this way. It is also how the scope is read as a whole — its top-level entries enumerated, the containers read. `useData()` with no selector returns the same snapshot.
 
-`useData(selector)` subscribes the component to a slice: it re-renders only when the reference of `selector(data)` changes — so the selector must return something the projection already holds (a group node, a row, an entry, a value), never a new object or array built inside it, which would differ on every read and re-render without end.
+`useData(selector)` subscribes the component to part of the projection: it re-renders only when the reference of `selector(data)` changes — so the selector must return something the projection already holds (a group node, a row, an entry, a value), never a new object or array built inside it, which would differ on every read and re-render without end.
 
-Because of structural sharing — an unchanged node, row or entry keeps its previous reference — this is what lets a component pay only for what it reads: a component subscribed to a group node (`useData(s => s.o)`) ignores the rest of the scope, a row component subscribed to its own row (`useData(s => s.o.byKey[rowKey])`) ignores the other rows.
+Because of structural sharing — an unchanged node, row or entry keeps its previous reference — this is what lets a component re-render only when what it reads changes: a component subscribed to a group node (`useData(s => s.o)`) does not re-render on changes to the rest of the scope, a row component subscribed to its own row (`useData(s => s.o.byKey[rowKey])`) does not re-render on changes to the other rows.
 
-The root is the exception: the platform hands it a new `props.data` on every change, so it re-renders whatever it subscribes to, and what it renders below it skips the render only when it is memoized (`React.memo`) and is not handed `data`.
+The root is the exception: the platform passes it a new `props.data` on every change, so it re-renders whatever it subscribes to, and what it renders below it skips the render only when it is memoized (`React.memo`) and does not receive `data`.
 
-`useController()` returns the same `controller` the root receives as a prop — its identity never changes for the life of the root, so it is safe in dependencies and closures, and passing it down as a prop is equally fine.
+`useController()` returns the same `controller` the root receives as a prop — its identity never changes throughout the root's lifetime, so it is safe in dependencies and closures, and passing it down as a prop is equally fine.
 
-`useData` and `useController` read whatever root the component is mounted under, and know nothing about forms in particular. `Platform` and `usePlatform` place a view the platform draws itself, so they serve a form container and a [navigator window](React_windows.md#navigator-window) alike. The helpers built on the group and row shape of a form projection — `List`, `BucketScope`, `useBucket`, `Buckets`, `useSeekOnScroll` — are form-only: they read `data.<group>.list` / `.byKey` / `.keys`, which another kind of root does not have — and neither does a form view that draws no rows of that group.
+`useData` and `useController` read whatever root the component is mounted under, regardless of whether that root belongs to a form. `Platform` and `usePlatform` place a view the platform draws itself, so they serve a form container and a [navigator window](React_windows.md#navigator-window) alike. The helpers built on the group and row shape of a form projection — `List`, `BucketScope`, `useBucket`, `Buckets`, `useSeekOnScroll` — are form-only: they read `data.<group>.list` / `.byKey` / `.keys`, which another kind of root does not have — and neither does a form view that draws no rows of that group.
 
 ### Display options {#display-options}
 
@@ -185,7 +185,7 @@ The projection follows what an option describes — a whole column, one cell, or
 | `data.<g>.<integrationSID>` | For a property shown in the table — its column attributes, one entry for the whole column: `caption`, `image`, `footer`, `comment`, `tooltip`, `defaultValue`, and `hidden` while the form hides it |
 | `data.<g>.list[i].<integrationSID>` | One cell of a table property — its `value` for that row and the cell attributes computed for that row: `readOnly`, `disabled`, `background`, `foreground` and the rest |
 | `data.<g>.list[i]` | The row's own options, direct on the row: `background`, `foreground`, `selected` |
-| `data.<g>` | `options` — the group's custom options, where the view draws its rows; `properties` — the property entries this node carries, shown or not |
+| `data.<g>` | `options` — the group's custom options, where the view draws its rows; `properties` — the property entries this node contains, shown or not |
 | `data.<integrationSID>` | A property of the empty group — its `value`, its attributes, and `hidden` while the form hides it; one the platform draws — the entry that labels it, with no `value` |
 | `data.<componentSID>` | The entry of every other component this view draws or places: its `caption` and `image` when it has them, and `hidden` while the form hides it, keyed by its design component identifier, always at the top level, whatever it is nested in |
 
@@ -201,7 +201,7 @@ The projection follows what an option describes — a whole column, one cell, or
 
 The entry is always there; a shown component with neither a caption nor an image has an empty one.
 
-Each attribute is delivered at one point, already resolved: a property's static design value and its per-row `BACKGROUND` / `READONLYIF` / … result are folded into a single effective value before the view sees it, so the view reads an attribute straight from where it lives and never merges a column base with a row override. A list property's whole-column attributes — `caption`, `image`, `footer`, `comment`, `tooltip`, `defaultValue` — are on its column node `data.<g>.<prop>`, while its per-row value and the cell attributes that can vary by row are on the cell `data.<g>.list[i].<prop>`:
+Each attribute is delivered at one point, already resolved: a property's static design value and its per-row `BACKGROUND` / `READONLYIF` / … result are combined into a single effective value before the view receives it, so the view reads an attribute directly from its entry and never merges a column base with a row override. A list property's whole-column attributes — `caption`, `image`, `footer`, `comment`, `tooltip`, `defaultValue` — are on its column node `data.<g>.<prop>`, while its per-row value and the cell attributes that can vary by row are on the cell `data.<g>.list[i].<prop>`:
 
 ```jsx
 const caption = props.data.o.sum.caption;   // a column attribute, once for the column
@@ -231,7 +231,7 @@ A property the form hides when it opens is `hidden` until it is first sent. Read
 | `image` | The property's image | string with the image HTML |
 | `footer` | The column's footer value | converted like a cell value of its own type |
 | `readOnly` | The cell is read-only: as delivered by `READONLYIF`, and where it delivers nothing, for a property that is `READONLY` on the form or has no change at all. Absent otherwise | `true` / absent |
-| `disabled` | The cell is disabled: as delivered by `DISABLEIF`, and where it delivers nothing, for a property that is `DISABLE` on the form. Absent otherwise. One cell never carries both `readOnly` and `disabled` | `true` / absent |
+| `disabled` | The cell is disabled: as delivered by `DISABLEIF`, and where it delivers nothing, for a property that is `DISABLE` on the form. Absent otherwise. One cell never contains both `readOnly` and `disabled` | `true` / absent |
 | `background`, `foreground` | The background and text colors of the cell | string with a color |
 | `comment` | The comment shown next to the value | string |
 | `placeholder` | The text shown in an empty cell | string |
@@ -242,11 +242,11 @@ A property the form hides when it opens is `hidden` until it is first sent. Read
 | `defaultValue` | The value editing starts with | string |
 | `select` | What a [selection](#select) adds — its options and how it selects. It is on the cell of a table property, and on the entry itself of a panel or empty-group one | object |
 
-`type` describes the property rather than one of its values, so it sits with the column attributes: `data.<g>.<prop>.type` for a table property, and on the entry itself for a panel or empty-group one. A cell does not carry it. Of a [selection](#select), `type` is `string`: its `value` is made of the views of its options, which are text, as the platform's own element shows them.
+`type` describes the property rather than one of its values, so it is with the column attributes: `data.<g>.<prop>.type` for a table property, and on the entry itself for a panel or empty-group one. A cell does not contain it. Of a [selection](#select), `type` is `string`: its `value` is made of the views of its options, which are text, as the platform's own element shows them.
 
 `loading` is on the cell of a table property, and on the entry itself of a panel or empty-group one. An action's cell says `loading` while the action runs, and the entry of the form's Refresh button while the [form waits for the server](React_form_behavior.md#form-loading).
 
-Of these options, `caption`, `image`, `footer`, `comment`, `tooltip` and `defaultValue` are the column's own attributes, on the column node `data.<g>.<prop>` — one per column, beside `type`. The rest (`background`, `foreground`, `readOnly`, `disabled`, `placeholder`, `pattern`, `regexp`, `regexpMessage`, `valueTooltip`, `options`, `select`, `loading`) are cell attributes, on each row's cell `data.<g>.list[i].<prop>` next to its `value`. The row itself carries `background` and `foreground` — the colors of the row as a whole — and `selected`, which is `true` while the row belongs to the selected range and absent otherwise — directly, not inside any property entry.
+Of these options, `caption`, `image`, `footer`, `comment`, `tooltip` and `defaultValue` are the column's own attributes, on the column node `data.<g>.<prop>` — one per column, beside `type`. The rest (`background`, `foreground`, `readOnly`, `disabled`, `placeholder`, `pattern`, `regexp`, `regexpMessage`, `valueTooltip`, `options`, `select`, `loading`) are cell attributes, on each row's cell `data.<g>.list[i].<prop>` next to its `value`. The row itself contains `background` and `foreground` — the colors of the row as a whole — and `selected`, which is `true` while the row belongs to the selected range and absent otherwise — directly, not inside any property entry.
 
 ```jsx
 function Row(props) {
@@ -264,7 +264,7 @@ function Row(props) {
 
 ### A selection {#select}
 
-A property given `SELECT` in the `FORM` is shown as a choice among all its possible values: the objects a link can point at, by their view (the statuses an order can have, by their names), or, for a [selection of several values](../paradigm/Interactive_view.md#multiselect), the objects that can be checked (the tags of an order). Inside a container a React component draws, the component draws such a property itself, and the property's entry carries all its options at once:
+A property given `SELECT` in the `FORM` is shown as a choice among all its possible values: the objects a link can point at, by their view (the statuses an order can have, by their names), or, for a [selection of several values](../paradigm/Interactive_view.md#multiselect), the objects that can be checked (the tags of an order). Inside a container a React component draws, the component draws such a property itself, and the property's entry contains all its options at once:
 
 ```lsf
 FORM orders 'Orders'

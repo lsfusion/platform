@@ -24,7 +24,7 @@ The rest is described in other articles:
 
 - the components and hooks of the platform for drawing rows, images and captions, in [Rendering in React](React_rendering.md);
 - placing what the platform draws, in [Components the platform draws](React_platform_components.md);
-- focus, form loading, keys and mouse bindings, live data and a hidden view, in [Form behavior in React](React_form_behavior.md);
+- focus, form loading, keys and mouse bindings, scheduled refresh and a hidden view, in [Form behavior in React](React_form_behavior.md);
 - the parts of an object group a view draws, in [Trees, sortings and selection in React](React_trees_sortings_selection.md) and [Filters and toolbar in React](React_filters_and_toolbar.md);
 - the form controller and the navigator controller, which any view written in JavaScript is given, in [Form and navigator controllers](Form_and_navigator_controllers.md).
 
@@ -55,7 +55,7 @@ The [window size](../paradigm/Form_design.md#windowSize) and the container's [ba
 
 `OrderBoard` is a named export from a `.jsx` [module](Client_JavaScript_modules.md) under `src/main/web`. The examples of the React articles use JSX.
 
-For a project [using files without a build](Client_JavaScript_modules.md#without-the-build), ship the same component as a `.jsx` file — it is transformed on the server when served. `import` and `export` are not available there, so the `export` keyword is dropped and the component works against the platform-provided `window.React` — or write it with `React.createElement` in a plain `.js`. Either file is placed under `src/main/resources/web/init` (auto-loaded) or under `src/main/resources/web` and registered with `onWebClientInit`.
+For a project [using files without a build](Client_JavaScript_modules.md#without-the-build), include the same component as a `.jsx` file — it is transformed on the server when served. `import` and `export` are not available there, so the `export` keyword is dropped and the component works against the platform-provided `window.React` — or write it with `React.createElement` in a plain `.js`. Either file is placed under `src/main/resources/web/init` (auto-loaded) or under `src/main/resources/web` and registered with `onWebClientInit`.
 
 The component is a plain function that receives `props.data` and `props.controller`:
 
@@ -100,6 +100,6 @@ The components and hooks of the platform are runtime globals in `window.lsfusion
 
 ### A React component and an HTML template {#choosing-between-a-react-component-and-an-html-template}
 
-For a component that only places children and reads nothing from `props.data`, compare [HTML template places](DESIGN_statement.md#template-places). When the platform draws every child of the container, `props.data` carries no group or property values, because such a child is not projected — only the children's `{ caption, image, hidden }` entries in `props.data`.
+For a component that only places children and reads nothing from `props.data`, compare [HTML template places](DESIGN_statement.md#template-places). When the platform draws every child of the container, `props.data` contains no group or property values, because such a child is not projected — only the children's `{ caption, image, hidden }` entries in `props.data`.
 
 The React component names its children too: adding a child requires editing the JSX, not just `DESIGN`.

@@ -25,7 +25,7 @@ function itemCards() {
 }
 ```
 
-It is the function that is registered: the platform itself calls _itemCards()_ and takes _render_ and _update_ from the result, so the object with these functions cannot be registered without the wrapping function. Its name is looked up first in the registry `window.lsfusion.custom`, where the loaded [client JavaScript modules](Client_JavaScript_modules.md#named-exports-and-auto-registration) register their exports, and then among the names on the global `window` object. A name registered with the kind `reactView` is a React component.
+It is the function that is registered: the platform itself calls _itemCards()_ and takes _render_ and _update_ from the result, so the object with these functions cannot be registered without the function that returns it. Its name is looked up first in the registry `window.lsfusion.custom`, where the loaded [client JavaScript modules](Client_JavaScript_modules.md#named-exports-and-auto-registration) register their exports, and then among the names on the global `window` object. A name registered with the kind `reactView` is a React component.
 
 The function _render_ takes as input the controller and the element inside which the new elements necessary to display the data are to be created.
 
@@ -45,7 +45,7 @@ The names of the object fields correspond to the names of the properties on the 
 
 The property values are converted to JS values in the same way as in the rows of a [React view](React_projection.md#values): for example, values of the date and time classes are passed as `Date`, and `JSON` — as a parsed object. A property whose value is an object arrives as that object's numeric id — the same id an object is passed by in [FK writes and server calls](Form_and_navigator_controllers.md#value-formats).
 
-Each object also carries the same `key` and `objects` as a row of a React view ([Row identity](Form_and_navigator_controllers.md#row-identity-contract)). The names `key` and `objects` are reserved for row identity.
+Each object also contains the same `key` and `objects` as a row of a React view ([Row identity](Form_and_navigator_controllers.md#row-identity-contract)). The names `key` and `objects` are reserved for row identity.
 
 As its fourth argument, `options`, `update` receives the value of the group's [`OPTIONS`](Object_blocks.md#objects) option (a parsed JSON).
 
@@ -125,7 +125,7 @@ controller.batch(() => {
 });
 ```
 
-A batch carries changes only, and changes only through `changeProperty` and the view filters (`setBooleanViewFilter`, `setDateIntervalViewFilter`), which go with the batch — moving the focus or changing the DOM inside `fn` makes the platform send requests of its own, which a batch is not made for.
+A batch includes changes only, and changes only through `changeProperty` and the view filters (`setBooleanViewFilter`, `setDateIntervalViewFilter`), which go with the batch — moving the focus or changing the DOM inside `fn` makes the platform send requests of its own, which a batch is not made for.
 
 Inside `fn`, `getPropertyValues` is refused — its failure callback called, the reason said on the console —, and so is a server call on the form's controller (`controller.form.exec`, `eval`, `evalAction`, `change`), its promise rejected. Make them before the batch or after it.
 
@@ -135,7 +135,7 @@ A function returning a Promise is refused — but not the batch's own, which a `
 
 `getPropertyValues` uses the same `mode` values as the form controller's `<group>.<property>.getValues`, but the property is resolved among this group's columns, and the lookup runs for its current object.
 
-The result is delivered to the `ok` callback as `{ data: [ { displayString, rawString, objects }, ... ], more }`. `more` is `true` while more answers are to come — the final list of an answer the server gave before it was sure the form's unsaved changes do not affect it, or a later lookup's answer. An earlier lookup's answer that comes after a later one's is dropped:
+The result is delivered to the `ok` callback as `{ data: [ { displayString, rawString, objects }, ... ], more }`. `more` is `true` while more answers are to come — the final list of an answer the server gave before it was sure the form's unsaved changes do not affect it, or a later lookup's answer. An earlier lookup's answer that comes after a later one's is ignored:
 
 ```js
 controller.getPropertyValues('name', query, result => { ... });
@@ -190,7 +190,7 @@ The column getters that take an object use the current row if it is omitted or `
 
 The request `Promise` of a group change, view filter or batch resolves when the client finishes processing the server's answer, or immediately if there is no request to send. It rejects if the request fails or the form is closed (`Form is closed`).
 
-Editing the form — `changeObject`, `changeProperty`, `batch` and the view filters — goes through the ordinary edit channel and is not gated. The server calls of the form's controller, `controller.form`, are gated ([Authorization gate](Form_and_navigator_controllers.md#access)).
+Editing the form — `changeObject`, `changeProperty`, `batch` and the view filters — uses the ordinary edit mechanism without the access checks for server calls. The server calls of the form's controller, `controller.form`, require access checks ([Access checks](Form_and_navigator_controllers.md#access)).
 
 ### A property's value {#property}
 
@@ -205,7 +205,7 @@ A value of any class arrives converted to a JS value in the same way as in the r
 
 The fourth argument of `update` is `null` for an ordinary `CUSTOM` cell renderer.
 
-Given together with [`SELECT`](Properties_and_actions_block.md#options), the render function draws the selection. The `value` passed to `update` contains the property's options, as for the platform's own selection element. The wrapping function is called with an object `{multi, notNull, html, changeValue}`: `multi` means a selection of several values, `notNull` means a value has to be selected, `html` means the options' views are HTML, and `changeValue` means a pick is passed to the property's explicit change as the option's view.
+Given together with [`SELECT`](Properties_and_actions_block.md#options), the render function draws the selection. The `value` passed to `update` contains the property's options, as for the platform's own selection element. The registered function is called with an object `{multi, notNull, html, changeValue}`: `multi` means a selection of several values, `notNull` means a value has to be selected, `html` means the options' views are HTML, and `changeValue` means a pick is passed to the property's explicit change as the option's view.
 
 ### A property's controller {#property-controller}
 

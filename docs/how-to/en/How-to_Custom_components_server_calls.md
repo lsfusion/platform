@@ -223,6 +223,6 @@ On the form the calls run in the form's session: the cart line and the "hidden" 
 
 ### The gate
 
-`CUSTOMS` opens the listed entries to the controller of this form only, and it does not restrict the argument values the component passes, so every listed entry must stay safe for an arbitrary id and arbitrary values ([Authorization gate](../language/Form_and_navigator_controllers.md#access)). The `edit` double-click needs no entry: an action drawn on the form is executed through the form-edit channel (`changeProperty`), which is not gated — but which also takes no extra arguments, only the target row. As soon as an argument that is not on the form is needed — a quantity, a percentage, an array — that is `exec` plus an entry in `CUSTOMS`.
+`CUSTOMS` opens the listed entries to the controller of this form only, and it does not restrict the argument values the component passes, so every listed entry must stay safe for an arbitrary id and arbitrary values ([Access checks](../language/Form_and_navigator_controllers.md#access)). The `edit` double-click needs no entry: an action drawn on the form is executed through the form-edit channel (`changeProperty`), which is not gated — but which also takes no extra arguments, only the target row. As soon as an argument that is not on the form is needed — a quantity, a percentage, an array — that is `exec` plus an entry in `CUSTOMS`.
 
 Prefer `CUSTOMS` over `@@api` for a call a custom view needs. Mark something `@@api` only when it is genuinely part of the external HTTP API.

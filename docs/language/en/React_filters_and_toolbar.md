@@ -35,7 +35,7 @@ Each condition is an object:
 | `negation` | Whether the condition is negated |
 | `or` | Whether this condition is joined to the **next** one by OR rather than AND — so `or` on the first of two makes the pair a disjunction |
 
-This is the shape the [`FILTER`](FILTER_ORDER_operators.md) operator reads, so one vocabulary describes a
+This is the shape the [`FILTER`](FILTER_ORDER_operators.md) operator reads, so the same format describes a
 condition in `.lsf` and in the projection; `FILTERS` writes it too, with the value as a string and `or` only on a
 condition joined by OR. Only the name differs: `FILTER` names a property by its name on the form, the projection by its
 integration SID, and the two are different names when the property has an `EXTID`.
@@ -48,7 +48,7 @@ until they have explicit `EXTID`s.
 `data.<g>.properties` lists the entries of the node it is on, so on a node that holds only the user filters it is
 empty: the properties a condition can name are the group's, not the node's — `filterProperties` lists them.
 
-The controller takes a condition in the same shape, so a projected condition can be handed back to it as it is. What a
+The controller takes a condition in the same shape, so a projected condition can be passed back to it as it is. What a
 condition leaves out of `compare`, `negation` and `or` is read as below:
 
 - in an array, as for a new condition — the property's default comparison (its `defaultCompare` in `filterProperties`),
@@ -78,7 +78,7 @@ compared last, and F3 on an empty cell states the condition comparing with `NULL
 in advance, its value and a condition added by hand are stated by one rule.
 
 Prefer it to replacing the whole list. A view that rebuilds the list merges into the conditions its handler saw, so
-a handler that holds the list of an earlier render silently drops a filter set since.
+a handler that holds the list of an earlier render omits a filter set since then without reporting it.
 
 ```jsx
 export function ItemBoard(props) {
@@ -132,8 +132,8 @@ A condition set elsewhere is not listed when it is on a property with no integra
 projection has no name for, on an action, which is not something a form is filtered by, or on a property grouped in
 columns, as a condition here names a property, not one of its columns. The console says which and why.
 
-Handing `data.<group>.filters` back through the array form therefore leaves those conditions where they are, as changing
-ONE condition never touches the conditions on other properties.
+Passing `data.<group>.filters` back through the array form therefore leaves those conditions where they are, as changing
+ONE condition never changes the conditions on other properties.
 
 #### Refused conditions {#refused-conditions}
 
@@ -148,7 +148,7 @@ node](React_trees_sortings_selection.md#trees). `filters` there lists the condit
 property by its group's name and its own, `c.name`, as a [`<Platform>`](React_platform_components.md#crossing-back-to-lsfusion) names a property of a group.
 
 `controller.<tree>.filters.change` takes a condition named the same way: the name is read up to its first dot, the
-group's — a group's name has none, and an `EXTID` with a dot, which a property the platform draws may carry, is taken
+group's — a group's name has none, and an `EXTID` with a dot, which a property the platform draws may have, is taken
 back as `filters` gives it. A list it states is the tree's: `controller.t.filters.change([])` clears the conditions it
 can name of all its groups in one request, and a single condition is merged into the conditions of all of them.
 
@@ -163,7 +163,7 @@ the properties of all its groups, those of the upper groups first. Each is an ob
 | `property` | The property, named as a condition names it |
 | `caption` | Its caption in the design, `null` where the design gives none |
 | `type` | The type of a condition's value: `string`, `number`, `date`, `boolean` or `json` — the FILTER type, by which `value` is read and written |
-| `compares` | The comparisons the platform's own filter editor offers for it, spelled as `filters` spells them |
+| `compares` | The comparisons the platform's own filter editor offers for it, in the format used by `filters` |
 | `defaultCompare` | The one that editor starts with — the one the design named, which need not be one of `compares` |
 
 An action, a property grouped in columns and one with no integration SID are not listed: no condition can be on them.
@@ -219,7 +219,7 @@ function ItemFilterButtons({data, controller}) {
 The cell a condition is added on is:
 
 - where the platform draws the rows, the current cell of the standard grid;
-- where a view draws them, the first column a view carries that the form shows and a condition can be on — a view has
+- where a view draws them, the first column a view includes that the form shows and a condition can be on — a view has
   no current column —, in its current row;
 - on a tree, the current cell of the platform's tree, or the first column of the
   [current node](React_trees_sortings_selection.md#trees)'s group that the form shows and a condition can be on, in that
@@ -269,7 +269,7 @@ filter, and in a group of one filter — the platform's check box —, pressed a
 
 A filter group is its group's — the last group for the objects its filters take, the one a
 [filter](../paradigm/Form_structure.md#filters) of the form is applied to —, a group of a [tree](React_trees_sortings_selection.md#trees) included: it is
-on that group's node, `data.<group>.<filterGroup>`, never on the tree's, which carries what the platform has one of for
+on that group's node, `data.<group>.<filterGroup>`, never on the tree's, which contains what the platform has one of for
 the whole tree — its user filters, filter controls, toolbar and sortings —, though the platform's design puts a tree's
 filter groups in the tree's `FILTERGROUPS(TREE <tree>)`.
 
@@ -313,7 +313,7 @@ controller.i.filter.name.change(null);                     // ... and not any mo
 | `caption` | The property's caption in the design, `null` where the design gives none |
 | `type` | The type of a condition's value: `string`, `number`, `date`, `boolean` or `json` — the FILTER type, by which `value` is read and written |
 | `active` | Whether the filter has a condition — one comparing with `NULL` too, whose `value` is `null` as with none (`false` on a `BOOLEAN` property) |
-| `compare`, `negation`, `or` | The comparison of the filter's condition, spelled as `filters` spells it, whether the condition is negated, and whether it is joined to the next one by OR, as `filters` says it; while there is no condition, those of the condition it showed last — at first, the property's default comparison, `false` and `false` |
+| `compare`, `negation`, `or` | The comparison of the filter's condition, in the format used by `filters`, whether the condition is negated, and whether it is joined to the next one by OR, as specified by `filters`; while there is no condition, those of the condition it showed last — at first, the property's default comparison, `false` and `false` |
 | `value` | The value of the filter's condition, `null` while there is none |
 
 A filter of a property of a [tree](React_trees_sortings_selection.md#trees)'s group is on its group's node, as a filter
@@ -328,7 +328,7 @@ filter panel, a `FILTER` action.
 
 `change(value, options)` states its value as `filters.change` states one condition: in that condition's place, or,
 where there is none, in the filter's own. The options, `{compare, negation, or}`, any of them, state the condition's
-comparison — spelled as `filters` spells it —, its negation and its junction, as the platform's row does with the
+comparison — in the format used by `filters` —, its negation and its junction, as the platform's row does with the
 filter controls shown; what they leave out stays as the filter has it — as its condition has it, or, with none, as it
 compared last (above).
 
@@ -466,7 +466,7 @@ group's view filters, as a calendar filters its group by the period it shows. Th
 with those, with the form's own `FILTERS` and with its filter groups.
 
 `viewFilters` lists them beside `list` and `keys`, where the rows are drawn: always there, and empty until the view
-states any. Each entry is a condition in the shape [`filters`](#filters) gives one — `property`, `compare`, `value`,
+states any. Each entry is a condition in the same format as [`filters`](#filters) — `property`, `compare`, `value`,
 `negation`, `or` —, on a property of the group named the same way, wherever it is drawn.
 
 `controller.<group>.viewFilters.change(conditions)` — a member in the same place, and only there — states the whole
@@ -532,7 +532,7 @@ it on the node, no members, no names taken.
 | on the node | member | what it does | the platform's button |
 | --- | --- | --- | --- |
 | `manual` | `manual.change(on)` | the manual update turned on or off | the manual update |
-| `updatePending` | `update()` | the changes the server holds back while the update is manual, brought | the update |
+| `updatePending` | `update()` | retrieves the changes the server defers while the update is manual | the update |
 | `filterControlsVisible` | `filterControlsVisible.change(shown)` | whether the platform's filter controls are shown — the buttons of its FILTERCONTROLS and the condition editors of its FILTERS panel and of the property filters' rows it draws; shown on a panel with no conditions, with one to fill in | the filter button |
 | `listView`, `listViews` | `listView.change(name)` | the rows of the platform's table shown in another view type, one of `listViews`: `grid`, `pivot`, and `custom`, `map` or `calendar` where the group has one | the view type switch |
 | | `getCount()` | the number of the group's rows — of the marked ones only, where the user has marked any, as the platform counts them —, as a `Promise` of the server's answer, a request as `getValues` is | the count |
@@ -625,7 +625,7 @@ They work over the view's rows as over the standard grid, with what those rows c
 
 - the toolbar has the buttons that need no table: the filter button, the count of the rows, the export and the manual
   update — not the view type switch, the settings or the sum of a column;
-- the filter panel's conditions can be on the columns the view carries, by their captions, and a new one starts on [the
+- the filter panel's conditions can be on the columns the view includes, by their captions, and a new one starts on [the
   cell a condition is added on](#filter-controls). The panel states them as the group's list, the one a `FILTER` action
   sets, and the view's rows follow it;
 - where the view draws the conditions too — it gets the group's `filters` —, the platform builds no panel: its controls

@@ -42,7 +42,7 @@ with [`<Platform name row/>`](React_platform_components.md#live-editor); it plac
 [Restrictions on `custom`](DESIGN_statement.md#component-properties).
 
 The attributes of the platform's table — a table's `valueClass` given by a property, a tree's `hierarchicalCaption` —
-mean nothing to its own view, as to a table a React container draws: the projection carries neither.
+mean nothing to its own view, as to a table a React container draws: the projection includes neither.
 
 ### A React component in `CUSTOM` {#form-custom}
 
@@ -97,7 +97,7 @@ The component is given its one group, with no name above it:
 
 [`List`](React_rendering.md#rendering-rows) and [`BucketScope`](React_rendering.md#bucketing) are given no `group` there. A property the form gives a view of its own — `NOCUSTOM`, or a `CUSTOM` render function — is not drawn by the component but placed by it in each row, by its name alone: [`<Platform name="quantity" row={row}/>`](React_platform_components.md#live-editor); the component places nothing else.
 
-The table takes the size of what the component draws, as any `CUSTOM` view does, and the toolbar switches it with the platform's other views of the rows. The toolbar and the user filters of the group remain the platform's, which draws them around the component, so `data` and `controller` carry nothing for them.
+The table takes the size of what the component draws, as any `CUSTOM` view does, and the toolbar switches it with the platform's other views of the rows. The toolbar and the user filters of the group remain the platform's, which draws them around the component, so `data` and `controller` have no entries for them.
 
 A property whose name is a [reserved name](React_projection.md#reserved-names) of a row or of a group's node where its rows are drawn, or `form` or `batch`, is not given, and neither is a property grouped in columns (`COLUMNS`): the form is not refused for it, as the server does not know that the render function is a component.
 
@@ -120,7 +120,7 @@ A child whose place is rendered but hidden is still placed: hiding its place doe
 
 #### A component in a place with `ownRoot` {#own-root}
 
-Where the place itself has to go and come back — a tab strip that renders only the active child so that the others are not read, a row of a list that is not rendered while it is scrolled away — and the components inside have to keep their state meanwhile, give the place `ownRoot`, at the price of the context and the `Suspense` boundaries the view has around the place:
+Where the host itself has to be removed and rendered again — a tab strip that renders only the active child so that the others are not read, a row of a list that is not rendered while it is scrolled away — and the components inside have to keep their state meanwhile, give the place `ownRoot`, which leaves the placed components outside the context and `Suspense` boundaries the view has around the host:
 
 ```jsx
 <Platform key={active} name={active} ownRoot/>

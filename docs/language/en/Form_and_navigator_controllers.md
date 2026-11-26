@@ -9,11 +9,11 @@ A custom view written in JavaScript communicates with the form through a *contro
 
 The controller is obtained in different ways:
 
-- a React view gets the controller of its own projection — the [members](React_view_controller.md#members), beside the `props.data` they mirror — and the form's controller as its `form`;
+- a React view gets the controller of its own projection — the [members](React_view_controller.md#members), at the same paths as the corresponding entries in `props.data` — and the form's controller as its `form`;
 - a classic view finds the form's controller as `controller.form`;
 - an `INTERNAL CLIENT` action is given the form's controller as an argument.
 
-The form's controller carries:
+The form's controller provides:
 
 - the server calls (`exec` / `eval` / `evalAction` / `change`);
 - the [methods](#across-containers) that do what a view's members do to what another container or the platform draws (`changeOrders('i', …)`, `changeObject('i', row)`, …);
@@ -22,7 +22,7 @@ The form's controller carries:
 
 Properties and actions are addressed by their integration name — the name on the form (or the alias / `NEW` / `DELETE` integration name of a button). Unless an `EXTID` gives it one of its own, that name is the property's name on the form with everything from `(` cut off, so `f(a)` and `f(b)` drawn on one group are both `f`: an integration name is not, by itself, unique.
 
-That is the name a view has, everywhere: `props.data` is keyed by it and every controller member is named by it. The form's own operators — `FILTER`, `ORDER` and the `READ` that writes their state back out — speak the other name, the property's SID on the form, in both directions. So a name a view was handed is not a name one of those operators takes: convert where the two meet, in the `lsf` code that calls the operator, rather than expecting either side to accept both.
+That is the name a view has, everywhere: `props.data` is keyed by it and every controller member is named by it. The form's own operators — `FILTER`, `ORDER` and the `READ` that writes their state back out — use the other name, the property's SID on the form, in both directions. So a name a view was handed is not a name one of those operators takes: convert in the `lsf` code that calls the operator, rather than expecting either side to accept both.
 
 Optional arguments are bracketed.
 
@@ -70,9 +70,9 @@ An [`INTERNAL CLIENT`](INTERNAL_operator.md#client) action is another entry poin
 
 ### Server calls {#calling-the-server}
 
-The form's `exec`, `eval`, `evalAction` and `change` — `controller.form` in a React view — each run on the server and return a `Promise`. They are subject to the [authorization gate](#access) and convert [the result](#result) to a JS value.
+The form's `exec`, `eval`, `evalAction` and `change` — `controller.form` in a React view — each run on the server and return a `Promise`. They are subject to the [access checks](#access) and convert [the result](#result) to a JS value.
 
-- `exec(action, ...params)` — runs a named action. Resolves to its `RETURN` value. `action` is the action's name — an entry of the form's `CUSTOMS` by the name it has there, or an action of the project by its [name](IDs.md), with the namespace and the signature in brackets when they are needed to pick one: `runReport[Order]` among overloaded actions. Not the `saveFilters()` a script would write: that shape answers "Action was not found".
+- `exec(action, ...params)` — runs a named action. Resolves to its `RETURN` value. `action` is the action's name — an entry of the form's `CUSTOMS` by the name it has there, or an action of the project by its [name](IDs.md), with the namespace and the signature in brackets when they are needed to pick one: `runReport[Order]` among overloaded actions. Not the `saveFilters()` a script would write: that syntax produces "Action was not found".
 - `eval(script, ...params)` — runs an lsf script that defines its own `run` action (typed parameters).
 - `evalAction(script, ...params)` — runs an action body wrapped into a `run` action, with parameters referenced as `$1`, `$2`, ….
 - `mcp` — `exec`, `eval` and `evalAction` that make their call as the MCP server's eval tool makes one: `controller.form.mcp.eval(script, ...params)`. The parameters are bound as the tool binds its `params`, and the call resolves with the object the tool answers with, `{results, status}` ([described after the result table](#mcp-calls)).
@@ -111,9 +111,9 @@ A file is the entry `{type: 'file', fileName, extension, mimeType, size}` — `f
 - `base64` — the content of any other file under 64 KiB, in base64;
 - `url` — the download URL of a bigger one.
 
-The content is named as in a file given as a parameter, so an entry that carries it can be passed to the next call as it is.
+The content is named as in a file given as a parameter, so an entry that contains it can be passed to the next call as it is.
 
-A text file over 10 MiB is given without its text, with `truncated: true`; one call carries 30 MiB of content at most, past which a text is given the same way and any other file by its `url`.
+A text file over 10 MiB is given without its text, with `truncated: true`; one call returns 30 MiB of content at most, past which a text is given the same way and any other file by its `url`.
 
 #### Parameters {#parameters}
 
@@ -137,9 +137,9 @@ await controller.form.change('archived', orderId, true);
 
 In a form the calls run in the form's session, so a change is visible to the following calls and is committed when the form applies. In the navigator each call runs in its own session, so a change is discarded unless the script applies it with `APPLY`, and a read sees the committed database state.
 
-#### Authorization gate {#access}
+#### Access checks {#access}
 
-By default these calls are gated like the external HTTP API: with the default `enableAPI = 0` a call is allowed only when the target action or property carries [`@@api`](Action_options.md) (which also exposes it over HTTP), or the user can run code in the interpreter. To let a specific form's controller call selected actions/properties without that gate, list them in the form's `CUSTOMS` clause — the authorization becomes "the user can open this form" plus the explicit listing:
+By default these calls undergo the same access checks as the external HTTP API: with the default `enableAPI = 0` a call is allowed only when the target action or property has [`@@api`](Action_options.md) (which also exposes it over HTTP), or the user can run code in the interpreter. To let a specific form's controller call selected actions/properties without those checks, list them in the form's `CUSTOMS` clause — the authorization becomes "the user can open this form" plus the explicit listing:
 
 ```lsf
 FORM order 'Order'
@@ -159,13 +159,13 @@ Each entry may be:
 
 `exec` needs an action entry and `change` a property entry. Parameters are passed positionally by the caller as plain values.
 
-The clause changes which calls are allowed, not how parameters are bound, and does not restrict the argument values a caller passes, so list only entries safe for any argument. `eval`/`evalAction` run arbitrary script and stay under the gate.
+The clause changes which calls are allowed, not how parameters are bound, and does not restrict the argument values a caller passes, so list only entries safe for any argument. `eval`/`evalAction` run arbitrary script and remain subject to the access checks.
 
 `CUSTOMS` scopes access to this form, while `@@api` also exposes the action or property over the external HTTP API.
 
 #### A closed form {#closed-form}
 
-A call made after the form has been closed *rejects* with a `Form is closed` error — it never hangs — so an `await` on a closed form lands in the `catch` branch. The form counts as closed once the server has closed it.
+A call made after the form has been closed *rejects* with a `Form is closed` error — it never waits indefinitely — so an `await` on a closed form transfers control to the `catch` branch. The form counts as closed once the server has closed it.
 
 A call made while the close is still being processed — the client has taken the form off the page as an action that may close it was clicked, and the server has not answered yet — is sent and runs after the close's request: if the server refuses the close, the form comes back with what the call did, so input a view commits as the form closes is not lost.
 
@@ -222,7 +222,7 @@ controller.form.changeObject('i', found.objects);   // a row found by a lookup
 
 `getValues` asks the server for a capped suggestion list for a property — a suggestion list, not a full `SELECT DISTINCT` — and returns the `Promise` of the answer, `{ data: [ { displayString, rawString, objects }, ... ] }`.
 
-A query too short for the server to search rejects it with the message the platform's editor shows then — "String too short to search", in the user's language —, as `form.exec` and `form.eval` reject with the server's message. An answer the server gave before it was sure the form's unsaved changes do not affect it carries `more` too — the `Promise` of the final answer.
+A query too short for the server to search rejects it with the message the platform's editor shows then — "String too short to search", in the user's language —, as `form.exec` and `form.eval` reject with the server's message. An answer the server gave before it was sure the form's unsaved changes do not affect it contains `more` too — the `Promise` of the final answer.
 
 ```js
 controller.<group>.<property>.getValues(value[, {row, mode, count}]);
@@ -272,7 +272,7 @@ Before `fn` runs, the form sends, in a request of its own, the row a user moved 
 
 Inside `fn`, call members and the form's controller's methods only: moving the focus, changing the DOM or dispatching events to the platform's components there makes the platform send requests of its own — an editor losing the focus saves its value —, which a batch is not made for.
 
-A batch carries changes only. Inside `fn`, these are refused:
+A batch includes changes only. Inside `fn`, these are refused:
 
 - `getValues` and a server call of the form's controller (`form.exec`, `form.eval`, `form.evalAction`, `form.change`), their promise rejected;
 - a toolbar's calls that ask the server — `getCount`, `getSum`, `export` — a tree's too — and a group's `copy` and `paste`, their `Promise` rejected with the reason;
@@ -352,7 +352,7 @@ controller.batch(() => {
 
 While a form is editing, a binding whose `editing` scope is the default does not fire for an event that came from inside the element being edited: `ENTER` does not move the focus to the next component, `ESCAPE` does not close a modal window, and a shortcut bound with [`CHANGEKEY`](Property_options.md) does not run. A binding declared with `editing=all` fires regardless.
 
-The form knows the editors it created itself. A field a view drew for itself it does not know, so the view declares it, on the form's controller:
+The form tracks the editors it created itself. It does not track a field a view drew for itself, so the view declares it, on the form's controller:
 
 - `startEditing(element)` — from now on the user is editing in `element`;
 - `stopEditing(element)` — the user is no longer editing in `element`, and the declaration is cleared only when `element` is the declared one;
@@ -364,9 +364,9 @@ While the declaration stands, the bindings above do not fire for events from `el
 
 A property's own editor starts editing on the first character typed, not on focus.
 
-Declaring on a wrapper covers every field inside it — including a nested [child the platform draws](React_platform_components.md#placing) and the editor the platform renders there. Declare on a narrower element when that is not wanted.
+Declaring on a containing element applies to every field inside it — including a nested [child the platform draws](React_platform_components.md#placing) and the editor the platform renders there. Declare on a narrower element when that is not wanted.
 
-Removing the declaration is the view's to do, and not only on blur: clear it when the element is removed or the view unmounts. A declaration left behind keeps those bindings from firing for events inside that element for as long as the form is open.
+Removing the declaration is the view's to do, and not only on blur: clear it when the element is removed or the view unmounts. A declaration left in effect keeps those bindings from firing for events inside that element for as long as the form is open.
 
 The declaration does not start property editing: there is no value to commit or to cancel, and `ENTER` saves nothing. To edit a *property* from the view, place the property with [`<Platform name/>`](React_platform_components.md#placing) — the platform renders its own editor there, and nothing is declared.
 
@@ -407,7 +407,7 @@ A method that targets a row accepts one of:
 - a raw `objects` handle — `row.objects`, or `item.objects` from a `getValues` `'objects'` result;
 - the **key** the projection gave the row — `row.key`, or a key out of `data.<group>.keys` / `byKey`.
 
-A row is taken only where its group's rows are drawn, so there is always this view's `byKey` to look the key up in: it is looked up among the rows of the member's own group, and a key naming no row there fails with an error. This is what lets a view hand back what it was handed: `byKey` is a JS object, and `Object.keys()` on it yields strings, so a key that has been through it no longer carries the type `row.key` was written with.
+A row is taken only where its group's rows are drawn, so there is always this view's `byKey` to look the key up in: it is looked up among the rows of the member's own group, and a key naming no row there fails with an error. This is what lets a view hand back what it was handed: `byKey` is a JS object, and `Object.keys()` on it yields strings, so a key obtained that way is a string regardless of the original type of `row.key`.
 
 A classic view has no such index, so its `changeProperty` takes the row or its handle.
 
@@ -415,6 +415,6 @@ For a single-object group of a custom class the value of `row.key` numerically e
 
 If an explicit row argument is none of these, the platform does not silently fall back to the current row: the call fails with an error naming what was expected rather than acting on another row.
 
-Nor does it accept a row of a *different* group: `controller.<group>.change(row)` and a list property member's `change(value, row)` / `exec(row)` both say whose row is meant — the member's group — and a row of another group carries only that group's objects, so the rest would be taken from the current ones and the call would land on a row of this group nobody named.
+Nor does it accept a row of a *different* group: `controller.<group>.change(row)` and a list property member's `change(value, row)` / `exec(row)` both require a row of the member's group and a row of another group contains only that group's objects, so the rest would be taken from the current ones and the call would act on a row of this group that was not specified.
 
 Inside a tree a row of a group BELOW is not another group's row in this sense: its key is the whole path down to it, so it names one row of every group above it, and it is accepted there — exactly as `<group>.change` accepts it.

@@ -7,17 +7,17 @@ The component of a [React view](React_views.md) works with the form open in the 
 
 There is one controller **per projection**: a React view's `props.controller` is its own container's, and it names exactly what that container's `props.data` shows.
 
-The object a classic view and a custom cell editor are given as `controller.form`, an `INTERNAL CLIENT` action as its argument and a React view as `props.controller.form` is the FORM's: it projects no data, so it has none of the members below — a member says that `data.<group>.<property>` is there —, and what it reaches it is given the name of, as a string, which the platform checks when it is called.
+The object a classic view and a custom cell editor are given as `controller.form`, an `INTERNAL CLIENT` action as its argument and a React view as `props.controller.form` is the FORM's: it projects no data, so it has none of the members below — a member indicates that `data.<group>.<property>` is there —, and it receives the name of the element to operate on as a string, which the platform checks when it is called.
 
-A view's controller **mirrors the shape of `props.data`**: its members are the container's entries, made once, when the form opens, each at the same path as its data — what a view reads as `data.o.qty` it changes through `controller.o.qty`, and `data.total` through `controller.total`. Specifically:
+A view's controller **has the same shape as `props.data`**: its members are the container's entries, made once, when the form opens, each at the same path as its data — what a view reads as `data.o.qty` it changes through `controller.o.qty`, and `data.total` through `controller.total`. Specifically:
 
 - each object group a part of which this view draws is a member of the controller under its group SID;
-- each property whose VALUE this view carries is a member of that group under its integration name;
+- each property whose VALUE this view includes is a member of that group under its integration name;
 - each property of the empty group (the form level) is a member of the controller itself.
 
-A form in which one of these names would stand for two properties of one container is refused when it is built. The member *is* the address — a view's controller has no second, string-addressed set of verbs saying the same thing, and a name typed wrong is a member that does not exist rather than a string the platform has to validate.
+A form in which one of these names would stand for two properties of one container is refused when it is built. The member *is* the address — a view's controller has no second, string-addressed set of methods for the same operations, and a name typed wrong is a member that does not exist rather than a string the platform has to validate.
 
-A view reads only its own container's parts, and its controller's members change what its `props.data` carries. What another container draws, or the platform, a view changes through the form's controller, by names ([across containers](Form_and_navigator_controllers.md#across-containers)). What containers share is the form itself — its current objects, sortings, filters and session — so a filter or a current object changed in one container shows in another, as it does in the standard client.
+A view reads only its own container's parts, and its controller's members change what its `props.data` contains. What another container draws, or the platform, a view changes through the form's controller, by names ([across containers](Form_and_navigator_controllers.md#across-containers)). What containers share is the form itself — its current objects, sortings, filters and session — so a filter or a current object changed in one container shows in another, as it does in the standard client.
 
 ### Members {#members}
 
@@ -45,7 +45,7 @@ Optional arguments are bracketed.
 | `<group>.filter.<property>.change(value[, {compare, negation, or}])` | state the value of a [property's filter](React_filters_and_toolbar.md#property-filters) — in its condition, the first on the property, or, with none, in the filter's own place, with the comparison, the negation and the junction the options state; `null` takes that one off — where `FILTER(<property>)` is drawn | `Promise` |
 | `<group>.viewFilters.change(conditions)` | state the group's [view filters](React_filters_and_toolbar.md#view-filters), the view's own conditions the server filters its rows by beside the user filters: an array states them all, an empty one none — only where the rows of a group not in a tree are drawn | `Promise` |
 | `<group>.getCount()` / `.getSum(property)` | the number of the group's rows and the sum of a column of them, of the marked rows only where the user has marked any — where `TOOLBARSYSTEM(<group>)` is, whatever the design's `show…` flags say — its [buttons](React_filters_and_toolbar.md#toolbar) | `Promise` |
-| `<group>.export()` / `.update()` / `.manual.change(on)` / `.filterControlsVisible.change(shown)` / `.listView.change(name)` | export the rows, bring the changes the server holds back, turn the manual update on or off, show or hide the platform's filter controls, show the rows in another view type — where `TOOLBARSYSTEM(<group>)` is, whatever the design's `show…` flags say | `Promise` |
+| `<group>.export()` / `.update()` / `.manual.change(on)` / `.filterControlsVisible.change(shown)` / `.listView.change(name)` | export the rows, retrieve the changes the server defers, turn the manual update on or off, show or hide the platform's filter controls, show the rows in another view type — where `TOOLBARSYSTEM(<group>)` is, whatever the design's `show…` flags say | `Promise` |
 | `<tree>.expandCurrent()` | open the [tree](React_trees_sortings_selection.md#trees)'s current node and every node under it — the tree's own, on the tree's node where its rows are drawn; over the platform's tree, its toolbar's, where `TOOLBARSYSTEM(TREE <tree>)` is | `Promise` |
 | `<tree>.export()` / `.filterControlsVisible.change(shown)` / `.expandTree()` | export the tree, show or hide the platform's filter controls of the tree — on the tree's node, where `TOOLBARSYSTEM(TREE <tree>)` is ([its toolbar](React_filters_and_toolbar.md#tree-toolbar)); over the platform's tree also open it from the selected node's group down | `Promise` |
 | `batch(fn)` | run `fn`, the member changes it makes shown at once and sent together in one request when it returns, in the order made — the form's [batch](Form_and_navigator_controllers.md#batch), also `form.batch(fn)` | `Promise` |
@@ -61,32 +61,32 @@ controller.o.customer.getValues(text, {mode: 'objects'});   // the Promise of it
 controller.total.change(500);          // a property of the empty group
 ```
 
-Beside its members and `batch`, the controller carries `form`, the [form's controller](Form_and_navigator_controllers.md#the-form-controller).
+Beside its members and `batch`, the controller includes `form`, the [form's controller](Form_and_navigator_controllers.md#the-form-controller).
 
 A member's `change` and `exec` do not ask the confirmation a property's design asks for (`CONFIRM` on an action, `askConfirm` in the design): the platform's own editor and button ask it, a view's call goes straight to the server. The property's entry says whether to ask, and what — `askConfirm` and `askConfirmMessage` ([display options](React_projection.md#display-options)) —, so a view that wants the question asks it before it calls.
 
 #### Members and entries {#members-and-entries}
 
-The members are **what this view can change** - the entries it carries, minus what the PLATFORM draws. What the platform draws in this view's part has an entry but no member:
+The members are **what this view can change** - the entries it includes, minus what the PLATFORM draws. What the platform draws in this view's part has an entry but no member:
 
 - a property declared `NOCUSTOM` - or given a `CUSTOM` render function in the `FORM` - has an entry (an ordinary column entry, so the view can draw the column header) and no member, because its value is drawn and edited by its own renderer, which this view places with `<Platform name row/>`;
-- any other child the platform draws has only the entry that labels it - an action the platform draws, panel or drawn per row, only its entry, with no caption and no image - they are its button's face; the platform's button runs it.
+- any other child the platform draws has only the entry that labels it - an action the platform draws, panel or drawn per row, only its entry, with no caption and no image - the platform displays them on its button; the platform's button runs it.
 
-So a group is a member of the controller of every container that has `data.<group>` - an empty one where the container only places what the platform draws of the group -, and a property is a member there when THAT container carries its value: a grid property where the rows are drawn, a panel property where the property itself stands.
+So a group is a member of the controller of every container that has `data.<group>` - an empty one where the container only places what the platform draws of the group -, and a property is a member there when THAT container includes its value: a grid property where the rows are drawn, a panel property where the property itself stands.
 
-A member is there as long as its entry is — from the start, `hidden` or not: a `SHOWIF` that hides the property leaves the member in place, and a call through it is refused while the entry is `hidden`, with an error saying the property is not shown by the form now. A property's change event is the one a user fires by editing the cell, so a property the form is not showing has nobody to fire it for.
+A member is there as long as its entry is — from the start, `hidden` or not: a `SHOWIF` that hides the property leaves the member in place, and a call through it is refused while the entry is `hidden`, with an error indicating the property is not shown by the form now. A property's change event is the one a user fires by editing the cell, so the user cannot trigger that event by editing a property the form is not showing.
 
-`<group>.change(row)` is there only where the group's rows are drawn — the current object is chosen among them — and so is `orders.change(...)` — the group's, or a tree's on the tree's node —, since a sorting is the order those rows are drawn in; and a row is taken only there: by `<group>.change` itself, and by the member of a list property, which lives where the rows are. The member of a panel property and a member of the empty group take no row: they act on the current objects.
+`<group>.change(row)` is there only where the group's rows are drawn — the current object is chosen among them — and so is `orders.change(...)` — the group's, or a tree's on the tree's node —, since a sorting is the order those rows are drawn in. See [Row argument](#row-argument) for which members take a row.
 
 What a view cannot see it has no member for either: the rest of the form is reached through the form's controller, `form` — its [methods across containers](Form_and_navigator_controllers.md#across-containers), and `change` / `exec` / `eval` / `evalAction`, which take lsf names and code rather than projection names.
 
 #### Property names in states and calls {#property-names}
 
-Where the state a view keeps names a property — a sorting, a user filter's condition — it names it by its integration name, not by a member: a state is data, written in the shape `props.data` publishes it, and it may name a property no member stands for, such as a column the platform draws.
+Where the state a view keeps names a property — a sorting, a user filter's condition — it names it by its integration name, not by a member: a state is data, written in the format used by `props.data`, and it may name a property no member stands for, such as a column the platform draws.
 
 A sorting is `{property: 'sum', desc: true}` and a condition `{property: 'sum', compare: '>', value: 100}`, and either name is looked up among the group's properties, wherever they are drawn: a group's state is the group's, not one view's — `FILTERS(<group>)` need not be anywhere near a column, and the rows need not be drawn beside a property they are sorted by ([Sortings](React_trees_sortings_selection.md#orders), [Filters](React_filters_and_toolbar.md#filters)).
 
-A call, by contrast, names what it changes by its member. A property grouped in columns is a member nowhere, for the same reason it is not projected: its values are addressed by a row-and-column key. (The classic `changeProperty` — a CUSTOM object group's, and the form's controller's, `form.changeProperty` — is another surface, older than this one, and goes on naming the whole form.)
+A call, by contrast, names what it changes by its member. A property grouped in columns is a member nowhere, for the same reason it is not projected: its values are addressed by a row-and-column key. (The classic `changeProperty` — a CUSTOM object group's, and the form's controller's, `form.changeProperty` — is another interface, older than this one, and still accepts names from the whole form.)
 
 #### Call results {#call-results}
 
@@ -100,28 +100,28 @@ After the form has been closed, the `Promise` of a mutating member's call is rej
 
 A property's `change` or `exec` the platform makes no request for — a delete with no row to delete, a closing of the form the user does not confirm — resolves its `Promise` at once outside a batch; when the server fails to give a new object its id, the `Promise` is rejected with the reason, as a failed request's is.
 
-Calls on the user filters — including a change the [manual apply mode](React_filters_and_toolbar.md#filter-controls) holds back and an `applyFilters` with nothing waiting — wait for the table's latest filter request in flight. A tree's `expandCurrent` and `expandTree` likewise wait for its latest expansion request in flight. With none in flight they resolve at once, as do other calls that make no request outside a batch.
+Calls on the user filters — including a change the [manual apply mode](React_filters_and_toolbar.md#filter-controls) defers and an `applyFilters` with nothing waiting — wait for the table's latest filter request still being processed. A tree's `expandCurrent` and `expandTree` likewise wait for its latest expansion request still being processed. With no request still being processed they resolve at once, as do other calls that make no request outside a batch.
 
 ### Member names {#member-names}
 
 A name that is not a JavaScript identifier is addressed with brackets: a property with `EXTID 'unit price'` is `controller.o['unit price'].change(v)`. A group SID is always an identifier — a group of several objects, whose SID would be their names joined with dots, is refused when the form is built until it is named (`OBJECTS pair = (d = X, t = Y)`).
 
-A name that would shadow a member of the surface itself is refused when the form is **built**, the same way [the projection's own reserved names](React_projection.md#reserved-names) are:
+A name that would shadow a member of the controller itself is refused when the form is **built**, the same way [the projection's own reserved names](React_projection.md#reserved-names) are:
 
-- a group SID, a tree's name where a view draws its rows or another part of the tree, or a property of the empty group coinciding with what the controller carries beside its members (`form`, `batch`), or with each other;
+- a group SID, a tree's name where a view draws its rows or another part of the tree, or a property of the empty group coinciding with what the controller includes beside its members (`form`, `batch`), or with each other;
 - a group property named like one of the group's own members in the same container.
 
 A controller is one namespace for its own projection, so a group and a property of the empty group the same container projects cannot both be `total`, while two different containers may. The fix is to rename it, or give it an `EXTID`.
 
-A tree's sortings, its current row and its own `expandCurrent`, where its rows are drawn, and its user filters, toolbar and filter controls are on [the tree's node](React_trees_sortings_selection.md#trees), which carries no property.
+A tree's sortings, its current row and its own `expandCurrent`, where its rows are drawn, and its user filters, toolbar and filter controls are on [the tree's node](React_trees_sortings_selection.md#trees), which contains no property.
 
 ### Form edits and server calls {#edits-and-server-calls}
 
-Running an action through its member — `controller.o.edit.exec(row)`, outside a `batch` — is the same request as clicking it on the form: synchronous, blocking input until it completes and showing the [busy indicator](../paradigm/Interactive_view.md#busy) after its delay, unless the action is drawn with `NOWAIT` (the `syncType` [property option](Property_options.md)). The form's `exec`, `eval`, `evalAction` and `change` go as asynchronous requests. So a refresh on a timer is not made through the controller — see [Live data](React_form_behavior.md#live-data).
+Running an action through its member — `controller.o.edit.exec(row)`, outside a `batch` — is the same request as clicking it on the form: synchronous, blocking input until it completes and showing the [busy indicator](../paradigm/Interactive_view.md#busy) after its delay, unless the action is drawn with `NOWAIT` (the `syncType` [property option](Property_options.md)). The form's `exec`, `eval`, `evalAction` and `change` go as asynchronous requests. So a refresh on a timer is not made through the controller — see [Scheduled refresh](React_form_behavior.md#live-data).
 
-Editing the form and calling the server also differ along two more axes — whether they are gated, and how an object is addressed in them:
+Editing the form and calling the server also differ in two more respects — whether they require access checks, and how an object is addressed in them:
 
-| group | methods | gate | how an object is passed |
+| group | methods | access check | how an object is passed |
 | --- | --- | --- | --- |
 | editing the form | `<group>.change` / `<property>.change` / `<property>.exec`; on the form's controller, `changeObject` / `changeOrders` / … ([across containers](Form_and_navigator_controllers.md#across-containers)) | none | the target row — a data row (`row`), a raw handle (`row.objects`), or its key (a member's only); an object as a value (FK) — its id |
 | calling the server | `exec` / `eval` / `evalAction` / `change` on the form's controller, `form` | `@@api` or the form's `CUSTOMS` (`exec`, `change`) / the right to run code in the interpreter | an object — its id |
@@ -130,7 +130,7 @@ A custom view normally reads state from `props.data` and changes it through the 
 
 The form's server calls (`exec` / `eval` / `evalAction` / `change`) are used only for what the form does not express — ad-hoc server computation, a global write, or creating an object.
 
-Editing the form goes through the ordinary edit channel and is not gated. The server calls are (see [Server calls](Form_and_navigator_controllers.md#calling-the-server)). The edited row is addressed by a handle, while any other object — an FK value or an action parameter — is passed as its numeric id (an lsFusion object cannot be passed from JS).
+Editing the form uses the ordinary edit mechanism without the access checks for server calls. The server calls require them (see [Server calls](Form_and_navigator_controllers.md#calling-the-server)). The edited row is addressed by a handle, while any other object — an FK value or an action parameter — is passed as its numeric id (an lsFusion object cannot be passed from JS).
 
 ### Changes to the current object and property values {#changing-values}
 
@@ -155,7 +155,7 @@ The rows read by the move replace `list`. The same call can change the [selected
 
 A group of an [object tree](React_trees_sortings_selection.md#trees) takes no edge, and its `list` contains all rows under open nodes without paging ([object search in a tree](../paradigm/Activation_ACTIVATE.md#search)). To move to the first or last node, call `controller.<group>.change(row)` through the member of that node's group, passing the row of the first or last node the view draws in its own order — parent then children — rather than the first or last element of one group's `list`.
 
-A built-in primitive-class object group — a `DATE` navigator, for instance — is moved to a value by writing the object's value (`controller.<g>.VALUE.change(d)`), by `controller.<g>.change(row)` with a row from `props.data.<g>.list` (which carries the `objects` handle), or, when the group is filtered by a data property, by changing that filter property.
+A built-in primitive-class object group — a `DATE` navigator, for instance — is moved to a value by writing the object's value (`controller.<g>.VALUE.change(d)`), by `controller.<g>.change(row)` with a row from `props.data.<g>.list` (which contains the `objects` handle), or, when the group is filtered by a data property, by changing that filter property.
 
 A date is given as a JS `Date` (`new Date(year, month - 1, day)`) or as the string a date input of the class has for its value (`'2026-11-18'` for a `DATE`), as for any date property (see [value formats](Form_and_navigator_controllers.md#value-formats)); any other value — a timestamp, the string `Date.toISOString()` gives, a day its month does not have — is refused: `change` throws `<value> is not a date: …`.
 
@@ -165,11 +165,11 @@ A date is given as a JS `Date` (`new Date(year, month - 1, day)`) or as the stri
 
 `.exec()` runs the property's change event, the one a user fires by editing the cell, on the current object — for an action, it runs the action — and `.exec(row)` does it on the given row. An action has no value to set, so `.change` on one is refused: call `exec`.
 
-A row is taken only by the member of a list property, which lives where the group's rows are drawn. The member of a panel property and a member of the empty group take none, and act on the current objects.
+See [Row argument](#row-argument) for which property members take a row.
 
 <a className="lsdoc-anchor" id="row-argument"/>
 
-A member takes a row only where the group's rows are drawn — `<group>.change(row)`, and the member of a list property, which lives there — and there it takes the row object, its `objects` handle, or the **key** string the projection gave it, looked up in this view's `byKey`. A panel property's member and a member of the empty group take no row: they act on the current objects. [Row identity](Form_and_navigator_controllers.md#row-identity-contract) says what each of the three means.
+A member takes a row only where the group's rows are drawn — `<group>.change(row)`, and the member of a list property, which is available there — and there it takes the row object, its `objects` handle, or the **key** string the projection gave it, looked up in this view's `byKey`. A panel property's member and a member of the empty group take no row: they act on the current objects. [Row identity](Form_and_navigator_controllers.md#row-identity-contract) says what each of the three means.
 
 For `controller.<g>.<p>.exec(row)`, `.change(value, row)` or `.getValues(query, {row})`, the property or action must be in `GRID` view, in a group in `GRID` view. Add a row action as `PROPERTIES(i) addToCart GRID`: actions default to `PANEL`. `PANEL`, `TOOLBAR` and `POPUP` properties refer to the current object, have no cells in `list` / `byKey`, and refuse member calls naming a row at runtime with `'<p>' is a panel property`. [Per-row editors](React_platform_components.md#live-editor) placed with `<Platform name row/>` or `usePlatform(name, {row})` also require a `GRID` property.
 

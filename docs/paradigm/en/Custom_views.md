@@ -65,7 +65,7 @@ The [JavaScript function](../language/Render_functions.md#render-function) named
 - [A React component in `CUSTOM`](../language/React_component_views.md#form-custom) shows how a React component draws the rows of an object group in its custom list view or draws a property's value.
 - [Form projection](../language/React_projection.md) describes the state a React component receives for the part it draws, including object groups with their rows and current objects, property values, and the options of properties shown as selection elements.
 - [Value lookup](../language/Form_and_navigator_controllers.md#looking-up-values) shows how a React component asks the server for a property's asynchronous value list.
-- [Live data](../language/React_form_behavior.md#live-data) explains how changes made by the `SCHEDULE` handler reach a React component like any other change.
+- [Scheduled refresh](../language/React_form_behavior.md#live-data) explains how changes made by the `SCHEDULE` handler reach a React component like any other change.
 - [The React view controller](../language/React_view_controller.md) describes how a React component changes current objects and property values and runs form actions.
 - [Changes to the current object and property values](../language/React_view_controller.md#changing-values) explains how a React component triggers property change events with the `CUSTOM` source and pushes a supplied value into a value request without prompting the user.
 - [Drawing trees](../language/React_trees_sortings_selection.md#trees) covers how a React component draws an object tree and expands or collapses its nodes.

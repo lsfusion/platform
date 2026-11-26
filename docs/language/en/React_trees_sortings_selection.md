@@ -32,7 +32,7 @@ short of an object of a STRING class whose value contains `|`). It is written th
 `row.parent === parentRow.key` holds rather than merely looking alike.
 
 Rows arrive under a loaded parent, so the parent
-a row names is usually there — until something takes it away: a filter on an upper group drops the parent row while its
+a row names is usually there — until something excludes it: a filter on an upper group excludes the parent row while its
 children stay (the server keeps sending them), and from then on `parent` can name a row this client does not have. So a
 view that indexes rows by key must decide what to do with a row whose parent it cannot find, rather than assume the
 lookup succeeded.
@@ -41,15 +41,15 @@ A view finds a row's ancestors the same way, following `parent` through the `byK
 the parent belongs to, and stopping at a parent it does not have; the depth a row is indented by needs no such walk, as
 it comes from drawing the tree from its roots down.
 
-`hasChildren` is what the server says the node has, loaded or not — not a design attribute, but the tree's live
+`hasChildren` is what the server reports the node has, loaded or not — not a design attribute, but the tree's current
 state.
 
 `expanded` says the node is open: its children are loaded — or a view asked to open or close it and the rows of the
 answer have not arrived yet, and then it says what was asked, as a changed value is shown before the answer and as the
-platform's own tree turns its expander glyph at the click. It is live state as well.
+platform's own tree turns its expander glyph at the click. It is current state as well.
 
 A node is closed at once, while its children stay in `list`
-until the answer takes them away, so a view that draws a node's children only under an `expanded` node hides
+until the server's answer removes them, so a view that draws a node's children only under an `expanded` node hides
 them at once. Only a node with children opens: one whose `hasChildren` is false stays closed, as it does in the
 platform's tree.
 
@@ -62,7 +62,7 @@ neither does opening one whose `hasChildren` is false; the field is absent but w
 Rows arrive as the tree is opened — past the roots, a group of a tree returns only the rows under nodes that are
 currently expanded, which is why, before anything is opened, its lower groups project an empty list.
 
-A row of a group below carries the path above it, so a row made current — through `change(row)`, or by the server —
+A row of a group below contains the path to its ancestors, so a row made current — through `change(row)`, or by the server —
 makes the rows on that path current in their groups as well. `current` follows the path up, as the platform's tree
 selects one node. The groups below it have no current row — the server clears their current objects when a row above is
 chosen. Every row in those groups has `current` set to `false` until a row is chosen there again.
@@ -82,8 +82,8 @@ opened again afterwards shows its children closed. Their rows' `expanded` change
 A group outside a tree has no such members at all: the five are
 installed on a group of a tree and nowhere else, and they are reserved on that group's node, as `list` is.
 
-These verbs are members of the group's node, so a container has them exactly where it has that group's rows: the tree
-React draws. A tree the platform draws is opened by the platform's own expander, and no React container has node verbs
+These methods are members of the group's node, so a container has them exactly where it has that group's rows: the tree
+React draws. A tree the platform draws is opened by the platform's own expander, and no React container has node methods
 for it; a view that draws its [toolbar](React_filters_and_toolbar.md#tree-toolbar) opens it through the toolbar's two buttons.
 
 #### The tree's own node {#tree-node}
@@ -103,14 +103,14 @@ FORM catalogue
 
 A container has the tree's node wherever it draws a part of
 the tree: the tree's rows — as a group's node is where its rows are — with its [sortings](#orders), its [user
-filters](React_filters_and_toolbar.md#filters), its [toolbar and filter controls](React_filters_and_toolbar.md#tree-toolbar). It carries no property, so a property of a group
+filters](React_filters_and_toolbar.md#filters), its [toolbar and filter controls](React_filters_and_toolbar.md#tree-toolbar). It contains no property, so a property of a group
 of the tree may take any name its parts take there.
 
 Where a view draws any part of the tree, the tree's name is taken at
-the top level there, so it may not be like a group the view carries, a container or a component it projects, a property
+the top level there, so it may not be like a group the view includes, a container or a component it projects, a property
 of the empty group or a member of the controller.
 
-Where a view draws the tree's rows, the tree's node says which of them is current, and has the one verb that needs to
+Where a view draws the tree's rows, the tree's node indicates which of them is current, and has the one method that needs to
 know it — no group's rows know it alone:
 
 | on the node | member | what it is |
@@ -136,7 +136,7 @@ reads rows around the current row.
 
 #### A group's sortings {#group-orders}
 
-A view that draws the rows of a group not in a tree carries `orders` — the group's sortings, in priority order — beside
+A view that draws the rows of a group not in a tree includes `orders` — the group's sortings, in priority order — beside
 `list` and `keys`: a sorting is the order the rows are drawn in, so it is projected where they are, and a container
 holding only a panel property of the group has neither. Where it is there it is always there, and empty when the group
 is sorted by nothing. Each entry is an object:
@@ -166,7 +166,7 @@ direction changes, and a new one is appended. An order with no `desc` is not a s
 property. An array — `controller.<group>.orders.change(orders)` — states the list as a whole, so what it leaves out
 stops sorting the group.
 
-A list naming one property twice is refused, and so are a name the group does not carry and a property grouped in
+A list naming one property twice is refused, and so are a name the group does not contain and a property grouped in
 columns.
 
 A change through the controller is sent at once, as the group's whole list — the same request a click on a standard
@@ -203,7 +203,7 @@ Two more kinds of sorting are not listed, and a console message says so when one
 no integration SID (`NOEXTID`), which the projection has no name for, and a sorting on a property grouped in columns,
 as a sorting here names a property, not one of its columns.
 
-Handing `data.<group>.orders` back through the array form would therefore take those two sortings off — the one on a
+Passing `data.<group>.orders` back through the array form would therefore remove those two sortings — the one on a
 `NOEXTID` property and the one on a property grouped in columns — while changing ONE sorting never touches what it does
 not name.
 
@@ -328,7 +328,7 @@ While no row of `list` is `selected`, the row is the current one, and while no c
 current one. `copy` returns the text of the current row without a request to the server. With no current row in `list`
 nothing is pasted, and with no column `copy` returns an empty text. `paste('')` does nothing.
 
-`copy` and `paste` are calls of their own. A [batch](Form_and_navigator_controllers.md#batch) does not carry them,
+`copy` and `paste` are calls of their own. A [batch](Form_and_navigator_controllers.md#batch) does not include them,
 and inside one they are refused. `paste` does not ask, so a view that needs the question asks it itself.
 
 The view takes the browser's `copy` and `paste` events itself and gives the text to the clipboard when it has it:
