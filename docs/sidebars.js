@@ -386,15 +386,7 @@ module.exports = {
                   link: {type: 'doc', id: 'paradigm/Integration'},
                   items: [
                     'paradigm/Access_from_an_external_system',
-                    {
-                      type: 'category',
-                      label: 'Access from an internal system',
-                      link: {type: 'doc', id: 'paradigm/Access_from_an_internal_system'},
-                      items: [
-                        'paradigm/Custom_Spring_bean_EventServer',
-                        'paradigm/Java_integration_API',
-                      ]
-                    },
+                    'paradigm/Access_from_an_internal_system',
                     {
                       type: 'category',
                       label: 'Access to an external system (EXTERNAL)',
@@ -649,28 +641,43 @@ module.exports = {
         },
         {
           type: 'category',
-          label: 'React',
-          link: {type: 'doc', id: 'language/React_views'},
+          label: 'Other languages',
+          link: {type: 'doc', id: 'language/Other_languages'},
           items: [
-            'language/React_projection',
-            'language/React_view_controller',
-            'language/React_rendering',
-            'language/React_platform_components',
-            'language/React_form_behavior',
-            'language/React_trees_sortings_selection',
-            'language/React_filters_and_toolbar',
-            'language/React_component_views',
-            'language/React_windows',
-          ]
-        },
-        {
-          type: 'category',
-          label: 'JavaScript',
-          link: {type: 'doc', id: 'language/Client_JavaScript_modules'},
-          items: [
-            'language/Render_functions',
-            'language/Edit_functions',
-            'language/Form_and_navigator_controllers',
+            {
+              type: 'category',
+              label: 'JavaScript',
+              link: {type: 'doc', id: 'language/Client_JavaScript_modules'},
+              items: [
+                'language/Render_functions',
+                'language/Edit_functions',
+                'language/Form_and_navigator_controllers',
+                {
+                  type: 'category',
+                  label: 'React',
+                  link: {type: 'doc', id: 'language/React_views'},
+                  items: [
+                    'language/React_projection',
+                    'language/React_view_controller',
+                    'language/React_rendering',
+                    'language/React_platform_components',
+                    'language/React_form_behavior',
+                    'language/React_trees_sortings_selection',
+                    'language/React_filters_and_toolbar',
+                    'language/React_component_views',
+                    'language/React_windows',
+                  ]
+                },
+              ]
+            },
+            {
+              type: 'category',
+              label: 'Java',
+              link: {type: 'doc', id: 'language/Java_integration_API'},
+              items: [
+                'language/Custom_Spring_bean_EventServer',
+              ]
+            },
           ]
         },
         'language/Comments',

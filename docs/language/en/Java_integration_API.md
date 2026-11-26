@@ -3,7 +3,7 @@ slug: "/Java_integration_API"
 title: 'Java API for integrations'
 ---
 
-A catalog of Java classes and methods used to access the lsFusion system from Java code — both from inside an `InternalAction` subclass (see [internal call (`INTERNAL`)](Internal_call_INTERNAL.md)) and from inside a Spring bean (see [custom Spring bean (`EventServer`)](Custom_Spring_bean_EventServer.md)).
+The Java integration API provides classes and methods for accessing lsFusion from Java code in the application server. The API is available in `InternalAction` subclasses (see [internal call (`INTERNAL`)](../paradigm/Internal_call_INTERNAL.md)) and in [Spring beans based on `EventServer`](Custom_Spring_bean_EventServer.md).
 
 ### Fully qualified names of the key classes
 
@@ -60,14 +60,14 @@ lsfusion.interop.server.RmiServerInterface
 - `findClass(canonicalName)` → `CustomClass`
 - `getModule(name)` → `ScriptingLogicsModule` for the module by name
 
-`ScriptingLogicsModule` (commonly `LM`) — a specific [module](Modules.md).
+`ScriptingLogicsModule` (commonly `LM`) — a specific [module](../paradigm/Modules.md).
 - `findProperty(localName)` → `LP<?>` / `findAction(localName)` → `LA<?>` — module-scoped resolution
 - `findClass(localName)` → `ValueClass` (a more general type than `BusinessLogics.findClass`'s; covers built-in classes — for user-defined classes a cast to `ConcreteCustomClass` is needed).
 - `findGroup(localName)` → `Group` / `findForm(localName)` → `FormEntity`
 
 ### Properties and actions
 
-`LP<?>` — Java wrapper over a [property](Properties.md).
+`LP<?>` — Java wrapper over a [property](../paradigm/Properties.md).
 - `read(session, ObjectValue... params)` → `Object` — current value (a Java value for scalar properties; a `Long` id for object-class properties)
 - `read(context, ObjectValue... params)` → `Object`
 - `readClasses(session, ObjectValue... params)` → `ObjectValue` — for object-class properties returns a `DataObject` with the concrete class set (or `NullValue`). Convenient when the value has to be passed straight into `LP.change` / `LA.execute` without rebuilding the class manually
@@ -77,7 +77,7 @@ lsfusion.interop.server.RmiServerInterface
 - `change(ObjectValue value, session, DataObject... params)` — write an object value (useful when copying a value read through `readClasses`)
 - `change(ObjectValue value, context, DataObject... params)`
 
-`LA<?>` — Java wrapper over an [action](Actions.md).
+`LA<?>` — Java wrapper over an [action](../paradigm/Actions.md).
 - `execute(session, stack, ObjectValue... params)` — run with own session+stack
 - `execute(context, ObjectValue... params)` — run from inside an `InternalAction`
 
@@ -89,7 +89,7 @@ lsfusion.interop.server.RmiServerInterface
 
 ### Change session
 
-`DataSession` — change [session](Change_sessions.md), accumulates changes until applied. Opened through `EventServer.createSession()` or `dbManager.createSession()`. Implements `AutoCloseable` — properly used in try-with-resources, an unapplied session is rolled back.
+`DataSession` — change [session](../paradigm/Change_sessions.md), accumulates changes until applied. Opened through `EventServer.createSession()` or `dbManager.createSession()`. Implements `AutoCloseable` — properly used in try-with-resources, an unapplied session is rolled back.
 - `applyException(BL, stack)` — apply, throwing on failure
 - `applyMessage(BL, stack)` → `String` — apply, returning the error message or `null`
 

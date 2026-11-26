@@ -30,7 +30,10 @@ It MUST:
   vs reused by reference;
   those mechanics
   (and their syntactic forms)
-  belong to the Language article
+  belong to the Language article,
+  as do the specifications
+  of interfaces
+  that code in other languages receives and calls
 - describe abstractions
   as independently as possible
   from the current language

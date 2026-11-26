@@ -3,9 +3,9 @@ slug: "/Custom_Spring_bean_EventServer"
 title: 'Свой Spring bean (EventServer)'
 ---
 
-Когда из своего Java-кода нужно обращаться к lsFusion-системе — запустить фоновую задачу, поднять интеграционный сервер, обработать поток событий, выставить наружу RMI-сервис — это делается через Spring bean, наследующийся от иерархии `EventServer`.
+`EventServer` — базовый класс компонентов Spring, которые обращаются к lsFusion из кода на Java на сервере приложений. Такие компоненты могут запускать фоновые задачи и интеграционные серверы, обрабатывать потоки событий и предоставлять сервисы по RMI.
 
-Это второй из двух способов [обращения из внутренней системы](Access_from_an_internal_system.md), параллельный пути через [`InternalAction`](Internal_call_INTERNAL.md#java).
+Это второй из двух способов [обращения из внутренней системы](../paradigm/Access_from_an_internal_system.md), параллельный пути через [`InternalAction`](../paradigm/Internal_call_INTERNAL.md#java).
 
 ### Базовый класс
 
@@ -86,7 +86,7 @@ RMI-клиент находит сервис в registry по тому же `<ex
 Bean инжектируется через Spring (минимально достаточно `logicsInstance` (`LogicsInstance`); через него доступны `getBusinessLogics()`, `getDbManager()`, `getRmiManager()`). Стандартные хуки распределяются так:
 
 - `afterPropertiesSet()` (когда bean реализует `InitializingBean`) — сразу после Spring DI. Здесь только `Assert.notNull(...)` для проверки инжекции. Runtime платформы ещё не готов, открывать сессии нельзя.
-- `onInit(LifecycleEvent)` — платформа начала инициализацию. Здесь резолвят [модуль](Modules.md) (`getLogicsInstance().getBusinessLogics().getModule("MyModule")`) и сохраняют `LP` / `LA`-обёртки в полях через `LM.findProperty(...)` / `LM.findAction(...)`.
+- `onInit(LifecycleEvent)` — платформа начала инициализацию. Здесь резолвят [модуль](../paradigm/Modules.md) (`getLogicsInstance().getBusinessLogics().getModule("MyModule")`) и сохраняют `LP` / `LA`-обёртки в полях через `LM.findProperty(...)` / `LM.findAction(...)`.
 - `onStarted(LifecycleEvent)` — платформа полностью поднята. Здесь стартуют фоновые потоки и listener-ы. Для `RmiServer`-bean-ов делают `bindAndExport`.
 - `onStopping(LifecycleEvent)` — корректно гасят свои потоки, для `RmiServer` делают `unbindAndUnexport`.
 

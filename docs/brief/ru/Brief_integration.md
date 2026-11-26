@@ -171,7 +171,7 @@ exportSku (Store store) {
 
 Принимается ли такой вызов вообще, задает настройка [`enableAPI`](../paradigm/Working_parameters.md). Действие, оказавшееся интерактивным, маршрутизируется в запущенный клиент пользователя и требует `enableUI` вдобавок к проверке `enableAPI`. Опция действия [`@@api`](../language/Action_options.md) разрешает конкретное действие при `enableAPI=0` (авторизованный пользователь при этом все равно нужен), а `@@noauth` обходит и проверку аутентификации, и `enableAPI`. Аннотация помечает именованное действие, поэтому она не распространяется ни на `/eval` и `/eval/action`, выполняющие произвольный код, ни на File API, где никакое действие не вызывается. Механизм — [обращение из внешней системы](../paradigm/Access_from_an_external_system.md).
 
-Из той же JVM или того же SQL-сервера к элементам обращаются напрямую — Java-кодом ([Java API для интеграций](../paradigm/Java_integration_API.md)) либо запросом SQL к таблицам платформы ([обращение из внутренней системы](../paradigm/Access_from_an_internal_system.md)).
+Из той же JVM или того же SQL-сервера к элементам обращаются напрямую — Java-кодом ([Java API для интеграций](../language/Java_integration_API.md)) либо запросом SQL к таблицам платформы ([обращение из внутренней системы](../paradigm/Access_from_an_internal_system.md)).
 
 ### Внешние вызовы (EXTERNAL)
 
@@ -210,7 +210,7 @@ INTERNAL [syncType] <{anyTokens}> [NULL]
 INTERNAL internalCall [PARAMS paramExpr1, ..., paramExprN] [TO propertyId1, ..., propertyIdM]
 ```
 
-Java-цель — класс, наследующий `InternalAction`, заданный своим именем или встраиваемым фрагментом кода в `<{ }>`. Такой код пишет значения прямо в свойства lsFusion в той же [сессии изменений](Brief_logic.md#сессии-изменений). Что ему доступно — [Java API для интеграций](../paradigm/Java_integration_API.md). Механизм всех трех типов — [внутренний вызов (`INTERNAL`)](../paradigm/Internal_call_INTERNAL.md), место оператора рядом с `FORMULA` — [обращение к внутренней системе](../paradigm/Access_to_an_internal_system_INTERNAL_FORMULA.md).
+Java-цель — класс, наследующий `InternalAction`, заданный своим именем или встраиваемым фрагментом кода в `<{ }>`. Такой код пишет значения прямо в свойства lsFusion в той же [сессии изменений](Brief_logic.md#сессии-изменений). Что ему доступно — [Java API для интеграций](../language/Java_integration_API.md). Механизм всех трех типов — [внутренний вызов (`INTERNAL`)](../paradigm/Internal_call_INTERNAL.md), место оператора рядом с `FORMULA` — [обращение к внутренней системе](../paradigm/Access_to_an_internal_system_INTERNAL_FORMULA.md).
 
 ```lsf
 setNoCancelInTransaction() INTERNAL <{ context.getSession().setNoCancelInTransaction(true); }>;

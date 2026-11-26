@@ -289,7 +289,7 @@ Since java code cannot be executed directly in the browser, this action will onl
 We need to implement an action that will listen to a specific port and call the appropriate action when a new message is received.
 
 :::info
-The canonical pattern for a long-lived server component is a bean registered in Spring and hooked into the platform lifecycle; see [custom Spring bean (`EventServer`)](../paradigm/Custom_Spring_bean_EventServer.md). The solution below creates a `MonitorServer` from inside an `InternalAction` without Spring registration — a working but less canonical alternative.
+The canonical pattern for a long-lived server component is a bean registered in Spring and hooked into the platform lifecycle; see [custom Spring bean (`EventServer`)](../language/Custom_Spring_bean_EventServer.md). The solution below creates a `MonitorServer` from inside an `InternalAction` without Spring registration — a working but less canonical alternative.
 :::
 
 ### Solution

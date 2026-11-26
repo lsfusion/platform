@@ -13,9 +13,25 @@ LANGUAGE — applies to docs/<lang>/language/
 ### 1. Language
 
 Language documentation is organized by syntax constructions
-and by the interfaces client code
-(an application's own code running in the client)
-receives and calls.
+and by the interfaces
+that code in other languages receives and calls
+(JavaScript in the client
+and Java in the application server).
+
+The articles on those interfaces
+sit in the `Other languages` subsection
+(`Other_languages.md`
+and the `Other languages` sidebar category),
+separate from the syntax.
+The subsection has one category
+per language
+(`JavaScript`, `Java`);
+a category MAY hold
+a category of its own
+for an interface
+specific to one technology
+of that language
+(`React` inside `JavaScript`).
 
 For a syntax construction it MUST contain:
 - the language syntax itself
@@ -41,14 +57,14 @@ For a syntax construction it MUST contain:
   the paradigm
 
 For an interface
-client code receives and calls
-it MUST contain
+that code in another language receives and calls,
+the article MUST contain
 the same basic explanation
 and, for each element
 of the interface,
 those of the following that apply:
 - its names
-  as client code writes them,
+  as that code writes them,
   how a name is formed
   from the element it stands for,
   and which names are reserved
@@ -72,7 +88,7 @@ those of the following that apply:
   and when a call
   takes effect
 - its availability:
-  in which client,
+  in which client or server context,
   under which kind of view,
   and for which components
   it exists
@@ -111,10 +127,10 @@ as its subject —
 not the human-language name
 that abstraction prose uses;
 an article on an interface
-client code receives and calls
+that code in another language receives and calls
 likewise takes as its subject
 the interface's own names,
-in the form client code writes them.
+in the form that code writes them.
 Language documentation
 MUST describe
 what can be written
@@ -146,7 +162,7 @@ Language article structure convention:
   `Parameters`,
   `Examples`
 - an article on an interface
-  client code receives and calls
+  that code in another language receives and calls
   uses none of these sections:
   after the definition
   it SHOULD have
@@ -258,9 +274,9 @@ Language article structure convention:
 Language file naming convention:
 - file names usually contain the syntax token in uppercase
 - an article on an interface
-  client code receives and calls
+  that code in another language receives and calls
   takes a descriptive name,
-  prefixed with the client technology
+  prefixed with the language or technology
   when the interface is specific to it
   and the name does not already say so
   (`React_projection.md`;
@@ -276,7 +292,7 @@ completing,
 or extending
 an article for a language syntax construction
 (or for an interface
-client code receives and calls,
+that code in another language receives and calls,
 leaving out the rules
 for `Syntax`, `Description`, `Parameters`,
 `Examples`, and syntax blocks),
@@ -979,7 +995,7 @@ Completeness of research:
   the assistant MUST explicitly propose
   describing them as well
 - for an interface
-  client code receives and calls,
+  that code in another language receives and calls,
   inspect and describe
   the ENTIRE interface
   the same way —
@@ -1018,7 +1034,22 @@ Completeness of research:
   `build/web-compile-maven-plugin`
   and `web-client/src/main/java/lsfusion/gwt/server/JsxTransformer.java`;
   the `form/…` paths
-  are under `web-client/src/main/java/lsfusion/gwt/client/`
+  are under `web-client/src/main/java/lsfusion/gwt/client/`.
+
+  For the Java API,
+  inspect the server classes listed in `Java_integration_API.md`
+  under `server/src/main/java/lsfusion/server/`,
+  including `physics/dev/integration/internal/to/InternalAction.java`,
+  `logics/action/controller/context/ExecutionContext.java`,
+  `base/controller/manager/EventServer.java`
+  and its subclasses
+  `base/controller/manager/MonitorServer.java`
+  and `base/controller/remote/manager/RmiServer.java`,
+  `language/property/LP.java` and `language/action/LA.java`,
+  `logics/action/session/DataSession.java`,
+  `logics/action/controller/stack/ExecutionStack.java`,
+  `base/controller/thread/ExecutorFactory.java`
+  and `base/controller/thread/ThreadLocalContext.java`
 - validate a JSX or JS example
   of such an interface
   (see Examples in ../AGENTS.md)

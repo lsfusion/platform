@@ -16,7 +16,7 @@ when working on that type (auto-loaded for BOTH language versions, since the
 layout is type-first docs/<type>/{en,ru}/ — these are agent rules, not
 translated content):
 - LANGUAGE — docs/language/AGENTS.md   (syntax constructions and the
-  interfaces client code receives and calls)
+  interfaces that code in other languages receives and calls)
 - PARADIGM — docs/paradigm/AGENTS.md   (abstractions and concepts)
 - HOW-TO   — docs/how-to/AGENTS.md      (task recipes)
 - RULES    — docs/rules/AGENTS.md       (AI task rules / coding recommendations;
@@ -212,11 +212,21 @@ The required order is:
 2) Paradigm
 3) How-to
 
+Paradigm describes
+the abstractions;
+Language describes
+their concrete realization:
+in lsFusion
+(its syntax constructions)
+or in other languages
+(the interfaces
+code written in them
+receives and calls).
 The specification of an interface
-that client code
-(an application's own code
-running in the client)
+that code in other languages
 receives and calls
+(JavaScript in the client
+and Java in the application server)
 is Language documentation,
 as is that of a syntax construction;
 How-to about such an interface
@@ -268,7 +278,8 @@ RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
 2. RESEARCH FLOW
    The assistant MUST first determine
    which syntax constructions
-   (or interfaces client code receives and calls)
+   (or interfaces that code in other languages
+   receives and calls)
    are relevant.
 
    After that it MUST:
@@ -298,7 +309,8 @@ RULES FOR UNDERSTANDING LANGUAGE CAPABILITIES
    - `plugin-idea/src/com/lsfusion/lang/LSF.bnf`
    - `plugin-idea/src/com/lsfusion/lang/psi/LSFPsiImplUtil.java`
 
-   For an interface client code receives and calls,
+   For an interface
+   that code in other languages receives and calls,
    the primary source is the runtime code
    that builds it and serves its calls
    (named in docs/language/AGENTS.md).

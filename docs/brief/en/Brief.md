@@ -10,7 +10,7 @@ map that says which article to open. It is deliberately not a short version of
 those articles. What is here is enough to classify a task and answer a rough conceptual
 question.
 
-Which branch: `language` — statement / operator syntax and the interfaces client code receives and calls; `paradigm` — concepts and the system-module libraries; `how-to` — task recipes. Those three are searched with `lsfusion_retrieve_docs`. When unsure which one, omit the filter and it searches all three and merges them.
+Which branch: `language` — statement / operator syntax and the interfaces code in [other languages](../language/Other_languages.md) receives and calls; `paradigm` — concepts and the system-module libraries; `how-to` — task recipes. Those three are searched with `lsfusion_retrieve_docs`. When unsure which one, omit the filter and it searches all three and merges them.
 
 `brief` and `rules` are not searched. Each is a small set of articles, named and delivered whole by `lsfusion_get_guidance`: `brief` says what an area offers, `rules` states the constraints on using it. The `rules` map, in the top `Rules` article, says when reading one of its articles becomes mandatory.
 

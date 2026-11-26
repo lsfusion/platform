@@ -3,9 +3,9 @@ slug: "/Custom_Spring_bean_EventServer"
 title: 'Custom Spring bean (EventServer)'
 ---
 
-When you need to reach the lsFusion system from your own Java code — to run a background job, host an integration server, process a stream of events, expose an RMI service — that is done with a Spring bean extending the `EventServer` hierarchy.
+`EventServer` is the base class for Spring beans that access lsFusion from Java code in the application server. Such beans can run background jobs, host integration servers, process event streams or expose RMI services.
 
-This is the second of the two ways of [accessing lsFusion from an internal system](Access_from_an_internal_system.md), parallel to the [`InternalAction`](Internal_call_INTERNAL.md#java) path.
+This is the second of the two ways of [accessing lsFusion from an internal system](../paradigm/Access_from_an_internal_system.md), parallel to the [`InternalAction`](../paradigm/Internal_call_INTERNAL.md#java) path.
 
 ### Base class
 
@@ -86,7 +86,7 @@ The RMI client locates the service in the registry under the same `<exportName>/
 The bean is injected via Spring (the minimum is `logicsInstance` (`LogicsInstance`), through which the bean reaches `getBusinessLogics()`, `getDbManager()`, `getRmiManager()`). The standard hooks are used as follows:
 
 - `afterPropertiesSet()` (when the bean implements `InitializingBean`) — fires right after Spring DI. Only the injection check goes here (`Assert.notNull(...)`). The platform runtime is not ready yet, sessions cannot be opened.
-- `onInit(LifecycleEvent)` — platform initialisation has started. This is where the [module](Modules.md) is resolved (`getLogicsInstance().getBusinessLogics().getModule("MyModule")`) and `LP` / `LA` wrappers are stored in fields via `LM.findProperty(...)` / `LM.findAction(...)`.
+- `onInit(LifecycleEvent)` — platform initialisation has started. This is where the [module](../paradigm/Modules.md) is resolved (`getLogicsInstance().getBusinessLogics().getModule("MyModule")`) and `LP` / `LA` wrappers are stored in fields via `LM.findProperty(...)` / `LM.findAction(...)`.
 - `onStarted(LifecycleEvent)` — the platform is fully up. This is where background threads and listeners are started. `RmiServer`-style beans call `bindAndExport` here.
 - `onStopping(LifecycleEvent)` — graceful shutdown: stop owned threads; for `RmiServer` call `unbindAndUnexport`.
 

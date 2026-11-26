@@ -3,7 +3,7 @@ slug: "/Java_integration_API"
 title: 'Java API для интеграций'
 ---
 
-Каталог Java-классов и методов, используемых при обращении к lsFusion-системе из Java-кода — как изнутри подкласса `InternalAction` (см. [внутренний вызов (`INTERNAL`)](Internal_call_INTERNAL.md)), так и изнутри Spring bean (см. [свой Spring bean (`EventServer`)](Custom_Spring_bean_EventServer.md)).
+Java API для интеграций предоставляет классы и методы для обращения к lsFusion из кода на Java на сервере приложений. API доступен в подклассах `InternalAction` (см. [внутренний вызов (`INTERNAL`)](../paradigm/Internal_call_INTERNAL.md)) и в [компонентах Spring на основе `EventServer`](Custom_Spring_bean_EventServer.md).
 
 ### Полные имена ключевых классов
 
@@ -60,14 +60,14 @@ lsfusion.interop.server.RmiServerInterface
 - `findClass(canonicalName)` → `CustomClass`
 - `getModule(name)` → `ScriptingLogicsModule` для модуля по имени
 
-`ScriptingLogicsModule` (обычно `LM`) — конкретный [модуль](Modules.md).
+`ScriptingLogicsModule` (обычно `LM`) — конкретный [модуль](../paradigm/Modules.md).
 - `findProperty(localName)` → `LP<?>` / `findAction(localName)` → `LA<?>` — резолвинг в рамках модуля
 - `findClass(localName)` → `ValueClass` (более общий тип, чем у `BusinessLogics.findClass`; включает встроенные классы — для пользовательских требуется приведение к `ConcreteCustomClass`).
 - `findGroup(localName)` → `Group` / `findForm(localName)` → `FormEntity`
 
 ### Свойства и действия
 
-`LP<?>` — Java-обёртка над [свойством](Properties.md).
+`LP<?>` — Java-обёртка над [свойством](../paradigm/Properties.md).
 - `read(session, ObjectValue... params)` → `Object` — текущее значение (Java-значение для скалярных свойств; `Long`/идентификатор объекта для свойств объектного класса)
 - `read(context, ObjectValue... params)` → `Object`
 - `readClasses(session, ObjectValue... params)` → `ObjectValue` — для свойств объектного класса возвращает `DataObject` с правильным конкретным классом (или `NullValue`). Удобно, когда значение нужно сразу передать в `LP.change` / `LA.execute` без ручного восстановления класса
@@ -77,7 +77,7 @@ lsfusion.interop.server.RmiServerInterface
 - `change(ObjectValue value, session, DataObject... params)` — запись объектного значения (полезно при копировании значения, прочитанного через `readClasses`)
 - `change(ObjectValue value, context, DataObject... params)`
 
-`LA<?>` — Java-обёртка над [действием](Actions.md).
+`LA<?>` — Java-обёртка над [действием](../paradigm/Actions.md).
 - `execute(session, stack, ObjectValue... params)` — запуск с собственными session+stack
 - `execute(context, ObjectValue... params)` — запуск из `InternalAction`
 
@@ -89,7 +89,7 @@ lsfusion.interop.server.RmiServerInterface
 
 ### Сессия изменений
 
-`DataSession` — [сессия изменений](Change_sessions.md), накапливает изменения до явного применения. Открывается через `EventServer.createSession()` или `dbManager.createSession()`. Реализует `AutoCloseable` — корректно использовать в `try`-with-resources, неприменённая сессия откатывается.
+`DataSession` — [сессия изменений](../paradigm/Change_sessions.md), накапливает изменения до явного применения. Открывается через `EventServer.createSession()` или `dbManager.createSession()`. Реализует `AutoCloseable` — корректно использовать в `try`-with-resources, неприменённая сессия откатывается.
 - `applyException(BL, stack)` — применить, бросив исключение при ошибке
 - `applyMessage(BL, stack)` → `String` — применить, вернув текст ошибки или `null`
 
