@@ -307,6 +307,7 @@ The AI guidance is published as documentation pages — `docs/brief/{en,ru}/Brie
 - Don't comment what the code already says. Comments belong only where **why** is non-obvious: a hidden constraint, a workaround, a subtle invariant.
 - No emojis in source, commits, or comments unless the user explicitly asks.
 - Prefer editing existing files to creating new ones.
+- Where the platform already solves the same problem one way (another form container, another popup, another dispatcher), solve it that way too, by analogy, even when that way has a known problem: such a problem is fixed later in every place at once, not avoided in one of them. Name the problem; going another way is the user's call.
 - Module-specific code/process rules live in the module's own `AGENTS.md`, auto-loaded when working there: language-syntax deprecation and the system `.lsf` deprecation-warning policy in `server/AGENTS.md`; API-version bumping in `api/AGENTS.md`; the JS controllers' methods and the page's WebMCP tool in `web-client/AGENTS.md`.
 
 ## Risk discipline
