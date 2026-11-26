@@ -53,7 +53,7 @@ Native CSS (nesting, custom properties) and CSS modules cover most of what a pre
 
 ### Colors for the dark theme {#dark-theme-colors}
 
-We need the colors of a component to follow the color theme of the interface. The solution uses the `data-bs-theme` attribute of the page's root element ([Styles](../language/Client_JavaScript_modules.md#styles)). The basic rules give the colors of the light theme, and the rules addressed by the attribute override them in the dark one.
+We need the colors of a component to follow the color theme of the interface. The solution uses the `data-bs-theme` attribute of the page's root element ([Color theme](../language/CSS_view_styles.md#color-theme)). The basic rules give the colors of the light theme, and the rules addressed by the attribute override them in the dark one.
 
 ```css
 .board { background: #ffffff; color: #212529; }

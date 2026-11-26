@@ -86,11 +86,6 @@ For each container, one of the directions is considered to be *dynamic*, and the
 For example, in the case of a vertical upper container, if the component is set to align at the start then it will be located on the maximum left of the container. If it is set to Stretch, the component will occupy all the space from the left to the right border.
 :::
 
-
-:::info
-This component layout algorithm is a special case of [CSS Flexible Box Layout](https://www.w3.org/TR/css-flexbox-1/) (and is implemented using it in the web client). For example, the CSS `flex-grow` property corresponds to the extension coefficient, and `flex-basis` corresponds to the base size.
-:::
-
 The column container breaks its static (horizontal) direction into `N` identical parts (where `N` is the number of columns): each part then has its own components, as if this part were a separate vertical container.
 
 For base components, instead of a base size in pixels, you can specify the *automatic size* (the base size `-1`): the base size is then not fixed but follows the content of the component — for a table, its base height encloses the rows it has loaded plus the header. For a property the automatic size is specified for the [value cell](#valueWidth) (in the web client; the desktop client always sizes the cell by the value class): its height, and in a panel also its width, then follow the content instead of being determined by the value class. The width of a table column is still determined by the value class.
@@ -99,7 +94,7 @@ The properties layout in a table (or rather, the columns that display their valu
 
 
 :::info
-Since the current implementation uses the [CSS Table Layout Fixed](https://www.w3schools.com/cssref/pr_tab_table-layout.asp) mechanism to place columns inside the table in the Web client, and its capabilities are significantly limited, the extension coefficient for properties displayed in the table can be equal either to `0` or to the base size.
+In the web client, a table column with an extension coefficient of `0` keeps its base width. A stretchable column can have an explicit coefficient. For columns sized by the platform, see [default dimensions and layout](#defaultSizes).
 :::
 
 The caption and the value cell are placed inside the property panel in the same way as if the panel were a container (horizontal if the caption is on the left, vertical if at the top), in which the cell has an extension coefficient of `1`, the caption is `0` and the alignment of both is set to  `STRETCH` 
@@ -218,6 +213,8 @@ The hierarchy of containers and components in the default design will look like 
 ### Language
 
 To set up the design of the form, use the [`DESIGN` statement](../language/DESIGN_statement.md). Its article also gives the complete tables of the properties of components of every kind (containers, components of properties and actions on the form, toolbars, grids) set by this statement.
+
+The [CSS layout reference](../language/CSS_view_styles.md#layout) shows which CSS properties the web client uses to lay out form components.
 
 A JavaScript function named in an object group's `CUSTOM` option draws the group's rows and can [show the table's record next to an element it supplies when changing the current object](../language/Render_functions.md#controller-methods).
 

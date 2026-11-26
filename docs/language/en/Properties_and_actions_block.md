@@ -189,7 +189,7 @@ In the current platform implementation, `=` is required before an expression or 
 
 - `CLASS propertyExpression`
 
-    Specifies a property whose value determines the CSS classes (separated by spaces) of the value element of the property being added. Similar to the `valueClass` property in the [`DESIGN` statement](DESIGN_statement.md): an explicit value fully replaces the default value classes, and in a table, for a typical text cell, the value element is the cell itself (`td`), so the classes end up on it (see the `valueClass` description for details).
+    [CSS classes of the value](CSS_view_styles.md#property-value-classes) of the property or action being added, given by a string. If omitted, the platform chooses the value classes.
 
     - `propertyExpression`
 

@@ -215,11 +215,11 @@ The `HIDE WINDOW` statement hides the specified window, making it invisible. A h
 
 - `CLASS cssClassExpr`
 
-    Specifying the name of the CSS class for the DOM element created for the window component in HTML. This can be used to apply custom styles.
+    [CSS classes](CSS_view_styles.md#classes) of the window. By default the option supplies no classes.
 
     - `cssClassExpr`
 
-        [Expression](Expression.md), whose value determines the class name.
+        [Expression](Expression.md) with a string value.
 
 <a className="lsdoc-anchor" id="custom"/>
 

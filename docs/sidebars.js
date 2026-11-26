@@ -678,6 +678,12 @@ module.exports = {
             },
             {
               type: 'category',
+              label: 'CSS',
+              link: {type: 'doc', id: 'language/CSS_view_styles'},
+              items: []
+            },
+            {
+              type: 'category',
               label: 'Java',
               link: {type: 'doc', id: 'language/Java_integration_API'},
               items: [

@@ -66,18 +66,7 @@ title: 'SystemEvents'
 
 Форма `design` редактирует оформление текущей среды (`captionTheme[DesignEnv]`, `captionSize[DesignEnv]`, `captionNavbar[DesignEnv]` и переключатели выше) и перезагружает клиент при применении, если изменилась настройка, требующая перезагрузки. `showDesign[]` открывает её плавающим окном. В окне `system` навигатора модуль добавляет пункты `showDesign`, `toggleNavigatorPinMode` и `toggleColorTheme`.
 
-Модуль также реализует CSS-классы окон навигатора, объявленных в [System](System_System.md), и своих пунктов навигатора. Эти абстрактные свойства выбирают реализацию по значению, поэтому реализация проекта, которую модуль, требующий `SystemEvents`, добавляет после этой, проверяется первой и заменяет классы модуля, когда возвращает значение. Каждое вычисляемое модулем значение — базовые классы, за которыми при перечисленных условиях добавляются вспомогательные (`isWebDesktop[]` / `isWebMobile[]` — тип клиента, настройки — из таблицы выше; «окна располагает компонент React» здесь значит, что `customNavigator[]` не `NULL`, а «окно рисует компонент React» — что не `NULL` `customWindow[STRING[100]]` от канонического имени окна: оба хранят компоненты, заданные приложением, и объявлены в [System](System_System.md)):
-
-| Свойство (окно или пункт)                               | Базовые классы                     | Вспомогательные классы и их условия |
-|---------------------------------------------------------|------------------------------------|-------------------------------------|
-| `logoWindowClass[]` (`logo`)                            | `bg-dark-subtle`                   | в настольном веб-клиенте, если окно не рисует компонент React: `navbar-text-on-hover` при вертикальной панели, пока ничего не закреплено (`navigatorPinMode[]` — `NULL`) и окна не располагает компонент React, `navbar-force-align-start` при вертикальной панели, `navbar-auto-icon-font-size` при горизонтальной |
-| `rootWindowClass[]` (`root`)                            | `bg-dark-subtle navbar-icon-large` | в настольном веб-клиенте, если окно не рисует компонент React: `navbar-text-on-hover`, пока ничего не закреплено и окна не располагает компонент React, `navbar-force-align-start` при вертикальной панели |
-| `systemWindowClass[]` (`system`)                        | `bg-dark-subtle`                   | в настольном веб-клиенте: `navbar-icon-large`; `navbar-text-on-hover` при вертикальной панели, пока ничего не закреплено, если компонент React не располагает окна и не рисует это окно; `navbar-text-hidden` при горизонтальной панели; `navbar-force-align-start` при вертикальной, если окно не рисует компонент React |
-| `formsWindowClass[]` (`forms`)                          | `bg-body-tertiary`                 | `dont-show-close-button` в мобильном веб-клиенте или когда выполняется `dontShowCloseButtonOnInactiveTab[]` и окно не рисует компонент React |
-| `toolbarWindowClass[]` (`toolbar`)                      | `bg-body-secondary`                | `navbar-popup-over-selected-hover` в настольном веб-клиенте, если навигатор не закреплён целиком (`navigatorPinMode[]` не `TTRUE`) и окна не располагает компонент React |
-| `logsWindowClass[]` (`log`)                             | `bg-body-secondary`                | `navbar-popup-over-selected-hover navbar-always-hide-unpinned` в настольном веб-клиенте, пока окно логов не закреплено (`logsPinMode[]`) и окна не располагает компонент React |
-| `logoActionClass[]` (`logoAction`)                      | `navbar-icon-large`                | `navbar-hidden` в мобильном веб-клиенте без Bootstrap (`useBootstrap[]` не выполняется) |
-| `navigatorPinModeClass[]` (`toggleNavigatorPinMode`)    | —                                  | `navbar-hidden` в мобильном веб-клиенте |
+Модуль реализует свойства классов окон навигатора, объявленных в [System](System_System.md), и своих элементов навигатора: `logoActionClass[]` для `logoAction` и `navigatorPinModeClass[]` для `toggleNavigatorPinMode`. Эти абстрактные свойства выбирают реализацию по значению. Реализация проекта, добавленная модулем, который требует `SystemEvents`, проверяется первой и заменяет классы модуля, когда возвращает значение. Модуль задаёт базовые классы и добавляет вспомогательные с учётом настроек оформления выше, типа клиента (`isWebDesktop[]` или `isWebMobile[]`) и наличия компонентов React для расположения окон (`customNavigator[]`) или для отрисовки окна (`customWindow[STRING[100]]` по его каноническому имени).
 
 При инициализации веб-клиента `onWebClientInit[STRING]` регистрирует CSS- и JS-ресурсы клиента: набор Bootstrap и зависящие от размера таблицы отступов / шрифтов, когда выполняется `useBootstrap[]`, либо обычные табличные стили в противном случае, а затем общие скрипты и стили виджетов. Ресурсы, лежащие под `/onStarted/`, подхватываются автоматически.
 
@@ -237,6 +226,7 @@ title: 'SystemEvents'
 - [Заголовок модуля](../language/Module_header.md) — синтаксис `MODULE` / `REQUIRE`, подключающий модуль.
 - [Оператор `ABSTRACT`](../language/ABSTRACT_action_operator.md) — абстрактные списки действий, которыми объявлены обработчики событий запуска.
 - [Оператор `WHEN`](../language/WHEN_statement.md) — обработчики событий, реагирующие на изменения оформления и запускающие перезагрузку или изменение размера клиента.
+- [Справочник по CSS](../language/CSS_view_styles.md#system-window-and-navigator-classes) описывает классы, которые модуль задаёт для системных окон и элементов навигатора, и их действие.
 
 ### Связано
 

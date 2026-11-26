@@ -127,13 +127,13 @@ To access design components, you can use their names or address property compone
 |`size`|The base component size in pixels. `-1` means that the base size is not set and the component is sized by its content ([automatic size](../paradigm/Form_design.md#components)): a table or tree then takes the height of the rows it has loaded plus the header instead of its default base size|A pair of [integer literals](Literals.md#intliteral) (width, height)|`(-1, -1)`; a table or tree — its [default size](../paradigm/Form_design.md#defaultSizes) from `lineHeight` rows and `lineWidth` columns; the main container of a form opened as a window — measured at opening (see [window size](../paradigm/Form_design.md#windowSize))|`(100, 20)`|
 |`height`|The base component height in pixels (`-1` — the height of the content, see `size`)|Integer literal|`-1`; a table or tree — its [default height](../paradigm/Form_design.md#defaultSizes) of `lineHeight` rows; the main container of a form opened as a window — measured at opening (see [window size](../paradigm/Form_design.md#windowSize))|`50`|
 |`width`|The base component width in pixels (`-1` — the width of the content, see `size`)|Integer literal|`-1`; a table or tree — its [default width](../paradigm/Form_design.md#defaultSizes) of `lineWidth` columns; the main container of a form opened as a window — measured at opening (see [window size](../paradigm/Form_design.md#windowSize))|`20`|
-|`flex`|Extension coefficient. Value of a property similar to the [CSS flex-grow](http://www.w3schools.com/cssref/css3_pr_flex-grow.asp) property. Defines how much the component should grow in size relative to other components.|[`NUMERIC` type literal](Literals.md#numericliteral)|`0`|`0.25`|
-|`shrink`|Allows the component to shrink below its base size along the container's main direction (similar to CSS `flex-shrink`)|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
+|`flex`|[Extension coefficient](CSS_view_styles.md#layout). Defines how much the component grows relative to other components.|[`NUMERIC` type literal](Literals.md#numericliteral)|`0`|`0.25`|
+|`shrink`|[Allows the component to shrink](CSS_view_styles.md#layout) below its base size along the container's main direction|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`alignShrink`|Allows the component to shrink below its base size along the cross (alignment) direction|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`align`<br/>`alignment`|Component alignment inside the container. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`START`|`STRETCH`|
 |`alignCaption`|When the container aligns captions (`alignCaptions`), draws this component's caption in the shared caption column|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`overflowHorz`|Behavior when the content exceeds the component width: `auto` (scroll if needed), `clip`, or `visible` (CSS `overflow-x`)|String literal|`auto`|`clip`<br/>`visible`<br/>`auto`|
-|`overflowVert`|Behavior when the content exceeds the component height: `auto` (scroll if needed), `clip`, or `visible` (CSS `overflow-y`)|String literal|`auto`|`clip`<br/>`visible`<br/>`auto`|
+|`overflowHorz`|[Overflow behavior](CSS_view_styles.md#layout) when the content exceeds the component width. The value `auto` scrolls when needed, `clip` clips the content, and `visible` shows it|String literal|`auto`|`clip`<br/>`visible`<br/>`auto`|
+|`overflowVert`|[Overflow behavior](CSS_view_styles.md#layout) when the content exceeds the component height (`auto`, `clip`, or `visible`)|String literal|`auto`|`clip`<br/>`visible`<br/>`auto`|
 |`marginTop`|Top margin|Integer literal|`0`|`3`|
 |`marginBottom`|Bottom margin|Integer literal|`0`|`4`|
 |`marginLeft`|Left margin|Integer literal|`0`|`1`|
@@ -141,7 +141,7 @@ To access design components, you can use their names or address property compone
 |`margin`|Margin. Sets the same value to the following properties: `marginTop`, `marginRight`, `marginBottom`, `marginLeft`|Integer literal|`0`|`5`|
 |`captionFont`|The font to be used for displaying caption of the component|String literal|depends on the component|`'Tahoma bold 16'`<br/>`'Times 12'`|
 |`font`|The font to be used for displaying the component text — for example, property value, action caption, table text|[Expression](Expression.md)(string value)|depends on the component|`'Tahoma bold 16'`<br/>`'Times 12'`|
-|`class`|CSS classes of the component (separated by spaces). Not applied to the form's main (root) container in the web client. There the root element of a form carries the attribute `lsfusion-form` with the form's canonical name, and the element of a component carries `lsfusion-container` with the component's identifier (`PROPERTY(name(i))`, the name of a container), so a CSS rule can be addressed to one form or component without a class|Expression (string value)|`NULL`|`some-class-one some-class-two`|
+|`class`|[CSS classes](CSS_view_styles.md#classes) of the component|Expression (string value)|`NULL`|`some-class-one some-class-two`|
 |`fontSize`|The size of the font to be used for displaying the component text|Numeric literal|depends on the component|`10`|
 |`fontStyle`|The style of the font to be used for the component text May contain the words `'bold'` and/or `'italic'`, or an empty string|String literal|`''`|`'bold'`<br/>`'bold italic'`|
 |`background`|The color to be used for the component background|Expression ([COLOR](Literals.md#colorliteral) value)|`NULL`|`#FFFFCC`<br/>`RGB(255, 0, 0)`|
@@ -160,9 +160,9 @@ To access design components, you can use their names or address property compone
 |Property name|Description|Value type|Default value|Examples|
 |---|---|---|---|---|
 |`caption`|Container header. For the main container `BOX` — the caption of the form itself (of its window or tab) in the interactive view; an expression whose value depends on data updates it when the data changes, the form caption in the [navigator](../paradigm/Navigator.md) does not change. An empty string is equivalent to `NULL`: no header is created (and the container stops being `collapsible` by default)|Expression (string value)|`NULL`|`'Caption'`<br/>`'Order ' + number(o)`|
-|`captionClass`|CSS-classes of container header (separated by space)|Expression (string value)|`NULL`|`'some-caption-class'`|
-|`valueClass`|CSS-classes of container value (separated by space)|Expression (string value)|`NULL`|`'some-value-class'`|
-|`image`|Image shown in the container caption: a path relative to the `images` folder, icon font CSS classes, an HTTP(S) URL, or a property expression yielding one of these strings|Expression (string value)|`NULL`|`'image.png'`|
+|`captionClass`|[CSS classes](CSS_view_styles.md#classes) of the container caption|Expression (string value)|`NULL`|`'some-caption-class'`|
+|`valueClass`|[CSS classes](CSS_view_styles.md#classes) of the container content|Expression (string value)|`NULL`|`'some-value-class'`|
+|`image`|Image shown in the container caption. The string can be a path relative to the `images` folder, [icon font classes](../paradigm/Icons.md#manual), or an HTTP(S) URL|Expression (string value)|`NULL`|`'image.png'`|
 |`collapsible`|Lets the user collapse and expand the container; when collapsed, only its caption is shown|Logical literal|depends on the caption|`TRUE`<br/>`FALSE`|
 |`popup`|Shows the container's content in a popup opened from its caption instead of inline (the container starts collapsed)|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`border`|Draws a border around the container|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
@@ -208,17 +208,17 @@ To access design components, you can use their names or address property compone
 |`focusable`|Specifying that the property (action) component or a table column can get focus|Extended Logical literal|`NULL`|`TRUE`<br/>`FALSE`|
 |`inline`|Renders the property or action inline within its container's flow rather than as a separate layout box|Extended Logical literal|`NULL`|`TRUE`<br/>`FALSE`|
 |`panelColumnVertical`|In a panel, stacks the property's column-group columns vertically instead of horizontally|Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
-|`class`|CSS-classes for property (separated by space)|Expression (string value)|`NULL`|`some-class-one some-class-two`|
-|`footerClass`|CSS-classes for property footer (separated by space)|Expression (string value)|`NULL`|`some-footer-class`|
-|`valueClass`|CSS-classes for the property value (separated by space). An explicit value fully replaces the default value classes (`form-control`, etc.). In a table, for a typical text cell the value element is the cell itself (`td`); selection elements (button group, dropdown) created for properties with a small number of options are its descendants, and the value classes are not propagated to them|Expression (string value)|`NULL`|`some-value-class`|
-|`captionClass`|CSS-classes for the property caption (separated by space)|Expression (string value)|`NULL`|`some-caption-class`|
+|`class`|[CSS classes](CSS_view_styles.md#classes) of the property|Expression (string value)|`NULL`|`some-class-one some-class-two`|
+|`footerClass`|[CSS classes](CSS_view_styles.md#classes) of the property footer|Expression (string value)|`NULL`|`some-footer-class`|
+|`valueClass`|[CSS classes](CSS_view_styles.md#property-value-classes) of the property value|Expression (string value)|`NULL`|`some-value-class`|
+|`captionClass`|[CSS classes](CSS_view_styles.md#classes) of the property caption|Expression (string value)|`NULL`|`some-caption-class`|
 |`caption`|Caption of a property or action|String literal|caption of a property or action|`'Caption'`|
-|`tag`|HTML tag used to render the value element (for example `input`, `a`, `button`, `select`); overrides the tag the platform chooses by itself: `a` for a value of the `LINK` class or of a link to a file of a specific type, and for a property whose change action opens a form, changes no data and has no input; `input` for a value that is entered as text (a string, a number, a date or a time) in a panel under the conditions of [value cell rendering](../paradigm/Form_design.md#cellrender), and for a logical value; `button` for an action that takes no input value and has an effect; `select` for a value chosen from a dropdown when it is drawn as a native selection element (the same section). In the other cases, including a value drawn by a render function (`custom`), there is no tag: in a panel the value is drawn in a `div`, in a table, for a typical text cell, it is the cell itself (`td`). The empty string `''` also means no tag. A `NULL` value of a string class in an `a` element gets the default placeholder `Not defined` (an explicit `placeholder` wins) and, with the standard Bootstrap styles, is drawn in the link color at half opacity, while a placeholder in a `div` is drawn in the secondary text color|String literal|`NULL`|`'a'`|
+|`tag`|HTML tag of the value element (for example `input`, `a`, `button`, `select`). It overrides the [tag chosen by the platform](CSS_view_styles.md#property-value-elements). The empty string `''` leaves the value without an explicit tag.|String literal|`NULL`|`'a'`|
 |`inputType`|HTML input type used when editing the value (for example `password`, `range`); overrides the type-derived default|String literal|`NULL`|`'password'`|
-|`image`|Image displayed as an action icon: a path relative to the `images` folder, icon font CSS classes, or an HTTP(S) URL|String literal|`NULL`|`'image.png'`|
+|`image`|Image displayed as an action icon. The string can be a path relative to the `images` folder, [icon font classes](../paradigm/Icons.md#manual), or an HTTP(S) URL|Expression (string value)|`NULL`|`'image.png'`|
 |`imagePath`|**deprecated since version 6, use `image`**|String literal|`NULL`|`'image.png'`|
 |`comment`|Comment of a property or action|Expression (string value)|`NULL`|`'Comment'`|
-|`commentClass`|Class of comment of property or action|Expression (string value)|`NULL`|`'comment-class'`|
+|`commentClass`|[CSS classes](CSS_view_styles.md#classes) of the property or action comment|Expression (string value)|`NULL`|`'comment-class'`|
 |`panelCommentVertical`|Indicates that the comment of property or action should be drawn above or below the value on the panel|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCommentFirst`|Indicates that the comment should be drawn on the panel before property value|Extended Logical literal|`FALSE`|`TRUE`<br/>`FALSE`|
 |`panelCommentAlignment`|Comment component alignment inside the container. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|`CENTER`|`STRETCH`|
@@ -232,8 +232,8 @@ To access design components, you can use their names or address property compone
 |`valueAlignmentHorz`|Component value alignment horizontal. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|depends on the property|`STRETCH`|
 |`valueAlignmentVert`|Component value alignment vertical. Acceptable values: `START` (at the beginning), `CENTER` (in the center), `END` (at the end), `STRETCH` (stretched).|Alignment type|depends on the property|`STRETCH`|
 |`panelCustom`|Uses a custom layout for the property in a panel instead of the standard caption-and-value layout|Logical literal|depends on the property|`TRUE`<br/>`FALSE`|
-|`valueOverflowHorz`|Behavior when the value content exceeds the cell width: `auto`, `clip`, or `visible` (CSS `overflow-x`)|String literal|depends on the property|`auto`<br/>`clip`<br/>`visible`|
-|`valueOverflowVert`|Behavior when the value content exceeds the cell height: `auto`, `clip`, or `visible` (CSS `overflow-y`)|String literal|`clip`|`auto`<br/>`clip`<br/>`visible`|
+|`valueOverflowHorz`|[Overflow behavior](CSS_view_styles.md#layout) when the value content exceeds the cell width (`auto`, `clip`, or `visible`)|String literal|depends on the property|`auto`<br/>`clip`<br/>`visible`|
+|`valueOverflowVert`|[Overflow behavior](CSS_view_styles.md#layout) when the value content exceeds the cell height (`auto`, `clip`, or `visible`)|String literal|`clip`|`auto`<br/>`clip`<br/>`visible`|
 |`valueShrinkHorz`|Allows the value cell to shrink below its base width|Logical literal|depends on the property|`TRUE`<br/>`FALSE`|
 |`valueShrinkVert`|Allows the value cell to shrink below its base height|Logical literal|depends on the property|`TRUE`<br/>`FALSE`|
 |`highlightDuplicate`|Highlights cells whose value repeats another cell's value in the same column|Logical literal|depends on the table|`TRUE`<br/>`FALSE`|
