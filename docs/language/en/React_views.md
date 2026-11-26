@@ -100,6 +100,6 @@ The components and hooks of the platform are runtime globals in `window.lsfusion
 
 ### A React component and an HTML template {#choosing-between-a-react-component-and-an-html-template}
 
-For a component that only places children and reads nothing from `props.data`, compare [HTML template places](DESIGN_statement.md#template-places). When the platform draws every child of the container, `props.data` contains no group or property values, because such a child is not projected — only the children's `{ caption, image, hidden }` entries in `props.data`.
+For a component that only places children and reads nothing from `props.data`, compare [HTML template places](HTML_templates.md#template-places). When the platform draws every child of the container, `props.data` contains no group or property values, because such a child is not projected — only the children's `{ caption, image, hidden }` entries in `props.data`.
 
 The React component names its children too: adding a child requires editing the JSX, not just `DESIGN`.

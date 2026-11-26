@@ -672,6 +672,12 @@ module.exports = {
             },
             {
               type: 'category',
+              label: 'HTML',
+              link: {type: 'doc', id: 'language/HTML_templates'},
+              items: []
+            },
+            {
+              type: 'category',
               label: 'Java',
               link: {type: 'doc', id: 'language/Java_integration_API'},
               items: [

@@ -92,12 +92,7 @@ Which window draws an element is not such a case: a button assigned to another w
 
 #### An HTML template instead of a component {#navigator-template}
 
-[Navigator HTML templates](WINDOW_statement.md#custom).
-
-```lsf
-EXTEND WINDOW System.toolbar CUSTOM
-    '<div class="menu"><div class="menu-head">Master data</div><Platform:items><Platform:partners></div>';
-```
+[Navigator HTML templates](HTML_templates.md#navigator-window-places).
 
 A component is still what a menu needs when the markup depends on what the component itself reads.
 

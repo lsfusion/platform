@@ -92,12 +92,7 @@ NAVIGATOR {
 
 #### HTML-шаблон вместо компонента {#navigator-template}
 
-[HTML-шаблоны навигатора](WINDOW_statement.md#custom).
-
-```lsf
-EXTEND WINDOW System.toolbar CUSTOM
-    '<div class="menu"><div class="menu-head">Справочники</div><Platform:items><Platform:partners></div>';
-```
+[HTML-шаблоны навигатора](HTML_templates.md#navigator-window-places).
 
 Компонент остаётся нужен тогда, когда разметка зависит от того, что компонент читает сам.
 
