@@ -690,6 +690,12 @@ module.exports = {
                 'language/Custom_Spring_bean_EventServer',
               ]
             },
+            {
+              type: 'category',
+              label: 'JRXML',
+              link: {type: 'doc', id: 'language/JRXML_report_templates'},
+              items: []
+            },
           ]
         },
         'language/Comments',

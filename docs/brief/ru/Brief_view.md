@@ -169,7 +169,7 @@ print (Order o) { PRINT printOrder OBJECTS o = o DOCX TO orderFile; }
 
 ### Дизайн отчёта
 
-[Дизайн отчета](../paradigm/Report_design.md) — то, как отчет раскладывается в документе. Отчет описывает [шаблон](../paradigm/Report_design.md#template) — [файл `.jrxml`](../paradigm/Report_design.md#format) технологии JasperReports, который платформа ищет в classpath сервера по имени, производному от канонического имени формы. Полями шаблона служат свойства формы, их имена и типы совпадают. Точные правила именования и цена ошибки в имени — [Правила: отчеты](../rules/Rules_view.md).
+[Дизайн отчета](../paradigm/Report_design.md) — то, как отчет раскладывается в документе. Отчет описывает [шаблон](../paradigm/Report_design.md#template) — [файл `.jrxml`](../paradigm/Report_design.md#format) технологии JasperReports, который платформа ищет в classpath сервера по имени, производному от канонического имени формы. Поля шаблона получают имена свойств формы. Их [Java-классы](../language/JRXML_report_templates.md#fields) определяются по классам этих свойств. Точные правила именования и цена ошибки в имени — [Правила: отчеты](../rules/Rules_view.md).
 
 Своего шаблона может и не быть: если хотя бы один не найден, платформа строит [автоматический дизайн](../paradigm/Report_design.md#auto) по структуре формы. Шаблон задается и явно, свойством с именем файла или самим файлом: блок `REPORT` [инструкции `FORM`](../language/FORM_statement.md) — для верхнего отчета, `REPORTS` (синоним `REPORTFILES`) — для перечисленных групп объектов, выражение после `SUBREPORT` в [блоке объектов](../language/Object_blocks.md) — для своей группы.
 

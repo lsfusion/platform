@@ -392,10 +392,12 @@ title: 'Rules: view logic'
 
 ## Reports
 
-1. Before designing or editing jrxml report templates, or reasoning
-   about report structure or template naming, the assistant MUST
-   retrieve the `Report_design` documentation. It MUST NOT rely on
-   these rules as a template-format or layout reference.
+1. Before designing or editing JRXML report templates, or reasoning
+   about report structure or template naming, the assistant MUST retrieve
+   [`Report_design`](../paradigm/Report_design.md) for report hierarchy, template
+   naming, and fallback, and [`JRXML_report_templates`](../language/JRXML_report_templates.md)
+   for field and parameter declarations and template markup. It MUST NOT
+   rely on these rules as a template-format or layout reference.
 
 2. When a form has no object groups independent of each other
    (all groups form a single dependency chain), only ONE jrxml

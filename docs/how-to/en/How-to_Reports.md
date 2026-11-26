@@ -81,7 +81,7 @@ The system will save automatic templates for [Jasper Reports](https://community.
 
 The system will then start the editor associated with the jrxml format where these files will be opened. You can use [JasperSoft Studio](https://community.jaspersoft.com/project/jaspersoft-studio) as an editor. In addition, a background process will be launched to constantly synchronize report files in the src / main / lsfusion and out / production folders (or target / classes if Maven is used to start the configuration instead of IDEA Build) to eliminate the need for rebuilding the project after the templates are modified in the editor.
 
-Since categories and books are associated, a single flat report will be created with categories represented as groups of books. Report data will be transmitted in a flat, denormalized form, where a separate (**Field**) field will be created for each property. A group (**Group**) and a corresponding header block (**Group Header**) will be created for categories.
+Since categories and books are associated, a single flat report will be created with categories represented as groups of books. Report data will be transmitted in a flat, denormalized form, where a separate (**Field**) [field](../language/JRXML_report_templates.md#fields) will be created for each property. A group (**Group**) and a corresponding header block (**Group Header**) will be created for categories.
 
 Let's make a few changes in the automatic template and save it:
 
@@ -361,7 +361,7 @@ The principle of this report is that objects with invoices and orders are indepe
 
 Since the dependency between objects forms a tree with two leaf nodes, a total of three templates will be formed:
 
-1.  `Sample_customerInfo` is a top report that will show buyer data (in this case, for a single buyer). It will contain links to subreports `Sample_customerInfo_i` and `Sample_customerInfo_o`.  
+1.  `Sample_customerInfo` is a top report that will show buyer data (in this case, for a single buyer). It will contain links to subreports `Sample_customerInfo_i` and `Sample_customerInfo_o` (see [subreport parameters](../language/JRXML_report_templates.md#subreports)).  
     ![](../images/How-to_Reports_ex3_templates.png)
 
     **Template** `Sample_customerInfo.jrxml`:
