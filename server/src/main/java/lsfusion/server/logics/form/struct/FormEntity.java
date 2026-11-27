@@ -147,7 +147,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
 
     // the code that customized the form, if this is the copy it made (getCustomizedForm)
     private EvalScriptingLogicsModule customizeLM;
-    // the module the code running on the form sees : that code, compiled under what opened the form, else what opened it
+    // the module code running on the form sees : that code, compiled under what opened the form, else what opened it
     public EvalScriptingLogicsModule getCustomizeLM(EvalScriptingLogicsModule openerLM) {
         return customizeLM != null ? customizeLM : openerLM;
     }
@@ -1801,16 +1801,16 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     Map<String, Integer> formsCount = new HashMap<>();
     @Override
     public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm(BusinessLogics BL, DataSession session, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, EvalScriptingLogicsModule openerLM) throws SQLException, SQLHandledException {
-        // a copy the code made - shown by an action of that code, by a script evaluated on the copy - opens as it is : the
-        // code compiled again - under that script, after the code changed - would make another copy of the form, with
-        // none of this copy's objects
+        // a copy the code made - shown by an action of that code, by a script evaluated on the copy - opens as it is :
+        // the code compiled again - under that script, after the code changed - would make another copy of the form,
+        // with none of this copy's objects
         if(customizeForm == null && isNamed()) {
             String canonicalName = getCanonicalName();
             String extendCode = session != null ? (String) BL.systemEventsLM.extendCode.read(session, new DataObject(canonicalName)) : null;
             if (extendCode != null) {
                 try {
-                    // compiled under what a form opened there continues (ExecutionContext.getEvalLM) : the customization of
-                    // the application for the connection's user, a script, a form that opens the form
+                    // compiled under what a form opened there continues (ExecutionContext.getEvalLM) : the
+                    // customization of the application for the connection's user, a script, a form that opens the form
                     FormEntity copyForm = getCustomizedForm(BL, openerLM, extendCode);
                     return new Pair<>(copyForm, getObjects().mapRevKeys((ObjectEntity obj) -> copyForm.getExEntity(obj)));
                 } catch (ScriptingErrorLog.SemanticErrorException | ScriptParsingException | ScriptErrorException e) {
@@ -1824,8 +1824,8 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     // compiles the copy of this (named) form the customization code makes, under the given module, if any - what opens
-    // the form, the connection's code as the code is saved -, running nothing of it; what the compilation
-    // fails with is thrown - getForm reports it and opens the form itself, a save of the code refuses the code
+    // the form, the connection's code as the code is saved -, running nothing of it; what the compilation fails with is
+    // thrown - getForm reports it and opens the form itself, a save of the code refuses the code
     public FormEntity getCustomizedForm(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String extendCode) throws ScriptingErrorLog.SemanticErrorException, ScriptParsingException, ScriptErrorException {
         String name = getName();
         String script = "FORM " + name + " EXTEND FORMS " + getCanonicalName() + ";\n" + extendCode + ";";

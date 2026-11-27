@@ -15,7 +15,8 @@ import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClasses
 public class TopExecutionStack implements NewThreadExecutionStack {
 
     private final String threadId;
-    // the module of the code that started the thread (SyncExecutionStack.newThread), if any : the thread goes on with it
+    // the module of the code that started the thread (SyncExecutionStack.newThread; for a pool, the code that made it),
+    // if any : a code the thread evaluates is compiled under it
     private final EvalScriptingLogicsModule evalLM;
 
     public TopExecutionStack(String threadId) {

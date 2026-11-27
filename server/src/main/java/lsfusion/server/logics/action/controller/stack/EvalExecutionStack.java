@@ -4,8 +4,8 @@ import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.logics.action.session.DataSession;
 
 // the code above runs with this module (ExecutionStack.getEvalLM) : a script's (EvalUtils.findAction), a form's
-// (ExecutionContext.createAndRequestFormInstance). Sacrificed for one way to run a script: a script compiled without the
-// module of an EVAL it runs under (a debugger's expression) hides that module from an EVAL inside it
+// (ExecutionContext.createAndRequestFormInstance). Sacrificed for one way to run a script: a script compiled without
+// the module of an EVAL it runs under (a debugger's expression) hides that module from an EVAL inside it
 public class EvalExecutionStack extends SameThreadExecutionStack {
 
     private final EvalScriptingLogicsModule evalLM;

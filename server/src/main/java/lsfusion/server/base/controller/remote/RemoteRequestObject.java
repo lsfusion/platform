@@ -414,8 +414,8 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
     // hooks: form -> persistent form.session + FormInstanceContext; navigator -> fresh createSession() + connection context
     protected abstract BusinessLogics getControllerBL();
     // the module of the code that customized what a request to this object is about : a form's
-    // (FormEntity.getCustomizeLM : its code's, else what opened it), else the connection's (RemoteConnection.getCustomizeLM :
-    // its user's code); null with none
+    // (FormEntity.getCustomizeLM : its code's, else what opened it), else the connection's
+    // (RemoteConnection.getCustomizeLM : its user's code); null with none
     protected abstract EvalScriptingLogicsModule getCustomizeLM();
     protected abstract void controllerGate(boolean apiAnnotation);
     protected abstract ClientAction runControllerRequest(ExecutionStack stack, ControllerBody body) throws SQLException, SQLHandledException, ParseException, IOException;

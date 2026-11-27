@@ -149,8 +149,8 @@ testCcConnectionSave () {
     ccDrop(NULL);
 }
 
-// a form's code is compiled with the connection's code it is used with, as it is stored : not the one the connection that
-// saves it was made with (this test's has none)
+// a form's code is compiled with the connection's code it is used with, as it is stored : not the one the connection
+// that saves it was made with (this test's has none)
 testCcFormSaveOverConnection () {
     ccDrop(ccForm());
     ccDrop(NULL);

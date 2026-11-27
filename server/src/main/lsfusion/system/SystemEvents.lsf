@@ -1123,8 +1123,9 @@ dataExtendCode = DATA TEXT (Form);
 dataExtendCode = DATA TEXT (Form, User);
 
 // the application as a whole is customized for a user the way a form is, by the connection's code, stored as a form's
-// is (dataExtendCode), with no form among the parameters. The code is compiled for a connection of the user as it is made - a client, say -,
-// its NAVIGATOR statements over a copy of the navigator, so it takes effect when the client is started again
+// is (dataExtendCode), with no form among the parameters. The code is compiled for a connection of the user as it is
+// made - a client, say -, its NAVIGATOR statements over a copy of the navigator, so it takes effect when the client is
+// started again
 dataExtendCode = DATA TEXT ();
 dataExtendCode = DATA TEXT (User);
 

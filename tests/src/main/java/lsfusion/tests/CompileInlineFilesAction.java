@@ -9,7 +9,8 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 
-// compiles a script the way /eval does before it checks the script's access (BaseLogicsModule.evaluateRun), running nothing of it
+// compiles a script the way /eval does before it checks the script's access (BaseLogicsModule.evaluateRun), running
+// nothing of it
 public class CompileInlineFilesAction extends InternalAction {
 
     public CompileInlineFilesAction(ScriptingLogicsModule LM, ValueClass... classes) {

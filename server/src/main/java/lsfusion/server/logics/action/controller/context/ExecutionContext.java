@@ -845,8 +845,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return createFormInstance(formEntity, MapFact.EMPTY(), getSession(), false, new FormOptions(FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, ModalityShowFormType.DIALOG_MODAL, null, null, false, null, false, false, false, null, null));
     }
 
-    // the module the code here runs with - what it evaluates is compiled under it, a form it opens continues it : the one
-    // the stack sets (ExecutionStack.getEvalLM), else the code of the session's user
+    // the module the code here runs with - what it evaluates is compiled under it, a form it opens continues it : the
+    // one the stack sets (ExecutionStack.getEvalLM), else the code of the session's user
     public EvalScriptingLogicsModule getEvalLM() {
         EvalScriptingLogicsModule evalLM = stack.getEvalLM();
         return evalLM != null ? evalLM : getSession().user.getCustomizeLM();
@@ -854,9 +854,9 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public FormInstance createAndRequestFormInstance(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                                                      FormOptions options) throws SQLException, SQLHandledException {
-        EvalScriptingLogicsModule openerLM = getEvalLM(); // the form is opened under the module of the code that opens it
-        // the form's code - its ON INIT, the events of its first reading, the requests of its client (whose stack starts
-        // from this one) - runs with the form's module
+        EvalScriptingLogicsModule openerLM = getEvalLM(); // the form is opened under the module of the code opening it
+        // the form's code - its ON INIT, the events of its first reading, the requests of its client (whose stack
+        // starts from this one) - runs with the form's module
         ExecutionContext<P> formContext = override(form.getCustomizeLM(openerLM));
         FormInstance newFormInstance = formContext.createFormInstance(form, mapObjects, getSession(), true, options);
         newFormInstance.openerLM = openerLM;

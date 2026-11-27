@@ -197,8 +197,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public FormOptions options;
 
     public FormInstance recreatedForm;
-    // the module of the code that opened the form (ExecutionContext.createAndRequestFormInstance) : its code is compiled
-    // under it, it is recreated under it
+    // the module of the code that opened the form (ExecutionContext.createAndRequestFormInstance) : its code is
+    // compiled under it, it is recreated under it
     public EvalScriptingLogicsModule openerLM;
 
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта

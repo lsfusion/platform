@@ -45,7 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
 // a module made of a text while the server runs, after the logics is final : what it declares is its own, and what would
 // change the logics is refused
 public class EvalScriptingLogicsModule extends ScriptingLogicsModule implements ExternalLAPResolver {
-    // the module this one is compiled under, if any - it sees what that one sees -, one, so that the modules make a tree
+    // the one module this one is compiled under, if any - it sees what that one sees -, so that the modules make a tree
     private final EvalScriptingLogicsModule parentLM;
 
     // whether the code changes the navigator - a copy of its own : the code that customizes the application does, a script
@@ -73,8 +73,8 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule implements 
         emitEvalError("CLASS statement");
     }
 
-    // a script is compiled before its access is checked, and its text can come with data : what its literals wrap is added once
-    // it runs (EvalUtils.findAction), a code that customizes the application adds them as it compiles
+    // a script can be compiled before its access is checked, and its text can come with data : what its literals wrap
+    // is added once it runs (EvalUtils.findAction), a code that customizes the application adds them as it compiles
     // (BaseLogicsModule.evaluateCustomize)
     private final Set<String> wrappedNames = ConcurrentHashMap.newKeySet();
 
@@ -124,8 +124,9 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule implements 
     // would refuse them. And every name they give is found in the copy : the element a statement changes or moves, the one
     // it puts another before or after, the window it hides or turns over, the one an element is put into. So none gets
     // what is the logics'. Once the code is compiled the copy is what a client the code customizes draws.
-    // A script changes nothing of the navigator : it finds the window it names in the navigator of the code it is compiled
-    // under - the parent or a parent's parent, which the code that customizes the application changed -, or in the logics'
+    // A script changes nothing of the navigator : it finds the window it names in the navigator of the code it is
+    // compiled under - the parent or a parent's parent, which the code that customizes the application changed -, or in
+    // the logics'
     @Override
     public NavigatorEntity getNavigator() {
         if (changesNavigator) {
@@ -133,6 +134,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule implements 
                 navigator = new NavigatorEntity(BL.getNavigator(), getVersion());
             return navigator;
         }
+
         return parentLM != null ? parentLM.getNavigator() : super.getNavigator();
     }
 
