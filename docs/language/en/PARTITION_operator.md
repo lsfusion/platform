@@ -38,7 +38,7 @@ The `PARTITION` operator creates a property that, for each object collection, ei
 
 The window of a group consists of the object collections for which all main expressions and all group expressions are non-`NULL`. The window does not depend on where the property is used: the `WHERE` of an assignment of its value or a filter on a form selects among the computed values, and the collections outside that condition still take part in the window. A collection whose main expression is `NULL` neither receives a value nor takes a position in the order. With an order unique within the group, `PARTITION SUM 1 IF cond ORDER x` numbers the collections where `cond` holds consecutively from 1.
 
-The `BY` block describes the groups into which object collections are split. If the `BY` block is not specified, all object collections are considered to belong to the same group. A parameter of the created property does not split the groups by itself: only the values of the `BY` expressions do, so object collections that differ only in a parameter absent from `BY` fall into one window. The same applies to a parameter of the upper context used in a main or order expression — for example, a parameter of the action or of the loop in which the operator is used: it becomes a parameter of the created property, so its fixed outer value selects among the computed values instead of restricting the window. To split the groups by its value, the parameter is specified in `BY`. Where a `WHERE` condition follows the expression — in the [`CHANGE`](CHANGE_operator.md) and [`EXPORT`](EXPORT_operator.md) operators — the `BY` block, like the other blocks of the operator, is written before `WHERE`.
+The `BY` block describes the groups into which object collections are split. If the `BY` block is not specified, all object collections are considered to belong to the same group. A parameter of the created property does not split the groups by itself: only the values of the `BY` expressions do, so object collections that differ only in a parameter absent from `BY` fall into one window. The same applies to a parameter of the upper context used in a main or order expression — for example, a parameter of the action or of the loop in which the operator is used: it becomes a parameter of the created property, so its fixed outer value selects among the computed values instead of restricting the window. To split the groups by its value, the parameter is specified in `BY`. A parameter of the upper context used in a main, group or order expression also needs a [source to iterate over](../paradigm/Set_operations.md#correct) inside the operator, since the operator iterates over it as a parameter of the created property: a fixed outer value is not such a source. If the parameter itself is one of the `BY` expressions and has a fixed outer value, the operator uses that value without iterating over the parameter and computes only the groups with that value. Where a `WHERE` condition follows the expression — in the [`CHANGE`](CHANGE_operator.md) and [`EXPORT`](EXPORT_operator.md) operators — the `BY` block, like the other blocks of the operator, is written before `WHERE`.
 
 The `ORDER` block defines the order in which the aggregate function will be calculated or the distribution will take place. If this function is [non-commutative](../paradigm/Set_operations.md), the specified order must be uniquely determined. If a new parameter (not used earlier in the `PARTITION` and `BY` options and in the upper context) is declared in the expressions defining the order, the condition of non-`NULL`ness of all these expressions is automatically added when calculating the resulting value.
 
@@ -152,5 +152,14 @@ discountSum 'Discount by line' (OrderDetail d) =
 lineIndex = DATA LOCAL INTEGER (OrderDetail);
 numberLines (Order o) {
     lineIndex(OrderDetail d) <- PARTITION SUM 1 IF order(d) = o ORDER d BY o WHERE order(d) = o;
+}
+
+// numbering the orders placed on or before the date passed to the action: the parameter dt is specified in BY,
+// so only the group of its value is computed. Without BY dt the action would fail with the 'Set operation is incorrect' error:
+// the comparison date(o) <= dt is not a source to iterate over for dt
+date = DATA DATE (Order);
+orderIndex = DATA LOCAL INTEGER (Order);
+numberOrders (DATE dt) {
+    orderIndex(Order o) <- PARTITION SUM 1 IF date(o) <= dt ORDER date(o), o BY dt;
 }
 ```

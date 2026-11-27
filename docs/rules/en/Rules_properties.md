@@ -341,12 +341,17 @@ title: 'Rules: properties'
    value: it is the value of the current row. `GROUP LAST` is
    the one that picks by order.
 
-4. A `PARTITION` does not split its window by the parameters of
-   the property: to number rows separately for each `loc` in
+4. `PARTITION` (also `PARTITION UNGROUP`) does not split its
+   window by property parameters: to number rows per `loc` in
    `idx(loc, x) <- PARTITION SUM 1 IF cond(loc, x) ORDER x`, the
-   assistant MUST add `BY loc`. Without it the numbering runs
-   across all values of `loc`. So it is with `idx(x) <- ...`
-   where `loc` is an action or loop parameter. Rows whose
-   summed expression is `NULL` are not in the window, so
-   `SUM 1 IF cond` by itself numbers, under a unique order,
-   the rows where `cond` holds from 1.
+   assistant MUST add `BY loc`, or all `loc` values share a
+   window. This holds in `idx(x) <- ...` for an action or loop
+   parameter `loc`, unless `PARTITION` reads a `LOCAL` of `x`
+   first filled with `cond(loc, x)`. In `PARTITION` without
+   `BY loc`, `NOT` or a one-sided bound gives such a `loc` no
+   [source](../paradigm/Set_operations.md#correct): with no
+   other there, execution fails with
+   `Set operation is incorrect`. Rows with a `NULL` summed
+   expression are outside the window, so under a unique order
+   `SUM 1 IF cond` alone numbers the rows where `cond` holds
+   from 1.
