@@ -60,8 +60,12 @@ public class UiCsrfIT extends UiTest {
     }
 
     // logs the page's browser context in to the web client at the address as admin: the session's cookie is the
-    // context's from now on. Returns the response's Set-Cookie of the session
+    // context's from now on. Returns the response's Set-Cookie of the session. The page leaves /main first: the login
+    // gives the session a new id, and a request /main sends with the old one meanwhile - a script onWebClientLoad loads
+    // after the navigator shows - finds no session, so the web client answers it with a new one, whose cookie then
+    // replaces the login's in the browser
     private String login(String web) {
+        page.navigate(pages("127.0.0.1"));
         return sessionCookie(page.context().request().post(web + "/login_check", RequestOptions.create()
                 .setForm(FormData.create().set("username", "admin").set("password", "")).setMaxRedirects(0)));
     }
@@ -237,8 +241,7 @@ public class UiCsrfIT extends UiTest {
     // runs as the login, its password checked though the login is the session's user's
     @Test
     public void basicRequestRunsAsLogin() throws Exception {
-        page.navigate(pages("127.0.0.1")); // a wrong password drops the session's login, under no page of the web client
-        login();
+        login(); // the page leaves the web client too: the wrong password drops the session's login
         String right = tag("rightPassword"), wrong = tag("wrongPassword");
         page.context().request().get(webClient() + evalLink(right), RequestOptions.create().setHeader("Authorization", basic("")));
         assertEquals(401, page.context().request().get(webClient() + evalLink(wrong), RequestOptions.create().setHeader("Authorization", basic("wrong"))).status());
