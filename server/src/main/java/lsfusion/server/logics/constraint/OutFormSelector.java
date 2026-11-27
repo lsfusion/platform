@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
@@ -54,7 +55,7 @@ public class OutFormSelector<P extends PropertyInterface> implements FormSelecto
     }
 
     @Override
-    public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectSelector>> getForm(BusinessLogics BL, DataSession session, ImMap<ObjectSelector, ? extends ObjectValue> mapObjectValues) {
+    public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectSelector>> getForm(BusinessLogics BL, DataSession session, ImMap<ObjectSelector, ? extends ObjectValue> mapObjectValues, EvalScriptingLogicsModule openerLM) {
         return new Pair<>(getStaticForm(BL), MapFact.EMPTYREV());
     }
 

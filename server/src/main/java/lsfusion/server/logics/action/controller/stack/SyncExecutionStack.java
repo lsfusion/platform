@@ -20,7 +20,7 @@ public class SyncExecutionStack extends UpExecutionStack implements NewThreadExe
     public static NewThreadExecutionStack newThread(ExecutionStack upStack, String threadId, SyncType type) {
         if(type == SyncType.SYNC)
             return new SyncExecutionStack(threadId, upStack);
-        return new TopExecutionStack(threadId);
+        return new TopExecutionStack(threadId, upStack.getEvalLM());
     }
 
     @Override

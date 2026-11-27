@@ -1,0 +1,106 @@
+MODULE EvalFormCodeScope;
+
+REQUIRE TestUtils, SystemEvents;
+
+// a form the code of a form declares sees what that code declares, as the form the code customizes does : a script
+// evaluated on it finds a name of the code
+
+FORM efcForm 'Form with a code';
+
+// the objects of the form the code declares, whose filtering the form's reading fires (FormsWithoutClient) : an EVAL in
+// ON INIT would end it with INTERNAL CLIENT WAIT, which fails with no client
+CLASS EfcItem 'Item';
+
+efcSeen = DATA LOCAL INTEGER ();
+// evaluates a script that names what only the code of the form declares
+efcEvaluate () { EVAL ACTION 'efcSeen() <- efcAnswer();'; }
+
+efcSet (TEXT code) {
+    dataExtendCode(form('EvalFormCodeScope.efcForm')) <- code;
+    APPLY;
+}
+// a code is checked as it is saved under the code of the application only, so a code naming what a script that opens the
+// form declares is stored past that check
+efcSetUnchecked (TEXT code) {
+    setNoCancelInTransaction();
+    efcSet(code);
+    dropNoCancelInTransaction();
+}
+
+testFormOfTheCodeSeesTheCode 'A script evaluated on a form the code of a form declares sees what that code declares' () {
+    efcSet('efcAnswer() = 42;\n'
+        + 'FORM efcAux OBJECTS i = EfcItem EVENTS ON FILTER i EvalFormCodeScope.efcEvaluate();\n'
+        + 'EXTEND FORM efcForm EVENTS ON INIT \{ SHOW efcAux NOWAIT; \}');
+    TRY {
+        SHOW efcForm NOWAIT;
+        assertEquals(efcSeen(), 42, 'the script evaluated on the form of the code saw ' + (OVERRIDE STRING(efcSeen()), 'nothing'));
+    } FINALLY {
+        efcSet(NULL);
+    }
+}
+
+// the code of a form is compiled under what opens the form : a script that shows the form, whose names the code sees
+testFormCodeSeesTheOpeningScript 'The code of a form a script shows sees what that script declares' () {
+    efcSetUnchecked('EXTEND FORM efcForm OBJECTS i = EfcItem EVENTS ON FILTER i \{ efcSeen() <- efcOpener(); \}');
+    TRY {
+        EVAL 'efcOpener() = 42; run() \{ SHOW EvalFormCodeScope.efcForm NOWAIT; \}';
+        assertEquals(efcSeen(), 42, 'the code of the form the script showed saw ' + (OVERRIDE STRING(efcSeen()), 'nothing'));
+    } FINALLY {
+        efcSet(NULL);
+    }
+}
+
+// a script evaluated on a form with a code - it sees the form's code - shows the copy the code made again, as it is, on an
+// object the code added, also after the code changed - in another tab, say - : the code compiled again would extend the
+// form, not the copy, and would not have the object to pass the value to
+efcTarget = DATA LOCAL EfcItem ();
+efcSeenItem = DATA LOCAL EfcItem ();
+efcCode = DATA LOCAL TEXT ();
+efcChangeCode () {
+    NEWSESSION {
+        dataExtendCode(form('EvalFormCodeScope.efcForm')) <- dataExtendCode(form('EvalFormCodeScope.efcForm')) + '\n';
+        APPLY;
+    }
+}
+testFormCodeShownAgain 'A script evaluated on a form with a code shows the form again after the code changed, on an object of the code' () {
+    efcSet('EXTEND FORM efcForm OBJECTS i = EfcItem\n'
+        + '    EVENTS ON INIT \{ efcSeenItem() <- i; \},\n'
+        + '        ON FILTER i \{ efcSeen() <- efcSeen() (+) 1; IF efcSeen() = 1 THEN \{ EvalFormCodeScope.efcChangeCode(); EVAL ACTION \'efcShowSelf();\'; \} \};\n'
+        + 'efcShowSelf() \{ SHOW efcForm OBJECTS i = efcTarget() NOWAIT; \}');
+    TRY {
+        // after the code is saved : its apply drops what is local
+        efcSeen() <- NULL;
+        efcCode() <- dataExtendCode(form('EvalFormCodeScope.efcForm'));
+        NEW first = EfcItem {
+            NEW target = EfcItem {
+                efcTarget() <- target;
+            }
+        }
+        SHOW efcForm NOWAIT;
+        assertTrue(dataExtendCode(form('EvalFormCodeScope.efcForm')) = efcCode() + '\n', 'the code was not changed');
+        assertEquals(efcSeen(), 2, 'the form with the code was read ' + (OVERRIDE STRING(efcSeen()), 'no') + ' times');
+        assertTrue(efcSeenItem() = efcTarget(), 'the form shown again did not get the object it was shown on');
+    } FINALLY {
+        efcSet(NULL);
+    }
+}
+
+// a script evaluated on a form a script shows sees what that script declares, also where the script's code does not run :
+// here in a thread of a pool, which goes on with the module of the form's code that started it
+efcEvaluateOpener () { EVAL ACTION 'efcSeen() <- efcOpener();'; }
+FORM efcPlain 'Form without a code'
+    OBJECTS i = EfcItem
+    EVENTS ON FILTER i { NEWEXECUTOR { NEWTHREAD efcEvaluateOpener(); } THREADS 1 WAIT; }
+;
+
+testFormOfAScriptSeesTheScript 'A script evaluated on a form a script shows sees what that script declares' () {
+    EVAL 'efcOpener() = 42; run() \{ SHOW EvalFormCodeScope.efcPlain NOWAIT; \}';
+    assertEquals(efcSeen(), 42, 'the script evaluated on the form the script showed saw ' + (OVERRIDE STRING(efcSeen()), 'nothing'));
+}
+
+// a thread a script starts on the server goes on with the script, which the thread's own stack does not have : what it
+// evaluates sees what the script declares
+testThreadOfAScriptSeesTheScript 'A thread a script starts sees what the script declares' () {
+    EVAL 'efcOpener() = 42; run() \{ NEWEXECUTOR \{ NEWTHREAD EvalFormCodeScope.efcEvaluateOpener(); \} THREADS 1 WAIT; \}';
+    assertEquals(efcSeen(), 42, 'the thread the script started saw ' + (OVERRIDE STRING(efcSeen()), 'nothing'));
+}

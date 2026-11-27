@@ -1449,15 +1449,15 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     // before it is compiled : the scripts that are refused or fail are there too. Every line of an entry but its first is
     // indented, so that nothing a client sends - a script, the name of its computer - reads as an entry of its own. It is
     // out of the cache of evaluate, so a script run again is logged again
-    public Pair<LA, UnaryOperator<ExecutionStack>> evaluateRun(String script, Set<EvalScriptingLogicsModule> parentLMs, boolean action) {
+    public Pair<LA, UnaryOperator<ExecutionStack>> evaluateRun(String script, EvalScriptingLogicsModule parentLM, boolean action) {
         ServerLoggers.evalLogger.info(((action ? "EVAL ACTION" : "EVAL") + " - " + ThreadLocalContext.get().getLogInfo() + ":\n" + script).replaceAll("\\R", "\n\t"));
-        return EvalUtils.evaluateAndFindAction(BL, parentLMs, script, action);
+        return EvalUtils.evaluateAndFindAction(BL, parentLM, script, action);
     }
 
     // the same, with the stack its run action runs in : a stack of the script's module over the given one, made only for
     // an action that is there to run
-    public Pair<LA, ExecutionStack> evaluateRun(String script, Set<EvalScriptingLogicsModule> parentLMs, boolean action, ExecutionStack stack) {
-        Pair<LA, UnaryOperator<ExecutionStack>> run = evaluateRun(script, parentLMs, action);
+    public Pair<LA, ExecutionStack> evaluateRun(String script, EvalScriptingLogicsModule parentLM, boolean action, ExecutionStack stack) {
+        Pair<LA, UnaryOperator<ExecutionStack>> run = evaluateRun(script, parentLM, action);
         return new Pair<>(run.first, run.first != null ? run.second.apply(stack) : null);
     }
 
@@ -1465,7 +1465,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     // customizes the application - the connections one code customizes share one module, and the clients among them one
     // copy of the navigator
     @IdentityLazy
-    public EvalScriptingLogicsModule evaluate(String script, Set<EvalScriptingLogicsModule> parentLMs, boolean changesNavigator) {
-        return EvalUtils.evaluate(BL, parentLMs, null, null, null, null, false, script, changesNavigator);
+    public EvalScriptingLogicsModule evaluate(String script, EvalScriptingLogicsModule parentLM, boolean changesNavigator) {
+        return EvalUtils.evaluate(BL, parentLM, null, null, null, null, false, script, changesNavigator);
     }
 }

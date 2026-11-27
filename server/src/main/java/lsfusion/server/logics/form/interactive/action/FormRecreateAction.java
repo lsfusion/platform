@@ -29,8 +29,10 @@ public class FormRecreateAction extends InternalAction {
             throw new RuntimeException("formRecreate must be called in a form");
         form.formClose(context, true);
 
-        Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> resolvedForm = form.entity.getCustomizeForm().getForm(context.getBL(), context.getSession(), MapFact.EMPTY());
+        // opened again as what opened it opens a form : in a context with its module
+        ExecutionContext<ClassPropertyInterface> openerContext = context.override(form.openerLM);
+        Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> resolvedForm = form.entity.getCustomizeForm().getForm(openerContext, MapFact.EMPTY());
         // the objects are the base form's, and a form customized already is a copy with objects of its own
-        form.recreatedForm = context.createAndRequestFormInstance(resolvedForm.first, resolvedForm.second.mapValues(object -> form.instanceFactory.getExInstance(object).getObjectValue()), form.options);
+        form.recreatedForm = openerContext.createAndRequestFormInstance(resolvedForm.first, resolvedForm.second.mapValues(object -> form.instanceFactory.getExInstance(object).getObjectValue()), form.options);
     }
 }

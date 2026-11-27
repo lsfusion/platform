@@ -36,5 +36,8 @@ public interface ExecutionStack {
 
     // "global" stack methods (even in async calls)
 
+    // the module the code evaluated here is compiled under, and a form opened here continues : the one the nearest
+    // EvalExecutionStack up the stack sets - a thread's root keeps the one of the code that started it -, with none the
+    // code of the session's user (ExecutionContext.getEvalLM)
     EvalScriptingLogicsModule getEvalLM();
 }

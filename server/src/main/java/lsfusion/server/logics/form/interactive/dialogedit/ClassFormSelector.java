@@ -10,6 +10,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ConcreteClass;
@@ -63,7 +64,7 @@ public class ClassFormSelector implements FormSelector<ClassFormSelector.Virtual
     }
 
     @Override
-    public Pair<FormEntity, ImRevMap<ObjectEntity, VirtualObject>> getForm(BusinessLogics BL, DataSession session, ImMap<VirtualObject, ? extends ObjectValue> mapObjectValues) throws SQLException, SQLHandledException {
+    public Pair<FormEntity, ImRevMap<ObjectEntity, VirtualObject>> getForm(BusinessLogics BL, DataSession session, ImMap<VirtualObject, ? extends ObjectValue> mapObjectValues, EvalScriptingLogicsModule openerLM) throws SQLException, SQLHandledException {
         assert mapObjectValues.isEmpty() || mapObjectValues.singleKey() == virtualObject;
 
         ObjectValue concreteObject = mapObjectValues.isEmpty() ? NullValue.instance : mapObjectValues.singleValue();
@@ -78,7 +79,7 @@ public class ClassFormSelector implements FormSelector<ClassFormSelector.Virtual
         if(formEntity == null)
             return null;
 
-        Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm = formEntity.form.getForm(BL, session, MapFact.singleton(formEntity.object, concreteObject));
+        Pair<FormEntity, ImRevMap<ObjectEntity, ObjectEntity>> getForm = formEntity.form.getForm(BL, session, MapFact.singleton(formEntity.object, concreteObject), openerLM);
         return new Pair<>(getForm.first, MapFact.singletonRev(getForm.second.reverse().get(formEntity.object), virtualObject));
     }
 

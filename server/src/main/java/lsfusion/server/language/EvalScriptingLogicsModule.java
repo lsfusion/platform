@@ -45,7 +45,8 @@ import java.util.concurrent.ConcurrentHashMap;
 // a module made of a text while the server runs, after the logics is final : what it declares is its own, and what would
 // change the logics is refused
 public class EvalScriptingLogicsModule extends ScriptingLogicsModule implements ExternalLAPResolver {
-    private Set<EvalScriptingLogicsModule> parentLMs;
+    // the module this one is compiled under, if any - it sees what that one sees -, one, so that the modules make a tree
+    private final EvalScriptingLogicsModule parentLM;
 
     // whether the code changes the navigator - a copy of its own : the code that customizes the application does, a script
     // that is run (EVAL, the code that customizes a form) does not - nothing would keep its change. The caller says it,
@@ -59,9 +60,9 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule implements 
     // code is compiled the module's navigator is settled (finalizeAndCheckNavigator) and is only read, by every thread
     private NavigatorEntity navigator;
 
-    public EvalScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL, Set<EvalScriptingLogicsModule> parentLMs, String code, boolean changesNavigator) {
+    public EvalScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL, EvalScriptingLogicsModule parentLM, String code, boolean changesNavigator) {
         super(code, baseModule, BL);
-        this.parentLMs = parentLMs;
+        this.parentLM = parentLM;
         this.changesNavigator = changesNavigator;
     }
 
@@ -117,8 +118,8 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule implements 
     // would refuse them. And every name they give is found in the copy : the element a statement changes or moves, the one
     // it puts another before or after, the window it hides or turns over, the one an element is put into. So none gets
     // what is the logics'. Once the code is compiled the copy is what a client the code customizes draws.
-    // A script changes nothing of the navigator : it finds the window it names in the navigator of the code it is run
-    // under - a parent or a parent's parent, which the code that customizes the application changed -, or in the logics'
+    // A script changes nothing of the navigator : it finds the window it names in the navigator of the code it is compiled
+    // under - the parent or a parent's parent, which the code that customizes the application changed -, or in the logics'
     @Override
     public NavigatorEntity getNavigator() {
         if (changesNavigator) {
@@ -126,16 +127,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule implements 
                 navigator = new NavigatorEntity(BL.getNavigator(), getVersion());
             return navigator;
         }
-
-        NavigatorEntity logicsNavigator = super.getNavigator();
-        if(parentLMs != null) {
-            for (EvalScriptingLogicsModule parentLM : parentLMs) {
-                NavigatorEntity navigator = parentLM.getNavigator();
-                if (navigator != logicsNavigator)
-                    return navigator;
-            }
-        }
-        return logicsNavigator;
+        return parentLM != null ? parentLM.getNavigator() : super.getNavigator();
     }
 
     // the copy is checked as the logics' own navigator is as the server starts; a code that did not touch the navigator
@@ -149,17 +141,11 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule implements 
 
     @Override
     protected LogicsModule getSysModule(String requiredModuleName) {
-        if(parentLMs != null) {
-            for (EvalScriptingLogicsModule parentLM : parentLMs) {
-                LogicsModule result = parentLM.getSysModule(requiredModuleName);
-                if (result != null) {
-                    return result;
-                } else if (parentLM.getName().equals(requiredModuleName)) {
-                    return parentLM;
-                }
-            }
-        }
-        return super.getSysModule(requiredModuleName);
+        LogicsModule result = super.getSysModule(requiredModuleName);
+        for (EvalScriptingLogicsModule module = parentLM; result == null && module != null; module = module.parentLM)
+            if (module.getName().equals(requiredModuleName))
+                result = module;
+        return result;
     }
 
     @Override

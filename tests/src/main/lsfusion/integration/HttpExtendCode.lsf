@@ -103,3 +103,23 @@ testCallIgnoresBrokenExtendCode 'A call through the Action API goes on without a
         hecSet(NULL);
     }
 }
+
+// an EVAL inside a script a call sends sees what that script declares, as one inside an EVAL does : the call evaluates
+// the script itself, with no EVAL around it whose script the inner one would see
+testNestedEvalSeesTheScript 'An EVAL inside a script a call sends sees what that script declares' () {
+    hecEval('hecOuter() = 21;\n'
+        + 'hecResult = DATA LOCAL INTEGER ();\n'
+        + 'run() \{ EVAL ACTION \'hecResult() <- hecOuter() * 2;\'; RETURN hecResult(); \}');
+    hecAnswered('42', 'A script with an EVAL inside');
+}
+
+// a script evaluated by an action of the logics - an EVAL written in no script - inside a script a call sends sees what
+// that script declares : the script that runs it
+hecEvalText (STRING text) { EVAL ACTION text; }
+
+testEvalOfLogicsSeesTheScript 'An EVAL of the logics run inside a script a call sends sees what that script declares' () {
+    hecEval('hecOuter() = 21;\n'
+        + 'hecResult = DATA LOCAL INTEGER ();\n'
+        + 'run() \{ HttpExtendCode.hecEvalText(\'hecResult() <- hecOuter() * 2;\'); RETURN hecResult(); \}');
+    hecAnswered('42', 'A script running an EVAL of the logics');
+}

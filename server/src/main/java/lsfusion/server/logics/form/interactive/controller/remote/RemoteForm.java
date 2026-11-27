@@ -42,6 +42,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
+import lsfusion.server.logics.action.controller.stack.EvalExecutionStack;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.ParseException;
@@ -83,7 +84,6 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
@@ -157,7 +157,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public Pair<RemoteFormInterface, String> getFormExternal(ExecutionStack stack) {
         JSONObject result = new JSONObject();
         FormInstanceContext context = getRemoteContext();
-        result.put("initial", getFormChangesExternal(stack, context).get("modify"));
+        // read in the request of the navigator that opened the form : the events of the reading are the form's code
+        result.put("initial", getFormChangesExternal(new EvalExecutionStack(getCustomizeLM(), stack), context).get("modify"));
         result.put("meta", getMetaExternal().serialize());
         return new Pair<>(this, result.toString());
     }
@@ -1211,10 +1212,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return form.BL;
     }
 
-    // of the code that customized the form, else of the one that customizes the application for the user of its session
+    // the module of the form (FormEntity.getCustomizeLM)
     @Override
     protected EvalScriptingLogicsModule getCustomizeLM() {
-        return EvalUtils.getCustomizeLM(form.entity, form.session.user.getCustomizeLM());
+        return form.entity.getCustomizeLM(form.openerLM);
     }
 
     // API gate, delegating to the single core impl in RemoteConnection (enableAPI / @api / canDeriveAPIAccess +

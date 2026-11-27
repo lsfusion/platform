@@ -170,7 +170,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     // a copy of the navigator, which is checked. What it fails with is thrown - a connection goes on without the code, a
     // save of the code refuses it
     public static EvalScriptingLogicsModule evaluateCustomizeCode(BusinessLogics businessLogics, String code) {
-        return businessLogics.LM.evaluate(code, Collections.emptySet(), true);
+        return businessLogics.LM.evaluate(code, null, true);
     }
 
     private String readCustomizeCode(DataSession session) throws SQLException, SQLHandledException {
@@ -181,7 +181,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     protected void customizeFailed(String error) {
     }
 
-    // what that code declares is seen by what looks a name up in the connection (EvalUtils.getCustomizeLM)
+    // what that code declares is seen by what looks a name up in the connection, and by a form opened there
+    // (ExecutionContext.getEvalLM)
     @Override
     public EvalScriptingLogicsModule getCustomizeLM() {
         return customizeLM;
@@ -518,7 +519,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
         return logFromExternalSystemRequest(() -> {
             if (script != null) {
-                Pair<LA, UnaryOperator<ExecutionStack>> run = businessLogics.evaluateRun(script, getCustomizeLM(), action);
+                Pair<LA, UnaryOperator<ExecutionStack>> run = businessLogics.LM.evaluateRun(script, getCustomizeLM(), action);
                 if(run.first != null) {
                     return executeExternal(run.first, paramScript.value, null, true, run.second, request);
                 } else {

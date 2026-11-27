@@ -383,7 +383,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             ClientAction terminal;
             try {
                 controllerGate(false); // gate BEFORE evaluateRun, no @api for a dynamic script
-                Pair<LA, ExecutionStack> run = getControllerBL().evaluateRun(script, getCustomizeLM(), evalAction, stack); // evalAction: true -> wrap body into run(); false -> script defines its own run (typed params)
+                Pair<LA, ExecutionStack> run = getControllerBL().LM.evaluateRun(script, getCustomizeLM(), evalAction, stack); // evalAction: true -> wrap body into run(); false -> script defines its own run (typed params)
                 if(run.first == null)
                     throw new RuntimeException("Eval 'run' action was not found");
                 terminal = runControllerAction(run.first, params, options, run.second);
@@ -413,8 +413,9 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
 
     // hooks: form -> persistent form.session + FormInstanceContext; navigator -> fresh createSession() + connection context
     protected abstract BusinessLogics getControllerBL();
-    // the module of the code that customized what a request to this object is about (EvalUtils.getCustomizeLM) : a
-    // form's, else the one of the application for the user; null with none
+    // the module of the code that customized what a request to this object is about : a form's
+    // (FormEntity.getCustomizeLM : its code's, else what opened it), else the one of the application for the user; null
+    // with none
     protected abstract EvalScriptingLogicsModule getCustomizeLM();
     protected abstract void controllerGate(boolean apiAnnotation);
     protected abstract ClientAction runControllerRequest(ExecutionStack stack, ControllerBody body) throws SQLException, SQLHandledException, ParseException, IOException;

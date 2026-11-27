@@ -66,6 +66,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -196,6 +197,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public FormOptions options;
 
     public FormInstance recreatedForm;
+    // the module of the code that opened the form (ExecutionContext.createAndRequestFormInstance) : its code is compiled
+    // under it, it is recreated under it
+    public EvalScriptingLogicsModule openerLM;
 
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
     protected Set<PropertyDrawInstance> isShown = new HashSet<>();

@@ -3,9 +3,9 @@ package lsfusion.server.logics.action.controller.stack;
 import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.logics.action.session.DataSession;
 
-// the code of a script runs in a stack of its module, wherever the script is run. Sacrificed for one way to run a
-// script: a script compiled without the module of an EVAL it runs under (one run on a form that EVAL showed, a
-// debugger's expression) hides that module from an EVAL inside it
+// the code above runs with this module (ExecutionStack.getEvalLM) : a script's (EvalUtils.findAction), a form's
+// (ExecutionContext.createAndRequestFormInstance). Sacrificed for one way to run a script: a script compiled without the
+// module of an EVAL it runs under (a debugger's expression) hides that module from an EVAL inside it
 public class EvalExecutionStack extends SameThreadExecutionStack {
 
     private final EvalScriptingLogicsModule evalLM;
@@ -15,7 +15,8 @@ public class EvalExecutionStack extends SameThreadExecutionStack {
 
         this.evalLM = evalLM;
 
-        evalLM.addWrapped(); // the module's code starts running
+        if(evalLM != null)
+            evalLM.addWrapped(); // the module's code starts running
     }
 
     @Override

@@ -9,7 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.SystemAction;
@@ -17,15 +16,11 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
-import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-import java.util.Set;
 
 public class EvalAction<P extends PropertyInterface> extends SystemAction {
 
@@ -57,14 +52,7 @@ public class EvalAction<P extends PropertyInterface> extends SystemAction {
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         String script = getScript(context);
 
-        ExecutionStack stack = context.stack;
-        FormInstance formInstance = context.getFormInstance(false, false);
-        // the code of the form it runs on, else of the application, for the user of the session it runs in
-        Set<EvalScriptingLogicsModule> parentLMs = EvalUtils.getParentLMs(EvalUtils.getCustomizeLM(formInstance != null ? formInstance.entity : null, context.getSession().user.getCustomizeLM()));
-        EvalScriptingLogicsModule stackEvalLM = stack.getEvalLM();
-        if (stackEvalLM != null)
-            parentLMs.add(stackEvalLM);
-        Pair<LA, ExecutionStack> evalResult = context.getBL().LM.evaluateRun(script, parentLMs, action, stack);
+        Pair<LA, ExecutionStack> evalResult = context.getBL().LM.evaluateRun(script, context.getEvalLM(), action, context.stack);
         return evalResult.first.execute(context.override(evalResult.second), getParams(context));
     }
     @Override

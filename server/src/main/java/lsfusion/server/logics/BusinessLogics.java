@@ -48,7 +48,6 @@ import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.value.DataObject;
-import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.metacode.MetaCodeFragment;
@@ -102,7 +101,6 @@ import lsfusion.server.physics.admin.activity.UserEventsLogicsModule;
 import lsfusion.server.physics.admin.authentication.AuthenticationLogicsModule;
 import lsfusion.server.physics.admin.authentication.security.SecurityLogicsModule;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
-import lsfusion.server.physics.admin.interpreter.EvalUtils;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.monitor.StatusMessage;
@@ -158,7 +156,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 import java.util.function.IntFunction;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -234,18 +231,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public BusinessLogics() {
         super(LOGICS_ORDER);
-    }
-
-    // a script a request brings (/eval, the code of a page, a form a client describes) : evaluated on a form or in a
-    // connection that is customized, it sees what the code of the customization declares - the module the request's
-    // object gives (RemoteRequestObject.getCustomizeLM)
-    public Pair<LA, UnaryOperator<ExecutionStack>> evaluateRun(String script, EvalScriptingLogicsModule customizeLM, boolean action) {
-        return LM.evaluateRun(script, EvalUtils.getParentLMs(customizeLM), action);
-    }
-
-    // the same, with the stack its run action runs in
-    public Pair<LA, ExecutionStack> evaluateRun(String script, EvalScriptingLogicsModule customizeLM, boolean action, ExecutionStack stack) {
-        return LM.evaluateRun(script, EvalUtils.getParentLMs(customizeLM), action, stack);
     }
 
     public void setTopModule(String topModule) {

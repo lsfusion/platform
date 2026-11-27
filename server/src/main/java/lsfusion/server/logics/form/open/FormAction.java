@@ -102,7 +102,7 @@ public abstract class FormAction<O extends ObjectSelector> extends SystemExplici
 
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ImMap<O, ? extends ObjectValue> mapObjectValues = mapObjects.join(context.getKeys());
-        Pair<FormEntity, ImRevMap<ObjectEntity, O>> resolvedForm = form.getForm(context.getBL(), context.getSession(), mapObjectValues);
+        Pair<FormEntity, ImRevMap<ObjectEntity, O>> resolvedForm = form.getForm(context, mapObjectValues);
         if(resolvedForm == null)
             return;
 

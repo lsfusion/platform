@@ -7,7 +7,9 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.EvalScriptingLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -33,12 +35,17 @@ public interface FormSelector<O extends ObjectSelector> {
     }
     default Pair<FormEntity, ImRevMap<ObjectEntity, O>> getForm(BusinessLogics BL) {
         try {
-            return getForm(BL, null, MapFact.EMPTY()); // always not null since session is null
+            return getForm(BL, null, MapFact.EMPTY(), null); // always not null since session is null
         } catch (SQLException | SQLHandledException e) { // can't be since session is null
             throw Throwables.propagate(e);
         }
     }
-    Pair<FormEntity, ImRevMap<ObjectEntity, O>> getForm(BusinessLogics BL, DataSession session, ImMap<O, ? extends ObjectValue> mapObjectValues) throws SQLException, SQLHandledException;
+    // the form to open - a named one a code customizes is its copy that code makes, compiled under openerLM, the module
+    // the form continues (ExecutionContext.getEvalLM)
+    Pair<FormEntity, ImRevMap<ObjectEntity, O>> getForm(BusinessLogics BL, DataSession session, ImMap<O, ? extends ObjectValue> mapObjectValues, EvalScriptingLogicsModule openerLM) throws SQLException, SQLHandledException;
+    default Pair<FormEntity, ImRevMap<ObjectEntity, O>> getForm(ExecutionContext<?> context, ImMap<O, ? extends ObjectValue> mapObjectValues) throws SQLException, SQLHandledException {
+        return getForm(context.getBL(), context.getSession(), mapObjectValues, context.getEvalLM());
+    }
     default FormEntity getStaticForm(BusinessLogics BL, CustomClass customClass) {
         return getStaticForm(BL);
     } 

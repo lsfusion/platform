@@ -16,8 +16,6 @@ import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.LazyProperty;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.UnaryOperator;
 
@@ -28,26 +26,10 @@ public class EvalUtils {
         return "UNIQUE" + uniqueNameCounter.incrementAndGet() + "NSNAME";
     }
 
-    // the module whose names are seen here besides the logics' : of the code that customized the form, or - with none -
-    // of the code that customizes the application for the user (the session's, UserController.getCustomizeLM). The former
-    // is itself compiled under the latter (FormEntity.getForm), so the nearest one sees what both declare
-    public static EvalScriptingLogicsModule getCustomizeLM(FormEntity form, EvalScriptingLogicsModule userLM) {
-        EvalScriptingLogicsModule formLM = form != null ? form.getCustomizeLM() : null;
-        return formLM != null ? formLM : userLM;
-    }
-
-    // that module as the parents of a script evaluated with it (an EVAL inside a script adds the module of that script)
-    public static Set<EvalScriptingLogicsModule> getParentLMs(EvalScriptingLogicsModule customizeLM) {
-        Set<EvalScriptingLogicsModule> parentLMs = new HashSet<>();
-        if (customizeLM != null)
-            parentLMs.add(customizeLM);
-        return parentLMs;
-    }
-
-    public static Pair<LA, UnaryOperator<ExecutionStack>> evaluateAndFindAction(BusinessLogics BL, Set<EvalScriptingLogicsModule> parentLMs, String script, boolean action) {
+    public static Pair<LA, UnaryOperator<ExecutionStack>> evaluateAndFindAction(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String script, boolean action) {
         if(script != null && script.startsWith("\uFEFF"))
             script = script.substring(1);
-        EvalScriptingLogicsModule module = BL.LM.evaluate(action ? EvalActionParser.parse(script) : script, parentLMs, false);
+        EvalScriptingLogicsModule module = BL.LM.evaluate(action ? EvalActionParser.parse(script) : script, parentLM, false);
         return findAction(module, "run");
     }
     
@@ -61,15 +43,12 @@ public class EvalUtils {
         }
     }
 
-    public static EvalScriptingLogicsModule evaluate(BusinessLogics BL, Set<EvalScriptingLogicsModule> parentLMs, String namespace, String require, String priorities, final ImSet<Pair<LP, LogicsModule.LocalPropertyData>> locals, boolean prevEventScope, String script, boolean changesNavigator) {
+    public static EvalScriptingLogicsModule evaluate(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String namespace, String require, String priorities, final ImSet<Pair<LP, LogicsModule.LocalPropertyData>> locals, boolean prevEventScope, String script, boolean changesNavigator) {
         String name = getUniqueName();
-        Set<String> parentModules = new HashSet<>();
-        if(parentLMs != null)
-            parentLMs.forEach(parentLM -> parentModules.add(parentLM.getName()));
-        WrapResult wrapResult = wrapScript(BL, parentModules, namespace, require, priorities, script, name);
+        WrapResult wrapResult = wrapScript(BL, parentLM, namespace, require, priorities, script, name);
         
         String code = wrapResult.code;
-        EvalScriptingLogicsModule module = new EvalScriptingLogicsModule(BL.LM, BL, parentLMs, code, changesNavigator);
+        EvalScriptingLogicsModule module = new EvalScriptingLogicsModule(BL.LM, BL, parentLM, code, changesNavigator);
         module.getErrLog().setLineNumberShift(wrapResult.additionalLines);
         // the module gets its name from its header, so an error before the header is parsed would have no module to point to
         module.getErrLog().setModuleId(name);
@@ -124,7 +103,7 @@ public class EvalUtils {
         }
     }
 
-    private static WrapResult wrapScript(BusinessLogics BL, Set<String> parentModules, String namespace, String require, String priorities, String script, String name) {
+    private static WrapResult wrapScript(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String namespace, String require, String priorities, String script, String name) {
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append("MODULE ");
         strBuilder.append(name);
@@ -142,9 +121,8 @@ public class EvalUtils {
                 isFirst = false;
                 strBuilder.append(module.getName());
             }
-            for(String parentModule : parentModules) {
-                strBuilder.append(isFirst ? "" : ", ").append(parentModule);
-            }
+            if(parentLM != null)
+                strBuilder.append(isFirst ? "" : ", ").append(parentLM.getName());
         }
         strBuilder.append(";\n");
         int additionalLines = 2;
