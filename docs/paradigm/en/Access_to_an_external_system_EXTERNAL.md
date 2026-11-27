@@ -70,6 +70,8 @@ For this type of interaction, a connection string and the SQL command(s) to be e
 
 `EXTERNAL SQL 'LOCAL'` is not supported. To run SQL against the database used by the platform itself, use `INTERNAL DB`.
 
+The optional `System.timeoutSql[]` property limits the execution time of the SQL command in milliseconds (rounded up to whole seconds): the command is cancelled when it runs longer, and the operator throws an exception. This is the query timeout of JDBC, so what it covers depends on the driver: the Oracle 11.2 driver shipped with the platform, for example, limits the execution of the command, but not the reading of the rows that come after the first batch. Connection timeouts are set in the connection string, in the format of the specific JDBC driver.
+
 #### Parameters {#table}
 
 File class parameters (`FILE`, `PDFFILE`, etc.) can be used only in an SQL command (not in the connection string). Furthermore, if any of the parameters, when executed, is a file in `TABLE` format (`TABLEFILE` or `FILE` with the extension `table`), that parameter is considered to be a table and in this case:

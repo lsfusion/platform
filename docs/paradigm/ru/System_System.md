@@ -52,7 +52,7 @@ title: 'System'
 
 **Производные URL**: `origin[]` (`scheme://webHost:webPort`), `webPath[]` (`origin + contextPath`), `url[]` (`webPath + servletPath + pathInfo`), `apiOriginUrl[STRING]` / `apiOriginUrl[LINK]` (URL к API относительно `origin`), `apiContextUrl[STRING]` (URL к API относительно `webPath`).
 
-**Обращения к внешней системе**: `timeoutHttp[]` и `insecureSSL[]` читаются перед вызовом `HTTP`, а статус его ответа записывается в `statusHttp[]` ([ошибки](Access_to_an_external_system_EXTERNAL.md#errors)). `failedHttp[]` истинно, когда `statusHttp[]` меньше `200` или не меньше `300`. `timeoutTcp[]` читается перед вызовом `TCP`, а `responseTcp[]` получает его ответ.
+**Обращения к внешней системе**: `timeoutHttp[]` и `insecureSSL[]` читаются перед вызовом `HTTP`, а статус его ответа записывается в `statusHttp[]` ([ошибки](Access_to_an_external_system_EXTERNAL.md#errors)). `failedHttp[]` истинно, когда `statusHttp[]` меньше `200` или не меньше `300`. `timeoutTcp[]` читается перед вызовом `TCP`, а `responseTcp[]` получает его ответ. `timeoutSql[]` читается перед вызовом `SQL` ([SQL](Access_to_an_external_system_EXTERNAL.md#sql)).
 
 ### Состояние пойманного исключения
 

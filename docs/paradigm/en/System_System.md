@@ -52,7 +52,7 @@ The platform fills the following `NESTED LOCAL` properties from an incoming HTTP
 
 **Derived URLs**: `origin[]` (`scheme://webHost:webPort`), `webPath[]` (`origin + contextPath`), `url[]` (`webPath + servletPath + pathInfo`), `apiOriginUrl[STRING]` / `apiOriginUrl[LINK]` (API URL relative to `origin`), `apiContextUrl[STRING]` (API URL relative to `webPath`).
 
-**Calls to an external system**: `timeoutHttp[]` and `insecureSSL[]` are read before an `HTTP` call, and the status of its response is written to `statusHttp[]` ([errors](Access_to_an_external_system_EXTERNAL.md#errors)). `failedHttp[]` is `TRUE` when `statusHttp[]` is below `200` or at least `300`. `timeoutTcp[]` is read before a `TCP` call, and `responseTcp[]` receives its response.
+**Calls to an external system**: `timeoutHttp[]` and `insecureSSL[]` are read before an `HTTP` call, and the status of its response is written to `statusHttp[]` ([errors](Access_to_an_external_system_EXTERNAL.md#errors)). `failedHttp[]` is `TRUE` when `statusHttp[]` is below `200` or at least `300`. `timeoutTcp[]` is read before a `TCP` call, and `responseTcp[]` receives its response. `timeoutSql[]` is read before an `SQL` call ([SQL](Access_to_an_external_system_EXTERNAL.md#sql)).
 
 ### Caught-exception state
 

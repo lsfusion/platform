@@ -34,7 +34,8 @@ public class InternalDBAction extends CallDBAction {
 
             sql.executeAction(exConnection -> {
                 try {
-                    readJDBC(context, exConnection.sql, sql.syntax, opOwner);
+                    // no timeoutSql here: a cancelled command inside a transaction would leave it aborted, which TRY cannot undo
+                    readJDBC(context, exConnection.sql, sql.syntax, opOwner, null);
                 } catch (IOException | ExecutionException e) {
                     throw Throwables.propagate(e);
                 }

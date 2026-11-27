@@ -46,6 +46,8 @@ notEmpty(STRING s) = IF s = '' THEN NULL ELSE s;
 responseTcp = DATA LOCAL RAWFILE();
 timeoutTcp = DATA LOCAL INTEGER();
 
+timeoutSql = DATA LOCAL INTEGER();
+
 statusHttp = DATA LOCAL INTEGER();
 failedHttp = statusHttp() < 200 OR statusHttp() >= 300;
 statusHttpTo = DATA LOCAL NESTED INTEGER();
