@@ -26,6 +26,7 @@ import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.connection.ConnectionInfo;
+import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.navigator.ClientInfo;
@@ -48,6 +49,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.HtmlUtils;
+import org.springframework.web.util.WebUtils;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -565,6 +567,15 @@ public class MainController {
 
         model.addAttribute("sessionID", sessionId);
         addResourcesAttributes(model, serverSettings, false, initSettings.mainResourcesBeforeSystem, initSettings.mainResourcesAfterSystem);
+
+        Locale locale = LocalePreferences.getLocale(initSettings.language, null);
+        String language = locale != null ? locale.getLanguage() : null;
+        Cookie localeCookie = WebUtils.getCookie(request, ServerUtils.LOCALE_COOKIE_NAME);
+        if (language != null && (localeCookie == null || !language.equals(localeCookie.getValue().split("_")[0]))) {
+            localeCookie = new Cookie(ServerUtils.LOCALE_COOKIE_NAME, language);
+            localeCookie.setMaxAge(60 * 60 * 24 * 365 * 5);
+            response.addCookie(localeCookie);
+        }
 
         // the page (with its resources, whose .jsx transform above can take a long time) is built: only now does the
         // client's grace to send InitializeNavigator start, so a slow build cannot reap this navigator before its

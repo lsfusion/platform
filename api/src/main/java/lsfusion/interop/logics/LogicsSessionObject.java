@@ -152,17 +152,19 @@ public class LogicsSessionObject {
         List<Pair<String, RawFileData>> mainResourcesBeforeSystem = getFileData(json,"mainResourcesBeforeSystem");
         List<Pair<String, RawFileData>> mainResourcesAfterSystem = getFileData(json,"mainResourcesAfterSystem");
 
-        return new InitSettings(mainResourcesBeforeSystem, mainResourcesAfterSystem);
+        return new InitSettings(mainResourcesBeforeSystem, mainResourcesAfterSystem, json.optString("language", null));
     }
 
     public static class InitSettings {
 
         public List<Pair<String, RawFileData>> mainResourcesBeforeSystem;
         public List<Pair<String, RawFileData>> mainResourcesAfterSystem;
+        public String language;
 
-        public InitSettings(List<Pair<String, RawFileData>> mainResourcesBeforeSystem, List<Pair<String, RawFileData>> mainResourcesAfterSystem) {
+        public InitSettings(List<Pair<String, RawFileData>> mainResourcesBeforeSystem, List<Pair<String, RawFileData>> mainResourcesAfterSystem, String language) {
             this.mainResourcesBeforeSystem = mainResourcesBeforeSystem;
             this.mainResourcesAfterSystem = mainResourcesAfterSystem;
+            this.language = language;
         }
     }
 

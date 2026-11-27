@@ -1,0 +1,30 @@
+MODULE UiLocale;
+
+REQUIRE TestUtils, Authentication, Security;
+
+uiLocaleUser (STRING login, STRING password, STRING language) {
+    NEW u = CustomUser {
+        login(u) <- login;
+        setSHA256Password(u, password);
+        userLanguage(u) <- language;
+        mainRole(u) <- userRoleSID('admin');
+    }
+    APPLY;
+}
+
+uiLocaleLanguage (STRING login, STRING language) {
+    userLanguage(customUserLogin(login)) <- language;
+    APPLY;
+}
+
+uiLocaleDate 'Date' = DATA LOCAL DATE ();
+
+FORM uiLocaleDates 'Dates'
+    PROPERTIES() uiLocaleDate
+;
+
+NAVIGATOR {
+    NEW FOLDER uiLocale 'UI locale' WINDOW toolbar {
+        NEW uiLocaleDates;
+    }
+}

@@ -911,7 +911,8 @@ getInitSettings(User user) + WHEN user IS User THEN {
 
     EXPORT JSON FROM
         mainResourcesBeforeSystem =(JSON FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResourcesOrder(s) < 0 ORDER webClientLoadedResourcesOrder(s)),
-        mainResourcesAfterSystem = (JSON FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResourcesOrder(s) >= 0 ORDER webClientLoadedResourcesOrder(s));
+        mainResourcesAfterSystem = (JSON FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResourcesOrder(s) >= 0 ORDER webClientLoadedResourcesOrder(s)),
+        language = language(user);
 }
 getInitSettings() {
     getInitSettings(currentUser());
