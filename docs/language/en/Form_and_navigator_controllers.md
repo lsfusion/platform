@@ -52,7 +52,7 @@ await controller.form.change('customerOrder', orderId, customerId);
 
 For a classic view's rows, see [Row identity](#row-identity-contract); for its `changeProperty` delegation to the form, see [An object group's controller](Render_functions.md#controller-methods). The form controller's `change` takes no rows: it names a property, then the values of its parameters and the new value.
 
-An [`INTERNAL CLIENT`](INTERNAL_operator.md#client) action is another entry point. The [custom value editor's controller](Edit_functions.md#editor-controller) (`CHANGE`) also exposes the form controller as its `form` field.
+An [`INTERNAL CLIENT`](INTERNAL_CLIENT_functions.md) action is another entry point. The [custom value editor's controller](Edit_functions.md#editor-controller) (`CHANGE`) also exposes the form controller as its `form` field.
 
 ### The form controller's methods {#the-form-controller}
 
@@ -374,7 +374,7 @@ A single key the view needs regardless of the editing state — a shortcut of it
 
 ### The navigator controller {#navigator-controller}
 
-An [`INTERNAL CLIENT`](INTERNAL_operator.md) action placed in [`NAVIGATOR`](NAVIGATOR_statement.md) receives a controller as well, but a navigator one: there is no form, so it has none of the form methods above.
+An [`INTERNAL CLIENT`](INTERNAL_CLIENT_functions.md) action placed in [`NAVIGATOR`](NAVIGATOR_statement.md) receives a controller as well, but a navigator one: there is no form, so it has none of the form methods above.
 
 It has the four server calls — `exec`, `eval`, `evalAction`, `change`, and `options` for the first three — which run in the navigator's own session, a new one per call that is not applied automatically, so a standalone `change` made here is not kept. An action or script can apply its changes with `APPLY`. Each returns a `Promise`. And it has `activate`:
 

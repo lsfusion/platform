@@ -5,7 +5,7 @@ title: 'Client JavaScript modules'
 
 A *client JavaScript module* is a file of a project that holds client code: JavaScript that draws [custom views](../paradigm/Custom_views.md) — parts of the [form design](../paradigm/Form_design.md) or of the [navigator design](../paradigm/Navigator_design.md) — in the web client, or that an action calls there.
 
-The components of [React views](React_views.md), the [render functions](Render_functions.md) and [edit functions](Edit_functions.md) of the classic custom views, and the functions called by [`INTERNAL CLIENT`](INTERNAL_operator.md) actions are all kept in such modules: lsFusion code names each of them by a string, and the web client resolves all these names the same way ([Named exports and auto-registration](#named-exports-and-auto-registration)).
+The components of [React views](React_views.md), the [render functions](Render_functions.md) and [edit functions](Edit_functions.md) of the classic custom views, and the [functions called by `INTERNAL CLIENT` actions](INTERNAL_CLIENT_functions.md) are all kept in such modules: lsFusion code names each of them by a string, and the web client resolves all these names the same way ([Named exports and auto-registration](#named-exports-and-auto-registration)).
 
 Code in these modules works with a form and the navigator through the [form and navigator controllers](Form_and_navigator_controllers.md).
 

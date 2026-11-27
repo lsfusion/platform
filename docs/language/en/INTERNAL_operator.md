@@ -39,17 +39,7 @@ The `INTERNAL` operator creates an action or an action statement that runs eithe
 
     Keyword. Targets the user's web client instead of the application-server JVM — a JavaScript function already loaded in the client, or a client-side file (resolution rule on `execStrExpr` / `className` below). Without `CLIENT` the call targets the JVM (a Java class extending `InternalAction`, or an inline Java snippet). In the inline statement form `CLIENT` and `DB` are mutually exclusive and one of them is required.
 
-    A `CLIENT` JavaScript function receives the call parameters as its leading arguments, followed by the [form *controller*](Form_and_navigator_controllers.md). If the function declares parameters beyond those, the call is treated as asynchronous: a success callback is appended after the controller, and a failure callback after it when the function declares one. With no such extra parameter the function's return value is used as the result.
-
-    ```js
-    function reload(controller) { controller.exec('refreshData'); }
-
-    function readClipboard(controller, resolve, reject) {
-        navigator.clipboard.readText().then(resolve, reject);
-    }
-    ```
-
-    A call made through the controller — but for a lookup of values (`getValues`), which may be answered out of turn — is a request of the form, and the form takes its requests one after another: the call runs once the action that made the `CLIENT` call is over. So a function the action waits for — a synchronous call, with `WAIT` or a `TO` — must not wait for a call it makes through the controller: the call waits for the action, the action for the function, and neither ends. The same goes for an asynchronous function followed in the action by a call the action waits for: the client starts a `CLIENT` call only once the asynchronous function before it has called one of its callbacks.
+    The function's arguments, result, and requests through the controller are described in [INTERNAL CLIENT functions](INTERNAL_CLIENT_functions.md).
 
 - `syncType`
 

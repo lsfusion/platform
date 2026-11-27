@@ -52,7 +52,7 @@ await controller.form.change('customerOrder', orderId, customerId);
 
 Строки классического представления — см. [Идентификация строки](#row-identity-contract), делегирование его `changeProperty` форме — [Контроллер группы объектов](Render_functions.md#controller-methods). `change` контроллера формы строк не принимает: он называет свойство, затем значения его параметров и новое значение.
 
-Ещё одна точка входа — действие [`INTERNAL CLIENT`](INTERNAL_operator.md#client). [Контроллер пользовательского редактора значения](Edit_functions.md#editor-controller) (`CHANGE`) также предоставляет контроллер формы в поле `form`.
+Ещё одна точка входа — действие [`INTERNAL CLIENT`](INTERNAL_CLIENT_functions.md). [Контроллер пользовательского редактора значения](Edit_functions.md#editor-controller) (`CHANGE`) также предоставляет контроллер формы в поле `form`.
 
 ### Методы контроллера формы {#the-form-controller}
 
@@ -374,7 +374,7 @@ controller.batch(() => {
 
 ### Контроллер навигатора {#navigator-controller}
 
-Действие [`INTERNAL CLIENT`](INTERNAL_operator.md), помещённое в [`NAVIGATOR`](NAVIGATOR_statement.md), тоже получает контроллер, но навигаторный: формы здесь нет, поэтому нет и перечисленных выше методов формы.
+Действие [`INTERNAL CLIENT`](INTERNAL_CLIENT_functions.md), помещённое в [`NAVIGATOR`](NAVIGATOR_statement.md), тоже получает контроллер, но навигаторный: формы здесь нет, поэтому нет и перечисленных выше методов формы.
 
 Есть четыре серверных вызова — `exec`, `eval`, `evalAction`, `change`, и `options` для первых трёх, — которые выполняются в собственной сессии навигатора, новой на каждый вызов и не применяемой автоматически, поэтому отдельный вызов `change` здесь не сохраняет изменение. Действие или скрипт может применить свои изменения через `APPLY`. Каждый из них возвращает `Promise`. И есть `activate`:
 

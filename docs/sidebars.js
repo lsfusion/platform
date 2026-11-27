@@ -651,6 +651,7 @@ module.exports = {
               items: [
                 'language/Render_functions',
                 'language/Edit_functions',
+                'language/INTERNAL_CLIENT_functions',
                 'language/Form_and_navigator_controllers',
                 {
                   type: 'category',

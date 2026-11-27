@@ -37,7 +37,7 @@ title: 'Внутренний вызов (INTERNAL)'
 
 [Свой Spring bean (`EventServer`)](../language/Custom_Spring_bean_EventServer.md) даёт доступ к lsFusion из кода на Java таким компонентам, как планировщик и серверы интеграции.
 
-Функция JavaScript, вызванная через `INTERNAL CLIENT` в веб-клиенте, получает [контроллер формы или навигатора](../language/Form_and_navigator_controllers.md): на форме она может менять форму и вызывать сервер, а в навигаторе — вызывать сервер и активировать элементы навигатора. [Клиентские модули JavaScript](../language/Client_JavaScript_modules.md#named-exports-and-auto-registration) описывают, как такая функция предоставляется и находится по имени.
+[Функция JavaScript, вызванная через `INTERNAL CLIENT`](../language/INTERNAL_CLIENT_functions.md) в веб-клиенте, получает [контроллер формы или навигатора](../language/Form_and_navigator_controllers.md): на форме она может менять форму и вызывать сервер, а в навигаторе — вызывать сервер и активировать элементы навигатора. [Клиентские модули JavaScript](../language/Client_JavaScript_modules.md#named-exports-and-auto-registration) описывают, как такая функция предоставляется и находится по имени.
 
 ## Примеры
 

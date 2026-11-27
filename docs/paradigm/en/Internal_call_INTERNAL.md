@@ -37,7 +37,7 @@ The [Java API for integrations](../language/Java_integration_API.md) describes t
 
 A [custom Spring bean (`EventServer`)](../language/Custom_Spring_bean_EventServer.md) provides Java access to lsFusion for components such as the scheduler and integration servers.
 
-A JavaScript function called by `INTERNAL CLIENT` in the web client receives [the form or navigator controller](../language/Form_and_navigator_controllers.md): on a form it can change the form and call the server, and in the navigator it can call the server and activate navigator elements. [Client JavaScript modules](../language/Client_JavaScript_modules.md#named-exports-and-auto-registration) describe how such a function is exposed and found by name.
+A [JavaScript function called by `INTERNAL CLIENT`](../language/INTERNAL_CLIENT_functions.md) in the web client receives [the form or navigator controller](../language/Form_and_navigator_controllers.md): on a form it can change the form and call the server, and in the navigator it can call the server and activate navigator elements. [Client JavaScript modules](../language/Client_JavaScript_modules.md#named-exports-and-auto-registration) describe how such a function is exposed and found by name.
 
 ## Examples
 
