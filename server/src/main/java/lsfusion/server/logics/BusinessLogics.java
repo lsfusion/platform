@@ -328,7 +328,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                     searchLanguage = getHeuristicSearchLanguage();
                 }
 
-                TimeZone timeZone = setTimezone == null ? null : TimeZone.getTimeZone(setTimezone);
+                TimeZone timeZone = setTimezone == null ? null : TimeZone.getTimeZone(LocalePreferences.getTimeZone(setTimezone));
                 if (timeZone != null) {
                     TimeZone.setDefault(timeZone);
                 }
