@@ -33,14 +33,18 @@ The executable code is meant to add new local elements and call existing ones. I
 -   declaring a [group](Groups_of_properties_and_actions.md) with a parent group from another module, or attaching a property or action to a group from another module
 -   adding base events to existing actions
 -   [abstract](Property_extension.md) properties and actions: adding an implementation to one declared outside the code, as well as declaring one in the code and using it
--   the [navigator](Navigator.md) and its [windows](Navigator_design.md): the [`NAVIGATOR`](../language/NAVIGATOR_statement.md) statement, its `SCHEDULE` included, and the [`WINDOW`](../language/WINDOW_statement.md) and `HIDE WINDOW` statements
--   the `ASON` [option](../language/Action_options.md) of an action and the [`BEFORE`](../language/BEFORE_statement.md) and [`AFTER`](../language/AFTER_statement.md) statements, which attach an action to an existing property or action
+-   configuring the [navigator](Navigator.md), including scheduling its actions, or creating or hiding its [windows](Navigator_design.md)
+-   assigning a default [form event handler](Form_events.md#property) to a property or action, or attaching an aspect to run before or after an existing action
 
 [Data properties](Data_properties_DATA.md) declared inside eval code are forced to the session scope. Persistent data declarations are not allowed.
 
 ### Language
 
 To create the eval action, use the [`EVAL` operator](../language/EVAL_operator.md).
+
+The [`NAVIGATOR` statement](../language/NAVIGATOR_statement.md) configures the navigator and schedules periodic actions with `SCHEDULE`. The [`WINDOW` and `HIDE WINDOW` statements](../language/WINDOW_statement.md) create and hide windows, respectively.
+
+The [`ASON` action option](../language/Action_options.md) sets a default form event handler. The [`BEFORE`](../language/BEFORE_statement.md) and [`AFTER`](../language/AFTER_statement.md) statements attach actions to run before and after an existing action, respectively.
 
 ### Examples
 

@@ -411,17 +411,17 @@ title: 'Rules: view logic'
    a template of its own with the `_<group>` postfix. The assistant
    MUST therefore read the object blocks of the form, not just its
    dependency shape: a linear chain with a `SUBREPORT` in it needs
-   more than one template, and a missing one silently discards
-   all of them (rule 3).
+   more than one template, and a missing one causes the platform to
+   discard all the templates it found (rule 3).
 
-3. The assistant MUST name every template exactly: the top report
-   by the canonical form name without a postfix, and each subreport
+3. With default names, the assistant MUST name the top report
+   by the canonical form name without a postfix and each subreport
    by the canonical form name plus the `_<group>` postfix of its
-   first non-empty object group. If even one template name is wrong
-   (not found from the platform's point of view), the platform
-   silently falls back to a fully automatic design for the WHOLE
-   report, with no error in the logs — so a single mismatch silently
-   discards all custom templates.
+   first non-empty object group. If even one template is missing,
+   the platform falls back to a fully automatic design for the WHOLE
+   form. If it found some templates, it writes a warning naming the
+   missing template to the server log. If it found none, the fallback
+   is silent.
 
 ## Internationalization
 
