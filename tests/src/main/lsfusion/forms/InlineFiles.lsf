@@ -3,8 +3,8 @@ MODULE InlineFiles;
 REQUIRE TestUtils, SystemEvents;
 
 // a string value sent to a client reads a resource named between two inline file separators only when a literal of a
-// module, or of a script that runs, put it there, never when the name came with data or with a script that is only
-// compiled. Before the fix any name was read
+// module, of a script that runs or of a customization code put it there, never when the name came with data or with a
+// script that is only compiled. Before the fix any name was read
 
 inlineFilesRead = DATA LOCAL TEXT ();
 readInlineFiles INTERNAL 'lsfusion.tests.ReadInlineFilesAction' (TEXT);
@@ -38,17 +38,18 @@ testInlineFilesCompiledScriptResource 'A resource a literal of a script names is
     assertEquals(inlineFilesRead(), 'not found', 'a resource a compiled script names read ' + inlineFilesRead());
 }
 
-// a customization code is compiled to be checked before it is saved (compileExtendCode), running nothing of it
+// a customization code is written only by a user who may evaluate a script, so what its literals name is read once it
+// compiles - also when it is only checked before it is saved (compileExtendCode)
 inlineFilesNote = DATA LOCAL TEXT ();
 FORM inlineFilesForm PROPERTIES() inlineFilesNote;
-testInlineFilesCheckedCustomizationResource 'A resource a literal of a customization names is not found while the code is only checked' () {
+testInlineFilesCheckedCustomizationResource 'A resource a literal of a customization names is read once the code is checked' () {
     compileExtendCode('inlineFilesCustomized() = \'a\$R\{inline/InlineFilesCustomized.txt\}b\';');
     assertNull(extendCodeError(), 'the application code does not compile: ' + extendCodeError());
     readInlineFiles('a' + inlineFileSeparator() + 'inline/InlineFilesCustomized.txt' + inlineFileSeparator() + 'b');
-    assertEquals(inlineFilesRead(), 'not found', 'a resource a checked application code names read ' + inlineFilesRead());
+    assertEquals(inlineFilesRead(), 'resource inline/InlineFilesCustomized.txt', 'a resource a checked application code names read ' + inlineFilesRead());
 
     compileExtendCode('InlineFiles.inlineFilesForm', NULL, 'inlineFilesFormCustomized() = \'a\$R\{inline/InlineFilesFormCustomized.txt\}b\';');
     assertNull(extendCodeError(), 'the form code does not compile: ' + extendCodeError());
     readInlineFiles('a' + inlineFileSeparator() + 'inline/InlineFilesFormCustomized.txt' + inlineFileSeparator() + 'b');
-    assertEquals(inlineFilesRead(), 'not found', 'a resource a checked form code names read ' + inlineFilesRead());
+    assertEquals(inlineFilesRead(), 'resource inline/InlineFilesFormCustomized.txt', 'a resource a checked form code names read ' + inlineFilesRead());
 }

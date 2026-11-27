@@ -73,7 +73,9 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule implements 
         emitEvalError("CLASS statement");
     }
 
-    // a script is compiled before its access is checked, and its text can come with data : what its literals wrap is added once its code runs (EvalExecutionStack)
+    // a script is compiled before its access is checked, and its text can come with data : what its literals wrap is added once
+    // it runs (EvalUtils.findAction), a code that customizes the application adds them as it compiles
+    // (BaseLogicsModule.evaluateCustomize)
     private final Set<String> wrappedNames = ConcurrentHashMap.newKeySet();
 
     @Override
@@ -81,8 +83,12 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule implements 
         wrappedNames.addAll(names);
     }
 
-    public void addWrapped() {
-        super.addWrapped(wrappedNames);
+    // once : the names added stay, so a module whose code runs again adds nothing
+    public void flushWrapped() {
+        if(!wrappedNames.isEmpty()) {
+            super.addWrapped(wrappedNames);
+            wrappedNames.clear();
+        }
     }
 
     @Override

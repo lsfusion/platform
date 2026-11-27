@@ -14,9 +14,6 @@ public class EvalExecutionStack extends SameThreadExecutionStack {
         super(upStack);
 
         this.evalLM = evalLM;
-
-        if(evalLM != null)
-            evalLM.addWrapped(); // the module's code starts running
     }
 
     @Override

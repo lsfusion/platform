@@ -1468,4 +1468,13 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public EvalScriptingLogicsModule evaluate(String script, EvalScriptingLogicsModule parentLM, boolean changesNavigator) {
         return EvalUtils.evaluate(BL, parentLM, null, null, null, null, false, script, changesNavigator);
     }
+
+    // a code that customizes the application - a connection's, a form's - adds what its literals wrap as it compiles, checked
+    // before it is saved or used : only a user who may evaluate a script writes it (CompileExtendCodeAction), and a script
+    // that user runs adds them as well
+    public EvalScriptingLogicsModule evaluateCustomize(String script, EvalScriptingLogicsModule parentLM, boolean changesNavigator) {
+        EvalScriptingLogicsModule module = evaluate(script, parentLM, changesNavigator);
+        module.flushWrapped();
+        return module;
+    }
 }

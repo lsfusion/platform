@@ -92,7 +92,10 @@ public class EvalUtils {
     // goes on only inside that stack
     public static Pair<LA, UnaryOperator<ExecutionStack>> findAction(EvalScriptingLogicsModule module, String action) {
         try {
-            return new Pair<>(module.findAction(module.getNamespace() + '.' + action), upStack -> new EvalExecutionStack(module, upStack));
+            return new Pair<>(module.findAction(module.getNamespace() + '.' + action), upStack -> {
+                module.flushWrapped(); // the script's code starts running
+                return new EvalExecutionStack(module, upStack);
+            });
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new UnsupportedOperationException(); // should not be since there is no currentParser in module
         } catch (ScriptErrorException e) {  // we don't need stack for ScriptErrorException, since it is obvious, so will convert it to scriptParsingException

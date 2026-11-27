@@ -1812,7 +1812,6 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
                     // compiled under what a form opened there continues (ExecutionContext.getEvalLM) : the customization of
                     // the application for the connection's user, a script, a form that opens the form
                     FormEntity copyForm = getCustomizedForm(BL, openerLM, extendCode);
-                    copyForm.customizeLM.addWrapped();
                     return new Pair<>(copyForm, getObjects().mapRevKeys((ObjectEntity obj) -> copyForm.getExEntity(obj)));
                 } catch (ScriptingErrorLog.SemanticErrorException | ScriptParsingException | ScriptErrorException e) {
                     // the customization code is written by the user, so a broken one must not make the form unopenable -
@@ -1830,7 +1829,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     public FormEntity getCustomizedForm(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String extendCode) throws ScriptingErrorLog.SemanticErrorException, ScriptParsingException, ScriptErrorException {
         String name = getName();
         String script = "FORM " + name + " EXTEND FORMS " + getCanonicalName() + ";\n" + extendCode + ";";
-        EvalScriptingLogicsModule customizeLM = BL.LM.evaluate(script, parentLM, false);
+        EvalScriptingLogicsModule customizeLM = BL.LM.evaluateCustomize(script, parentLM, false);
         FormEntity copyForm = customizeLM.findForm(name);
         copyForm.customizeForm = this; // a copy is not customized again (getForm)
         copyForm.customizeLM = customizeLM;
