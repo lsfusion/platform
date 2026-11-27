@@ -95,7 +95,7 @@ public abstract class CallDBAction extends CallAction {
         return mParamObjects.immutable();
     }
 
-    protected void readJDBC(ExecutionContext<PropertyInterface> context, Connection conn, SQLSyntax syntax, OperationOwner owner) throws SQLException, SQLHandledException, IOException, ExecutionException {
+    protected void readJDBC(ExecutionContext<PropertyInterface> context, Connection conn, SQLSyntax syntax, OperationOwner owner, Integer timeout) throws SQLException, SQLHandledException, IOException, ExecutionException {
         String exec = (String) context.getKeyObject(this.exec);
         boolean isFile = exec.endsWith(".sql");
         if(isFile)
@@ -112,6 +112,9 @@ public abstract class CallDBAction extends CallAction {
                 SQLSession.ParamNum paramNum = new SQLSession.ParamNum();
                 for (String param : parsed.preparedParams)
                     paramObjects.get(param).writeParam(parsed.statement, paramNum, syntax);
+
+                if (timeout != null) // JDBC counts whole seconds, and 0 means no limit, so rounding up
+                    parsed.statement.setQueryTimeout((int) Math.ceil(timeout / 1000.0));
 
                 boolean isResultSet = (boolean) Executors.newSingleThreadExecutor().submit((Callable) parsed.statement::execute).get();
 

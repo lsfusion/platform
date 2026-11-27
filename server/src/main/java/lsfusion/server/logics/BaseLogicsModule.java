@@ -183,6 +183,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP responseTcp;
     public LP timeoutTcp;
 
+    public LP timeoutSql;
+
     public LP statusHttp;
     public LP statusHttpTo;
     public LP timeoutHttp;
@@ -573,6 +575,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         responseTcp = findProperty("responseTcp[]");
         timeoutTcp = findProperty("timeoutTcp[]");
+
+        timeoutSql = findProperty("timeoutSql[]");
 
         statusHttp = findProperty("statusHttp[]");
         statusHttpTo = findProperty("statusHttpTo[]");
