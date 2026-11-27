@@ -741,7 +741,8 @@ module.exports = {
           label: 'Rules',
           link: {type: 'doc', id: 'rules/Rules'},
           items: [
-            'rules/Rules_logic',
+            'rules/Rules_properties',
+            'rules/Rules_changes',
             'rules/Rules_view',
             'rules/Rules_custom',
             'rules/Rules_physical',

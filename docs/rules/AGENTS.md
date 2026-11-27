@@ -27,7 +27,7 @@ Three kinds of article, with different budgets:
   it is the only thing that tells the assistant an article exists, and the
   session that motivated this structure went wrong precisely because nothing
   did. Changing the set of articles means changing the map in the same commit.
-- `Rules_<area>.md` are the five area articles: `logic`, `view`, `custom`,
+- `Rules_<area>.md` are the six area articles: `properties`, `changes`, `view`, `custom`,
   `physical`, `integration`. They reach the assistant only when it asks for one by name.
   Each must stay inside the tool-result envelope of the harnesses — under
   40 KB, against a measured 50 KB ceiling — because an article that arrives

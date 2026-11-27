@@ -120,8 +120,8 @@ title: 'Rules: integration'
 
     Which session the import runs in, how the upper-session
     buffer reaches it and what follows `APPLY;` are governed
-    by the change-session rules of the domain-logic article
-    (`lsfusion_get_guidance(rules='logic')`).
+    by the change-session rules of the article on actions and
+    data changes (`lsfusion_get_guidance(rules='changes')`).
 
 12. The assistant MUST NOT partially persist
     a failed import silently. For failures the assistant

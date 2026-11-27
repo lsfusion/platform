@@ -11,7 +11,7 @@ title: 'Rules: running application'
 
 1. The assistant MUST treat `lsfusion_eval` and `lsfusion_exec` calls as execution on live data and MUST confirm the target, scope and effects of a change with the user before making it. Before treating a call as read-only, it MUST check the called actions for their own `APPLY` and external effects: discarding the call's session does not undo them.
 
-2. In scripts, the assistant MUST follow the area rules on [non-interactive `APPLY`](Rules_logic.md#change-sessions-newsession-apply), [local events](Rules_logic.md#where-local-events-actually-run) and [raw `r'...'` literals in comparisons](Rules_view.md#internationalization).
+2. In scripts, the assistant MUST follow the area rules on [non-interactive `APPLY`](Rules_changes.md#change-sessions-newsession-apply), [local events](Rules_changes.md#where-local-events-actually-run) and [raw `r'...'` literals in comparisons](Rules_view.md#internationalization).
 
 ## Logic changes
 
