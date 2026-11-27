@@ -16,7 +16,6 @@ import lsfusion.interop.connection.*;
 import lsfusion.interop.session.*;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.remote.RemoteRequestObject;
-import lsfusion.server.base.controller.thread.AssertSynchronized;
 import lsfusion.server.base.controller.thread.SyncType;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -364,9 +363,11 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     // read by the connection balancing and restart too (SQLSession.balanceConnection / restartConnection), from threads
     // of their own beside the connection's requests - so volatile, and not @AssertSynchronized, which took such a read
-    // for a second thread inside the connection (and under -ea failed the request, after its commit)
+    // for a second thread inside the connection (and under -ea failed the request, after its commit). Written at a
+    // commit, under the write lock of the connection's SQL session, which orders the commits of all its sessions - and
+    // not @AssertSynchronized either: the navigator runs its requests at once, and the check took the commit of one for
+    // a second thread beside the getChanges of another
     private volatile LogSequenceNumber lsn;
-    @AssertSynchronized
     public void updateLSN(LogSequenceNumber lsn) {
         this.lsn = lsn;
     }

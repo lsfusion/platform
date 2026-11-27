@@ -8,9 +8,18 @@ REQUIRE TestUtils;
 // request that was committing, after its commit)
 
 clFailure = DATA LOCAL STRING ();
-clReadBeside INTERNAL 'lsfusion.tests.ReadLsnBesideRequestAction' ();
+clCommitted = DATA LONG ();
+clBeside INTERNAL 'lsfusion.tests.LsnBesideRequestAction' (STRING);
 
 testLsnReadBesideARequest 'The LSN is read by the balancing beside a request of the connection' () {
-    clReadBeside();
+    clBeside('read');
+    assertNull(clFailure(), clFailure());
+}
+
+// ... and the commit that writes it was checked so too, while the navigator runs its requests at once: a commit of one
+// failed while another was reading the navigator's changes - in the web client, a call of the page's agent made as the
+// client was starting (UiWebMCPIT)
+testLsnWrittenBesideARequest 'A commit writes the LSN beside another request of the connection' () {
+    clBeside('commit');
     assertNull(clFailure(), clFailure());
 }
