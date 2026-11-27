@@ -1824,7 +1824,7 @@ public class FormEntity extends IdentityEntity<FormEntity, FormEntity> implement
     }
 
     // compiles the copy of this (named) form the customization code makes, under the given module, if any - what opens
-    // the form, the application's customization as the code is saved -, running nothing of it; what the compilation
+    // the form, the connection's code as the code is saved -, running nothing of it; what the compilation
     // fails with is thrown - getForm reports it and opens the form itself, a save of the code refuses the code
     public FormEntity getCustomizedForm(BusinessLogics BL, EvalScriptingLogicsModule parentLM, String extendCode) throws ScriptingErrorLog.SemanticErrorException, ScriptParsingException, ScriptErrorException {
         String name = getName();

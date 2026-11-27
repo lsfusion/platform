@@ -1122,9 +1122,9 @@ shareAction(STRING relativeUrl) {
 dataExtendCode = DATA TEXT (Form);
 dataExtendCode = DATA TEXT (Form, User);
 
-// the application as a whole is customized for a user the way a form is, and its code is named as a form's, with no
-// form among the parameters. The code is compiled for a connection of the user as it is made - a client, say -, its
-// NAVIGATOR statements over a copy of the navigator, so it takes effect when the client is started again
+// the application as a whole is customized for a user the way a form is, by the connection's code, stored as a form's
+// is (dataExtendCode), with no form among the parameters. The code is compiled for a connection of the user as it is made - a client, say -,
+// its NAVIGATOR statements over a copy of the navigator, so it takes effect when the client is started again
 dataExtendCode = DATA TEXT ();
 dataExtendCode = DATA TEXT (User);
 
@@ -1136,14 +1136,15 @@ extendCode(STRING sid) = PREV(extendCode(form(sid)));
 
 // a line break between the two, as in a form's. Every connection of a user reads it, so it is kept in memory (LAZY) -
 // and let go as a code is applied (WAIT), for a connection made right after that to take the code that was saved
-extendCode (User user) = CONCAT '\n', dataExtendCode(), dataExtendCode(user) LAZY WAIT;
+connectionExtendCode (User user) = CONCAT '\n', dataExtendCode(), dataExtendCode(user) LAZY WAIT;
 
-// what compileExtendCode failed with, or that the user may not write a code, NULL if the code compiles
+// what the compilation failed with, or that the user may not write a code, NULL if the code compiles
 extendCodeError = DATA LOCAL TEXT ();
-// compile a code as it is compiled where it is used, running nothing of it: a form's (by its canonical name) as the form
-// opens in a connection the application's code given before it customizes, the application's as a connection starts
-compileExtendCode INTERNAL 'lsfusion.server.physics.admin.interpreter.action.CompileFormExtendCodeAction' (STRING, TEXT, TEXT) NULL;
-compileExtendCode INTERNAL 'lsfusion.server.physics.admin.interpreter.action.CompileApplicationExtendCodeAction' (TEXT) NULL;
+// compile a code as it is compiled where it is used, running nothing of it: a form's (by its canonical name) under the
+// connection's code given before it, as the form opens in a connection that code customizes, the connection's as a
+// connection starts
+compileFormExtendCode INTERNAL 'lsfusion.server.physics.admin.interpreter.action.CompileFormExtendCodeAction' (STRING, TEXT, TEXT) NULL;
+compileConnectionExtendCode INTERNAL 'lsfusion.server.physics.admin.interpreter.action.CompileConnectionExtendCodeAction' (TEXT) NULL;
 
 refuseExtendCode() {
     IF extendCodeError() THEN {
@@ -1153,22 +1154,22 @@ refuseExtendCode() {
 }
 
 // a code written anew is compiled as it is used, whoever writes it, and the apply is canceled if it does not compile : the
-// code for all users by itself, a user's after it on a line of its own, a form's in a connection of the application's code
-// it is used with. A code dropped is not compiled - a code can be dropped when what remains does not compile
+// code for all users by itself, a user's after it on a line of its own, a form's under the connection's code it is used
+// with. A code dropped is not compiled - a code can be dropped when what remains does not compile
 WHEN SETCHANGED(dataExtendCode(Form f)) DO {
-    compileExtendCode(canonicalName(f), dataExtendCode(), dataExtendCode(f));
+    compileFormExtendCode(canonicalName(f), dataExtendCode(), dataExtendCode(f));
     refuseExtendCode();
 }
 WHEN SETCHANGED(dataExtendCode(Form f, User u)) DO {
-    compileExtendCode(canonicalName(f), extendCode(u), extendCode(f, u));
+    compileFormExtendCode(canonicalName(f), connectionExtendCode(u), extendCode(f, u));
     refuseExtendCode();
 }
 WHEN SETCHANGED(dataExtendCode()) DO {
-    compileExtendCode(dataExtendCode());
+    compileConnectionExtendCode(dataExtendCode());
     refuseExtendCode();
 }
 WHEN SETCHANGED(dataExtendCode(User u)) DO {
-    compileExtendCode(extendCode(u));
+    compileConnectionExtendCode(connectionExtendCode(u));
     refuseExtendCode();
 }
 
@@ -1186,7 +1187,7 @@ recreate = DATA LOCAL BOOLEAN();
 
 nullEmpty(STRING s) = IF s == '' THEN NULL ELSE s;
 
-// the codes the dialog edits : of the form sid, else of the application. Each is written to its own DATA property - a
+// the codes the dialog edits : of the form sid, else the connection's. Each is written to its own DATA property - a
 // change of the IF over them does not reach a property joined on form(sid)
 customizeCodeAll(STRING sid) = IF form(sid) THEN dataExtendCode(form(sid)) ELSE dataExtendCode();
 customizeCodeCurrentUser(STRING sid) = IF form(sid) THEN dataExtendCode(form(sid), currentUser()) ELSE dataExtendCode(currentUser());
@@ -1204,7 +1205,7 @@ changeCustomizeCodeCurrentUser(STRING sid, TEXT code) {
 }
 
 FORM customizeForm '{action.form.customize}' IMAGE 'settings'
-    // sid : the form whose code is edited, not passed for the application's
+    // sid : the form whose code is edited, not passed for the connection's
     OBJECTS code = TEXT PANEL, defaultCode = TEXT PANEL, sid = STRING PANEL
     PROPERTIES() enableOriginalCode SHOWIF code, enableExtendCodeAll, enableExtendCodeCurrentUser
     PROPERTIES
@@ -1271,7 +1272,7 @@ DESIGN customizeForm {
 
 formRecreate INTERNAL 'lsfusion.server.logics.form.interactive.action.FormRecreateAction' ();
 customize(STRING sid, STRING code) {
-    // a form the application's code declares has no row in the reflection, so no code of its own
+    // a form the connection's code declares has no row in the reflection, so no code of its own
     IF NOT form(sid) THEN {
         MESSAGE 'Form was not found: ' + sid;
         RETURN;

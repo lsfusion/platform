@@ -97,7 +97,7 @@ public class ExternalApiAccessIT {
     // a code of every kind is saved only by a call that may evaluate a script : an authenticated one, not one with no login
     @Test
     public void writingCustomizationCodeRequiresTheRightToEvaluate() throws Exception {
-        for (String kind : new String[]{"application", "form", "ownApplication", "ownForm"}) {
+        for (String kind : new String[]{"connection", "form", "ownConnection", "ownForm"}) {
             String write = "/exec?action=ExtendCodeRights.ecrWrite&p=" + kind;
             Assert.assertEquals(kind, "refused", post(write, "").body());
             Assert.assertEquals(kind, "saved", postAsAdmin(write, "").body());

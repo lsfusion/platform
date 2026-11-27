@@ -360,7 +360,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule implements 
 
     // a name a caller gives, by the rules of such a name (BusinessLogicsResolvingUtils.findActionByName : every namespace
     // alike, no priority of a module's own) among the modules this one sees : the logics', the ones it is compiled under
-    // (a form's code under the code of the application) and itself - so what the logics and a code both declare is
+    // (a form's code under the connection's code) and itself - so what the logics and a code both declare is
     // ambiguous until a namespace says whose
     @Override
     @IdentityLazy

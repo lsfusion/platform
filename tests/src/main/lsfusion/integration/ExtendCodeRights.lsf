@@ -2,11 +2,11 @@ MODULE ExtendCodeRights;
 
 REQUIRE SystemEvents, Utils;
 
-// a customization's code of each kind : the application's and a form's, for all users and the caller's own
+// a customization's code of each kind : the connection's and a form's, for all users and the caller's own
 ecrCode (STRING kind, Form f, User u) = CASE
-    WHEN kind == 'application' THEN dataExtendCode()
+    WHEN kind == 'connection' THEN dataExtendCode()
     WHEN kind == 'form' THEN dataExtendCode(f)
-    WHEN kind == 'ownApplication' THEN dataExtendCode(u)
+    WHEN kind == 'ownConnection' THEN dataExtendCode(u)
     WHEN kind == 'ownForm' THEN dataExtendCode(f, u);
 ecrMarker() = 'ecrMarker() \{ \}';
 

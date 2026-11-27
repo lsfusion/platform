@@ -19,7 +19,7 @@ efcSet (TEXT code) {
     dataExtendCode(form('EvalFormCodeScope.efcForm')) <- code;
     APPLY;
 }
-// a code is checked as it is saved under the code of the application only, so a code naming what a script that opens the
+// a code is checked as it is saved under the connection's code only, so a code naming what a script that opens the
 // form declares is stored past that check
 efcSetUnchecked (TEXT code) {
     setNoCancelInTransaction();

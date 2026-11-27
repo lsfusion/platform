@@ -321,9 +321,9 @@ public class UiConnectionCustomizeIT extends UiTest {
         close(form);
     }
 
-    // and for the application's
+    // and for the connection's
     @Test
-    public void theEditorRefusesBrokenApplicationCode() {
+    public void theEditorRefusesBrokenConnectionCode() {
         open("System.administration", element("SystemEvents.customize"));
         Locator editor = form("SystemEvents.customizeForm");
         refuseCode(editor, "NAVIGATOR { NEW uiCcNoSuchForm; }", "uiCcNoSuchForm");

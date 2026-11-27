@@ -89,7 +89,7 @@ uiCcSetForm (STRING name, TEXT code) {
     APPLY;
 }
 
-// evaluates a script that names what only the code of the application's customization declares
+// evaluates a script that names what only the connection's code declares
 uiCcEvaluate 'Evaluate' () { EVAL ACTION 'uiCcSay();'; }
 EXTEND FORM uiCcOther PROPERTIES() uiCcEvaluate;
 

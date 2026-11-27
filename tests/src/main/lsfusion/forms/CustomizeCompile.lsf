@@ -10,53 +10,53 @@ ccForm() = form(ccFormName());
 ccBadFormCode() = 'EXTEND FORM ccForm PROPERTIES() ccNoSuchProperty;';
 ccFormObjects() = 'EXTEND FORM ccForm OBJECTS n = INTEGER PANEL;';
 ccFormProperties() = 'EXTEND FORM ccForm PROPERTIES VALUE(n)';
-ccBadAppCode() = 'NAVIGATOR \{ NEW ccNoSuchForm; \}';
-ccAppForm() = 'FORM ccAppForm \'x\';';
-ccAppNavigator() = 'NAVIGATOR \{ System.administration \{ NEW ccAppForm; \} \}';
-ccAppDeclares() = 'ccAppAnswer() = 42;';
-ccFormUsesApp() = 'EXTEND FORM ccForm PROPERTIES() ccAppAnswer;';
+ccBadConnCode() = 'NAVIGATOR \{ NEW ccNoSuchForm; \}';
+ccConnForm() = 'FORM ccConnForm \'x\';';
+ccConnNavigator() = 'NAVIGATOR \{ System.administration \{ NEW ccConnForm; \} \}';
+ccConnDeclares() = 'ccConnAnswer() = 42;';
+ccFormUsesConn() = 'EXTEND FORM ccForm PROPERTIES() ccConnAnswer;';
 
 testCcFormCode () {
-    compileExtendCode(ccFormName(), NULL, ccBadFormCode());
+    compileFormExtendCode(ccFormName(), NULL, ccBadFormCode());
     assertTrue(extendCodeError() LIKE '%ccNoSuchProperty%', 'The error of the form code should name the missing property');
 
-    compileExtendCode(ccFormName(), NULL, ccFormObjects());
+    compileFormExtendCode(ccFormName(), NULL, ccFormObjects());
     assertNull(extendCodeError(), 'The form code still has an error');
 
-    compileExtendCode(ccFormName(), NULL, ccFormProperties());
+    compileFormExtendCode(ccFormName(), NULL, ccFormProperties());
     assertTrue(extendCodeError() LIKE '%object \'n\' is not found%', 'The personal code needs the object from the code for all users');
-    compileExtendCode(ccFormName(), NULL, ccFormObjects() + '\n' + ccFormProperties());
+    compileFormExtendCode(ccFormName(), NULL, ccFormObjects() + '\n' + ccFormProperties());
     assertNull(extendCodeError(), 'The personal code should see the object from the code for all users');
 
     // a check of what the code makes, the objects of the form, is an error of the code as well
-    compileExtendCode(ccFormName(), NULL, 'EXTEND FORM ccForm OBJECTS m = INTEGER MAP;');
+    compileFormExtendCode(ccFormName(), NULL, 'EXTEND FORM ccForm OBJECTS m = INTEGER MAP;');
     assertTrue(extendCodeError() LIKE '%none of required MAP propertyDraws found%', 'A MAP group without coordinates was not refused: ' + extendCodeError());
 
-    // the code sees what the application's code given declares, as in a connection that code customizes
-    compileExtendCode(ccFormName(), ccAppDeclares(), ccFormUsesApp());
-    assertNull(extendCodeError(), 'The form code did not see what the application code declares: ' + extendCodeError());
-    compileExtendCode(ccFormName(), ccBadAppCode(), ccFormUsesApp());
-    assertTrue(extendCodeError() LIKE '%ccAppAnswer%', 'The form code saw a broken application code');
+    // the code sees what the connection's code given declares, as in a connection that code customizes
+    compileFormExtendCode(ccFormName(), ccConnDeclares(), ccFormUsesConn());
+    assertNull(extendCodeError(), 'The form code did not see what the connection code declares: ' + extendCodeError());
+    compileFormExtendCode(ccFormName(), ccBadConnCode(), ccFormUsesConn());
+    assertTrue(extendCodeError() LIKE '%ccConnAnswer%', 'The form code saw a broken connection code');
 
-    compileExtendCode(ccFormName(), NULL, ccBadFormCode());
-    compileExtendCode(ccFormName(), NULL, NULL);
+    compileFormExtendCode(ccFormName(), NULL, ccBadFormCode());
+    compileFormExtendCode(ccFormName(), NULL, NULL);
     assertNull(extendCodeError(), 'A NULL form code kept the previous error');
 }
 
-testCcApplicationCode () {
-    compileExtendCode(ccBadAppCode());
-    assertTrue(extendCodeError() LIKE '%ccNoSuchForm%', 'The error of the application code should name the missing form');
+testCcConnectionCode () {
+    compileConnectionExtendCode(ccBadConnCode());
+    assertTrue(extendCodeError() LIKE '%ccNoSuchForm%', 'The error of the connection code should name the missing form');
 
-    compileExtendCode(ccAppForm() + '\n' + ccAppNavigator());
-    assertNull(extendCodeError(), 'The application code still has an error');
+    compileConnectionExtendCode(ccConnForm() + '\n' + ccConnNavigator());
+    assertNull(extendCodeError(), 'The connection code still has an error');
 
-    compileExtendCode('NAVIGATOR \{ NEW FOLDER ccTop; \}');
+    compileConnectionExtendCode('NAVIGATOR \{ NEW FOLDER ccTop; \}');
     assertTrue(extendCodeError() LIKE '%must specify a WINDOW for its children%', 'The navigator check should refuse a top folder without a window');
-    compileExtendCode(NULL);
-    assertNull(extendCodeError(), 'A NULL application code kept the navigator error');
+    compileConnectionExtendCode(NULL);
+    assertNull(extendCodeError(), 'A NULL connection code kept the navigator error');
 }
 
-// each code is saved in an apply of its own - the code of the form, else the application's.
+// each code is saved in an apply of its own - the code of the form, else the connection's.
 // They stay saved, so every test drops them at its start and its end
 // what the apply ended with : APPLY's own canceled[] and applyMessage[] are not taken out of the session
 ccCanceled = DATA LOCAL BOOLEAN ();
@@ -125,42 +125,42 @@ testCcFormSave () {
     ccDrop(ccForm());
 }
 
-testCcApplicationSave () {
+testCcConnectionSave () {
     ccDrop(NULL);
 
-    ccSaveUser(NULL, ccBadAppCode());
-    ccRefused('ccNoSuchForm', 'a broken personal application code');
-    ccSaveAll(NULL, ccBadAppCode());
-    ccRefused('ccNoSuchForm', 'a broken application code for all users');
+    ccSaveUser(NULL, ccBadConnCode());
+    ccRefused('ccNoSuchForm', 'a broken personal connection code');
+    ccSaveAll(NULL, ccBadConnCode());
+    ccRefused('ccNoSuchForm', 'a broken connection code for all users');
     ccSaveUser(NULL, 'NAVIGATOR \{ NEW FOLDER ccTop; \}');
     ccRefused('must specify a WINDOW for its children', 'a code the navigator check refuses');
     ccSaveAll(NULL, 'CLASS CcClass;');
     ccRefused('CLASS statement cannot be used in EVAL module', 'a code declaring a class');
-    assertNull(dataExtendCode(), 'the broken application code for all users is stored');
-    assertNull(dataExtendCode(currentUser()), 'the broken personal application code is stored');
+    assertNull(dataExtendCode(), 'the broken connection code for all users is stored');
+    assertNull(dataExtendCode(currentUser()), 'the broken personal connection code is stored');
 
-    ccSaveAll(NULL, ccAppForm());
-    ccSaved('an application code for all users');
-    ccSaveUser(NULL, ccAppNavigator());
-    ccSaved('a personal application code using a form of the code for all users');
+    ccSaveAll(NULL, ccConnForm());
+    ccSaved('a connection code for all users');
+    ccSaveUser(NULL, ccConnNavigator());
+    ccSaved('a personal connection code using a form of the code for all users');
     ccSaveAll(NULL, NULL);
-    ccSaved('a drop of the application code for all users');
+    ccSaved('a drop of the connection code for all users');
 
     ccDrop(NULL);
 }
 
-// a form's code is compiled with the application's code it is used with, as it is stored : not the one the connection that
+// a form's code is compiled with the connection's code it is used with, as it is stored : not the one the connection that
 // saves it was made with (this test's has none)
-testCcFormSaveOverApplication () {
+testCcFormSaveOverConnection () {
     ccDrop(ccForm());
     ccDrop(NULL);
 
-    ccSaveUser(ccForm(), ccFormUsesApp());
-    ccRefused('ccAppAnswer', 'a form code using what no application code declares');
-    ccSaveAll(NULL, ccAppDeclares());
-    ccSaved('an application code');
-    ccSaveUser(ccForm(), ccFormUsesApp());
-    ccSaved('a form code using what the application code declares');
+    ccSaveUser(ccForm(), ccFormUsesConn());
+    ccRefused('ccConnAnswer', 'a form code using what no connection code declares');
+    ccSaveAll(NULL, ccConnDeclares());
+    ccSaved('a connection code');
+    ccSaveUser(ccForm(), ccFormUsesConn());
+    ccSaved('a form code using what the connection code declares');
 
     ccDrop(ccForm());
     ccDrop(NULL);
@@ -183,9 +183,9 @@ testCcNavigatorUserRefused () {
     ccDrop(NULL);
     messageCaughtException() <- NULL;
     TRY {
-        customizeNavigatorUser(ccBadAppCode());
+        customizeNavigatorUser(ccBadConnCode());
     } CATCH {
     }
-    assertTrue(messageCaughtException() LIKE '%ccNoSuchForm%', 'a broken application code failed the call with ' + messageCaughtException());
-    assertNull(dataExtendCode(currentUser()), 'the broken application code is stored');
+    assertTrue(messageCaughtException() LIKE '%ccNoSuchForm%', 'a broken connection code failed the call with ' + messageCaughtException());
+    assertNull(dataExtendCode(currentUser()), 'the broken connection code is stored');
 }

@@ -173,7 +173,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     private String readCustomizeCode(DataSession session) throws SQLException, SQLHandledException {
-        return (String) businessLogics.systemEventsLM.extendCodeUser.read(session, user);
+        return (String) businessLogics.systemEventsLM.connectionExtendCode.read(session, user);
     }
 
     // a client tells its user what the code failed with, a call of the program interface has only the log

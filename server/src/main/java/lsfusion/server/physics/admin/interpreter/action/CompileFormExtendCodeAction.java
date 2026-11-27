@@ -11,7 +11,7 @@ import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConn
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 
 // a form's code, compiled as the form compiles it when it opens (FormEntity.getCustomizedForm) in a connection the given
-// application's code customizes - what the code uses of that one is seen
+// connection's code customizes - what the code uses of that one is seen
 public final class CompileFormExtendCodeAction extends CompileExtendCodeAction {
     public CompileFormExtendCodeAction(SystemEventsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
@@ -22,17 +22,17 @@ public final class CompileFormExtendCodeAction extends CompileExtendCodeAction {
         BusinessLogics BL = context.getBL();
         FormEntity form = BL.findForm((String) getParamValue(0, context).getValue());
 
-        // a connection whose application's code does not compile goes on without it (RemoteConnection.initCustomize)
-        String applicationCode = (String) getParamValue(1, context).getValue();
-        EvalScriptingLogicsModule applicationLM = null;
-        if (applicationCode != null) {
+        // a connection whose own code does not compile goes on without it (RemoteConnection.initCustomize)
+        String connectionCode = (String) getParamValue(1, context).getValue();
+        EvalScriptingLogicsModule parentLM = null;
+        if (connectionCode != null) {
             try {
-                applicationLM = RemoteConnection.evaluateCustomizeCode(BL, applicationCode);
+                parentLM = RemoteConnection.evaluateCustomizeCode(BL, connectionCode);
             } catch (RuntimeException e) {
             }
         }
         try {
-            form.getCustomizedForm(BL, applicationLM, code);
+            form.getCustomizedForm(BL, parentLM, code);
             return null;
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             return e.getMessage();
