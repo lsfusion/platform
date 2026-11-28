@@ -1,0 +1,21 @@
+MODULE EvalErrorText;
+
+REQUIRE TestUtils;
+
+// what an error of a script compiled while the server runs says
+
+// what the script fails with is in messageCaughtException()
+eetEval (TEXT script) {
+    TRY {
+        EVAL script;
+    } CATCH {
+    }
+}
+
+// whoever sends a script can set neither batchScriptErrors nor dryRun for its compile : it is compiled before any
+// action of it runs
+testEvalErrorNamesNoStartSetting 'An error of an EVAL script names no setting read at the start' () {
+    eetEval('run() \{ eetMissing() <- 1; \}');
+    assertTrue(messageCaughtException() LIKE '%eetMissing%', 'the script failed with ' + messageCaughtException());
+    assertFalse(messageCaughtException() LIKE '%batchScriptErrors%', 'the error names a setting read at the start: ' + messageCaughtException());
+}

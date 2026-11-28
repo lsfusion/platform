@@ -89,7 +89,10 @@ public class ScriptingErrorLog {
 
     private String getSemanticRecognitionErrorText(String msg, ScriptParser parser, RecognitionException e) {
         String text = getRecognitionErrorText(parser, "error", msg, e);
-        if (Settings.get().isBatchScriptErrors()) // the run keeps looking, so promising nothing more would be a lie
+        // the run keeps looking, so promising nothing more would be a lie. And a code compiled while the server
+        // runs - a script, a code that customizes a form or the application - is compiled before any action of it
+        // runs : whoever sends it can set neither setting for that compile
+        if (Settings.get().isBatchScriptErrors() || parser.getCurrentParser().self instanceof EvalScriptingLogicsModule)
             return text;
         return text + "Only the first error is reported: set 'batchScriptErrors' (or run with 'dryRun') to report several errors at once.";
     }
