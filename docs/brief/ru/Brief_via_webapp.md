@@ -1,6 +1,6 @@
 ---
 slug: "/Brief_via_webapp"
-title: 'Brief: browser WebMCP tools'
+title: 'Краткий обзор: инструменты WebMCP в браузере'
 ---
 
 ## Инструменты в клиенте пользователя

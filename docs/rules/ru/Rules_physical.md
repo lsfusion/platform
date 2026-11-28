@@ -1,6 +1,6 @@
 ---
 slug: "/Rules_physical"
-title: 'Rules: physical model'
+title: 'Правила: физическая модель'
 ---
 
 - [Правила: исполнение](#правила-исполнение)

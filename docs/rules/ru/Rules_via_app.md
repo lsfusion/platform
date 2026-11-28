@@ -1,6 +1,6 @@
 ---
 slug: "/Rules_via_app"
-title: 'Rules: running application'
+title: 'Правила: запущенное приложение'
 ---
 
 ## Контекст приложения

@@ -1,6 +1,6 @@
 ---
 slug: "/How-to_Use_Cases"
-title: 'How-to: Use Cases'
+title: 'How-to: Сценарии использования'
 ---
 
 ### Порядок ознакомления

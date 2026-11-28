@@ -1,6 +1,6 @@
 ---
 slug: "/Rules_via_idedev"
-title: 'Rules: IntelliJ tools'
+title: 'Правила: инструменты IntelliJ'
 ---
 
 ## Диагностика IDE

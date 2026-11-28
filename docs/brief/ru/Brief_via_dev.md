@@ -1,6 +1,6 @@
 ---
 slug: "/Brief_via_dev"
-title: 'Brief: development'
+title: 'Краткий обзор: разработка'
 ---
 
 ## Разработка исходного кода

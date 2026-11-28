@@ -5,9 +5,9 @@ title: 'AI'
 
 This section contains the guidance that helps AI assistants — and the developers prompting them — read and write **lsFusion** code correctly. The same materials are served to AI tools through the lsFusion MCP server and published here so they can also be read directly. The per-area articles of the Brief and the Rules are requested by name through the `rules` and `brief` parameters of the `lsfusion_get_guidance` tool.
 
-### [Brief](../brief/Brief.md)
+### [Brief](../brief/Brief.md) {#brief}
 A concise map of **lsFusion** elements — properties, actions, forms, and the core operators — written for quick understanding and code generation. It is deliberately compact, and detailed syntax is looked up in the rest of the documentation as needed.
-### [Rules](../rules/Rules.md)
+### [Rules](../rules/Rules.md) {#rules}
 The mandatory conventions for writing **lsFusion** code: how to structure modules, declare and name properties and actions, and which common mistakes to avoid. An AI assistant should read and follow these before generating `.lsf` code.
 ### [MCP server](MCP_server.md)
 How to run an lsFusion application itself as an MCP server (`enableAPI` + HTTPS) so external AI clients such as `claude.ai` can call its tools — including the OAuth `.well-known` discovery caveat for deployments that are not at the domain root. In a browser that supports WebMCP, the page of the web client gives the same tools to the AI agent of the browser.

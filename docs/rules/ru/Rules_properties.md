@@ -1,6 +1,6 @@
 ---
 slug: "/Rules_properties"
-title: 'Rules: properties'
+title: 'Правила: свойства'
 ---
 
 - [Правила: свойства](#правила-свойства)

@@ -1,6 +1,6 @@
 ---
 slug: "/Brief_operation"
-title: 'Brief: operation'
+title: 'Краткий обзор: эксплуатация'
 ---
 
 ## Системные параметры

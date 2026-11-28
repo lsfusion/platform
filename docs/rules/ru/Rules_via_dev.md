@@ -1,6 +1,6 @@
 ---
 slug: "/Rules_via_dev"
-title: 'Rules: development'
+title: 'Правила: разработка'
 ---
 
 ## Контекст проекта

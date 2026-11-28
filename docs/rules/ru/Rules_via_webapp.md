@@ -1,6 +1,6 @@
 ---
 slug: "/Rules_via_webapp"
-title: 'Rules: browser WebMCP tools'
+title: 'Правила: инструменты WebMCP в браузере'
 ---
 
 ## Контекст сессии

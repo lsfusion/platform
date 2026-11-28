@@ -1,6 +1,6 @@
 ---
 slug: "/Brief_via_app"
-title: 'Brief: running application'
+title: 'Краткий обзор: запущенное приложение'
 ---
 
 ## Запущенное приложение

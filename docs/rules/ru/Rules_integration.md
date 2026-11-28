@@ -1,6 +1,6 @@
 ---
 slug: "/Rules_integration"
-title: 'Rules: integration'
+title: 'Правила: интеграция'
 ---
 
 - [Правила: импорт данных (IMPORT)](#правила-импорт-данных-import)

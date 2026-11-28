@@ -1,6 +1,6 @@
 ---
 slug: "/Brief_via_idedev"
-title: 'Brief: IntelliJ tools'
+title: 'Краткий обзор: инструменты IntelliJ'
 ---
 
 ## Инструменты проекта IntelliJ
